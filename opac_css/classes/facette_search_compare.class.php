@@ -3,7 +3,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: facette_search_compare.class.php,v 1.10 2015-06-04 09:04:35 dgoron Exp $
+// $Id: facette_search_compare.class.php,v 1.10.2.2 2015-09-17 15:14:13 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -396,11 +396,11 @@ class facette_search_compare {
 				//le panier
 				if ($current->cart_allowed){
 					if(isset($_SESSION["cart"]) && in_array($current->notice_id, $_SESSION["cart"])) {
-						$notices.="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+						$notices.="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".get_url_icon('basket_exist.gif', 1)."\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 					} else {
 						$title=$current->notice_header;
 						if(!$title)$title=$current->notice->tit1;
-						$notices.="<a href=\"cart_info.php?id=".$current->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+						$notices.="<a href=\"cart_info.php?id=".$current->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".get_url_icon("basket_small_20x20.gif", 1)."' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 					}
 				}else {
 					$notices.="";

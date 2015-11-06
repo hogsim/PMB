@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes.tpl.php,v 1.22 2015-05-31 18:17:24 Alexandre Exp $
+// $Id: demandes.tpl.php,v 1.22.2.1 2015-09-11 12:50:41 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -127,7 +127,9 @@ $form_filtre_demande .="
 			</div>
 		</div>";
 $form_filtre_demande .="
-		<div class='row'></div>	
+		<div class='row'></div>
+		!!champs_perso!!
+		<div class='row'></div>
 	</div>
 	<div class='row'></div>
 	<div class='row'>
@@ -197,6 +199,7 @@ $form_liste_demande ="
 					<th>".$msg['demandes_demandeur']."</th>
 					<th>".$msg['demandes_attribution']."</th>
 					<th>".$msg['demandes_progression']."</th>
+					!!header_champs_perso!!
 					<th>".$msg['demandes_notice']."</th>					
 					<th></th>
 				</tr>
@@ -324,7 +327,9 @@ $form_modif_demande = "
 			</div>
 			<div class='colonne3'>&nbsp;</div>
 		</div>	
-		<div class='row'></div>	
+		<div class='row'></div>
+		!!champs_perso!!
+		<div class='row'></div>
 	</div>
 	<div class='row'>
 		<div class='left'>
@@ -357,7 +362,7 @@ $form_modif_demande = "
 	    	alert(\"$msg[demandes_date_ko]\");
 	    	return false;
 	    }
-		return true;
+		return check_form();
 			
 	}
 </script>
@@ -441,6 +446,10 @@ $form_consult_dmde = "
 				<label class='etiquette' >".$msg['demandes_progression']." : </label>
 				<span id='progressiondemande_!!iddemande!!' name='progressiondemande_!!iddemande!!' dynamics='demandes,progressiondemande' dynamics_params='text'>!!progression_dmde!!</span>
 			</div>
+		</div>
+		<div class='row'></div>
+		<div class='row'>
+			!!champs_perso!!
 		</div>
 		<div class='row'></div>
 	</div>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: analyse_query.class.php,v 1.80 2015-06-12 10:24:14 arenou Exp $
+// $Id: analyse_query.class.php,v 1.80.2.1 2015-09-14 07:20:23 jpermanne Exp $
 
 require_once($class_path."/stemming.class.php");
 //Structure de stockage d'un terme
@@ -1065,7 +1065,7 @@ class analyse_query {
 					//pour les grosses volumétrie, on essaye d'etre plus efficace
 					switch($table_mot){
 						case "notices_mots_global_index" :
-							$query =" select count(id_notice) from notices";
+							$query =" select count(notice_id) from notices";
 							break;
 						default :
 							$query = "select count(distinct ".$field_id.") from ".$table_mot;
@@ -1526,7 +1526,7 @@ class analyse_query_explnum extends analyse_query {
 					//pour les grosses volumétrie, on essaye d'etre plus efficace
 					switch($table_mot){
 						case "notices_mots_global_index" :
-							$query =" select count(id_notice) from notices";
+							$query =" select count(notice_id) from notices";
 							break;
 						default :
 							$query = "select count(distinct ".$field_id.") from ".$table_mot;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_pro.inc.php,v 1.38 2015-07-03 13:43:33 dgoron Exp $
+// $Id: func_pro.inc.php,v 1.38.2.1 2015-08-11 10:33:33 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -90,8 +90,13 @@ function bannette_equation ($nom="", $id_bannette=0) {
 	global $dsi_bannette_equation_assoce, $msg, $dbh, $id_classement ;
 	global $charset ;
 	global $faire;
+	global $page, $nbr_lignes, $nb_per_page;
 	
 	if (!$id_classement) $id_classement=0;
+	$link_pagination = "";
+	if($page > 1) {
+		$link_pagination .= "&page=".$page."&nbr_lignes=".$nbr_lignes."&nb_per_page=".$nb_per_page;
+	}
 	$url_base = "./dsi.php?categ=bannettes&sub=pro&id_bannette=$id_bannette&suite=affect_equation"; 
 	$url_modif = "./dsi.php?categ=bannettes&sub=pro&id_bannette=$id_bannette&suite=acces"; 
 	// $detail_bannette = "<h3>$nom &nbsp;<input type='button' class='bouton' value=\"$msg[dsi_bt_modifier_ban]\" onclick=\"document.location='$url_modif';\" /></h3>";
@@ -107,8 +112,8 @@ function bannette_equation ($nom="", $id_bannette=0) {
 		$res_affect = pmb_mysql_query($requete_affect, $dbh);
 		if (pmb_mysql_num_rows($res_affect)) $equations .= "checked" ;
 		$equations .= " /> $equa->nom_equation<br />";
-		}
-	$dsi_bannette_equation_assoce = str_replace("!!form_action!!", $url_base."&faire=enregistrer", $dsi_bannette_equation_assoce);
+	}
+	$dsi_bannette_equation_assoce = str_replace("!!form_action!!", $url_base."&faire=enregistrer".$link_pagination, $dsi_bannette_equation_assoce);
 	$dsi_bannette_equation_assoce = str_replace("!!nom_bannette!!", $nom, $dsi_bannette_equation_assoce);
 	$dsi_bannette_equation_assoce = str_replace("!!equations!!", $equations, $dsi_bannette_equation_assoce);
 	$dsi_bannette_equation_assoce = str_replace("!!id_classement_anc!!", $id_classement, $dsi_bannette_equation_assoce);
@@ -125,16 +130,18 @@ function bannette_equation ($nom="", $id_bannette=0) {
 	global $form_cb ;
 	$dsi_bannette_equation_assoce = str_replace('!!form_cb!!', urlencode($form_cb),  $dsi_bannette_equation_assoce);
 	$dsi_bannette_equation_assoce = str_replace('!!form_cb_hidden!!', htmlentities($form_cb,ENT_QUOTES, $charset),  $dsi_bannette_equation_assoce);
-
+	$dsi_bannette_equation_assoce = str_replace('!!link_pagination!!', $link_pagination,  $dsi_bannette_equation_assoce);
+	
 	$detail_bannette .= $dsi_bannette_equation_assoce ;
 	return $detail_bannette ;
-	}
+}
 
 function bannette_lecteur ($nom="", $id_bannette=0) {
 	global $dsi_bannette_lecteurs_assoce, $msg, $dbh, $quoi, $id_categorie, $id_groupe, $mail_abon ;
 	global $lect_restrict, $empr_location_id, $deflt2docs_location, $pmb_lecteurs_localises ;
 	global $charset ;
 	global $faire;
+	global $page, $nbr_lignes, $nb_per_page;
 	
 	$nb_limit = 20 ;
 	if ($lect_restrict) {
@@ -156,6 +163,11 @@ function bannette_lecteur ($nom="", $id_bannette=0) {
 	} else {
 		$restrict_mail = "";
 		$mail_abon_checked = "";
+	}
+	
+	$link_pagination = "";
+	if($page > 1) {
+		$link_pagination .= "&page=".$page."&nbr_lignes=".$nbr_lignes."&nb_per_page=".$nb_per_page;
 	}
 	
 	$url_base = "./dsi.php?categ=bannettes&sub=pro&id_bannette=$id_bannette&suite=affect_lecteurs"; 
@@ -215,7 +227,7 @@ function bannette_lecteur ($nom="", $id_bannette=0) {
 		}
 		$lecteurs.="</table>";
 	}	
-	$dsi_bannette_lecteurs_assoce = str_replace("!!form_action!!", $url_base."&faire=enregistrer", $dsi_bannette_lecteurs_assoce);
+	$dsi_bannette_lecteurs_assoce = str_replace("!!form_action!!", $url_base."&faire=enregistrer".$link_pagination, $dsi_bannette_lecteurs_assoce);
 	$dsi_bannette_lecteurs_assoce = str_replace("!!nom_bannette!!", $nom, $dsi_bannette_lecteurs_assoce);
 	$dsi_bannette_lecteurs_assoce = str_replace("!!selected!!", $quoi, $dsi_bannette_lecteurs_assoce);
 	$dsi_bannette_lecteurs_assoce = str_replace("!!lecteurs!!", $lecteurs, $dsi_bannette_lecteurs_assoce);
@@ -249,7 +261,8 @@ function bannette_lecteur ($nom="", $id_bannette=0) {
 	global $form_cb ;
 	$dsi_bannette_lecteurs_assoce = str_replace('!!form_cb!!', urlencode($form_cb),  $dsi_bannette_lecteurs_assoce);
 	$dsi_bannette_lecteurs_assoce = str_replace('!!form_cb_hidden!!', htmlentities($form_cb,ENT_QUOTES, $charset),  $dsi_bannette_lecteurs_assoce);
-
+	$dsi_bannette_lecteurs_assoce = str_replace('!!link_pagination!!', $link_pagination,  $dsi_bannette_lecteurs_assoce);
+	
 	$detail_lecteurs .= $dsi_bannette_lecteurs_assoce ;
 	return $detail_lecteurs ;
 }
@@ -283,6 +296,10 @@ if(!$nbr_lignes) {
 
 if (!$page) $page=1;
 $debut = ($page-1)*$nb_per_page;
+
+if($page > 1) {
+	$link_pagination ="&page=".$page."&nbr_lignes=".$nbr_lignes."&nb_per_page=".$nb_per_page;
+} else $link_pagination = "";
 
 if($nbr_lignes) {
 
@@ -327,6 +344,7 @@ if($nbr_lignes) {
 			$td_javascript=" onmousedown=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=$bann->id_bannette";
 			$td_javascript.="&suite=acces&id_classement=$id_classement";
 			$td_javascript.="&form_cb=".urlencode($form_cb_save);
+			$td_javascript.=$link_pagination;
 			$td_javascript.="';\" ";
 			$bann_list .= "
 				<td valign='top' $td_javascript>
@@ -340,18 +358,24 @@ if($nbr_lignes) {
 			$equations = "" ;
 			while ($equa=pmb_mysql_fetch_object($resequ)) {
 				$equations .= "<li>$equa->nom_equation</li>";
-				}
-			$td_javascript=" onmousedown=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=$bann->id_bannette&suite=affect_equation&id_classement=$id_classement&form_cb=".urlencode($form_cb_save)."';\" ";
+			}
+			$td_javascript=" onmousedown=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=$bann->id_bannette&suite=affect_equation&id_classement=$id_classement&form_cb=".urlencode($form_cb_save);
+			$td_javascript.=$link_pagination;
+			$td_javascript.="';\" ";
 			if($equ_trouvees == 0) $bann_list .= "<td valign='top' $td_javascript><ul>".$msg[dsi_ban_no_equ]."</ul></td>";
 				else $bann_list .= "<td valign='top' $td_javascript><ul>$equations</ul></td>";
 			$bann_list .= "<td valign='top'>$bann->nb_notices</td>";
 			
-			$td_javascript=" onmousedown=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=$bann->id_bannette&suite=affect_lecteurs&id_classement=$id_classement&form_cb=".urlencode($form_cb_save)."';\" ";
+			$td_javascript=" onmousedown=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=$bann->id_bannette&suite=affect_lecteurs&id_classement=$id_classement&form_cb=".urlencode($form_cb_save);
+			$td_javascript.=$link_pagination;
+			$td_javascript.="';\" ";
 			if ($bann->num_panier) $aff_bann_fills_basket = "&nbsp;&nbsp;<img src='./images/basket_small_20x20.gif' border='0' align='center' />";
 				else $aff_bann_fills_basket = "";
 			$bann_list .= "<td valign='top' $td_javascript>".$bann->nb_abonnes.$aff_bann_fills_basket."</td>";
 			
-			$td_javascript=" onmousedown=\"document.location='./dsi.php?categ=diffuser&sub=auto&id_bannette=$bann->id_bannette&id_classement=$id_classement&form_cb=".urlencode($form_cb_save)."';\" ";
+			$td_javascript=" onmousedown=\"document.location='./dsi.php?categ=diffuser&sub=auto&id_bannette=$bann->id_bannette&id_classement=$id_classement&form_cb=".urlencode($form_cb_save);
+			$td_javascript.=$link_pagination;
+			$td_javascript.="';\" ";
 			$bann_list .= "<td valign='top' sorttable_customkey='".$bann->date_last_envoi."' $td_javascript>
 					<strong>".htmlentities($bann->aff_date_last_envoi,ENT_QUOTES, $charset)."</strong>";
 			if ($bann->alert_diff) $bann_list .= "<br /><font color=red>(".htmlentities($bann->aff_date_last_remplissage,ENT_QUOTES, $charset).")</font>";
@@ -359,7 +383,7 @@ if($nbr_lignes) {
 			$bann_list .= "</td>";
 			$bann_list .= "</tr>";
 			$parity += 1;
-			}
+		}
 		pmb_mysql_free_result($res);
 
 
@@ -375,6 +399,6 @@ if($nbr_lignes) {
 		$dsi_list_tmpl = str_replace("!!message_trouve!!", $msg['dsi_ban_trouvees'], $dsi_list_tmpl);
 		
 		return $dsi_list_tmpl;
-		} else return $msg['dsi_no_ban_found'] ;
+	} else return $msg['dsi_no_ban_found'] ;
 }
 	

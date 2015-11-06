@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: api.inc.php,v 1.17 2015-04-03 11:16:23 jpermanne Exp $
+// $Id: api.inc.php,v 1.17.4.1 2015-10-05 12:03:43 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -165,6 +165,10 @@ function table_dump($table_name,$fp) {
 					case "time":
 						$is_numeric=false;
 						break;
+						
+					case "geometry":
+						$is_numeric=false;
+						break;
 	
 					default:
 						//future support for field types that are not recognized
@@ -190,7 +194,7 @@ function table_dump($table_name,$fp) {
 					if ($ina[$d]==true) {
 						((string)$values!="")? $values.= ', '.floatval($data) : $values.= floatval($data);
 					} else {
-						((string)$values!="")? $values.=", \"".pmb_mysql_escape_string($data)."\"" : $values.="\"".pmb_mysql_escape_string($data)."\"";
+						((string)$values!="")? $values.=", \"".pmb_mysql_real_escape_string($data)."\"" : $values.="\"".pmb_mysql_real_escape_string($data)."\"";
 					}
 				}
 				fwrite($fp,"insert into $table_name ($fields) values ($values);\r\n");

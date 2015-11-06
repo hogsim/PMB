@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: la_LA.xml,v 1.744 2015-07-16 12:16:52 jpermanne Exp $ -->
+$Id: la_LA.xml,v 1.744.2.13 2015-10-15 09:35:02 jpermanne Exp $ -->
 
 <XMLlist>
 <entry code="demo">ແບບຢ່າງ</entry>
@@ -3738,7 +3738,7 @@ $Id: la_LA.xml,v 1.744 2015-07-16 12:16:52 jpermanne Exp $ -->
 <entry code="extexpl_section">Section</entry>
 <entry code="extexpl_statut">Statut</entry>
 <entry code="extexpl_emprunteur">Emprunteur</entry>
-<entry code="extexpl_doctype">Type de document</entry>
+<entry code="extexpl_doctype">Support</entry>
 <entry code="extexpl_note">Note</entry>
 <entry code="parperso_options_external_url">Url du sélecteur externe</entry>
 <entry code="parperso_options_external_hide">Cacher la boite de texte ?</entry>
@@ -7589,12 +7589,12 @@ $Id: la_LA.xml,v 1.744 2015-07-16 12:16:52 jpermanne Exp $ -->
 <entry code="cms_module_item_datasource_desc_interesting">Item intéressant/inintéressant</entry>
 <entry code="cms_module_item_datasource_desc_descriptors">Tableau des catégories</entry>
 <entry code="cms_module_item_datasource_desc_descriptor_id">Identifiant de la catégorie associée à l'item</entry>
-<entry code="cms_module_item_datasource_desc_descriptor_name">Libellé de la catégorie associée à l'item</entry>
+<entry code="cms_module_item_datasource_desc_descriptor_label">Libellé de la catégorie associée à l'item</entry>
 <entry code="cms_module_item_datasource_desc_descriptor_comment">Commentaire de la catégorie associée à l'item</entry>
 <entry code="cms_module_item_datasource_desc_descriptor_lang">Langue de la catégorie associée à l'item</entry>
 <entry code="cms_module_item_datasource_desc_tags">Tableau des tags</entry>
 <entry code="cms_module_item_datasource_desc_tag_id">Identifiant du tag</entry>
-<entry code="cms_module_item_datasource_desc_tag_name">Libellé du tag</entry>
+<entry code="cms_module_item_datasource_desc_tag_label">Libellé du tag</entry>
 <entry code="cms_module_item_datasource_desc_watch">Information générales concernant la veille de l'item</entry>
 <entry code="cms_module_item_datasource_desc_watch_id">Identifiant de la veille de l'item</entry>
 <entry code="cms_module_item_datasource_desc_watch_title">Libellé de la veille de l'item </entry>
@@ -7833,4 +7833,63 @@ $Id: la_LA.xml,v 1.744 2015-07-16 12:16:52 jpermanne Exp $ -->
 <entry code="expl_surlocation_without_expl">Sur-localisations sans exemplaire</entry>
 
 <entry code="acquisition_cde_date_val">Date de validation</entry>
+
+<entry code="acquisitions_export_excel">Export tableau EXCEL</entry>
+
+<entry code="cp_auth_show_all">Tout afficher</entry>
+<entry code="cp_auth_show_last">Uniquement la dernière feuille de l'arbre de la catégorie</entry>
+
+<entry code="edit_tpl_export_button">Exporter</entry>
+<entry code="edit_tpl_import_button">Importer un template de notice</entry>
+<entry code="notice_tpl_title_form_import">Import de template</entry>
+<entry code="notice_tpl_file_import">Fichier du template</entry>
+<entry code="notice_tpl_bt_import">Importer</entry>
+<entry code="notice_tpl_import_invalide">Les portions de template suivantes n'ont pu être importées :</entry>
+<entry code="notice_tpl_import_error_typdoc">Type de document</entry>
+<entry code="notice_tpl_import_error_location">Localisation</entry>
+<entry code="notice_tpl_import_error_tplcode">Template</entry>
+<entry code="notice_tpl_import_error_error">Erreur</entry>
+<entry code="notice_tpl_import_error_missing_info">Information manquante</entry>
+<entry code="notice_tpl_import_error_missing_location">Localisation inexistante</entry>
+<entry code="notice_tpl_import_error_missing_typdoc">Type de document inexistant</entry>
+<entry code="admin_menu_demandes_perso">Personnalisables</entry>
+<entry code="serialcirc_diff_option_form_param_simple_circ">Simplifiée</entry>
+<entry code="serial_simple_circ_edit">Circulation simplifiée</entry>
+<entry code="serial_simple_circ_edit_title">Impression des étiquettes de circulation</entry>
+<entry code="serial_simple_circ_edit_start_date">Du</entry>
+<entry code="serial_simple_circ_edit_end_date">au</entry>
+<entry code="serial_simple_circ_edit_calculate">Afficher</entry>
+<entry code="serial_simple_circ_edit_print">Imprimer</entry>
+<entry code="serial_simple_circ_edit_format">Format d'impression</entry>
+<entry code="serial_simple_circ_edit_perio">Titre du périodique</entry>
+<entry code="serial_simple_circ_edit_abt">Abonnement</entry>
+<entry code="serial_simple_circ_edit_diff">Diffusion</entry>
+<entry code="serial_simple_circ_edit_largeur_zone">largeur zone</entry>
+<entry code="serial_simple_circ_edit_hauteur_zone">hauteur zone</entry>
+<entry code="serial_simple_circ_number">Nombre d'étiquettes à imprimer:</entry>
+<entry code="serial_simple_circ_edit_list_title">Impression des listes de circulation</entry>
+<entry code="serial_simple_circ_edit_list_add">Ajouter</entry>
+<entry code="serial_simple_circ_edit_raz">Effacer</entry>
+<entry code="serial_simple_circ_edit_list_table_perio">Périodiques</entry>
+<entry code="serial_simple_circ_edit_list_table_abt">Abonnements</entry>
+<entry code="serial_simple_circ_edit_print_error">Abonnement inconnu</entry>
+
+<entry code="nettoyage_clean_blob">Taille de champs blob</entry>
+<entry code="nettoyage_res_suppr_blob">Augmentation de la taille de champs blob</entry>
+
+<entry code="serialcirc_print_empr_categ">Catégorie</entry>
+<entry code="serialcirc_print_empr_statut">Statut</entry>
+<entry code="serialcirc_print_empr_codestat">Code statistique</entry>
+<entry code="serialcirc_print_empr_groupe">Groupe</entry>
+
+<entry code="parperso_text_i18n">Texte multilingue</entry>
+
+<entry code="cms_clean_cache">Vider le cache</entry>
+<entry code="cms_clean_cache_confirm">Etes-vous sûr de vouloir vider le cache du portail ?</entry>
+
+<entry code="operator_between_multiple_authorities">Opérateur entre autorités :</entry>
+<entry code="operator_between_multiple_authorities_or">Ou</entry>
+<entry code="operator_between_multiple_authorities_and">Et</entry>
+
+<entry code="deflt_notice_is_new">Nouveauté par défaut en création de notice :</entry>
 </XMLlist>

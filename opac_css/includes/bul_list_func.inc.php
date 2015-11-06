@@ -17,7 +17,7 @@ function affichage_liste_bulletins_normale($res) {
 		print "<span class='liste_bulletins'>";
 		if ($tableau['nbexplnum']>0){
 			$padding = "";
-			print '<img src="./images/attachment.png">';
+			print '<img src="'.get_url_icon('attachment.png').'">';
 		}
 		else 
 			$padding = "style=\"padding-left:11px;\"";
@@ -46,7 +46,7 @@ function affichage_liste_bulletins_tableau($res) {
 				$odd_even=0;
 				}
 		$tr_javascript=" class='$pair_impair' onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./index.php?lvl=bulletin_display&id=".$tableau['bulletin_id']."';\" style='cursor: pointer' ";
-		print "<tr $tr_javascript><td><table width='100%'><tr><td style='border:none;width:16px'>".($tableau['nbexplnum'] != 0 ? ($tableau['nbexplnum'] > 1 ? "<img src='./images/globe_rouge.png' />" : "<img src='./images/globe_orange.png' />"):"")."</td><td style='border:none;'>".$tableau['bulletin_numero']."</td></tr></table>";
+		print "<tr $tr_javascript><td><table width='100%'><tr><td style='border:none;width:16px'>".($tableau['nbexplnum'] != 0 ? ($tableau['nbexplnum'] > 1 ? "<img src='".get_url_icon("globe_rouge.png")."' />" : "<img src='".get_url_icon("globe_orange.png")."' />"):"")."</td><td style='border:none;'>".$tableau['bulletin_numero']."</td></tr></table>";
 		print "</td><td>";
 		if ($tableau['mention_date']) print pmb_bidi(" ".$tableau['mention_date']."\n"); 
 		elseif ($tableau['date_date']) print pmb_bidi(" ".formatdate($tableau['date_date'])."\n");
@@ -68,7 +68,7 @@ function affichage_liste_bulletins_depliable($res) {
 		$count=pmb_mysql_result($result, 0, 0);
 
 		$titre="";
-		if($count)$titre.= '<img src="./images/attachment.png">';
+		if($count)$titre.= '<img src="'.get_url_icon('attachment.png').'">';
 
 		$titre.= $tableau['bulletin_numero'];
 		if ($tableau['mention_date']) $titre.= pmb_bidi(" (".$tableau['mention_date'].")\n");
@@ -122,7 +122,7 @@ function get_bulletin_list_func($id){
 		if (!$icon) $icon="icon_per.gif";
 		$icon = $icon_doc["b".$typdocchapeau];
 
-		$res_print .= "<h3><img src=./images/$icon /> ".$notice3->print_resume(1,$css)."."." <b>".$obj["bulletin_numero"]."</b></h3>\n";
+		$res_print .= "<h3><img src='".get_url_icon($icon)."' /> ".$notice3->print_resume(1,$css)."."." <b>".$obj["bulletin_numero"]."</b></h3>\n";
 		$num_notice=$obj['num_notice'];
 
 		if ($obj['date_date']) $res_print .= $msg['bull_date_date']." &nbsp;".$obj['aff_date_date']." \n";

@@ -4,20 +4,21 @@
 // | creator : Eric ROBERT                                                    |
 // | modified : ...                                                           |
 // +-------------------------------------------------+
-// $Id: func_customfields_artevod.inc.php,v 1.2 2015-04-03 11:16:22 jpermanne Exp $
+// $Id: func_customfields_artevod.inc.php,v 1.2.4.1 2015-09-02 09:32:05 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
-// DEBUT paramétrage propre à la base de données d'importation :
-require_once($base_path."/admin/import/func_customfields.inc.php");
-
 function z_recup_noticeunimarc_suite($notice) {
+	global $base_path;
+	require_once($base_path."/admin/import/func_customfields.inc.php");
 	recup_noticeunimarc_suite($notice);
 } 
 	
 function z_import_new_notice_suite() {
+	global $base_path;
+	require_once($base_path."/admin/import/func_customfields.inc.php");
 	import_new_notice_suite();
-} 
+}
 
 // Permet de mémoriser la valeur d'un import extern pour ensuite l'intégré dans un champ perso de la notice avec param_perso_form
 function param_perso_prepare($record) {

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: artevod.class.php,v 1.4 2015-05-25 09:35:26 apetithomme Exp $
+// $Id: artevod.class.php,v 1.4.2.1 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -370,6 +370,7 @@ class artevod extends connector {
     			if ($this->del_old) {
     				$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."'";
     				pmb_mysql_query($requete,$dbh);
+					$this->delete_from_external_count($source_id, $ref);
     			}
     			$ref_exists = false;
     			//Si pas de conservation ou reférence inexistante

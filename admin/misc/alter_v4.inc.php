@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: alter_v4.inc.php,v 1.569 2015-04-03 11:16:24 jpermanne Exp $
+// $Id: alter_v4.inc.php,v 1.569.4.1 2015-08-05 12:17:02 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -2151,7 +2151,7 @@ switch ($action) {
 		$sql_corr = "select s.typdoc as typdoc_s, a.notice_id as notice_id_dep from notices as s, analysis, bulletins, notices as a where a.niveau_biblio='a' and s.niveau_biblio='s' and s.notice_id=bulletin_notice and analysis_bulletin=bulletin_id and analysis_notice=a.notice_id " ;
 		$res_corr = pmb_mysql_query($sql_corr,$dbh);
 		while ($obj_corr=pmb_mysql_fetch_object($res_corr)) {
-			@pmb_mysql_query("update notices set typdoc='".$obj_corr->typdoc_s."' where notice_id='".$obj_corr->notice_id_dep."'") ;
+			@pmb_mysql_query("update notices set typdoc='".$obj_corr->typdoc_s."', update_date=update_date where notice_id='".$obj_corr->notice_id_dep."'") ;
 			}
 		echo traite_rqt("select 1 from users","update analysis notices doctype with serial doctype ") ;
 
@@ -2448,7 +2448,7 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		// Correction tnvol = NULL sur création de périos
-		$rqt = "update notices set tnvol='' where tnvol is null "; 
+		$rqt = "update notices set tnvol='', update_date=update_date where tnvol is null "; 
 		echo traite_rqt($rqt, "update notice set tnvol not null ");
 		$rqt = "alter table notices change tnvol tnvol varchar(100) not null default '' "; 
 		echo traite_rqt($rqt, "update notice set tnvol not null ");
@@ -2875,7 +2875,7 @@ switch ($action) {
 					echo traite_rqt($rqt,"INSERT interne into origine_notice") ;
 					}
 				}
-		$rqt = "update notices set origine_catalogage=1 where origine_catalogage=0 or origine_catalogage is null" ;
+		$rqt = "update notices set origine_catalogage=1, update_date=update_date where origine_catalogage=0 or origine_catalogage is null" ;
 		echo traite_rqt($rqt,"update notices set origine_catalogage") ;
 			
 		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='export_allow_expl' "))==0){
@@ -3110,7 +3110,7 @@ switch ($action) {
 		$sql_corr = "select s.typdoc as typdoc_s, a.notice_id as notice_id_dep from notices as s, analysis, bulletins, notices as a where a.niveau_biblio='a' and s.niveau_biblio='s' and s.notice_id=bulletin_notice and analysis_bulletin=bulletin_id and analysis_notice=a.notice_id " ;
 		$res_corr = pmb_mysql_query($sql_corr,$dbh);
 		while ($obj_corr=pmb_mysql_fetch_object($res_corr)) {
-			@pmb_mysql_query("update notices set typdoc='".$obj_corr->typdoc_s."' where notice_id='".$obj_corr->notice_id_dep."'") ;
+			@pmb_mysql_query("update notices set typdoc='".$obj_corr->typdoc_s."', update_date=update_date where notice_id='".$obj_corr->notice_id_dep."'") ;
 			}
 		echo traite_rqt("select 1 from users","update analysis notices doctype with serial doctype ") ;
 

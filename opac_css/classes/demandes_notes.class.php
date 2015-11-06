@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes_notes.class.php,v 1.12 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: demandes_notes.class.php,v 1.12.4.1 2015-09-24 15:48:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -318,13 +318,13 @@ class demandes_notes {
 				$dialog.='<div class="btn_note">';
 				
 				if($note->prive){
-					$dialog.="<input type='image' src='./images/interdit.gif' alt='".htmlentities($msg['demandes_note_privacy'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_privacy'],ENT_QUOTES,$charset)."' onclick='return false;'/>"; 
+					$dialog.="<input type='image' src='".get_url_icon('interdit.gif')."' alt='".htmlentities($msg['demandes_note_privacy'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_privacy'],ENT_QUOTES,$charset)."' onclick='return false;'/>"; 
 				}
 				if($note->rapport){
-					$dialog.="<input type='image' src='./images/info.gif' alt='".htmlentities($msg['demandes_note_rapport'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_rapport'],ENT_QUOTES,$charset)."' onclick='return false;'/>";
+					$dialog.="<input type='image' src='".get_url_icon('info.gif')."' alt='".htmlentities($msg['demandes_note_rapport'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_rapport'],ENT_QUOTES,$charset)."' onclick='return false;'/>";
 				}
 				if($note->notes_read_opac){
-					$dialog.="<input type='image' src='./images/notification_new.png' alt='".htmlentities($msg['demandes_note_vue'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_vue'],ENT_QUOTES,$charset)."' onclick='return false;'/>";
+					$dialog.="<input type='image' src='".get_url_icon('notification_new.png')."' alt='".htmlentities($msg['demandes_note_vue'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_vue'],ENT_QUOTES,$charset)."' onclick='return false;'/>";
 				}
 				
 				$dialog.=' </div>';

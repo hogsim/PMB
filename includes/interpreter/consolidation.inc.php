@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: consolidation.inc.php,v 1.33 2015-04-16 11:16:38 jpermanne Exp $
+// $Id: consolidation.inc.php,v 1.33.2.4 2015-08-17 15:03:04 jpermanne Exp $
 
 global $include_path, $class_path, $base_path;
 require_once ($include_path . "/misc.inc.php");
@@ -32,6 +32,10 @@ $func_format['multi_facettes']=aff_facettes_multicritere;
 $func_format['recherche_predefinie']=aff_recherche_predefinie;
 $func_format['vue_num']=aff_vue_num;
 $func_format['vue_libelle']=aff_vue_libelle;
+$func_format['url_externe']=aff_url_externe;
+$func_format['url_externe_type']=aff_url_externe_type;
+$func_format['notice_id']=aff_notice_id;
+$func_format['bulletin_id']=aff_bulletin_id;
 
 //Fonctions emprunteur
 $func_format['empr_age']=aff_age_user;
@@ -82,6 +86,7 @@ $func_format['explnum_extfichier'] = aff_explnum_extfichier;
 $func_format['explnum_mimetype'] = aff_explnum_mimetype;
 $func_format['explnum_url'] = aff_explnum_url;
 $func_format['explnum_notice'] = aff_explnum_notice;
+$func_format['explnum_notice_type'] = aff_explnum_notice_type;
 $func_format['explnum_bulletin'] = aff_explnum_bulletin;
 $func_format['explnum_id'] = aff_explnum_id;
 
@@ -203,6 +208,38 @@ function aff_explnum_notice($param,$parser){
 	
 	if(isset($tab['explnum']) && is_array($tab['explnum'][0])){
 		return $tab['explnum'][0]['explnum_notice'];
+	}else{
+		return "";
+	}
+}
+
+/**
+ * Type de la notice reliée au document numérique
+ */
+function aff_explnum_notice_type($param,$parser){
+	global $lang, $include_path;
+	global $liste_libelle_types;
+	
+	$tab = get_info_generique($param,$parser);
+
+	if(isset($tab['explnum']) && is_array($tab['explnum'][0])){
+		$type_notice = sql_value("SELECT niveau_biblio FROM notices WHERE notice_id=".($tab['explnum'][0]['explnum_notice']*1));
+		if (!$param[0]) {
+			return $type_notice;
+		} elseif ($param[0]==1) {
+			if (!count($liste_libelle_types)) {
+				if(file_exists($include_path."/interpreter/statopac/$lang.xml")){
+					$liste_libelle = new XMLlist($include_path."/interpreter/statopac/$lang.xml");
+				} else {
+					$liste_libelle = new XMLlist($include_path."/interpreter/statopac/fr_FR.xml");
+				}
+				$liste_libelle->analyser();
+				$liste_libelle_types = $liste_libelle->table;
+			}
+			return $liste_libelle_types['notice_type_'.$type_notice];
+		} else {
+			return "";
+		}
 	}else{
 		return "";
 	}
@@ -823,6 +860,11 @@ function aff_sous_type_page($param,$parser){
 				return '2901';
 				break;
 		}
+	}
+	
+	//appel AJAX - Log url externe
+	if(strpos($url,'ajax.php') && strpos($url,'log')) {
+		return '3001';
 	}
 	
 	$search_type='';
@@ -1606,6 +1648,66 @@ function get_infos($param,$parser){
 		return $parser->environnement['ligne'];
 	}
 	return '';
+}
+
+/**
+ * Retourne l'url externe cliquée
+ */
+function aff_url_externe($param,$parser){
+	$tab = get_var_get($param,$parser);
+	if (!isset($tab['called_url'])) {
+		$tab = get_var_post($param,$parser);
+		if (!isset($tab['called_url'])) {
+			return '';
+		}
+	}
+	return $tab['called_url'];
+}
+
+/**
+ * Retourne le type d'url externe cliquée
+ */
+function aff_url_externe_type($param,$parser){
+	global $lang, $include_path;
+	global $liste_libelle_types;
+	
+	if (!count($liste_libelle_types)) {
+		if(file_exists($include_path."/interpreter/statopac/$lang.xml")){
+			$liste_libelle = new XMLlist($include_path."/interpreter/statopac/$lang.xml");
+		} else {
+			$liste_libelle = new XMLlist($include_path."/interpreter/statopac/fr_FR.xml");
+		}
+		$liste_libelle->analyser();
+		$liste_libelle_types = $liste_libelle->table;
+	}
+	
+	$tab = get_var_get($param,$parser);
+	if (!isset($tab['type_url'])) {
+		$tab = get_var_post($param,$parser);
+		if (!isset($tab['type_url'])) {
+			return '';
+		}
+	}
+	return $liste_libelle_types[$tab['type_url']];
+}
+
+/**
+ * Retourne l'identifiant de la notice cliquée ou développée
+ */
+function aff_notice_id($param,$parser){
+	$notice = get_info_notice($param,$parser);
+	return $notice['notice_id'];
+}
+
+/**
+ * Retourne l'identifiant du bulletin cliqué ou développé
+ */
+function aff_bulletin_id($param,$parser){
+	$tab = get_var_get($param,$parser);
+	if (!isset($tab['lvl']) || $tab['lvl']!="bulletin_display") {
+		return '';
+	}
+	return $tab['id'];
 }
 
 /****************************************

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abo.inc.php,v 1.25 2015-04-03 11:16:23 jpermanne Exp $
+// $Id: abo.inc.php,v 1.25.4.1 2015-09-09 08:18:41 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -40,7 +40,7 @@ switch($suite) {
     	$temp->id_equation=         $id_equation;		
 		$temp->num_classement=      0;	
 		$temp->nom_equation=        $equ_human;	
-		$temp->comment_equation=	$equation->comment_equation ;
+		$temp->comment_equation=	addslashes($equation->comment_equation);
 		$temp->requete=				$requete;	
 		$temp->proprio_equation=	$equation->proprio_equation;	
 		$temp->update_type=			"C";

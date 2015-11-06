@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: oai_protocol.class.php,v 1.25 2015-03-16 13:44:18 dbellamy Exp $
+// $Id: oai_protocol.class.php,v 1.25.4.2 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -116,7 +116,7 @@ class oai_record {
 			$this->header["IDENTIFIER"]=$precord->get_value("record/header/identifier");
 			$this->header["DATESTAMP"]=$precord->get_value("record/header/datestamp");
 			$this->header["SETSPECS"]=$precord->get_values("record/header/setSpec");
-			$this->header["STATUS"]=$precord->get_values("record/header/status");
+			$this->header["STATUS"]=$precord->get_values("record/header/status") ? $precord->get_values("record/header/status") : $precord->get_attribute($precord->get_node("record/header"), "status");
 			//Enregistrement
 			$this->metadata=$precord->get_value("record/metadata");
 			//About
@@ -454,7 +454,7 @@ class oai_protocol {
     	//Réinitialisation du "retry_after"
 		$this->retry_after="";
 
-		configurer_proxy_curl($ch);
+		configurer_proxy_curl($ch,$url);
 
     	//Explosion des arguments de la requête pour ceux qui ne respectent pas la norme !!
     	$query=substr($url,strpos($url,"?")+1);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmb_h2o.inc.php,v 1.5 2015-06-18 13:32:20 arenou Exp $
+// $Id: pmb_h2o.inc.php,v 1.5.2.1 2015-09-30 16:27:20 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once($include_path."/h2o/h2o.php");
@@ -50,6 +50,15 @@ class pmb_DateFilters extends FilterCollection {
 		$cleandate = detectFormatDate($date);
 		if($cleandate != "0000-00-00"){
 			return ucfirst($msg[strtolower(date("F",strtotime($cleandate)))]);
+		}
+		return $date;
+	}
+	
+	public static function shortmonthletter($date){
+		global $msg;
+		$cleandate = detectFormatDate($date);
+		if($cleandate != "0000-00-00"){
+			return ucfirst($msg['short_'.strtolower(date("F",strtotime($cleandate)))]);
 		}
 		return $date;
 	}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sync.class.php,v 1.4 2015-04-03 11:16:27 jpermanne Exp $
+// $Id: sync.class.php,v 1.4.4.1 2015-09-15 16:23:37 apetithomme Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -116,6 +116,14 @@ class sync extends tache {
 				".$msg['40']."&nbsp;<input type='radio' name='auto_import' value='1' ".($auto_import ? "checked='checked'" : "")."/>&nbsp;".$msg['39']."&nbsp;<input type='radio' name='auto_import' value='0' ".($auto_import ? "" : "checked='checked'")."/>
 			</div>
 		</div>
+		<div class='row'>
+			<div class='colonne3'>
+				<label for='auto_delete'>".$this->msg["planificateur_sync_delete"]."</label>
+			</div>
+			<div class='colonne_suite'>
+				".$msg['40']."&nbsp;<input type='radio' name='auto_delete' value='1' ".($auto_delete ? "checked='checked'" : "")."/>&nbsp;".$msg['39']."&nbsp;<input type='radio' name='auto_delete' value='0' ".($auto_delete ? "" : "checked='checked'")."/>
+			</div>
+		</div>
 		<div class='row'>&nbsp;</div>";
 			
 		return $form_task;
@@ -165,7 +173,7 @@ class sync extends tache {
 							$result = array();
 							$this->report[] = "<tr ><th>".$this->msg["report_sync"]." : ".$name."</th></tr>";
 							if (method_exists($this->proxy, "pmbesSync_doSync")) {
-								$result[] = $this->proxy->pmbesSync_doSync($this->id_connector, $this->id_source, $auto_import, $this->id_tache, array(&$this, "listen_commande"), array(&$this, "traite_commande"));
+								$result[] = $this->proxy->pmbesSync_doSync($this->id_connector, $this->id_source, $auto_import, $this->id_tache, array(&$this, "listen_commande"), array(&$this, "traite_commande"), $auto_delete);
 								if ($result) {
 									foreach ($result as $lignes) {
 										foreach ($lignes as $ligne) {
@@ -227,7 +235,7 @@ class sync extends tache {
 	
 	function make_serialized_task_params() {
     	global $base_path, $source_entrepot, $connecteurId;
-    	global $auto_import;
+    	global $auto_import, $auto_delete;
 
     	$t = parent::make_serialized_task_params();
 
@@ -245,6 +253,9 @@ class sync extends tache {
 		}
 		if($auto_import){
 			$t['auto_import'] = ($auto_import ? true : false);
+		}
+		if($auto_delete){
+			$t['auto_delete'] = ($auto_delete ? true : false);
 		}
 
     	return serialize($t);

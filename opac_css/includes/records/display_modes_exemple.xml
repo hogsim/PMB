@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: display_modes_exemple.xml,v 1.3 2015-05-12 08:07:43 abacarisse Exp $ -->
+$Id: display_modes_exemple.xml,v 1.3.4.2 2015-09-28 15:23:35 apetithomme Exp $ -->
 
 <modes>
 	<!--
@@ -21,7 +21,7 @@ $Id: display_modes_exemple.xml,v 1.3 2015-05-12 08:07:43 abacarisse Exp $ -->
 		template #Le template d'affichage à utiliser
 			@type (record|django) : Le type de template
 			@name : le nom du template
-			@mode : le dossier de template à utiliser (uniquement pour template django)
+			@directory : le dossier de template à utiliser (uniquement pour template django)
 			@template_id : L'identifiant en base de données du template (uniquement pour template record)
 			code #Le code du template (uniquement pour template record)
 				@localisation : L'identifiant de la localisation
@@ -29,7 +29,8 @@ $Id: display_modes_exemple.xml,v 1.3 2015-05-12 08:07:43 abacarisse Exp $ -->
 				@typdoc : Le type de document
 		layout #Le type d'affichage du résultat de recherche
 			@type (table|list) Affichage en table ou en liste
-			@colums : le nombre de collonnes (affichage en liste uniquement)			
+			@colums : le nombre de collonnes (affichage en liste uniquement)
+			@nav (yes|no) : affichage de la navigation, yes par defaut
 	nomode #Le mode par défaut (si pas de mode avec default=yes
 		@icon : l'icone affiché 
 		@name : le nom du mode
@@ -56,10 +57,14 @@ $Id: display_modes_exemple.xml,v 1.3 2015-05-12 08:07:43 abacarisse Exp $ -->
 		</template>
 		<layout type="list"/>
 	</mode>
-<!-- 	<mode id="3" icon="tpl.png" default="no" name="DJANGO">
+	<mode id="3" icon="tpl.png" default="no" name="DJANGO">
 		<function src="aff_notice_fonction_django"/>
-		<template type="django" mode="common"/>
-		<doctypes auto="no">a,g,l</doctypes>
+		<template type="django" directory="common"/>
+	</mode>
+	<!-- <mode id="4" icon="tpl.png" default="no" name="DJANGO_tab">
+		<function src="aff_notice_fonction_django"/>
+		<template type="django" directory="test"/>
+		<layout type="table" colums="2"/>
 	</mode> -->
 <!-- 	<mode id="4" icon="tpl.png" default="no" name="TPLNOTICE">
 		<function src="aff_notice_fonction_template"/>

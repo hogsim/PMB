@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_doc.class.php,v 1.4 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: explnum_doc.class.php,v 1.4.4.1 2015-09-24 15:48:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -139,7 +139,7 @@ class explnum_doc{
 				$alt = htmlentities($docnum_tab[$i]['explnum_doc_nomfichier'],ENT_QUOTES,$charset).' - '.htmlentities($docnum_tab[$i]['explnum_doc_mimetype'],ENT_QUOTES,$charset);
 				$display .= "<td class='docnum' style='width:25%;border:1px solid #CCCCCC;padding : 5px 5px'>
 				<a target='_blank' alt='$alt' title='$alt' href=\"./explnum_doc.php?explnumdoc_id=".$docnum_tab[$i]['id_explnum_doc']."\">
-				<img src='./images/mimetype/".icone_mimetype($docnum_tab[$i]['explnum_doc_mimetype'],$docnum_tab[$i]['explnum_doc_extfichier'])."' alt='$alt' title='$alt' >
+				<img src='".get_url_icon('mimetype/'.icone_mimetype($docnum_tab[$i]['explnum_doc_mimetype'],$docnum_tab[$i]['explnum_doc_extfichier']))."' alt='$alt' title='$alt' >
 				</a>
 				<br />
 				<div class='explnum_type'>".$docnum_tab[$i]['explnum_doc_mimetype']."</div>

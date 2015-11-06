@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_tpl.class.php,v 1.5 2015-04-03 14:18:33 dgoron Exp $
+// $Id: notice_tpl.class.php,v 1.5.4.1 2015-09-10 07:58:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -123,12 +123,14 @@ class notice_tpl {
 				$ligne = str_replace("!!pair!!",	$pair, $ligne);					
 				$ligne = str_replace("!!link_edit!!",	$link."?categ=tpl&sub=notice&action=edit&id=$id", $ligne);	
 				$ligne = str_replace("!!link_eval!!",	$link."?categ=tpl&sub=notice&action=eval&id=$id&id_test=".$this->id_test, $ligne);	
+				$ligne = str_replace("!!link_export!!",	"./export.php?quoi=notice_tpl&id=".$id, $ligne);
 				$ligne = str_replace("!!id!!",		$id, $ligne);	
 				$tableau.=$ligne;			
 			}				
 		}
 		$liste = str_replace("!!notice_tpl_liste!!",$tableau, $notice_tpl_liste);	
 		$liste = str_replace("!!link_ajouter!!",	$link."?categ=tpl&sub=notice&action=edit", $liste);	
+		$liste = str_replace("!!link_import!!",	$link."?categ=tpl&sub=notice&action=import", $liste);	
 		return $liste;
 	}	
 	
@@ -322,5 +324,224 @@ class notice_tpl {
 		
 		return $form;
 	}	
+	
+	function show_import_form($link="./edit.php") {
+		global $msg;
+		global $notice_tpl_form_import;
+		global $charset;
+
+		$form=$notice_tpl_form_import;		
+		$action = $link."?categ=tpl&sub=notice&action=import_suite";
+		
+		$form = str_replace("!!action!!",	$action, $form);
+					
+		return $form;
+	}
+	
+	function do_import(){
+		global $dbh, $msg, $charset;
+
+		$erreur=0;
+		$userfile_name = $_FILES['f_fichier']['name'];
+		$userfile_temp = $_FILES['f_fichier']['tmp_name'];
+		$userfile_moved = basename($userfile_temp);
+				
+		$userfile_name = preg_replace("/ |'|\\|\"|\//m", "_", $userfile_name);
+				
+		// création
+		if (move_uploaded_file($userfile_temp,'./temp/'.$userfile_moved)) {
+			$fic=1;
+		}				
+		if (!$fic) {
+			$erreur=$erreur+10;
+		}else{
+			$fp = fopen('./temp/'.$userfile_moved , "r" );
+			$contenu = fread ($fp, filesize('./temp/'.$userfile_moved));
+			if (!$fp || $contenu=="") $erreur=$erreur+100; ;
+			fclose ($fp) ;
+		}
+				
+		//récupération et affectation des lignes
+		$input_main_tmp='';
+		$input_sub_tmp='';
+		$input_locations_tmp='';
+		$input_charset_tmp='';
+		$input_cours='';
+		$tmpLignes=explode("\n",$contenu);		
+		foreach ($tmpLignes as $ligne){
+			if (preg_match('`^\#main\#=(.+)`',$ligne,$out)) {
+				$cours='input_main';
+				$input_main_tmp=$out[1];
+			} elseif (preg_match('`^\#sub\#=(.+)`',$ligne,$out)) {
+				$cours='input_sub';
+				$input_sub_tmp=$out[1];
+			} elseif (preg_match('`^\#locations\#=(.+)`',$ligne,$out)) {
+				$cours='input_locations';
+				$input_locations_tmp=$out[1];
+			} elseif (preg_match('`^\#charset\#=(.+)`',$ligne,$out)) {
+				$cours='input_charset';
+				$input_charset_tmp=$out[1];
+			} else {
+				switch ($cours) {
+					case 'input_main' :
+						$input_main_tmp.="\n".$ligne;
+						break;
+					case 'input_sub' :
+						$input_sub_tmp.="\n".$ligne;
+						break;
+					case 'input_locations' :
+						$input_locations_tmp.="\n".$ligne;
+						break;
+					case 'input_charset' :
+						$input_charset_tmp.="\n".$ligne;
+						break;
+					default :
+						$erreur=5;
+						break;
+				}
+			}
+		}
+		
+		//on recrée les données
+		$input_main=unserialize($input_main_tmp);
+		$input_sub=unserialize($input_sub_tmp);
+		$input_locations_tmp=unserialize($input_locations_tmp);
+		$input_locations=array();
+		if(is_array($input_locations_tmp) && count($input_locations_tmp)){
+			foreach($input_locations_tmp as $value){
+				$input_locations[$value["id_location"]]=$value["lib_location"];
+			}
+		}
+		$input_charset=$input_charset_tmp;
+		
+		//on vérifie
+		if(!count($input_main)||!count($input_sub)||!trim($input_charset)){
+			$erreur=5;
+		}
+				
+		if(!$erreur){
+			
+			//valeurs à connaitre
+			$doctype = new marc_list('doctype');
+			$locations = array();
+			$res=pmb_mysql_query("SELECT idlocation, location_libelle FROM docs_location ORDER BY 1");
+			while($row=pmb_mysql_fetch_object($res)){
+				$locations[$row->idlocation]=$row->location_libelle;
+			}
+			
+			//gestion de l'encodage fichier/PMB
+			$fonction_convert="";
+			if($input_charset=='iso-8859-1' && $charset=='utf-8'){
+				$input_main=pmb_utf8_encode($input_main);
+				$input_sub=pmb_utf8_encode($input_sub);
+				$input_locations=pmb_utf8_encode($input_locations);
+			}elseif($input_charset=='utf-8' && $charset=='iso-8859-1'){
+				$input_main=pmb_utf8_decode($input_main);
+				$input_sub=pmb_utf8_decode($input_sub);
+				$input_locations=pmb_utf8_decode($input_locations);
+			}
+			
+			//Ajout dans notice_tpl
+			$requete="INSERT INTO notice_tpl SET ";
+			foreach($input_main as $key=>$value){
+				if($key){
+					$requete.=", ";
+				}
+				$requete.=$value["field"]."='".addslashes($value["value"])."'";
+			}
+			pmb_mysql_query($requete);
+			$id_tpl = mysql_insert_id();
+			if ($id_tpl) {
+				
+				//Ajouts dans notice_tpl_code
+				$array_errors=array();
+				foreach($input_sub as $sub){
+					$ok_import=true;
+					$array_error_row=array();
+					if(isset($id_loc_cours)){
+						unset($id_loc_cours);
+					}
+					if(isset($typdoc_cours)){
+						unset($typdoc_cours);
+					}
+					
+					//création requête
+					$requete="INSERT INTO notice_tplcode SET num_notpl=".$id_tpl;
+					foreach($sub as $value){
+						$requete.=", ".$value["field"]."='".addslashes($value["value"])."'";
+						if($value["field"]=="notplcode_localisation"){
+							$id_loc_cours=$value["value"];
+						}
+						if($value["field"]=="notplcode_typdoc"){
+							$typdoc_cours=$value["value"];
+						}
+						if($value["field"]=="nottplcode_code"){
+							$array_error_row["tpl_code"]=$value["value"];
+						}
+					}
+					$array_error_row["typdoc"]=$typdoc_cours;
+					$array_error_row["location"]=$input_locations[$id_loc_cours]." (".$id_loc_cours.")";
+					
+					//vérification localisation et type de document
+					if(!isset($id_loc_cours)||!isset($typdoc_cours)){
+						$ok_import=false;
+						$array_error_row["error"]=$msg["notice_tpl_import_error_missing_info"];
+					}elseif(($id_loc_cours) || ($typdoc_cours)){
+						if($id_loc_cours){
+							if(!isset($locations[$id_loc_cours])||($locations[$id_loc_cours]!=$input_locations[$id_loc_cours])){
+								$array_error_row["error"]=$msg["notice_tpl_import_error_missing_location"];
+								$ok_import=false;
+							}
+						}
+						if($typdoc_cours){
+							if(!isset($doctype->table[$typdoc_cours])){
+								$array_error_row["error"]=$msg["notice_tpl_import_error_missing_typdoc"];
+								$ok_import=false;
+							}
+						}
+					}
+					
+					//ajout requête
+					if($ok_import){
+						pmb_mysql_query($requete);
+					}else{
+						$array_errors[]=$array_error_row;
+					}
+				}
+				
+				//Affichage des templates en erreur
+				if(count($array_errors)){
+					print "<h1>".$msg['notice_tpl_import_invalide']."</h1>";
+					foreach($array_errors as $error){
+						echo "<b>".$msg["notice_tpl_import_error_error"]."</b> : ".$error["error"]."<br>";
+						echo "<b>".$msg["notice_tpl_import_error_typdoc"]."</b> : ".$error["typdoc"]."<br>";
+						echo "<b>".$msg["notice_tpl_import_error_location"]."</b> : ".$error["location"]."<br>";
+						echo "<b>".$msg["notice_tpl_import_error_tplcode"]."</b> : <br>".nl2br(htmlentities($error["tpl_code"]))."<br>";
+						echo "<hr><br>";
+					}
+				}
+				print "<form class='form-$current_module' name=\"dummy\" method=\"post\" action=\"./edit.php?categ=tpl&sub=notice\" >
+				<input type='submit' class='bouton' name=\"id_form\" value=\"Ok\" />
+				</form>";
+				if(!count($array_errors)){
+					print "<script type=\"text/javascript\">document.dummy.submit();</script>";
+				}
+			} else {
+				print "<h1>".$msg['notice_tpl_import_invalide']."</h1>
+				Error code = 7";
+				print $this->show_import_form();
+			}
+		} else {
+			print "<h1>".$msg['notice_tpl_import_invalide']."</h1>
+			Error code = $erreur";
+			print $this->show_import_form();
+		}
+		print "</div>";
+				
+		//On efface le fichier temporaire
+		if ($userfile_name) {
+			unlink('./temp/'.$userfile_moved);
+		}	
+	}
 
 } // fin class 

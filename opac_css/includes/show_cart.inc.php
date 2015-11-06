@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: show_cart.inc.php,v 1.56 2015-07-08 07:42:01 jpermanne Exp $
+// $Id: show_cart.inc.php,v 1.56.2.1 2015-10-01 08:36:52 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -369,7 +369,7 @@ if (count($cart_)) {
 print "</div>";
 
 if (count($cart_)) {
-	print "<h3><span>".$msg["show_cart_content"]."</span> : <b>".sprintf($msg["show_cart_n_notices"],count($cart_))."</b></h3>";
+	print "<h3 class='title_basket'><span>".$msg["show_cart_content"]."</span> : <b>".sprintf($msg["show_cart_n_notices"],count($cart_))."</b></h3>";
 	
 	print "<div class='search_result'>";
 	if ($opac_notices_depliable) print $begin_result_liste;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_recordslist_view_carousel.class.php,v 1.11 2015-04-03 11:16:27 jpermanne Exp $
+// $Id: cms_module_recordslist_view_carousel.class.php,v 1.11.4.1 2015-09-17 15:14:13 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -57,7 +57,7 @@ class cms_module_recordslist_view_carousel extends cms_module_carousel_view_caro
 						}else if($code_chiffre){
 							$url_vign = str_replace("!!noticecode!!", $code_chiffre, $url_image) ;
 						}else {
-							$url_vign = $opac_url_base."images/vide.png";			
+							$url_vign = get_url_icon("vide.png", 1);			
 						}
 					}
 					$notice_class = new $opac_notice_affichage_class($row->notice_id,"");

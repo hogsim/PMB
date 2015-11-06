@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions.class.php,v 1.20 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: suggestions.class.php,v 1.20.4.2 2015-10-08 10:25:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -132,6 +132,11 @@ class suggestions{
 	static function exists($origine, $titre, $auteur, $editeur, $isbn) {
 
 		global $dbh;
+		
+		//suggestions identiques autorisées si complètement anonyme : pas identifié ou pas d'email saisi
+		if(!trim($origine)){
+			return 0;
+		}
 		
 		$q = "select count(1) from suggestions_origine, suggestions where origine = '".$origine."' and titre = '".$titre."' and id_suggestion = num_suggestion and auteur='".$auteur."' and editeur = '".$editeur."' and code = '".$isbn."' ";
 		$q.= "and statut in (1,2,8) ";
@@ -352,6 +357,10 @@ class suggestions{
 		<tr>
 			<td >".htmlentities($msg["empr_sugg_datepubli"], ENT_QUOTES, $charset)."</td>
 			<td>".htmlentities($this->date_publi, ENT_QUOTES, $charset)."</td>
+		</tr>
+		<tr>
+			<td >".htmlentities($msg["empr_sugg_qte"], ENT_QUOTES, $charset)."</td>
+			<td>".htmlentities($this->nb, ENT_QUOTES, $charset)."</td>
 		</tr>";
 		$source = new suggestion_source($this->sugg_src);
 		$table.= "

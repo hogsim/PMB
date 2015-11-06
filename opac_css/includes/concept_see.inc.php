@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: concept_see.inc.php,v 1.3 2015-04-16 16:09:56 arenou Exp $
+// $Id: concept_see.inc.php,v 1.3.2.1 2015-10-16 12:25:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -38,4 +38,10 @@ if(count($controler->get_indexed_notices())){
 				});
 			</script>";
 	}
+	//Formulaire "FACTICE" pour l'application du comparateur et du filetre multiple...
+	$str.= '
+<form name="form_values" style="display:none;" method="post" action="?lvl=more_results&mode=extended">
+	<input type="hidden" name="from_see" value="1" />
+	'.facette_search_compare::form_write_facette_compare().'
+</form>';
 }

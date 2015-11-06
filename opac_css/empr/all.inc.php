@@ -2,14 +2,28 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: all.inc.php,v 1.46 2015-07-16 09:04:29 jpermanne Exp $
+// $Id: all.inc.php,v 1.46.2.5 2015-10-09 11:43:09 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 //Récupération des variables postées, on en aura besoin pour les liens
 $page=$_SERVER[SCRIPT_NAME];
 
-if (!$dest) {
+
+if ($dest=="TABLEAU") {
+	//Export excel
+	$fname=str_replace(" ","",microtime());
+	$fname=str_replace("0.","",$base_path."/temp/".$fname);
+	require_once ("$class_path/writeexcel/class.writeexcel_workbook.inc.php");
+	require_once ("$class_path/writeexcel/class.writeexcel_worksheet.inc.php");
+	$workbook = new writeexcel_workbook($fname);
+	$worksheet = $workbook->addworksheet();
+	//formats
+	$workbook->set_custom_color(12, 00, 204, 255);
+	$heading_blue = $workbook->addformat(array('fg_color' => 12));
+	$heading_10 = $workbook->addformat(array('bold' => 1, 'size' => 10));
+	$heading_12 = $workbook->addformat(array('bold' => 1, 'size' => 12));
+} else {
 	echo"<form action='empr.php' method='post' name='FormEmpr'>";
 	echo"<input name='lvl' value='all' type='hidden'>";	
 	echo"<input name='prolonge_id' value='0' type='hidden'>";
@@ -102,11 +116,10 @@ $nb_elements = pmb_mysql_num_rows($req) ;
 if (!$dest) {
 	if ($lvl=="late") $class_aff_expl="class='liste-expl-empr-late'" ;
 	$class_aff_expl="class='liste-expl-empr-all'" ;
+	echo "<input class=\"bouton\" type=\"button\" value=\"".$msg["print_loans_bt"]."\" name=\"print_loans_bt\" id=\"print_loans_bt\" onClick=\"location.href='empr.php?tab=".$tab."&lvl=".$lvl."&dest=TABLEAU'\">";
 }
-
 if ($nb_elements) {
 	if (!$dest) {
-		echo "<input class=\"bouton\" type=\"button\" value=\"".$msg["print_loans_bt"]."\" name=\"print_loans_bt\" id=\"print_loans_bt\" onClick=\"location.href='empr.php?tab=".$tab."&lvl=".$lvl."&dest=TABLEAU'\">";
 		echo"<table $class_aff_expl width='100%'>";
 		echo "<tr>" ;
 		if ($lvl!="late") echo "<th><center>".$msg["empr_late"]."</center></th>" ;
@@ -124,9 +137,16 @@ if ($nb_elements) {
 		$loc_cours="";
 		while ($data = pmb_mysql_fetch_array($req)) { 
 			if ($loc_cours != $data['location_libelle']) {
+				$colspan=5;
+				if ($lvl!="late"){
+					$colspan++;
+				}
+				if($opac_pret_prolongation==1 && $allow_prol){
+					$colspan+=2;
+				}
 				$loc_cours = $data['location_libelle'];
 				echo "<tr class='tb_pret_location_row'>
-								<td colspan='".($opac_pret_prolongation==1 && $allow_prol?"7":"6")."'>".$msg["expl_header_location_libelle"]." : ".$loc_cours."</td>
+								<td colspan='".$colspan."'>".$msg["expl_header_location_libelle"]." : ".$loc_cours."</td>
 							</tr>";
 			}
 			$id_expl =$data['expl_cb'];
@@ -296,33 +316,27 @@ if ($nb_elements) {
 		
 		echo"</form>";
 	} elseif ($dest=="TABLEAU") {
-		//Export excel
-		$fname=str_replace(" ","",microtime());
-		$fname=str_replace("0.","",$base_path."/temp/".$fname);
-		require_once ("$class_path/writeexcel/class.writeexcel_workbook.inc.php");
-		require_once ("$class_path/writeexcel/class.writeexcel_worksheet.inc.php");
-		$workbook = new writeexcel_workbook($fname);
-		$worksheet = $workbook->addworksheet();
 		//Titre
 		if ($lvl!="late"){
-			$worksheet->write(0,0,$msg[empr_loans]);
+			$worksheet->write(0,0,$msg["empr_loans"],$heading_blue);
 		} else {
-			$worksheet->write(0,0,$msg["empr_late"]);
+			$worksheet->write(0,0,$msg["empr_late"],$heading_blue);
 		}
+		$worksheet->merge_cells(0,0,0,6);
 		//Entêtes
 		$line = 2;
 		$x=0;
 		if ($lvl!="late") {
-			$worksheet->write($line,$x,$msg["empr_late"]);
+			$worksheet->write($line,$x,$msg["empr_late"],$heading_10);
 			$x++;
 		}
-		$worksheet->write($line,$x,$msg["title"]);
-		$worksheet->write($line,$x+1,$msg["authors"]);
-		$worksheet->write($line,$x+2,$msg["typdoc_support"]);
-		$worksheet->write($line,$x+3,$msg["date_loan"]);
-		$worksheet->write($line,$x+4,$msg["date_back"]);
+		$worksheet->write($line,$x,$msg["title"],$heading_10);
+		$worksheet->write($line,$x+1,$msg["authors"],$heading_10);
+		$worksheet->write($line,$x+2,$msg["typdoc_support"],$heading_10);
+		$worksheet->write($line,$x+3,$msg["date_loan"],$heading_10);
+		$worksheet->write($line,$x+4,$msg["date_back"],$heading_10);
 		if ($opac_pret_prolongation==1 && $allow_prol) {
-			$worksheet->write($line,$x+5,$msg["opac_titre_champ_nb_prolongation"]);
+			$worksheet->write($line,$x+5,$msg["opac_titre_champ_nb_prolongation"],$heading_10);
 		}
 		//Valeurs
 		$loc_cours="";
@@ -331,7 +345,7 @@ if ($nb_elements) {
 			$x=0;
 			if ($loc_cours != $data['location_libelle']) {
 				$loc_cours = $data['location_libelle'];
-				$worksheet->write($line,$x,$msg["expl_header_location_libelle"]." : ".$loc_cours);
+				$worksheet->write($line,$x,$msg["expl_header_location_libelle"]." : ".$loc_cours,$heading_12);
 				$line++;
 			}
 			$id_expl =$data['expl_cb'];
@@ -398,18 +412,26 @@ if ($nb_elements) {
 } else { // fin du if nb_elements
 	switch($lvl) {
 		case 'all':	
-			print $msg["empr_no_loan"] ;
+			if(!$dest){
+				print '<br><br>'.$msg["empr_no_loan"] ;
+			}elseif ($dest=="TABLEAU") {
+				$worksheet->write(0,0,$msg["empr_no_loan"],$heading_blue);
+			}
 			break;
 		case 'late':
-			print $msg["empr_no_late"] ;
+			if(!$dest){
+				print '<br><br>'.$msg["empr_no_late"] ;
+			}elseif ($dest=="TABLEAU") {
+				$worksheet->write(0,0,$msg["empr_no_late"],$heading_blue);
+			}
 			break;
-	}		
+	}
 }
 if($opac_show_group_checkout) aff_pret_groupes();
 
 if(file_exists($base_path."/empr/all_extended.inc.php"))require_once($base_path."/empr/all_extended.inc.php");
 
-if ($dest) {
+if ($dest=="TABLEAU") {
 	$workbook->close();
 	header("Content-Type: application/x-msexcel; name=\"empr.xls"."\"");
 	header("Content-Disposition: inline; filename=\"empr.xls"."\"");
@@ -423,6 +445,7 @@ function aff_pret_groupes(){
 	global $msg,$id_empr,$lvl,$dbh;
 	global $opac_pret_prolongation,$opac_pret_duree_prolongation, $allow_prol;
 	global $dest,$worksheet,$line;
+	global $heading_blue,$heading_10,$heading_12;
 	
 	$req_groupes="SELECT * from groupe where resp_groupe=$id_empr order by libelle_groupe";
 	$res = pmb_mysql_query($req_groupes);		
@@ -431,11 +454,11 @@ function aff_pret_groupes(){
 		if ($lvl=="late"){
 			$titre_goup=sprintf($msg['empr_group_late'],$r_goupe->libelle_groupe);
 			$class_aff_expl="class='liste-expl-empr-late'" ;
-			$critere_requete=" AND pret_retour < '".date('Y-m-d')."' order by pret_retour ";
+			$critere_requete=" AND pret_retour < '".date('Y-m-d')."' ORDER BY location_libelle, empr_nom, empr_prenom, pret_retour";
 		}else{
 			$titre_goup=sprintf($msg['empr_group_loans'],$r_goupe->libelle_groupe);		
 			$class_aff_expl="class='liste-expl-empr-all'" ;
-			$critere_requete=" order by pret_retour";
+			$critere_requete=" ORDER BY location_libelle, empr_nom, empr_prenom, pret_retour";
 		}
 		
 		$sql = "SELECT notices_m.notice_id as num_notice_mono, bulletin_id, IF(pret_retour>sysdate(),0,1) as retard, expl_id, empr.id_empr as emprunteur, " ;
@@ -459,15 +482,15 @@ function aff_pret_groupes(){
 				echo"<table $class_aff_expl width='100%'>";
 				echo "<tr>" ;
 				if ($lvl!="late") echo "<th><center>".$msg["empr_late"]."</center></th>" ;
-				echo "<th>".$msg["title"]."</th>					
-					  <th>".$msg["typdoc_support"]."</th>
-					  <th><center>".$msg["extexpl_emprunteur"]."</center></th>
+				echo " <th>".$msg["extexpl_emprunteur"]."</th>
+					  <th>".$msg["title"]."</th>					
+					  <th>".$msg["typdoc_support"]."</th>					 
 					  <th><center>".$msg["date_loan"]."</center></th>
-					  <th><center>".$msg["date_back"]."</center></th>";		
+					  <th><center>".$msg["date_back"]."</center></th>";
 				echo "</tr>" ;
 				$odd_even=1;
 				$loc_cours="";
-				while ($data = pmb_mysql_fetch_array($req)) { 
+				while ($data = pmb_mysql_fetch_array($req)) {
 					if ($loc_cours != $data['location_libelle']) {
 						$loc_cours = $data['location_libelle'];
 						echo "<tr class='tb_pret_location_row'>
@@ -493,11 +516,10 @@ function aff_pret_groupes(){
 					if ($lvl!="late") 
 						if ($data['retard']) echo "<td class='expl-empr-retard'><center><b>&times;</b></center></td>";
 						else echo "<td>&nbsp;</td>";
-					echo "<td>".$data['tit']."</td>";    
-					echo "<td>".$data["tdoc_libelle"]."</td>";  
-	
 					$empr=get_info_empr($data['emprunteur']);
-					echo "<td><center>".$empr['nom']." ".$empr['prenom']."</center></td>"; 
+					echo "<td>".$empr['nom']." ".$empr['prenom']."</td>";
+					echo "<td>".$data['tit']."</td>";    
+					echo "<td>".$data["tdoc_libelle"]."</td>";
 					echo "<td><center>".$data['aff_pret_date']."</center></td>"; 
 						
 					if ($data['retard']) echo "<td class='expl-empr-retard'><center>".$data['aff_pret_retour']."</center></td>";
@@ -512,19 +534,20 @@ function aff_pret_groupes(){
 				$line+=2;
 				$x=0;
 				//Titre
-				$worksheet->write($line,$x,$titre_goup);
+				$worksheet->write($line,$x,$titre_goup,$heading_blue);
+				$worksheet->merge_cells($line,$x,$line,$x+6);
 				//Entêtes
 				$line+=2;
 				$x=0;
 				if ($lvl!="late") {
-					$worksheet->write($line,$x,$msg["empr_late"]);
+					$worksheet->write($line,$x,$msg["empr_late"],$heading_10);
 					$x++;
 				}
-				$worksheet->write($line,$x,$msg["title"]);
-				$worksheet->write($line,$x+1,$msg["typdoc_support"]);
-				$worksheet->write($line,$x+2,$msg["extexpl_emprunteur"]);
-				$worksheet->write($line,$x+3,$msg["date_loan"]);
-				$worksheet->write($line,$x+4,$msg["date_back"]);
+				$worksheet->write($line,$x,$msg["extexpl_emprunteur"],$heading_10);
+				$worksheet->write($line,$x+1,$msg["title"],$heading_10);
+				$worksheet->write($line,$x+2,$msg["typdoc_support"],$heading_10);
+				$worksheet->write($line,$x+3,$msg["date_loan"],$heading_10);
+				$worksheet->write($line,$x+4,$msg["date_back"],$heading_10);
 				//Valeurs
 				$loc_cours="";
 				while ($data = pmb_mysql_fetch_array($req)) {
@@ -532,7 +555,7 @@ function aff_pret_groupes(){
 					$line++;
 					if ($loc_cours != $data['location_libelle']) {
 						$loc_cours = $data['location_libelle'];
-						$worksheet->write($line,$x,$msg["expl_header_location_libelle"]." : ".$loc_cours);
+						$worksheet->write($line,$x,$msg["expl_header_location_libelle"]." : ".$loc_cours,$heading_12);
 						$line++;
 					}
 					if ($lvl!="late") {
@@ -541,10 +564,10 @@ function aff_pret_groupes(){
 						}
 						$x++;
 					}
-					$worksheet->write($line,$x,$data['tit']);
-					$worksheet->write($line,$x+1,$data["tdoc_libelle"]);
 					$empr=get_info_empr($data['emprunteur']);
-					$worksheet->write($line,$x+2,$empr['nom']." ".$empr['prenom']);
+					$worksheet->write($line,$x,$empr['nom']." ".$empr['prenom']);
+					$worksheet->write($line,$x+1,$data['tit']);
+					$worksheet->write($line,$x+2,$data["tdoc_libelle"]);
 					$worksheet->write($line,$x+3,$data['aff_pret_date']);
 					$worksheet->write($line,$x+4,$data['aff_pret_retour']);
 				}

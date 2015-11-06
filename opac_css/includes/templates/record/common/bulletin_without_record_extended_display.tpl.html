@@ -1,3 +1,5 @@
+<!-- $Id: bulletin_without_record_extended_display.tpl.html,v 1.1.2.2 2015-09-30 09:31:57 mramage Exp $ -->
+
 <div id="noticeNot">
 	<div class="parentNot">
 		<div id="blocNotice_descr">
@@ -14,7 +16,7 @@
 							<img class="vignetteNot" src="./styles/common/images/no_image.jpg" />
 						</div>
 					</div>
-					{% if global.opac_cart_allow %}
+					{% if record.cart_allow %}
 						<!-- Ajouter au panier -->
 						<div class="onglet_basketNot">
 							<a href="cart_info.php?id={{ bulletin.bulletin_id }}&amp;lvl=analysis&amp;header={{ bulletin.bulletin_numero | urlencode }}+-+{{ bulletin.mention_date | urlencode }}" target="cart_info" class="img_basketNot"><img src="./includes/templates/record/common/styles/images/basket_blanc.png" border="0" title="{{ msg.record_display_add_to_cart }}" alt="{{ msg.record_display_add_to_cart }}"/>{{ msg.record_display_add_to_cart }}</a>

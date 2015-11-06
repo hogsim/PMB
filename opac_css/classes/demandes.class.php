@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes.class.php,v 1.31 2015-05-20 14:14:14 ngantier Exp $
+// $Id: demandes.class.php,v 1.31.2.2 2015-09-24 15:53:01 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -17,6 +17,7 @@ require_once($class_path."/workflow.class.php");
 require_once($class_path."/audit.class.php");
 require_once($class_path."/demandes_types.class.php");
 require_once($class_path."/acces.class.php");
+require_once($class_path."/parametres_perso.class.php");
 
 /*
  * Classe de gestion des demandes
@@ -339,6 +340,13 @@ class demandes {
 		$onChange="onchange=\"submit();\"";
 		$form_liste_demande = str_replace('!!select_etat!!',$this->getStateSelector($idetat,$onChange,true),$form_liste_demande);
 		
+		$header_champs_perso = "";
+		$p_perso=new parametres_perso("demandes");
+		reset($p_perso->t_fields);
+		while (list($key,$val)=each($p_perso->t_fields)) {
+			if($val["OPAC_SHOW"]) $header_champs_perso .= "<th>".htmlentities($val["TITRE"],ENT_QUOTES,$charset)."</th>";
+		}
+		
 		//Formulaire de la liste
 		$req = self::getQueryFilter($idetat,$iduser,$id_empr,$user_input,$date_debut,$date_fin, $id_theme, $id_type,$dmde_loc);
 		$res = pmb_mysql_query($req,$dbh);
@@ -422,14 +430,14 @@ class demandes {
 				$liste .= "<td><img hspace=\"3\" border=\"0\" onclick=\"expand_action('action".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"action".$dmde->id_demande."Img\" name=\"imEx\" class=\"img_plus\" src=\"./images/plus.gif\"></td>";
 				$liste .= "<td>";
 				if($dmde->dmde_read_opac == 1){
-					$liste .= "<img hspace=\"3\" border=\"0\" onclick=\"change_read('read".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"read".$dmde->id_demande."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" style='display:none'>
-								<img hspace=\"3\" border=\"0\" onclick=\"change_read('read".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"read".$dmde->id_demande."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\">";
+					$liste .= "<img hspace=\"3\" border=\"0\" onclick=\"change_read('read".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"read".$dmde->id_demande."Img1\" name=\"imRead\" class=\"img_plus\" src=\"".get_url_icon('notification_empty.png')."\" style='display:none'>
+								<img hspace=\"3\" border=\"0\" onclick=\"change_read('read".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"read".$dmde->id_demande."Img2\" name=\"imRead\" class=\"img_plus\" src=\"".get_url_icon('notification_new.png')."\">";
 				} else {
-					$liste .= "<img hspace=\"3\" border=\"0\" onclick=\"change_read('read".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"read".$dmde->id_demande."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" >
-								<img hspace=\"3\" border=\"0\" onclick=\"change_read('read".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"read".$dmde->id_demande."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\" style='display:none'>";
+					$liste .= "<img hspace=\"3\" border=\"0\" onclick=\"change_read('read".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"read".$dmde->id_demande."Img1\" name=\"imRead\" class=\"img_plus\" src=\"".get_url_icon('notification_empty.png')."\" >
+								<img hspace=\"3\" border=\"0\" onclick=\"change_read('read".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"read".$dmde->id_demande."Img2\" name=\"imRead\" class=\"img_plus\" src=\"".get_url_icon('notification_new.png')."\" style='display:none'>";
 				}
 				$liste .= "</td>";
-				if(!$opac_demandes_affichage_simplifie)
+				if(!$opac_demandes_affichage_simplifie) {
 					$liste .="
 					<td $action>".htmlentities($dmde->titre_demande,ENT_QUOTES,$charset)."</td>
 					<td $action>".htmlentities($dmde->workflow->getStateCommentById($dmde->etat_demande),ENT_QUOTES,$charset)."</td>
@@ -438,16 +446,25 @@ class demandes {
 					<td $action>".htmlentities($nom_user,ENT_QUOTES,$charset)."</td>
 					<td>
 						<img src=\"$base_path/images/jauge.png\" height='15px' width=\"".$dmde->progression."%\" title='".$dmde->progression."%' />
-					</td>
-					$link_noti
-					";
-				else
+					</td>";
+					$perso_=$p_perso->show_fields($dmde->id_demande);
+					for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+						$p=$perso_["FIELDS"][$i];
+						if($p["OPAC_SHOW"]) $liste .= "<td>".nl2br($p["AFF"])."</td>";
+					}
+					$liste .= $link_noti;
+				} else {
 					$liste .="
 					<td $action>".htmlentities($dmde->titre_demande,ENT_QUOTES,$charset)."</td>
 					<td $action>".htmlentities($dmde->workflow->getStateCommentById($dmde->etat_demande),ENT_QUOTES,$charset)."</td>
-					<td $action>".htmlentities(formatdate($dmde->date_demande),ENT_QUOTES,$charset)."</td>
-					$link_noti
-					";
+					<td $action>".htmlentities(formatdate($dmde->date_demande),ENT_QUOTES,$charset)."</td>";
+					$perso_=$p_perso->show_fields($dmde->id_demande);
+					for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+						$p=$perso_["FIELDS"][$i];
+						if($p["OPAC_SHOW"]) $liste .= "<td>".nl2br($p["AFF"])."</td>";
+					}
+					$liste .= $link_noti;
+				}
 				
 				$liste .= "</tr>";
 				//Le détail de l'action, contient les notes
@@ -478,7 +495,8 @@ class demandes {
 			print "<script type='text/javascript'>document.location=\"./empr.php?tab=request&lvl=list_dmde&sub=open_demande&iddemande=".$demande_id_a_valider."&#fin\";</script>";
 			return;
 		}
-		*/	
+		*/
+		$form_liste_demande = str_replace('!!header_champs_perso!!',$header_champs_perso,$form_liste_demande);
 		$form_liste_demande = str_replace('!!liste_dmde!!',$liste,$form_liste_demande);
 		
 		print $form_liste_demande;
@@ -688,6 +706,9 @@ class demandes {
 			join demandes_actions da on eda.num_action=da.id_action
 			where da.num_demande=".$demande->id_demande;
 			pmb_mysql_query($req, $dbh);
+			// suppression des valeurs de CP
+			$p_perso=new parametres_perso("demandes");
+			$p_perso->delete_values($demande->id_demande);
 			// suppression de la demande
 			$req = "delete from demandes where id_demande='".$demande->id_demande."'"; 
 			pmb_mysql_query($req,$dbh);
@@ -845,6 +866,20 @@ class demandes {
 			$params[] = $loc;		
 		}
 		
+		//Champs perso
+		$join_cp="";
+		$p_perso=new parametres_perso("demandes");
+		$perso_=$p_perso->read_search_fields_from_form();
+		if(count($perso_["FIELDS"])) {
+			for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+				$p=$perso_["FIELDS"][$i];
+				if(is_array($p["VALUE"]) && count($p["VALUE"])) {
+					$join_cp .= " join demandes_custom_values as d_c_v_".$i." on (d_c_v_".$i.".demandes_custom_origine=d.id_demande)";
+					$join_cp .= " and d_c_v_".$i.".demandes_custom_".$p["DATATYPE"]." IN ('".implode("','", $p["VALUE"])."') ";
+				}
+			}
+		}
+		
 		if($params) $clause = "where ".implode(" and ",$params);
 		$req = "select id_demande
 				from demandes d 
@@ -854,6 +889,7 @@ class demandes {
 				left join users on (du.num_user=userid and du.users_statut=1)
 				$join_filtre_user
 				$join_loc
+				$join_cp
 				$clause
 				group by id_demande
 				order by date_demande desc";
@@ -897,6 +933,22 @@ class demandes {
 		$form_consult_dmde = str_replace('!!iddemande!!',$this->id_demande,$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!theme_dmde!!',htmlentities($this->theme_libelle,ENT_QUOTES,$charset),$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!type_dmde!!',htmlentities($this->type_libelle,ENT_QUOTES,$charset),$form_consult_dmde);
+		
+		//Champs personalisés
+		$perso_aff = "" ;
+		$p_perso = new parametres_perso("demandes");
+		if (!$p_perso->no_special_fields) {
+			$perso_=$p_perso->show_fields($this->id_demande);
+			for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+				$p=$perso_["FIELDS"][$i];
+				if ($p["AFF"] && $p["OPAC_SHOW"]) $perso_aff .="<br />".$p["TITRE"]." ".nl2br($p["AFF"]);
+			}
+		}
+		if ($perso_aff) {
+			$form_consult_dmde = str_replace("!!champs_perso!!",$perso_aff,$form_consult_dmde);
+		} else {
+			$form_consult_dmde = str_replace("!!champs_perso!!","",$form_consult_dmde);
+		}
 		
 		if(self::is_notice_visible($this)){
 			$link_noti = "<a href='".$opac_url_base."index.php?lvl=notice_display&id=".$this->num_notice."' alt='".$msg['demandes_see_notice']."' title='".$msg['demandes_see_notice']."'><img src='$base_path/images/mois.gif' /></a>";
@@ -1094,7 +1146,7 @@ class demandes {
 				<div class='row'>
 					<div class='colonne3'>
 						<input type='checkbox' id='chk[$doc->id]' value='$doc->id' name='chk[]' $check /><label for='chk[$doc->id]' class='etiquette'>".htmlentities($doc->nom,ENT_QUOTES,$charset)."</label>&nbsp;
-						<a href=\"$base_path/explnum_doc.php?explnumdoc_id=".$doc->id."'\" target=\"_LINK_\"><img src='$base_path/images/globe_orange.png' /></a>
+						<a href=\"$base_path/explnum_doc.php?explnumdoc_id=".$doc->id."'\" target=\"_LINK_\"><img src='".get_url_icon("globe_orange.png")."' /></a>
 					</div>
 					<div class='colonne3'>	
 						<input type='checkbox' id='ck_index[$doc->id]' value='$doc->id' name='ck_index[]' $check_index/><label for='ck_index[$doc->id]' class='etiquette'>".htmlentities($msg['demandes_docnum_indexer'],ENT_QUOTES,$charset)."</label>&nbsp;	

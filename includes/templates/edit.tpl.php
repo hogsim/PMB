@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: edit.tpl.php,v 1.29 2015-01-07 13:33:37 jpermanne Exp $
+// $Id: edit.tpl.php,v 1.29.4.1 2015-09-22 13:17:41 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -52,6 +52,7 @@ $edit_menu.= "
 <ul>
 <li><a href='./edit.php?categ=serials&sub=collect'>$msg[1151]</a></li>
 <!-- <li><a href='./edit.php?categ=serials&sub=manquant'>$msg[1154]</a></li> -->
+<li><a href='./edit.php?categ=serials&sub=simple_circ'>".$msg["serial_simple_circ_edit"]."</a></li>
 </ul>
 <h3 onclick='menuHide(this,event)'>$msg[1140]</h3>
 <ul>

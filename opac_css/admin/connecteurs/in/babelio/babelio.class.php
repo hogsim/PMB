@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: babelio.class.php,v 1.6 2015-04-03 11:16:27 jpermanne Exp $
+// $Id: babelio.class.php,v 1.6.4.1 2015-09-24 15:48:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -237,8 +237,8 @@ class babelio extends connector {
 		$cpt_star = 5;
 		
 		for ($i = 1; $i <= $cpt_star; $i++) {
-			if($note >= $i) $etoiles_moyenne.="<img border=0 src='images/star.png' align='absmiddle'>";
-			else $etoiles_moyenne.="<img border=0 src='images/star_unlight.png' align='absmiddle'>";
+			if($note >= $i) $etoiles_moyenne.="<img border=0 src='".get_url_icon('star.png')."' align='absmiddle'>";
+			else $etoiles_moyenne.="<img border=0 src='".get_url_icon('star_unlight.png')."' align='absmiddle'>";
 		}
 		return $etoiles_moyenne;
 	} // fin stars()

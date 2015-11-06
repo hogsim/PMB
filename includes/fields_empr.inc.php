@@ -2,20 +2,20 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fields_empr.inc.php,v 1.103 2015-06-26 13:15:14 dgoron Exp $
+// $Id: fields_empr.inc.php,v 1.103.2.6 2015-10-06 10:03:43 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once($class_path."/categories.class.php");
 require_once("$class_path/editor.class.php");
 
-$aff_list_empr=array("text"=>"aff_text_empr","list"=>"aff_list_empr","query_list"=>"aff_query_list_empr","query_auth"=>"aff_query_auth_empr","date_box"=>"aff_date_box_empr","comment"=>"aff_comment_empr","external"=>"aff_external_empr","url"=>"aff_url_empr","resolve"=>"aff_resolve_empr","marclist"=>"aff_marclist_empr","html"=>"aff_html_empr");
-$aff_list_empr_search=array("text"=>"aff_text_empr_search","list"=>"aff_list_empr_search","query_list"=>"aff_query_list_empr_search","query_auth"=>"aff_query_auth_empr_search","date_box"=>"aff_date_box_empr_search","comment"=>"aff_comment_empr_search","external"=>"aff_external_empr_search","url"=>"aff_url_empr_search","resolve"=>"aff_resolve_empr_search","marclist"=>"aff_marclist_empr_search","html"=>"aff_comment_empr_search");
-$aff_filter_list_empr=array("text"=>"aff_filter_text_empr","list"=>"aff_filter_list_empr","query_list"=>"aff_filter_query_list_empr","query_auth"=>"aff_filter_query_auth_empr","date_box"=>"aff_filter_date_box_empr","comment"=>"aff_filter_comment_empr","external"=>"aff_filter_external_empr","url"=>"aff_filter_resolve_empr","resolve"=>"aff_filter_resolve_empr","marclist"=>"aff_filter_marclist_empr","html"=>"aff_filter_comment_empr");
-$chk_list_empr=array("text"=>"chk_text_empr","list"=>"chk_list_empr","query_list"=>"chk_query_list_empr","query_auth"=>"chk_query_auth_empr","date_box"=>"chk_date_box_empr","comment"=>"chk_comment_empr","external"=>"chk_external_empr","url"=>"chk_url_empr","resolve"=>"chk_resolve_empr","marclist"=>"chk_marclist_empr","html"=>"chk_comment_empr");
-$val_list_empr=array("text"=>"val_text_empr","list"=>"val_list_empr","query_list"=>"val_query_list_empr","query_auth"=>"val_query_auth_empr","date_box"=>"val_date_box_empr","comment"=>"val_comment_empr","external"=>"val_external_empr","url"=>"val_url_empr","resolve"=>"val_resolve_empr","marclist"=>"val_marclist_empr","html"=>"val_html_empr");
-$type_list_empr=array("text"=>$msg["parperso_text"],"list"=>$msg["parperso_choice_list"],"query_list"=>$msg["parperso_query_choice_list"],"query_auth"=>$msg["parperso_authorities"],"date_box"=>$msg["parperso_date"],"comment"=>$msg["parperso_comment"],"external"=>$msg["parperso_external"],"url"=>$msg["parperso_url"],"resolve"=>$msg["parperso_resolve"],"marclist"=>$msg["parperso_marclist"],"html"=>$msg["parperso_html"]);
-$options_list_empr=array("text"=>"options_text.php","list"=>"options_list.php","query_list"=>"options_query_list.php","query_auth"=>"options_query_authorities.php","date_box"=>"options_date_box.php","comment"=>"options_comment.php","external"=>"options_external.php","url"=>"options_url.php","resolve"=>"options_resolve.php","marclist"=>"options_marclist.php","html"=>"options_html.php");
+$aff_list_empr=array("text"=>"aff_text_empr","list"=>"aff_list_empr","query_list"=>"aff_query_list_empr","query_auth"=>"aff_query_auth_empr","date_box"=>"aff_date_box_empr","comment"=>"aff_comment_empr","external"=>"aff_external_empr","url"=>"aff_url_empr","resolve"=>"aff_resolve_empr","marclist"=>"aff_marclist_empr","html"=>"aff_html_empr","text_i18n"=>"aff_text_i18n_empr");
+$aff_list_empr_search=array("text"=>"aff_text_empr_search","list"=>"aff_list_empr_search","query_list"=>"aff_query_list_empr_search","query_auth"=>"aff_query_auth_empr_search","date_box"=>"aff_date_box_empr_search","comment"=>"aff_comment_empr_search","external"=>"aff_external_empr_search","url"=>"aff_url_empr_search","resolve"=>"aff_resolve_empr_search","marclist"=>"aff_marclist_empr_search","html"=>"aff_comment_empr_search","text_i18n"=>"aff_text_i18n_empr_search");
+$aff_filter_list_empr=array("text"=>"aff_filter_text_empr","list"=>"aff_filter_list_empr","query_list"=>"aff_filter_query_list_empr","query_auth"=>"aff_filter_query_auth_empr","date_box"=>"aff_filter_date_box_empr","comment"=>"aff_filter_comment_empr","external"=>"aff_filter_external_empr","url"=>"aff_filter_resolve_empr","resolve"=>"aff_filter_resolve_empr","marclist"=>"aff_filter_marclist_empr","html"=>"aff_filter_comment_empr","text_i18n"=>"aff_filter_text_i18n_empr");
+$chk_list_empr=array("text"=>"chk_text_empr","list"=>"chk_list_empr","query_list"=>"chk_query_list_empr","query_auth"=>"chk_query_auth_empr","date_box"=>"chk_date_box_empr","comment"=>"chk_comment_empr","external"=>"chk_external_empr","url"=>"chk_url_empr","resolve"=>"chk_resolve_empr","marclist"=>"chk_marclist_empr","html"=>"chk_comment_empr","text_i18n"=>"chk_text_i18n_empr");
+$val_list_empr=array("text"=>"val_text_empr","list"=>"val_list_empr","query_list"=>"val_query_list_empr","query_auth"=>"val_query_auth_empr","date_box"=>"val_date_box_empr","comment"=>"val_comment_empr","external"=>"val_external_empr","url"=>"val_url_empr","resolve"=>"val_resolve_empr","marclist"=>"val_marclist_empr","html"=>"val_html_empr","text_i18n"=>"val_text_i18n_empr");
+$type_list_empr=array("text"=>$msg["parperso_text"],"list"=>$msg["parperso_choice_list"],"query_list"=>$msg["parperso_query_choice_list"],"query_auth"=>$msg["parperso_authorities"],"date_box"=>$msg["parperso_date"],"comment"=>$msg["parperso_comment"],"external"=>$msg["parperso_external"],"url"=>$msg["parperso_url"],"resolve"=>$msg["parperso_resolve"],"marclist"=>$msg["parperso_marclist"],"html"=>$msg["parperso_html"],"text_i18n"=>$msg["parperso_text_i18n"]);
+$options_list_empr=array("text"=>"options_text.php","list"=>"options_list.php","query_list"=>"options_query_list.php","query_auth"=>"options_query_authorities.php","date_box"=>"options_date_box.php","comment"=>"options_comment.php","external"=>"options_external.php","url"=>"options_url.php","resolve"=>"options_resolve.php","marclist"=>"options_marclist.php","html"=>"options_html.php","text_i18n"=>"options_text_i18n.php");
 
 // formulaire de saisie des param perso des autorités
 function aff_query_auth_empr($field,&$check_scripts,$script="") {
@@ -131,7 +131,11 @@ function aff_query_auth_empr($field,&$check_scripts,$script="") {
 					$isbd=html_entity_decode($aut->isbd_entry,ENT_QUOTES, $charset);
 				break;
 				case 2:// categories
-					$isbd=html_entity_decode(categories::listAncestorNames($id,$lang),ENT_QUOTES, $charset);
+					if ($field["OPTIONS"][0]["CATEG_SHOW"]["0"]["value"]==1) {
+						$isbd=html_entity_decode(categories::getLibelle($id,$lang),ENT_QUOTES, $charset);
+					} else {
+						$isbd=html_entity_decode(categories::listAncestorNames($id,$lang),ENT_QUOTES, $charset);
+					}
 				break;
 				case 3:// Editeur
 					$aut = new editeur($id);
@@ -225,7 +229,11 @@ function aff_query_auth_empr_search($field,&$check_scripts,$varname) {
 				$isbd=$aut->isbd_entry;
 				break;
 			case 2:
-				$isbd=categories::listAncestorNames($id,$lang);
+				if ($field["OPTIONS"][0]["CATEG_SHOW"]["0"]["value"]==1) {
+					$isbd=categories::getLibelle($id,$lang);
+				} else {
+					$isbd=categories::listAncestorNames($id,$lang);
+				}
 				//print $isbd;
 				break;
 			case 3:
@@ -325,14 +333,14 @@ function chk_query_auth_empr($field,&$check_message) {
 }
 
 // affichage de l'autorité 
-function val_query_auth_empr($field) {
+function val_query_auth_empr($field,$val) {
 	global $lang,$pmb_perso_sep,$charset;
 	
 	$name=$field[NAME];
 	$options=$field[OPTIONS][0];
 	$isbd_s=array();
-	if(!$field[VALUES])return "";
-	foreach($field[VALUES] as $id){
+	if(!$val)return "";
+	foreach($val as $id){
 		if($id)
 		switch($field["OPTIONS"][0]["DATA_TYPE"]["0"]["value"]) {
 			case 1:// auteur
@@ -340,7 +348,11 @@ function val_query_auth_empr($field) {
 				$isbd_s[]=html_entity_decode($aut->isbd_entry,ENT_QUOTES, $charset);
 			break;
 			case 2:// categories
-				$isbd_s[]=html_entity_decode(categories::listAncestorNames($id,$lang),ENT_QUOTES, $charset);
+				if ($field["OPTIONS"][0]["CATEG_SHOW"]["0"]["value"]==1) {
+					$isbd_s[]=html_entity_decode(categories::getLibelle($id,$lang),ENT_QUOTES, $charset);
+				} else {
+					$isbd_s[]=html_entity_decode(categories::listAncestorNames($id,$lang),ENT_QUOTES, $charset);
+				}
 			break;
 			case 3:// Editeur
 				$aut = new editeur($id);
@@ -424,11 +436,13 @@ function aff_date_box_empr($field,&$check_scripts) {
 	global $charset;
 	global $msg;
 	global $base_path;
-	
-	$values=$field[VALUES];
-	$d=explode("-",$values[0]);
-	
+	$values = ($field['VALUES'] ? $field['VALUES'] : array(""));
 	$options=$field[OPTIONS][0];
+	$afield_name = $field["ID"];
+	$count = 0;
+	$ret = "";
+	foreach ($values as $value) {
+		$d=explode("-",$value);
 	
 	if ((!@checkdate($d[1],$d[2],$d[0]))&&(!$options["DEFAULT_TODAY"][0]["value"])) {
 		$val=date("Y-m-d",time());
@@ -438,11 +452,66 @@ function aff_date_box_empr($field,&$check_scripts) {
 		$val="";
 	} else {
 		$val_popup=$d[0].$d[1].$d[2];
-		$val=$values[0];
+			$val=$value;
+		}
+		$ret .= "<div>
+					<input type='hidden' id='".$field[NAME]."_val_".$count."' name='".$field[NAME]."[]' value='$val' />
+					<input class='bouton' type='button' name='".$field[NAME]."_lib_".$count."' value='".($val_popup?formatdate($val_popup):htmlentities($msg["parperso_nodate"],ENT_QUOTES,$charset))."' onClick=\"openPopUp('".$base_path."/select.php?what=calendrier&caller='+this.form.name+'&date_caller=".$val_popup."&param1=".$field[NAME]."_val_".$count."&param2=".$field[NAME]."_lib_".$count."&auto_submit=NO&date_anterieure=YES', 'date_".$field[NAME]."', 250, 300, -2, -2, 'toolbar=no, dependent=yes, resizable=yes')\" />&nbsp;
+					<input class='bouton' type='button' value='X' onClick='this.form.elements[\"".$field[NAME]."_lib_".$count."\"].value=\"".htmlentities($msg["parperso_nodate"],ENT_QUOTES,$charset)."\"; document.getElementById(\"".$field[NAME]."_val_".$count."\").value=\"\"; '/>";
+		if ($options[REPEATABLE][0][value] && !$count)
+			$ret .= '<input class="bouton" type="button" value="+" onclick="add_custom_date_box_(\''.$afield_name.'\', \''.addslashes($field[NAME]).'\',\''.(!$options["DEFAULT_TODAY"][0]["value"] ? formatdate(date("Ymd",time())).'\',\''.date("Y-m-d",time()) : '').'\')">';
+		$ret .= '</div>';
+		$count++;
 	}
-	$ret="<input type='hidden' name='".$field[NAME]."[]' value='$val' />
-				<input class='bouton' type='button' name='".$field[NAME]."_lib' value='".($val_popup?formatdate($val_popup):htmlentities($msg["parperso_nodate"],ENT_QUOTES,$charset))."' onClick=\"openPopUp('".$base_path."/select.php?what=calendrier&caller='+this.form.name+'&date_caller=".$val_popup."&param1=".$field[NAME]."[]&param2=".$field[NAME]."_lib&auto_submit=NO&date_anterieure=YES', 'date_".$field[NAME]."', 250, 300, -2, -2, 'toolbar=no, dependent=yes, resizable=yes')\" />&nbsp;
-				<input class='bouton' type='button' value='X' onClick='this.form.elements[\"".$field[NAME]."_lib\"].value=\"".htmlentities($msg["parperso_nodate"],ENT_QUOTES,$charset)."\"; this.form.elements[\"".$field[NAME]."[]\"].value=\"\"; '/>";
+	if ($options[REPEATABLE][0][value]) {
+		$ret .= '<input id="customfield_date_box_'.$afield_name.'" type="hidden" name="customfield_date_box_'.$afield_name.'" value="'.$count.'">';
+		$ret .= '<div id="spaceformorecustomfielddatebox_'.$afield_name.'"></div>';
+		$ret .= "<script>
+			function add_custom_date_box_(field_id, field_name, value, value_popup) {
+				var count = document.getElementById('customfield_date_box_'+field_id).value;
+				
+				var val = document.createElement('input');
+				val.setAttribute('name', field_name + '[]');
+				val.setAttribute('id', field_name + '_val_' + count);
+		        val.setAttribute('type','hidden');
+				if (value) {
+		        	val.setAttribute('value',value_popup);
+				} else {
+					val.setAttribute('value','');
+				}
+				
+				var lib = document.createElement('input');
+		        lib.setAttribute('name',field_name + '_lib_' + count);
+		        lib.setAttribute('class','bouton');
+		        lib.setAttribute('type','button');
+				if (value_popup) {
+		        	lib.setAttribute('value',value);
+				} else {
+					lib.setAttribute('value','".htmlentities($msg["parperso_nodate"],ENT_QUOTES,$charset)."');
+				}
+				lib.addEventListener('click', function() {
+					openPopUp('".$base_path."/select.php?what=calendrier&caller='+this.form.name+'&date_caller=' + value_popup + '&param1=' + field_name + '_val_' + count + '&param2=' + field_name + '_lib_' + count + '&auto_submit=NO&date_anterieure=YES', 'date_' + field_name, 250, 300, -2, -2, 'toolbar=no, dependent=yes, resizable=yes');
+				}, false);
+				
+				var del = document.createElement('input');
+				del.setAttribute('type', 'button');
+		        del.setAttribute('class','bouton');
+		        del.setAttribute('value','X');
+				del.addEventListener('click', function() {
+					this.form.elements[field_name + \"_lib_\" + count].value=\"".htmlentities($msg["parperso_nodate"],ENT_QUOTES,$charset)."\";
+					document.getElementById(field_name + '_val_' + count).value=\"\"; 
+				}, false);
+				
+				var br = document.createElement('br');
+				
+				document.getElementById('spaceformorecustomfielddatebox_'+field_id).appendChild(val);
+				document.getElementById('spaceformorecustomfielddatebox_'+field_id).appendChild(lib);
+				document.getElementById('spaceformorecustomfielddatebox_'+field_id).appendChild(del);
+				document.getElementById('spaceformorecustomfielddatebox_'+field_id).appendChild(br);
+				document.getElementById('customfield_date_box_'+field_id).value = document.getElementById('customfield_date_box_'+field_id).value * 1 + 1;
+			}
+		</script>";
+	}
 	if ($field[MANDATORY]==1) {
 		$caller = get_form_name();
 		$check_scripts.="if (document.forms[\"".$caller."\"].elements[\"".$field[NAME]."[]\"].value==\"\") return cancel_submit(\"".sprintf($msg["parperso_field_is_needed"],$field[ALIAS])."\");\n";
@@ -484,15 +553,22 @@ function chk_date_box_empr($field,&$check_message) {
 }
 
 function val_date_box_empr($field,$value) {
-	global $charset;
+	global $charset, $pmb_perso_sep;
 
-	if ($value[0]=="0000-00-00") $value[0]="";
-
-	if ($value) $value=format_output($field,$value);
-	
-	return $value[0];
+	$return = "";
+	$format_value = format_output($field,$value);
+	if (!$value) $value = array();
+	foreach ($value as $key => $val) {
+		if ($val == "0000-00-00") $val = "";
+		if ($val) {
+			if ($return) $return .= $pmb_perso_sep;
+			$return .= $format_value[$key];
+		}
+	}
+	return $return;
 }
 
+	
 function aff_text_empr($field,&$check_scripts) {
 	global $charset;
 	global $msg;
@@ -524,7 +600,7 @@ function aff_text_empr($field,&$check_scripts) {
 		        f_aut0.setAttribute('name',field_name+'[]');
 		        f_aut0.setAttribute('type','text');
 		        f_aut0.setAttribute('size',field_size);
-		        f_aut0.setAttribute('maxlen',field_size);
+		        f_aut0.setAttribute('maxlength',field_maxlen);
 		        f_aut0.setAttribute('value','');
 		        space=document.createElement('br');
 				document.getElementById('spaceformorecustomfieldtext_'+field_id).appendChild(f_aut0);
@@ -1277,6 +1353,159 @@ function val_query_list_empr($field,$val) {
 	if ($val_c=="") $val_c=array();
 	$val_=implode($pmb_perso_sep,$val_c);
 	return $val_;
+}
+
+function aff_text_i18n_empr($field,&$check_scripts) {
+	global $charset, $base_path;
+	global $msg, $langue_doc, $value_deflt_lang;
+	
+	if (!count($langue_doc)) {
+		$langue_doc = new marc_list('lang');
+		$langue_doc = $langue_doc->table;
+	}
+
+	$options=$field['OPTIONS'][0];
+	$values=$field['VALUES'];
+	$afield_name = $field["ID"];
+	$ret = "";
+	$count = 0;
+	if (!$values) {
+		$values = array("");
+	}
+	foreach ($values as $value) {
+		$exploded_value = explode("|||", $value);
+		$ret.="<input id=\"".$field['NAME']."_".$count."\" type=\"text\" size=\"".$options['SIZE'][0]['value']."\" maxlength=\"".$options['MAXSIZE'][0]['value']."\" name=\"".$field['NAME']."[".$count."]\" value=\"".htmlentities($exploded_value[0],ENT_QUOTES,$charset)."\">";
+		$ret.="<input id=\"".$field['NAME']."_lang_".$count."\" class=\"saisie-10emr\" type=\"text\" value=\"".($exploded_value[1] ? htmlentities($langue_doc[$exploded_value[1]],ENT_QUOTES,$charset) : htmlentities($langue_doc[$value_deflt_lang],ENT_QUOTES,$charset))."\" autfield=\"".$field['NAME']."_lang_code_".$count."\" completion=\"langue\" autocomplete=\"off\">";
+		$ret.="<input class=\"bouton\" type=\"button\" value=\"...\" onClick=\"openPopUp('".$base_path."/select.php?what=lang&caller='+this.form.name+'&p1=".$field['NAME']."_lang_code_".$count."&p2=".$field['NAME']."_lang_".$count."', 'select_lang', 500, 400, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\">";
+		$ret.="<input class=\"bouton\" type=\"button\" onclick=\"this.form.".$field['NAME']."_lang_".$count.".value=''; this.form.".$field['NAME']."_lang_code_".$count.".value=''; \" value=\"X\">";
+		$ret.="<input id=\"".$field['NAME']."_lang_code_".$count."\" type=\"hidden\" value=\"".($exploded_value[1] ? htmlentities($exploded_value[1], ENT_QUOTES, $charset) : htmlentities($value_deflt_lang, ENT_QUOTES, $charset))."\" name=\"".$field['NAME']."_langs[".$count."]\">"; 
+		if ($options['REPEATABLE'][0]['value'] && !$count)
+			$ret.='<input class="bouton" type="button" value="+" onclick="add_custom_text_i18n_(\''.$afield_name.'\', \''.addslashes($field['NAME']).'\', \''.$options['SIZE'][0]['value'].'\', \''.$options['MAXSIZE'][0]['value'].'\')">';
+		$ret.="<br />";
+		$count++;
+	}
+	if ($options['REPEATABLE'][0]['value']) {
+		$ret.='<input id="customfield_text_i18n_'.$afield_name.'" type="hidden" name="customfield_text_'.$afield_name.'" value="'.$count.'">';
+		$ret .= '<div id="spaceformorecustomfieldtexti18n_'.$afield_name.'"></div>';
+		$ret.="<script>
+			function add_custom_text_i18n_(field_id, field_name, field_size, field_maxlen) {
+		        var count = document.getElementById('customfield_text_i18n_'+field_id).value;
+				var text = document.createElement('input');
+				text.setAttribute('id', field_name + '_' + count);
+		        text.setAttribute('name',field_name+'[' + count + ']');
+		        text.setAttribute('type','text');
+		        text.setAttribute('value','');
+		        text.setAttribute('size',field_size);
+		        text.setAttribute('maxlength',field_maxlen);
+				
+				var lang = document.createElement('input');
+				lang.setAttribute('id', field_name + '_lang_' + count);
+				lang.setAttribute('class', 'saisie-10emr');
+				lang.setAttribute('type', 'text');
+				lang.setAttribute('value', '');
+				lang.setAttribute('autfield', field_name + '_lang_code_' + count);
+				lang.setAttribute('completion', 'langue');
+				lang.setAttribute('autocomplete', 'off');
+				
+				var select = document.createElement('input');
+				select.setAttribute('class', 'bouton');
+				select.setAttribute('type', 'button');
+				select.setAttribute('value', '...');
+				select.addEventListener('click', function(){
+					openPopUp('".$base_path."/select.php?what=lang&caller='+this.form.name+'&p1=' + field_name + '_lang_code_' + count + '&p2=' + field_name + '_lang_' + count, 'select_lang', 500, 400, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes');
+				}, false);
+				
+				var del = document.createElement('input');
+				del.setAttribute('class', 'bouton');
+				del.setAttribute('type', 'button');
+				del.setAttribute('value', 'X');
+				del.addEventListener('click', function(){
+					document.getElementById(field_name + '_lang_' + count).value=''; document.getElementById(field_name + '_lang_code_' + count).value='';
+				}, false);
+							
+				var lang_code = document.createElement('input');
+				lang_code.setAttribute('id', field_name + '_lang_code_' + count);
+				lang_code.setAttribute('type', 'hidden');
+				lang_code.setAttribute('value', '');
+				lang_code.setAttribute('name', field_name + '_langs[' + count + ']');
+				
+		        space=document.createElement('br');
+				
+				document.getElementById('spaceformorecustomfieldtexti18n_'+field_id).appendChild(text);
+				document.getElementById('spaceformorecustomfieldtexti18n_'+field_id).appendChild(lang);
+				document.getElementById('spaceformorecustomfieldtexti18n_'+field_id).appendChild(select);
+				document.getElementById('spaceformorecustomfieldtexti18n_'+field_id).appendChild(del);
+				document.getElementById('spaceformorecustomfieldtexti18n_'+field_id).appendChild(lang_code);
+				document.getElementById('spaceformorecustomfieldtexti18n_'+field_id).appendChild(space);
+				
+				document.getElementById('customfield_text_i18n_'+field_id).value = document.getElementById('customfield_text_i18n_'+field_id).value * 1 + 1;
+			}
+		</script>";
+	}
+	if ($field[MANDATORY]==1) {
+		$caller = get_form_name();
+		$check_scripts.="if (document.forms[\"".$caller."\"].elements[\"".$field[NAME]."[]\"].value==\"\") return cancel_submit(\"".sprintf($msg["parperso_field_is_needed"],$field[ALIAS])."\");\n";
+	}
+	return $ret;
+}
+
+function aff_text_i18n_empr_search($field,&$check_scripts,$varname) {
+	global $charset;
+	global $msg;
+
+	$options=$field[OPTIONS][0];
+	$values=$field[VALUES];
+	$ret="<input id=\"".$varname."\" type=\"text\" size=\"".$options[SIZE][0][value]."\" name=\"".$varname."[]\" value=\"".htmlentities($values[0],ENT_QUOTES,$charset)."\">";
+	return $ret;
+}
+
+function chk_text_i18n_empr($field,&$check_message) {
+	global $value_deflt_lang;
+	$name=$field[NAME];
+	global $$name, ${$name."_langs"};
+	$val=$$name;
+	$langs = (${$name."_langs"});
+	$final_value = array();
+	foreach ($val as $key => $value) {
+		if ($value) {
+			$final_value[] = $value."|||".($langs[$key] ? $langs[$key] : $value_deflt_lang);
+		}
+	}
+
+	$check_datatype_message="";
+	$val_1=chk_datatype($field,$final_value,$check_datatype_message);
+	if ($check_datatype_message) {
+		$check_message=$check_datatype_message;
+		return 0;
+	}
+
+	$$name=$val_1;
+	return 1;
+}
+
+function val_text_i18n_empr($field,$value) {
+	global $charset,$pmb_perso_sep;
+	global $langue_doc, $value_deflt_lang;
+	
+	if (!count($langue_doc)) {
+		$langue_doc = new marc_list('lang');
+		$langue_doc = $langue_doc->table;
+	}
+
+	$value=format_output($field,$value);
+	if (!$value) $value=array();
+	
+	$formatted_values = array();
+	foreach ($value as $val) {
+		$exploded_val = explode("|||", $val);
+		$formatted_values[] = $exploded_val[0]." (".($exploded_val[1] ? $langue_doc[$exploded_val[1]] : $langue_doc[$value_deflt_lang]).")";
+	}
+
+	if($field["OPTIONS"][0]["ISHTML"][0]["value"]){
+		return array("ishtml" => true, "value"=>implode($pmb_perso_sep,$formatted_values), "withoutHTML" =>implode($pmb_perso_sep,$formatted_values));
+	}else{
+		return implode($pmb_perso_sep,$formatted_values);
+	}
 }
 
 function aff_filter_comment_empr($field,$varname,$multiple) {
@@ -2322,6 +2551,9 @@ function get_form_name() {
 			break;
 		case "pret":
 			$caller="pret_doc";
+			break;
+		case "demandes":
+			$caller="modif_dmde";
 			break;
 	}
 	return $caller;

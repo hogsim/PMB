@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titre_uniforme_see.inc.php,v 1.25 2015-07-09 10:21:31 mbertin Exp $
+// $Id: titre_uniforme_see.inc.php,v 1.25.2.2 2015-10-16 12:25:16 jpermanne Exp $
 if (stristr ( $_SERVER ['REQUEST_URI'], ".inc.php" ))
 	die ( "no access" );
 	
@@ -17,7 +17,7 @@ if ($id) {
 	
 	// LISTE DE NOTICES ASSOCIEES
 	// affichage des notices associées
-	$recordslist = "<h3>".$msg["doc_titre_uniforme_title"]."</h3>";
+	$recordslist = "<h3><span class=\"aut_details_liste_titre\">".$msg["doc_titre_uniforme_title"]."</span></h3>";
 	// droits d'acces emprunteur/notice
 	$acces_j = '';
 	if ($gestion_acces_active == 1 && $gestion_acces_empr_notice == 1) {
@@ -232,5 +232,11 @@ if ($id) {
 				});
 			</script>";
 		}
+		//Formulaire "FACTICE" pour l'application du comparateur et du filetre multiple...
+		$str.= '
+<form name="form_values" style="display:none;" method="post" action="?lvl=more_results&mode=extended">
+	<input type="hidden" name="from_see" value="1" />
+	'.facette_search_compare::form_write_facette_compare().'
+</form>';
 	}
 }

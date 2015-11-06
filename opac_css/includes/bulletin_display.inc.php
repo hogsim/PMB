@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bulletin_display.inc.php,v 1.56 2015-06-05 14:55:39 apetithomme Exp $
+// $Id: bulletin_display.inc.php,v 1.56.2.3 2015-09-24 15:48:15 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -102,8 +102,8 @@ while(($obj=pmb_mysql_fetch_array($resdep))) {
 						if(!$notice->eformat) $info_bulle=$msg["open_link_url_notice"];
 						else $info_bulle=$notice->eformat;
 						// ajout du lien pour les ressources électroniques
-						$res_print_link .= "&nbsp;<span class='notice_link'><a href=\"".$notice->lien."\" target=\"__LINK__\">";
-						$res_print_link .= "<img src=\"".$opac_url_base."images/globe.gif\" border=\"0\" align=\"middle\" hspace=\"3\"";
+						$res_print_link .= "&nbsp;<span class='notice_link'><a href=\"".$notice->lien."\" target=\"__LINK__\" type=\"external_url_notice\">";
+						$res_print_link .= "<img src=\"".get_url_icon('globe.gif', 1)."\" border=\"0\" align=\"middle\" hspace=\"3\"";
 						$res_print_link .= " alt=\"";
 						$res_print_link .= $info_bulle;
 						$res_print_link .= "\" title=\"";
@@ -169,7 +169,7 @@ while(($obj=pmb_mysql_fetch_array($resdep))) {
 					}else{
 						$res_print_docnum= "&nbsp;<a href=\"./doc_num.php?explnum_id=".$explnumrow->explnum_id."\" target=\"__LINK__\">";
 					}
-					$res_print_docnum .= "<img src=\"./images/globe_orange.png\" ";
+					$res_print_docnum .= "<img src=\"".get_url_icon("globe_orange.png")."\" ";
 					$res_print_docnum .= " alt=\"";
 					$res_print_docnum .= htmlentities($info_bulle,ENT_QUOTES,$charset);
 					$res_print_docnum .= "\" title=\"";
@@ -178,7 +178,7 @@ while(($obj=pmb_mysql_fetch_array($resdep))) {
 					$res_print_docnum .= "</a>";
 				}elseif($nb_docnum > 1){
 					$info_bulle=$msg["info_docs_num_notice"];
-					$res_print_docnum = "&nbsp;<a href='#docnum'><img src=\"./images/globe_rouge.png\" alt=\"".htmlentities($info_bulle,ENT_QUOTES,$charset)."\" \" title=\"".htmlentities($info_bulle,ENT_QUOTES,$charset)."\"/></a>";
+					$res_print_docnum = "&nbsp;<a href='#docnum'><img src=\"".get_url_icon("globe_rouge.png")."\" alt=\"".htmlentities($info_bulle,ENT_QUOTES,$charset)."\" \" title=\"".htmlentities($info_bulle,ENT_QUOTES,$charset)."\"/></a>";
 				}
 			}
 			
@@ -203,7 +203,7 @@ while(($obj=pmb_mysql_fetch_array($resdep))) {
 			
 			if ($opac_notices_format != AFF_ETA_NOTICES_TEMPLATE_DJANGO) {
 				//$res_print .= "<h3><img src=./images/$icon /> ".$notice3->print_resume(1,$css)."."." <b>".$obj["bulletin_numero"]."</b>".($nb_docnum ? "&nbsp;<a href='#docnum'>".($nb_docnum > 1 ? "<img src='./images/globe_rouge.png' />" : "<img src='./images/globe_orange.png' />")."</a>" : "")."</h3>\n";
-				$res_print .= "<h3><img src=./images/$icon /> ".$notice3->print_resume(1,$css)."."." <b>".$obj["bulletin_numero"]."</b>";
+				$res_print .= "<h3><img src='".get_url_icon($icon)."' /> ".$notice3->print_resume(1,$css)."."." <b>".$obj["bulletin_numero"]."</b>";
 				if($res_print_link){
 					$res_print .=$res_print_link;
 				}
@@ -384,7 +384,12 @@ while(($obj=pmb_mysql_fetch_array($resdep))) {
 					}
 					
 					// On envoie le tout au template
-					$h2o = new H2o($include_path."/templates/record/".$opac_notices_format_django_directory."/bulletin_without_record_extended_display.tpl.html");
+					if (file_exists($include_path."/templates/record/".$opac_notices_format_django_directory."/bulletin_without_record_extended_display.tpl.html")) {
+						$template = $include_path."/templates/record/".$opac_notices_format_django_directory."/bulletin_without_record_extended_display.tpl.html";
+					} else {
+						$template = $include_path."/templates/record/common/bulletin_without_record_extended_display.tpl.html";
+					}
+					$h2o = new H2o($template);
 					
 					print $h2o->render(array('bulletin' => $obj, 'parent' => $notice3, 'liens_opac' => $liens_opac, 'resas_datas' => $resas_datas));
 				}

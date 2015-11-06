@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: record_display_modes.class.php,v 1.3 2015-05-12 08:35:38 abacarisse Exp $
+// $Id: record_display_modes.class.php,v 1.3.2.3 2015-09-28 15:23:35 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -135,7 +135,7 @@ class record_display_modes {
 	 * @return unknown|boolean
 	 */
 	public function get_aff_function($mode_id){
-		global $include_path;
+		global $class_path,$include_path;
 		
 		$mode=$this->get_mode($mode_id);
 		if($aff_notice_fonction=$mode['FUNCTION'][0]['SRC']){
@@ -183,6 +183,21 @@ class record_display_modes {
 	}
 	
 	/**
+	 * Retourne le répertoire de template à utiliser dans le cas du type django
+	 * @param int $mode_id
+	 * @return string
+	 */
+	public function get_template_directory($mode_id){
+		$mode = $this->get_mode($mode_id);
+		$template_mode = $mode['TEMPLATE'][0]['DIRECTORY'];
+		if ($template_mode) {
+			return $template_mode;
+		} else {
+			return "";
+		}
+	}
+	
+	/**
 	 * Retourne les informations du layout
 	 * 
 	 * @param unknown $mode_id
@@ -215,6 +230,7 @@ class record_display_modes {
 	public function show_mode_selector(){
 		
 		$current_mode=$this->get_current_mode();
+		$nb_modes = 0;
 		
 		$html = "<ul class='mode_selector_list'>";
 		//le mode par défaut 
@@ -224,6 +240,7 @@ class record_display_modes {
 				$selected='_selected';
 			}
 			$html.= "<li class='mode_selector$selected' onclick='switch_mode(0)'><img src='".$this->get_icon_url($this->modes['NOMODE'][0]['ICON'])."' alt='".$this->modes['NOMODE'][0]['NAME']."'/></li>";
+			$nb_modes++;
 		}
 		
 		foreach($this->modes['MODE'] as $mode){
@@ -234,8 +251,14 @@ class record_display_modes {
 					$selected='_selected';
 				}
 				$html.= "<li class='mode_selector$selected' onclick='switch_mode(".$mode['ID'].")' $selected><img src='".$this->get_icon_url($mode['ICON'])."' alt='".$mode['NAME']."'/></li>";
+				$nb_modes++;
 			}
 		}
+		// Si on n'a pas ou qu'un seul mode disponible, ça ne sert à rien d'aller plus loin
+		if ($nb_modes <= 1) {
+			return '';
+		}
+		
 		$html.= "</ul>";
 		
 		$html.="
@@ -308,5 +331,18 @@ class record_display_modes {
 			$src=$base_path.'/images/'.$name;
 		}
 		return $src;
+	}
+	
+	/**
+	 * renseigne l'affichage ou non de la navigation
+	 * @param int $mode_id
+	 */
+	public function is_nav_displayed($mode_id) {
+		$mode=$this->get_mode($mode_id);
+		$layout=$mode['LAYOUT'][0];
+		if($layout['NAV'] == 'no'){
+			return false;
+		}
+		return true;
 	}
 }

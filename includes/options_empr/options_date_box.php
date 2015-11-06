@@ -2,7 +2,7 @@
  // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: options_date_box.php,v 1.8 2008-11-27 08:14:46 kantin Exp $
+// $Id: options_date_box.php,v 1.8.18.1 2015-10-05 08:44:59 apetithomme Exp $
 
 //Gestion des options de type text
 $base_path = "../..";
@@ -17,6 +17,7 @@ $options = stripslashes($options);
 if ($first == 1) {
 	$param["FOR"]="date_box";
 	if ($DEFAULT_TODAY) $param["DEFAULT_TODAY"][0]["value"]="yes";
+	$param['REPEATABLE'][0]['value'] = $REPEATABLE ? 1 : 0;
 	$options = array_to_xml($param, "OPTIONS");
 ?> 
 <script>
@@ -47,6 +48,9 @@ self.close();
 	<!-- Formulaire -->
 	<table class='table-no-border' width=100%>
 	<tr><td><?php echo $msg["parperso_default_today"]; ?> </td><td><input type="checkbox" name="DEFAULT_TODAY" value="yes" <?php if ($param["DEFAULT_TODAY"][0]["value"]=="yes") echo "checked"; ?>></td></tr>
+	<tr><td><?php  echo $msg[persofield_textrepeat];
+	?> </td><td><input type="checkbox" name="REPEATABLE" <?php  echo $param[REPEATABLE][0][value] ? ' checked ' : "";
+	?>></td></tr>
 	</table>
 	</div>
 	<input class="bouton" type="submit" value="<?php  echo $msg[77];

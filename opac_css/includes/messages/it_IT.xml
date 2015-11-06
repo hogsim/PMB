@@ -2,7 +2,7 @@
 <!DOCTYPE XMLlist SYSTEM "../XMLlist.dtd" [<!ENTITY nbsp "&amp;nbsp;">]>
 
 <!-- messaggi localizzati in italiano per l'OPAC di PMB
-$Id: it_IT.xml,v 1.302 2015-07-17 14:04:46 jpermanne Exp $ -->
+$Id: it_IT.xml,v 1.302.2.6 2015-10-09 13:15:17 dgoron Exp $ -->
 
 <XMLlist>
 <entry code="not_allowed">Operazione non autorizzata</entry>
@@ -1722,4 +1722,45 @@ $Id: it_IT.xml,v 1.302 2015-07-17 14:04:46 jpermanne Exp $ -->
 <entry code="show_cart_uncheck_all">Tout décocher</entry>
 
 <entry code="avis_aucun_popup">Aucun avis sur cette notice.</entry>
+
+<entry code="aut_link_author">[Auteur] %1s</entry>
+<entry code="aut_link_categ">[Catégorie] %1s</entry>
+<entry code="aut_link_publisher">[Editeur] %1s</entry>
+<entry code="aut_link_coll">[Collection] %1s</entry>
+<entry code="aut_link_subcoll">[Sous collection] %1s</entry>
+<entry code="aut_link_serie">[Série] %1s</entry>
+<entry code="aut_link_tu">[Titre uniforme] %1s</entry>
+<entry code="aut_link_indexint">[Indexation décimale] %1s</entry>
+
+<entry code="a2z_abt_actif_filter_no_result">Aucun abonnement actif</entry>
+
+<entry code="opac_notice_vignette_alt">vignette</entry>
+
+<entry code="bbcode_button_label_b"> B </entry>
+<entry code="bbcode_button_label_i"> I </entry>
+<entry code="bbcode_button_label_u"> U </entry>
+<entry code="bbcode_button_label_http"> http:// </entry>
+<entry code="bbcode_button_label_img"> Img </entry>
+<entry code="bbcode_button_label_code"> Code </entry>
+<entry code="bbcode_button_label_quote"> Quote </entry>
+<entry code="bbcode_button_label_red"> Red </entry>
+<entry code="bbcode_button_label_list"> List </entry>
+
+<entry code="short_january">jan</entry>
+<entry code="short_february">fév</entry>
+<entry code="short_march">mars</entry>
+<entry code="short_april">avr</entry>
+<entry code="short_mai">mai</entry>
+<entry code="short_june">juin</entry>
+<entry code="short_july">juil</entry>
+<entry code="short_august">août</entry>
+<entry code="short_september">sept</entry>
+<entry code="short_october">oct</entry>
+<entry code="short_november">nov</entry>
+<entry code="short_december">déc</entry>
+
+<entry code="show_history_check_all">Tout cocher</entry>
+<entry code="show_history_uncheck_all">Tout décocher</entry>
+<entry code="show_sort_check_all">Tout cocher</entry>
+<entry code="show_sort_uncheck_all">Tout décocher</entry>
 </XMLlist>

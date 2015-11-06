@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: avis.tpl.php,v 1.8 2015-01-12 11:21:59 jpermanne Exp $
+// $Id: avis.tpl.php,v 1.8.4.2 2015-09-28 13:14:57 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -32,13 +32,15 @@ $avis_tpl_form = "
 					<input type='text' name='sujet' size='50'/>
 					</div>
 				<div style='padding-top: 4px;'>
-					<input value=' B ' name='B' onclick=\"insert_text('commentaire','[b]','[/b]')\" type='button' class='bouton'> 
-					<input value=' I ' name='I' onclick=\"insert_text('commentaire','[i]','[/i]')\" type='button' class='bouton'>
-					<input value=' U ' name='U' onclick=\"insert_text('commentaire','[u]','[/u]')\" type='button' class='bouton'>
-					<input value='http://' name='Url' onclick=\"insert_text('commentaire','[url]','[/url]')\" type='button' class='bouton'>
-					<input value='Img' name='Img' onclick=\"insert_text('commentaire','[img]','[/img]')\" type='button' class='bouton'>
-					<input value='Code' name='Code' onclick=\"insert_text('commentaire','[code]','[/code]')\" type='button' class='bouton'>
-					<input value='Quote' name='Quote' onclick=\"insert_text('commentaire','[quote]','[/quote]')\" type='button' class='bouton'>
+					<input value='".$msg["bbcode_button_label_b"]."' name='B' onclick=\"insert_text('commentaire','[b]','[/b]')\" type='button' class='bouton'> 
+					<input value='".$msg["bbcode_button_label_i"]."' name='I' onclick=\"insert_text('commentaire','[i]','[/i]')\" type='button' class='bouton'>
+					<input value='".$msg["bbcode_button_label_u"]."' name='U' onclick=\"insert_text('commentaire','[u]','[/u]')\" type='button' class='bouton'>
+					<input value='".$msg["bbcode_button_label_http"]."' name='Url' onclick=\"insert_text('commentaire','[url]','[/url]')\" type='button' class='bouton'>
+					<input value='".$msg["bbcode_button_label_img"]."' name='Img' onclick=\"insert_text('commentaire','[img]','[/img]')\" type='button' class='bouton'>
+					<input value='".$msg["bbcode_button_label_code"]."' name='Code' onclick=\"insert_text('commentaire','[code]','[/code]')\" type='button' class='bouton'>
+					<input value='".$msg["bbcode_button_label_quote"]."' name='Quote' onclick=\"insert_text('commentaire','[quote]','[/quote]')\" type='button' class='bouton'>
+					<input value='".$msg["bbcode_button_label_red"]."' name='Red' onclick=\"insert_text('commentaire','[red]','[/red]')\" type='button' class='bouton'>
+					<input value='".$msg["bbcode_button_label_list"]."' name='List' onclick=\"insert_text('commentaire','[li]','[/li]')\" type='button' class='bouton'>
 				</div>		
 				<div class='row'><label>".$msg[avis_avis]."</label><br />
 					<textarea id='commentaire' name='commentaire' cols='50' rows='4'></textarea>
@@ -146,13 +148,15 @@ $avis_tpl_form1 = "
 			<input type='text' name='sujet' id='edit_sujet_!!notice_id!!' size='50'/>
 		</div>
 		<div class='row'><label>".$msg[avis_avis]."</label><br />
-			<input value=' B ' name='B' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[b]','[/b]')\" type='button' class='bouton'> 
-			<input value=' I ' name='I' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[i]','[/i]')\" type='button' class='bouton'>
-			<input value=' U ' name='U' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[u]','[/u]')\" type='button' class='bouton'>
-			<input value='http://' name='Url' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[url]','[/url]')\" type='button' class='bouton'>
-			<input value='Img' name='Img' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[img]','[/img]')\" type='button' class='bouton'>
-			<input value='Code' name='Code' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[code]','[/code]')\" type='button' class='bouton'>
-			<input value='Quote' name='Quote' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[quote]','[/quote]')\" type='button' class='bouton'>
+			<input value='".$msg["bbcode_button_label_b"]."' name='B' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[b]','[/b]')\" type='button' class='bouton'> 
+			<input value='".$msg["bbcode_button_label_i"]."' name='I' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[i]','[/i]')\" type='button' class='bouton'>
+			<input value='".$msg["bbcode_button_label_u"]."' name='U' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[u]','[/u]')\" type='button' class='bouton'>
+			<input value='".$msg["bbcode_button_label_http"]."' name='Url' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[url]','[/url]')\" type='button' class='bouton'>
+			<input value='".$msg["bbcode_button_label_img"]."' name='Img' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[img]','[/img]')\" type='button' class='bouton'>
+			<input value='".$msg["bbcode_button_label_code"]."' name='Code' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[code]','[/code]')\" type='button' class='bouton'>
+			<input value='".$msg["bbcode_button_label_quote"]."' name='Quote' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[quote]','[/quote]')\" type='button' class='bouton'>
+			<input value='".$msg["bbcode_button_label_red"]."' name='Red' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[red]','[/red]')\" type='button' class='bouton'>
+			<input value='".$msg["bbcode_button_label_list"]."' name='List' onclick=\"insert_text('edit_commentaire_!!notice_id!!','[li]','[/li]')\" type='button' class='bouton'>
 		</div>		
 		<div class='row'>
 			<textarea name='commentaire' id='edit_commentaire_!!notice_id!!' cols='60' rows='4'></textarea>

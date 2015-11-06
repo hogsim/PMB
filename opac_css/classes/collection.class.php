@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collection.class.php,v 1.16 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: collection.class.php,v 1.16.4.3 2015-09-28 15:23:44 apetithomme Exp $
 
 // définition de la classe de gestion des collections
 // inclure :
@@ -10,6 +10,8 @@
 
 if ( ! defined( 'COLLECTION_CLASS' ) ) {
   define( 'COLLECTION_CLASS', 1 );
+
+require_once($class_path."/authorities_collection.class.php");
 
 class collection {
 
@@ -86,7 +88,7 @@ function get_primaldatafrom($obj) {
 	$this->collection_web= $obj->collection_web;
 	$this->comment= $obj->collection_comment;
 	if($obj->collection_web) 
-		$this->collection_web_link = " <a href='$obj->collection_web' target=_blank title='".htmlentities($obj->collection_web,ENT_QUOTES,$charset)."' alt='".htmlentities($obj->collection_web,ENT_QUOTES,$charset)."' ><img src='./images/globe.gif' border=0 /></a>";
+		$this->collection_web_link = " <a href='$obj->collection_web' target=_blank title='".htmlentities($obj->collection_web,ENT_QUOTES,$charset)."' alt='".htmlentities($obj->collection_web,ENT_QUOTES,$charset)."' type='external_url_autor' ><img src='".get_url_icon("globe.gif")."' border=0 /></a>";
 	else 
 		$this->collection_web_link = "" ;
 }
@@ -95,7 +97,7 @@ function get_primaldatafrom($obj) {
 //  get_otherdata() : calcul des données n'appartenant pas à la table
 // ---------------------------------------------------------------
 function get_otherdata() {
-	$publisher = new publisher($this->parent);
+	$publisher = authorities_collection::get_authority('publisher', $this->parent);
 	$this->publisher_isbd = $publisher->isbd_entry;
 	$this->publisher_libelle = $publisher->name;
 	$this->isbd_entry = $this->issn ? $this->name.', ISSN '.$this->issn : $this->name;

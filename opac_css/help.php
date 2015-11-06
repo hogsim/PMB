@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: help.php,v 1.12 2015-06-18 12:47:09 jpermanne Exp $
+// $Id: help.php,v 1.12.2.1 2015-09-24 15:48:44 dgoron Exp $
 
 $base_path="./";
 require_once($base_path."/includes/init.inc.php");
@@ -54,7 +54,7 @@ print "	<meta name=\"description\" content=\"Recherches simples dans l'OPAC de P
 
 <body onload=\"window.defaultStatus='pmb : opac';\" id=\"help_popup\" class='popup'>
 <div id='help-container'>
-<p align=right style=\"margin-top:4px;\"><a name='top' ></a><a href='#' onclick=\"self.close();return false\" title=\"".$msg[search_close]."\" alt=\"".$msg[search_close]."\"><img src=\"images/close.gif\" align=\"absmiddle\" border=\"0\"></a></p>
+<p align=right style=\"margin-top:4px;\"><a name='top' ></a><a href='#' onclick=\"self.close();return false\" title=\"".$msg[search_close]."\" alt=\"".$msg[search_close]."\"><img src=\"".get_url_icon('close.gif')."\" align=\"absmiddle\" border=\"0\"></a></p>
 
 ";
 

@@ -1,3 +1,4 @@
+<!-- $Id: record_extended_display.tpl.html,v 1.16.2.4 2015-10-07 15:14:21 apetithomme Exp $ -->
 <div id="noticeNot">
 	<div class="parentNot">
 		<div id="blocNotice_descr">
@@ -10,13 +11,15 @@
 			<!-- div conteneur des enrichissements -->
 			<div id="div_detail{{ record.id }}">
 				<div class="asideContentNot">	
-					<!-- Vignette de la notice -->
-					<div class="vignetteimgNot">
-						<div class="vignetteDocNot">
-							<img class="vignetteNot" src="{% if record.picture_url %}{{ record.picture_url }}{% else %}./styles/common/images/no_image.jpg{% endif %}" />
+					{% if record.picture_url %}
+						<!-- Vignette de la notice -->
+						<div class="vignetteimgNot">
+							<div class="vignetteDocNot">
+								<img class="vignetteNot" src="{{ record.picture_url }}" />
+							</div>
 						</div>
-					</div>
-					{% if global.opac_cart_allow %}
+					{% endif %}
+					{% if record.cart_allow %}
 						<!-- Ajouter au panier -->
 						<div class="onglet_basketNot">
 							<a href="cart_info.php?id={{ record.id }}&amp;header={{ record.tit1 | urlencode }}" target="cart_info" class="img_basketNot"><img src="./includes/templates/record/common/styles/images/basket_blanc.png" border="0" title="{{ msg.record_display_add_to_cart }}" alt="{{ msg.record_display_add_to_cart }}"/>{{ msg.record_display_add_to_cart }}</a>
@@ -24,7 +27,7 @@
 					{% endif %}
 					<!-- Avis sur la notice -->
 					<div class="avisN">
-						<span class="ExtnotCom imgComment"><img class="imgComment" src="../opac_css/styles/common/images/comment_w.png" border="0" alt="Commentaires"/></span><span class="avisN">{{ record.display_avis }}</span>
+						<span class="ExtnotCom imgComment"><img class="imgComment" src="./styles/common/images/comment_w.png" border="0" alt="Commentaires"/></span><span class="avisN">{{ record.display_avis }}</span>
 					</div>
 					<!-- Permalink -->
 					<div class="lienP">
@@ -47,7 +50,7 @@
 								{% if record.serie.id %}
 									<tr>
 										<td class="labelNot">
-											<span>{{ msg.tparent_start }}</span> <!-- Série -->
+											<span>{{ msg.tparent_start }}</span> <!-- Serie -->
 										</td>
 										<td>
 											<span><a href="{{ record.liens_opac.lien_rech_serie | replace '!!id!!' record.serie.id }}">{{ record.serie.name }}</a>, {{ record.tnvol }}</span>
@@ -91,7 +94,7 @@
 								{% if record.publishers.0.isbd_entry %}
 									<tr>
 										<td class="labelNot">
-											<span>{{ msg.editeur_start }}</span> <!-- Edition, Année-->
+											<span>{{ msg.editeur_start }}</span> <!-- Edition, Annee-->
 										</td>
 										<td>
 											<span><a href="{{ record.liens_opac.lien_rech_editeur | replace '!!id!!' record.publishers.0.id }}">{{ record.publishers.0.isbd_entry }}</a>, {{ record.year }}</span>
@@ -118,16 +121,6 @@
 										</td>
 									</tr>
 								{% endif %}
-								{% if record.indexint %}
-									<tr>
-										<td class="labelNot">
-											<span>{{ msg.indexint_start }}</span>
-										</td>
-										<td>
-											<span><a href="{{ record.liens_opac.lien_rech_indexint | replace '!!id!!' record.indexint.indexint_id }}">{{ record.indexint.display }}</a></span>
-										</td>
-									</tr>
-								{% endif %}
 								{% if record.display_size %}
 									<tr>
 										<td class="labelNot">
@@ -138,6 +131,67 @@
 										</td>
 									</tr>
 								{% endif %}
+								{% if record.indexint %}
+									<tr>
+										<td class="labelNot">
+											<span>{{ msg.indexint_start }}</span>
+										</td>
+										<td>
+											<span><a href="{{ record.liens_opac.lien_rech_indexint | replace '!!id!!' record.indexint.indexint_id }}">{{ record.indexint.display }}</a></span>
+										</td>
+									</tr>
+								{% endif %}
+								{% for id_thes,thesaurus in record.categories %}
+									{% if global.opac_thesaurus %}
+										{% if loop.first %}
+											<tr>
+												<td class="labelNot">
+													<span>{{ msg.categories_start }}</span>
+												</td>
+												<td>
+										{% endif %}
+										{% for categorie in thesaurus %}
+											{% if global.opac_categories_categ_in_line %}
+												{% if loop.first %}
+													<p><strong>{{ categorie.object.thes.libelle_thesaurus }}</strong></p>
+												{% else %}
+													{{ global.pmb_keyword_sep }}
+												{% endif %}
+												<span><a href="{{ record.liens_opac.lien_rech_categ | replace '!!id!!' categorie.object.id }}" {% if global.opac_show_infobulles_categ %}title="{{ categorie.object.comment }}"{% endif %}>{{ categorie.format_label }}</a></span>
+											{% else %}
+												<p>[{{ categorie.object.thes.libelle_thesaurus }}] <a href="{{ record.liens_opac.lien_rech_categ | replace '!!id!!' categorie.object.id }}">{{ categorie.object.libelle }}</a></p>
+											{% endif %}
+										{% endfor %}
+										{% if loop.last %}
+												</td>
+											</tr>
+										{% endif %}
+									{% else %}
+										{% if id_thes == global.opac_thesaurus_defaut %}
+											{% if loop.first %}
+											<tr>
+												<td class="labelNot">
+													<span>{{ msg.categories_start }}</span>
+												</td>
+												<td>
+											{% endif %}
+											{% for categorie in thesaurus %}
+												{% if global.opac_categories_categ_in_line %}
+													{% if !loop.first %}
+														{{ global.pmb_keyword_sep }}
+													{% endif %}
+													<span><a href="{{ record.liens_opac.lien_rech_categ | replace '!!id!!' categorie.object.id }}">{{ categorie.object.libelle }}</a></span>
+												{% else %}
+													<p><a href="{{ record.liens_opac.lien_rech_categ | replace '!!id!!' categorie.object.id }}">{{ categorie.object.libelle }}</a></p>
+												{% endif %}
+											{% endfor %}
+											{% if loop.last %}
+													</td>
+												</tr>
+											{% endif %}
+										{% endif %}
+									{% endif %}
+								{% endfor %}
 								{% if record.resume %}
 									<tr>
 										<td class="labelNot">
@@ -158,6 +212,16 @@
 										</td>
 									</tr>
 								{% endif %}
+								{% for cp in record.p_perso %}
+									<tr>
+										<td class="labelNot">
+											<span>{{ cp.TITRE }}</span>
+										</td>
+										<td>
+											<span>{{ cp.AFF }}</span>
+										</td>
+									</tr>
+								{% endfor %}
 								{% for relation in record.relations_up %}
 									<tr>
 										<td class="labelNot">
@@ -194,7 +258,7 @@
 		</div>
 		<div class="clear"></div>
 		{% if record.availability.availability != 'none' %}
-			<!-- Bouton de réservation -->
+			<!-- Bouton de reservation -->
 			{% if record.resas_datas.flag_resa_visible %}
 				{% if record.resas_datas.flag_resa_possible %}
 					{% if !record.resas_datas.flag_max_resa %}

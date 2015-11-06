@@ -2,12 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: record_display.class.php,v 1.9 2015-06-08 10:32:16 apetithomme Exp $
+// $Id: record_display.class.php,v 1.9.2.4 2015-09-24 15:48:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($class_path."/record_datas.class.php");
 require_once($class_path."/parametres_perso.class.php");
+include_once($include_path."/templates/demandes.tpl.php");
+require_once($class_path."/demandes.class.php");
 
 /**
  * Classe d'affichage d'une notice
@@ -615,6 +617,7 @@ class record_display {
 		global $opac_book_pics_url ;
 		global $opac_book_pics_msg;
 		global $opac_url_base ;
+		global $msg;
 		
 		$record_datas = static::get_record_datas($notice_id);
 	
@@ -625,14 +628,17 @@ class record_display {
 				$url_image = $opac_url_base."getimage.php?url_image=".urlencode($url_image)."&noticecode=!!noticecode!!&vigurl=".urlencode($record_datas->get_thumbnail_url()) ;
 				$title_image_ok = "";
 				if(!$record_datas->get_thumbnail_url()) $title_image_ok = htmlentities($opac_book_pics_msg, ENT_QUOTES, $charset);
-				if ($depliable) $image = "<img class='vignetteimg' src='".$opac_url_base."images/vide.png' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2' isbn='".$code_chiffre."' url_image='".$url_image."' vigurl=\"".$record_datas->get_thumbnail_url()."\" />";
+				if(!trim($title_image_ok)){
+					$title_image_ok = htmlentities($record_datas->get_tit1(), ENT_QUOTES, $charset);
+				}
+				if ($depliable) $image = "<img class='vignetteimg' src='".$opac_url_base."images/vide.png' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2' isbn='".$code_chiffre."' url_image='".$url_image."' vigurl=\"".$record_datas->get_thumbnail_url()."\"  alt='".$msg["opac_notice_vignette_alt"]."'/>";
 				else {
 					if ($record_datas->get_thumbnail_url()) {
 						$url_image_ok=$record_datas->get_thumbnail_url();
 					} else {
 						$url_image_ok = str_replace("!!noticecode!!", $code_chiffre, $url_image) ;
 					}
-					$image = "<img class='vignetteimg' src='".$url_image_ok."' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2' />";
+					$image = "<img class='vignetteimg' src='".$url_image_ok."' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2' alt='".$msg["opac_notice_vignette_alt"]."' />";
 				}
 			} else $image="" ;
 			if ($image) {
@@ -813,23 +819,23 @@ class record_display {
 		
 		if (!$moyenne) {
 			for ($i = 0; $i < 5; $i++) {
-				$etoiles_moyenne .= "<img class='img_star_avis' border=0 src='images/star_unlight.png' align='absmiddle' />";
+				$etoiles_moyenne .= "<img class='img_star_avis' border=0 src='".get_url_icon('star_unlight.png')."' align='absmiddle' />";
 			}
 		} else {
 			$cpt_star = 0;
 			for ($i = 1; $i <= $moyenne; $i++) {
-				$etoiles_moyenne.="<img class='img_star_avis' border=0 src='images/star.png' align='absmiddle' />";
+				$etoiles_moyenne.="<img class='img_star_avis' border=0 src='".get_url_icon('star.png')."' align='absmiddle' />";
 				$cpt_star++;
 			}
 			if (substr($moyenne,2,2) > 75) {
-				$etoiles_moyenne.="<img class='img_star_avis' border=0 src='images/star.png' align='absmiddle' />";
+				$etoiles_moyenne.="<img class='img_star_avis' border=0 src='".get_url_icon('star.png')."' align='absmiddle' />";
 				$cpt_star++;
 			} elseif (substr($moyenne,2,2) > 25) {
-				$etoiles_moyenne .= "<img class='img_star_avis' border=0 src='images/star-semibright.png' align='absmiddle' />";
+				$etoiles_moyenne .= "<img class='img_star_avis' border=0 src='".get_url_icon('star-semibright.png')."' align='absmiddle' />";
 				$cpt_star++;
 			}
 			for ($cpt_star;$cpt_star < 5 ; $cpt_star++) {
-				$etoiles_moyenne .= "<img class='img_star_avis' border=0 src='images/star_unlight.png' align='absmiddle' />";
+				$etoiles_moyenne .= "<img class='img_star_avis' border=0 src='".get_url_icon('star_unlight.png')."' align='absmiddle' />";
 			}
 		}	
 		return $etoiles_moyenne;
@@ -846,42 +852,75 @@ class record_display {
 		return $do_suggest;
 	}
 
-	static public function get_display_extended($notice_id) {
+	/**
+	 * Retourne l'affichage étendu d'une notice
+	 * @param unknown $notice_id Identifiant de la notice
+	 * @param string $django_directory Répertoire Django à utiliser
+	 * @return string Code html d'affichage de la notice
+	 */
+	static public function get_display_extended($notice_id, $django_directory = "") {
+		global $include_path;
+		
+		$record_datas = static::get_record_datas($notice_id);
+		
+		$template = static::get_template("record_extended_display", $record_datas->get_niveau_biblio(), $record_datas->get_typdoc(), $django_directory);
+		
+		return static::render($notice_id, $template);
+	}
+	
+	/**
+	 * Retourne l'affichage d'une notice dans un résultat de recherche
+	 * @param int $notice_id Identifiant de la notice
+	 * @param string $django_directory Répertoire Django à utiliser
+	 * @return string Code html d'affichage de la notice
+	 */
+	static public function get_display_in_result($notice_id, $django_directory = "") {
 		global $include_path;
 		global $opac_notices_format_django_directory;
 		
 		$record_datas = static::get_record_datas($notice_id);
-		if (file_exists($include_path."/templates/record/".$opac_notices_format_django_directory."/record_extended_display_".$record_datas->get_niveau_biblio().$record_datas->get_typdoc().".tpl.html")) {
-			$template = $include_path."/templates/record/".$opac_notices_format_django_directory."/record_extended_display_".$record_datas->get_niveau_biblio().$record_datas->get_typdoc().".tpl.html";
-		} else if (file_exists($include_path."/templates/record/".$opac_notices_format_django_directory."/record_extended_display_".$record_datas->get_niveau_biblio().".tpl.html")) {
-			$template = $include_path."/templates/record/".$opac_notices_format_django_directory."/record_extended_display_".$record_datas->get_niveau_biblio().".tpl.html";
-		} else {
-			$template = $include_path."/templates/record/".$opac_notices_format_django_directory."/record_extended_display.tpl.html";
-		}
+		
+		$template = static::get_template("record_in_result_display", $record_datas->get_niveau_biblio(), $record_datas->get_typdoc(), $django_directory);
 		
 		return static::render($notice_id, $template);
+	}
+	
+	/**
+	 * Retourne le bon template
+	 * @param string $template_name Nom du template : record_extended ou record_in_result
+	 * @param string $niveau_biblio Niveau bibliographique
+	 * @param string $typdoc Type de document
+	 * @param string $django_directory Répertoire Django à utiliser (paramètre opac_notices_format_django_directory par défaut)
+	 * @return string Nom du template à appeler
+	 */
+	static public function get_template($template_name, $niveau_biblio, $typdoc, $django_directory = "") {
+		global $include_path;
+		global $opac_notices_format_django_directory;
+		
+		if (!$django_directory) $django_directory = $opac_notices_format_django_directory;
+		
+		if (file_exists($include_path."/templates/record/".$django_directory."/".$template_name."_".$niveau_biblio.$typdoc.".tpl.html")) {
+			return $include_path."/templates/record/".$django_directory."/".$template_name."_".$niveau_biblio.$typdoc.".tpl.html";
+		}
+		if (file_exists($include_path."/templates/record/common/".$template_name."_".$niveau_biblio.$typdoc.".tpl.html")) {
+			return $include_path."/templates/record/common/".$template_name."_".$niveau_biblio.$typdoc.".tpl.html";
+		}
+		if (file_exists($include_path."/templates/record/".$django_directory."/".$template_name."_".$niveau_biblio.".tpl.html")) {
+			return $include_path."/templates/record/".$django_directory."/".$template_name."_".$niveau_biblio.".tpl.html";
+		}
+		if (file_exists($include_path."/templates/record/common/".$template_name."_".$niveau_biblio.".tpl.html")) {
+			return $include_path."/templates/record/common/".$template_name."_".$niveau_biblio.".tpl.html";
+		}
+		if (file_exists($include_path."/templates/record/".$django_directory."/".$template_name.".tpl.html")) {
+			return $include_path."/templates/record/".$django_directory."/".$template_name.".tpl.html";
+		}
+		return $include_path."/templates/record/common/".$template_name.".tpl.html";
 	}
 	
 	static public function get_liens_opac() {
 		global $liens_opac;
 		
 		return $liens_opac;
-	}
-	
-	static public function get_display_in_result($notice_id) {
-		global $include_path;
-		global $opac_notices_format_django_directory;
-		
-		$record_datas = static::get_record_datas($notice_id);
-		if (file_exists($include_path."/templates/record/".$opac_notices_format_django_directory."/record_in_result_display_".$record_datas->get_niveau_biblio().$record_datas->get_typdoc().".tpl.html")) {
-			$template = $include_path."/templates/record/".$opac_notices_format_django_directory."/record_in_result_display_".$record_datas->get_niveau_biblio().$record_datas->get_typdoc().".tpl.html";
-		} else if (file_exists($include_path."/templates/record/".$opac_notices_format_django_directory."/record_in_result_display_".$record_datas->get_niveau_biblio().".tpl.html")) {
-			$template = $include_path."/templates/record/".$opac_notices_format_django_directory."/record_in_result_display_".$record_datas->get_niveau_biblio().".tpl.html";
-		} else {
-			$template = $include_path."/templates/record/".$opac_notices_format_django_directory."/record_in_result_display.tpl.html";
-		}
-		
-		return static::render($notice_id, $template);
 	}
 	
 	static public function get_display_explnums($notice_id) {
@@ -910,5 +949,73 @@ class record_display {
 		if ($record_datas->get_size()) $size[] = $record_datas->get_size();
 		
 		return implode(" / ", $size);
+	}
+	
+	static public function get_display_demand($notice_id) {
+		global $msg, $include_path, $form_modif_demande, $form_linked_record, $demandes_active, $opac_demandes_allow_from_record;
+		
+		if ($demandes_active && $opac_demandes_allow_from_record && $_SESSION['id_empr_session']) {
+			$record_datas = static::get_record_datas($notice_id);
+			$demande = new demandes();
+			$themes = new demandes_themes('demandes_theme','id_theme','libelle_theme',$demande->theme_demande);
+			$types = new demandes_types('demandes_type','id_type','libelle_type',$demande->type_demande);
+			
+			$f_modif_demande = $form_modif_demande;
+			$f_modif_demande = str_replace('!!form_title!!',htmlentities($msg['demandes_creation'],ENT_QUOTES,$charset),$f_modif_demande);
+			$f_modif_demande = str_replace('!!sujet!!','',$f_modif_demande);
+			$f_modif_demande = str_replace('!!progression!!','',$f_modif_demande);
+			$f_modif_demande = str_replace('!!empr_txt!!','',$f_modif_demande);
+			$f_modif_demande = str_replace('!!idempr!!',$_SESSION['id_empr_session'],$f_modif_demande);
+			$f_modif_demande = str_replace('!!iduser!!',"",$f_modif_demande);
+			$f_modif_demande = str_replace('!!titre!!','',$f_modif_demande);
+				
+			$etat=$demande->getStateValue();
+			$f_modif_demande = str_replace('!!idetat!!',$etat['id'],$f_modif_demande);
+			$f_modif_demande = str_replace('!!value_etat!!',$etat['comment'],$f_modif_demande);
+			$f_modif_demande = str_replace('!!select_theme!!',$themes->getListSelector(),$f_modif_demande);
+			$f_modif_demande = str_replace('!!select_type!!',$types->getListSelector(),$f_modif_demande);
+				
+			$date = formatdate(today());
+			$date_debut=date("Y-m-d",time());
+			$date_dmde = "<input type='button' class='bouton' id='date_debut_btn' name='date_debut_btn' value='!!date_debut_btn!!'
+					onClick=\"openPopUp('./select.php?what=calendrier&caller=modif_dmde&date_caller=!!date_debut!!&param1=date_debut&param2=date_debut_btn&auto_submit=NO&date_anterieure=YES', 'date_debut', 250, 300, -2, -2, 'toolbar=no, dependent=yes, resizable=yes')\"/>";
+			$f_modif_demande = str_replace('!!date_demande!!',$date_dmde,$f_modif_demande);
+				
+			$f_modif_demande = str_replace('!!date_fin_btn!!',$date,$f_modif_demande);
+			$f_modif_demande = str_replace('!!date_debut_btn!!',$date,$f_modif_demande);
+			$f_modif_demande = str_replace('!!date_debut!!',$date_debut,$f_modif_demande);
+			$f_modif_demande = str_replace('!!date_fin!!',$date_debut,$f_modif_demande);
+			$f_modif_demande = str_replace('!!date_prevue!!',$date_debut,$f_modif_demande);
+			$f_modif_demande = str_replace('!!date_prevue_btn!!',$date,$f_modif_demande);
+				
+			$f_modif_demande = str_replace('!!iddemande!!', '', $f_modif_demande);
+			
+			$f_modif_demande = str_replace('!!form_linked_record!!', $form_linked_record, $f_modif_demande);
+			$f_modif_demande = str_replace('!!linked_record!!', $record_datas->get_tit1(), $f_modif_demande);
+			$f_modif_demande = str_replace("!!linked_record_id!!", $notice_id, $f_modif_demande);
+			$f_modif_demande = str_replace("!!linked_record_link!!", $record_datas->get_permalink(), $f_modif_demande);
+			
+			$act_cancel = "demandDialog_".$notice_id.".hide();";
+			$act_form = "./empr.php?tab=request&lvl=list_dmde&sub=save_demande";
+			
+			$f_modif_demande = str_replace('!!form_action!!',$act_form,$f_modif_demande);
+			$f_modif_demande = str_replace('!!cancel_action!!',$act_cancel,$f_modif_demande);
+			
+			// Requires et début de formulaire
+			$html = "
+					<script type='text/javascript'>
+						require(['dojo/parser', 'dijit/Dialog']);
+						document.body.setAttribute('class', 'tundra');
+					</script>
+					<div data-dojo-type='dijit/Dialog' data-dojo-id='demandDialog_".$notice_id."' title='".$msg['do_demande_on_document']."' style='display:none;width:75%;'>
+						".$f_modif_demande."
+					</div>
+					<a href='#' onClick='demandDialog_".$notice_id.".show();return false;'>
+						".$msg['do_demande_on_record']."
+					</a>";
+			
+			return $html;
+		}
+		return "";
 	}
 }

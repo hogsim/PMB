@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: restaure_act.php,v 1.8 2015-04-03 11:16:21 jpermanne Exp $
+// $Id: restaure_act.php,v 1.8.4.1 2015-09-21 13:13:56 jpermanne Exp $
 
 //Restauration d'un jeu
 
@@ -10,6 +10,7 @@
 
 if ($_POST["critical"]) {
 	include("emergency/messages_env_ract.inc.php");
+	include('../../includes/mysql_functions.inc.php');
 } else {
 	$base_path="../..";
     $base_auth="SAUV_AUTH|ADMINISTRATION_AUTH";
@@ -38,7 +39,7 @@ print "<div id=\"contenu-frame\">\n";
 echo "<center><h1>".sprintf($msg["sauv_misc_restaure"],$file_name)."</h1></center>\n";
 
 if ($critical==1) {
-	pmb_mysql_connect($host,$user,$password) or abort($msg["sauv_misc_ract_cant_connect"]);
+	$dbh=pmb_mysql_connect($host,$user,$password) or abort($msg["sauv_misc_ract_cant_connect"]);
 	pmb_mysql_select_db($db) or abort(sprintf($msg["sauv_misc_ract_db_dont_exists"],$db));
 }
 

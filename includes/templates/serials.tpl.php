@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials.tpl.php,v 1.187 2015-06-05 12:36:58 dgoron Exp $
+// $Id: serials.tpl.php,v 1.187.2.1 2015-09-07 15:23:40 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -939,29 +939,32 @@ function chklnk_f_lien(element){
 		}
 		document.getElementById('f_lien_check').appendChild(wait);
 		var testlink = encodeURIComponent(element.value);
-		var check = new http_request();
-		if(check.request('./ajax.php?module=ajax&categ=chklnk',true,'&timeout=0&link='+testlink)){
-			alert(check.get_text());
-		}else{
-			var result = check.get_text();
-			var img = document.createElement('img');
-			var src='';
-			if(result == '200') {
-				if((element.value.substr(0,7) != 'http://') && (element.value.substr(0,8) != 'https://')) element.value = 'http://'+element.value;
-				//impec, on print un petit message de confirmation
-				src = 'images/tick.gif';
-			}else{
-				//problème...
-				src = 'images/error.png';
-				img.setAttribute('style','height:1.5em;');
+		var req = new XMLHttpRequest();
+		req.open('GET', './ajax.php?module=ajax&categ=chklnk&timeout=0&link='+testlink, true);
+		req.onreadystatechange = function (aEvt) {
+		  if (req.readyState == 4) {
+		  	if(req.status == 200){
+				var img = document.createElement('img');
+			    var src='';
+			    if(req.responseText == '200'){
+			    	if((element.value.substr(0,7) != 'http://') && (element.value.substr(0,8) != 'https://')) element.value = 'http://'+element.value;
+					//impec, on print un petit message de confirmation
+					src = 'images/tick.gif';
+				}else{
+			      //problème...
+					src = 'images/error.png';
+					img.setAttribute('style','height:1.5em;');
+			    }
+			    img.setAttribute('src',src);
+				img.setAttribute('align','top');
+				while(document.getElementById('f_lien_check').firstChild){
+					document.getElementById('f_lien_check').removeChild(document.getElementById('f_lien_check').firstChild);
+				}
+				document.getElementById('f_lien_check').appendChild(img);
 			}
-			img.setAttribute('src',src);
-			img.setAttribute('align','top');
-			while(document.getElementById('f_lien_check').firstChild){
-				document.getElementById('f_lien_check').removeChild(document.getElementById('f_lien_check').firstChild);
-			}
-			document.getElementById('f_lien_check').appendChild(img);
-		}
+		  }
+		};
+		req.send(null);
 	}
 }
 </script>

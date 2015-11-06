@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_tpl.tpl.php,v 1.4 2014-07-23 12:13:21 dgoron Exp $
+// $Id: notice_tpl.tpl.php,v 1.4.4.1 2015-09-10 07:58:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -24,7 +24,7 @@ $notice_tpl_liste = "
 <div class='row'>&nbsp;</div>
 <div class='row'>
 	<div class='left'>
-		<input class='bouton' value='".$msg["notice_tpl_ajouter"]."' onclick=\"document.location='!!link_ajouter!!'\" type='button'>
+		<input class='bouton' value='".$msg["notice_tpl_ajouter"]."' onclick=\"document.location='!!link_ajouter!!'\" type='button'><input class='bouton' value='".$msg["edit_tpl_import_button"]."' onclick=\"document.location='!!link_import!!'\" type='button'>
 	</div>
 </div>
 ";
@@ -35,7 +35,7 @@ $notice_tpl_liste_ligne = "
 	<td onmousedown=\"document.location='!!link_edit!!';\">!!name!!</td>
 	<td onmousedown=\"document.location='!!link_edit!!';\">!!comment!!</td>
 	<td onmousedown=\"document.location='!!link_edit!!';\">!!show_opac!!</td>
-	<td ><input class='bouton' value='".$msg["notice_tpl_evaluer"]."' onclick=\"document.location='!!link_eval!!'\" type='button'></td>
+	<td ><input class='bouton' value='".$msg["notice_tpl_evaluer"]."' onclick=\"document.location='!!link_eval!!'\" type='button'><input class='bouton' value='".$msg["edit_tpl_export_button"]."' onclick=\"document.location='!!link_export!!'\" type='button'></td>
 </tr>
 ";
 
@@ -131,5 +131,20 @@ $notice_tpl_eval="
 !!tpl!!
 <div class='row'>&nbsp;</div>
 <input type='button' class='bouton' value='$msg[654]' onClick=\"history.go(-1);\" />
+";
+
+$notice_tpl_form_import="
+<form class='form-$current_module' ENCTYPE='multipart/form-data' name='fileform' method='post' action='!!action!!' >
+<h3>".$msg['notice_tpl_title_form_import']."</h3>
+<div class='form-contenu' >
+	<div class='row'>
+		<label class='etiquette' for='req_file'>".$msg['notice_tpl_file_import']."</label>
+		</div>
+	<div class='row'>
+		<INPUT NAME='f_fichier' 'saisie-80em' TYPE='file' size='60'>
+		</div>
+	</div>
+<input type='submit' class='bouton' value=' ".$msg['notice_tpl_bt_import']." ' />
+</form>
 ";
 

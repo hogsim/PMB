@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: parametres_perso.class.php,v 1.62 2015-07-15 07:46:47 jpermanne Exp $
+// $Id: parametres_perso.class.php,v 1.62.2.3 2015-09-28 16:05:39 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -595,8 +595,8 @@ class parametres_perso {
 				
 				if (is_array($aff) && $aff[ishtml] == true)$t["AFF"] = $aff["value"];
 				else $t["AFF"]=htmlentities($aff,ENT_QUOTES,$charset);
-				$t["NAME"]=$field["NAME"];
-				$t["ID"]=$field["ID"];
+				$t["NAME"]=static::$fields[$this->prefix][$key]["NAME"];
+				$t["ID"]=static::$fields[$this->prefix][$key]["ID"];
 				$perso["FIELDS"][]=$t;
 			}
 		}
@@ -892,5 +892,71 @@ class parametres_perso {
 		return true;
 	}
 	
+	//Affichage des champs de recherche
+	function show_search_fields() {
+		global $aff_list_empr_search,$charset;
+	
+		$perso=array();
+		$check_scripts="";
+		reset($this->t_fields);
+		while (list($key,$val)=each($this->t_fields)) {
+			if($this->t_fields[$key]["SEARCH"]) {
+				$t=array();
+				$t["NAME"]=$val["NAME"];
+				$t["TITRE"]=$val["TITRE"];
+				$field=array();
+				$field["ID"]=$key;
+				$field["NAME"]=$this->t_fields[$key]["NAME"];
+				$field_name=$field["NAME"];
+				$values = array();
+				if($val["NAME"] == $field_name) {
+					global $$field_name;
+					$value=$$field_name;
+					for ($i=0; $i<count($value); $i++) {
+						if($value[$i]) {
+							$values[] = stripslashes($value[$i]);
+						}
+					}
+				}
+				$field["VALUES"]=$values;
+				$field["PREFIX"]=$this->prefix;
+				$field["OPTIONS"][0]=_parser_text_no_function_("<?xml version='1.0' encoding='".$charset."'?>\n".$this->t_fields[$key]["OPTIONS"], "OPTIONS");
+				eval("\$aff=".$aff_list_empr_search[$this->t_fields[$key][TYPE]]."(\$field,\$check_scripts,\$field_name);");
+				$t["AFF"]=$aff;
+				$t["NAME"]=$field["NAME"];
+				$perso["FIELDS"][]=$t;
+			}
+		}
+		return $perso;
+	}
+	
+	//Lecture des champs de recherche
+	function read_search_fields_from_form() {
+	
+		$perso=array();
+		reset($this->t_fields);
+		while (list($key,$val)=each($this->t_fields)) {
+			if($this->t_fields[$key]["SEARCH"]) {
+				$t=array();
+				$t["DATATYPE"]=$val["DATATYPE"];
+				$t["NAME"]=$val["NAME"];
+				$t["TITRE"]=$val["TITRE"];
+				$name = $this->t_fields[$key]["NAME"];
+				$values = array();
+				if($val["NAME"] == $name) {
+					global $$name;
+					$value=$$name;
+					for ($i=0; $i<count($value); $i++) {
+						if($value[$i]) {
+							$values[] = $value[$i];
+						}
+					}
+				}
+				$t["VALUE"]=$values;
+				$perso["FIELDS"][]=$t;
+			}
+		}
+		return $perso;
+	}
 }
 ?>

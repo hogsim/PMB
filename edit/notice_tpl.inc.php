@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_tpl.inc.php,v 1.2 2013-10-07 07:08:26 dgoron Exp $
+// $Id: notice_tpl.inc.php,v 1.2.6.1 2015-09-10 07:58:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -28,6 +28,12 @@ switch ($action) {
 	case 'duplicate':
 		$notice_tpl->id = 0;
 		print $notice_tpl->show_form();
+		break;
+	case 'import':
+		print $notice_tpl->show_import_form();
+		break;
+	case 'import_suite':
+		print $notice_tpl->do_import();
 		break;
 	default:
 		print $notice_tpl->show_list();

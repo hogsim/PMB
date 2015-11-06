@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category_browse.php,v 1.49 2015-04-03 11:16:20 jpermanne Exp $
+// $Id: category_browse.php,v 1.49.4.1 2015-09-16 12:09:41 jpermanne Exp $
 //
 // Navigation simple dans l'arbre des catégories
 
@@ -28,7 +28,7 @@ $libelle_partiel=0;//Pour la recherche multi-critère sur une catégorie
 switch ($caller) {
 	case 'notice' :
 		if (!$id_thes) $id_thes = thesaurus::getNoticeSessionThesaurusId();
-		thesaurus::setNoticeSessionThesaurusId($id_thes);
+		if ($perso_id>0) thesaurus::setNoticeSessionThesaurusId($id_thes);
 		break;
 	case 'categ_form' :
 		if (!$id_thes) $id_thes = thesaurus::getSessionThesaurusId();
@@ -78,7 +78,7 @@ else $nb_per_page = 10;
 if(!$page) $page=1;
 $debut =($page-1)*$nb_per_page;
 
-$base_url = "./category_browse.php?caller=$caller&p1=$p1&p2=$p2&no_display=$no_display&bt_ajouter=$bt_ajouter&dyn=$dyn&keep_tilde=$keep_tilde&callback=$callback&infield=$infield"
+$base_url = "./category_browse.php?caller=$caller&p1=$p1&p2=$p2&perso_id=$perso_id&no_display=$no_display&bt_ajouter=$bt_ajouter&dyn=$dyn&keep_tilde=$keep_tilde&callback=$callback&infield=$infield"
 ."&max_field=".$max_field."&field_id=".$field_id."&field_name_id=".$field_name_id."&add_field=".$add_field."&parent="; // attention parent doit etre le dernier!!
 
 if($bt_ajouter == "no" || ($id_thes == -1)){//Ne pas mettre le bouton ajouter si pas de thésaurus sélectionné

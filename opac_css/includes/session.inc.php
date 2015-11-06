@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: session.inc.php,v 1.32 2015-06-04 09:34:20 arenou Exp $
+// $Id: session.inc.php,v 1.32.2.1 2015-10-07 12:46:15 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -144,6 +144,9 @@ if ($_SESSION["user_code"]) {
 	$allow_tag= $data['allow_tag'] & $droit_tag;
 	$allow_pwd= $data['allow_pwd'] & $droit_pwd;
 	$allow_liste_lecture = $data['allow_liste_lecture'] & $droit_liste_lecture;
+}else{
+	//pas de session authentifiée... AR veut une trace quand même
+	check_anonymous_session('PmbOpac');
 }
 
 // message de debug messages ?

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: common.tpl.php,v 1.114 2015-06-19 09:23:03 jpermanne Exp $
+// $Id: common.tpl.php,v 1.114.2.1 2015-09-28 08:19:22 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -370,10 +370,13 @@ $menu_bar = $menu_bar."
 	</ul>
 </div>";
 
-
+$notification_empty=$base_path."/images/notification_empty.png";
+if(file_exists($styles_path."/".$stylesheet."/images/notification_empty.png")){
+	$notification_empty=$styles_path."/".$stylesheet."/images/notification_empty.png";
+}
 $notification_icon = "
 		<div class='notification' id='notification'>
-			<img src='".$styles_path."/".$stylesheet."/images/notification_empty.png' title='".$msg['empty_notification']."' alt='".$msg['empty_notification']."'>
+			<img src='".$notification_empty."' title='".$msg['empty_notification']."' alt='".$msg['empty_notification']."'>
 		</div>";
 $notification_zone = "
 		<div id='notification_zone'>

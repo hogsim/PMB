@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: scan_docnum.class.php,v 1.5 2015-04-23 08:12:52 abacarisse Exp $
+// $Id: scan_docnum.class.php,v 1.5.2.1 2015-09-01 10:40:09 dbellamy Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -20,7 +20,7 @@ class scan_docnum extends tache {
 	
 	//formulaire spécifique au type de tâche
 	function show_form ($param='') {
-		global $dbh;
+		global $dbh,$charset;
 		global $deflt_upload_repertoire;
 		
 		//On créer le sélecteur pour choisir le repertoire d'upload 
@@ -61,7 +61,7 @@ class scan_docnum extends tache {
 				<label for='upload_folder'>".$this->msg["planificateur_scan_docnum_upload_folder"]."</label>
 			</div>
 			<div class='colonne_suite'>
-				<input type='text' id='upload_folder' name='upload_folder' value='".$param['upload_folder']."'/>		
+				<input type='text' id='upload_folder' name='upload_folder' value='".htmlentities($param['upload_folder'],ENT_QUOTES,$charset)."'/>
 			</div>
 		</div>";
 		

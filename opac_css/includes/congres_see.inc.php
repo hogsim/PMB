@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: congres_see.inc.php,v 1.24 2015-07-09 10:21:31 mbertin Exp $
+// $Id: congres_see.inc.php,v 1.24.2.1 2015-10-12 08:34:12 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -65,17 +65,17 @@ if($id) {
 
 	print "</div><!-- fermeture #aut_see -->\n";
 	// affichage des notices associées
-	print "<div id='aut_details_liste'>\n";
+	print "<div id='aut_details_liste'><h3><span class=\"aut_details_liste_titre\">\n";
 	if($ourAuteur->type == 72) {
 		//Congrès
-		print pmb_bidi("<h3>$msg[documents_disponibles_meme_congres]");
+		print pmb_bidi($msg[documents_disponibles_meme_congres]);
 	} else if($ourAuteur->type == 71) {
 		// Collectivités
-		print pmb_bidi("<h3><span>".$msg["doc_collectivite_title"]." $renvoi</span></h3>\n");
+		print pmb_bidi($msg["doc_collectivite_title"]." $renvoi\n");
 	} else {
-		print pmb_bidi("<h3>$msg[documents_disponibles_meme_auteur]");
+		print pmb_bidi($msg[documents_disponibles_meme_auteur]);
 	}
-	print "</h3>\n";
+	print "</span></h3>\n";
 
 	//droits d'acces emprunteur/notice
 	$acces_j='';

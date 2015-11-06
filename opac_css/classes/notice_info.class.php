@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_info.class.php,v 1.39 2015-07-17 12:53:08 dgoron Exp $
+// $Id: notice_info.class.php,v 1.39.2.6 2015-09-24 15:48:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -97,8 +97,17 @@ class notice_info {
 		$icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
 		if ($icon) {
 			$info_bulle_icon=$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc];
-			if ($use_opac_url_base)	$this->memo_icondoc="<img src=\"".$opac_url_base."images/$icon\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
-			else $this->memo_icondoc="<img src=\"".$base_path."/images/$icon\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
+			if ($use_opac_url_base)	$this->memo_icondoc="<img src=\"".get_url_icon($icon, 1)."\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
+			else $this->memo_icondoc="<img src=\"".get_url_icon($icon)."\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
+		}
+		if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
+			if ($use_opac_url_base)	$this->memo_iconcart="<span id='baskets".$this->notice_id."'><a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".get_url_icon('basket_exist.gif', 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket_exist']."\" /></a></span>";
+			else $this->memo_iconcart="<span id='baskets".$this->notice_id."'><a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".get_url_icon('basket_exist.gif')."\" border=\"0\" alt=\"".$msg['notice_title_basket_exist']."\" /></a></span>";
+		} else {
+			$title=$this->notice_header;
+			if(!$title)$title=$this->notice->tit1;
+			if ($use_opac_url_base) $this->memo_iconcart="<span id='baskets".$this->notice_id."'><a href=\"".$opac_url_base."cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.gif", 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a></span>";
+			else $this->memo_iconcart="<span id='baskets".$this->notice_id."'><a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.gif")."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a></span>";
 		}
 		$this->niveau_biblio=$this->notice->niveau_biblio;
 		$this->niveau_hierar=$this->notice->niveau_hierar;
@@ -448,6 +457,7 @@ class notice_info {
 			$this->parametres_perso[$mes_pp->t_fields[$field_id]["NAME"]]["TITRE"]=$mes_pp->t_fields[$field_id]["TITRE"];
 			foreach ( $vals as $value ) {
 				$this->parametres_perso[$mes_pp->t_fields[$field_id]["NAME"]]["VALUE"][]=$mes_pp->get_formatted_output(array($value),$field_id);				
+				$this->parametres_perso[$mes_pp->t_fields[$field_id]["NAME"]]["VALUE_IN_DATABASE"][]=$value;				
 			}
 		}		
 
@@ -514,7 +524,7 @@ class notice_info {
 				
 			} else{
 				$this->memo_image="" ;
-				$this->memo_url_image="./images/no_image.jpg";
+				$this->memo_url_image=get_url_icon("no_image.jpg");
 			}
 		}	
 		
@@ -558,6 +568,20 @@ class notice_info {
 				}
 				
 				$this->memo_tu[]=$tu_memo;
+			}
+		}
+		
+		//statut
+		$this->memo_statut['id_notice_statut'] = $res->statut;
+		$this->memo_statut['gestion_statut_libelle'] = '';
+		$this->memo_statut['opac_statut_libelle'] = '';
+		if ($this->memo_statut['id_notice_statut']) {
+			$requete="SELECT * FROM notice_statut WHERE id_notice_statut=".($this->memo_statut['id_notice_statut']*1);
+			$resultat = pmb_mysql_query($requete);
+			if ($resultat) {
+				$statut=pmb_mysql_fetch_object($resultat);
+				$this->memo_statut['gestion_statut_libelle'] = $statut->gestion_libelle;
+				$this->memo_statut['opac_statut_libelle'] = $statut->opac_libelle;
 			}
 		}
 		

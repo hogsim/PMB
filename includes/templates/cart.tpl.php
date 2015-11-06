@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart.tpl.php,v 1.49 2015-06-19 09:23:03 jpermanne Exp $
+// $Id: cart.tpl.php,v 1.49.2.1 2015-10-16 14:47:09 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -673,13 +673,13 @@ function confirm() {
 
 ";
 
-$cart_action_selector = "<div data-dojo-type='dijit/form/DropDownButton'>
-				<span>!!lib_action!!</span>
-			    <div data-dojo-type='dijit/TooltipDialog' id='cart_action_selector_!!object_id!!'>
-			    	<label class='etiquette'>!!msg_object_action!!</label>
-			   		<br />
-					<select  id='cart_action_selector_!!object_type!!_!!object_id!!' name='cart_action_selector_!!object_type!!_!!object_id!!' onChange='window.location.href=this.options[this.selectedIndex].value;'>
-						!!actions_liste!!
-					</select>
-			    </div>
-			</div>";
+$cart_action_selector = '<div data-dojo-type="dijit/form/DropDownButton">
+	<span>'.$msg["caddie_menu_action"].'</span>
+	<div data-dojo-type="dijit/DropDownMenu">
+		!!cart_action_selector_lines!!
+	</div>
+</div>';
+
+$cart_action_selector_line = '		<div data-dojo-type="dijit/MenuItem" data-dojo-props="onClick:function(){document.location.href=\'!!cart_action_selector_line_location!!\';}">
+			<span>!!cart_action_selector_line_msg!!</span>
+		</div>';

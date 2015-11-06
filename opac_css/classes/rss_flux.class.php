@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rss_flux.class.php,v 1.31 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: rss_flux.class.php,v 1.31.4.1 2015-09-16 15:20:52 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -403,7 +403,7 @@ class rss_flux {
 			}
 
 			if(!$this->tpl_rss_flux){
-				$image = $this->do_image($notice->notice->code,$notice->notice->thumbnail_url) ;
+				$image = $this->do_image($notice->notice->code,$notice->notice->thumbnail_url,$notice->notice->tit1) ;
 				$desc = str_replace("<br />","<br/>",$desc);
 				$retour_aff .= "	<description>".htmlspecialchars(strip_tags($image.$desc,"<table><tr><td><br/><img>"),ENT_QUOTES, $charset)."</description>";
 				$retour_aff .= $desc_explnum;
@@ -417,12 +417,13 @@ class rss_flux {
 		$this->notices = $retour_aff ;
 	}
 	
-	function do_image($code,$vigurl="") {
+	function do_image($code,$vigurl="",$tit1="") {
 		global $charset;
 		global $opac_show_book_pics ;
 		global $opac_book_pics_url ;
 		global $opac_book_pics_msg ;
 		global $opac_url_base ;
+		global $msg;
 	
 		if ($code<>"" || $vigurl<>"") {
 			if ($opac_show_book_pics=='1' && ($opac_book_pics_url || $vigurl)) {
@@ -435,7 +436,10 @@ class rss_flux {
 				} else {
 					$title_image_ok = htmlentities($opac_book_pics_msg, ENT_QUOTES, $charset);			
 				}
-				$image = "<img src='".$url_image_ok."' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2' />";
+				if(!trim($title_image_ok)){
+					$title_image_ok = htmlentities($tit1, ENT_QUOTES, $charset);
+				}
+				$image = "<img src='".$url_image_ok."' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2'  alt='".$msg["opac_notice_vignette_alt"]."'/>";
 			} else $image="" ;
 		} else $image="" ;
 		return $image ;

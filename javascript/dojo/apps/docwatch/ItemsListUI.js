@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ItemsListUI.js,v 1.42 2015-03-20 13:18:58 dgoron Exp $
+// $Id: ItemsListUI.js,v 1.42.4.1 2015-09-03 11:47:13 jpermanne Exp $
 
 
 define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/_base/lang", "dojo/topic", "dojox/grid/DataGrid", "dojo/data/ObjectStore", "dojo/store/Memory", "dojo/ready", "apps/docwatch/ItemsStore", "dojo/date/locale", "dojo/dom-construct", "dojo/on", 'dijit/form/Button',  'dojox/widget/Standby', "dojo/dom"], function(declare,ContentPane,lang,topic,DataGrid,ObjectStore,Memory,ready,ItemsStore,locale, domConstruct, on, Button, standby, dom){
@@ -175,7 +175,8 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/_base/lang", "do
 					}
 				}
 				if(datas.itemUIRefresh){
-					topic.publish("itemsListUI","itemSelected",{item: item});
+					var item = this.itemsGrid.store.objectStore.query({id:datas.itemId})[0];
+    				topic.publish("itemsListUI","itemSelected",{item: item});
 				}
 			}else if(datas!=null){//Comportement normal sans sort
 				/** Permet de revenir a la même vue qu'avant la mise à jour **/

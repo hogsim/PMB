@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_view_carousel_responsive.xml,v 1.1 2015-06-16 10:24:25 pmbs Exp $ -->
+$Id: cms_module_common_view_carousel_responsive.xml,v 1.1.2.1 2015-08-26 11:42:42 jpermanne Exp $ -->
 
 <XMLlist>
 	<entry code='cms_module_common_view_carousel_mode'>Display mode</entry>
@@ -60,4 +60,5 @@ $Id: cms_module_common_view_carousel_responsive.xml,v 1.1 2015-06-16 10:24:25 pm
 	<entry code='cms_module_common_view_carousel_auto_direction_next'>In the direction of the next one</entry>
 	<entry code='cms_module_common_view_carousel_no_image'>Default image to use</entry>	
 	<entry code='cms_module_common_view_carousel_no_image_desc'>Link to the "no-image" image</entry>
+	<entry code='cms_module_common_view_carousel_autotransition'>Automatic transition</entry>
 </XMLlist>

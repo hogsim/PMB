@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesTasks.class.php,v 1.13 2015-06-19 08:12:42 mbertin Exp $
+// $Id: pmbesTasks.class.php,v 1.13.2.1 2015-09-24 09:12:21 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -166,7 +166,7 @@ class pmbesTasks extends external_services_api_class {
 		$res = pmb_mysql_query($sql,$dbh);
 		while ($row = pmb_mysql_fetch_assoc($res)) {
 			$output=array();
-			if ($os == "Linux") {		
+			if ($os == "Linux") {
 				exec("nohup $pmb_path_php  $base_path/admin/planificateur/run_task.php ".$row["id_tache"]." ".$row["num_type_tache"]." ".$row["id_planificateur"]." ".$row["num_user"]." ".$connectors_out_source_id." ".LOCATION." > /dev/null 2>&1 & echo $!", $output);
 			} else if ($os == "Windows") {//L'utilitaire PsExec fait partie de PSTools et doit au préalable être installé sur le serveur avec l'ajout du dossier dans le PATH des variables d'environnements.
 				if ($pmb_psexec_cmd) {
@@ -224,7 +224,11 @@ class pmbesTasks extends external_services_api_class {
 
 		$result = array();
 	
-		$filename="../admin/planificateur/catalog.xml";
+		if (file_exists("../admin/planificateur/catalog_subst.xml")) {
+			$filename = "../admin/planificateur/catalog_subst.xml";
+		} else {
+			$filename = "../admin/planificateur/catalog.xml";
+		}
 		$xml=file_get_contents($filename);
 		$param=_parser_text_no_function_($xml,"CATALOG");
 		
@@ -282,7 +286,11 @@ class pmbesTasks extends external_services_api_class {
 		if (!$id_tache)
 			throw new Exception("Missing parameter: id_tache");
 	
-		$filename = $base_path."/admin/planificateur/catalog.xml";
+		if (file_exists($base_path."/admin/planificateur/catalog_subst.xml")) {
+			$filename = $base_path."/admin/planificateur/catalog_subst.xml";
+		} else {
+			$filename = $base_path."/admin/planificateur/catalog.xml";
+		}
 		$xml=file_get_contents($filename);
 		$param=_parser_text_no_function_($xml,"CATALOG");
 		

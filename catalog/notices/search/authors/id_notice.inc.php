@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: id_notice.inc.php,v 1.2 2015-04-03 11:16:26 jpermanne Exp $
+// $Id: id_notice.inc.php,v 1.2.4.1 2015-08-14 10:30:03 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -27,6 +27,8 @@ $res = pmb_mysql_query($rqt,$dbh);
 
 if(pmb_mysql_num_rows($res)){
 	$ident = pmb_mysql_fetch_object($res);	
+	
+	//C'est une notice d'article, on renvoie vers le bulletin	
 	if($ident->niveau_biblio == 'a' && $ident->niveau_hierar == '2'){
 		$rqt_bull = "select analysis_bulletin from analysis where analysis_notice='".$ident->notice_id."'";
 		$res_bull = pmb_mysql_query($rqt_bull);
@@ -36,10 +38,14 @@ if(pmb_mysql_num_rows($res)){
 			print "document.location = \"./catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=$ident_bull&art_to_show=".$ident->notice_id."\"";
 			print "</script>";
 		}
+	
+	//C'est une notice de periodique
 	} elseif ($ident->niveau_biblio == 's' && $ident->niveau_hierar == '1'){
 		print "<script type=\"text/javascript\">";
 		print "document.location = \"./catalog.php?categ=serials&sub=view&serial_id=".$ident->notice_id."\"";
 		print "</script>";
+		
+	//C'est une notice de bulletin
 	} elseif ($ident->niveau_biblio == 'b' && $ident->niveau_hierar == '2'){
 		$rqt_bull = "select bulletin_id from bulletins where num_notice='".$ident->notice_id."'";
 		$res_bull = pmb_mysql_query($rqt_bull);
@@ -49,6 +55,8 @@ if(pmb_mysql_num_rows($res)){
 			print "document.location = \"./catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".$ident_bull."\"";
 			print "</script>";
 		}
+	
+	//C'est une notice de monographie
 	} else {
 		print "<script type=\"text/javascript\">";
 		print "document.location = \"./catalog.php?categ=isbd&id=".$ident->notice_id."\"";

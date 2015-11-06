@@ -2,14 +2,11 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.11 2014-03-07 11:12:31 dgoron Exp $
+// $Id: main.inc.php,v 1.11.6.1 2015-08-14 10:30:03 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 // recherche notice (catalogage) : page de switch recherche auteurs/titres
-
-// on commence par créer le champs de sélection de document
-// récupération des types de documents utilisés.
 require_once($class_path."/searcher.class.php");
 
 if($pmb_show_notice_id && $f_notice_id){

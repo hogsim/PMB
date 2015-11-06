@@ -2,7 +2,7 @@
 // +--------------------------------------------------------------------------+
 // | PMB est sous licence GPL, la réutilisation du code est cadrée            |
 // +--------------------------------------------------------------------------+
-// $Id: print.php,v 1.73 2015-05-12 09:58:57 jpermanne Exp $
+// $Id: print.php,v 1.73.2.1 2015-09-24 15:48:15 dgoron Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -465,7 +465,7 @@ if ($action!="print_$lvl") {
 				$iconDoc = "";
 				if ($icon) {
 					$info_bulle_icon=$biblio_doc[$current->notice->niveau_biblio]." : ".$tdoc->table[$current->notice->typdoc];
-					$iconDoc="<img src=\"".$opac_url_base."images/$icon\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
+					$iconDoc="<img src=\"".get_url_icon($icon, 1)."\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
 				}
 				if ($header) $notice_aff .= "<h3>".$iconDoc.$current->notice_header."</h3>";
 				if ($current->notice->niveau_biblio =='s') {

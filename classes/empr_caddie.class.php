@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_caddie.class.php,v 1.10 2015-06-18 14:30:00 jpermanne Exp $
+// $Id: empr_caddie.class.php,v 1.10.2.2 2015-10-16 14:47:09 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -17,6 +17,7 @@ define( 'CADDIE_ITEM_BULL_USED', 4) ;
 define( 'CADDIE_ITEM_NOTI_USED', 5) ;
 define( 'CADDIE_ITEM_SUPPR_BASE_OK', 6) ;
 define( 'CADDIE_ITEM_INEXISTANT', 7 );
+define( 'CADDIE_ITEM_RESA', 8 );
 
 class empr_caddie {
 // propriétés
@@ -150,10 +151,15 @@ function del_item_base($item=0) {
 	
 	if (!$item) return CADDIE_ITEM_NULL ;
 	
-	if (!$this->verif_empr_item($item)) {
+	$verif_empr_item = $this->verif_empr_item($item); 
+	if (!$verif_empr_item) {
 		emprunteur::del_empr($item);
 		return CADDIE_ITEM_SUPPR_BASE_OK ;
-	} else return CADDIE_ITEM_EXPL_PRET ;
+	} elseif ($verif_empr_item == 1) {
+		return CADDIE_ITEM_EXPL_PRET ;
+	} else {
+		return CADDIE_ITEM_RESA ;
+	}
 				
 }
 
@@ -268,34 +274,49 @@ function compte_items() {
 }
 
 function verif_empr_item($id) {
-
 	global $dbh;
+	
 	if ($id) {
+		//Prêts en cours
 		$query = "select count(1) from pret where pret_idempr=".$id." limit 1 ";
 		$result = pmb_mysql_query($query, $dbh);
-		if(pmb_mysql_result($result, 0, 0)) return 1 ;
-		return 0 ;
-		
+		if(pmb_mysql_result($result, 0, 0)){
+			return 1 ;
+		} else {
+			//Réservations validées
+			$query = "select count(1) from resa where resa_idempr=".$id." and resa_confirmee=1 limit 1 ";
+			$result = pmb_mysql_query($query, $dbh);
+			if(pmb_mysql_result($result, 0, 0)){
+				return 2 ;
+			} else {
+				return 0 ;
+			}
+		}		
 	} else return 0 ;
 }
 
 static function show_actions($id_caddie = 0) {
-	global $msg,$empr_cart_action_selector;
+	global $msg,$empr_cart_action_selector,$empr_cart_action_selector_line;
 
-	$liste_actions = "<option value='' selected='selected'></option>";
-	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=supprpanier&action=choix_quoi&idemprcaddie=".$id_caddie."&item='>".$msg["empr_caddie_menu_action_suppr_panier"]."</option>";
-	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=transfert&action=transfert&idemprcaddie=".$id_caddie."&item='>".$msg["empr_caddie_menu_action_transfert"]."</option>";
-	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=edition&action=choix_quoi&idemprcaddie=".$id_caddie."&item=".$id_caddie."&item=0'>".$msg["empr_caddie_menu_action_edition"]."</option>";
-	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=mailing&action=envoi&idemprcaddie=".$id_caddie."&item=".$id_caddie."&item=0'>".$msg["empr_caddie_menu_action_mailing"]."</option>";
-	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=selection&action=&idemprcaddie=".$id_caddie."&item=".$id_caddie."&item=0'>".$msg["empr_caddie_menu_action_selection"]."</option>";
-	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=supprbase&action=choix_quoi&idemprcaddie=".$id_caddie."&item='>".$msg["empr_caddie_menu_action_suppr_base"]."</option>";
-
-	$to_show = $empr_cart_action_selector;
-	$to_show = str_replace("!!object_id!!",$id_caddie,$to_show);
-	$to_show = str_replace("!!object_type!!",$type_caddie,$to_show);
-	$to_show = str_replace("!!actions_liste!!",$liste_actions,$to_show);
-	$to_show = str_replace("!!lib_action!!",$msg["empr_caddie_menu_action"],$to_show);
-	$to_show = str_replace("!!msg_object_action!!",$msg["empr_caddie_menu_action"],$to_show);
+	//Le tableau des actions possibles
+	$array_actions = array();
+	$array_actions[] = array('msg' => $msg["empr_caddie_menu_action_suppr_panier"], 'location' => './circ.php?categ=caddie&sub=action&quelle=supprpanier&action=choix_quoi&idemprcaddie='.$id_caddie.'&item=');
+	$array_actions[] = array('msg' => $msg["empr_caddie_menu_action_transfert"], 'location' => './circ.php?categ=caddie&sub=action&quelle=transfert&action=transfert&idemprcaddie='.$id_caddie.'&item=');
+	$array_actions[] = array('msg' => $msg["empr_caddie_menu_action_edition"], 'location' => './circ.php?categ=caddie&sub=action&quelle=edition&action=choix_quoi&idemprcaddie='.$id_caddie.'&item='.$id_caddie.'&item=0');
+	$array_actions[] = array('msg' => $msg["empr_caddie_menu_action_mailing"], 'location' => './circ.php?categ=caddie&sub=action&quelle=mailing&action=envoi&idemprcaddie='.$id_caddie.'&item='.$id_caddie.'&item=0');
+	$array_actions[] = array('msg' => $msg["empr_caddie_menu_action_selection"], 'location' => './circ.php?categ=caddie&sub=action&quelle=selection&action=&idemprcaddie='.$id_caddie.'&item='.$id_caddie.'&item=0');
+	$array_actions[] = array('msg' => $msg["empr_caddie_menu_action_suppr_base"], 'location' => './circ.php?categ=caddie&sub=action&quelle=supprbase&action=choix_quoi&idemprcaddie='.$id_caddie.'&item=');
+	
+	//On crée les lignes du menu
+	$lines = '';
+	foreach($array_actions as $item_action){
+		$tmp_line = str_replace('!!cart_action_selector_line_location!!',$item_action['location'],$empr_cart_action_selector_line);
+		$tmp_line = str_replace('!!cart_action_selector_line_msg!!',$item_action['msg'],$tmp_line);
+		$lines.= $tmp_line;
+	}
+	
+	//On récupère le template
+	$to_show = str_replace('!!cart_action_selector_lines!!',$lines,$empr_cart_action_selector);
 
 	return $to_show;
 }

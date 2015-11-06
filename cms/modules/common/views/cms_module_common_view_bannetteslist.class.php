@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_bannetteslist.class.php,v 1.4 2015-04-03 11:16:26 jpermanne Exp $
+// $Id: cms_module_common_view_bannetteslist.class.php,v 1.4.4.1 2015-10-09 15:07:38 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,6 +37,15 @@ class cms_module_common_view_bannetteslist extends cms_module_common_view_django
 			</div>
 			<div class='colonne_suite'>";
 		$form.= $this->get_constructor_link_form("bannette");
+		$form.="
+			</div>
+		</div>
+		<div class='row'>
+			<div class='colonne3'>
+				<label for='cms_module_common_bannetteslist_view_record_link'>".$this->format_text($this->msg['cms_module_common_view_bannetteslist_build_record_link'])."</label>
+			</div>
+			<div class='colonne_suite'>";
+		$form.= $this->get_constructor_link_form("notice");
 		$form.="
 			</div>
 		</div>".
@@ -74,7 +83,8 @@ class cms_module_common_view_bannetteslist extends cms_module_common_view_django
 		global $cms_module_bannetteslist_view_bannetteslist_css;		
 		global $cms_module_common_view_django_template_record_content;
 		
-		$this->save_constructor_link_form("bannette");		
+		$this->save_constructor_link_form("bannette");
+		$this->save_constructor_link_form("notice");
 		$this->parameters['nb_notices'] = $cms_module_common_view_bannetteslist_nb_notices+0;
 		$this->parameters['css'] = stripslashes($cms_module_bannetteslist_view_bannetteslist_css);
 		$this->parameters['used_template'] = $cms_module_common_view_django_template_record_content;
@@ -99,6 +109,8 @@ class cms_module_common_view_bannetteslist extends cms_module_common_view_django
 	
 		//on gère l'affichage des banettes				
 		foreach($datas["bannettes"] as $i => $bannette) {
+			$datas['bannettes'][$i]['link'] = $this->get_constructed_link('bannette',$datas['bannettes'][$i]['id']);
+			
 			if($this->parameters['nb_notices']) $limitation = " LIMIT ". $this->parameters['nb_notices'];
 			$requete = "select * from bannette_contenu, notices where num_bannette='".$datas['bannettes'][$i]['id']."' 
 			and notice_id=num_notice";
@@ -160,7 +172,7 @@ class cms_module_common_view_bannetteslist extends cms_module_common_view_django
 				}
 				$datas["bannettes"][$i]['records'][$cpt_record]['id']=$r->num_notice;
 				$datas["bannettes"][$i]['records'][$cpt_record]['title']=$r->title;
-				$datas["bannettes"][$i]['records'][$cpt_record]['link']=$this->get_constructed_link("notice",$row->$r->num_notice);
+				$datas["bannettes"][$i]['records'][$cpt_record]['link']=$this->get_constructed_link("notice",$r->num_notice);
 				$datas["bannettes"][$i]['records'][$cpt_record]['url_vign']=$url_vign;
 				$datas["bannettes"][$i]['records'][$cpt_record]['content']=$content;
 				$cpt_record++;
@@ -193,6 +205,10 @@ class cms_module_common_view_bannetteslist extends cms_module_common_view_django
 					array(
 						'var' => "bannettes[i].record_number",
 						'desc'=> $this->msg['cms_module_bannetteslist_view_bannettes_record_number_desc']
+					),
+					array(
+						'var' => "bannettes[i].link",
+						'desc'=> $this->msg['cms_module_bannetteslist_view_bannettes_link_desc']
 					),
 					array(
 						'var' => "bannettes[i].records",		

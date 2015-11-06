@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesRepositories.class.php,v 1.4 2015-05-07 15:39:21 arenou Exp $
+// $Id: pmbesRepositories.class.php,v 1.4.2.1 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -44,7 +44,7 @@ class pmbesRepositories extends external_services_api_class {
 	}
 	
 	function rec_record($source_id, $record) {
-		global $charset,$base_path;
+		global $charset,$base_path, $dbh;
 		
 		$record = charset_pmb_normalize($record);
 		$n_header = array();
@@ -77,11 +77,13 @@ class pmbesRepositories extends external_services_api_class {
 
 		//Suppression d'un éventuel doublon
 		$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."'";
-		pmb_mysql_query($requete);		
+		pmb_mysql_query($requete, $dbh);
+		$requete="delete from external_count where recid='".addslashes("agnostic ".$source_id." ".$ref)."' and source_id = ".$source_id;
+		pmb_mysql_query($requete, $dbh);
 		
 		//Récupération d'un ID
 		$requete="insert into external_count (recid, source_id) values('".addslashes("agnostic ".$source_id." ".$ref)."', ".$source_id.")";
-		$rid=pmb_mysql_query($requete);
+		$rid=pmb_mysql_query($requete, $dbh);
 		if ($rid) $recid=pmb_mysql_insert_id();
 		
 		if (!$recid)
@@ -99,7 +101,7 @@ class pmbesRepositories extends external_services_api_class {
 			$requete="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid) values(
 			'".addslashes('agnostic')."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 			'".$hc."','',0,0,'".addslashes($code)."','',$recid)";
-			pmb_mysql_query($requete);
+			pmb_mysql_query($requete, $dbh);
 		}		
 		
 		for ($i=0; $i<count($record["f"]); $i++) {
@@ -116,7 +118,7 @@ class pmbesRepositories extends external_services_api_class {
 					'".addslashes('agnostic')."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 					'".addslashes($ufield)."','".addslashes($field_ind)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 					' ".addslashes(strip_empty_words($value))." ',$recid)";
-					pmb_mysql_query($requete);
+					pmb_mysql_query($requete, $dbh);
 				}
 			}
 		}

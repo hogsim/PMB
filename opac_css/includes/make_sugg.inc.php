@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: make_sugg.inc.php,v 1.14 2015-04-03 11:16:16 jpermanne Exp $
+// $Id: make_sugg.inc.php,v 1.14.4.1 2015-10-05 13:15:41 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -69,6 +69,12 @@ $sug_form .= "
 			<td>
 				<input type='text' id='date_publi' name='date_publi'>
 				<input type='button' class='bouton' id='date_publi_sug' name='date_publi_sug' value='...' onClick=\"window.open('./select.php?what=calendrier&caller=empr_sugg&param1=date_publi&param2=date_publi&auto_submit=NO&date_anterieure=YES', 'date_publi', 'toolbar=no, dependent=yes, width=250,height=250, resizable=yes')\"/>
+			</td>
+		</tr>		
+		<tr>
+			<td align=right>".htmlentities($msg["empr_sugg_qte"], ENT_QUOTES, $charset)."</td>
+			<td>
+				<input type='text' id='nb' name='nb' size='5' value='1'>
 			</td>
 		</tr>		
 		";

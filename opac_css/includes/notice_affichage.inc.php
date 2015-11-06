@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage.inc.php,v 1.48 2015-06-04 08:49:16 apetithomme Exp $
+// $Id: notice_affichage.inc.php,v 1.48.2.3 2015-09-15 09:40:10 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -30,7 +30,7 @@ if ($opac_notice_groupe_fonction) {
 
 global $opac_notices_display_modes;
 //on utilise le système de choix des modes d'affichage
-if($opac_notices_display_modes){
+if($opac_notices_display_modes && $lvl != "notice_display" && $lvl != "bulletin_display" && $lvl != "show_cart"){
 	//le selecteur de mode d'affichage
 	global $recordmodes;
 	$recordmodes = new record_display_modes();
@@ -110,7 +110,7 @@ function aff_notice($id, $nocart=0, $gen_header=1, $use_cache=0, $mode_aff_notic
 	global $opac_notice_enrichment;
 	global $opac_recherche_ajax_mode;
 	global $opac_notices_format_onglets;
-	global $lvl;
+	global $lvl,$search_type_asked;
 	global $record_css_already_included; // Pour pas inclure la css 10 fois
 	global $recordmodes;
 	
@@ -201,7 +201,11 @@ function aff_notice($id, $nocart=0, $gen_header=1, $use_cache=0, $mode_aff_notic
 							break;
 						case 'more_result' :
 						default :
-							$retour_aff .= record_display::get_display_in_result($id);
+							if($search_type_asked=='perio_a2z'){
+								$retour_aff .= record_display::get_display_extended($id);
+							} else {
+								$retour_aff .= record_display::get_display_in_result($id);
+							}
 							break;
 					}
 					break;

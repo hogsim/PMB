@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: Collection.php,v 1.23 2015-05-11 12:19:36 jpermanne Exp $
+// $Id: Collection.php,v 1.23.2.2 2015-10-19 10:27:11 arenou Exp $
 namespace Sabre\PMB;
 
 use Sabre\DAV;
@@ -27,196 +27,41 @@ class Collection extends DAV\Collection {
 		return $val;
 	}
 	
-	function get_notice_by_meta($name,$filename){
-		global $pmb_keyword_sep;
-		global $pmb_type_audit;
-		global $webdav_current_user_name,$webdav_current_user_id;
-		
+	function get_notice_by_meta($name,$filename){		
 		\create_tableau_mimetype();
-		$mimetype = \trouve_mimetype($filename,extension_fichier($name));
-		
-		$notice_id = 0;
-		$title = $cplt = $code = $pages = $year = $keywords = $url = $thumbnail_content = "";
+		$mimetype = \trouve_mimetype($filename,extension_fichier($name));	
 		//on commence avec la gymnatisque des métas...
 		if($mimetype == "application/epub+zip"){
 			//pour les ebook, on gère ca directement ici !
-			$epub = new \epubData(realpath($filename));
-			$title = $epub->metas['title'][0];
-			$authors = $epub->metas['creator'];
-			$co_authors = $epub->metas['contributor'];
-			if($epub->metas['identifier']['isbn']){
-				$code = \formatISBN($epub->metas['identifier']['isbn'],13);
-			}else if($epub->metas['identifier']['ean']){
-				$code = \EANtoISBN($epub->metas['identifier']['ean']);
-				$code = \formatISBN($code,13);
-			}
-			if($epub->metas['identifier']['uri']){
-				$url = \clean_string($epub->metas['identifier']['uri']);
-			}
-			
-			$publisher = $epub->metas['publisher'][0];
-			$year = $epub->metas['date'][0]['value'];
-			if(strlen($year) && strlen($year) != 4){
-				$year = \formatdate(detectFormatDate($year));
-			}
-			$lang= $epub->metas['language'];
-			$resume = implode("\n",$epub->metas['description']);
-			$keywords = implode($pmb_keyword_sep,$epub->metas['subject']);
-			
-			//jouons à et si on trouvait a vignette...
+			$epub = new \epubData(realpath($filename));		
+			$metas=$epub->metas;
 			$img = imagecreatefromstring($epub->getCoverContent());
 			$file=tempnam(sys_get_temp_dir(),"vign");
 			imagepng($img,$file);
-			$thumbnail_content = file_get_contents($file);
+			$metas['thumbnail_content'] = file_get_contents($file);
 			unlink($file);
 		}else{
 			$metas = \extract_metas(realpath($filename),$mimetype);
-			
-			$title = $name;
-			
-			if($metas['Title']){
-				$title = $metas['Title'];
-			}
-			
-			if($metas['Author']){
-				$authors = array( 0=> array('value'=>$metas['Author']) );
-			}
-			
-			if($metas['Subject']){
-				$cplt = $metas['Subject'];
-			}
+		}
+		$metasMapper = $this->load_metas_mapper();                         				
+		return $metasMapper->get_notice_id($metas, $mimetype,$name );		
+	}
 	
-			//date de création...
-			if($metas["CreateDate"]){
-				$year = substr($metas["CreateDate"],0,4);
+	protected function load_metas_mapper(){
+		if($this->config['metasMapper_class']){	
+			$this->load_class_mapper($this->config['metasMapper_class']);
+			if(class_exists($this->config['metasMapper_class'])){
+				$class_name = $this->config['metasMapper_class'];
+				return new $class_name($this->config);
 			}
-			//pages
-			if($metas['PageCount']){
-				$pages = $metas['PageCount'];
-			}
-			//keywords
-			if($metas['Keywords']){
-				foreach($metas['Keywords'] as $keyword){
-					if($keywords != "")	$keywords.= $pmb_keyword_sep;
-					$keywords.=$keyword;
-				}
-			}
-		}		
-		
-		
-		$query = "select notice_id from notices where tit1 = '".addslashes($title)."'";
-		$result= pmb_mysql_query($query);
-		if(pmb_mysql_num_rows($result)){
-			$notice_id = pmb_mysql_result($result,0,0);
 		}
-		if(!$notice_id){
-			//en cas d'une leture moyenne des infos, on s'assure d'avoir au moins un titre....
-			if(!$title) $title = $name;
-			
-			
-			if($publisher){
-				$ed_1 = \editeur::import(array('name'=>$publisher));
-			}else $ed_1 = 0;
-			
-
-			$ind_wew = $title." ".$cplt;
-			$ind_sew = \strip_empty_words($ind_wew) ; 
-			
-			$query = "insert into notices set 
-				tit1 = '".addslashes($title)."',". 
-				($code ? "code='".$code."',":"").
-				"ed1_id = '".$ed_1."',".
-				($cplt ? "tit4 = '".addslashes($cplt)."'," : "").
-				($pages ? "npages = '".addslashes($pages)."'," : "").
-				($keywords ? "index_l = '".addslashes($keywords)."'," : "")."
-				year = '".$year."',
-				niveau_biblio='m', 
-				niveau_hierar='0',
-				statut = '".$this->config['default_statut']."',
-				index_wew = '".$ind_wew."',
-				index_sew = '".$ind_sew."',
-				n_resume = '".addslashes($resume)."',
-				lien = '".addslashes($url)."',
-				index_n_resume = '".\strip_empty_words($resume)."',".
-				($thumbnail_content ? "thumbnail_url = 'data:image/png;base64,".base64_encode($thumbnail_content)."',":"").
-				"create_date = sysdate(), 
-				update_date = sysdate()";
-			pmb_mysql_query($query);
-			$notice_id = pmb_mysql_insert_id();
-			$sign = new \notice_doublon();
-			pmb_mysql_query("update notices set signature = '".$sign->gen_signature($notice_id)."' where notice_id = ".$notice_id);
-			
-			//traitement audit 
-			if ($pmb_type_audit) {
-				$query = "INSERT INTO audit SET ";
-				$query .= "type_obj='1', ";
-				$query .= "object_id='$notice_id', ";
-				$query .= "user_id='$webdav_current_user_id', ";
-				$query .= "user_name='$webdav_current_user_name', ";
-				$query .= "type_modif=1 ";
-				$result = @pmb_mysql_query($query);	
-			}
-			
-			if(count($authors)){
-				$i=0;
-				foreach($authors as $author){
-					$aut = array();
-					if($author['file-as']){
-						$infos = explode(",",$author['file-as']);
-						$aut = array(
-							'name' => $infos[0],
-							'rejete' => $infos[1],
-							'type' => 70
-						);
-					}
-					if(!$aut['name']){
-						$aut = array(
-							'name' => $author['value'],
-							'type' => 70
-						);
-					}
-					$aut_id = \auteur::import($aut);			
-					if($aut_id){
-						$query = "insert into responsability set 
-							responsability_author = '".$aut_id."',
-							responsability_notice = '".$notice_id."',
-							responsability_type = '0'";
-						pmb_mysql_query($query);
-						$i++;
-					}
-				}
-			}
-			if(count($co_authors)){
-				foreach($co_authors as $author){
-					$aut = array();
-					if($author['file-as']){
-						$infos = explode(",",$author['file-as']);
-						$aut = array(
-							'name' => $infos[0],
-							'rejete' => $infos[1],
-							'type' => 70
-						);
-					}
-					if(!$aut['name']){
-						$aut = array(
-							'name' => $author['value'],
-							'type' => 70
-						);
-					}
-					$aut_id = \auteur::import($aut);			
-					if($aut_id){
-						$query = "insert into responsability set 
-							responsability_author = '".$aut_id."',
-							responsability_notice = '".$notice_id."',
-							responsability_type = '0',
-							repsonsability_ordre = '".$i."'";
-						pmb_mysql_query($query);
-						$i++;
-					}
-				}
-			}			
-		}
-		return $notice_id;
+		$this->load_class_mapper("metasMapper");
+		return new \metasMapper($this->config); 
+	}
+	
+	protected function load_class_mapper($class_name){
+		global $base_path,$include_path,$class_path,$javascript_path;
+		require_once($class_path."/webdav_mapper/".$class_name.".class.php");
 	}
 	
 	function set_parent($parent){
@@ -408,6 +253,7 @@ class Collection extends DAV\Collection {
 				//throw new Sabre_DAV_Exception_FileNotFound('Empty file (filename ' . $filename . ')');
 			}	
 			
+
 			$notice_id = $this->get_notice_by_meta($name,$filename);
 			$bulletin_id = 0;
 			$this->update_notice($notice_id);

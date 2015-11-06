@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette_func.inc.php,v 1.37 2015-04-03 11:16:16 jpermanne Exp $
+// $Id: bannette_func.inc.php,v 1.37.4.2 2015-09-17 15:14:13 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -107,7 +107,7 @@ function affiche_bannette($bannettes="", $aff_notices_nb=0, $mode_aff_notice=AFF
 		$comment_public=$tableau_bannettes[$i]['comment_public'] ;
 		$aff_date_last_envoi=$tableau_bannettes[$i]['aff_date_last_envoi'] ;
 		$aff_banette.="\n<div class='bannette-titre'><h1>";
-		$aff_banette.="<a href='cart_info.php?lvl=dsi&id=$id_bannette' target='cart_info'><img src='images/basket_small_20x20.gif' border='0' title=\"".$msg[notice_title_basket]."\" alt=\"".$msg[notice_title_basket]."\"></a>";
+		$aff_banette.="<a href='cart_info.php?lvl=dsi&id=$id_bannette' target='cart_info' title=\"".$msg[notice_title_basket]."\"><img src='".get_url_icon("basket_small_20x20.gif")."' border='0' alt=\"".$msg[notice_title_basket]."\"></a>";
 		if ($link_to_bannette) $aff_banette.="<a href=\"".str_replace("!!id_bannette!!",$id_bannette,$link_to_bannette)."\">";
 		if($date_diff){
 			$aff_banette.= htmlentities($comment_public." - ".formatdate($date_diff),ENT_QUOTES, $charset);
@@ -470,7 +470,7 @@ function affiche_public_bannette($bannettes="", $aff_notices_nb=0, $mode_aff_not
 		$comment_public=$tableau_bannettes[$i]['comment_public'] ;
 		$aff_date_last_envoi=$tableau_bannettes[$i]['aff_date_last_envoi'] ;
 		$aff_banette.="\n<div class='bannette-titre'><h1>";
-		$aff_banette.="<a href='cart_info.php?lvl=dsi&id=$id_bannette' target='cart_info'><img src='images/basket_small_20x20.gif' border='0' title=\"".$msg[notice_title_basket]."\" alt=\"".$msg[notice_title_basket]."\"></a>";
+		$aff_banette.="<a href='cart_info.php?lvl=dsi&id=$id_bannette' target='cart_info' title=\"".$msg[notice_title_basket]."\"><img src='".get_url_icon("basket_small_20x20.gif")."' border='0' alt=\"".$msg[notice_title_basket]."\"></a>";
 		if ($link_to_bannette) $aff_banette.="<a href=\"".str_replace("!!id_bannette!!",$id_bannette,$link_to_bannette)."\">";
 		if($date_diff){
 			$aff_banette.= htmlentities($comment_public." - ".formatdate($date_diff),ENT_QUOTES, $charset);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette_gerer.inc.php,v 1.10 2015-04-03 11:16:16 jpermanne Exp $
+// $Id: bannette_gerer.inc.php,v 1.10.4.1 2015-09-14 09:14:30 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -42,7 +42,7 @@ if ($enregistrer=='PRI') {
 	}
 
 
-print "<div id='aut_details'>\n";
+print "<div id='aut_details' class='aut_details_bannette'>\n";
 
 if ($opac_allow_resiliation) {
 	$aff = gerer_abon_bannette ("PUB", "./empr.php?lvl=bannette&id_bannette=!!id_bannette!!" ) ;

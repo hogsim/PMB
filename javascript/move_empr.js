@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: move_empr.js,v 1.5 2013-09-17 14:11:18 dbellamy Exp $
+// $Id: move_empr.js,v 1.5.6.1 2015-10-15 07:53:24 jpermanne Exp $
 
 down=false;
 down_parent=false;
@@ -254,7 +254,7 @@ function move_parse_dom() {
 			
 			movables[i].onclick=function(e) {
 				var i;
-				if (e.ctrlKey) {
+				if (e.ctrlKey || e.metaKey) {
 					if (document.getElementById("popup_onglet")) document.getElementById("popup_onglet").parentNode.removeChild(document.getElementById("popup_onglet"));
 					e.cancelBubble = true;
 					if (e.stopPropagation) e.stopPropagation();

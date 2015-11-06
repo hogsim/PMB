@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials.class.php,v 1.168 2015-06-05 12:36:58 dgoron Exp $
+// $Id: serials.class.php,v 1.168.2.2 2015-10-15 09:35:03 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -71,11 +71,14 @@ class serial {
 
 	// constructeur
 	function serial($id=0) {
+		global $deflt_notice_is_new;
 		
 		// si id, allez chercher les infos dans la base
 		if($id) {
 			$this->serial_id = $id;
 			$this->fetch_serial_data();
+		}else{
+			$this->is_new = $deflt_notice_is_new;
 		}
 		return $this->serial_id;
 	}
@@ -227,7 +230,13 @@ class serial {
 	// fonction de mise à jour ou de création d'un périodique
 	function update($value,$other_fields="") {
 		
-		global $dbh;
+		global $dbh,$pmb_newrecord_timeshift;
+		
+		// clean des vieilles nouveautés
+		if($pmb_newrecord_timeshift){
+			$req_old="UPDATE notices SET notice_date_is_new ='', notice_is_new=0, update_date=update_date where notice_date_is_new !='0000-00-00 00:00:00' and (notice_date_is_new < now() - interval $pmb_newrecord_timeshift day )";
+			mysql_query($req_old, $dbh);
+		}
 		
 		// formatage des valeurs de $value
 		// $value est un tableau contenant les infos du périodique
@@ -260,7 +269,8 @@ class serial {
 			
 		}
 		// Mise à jour des index de la notice
-		notice::majNoticesTotal($this->serial_id);	
+		notice::majNoticesTotal($this->serial_id);
+		
 		return $this->serial_id;
 	}
 	
@@ -1420,9 +1430,14 @@ class bulletinage extends serial {
 		global $pmb_droits_explr_localises, $explr_invisible;			
 		global $pmb_sur_location_activate;	
 		global $xmlta_doctype_bulletin;
+		global $deflt_notice_is_new;
 		
 		$this->bulletin_id = $bulletin_id;
-		if($this->bulletin_id) $this->fetch_bulletin_data();
+		if($this->bulletin_id){
+			$this->fetch_bulletin_data();
+		} else {
+			$this->b_is_new = $deflt_notice_is_new;
+		}
 		if($serial_id) $this->bulletin_notice = $serial_id;
 		
 		$tmp_link=$this->notice_link;
@@ -1694,7 +1709,13 @@ class bulletinage extends serial {
 	
 	// fonction de mise à jour d'une entrée MySQL de bulletinage
 	function update($value,$dont_update_bul=false, $other_fields="") {
-		global $dbh;
+		global $dbh,$pmb_newrecord_timeshift;
+		
+		// clean des vieilles nouveautés
+		if($pmb_newrecord_timeshift){
+			$req_old="UPDATE notices SET notice_date_is_new ='', notice_is_new=0, update_date=update_date where notice_date_is_new !='0000-00-00 00:00:00' and (notice_date_is_new < now() - interval $pmb_newrecord_timeshift day )";
+			mysql_query($req_old, $dbh);
+		}
 		
 		if(is_array($value)) {
 			$this->bulletin_titre  = $value['bul_titre'];
@@ -2759,9 +2780,12 @@ class analysis extends bulletinage {
 	var $analysis_thumbnail_url = '' ;
 	var $analysis_create_date = "0000-00-00 00:00:00"; // date création
 	var $analysis_update_date = "0000-00-00 00:00:00"; // date modification
+	var $analysis_is_new = 0;
 	
 	// constructeur
 	function analysis($analysis_id, $bul_id=0) {
+		global $deflt_notice_is_new;
+		
 		// param : l'article hérite-t-il de l'URL de la notice chapeau
 		global $pmb_serial_link_article;
 		// param : l'article hérite-t-il de l'URL de la vignette de la notice chapeau
@@ -2769,7 +2793,11 @@ class analysis extends bulletinage {
 		$this->analysis_id = $analysis_id;
 		if ($bul_id) $this->id_bulletinage = $bul_id;
 		
-		if ($this->analysis_id) $this->fetch_analysis_data();
+		if ($this->analysis_id){
+			$this->fetch_analysis_data();
+		} else {
+			$this->analysis_is_new = $deflt_notice_is_new;
+		}
 		$tmp_link=$this->notice_link;
 		
 		//On vide les liens entre notices car ils sont appliqués pour le serial dans le $this
@@ -3614,7 +3642,13 @@ class analysis extends bulletinage {
 	function analysis_update($values, $other_fields="") {
 		
 		global $dbh,$pmb_notice_img_folder_id,$opac_url_base,$pmb_notice_img_pics_max_size;
-		global $pmb_map_activate;
+		global $pmb_map_activate,$pmb_newrecord_timeshift;
+		
+		// clean des vieilles nouveautés
+		if($pmb_newrecord_timeshift){
+			$req_old="UPDATE notices SET notice_date_is_new ='', notice_is_new=0, update_date=update_date where notice_date_is_new !='0000-00-00 00:00:00' and (notice_date_is_new < now() - interval $pmb_newrecord_timeshift day )";
+			mysql_query($req_old, $dbh);
+		}
 		
 	    if(is_array($values)) {
 			$this->analysis_biblio_level	=	'a';

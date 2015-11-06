@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: start.inc.php,v 1.32 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: start.inc.php,v 1.32.4.1 2015-09-28 15:23:35 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -88,6 +88,8 @@ if($lang_sel) {
 }
 
 if (!$pmb_indexation_lang) $pmb_indexation_lang = $lang; 
+
+if ($opac_search_results_per_page > $opac_max_results_on_a_page) $opac_search_results_per_page = $opac_max_results_on_a_page;
 
 require_once($base_path."/includes/logs.inc.php");
 

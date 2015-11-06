@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serial_display.class.php,v 1.161 2015-07-16 10:03:11 jpermanne Exp $
+// $Id: serial_display.class.php,v 1.161.2.1 2015-09-14 08:45:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -1043,7 +1043,7 @@ function do_image(&$entree) {
 	// génération du header
 	function do_header() {
 		global $dbh, $base_path;
-		global $charset;
+		global $charset,$msg;
 		global $icon_doc,$biblio_doc,$use_opac_url_base,$opac_url_base;
 		global $tdoc;
 		global $no_aff_doc_num_image;
@@ -1057,6 +1057,14 @@ function do_image(&$entree) {
 			$info_bulle_icon=$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc];
 			if ($use_opac_url_base)	$this->icondoc="<img src=\"".$opac_url_base."images/$icon\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
 			else $this->icondoc="<img src=\"".$base_path."/images/$icon\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
+    	}
+    	
+    	//Icone nouveauté
+    	$icon = "icone_nouveautes.png";
+    	if($this->notice->notice_is_new){
+    		$info_bulle_icon_new=$msg["notice_is_new_gestion"];
+    		if ($use_opac_url_base)	$this->icon_is_new="<img src=\"".$opac_url_base."images/$icon\" alt=\"$info_bulle_icon_new\" title=\"$info_bulle_icon_new\" align='top' />";
+    		else $this->icon_is_new="<img src=\"".$base_path."/images/$icon\" alt=\"$info_bulle_icon_new\" title=\"$info_bulle_icon_new\" align='top' />";
     	}
 
 		if ($this->notice->statut) {
@@ -1205,6 +1213,7 @@ function do_image(&$entree) {
 					$this->header=$this->header." <i>in ".$this->parent_title." (".$this->parent_numero." ".($this->parent_date?$this->parent_date:$this->parent_aff_date_date).")</i> ";
 			}
 		}
+		if ($this->icon_is_new) $this->header = $this->header." ".$this->icon_is_new;
 		global $use_opac_url_base, $opac_url_base, $use_dsi_diff_mode ;
 		if($this->notice->lien) {
 			// ajout du lien pour les ressources électroniques

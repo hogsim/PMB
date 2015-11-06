@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // � 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ItemUI.js,v 1.35 2015-03-19 09:51:28 dgoron Exp $
+// $Id: ItemUI.js,v 1.35.4.1 2015-10-09 13:49:22 dgoron Exp $
 
 
 define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/dom-construct", "dojo/dom", "dojo/on", "dojo/topic","dojo/_base/lang","dijit/form/Button","dijit/form/RadioButton","dijit/form/ToggleButton", "apps/pmb/authForm","dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem", "dijit/form/TextBox","dijit/registry","dojo/dom-style"], function(declare,ContentPane, domConstruct, dom, on, topic, lang, Button, RadioButton, ToggleButton,authForm, DropDownButton, DropDownMenu, MenuItem, TextBox, registry,domStyle){
@@ -62,8 +62,8 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/dom-construct", 
 			this.inherited(arguments);
 		},
 		itemIndexAck: function(response){
-			if(dojo.byId('categs_isbd')) {
-				domConstruct.place('<label>'+response.descriptors_isbd+'</label>', dojo.byId('categs_isbd'), 'only');
+			if(dojo.byId('descriptors_isbd')) {
+				domConstruct.place('<label>'+response.descriptors_isbd+'</label>', dojo.byId('descriptors_isbd'), 'only');
 			}
 			if(dojo.byId('tags_isbd')) {
 				domConstruct.place('<label>'+response.tags_isbd+'</label>', dojo.byId('tags_isbd'), 'only');
@@ -102,7 +102,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/dom-construct", 
 				html+="<b>"+this.getMsg("dsi_js_item_content")+"</b> : "+data.item.content+"</br>";
 			if(data.item.url){
 				if(data.item.logo_url)
-					html+="<b>"+this.getMsg("dsi_js_item_link")+"</b> : <a href='"+data.item.url+"' target='_blank'><img src='"+data.item.logo_url+"' width='auto' height='20'/></a></br>";
+					html+="<b>"+this.getMsg("dsi_js_item_link")+"</b> : <a href='"+data.item.url+"' target='_blank'><img src='"+data.item.logo_url+"' alt='"+data.item.url+"' width='auto' height='20'/></a></br>";
 				else
 					html+="<b>"+this.getMsg("dsi_js_item_link")+"</b> : <a href='"+data.item.url+"' target='_blank'>"+data.item.url+"</a></br>";
 			}
@@ -110,10 +110,11 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/dom-construct", 
 				html+="<b>"+this.getMsg("dsi_js_item_tags")+"</b> :  <span id='tags_isbd'></span></br><input id='max_tags' type='hidden' value='0' name='max_tags'>";	
 				html+="	<div class='row' id='buttons_tags'></div></br>";
 			}
-			if (!(data.item.status == 2 && data.item.categs.length == 0)) {
-				html+="<b>"+this.getMsg("dsi_docwatch_item_categ")+"</b> : <span id='categs_isbd'></span></br>";
+			if (!(data.item.status == 2 && data.item.descriptors.length == 0)) {
+				html+="<b>"+this.getMsg("dsi_docwatch_item_categ")+"</b> : <span id='descriptors_isbd'></span></br>";
 				html+="	<div id='categ'></div>";
 			}
+			html+="<div class='row'>&nbsp;</div>";
 			html+="<div class='row'>";
 			html+="	<div id='button_index'></div>";		
 			html+="</div>";
@@ -184,7 +185,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/dom-construct", 
 						}, "button_article").on('click', lang.hitch(this,this.see, data.item.article_link))
 					);				
 				}		
-				if(!data.item.categs)data.item.categs= new Array();
+				if(!data.item.descriptors)data.item.descriptors= new Array();
 				this.own(this.categForm= new authForm({
 						id: "categ",
 						what_sel: "select_categ",
@@ -193,7 +194,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/dom-construct", 
 						selectUrl: "./select.php?what=categorie&dyn=1",
 						inputIdUrl: "p1",
 						inputNameUrl: "p2",
-						data: data.item.categs,
+						data: data.item.descriptors,
 						callback:"callback_categ"
 					},'categ')
 				);
@@ -297,7 +298,7 @@ define(["dojo/_base/declare", "dijit/layout/ContentPane", "dojo/dom-construct", 
 		itemIndex: function(evt){
 			var data=this.categForm.get_data();
 			var data_tags=this.get_tags();
-			topic.publish('itemUI',"itemIndex",{itemId:this.itemId,data:{categs:data,tags:data_tags}});
+			topic.publish('itemUI',"itemIndex",{itemId:this.itemId,data:{descriptors:data,tags:data_tags}});
 		},
 		get_tags: function(evt){
 			var data= new Array();

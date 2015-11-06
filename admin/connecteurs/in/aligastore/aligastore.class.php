@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: aligastore.class.php,v 1.14 2015-04-03 11:16:26 jpermanne Exp $
+// $Id: aligastore.class.php,v 1.14.4.2 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -309,6 +309,7 @@ class aligastore extends connector {
 				if ($this->del_old) {
 					$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."'";
 					pmb_mysql_query($requete);
+					$this->delete_from_external_count($source_id, $ref);
 				}
 				$ref_exists = false;
 				//Si pas de conservation ou refï¿½rence inexistante
@@ -536,11 +537,10 @@ class aligastore extends connector {
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
 		$folder = $this->image_folder;
 		$folder_url = $this->image_folder_url;
-		
-		configurer_proxy_curl($ch);
 
 		if (!file_exists($folder."/".$isbn."_thumb.jpg")) {
 			$url = str_replace("!!isbn!!", $isbn, $this->image_thumb_url);
+			configurer_proxy_curl($ch,$url);
 			curl_setopt($ch, CURLOPT_URL, $url);
 			$buffer = curl_exec($ch);
 			if (!curl_error($ch)) {
@@ -553,6 +553,7 @@ class aligastore extends connector {
 		
 		if (!file_exists($folder."/".$isbn."_front.jpg")) {
 			$url = str_replace("!!isbn!!", $isbn, $this->image_front);
+			configurer_proxy_curl($ch,$url);
 			curl_setopt($ch, CURLOPT_URL, $url);
 			$buffer = curl_exec($ch);
 			if (!curl_error($ch)) {
@@ -566,6 +567,7 @@ class aligastore extends connector {
 
 		if (!file_exists($folder."/".$isbn."_back.jpg")) {
 			$url = str_replace("!!isbn!!", $isbn, $this->image_back);
+			configurer_proxy_curl($ch,$url);
 			curl_setopt($ch, CURLOPT_URL, $url);
 			$buffer = curl_exec($ch);
 			if (!curl_error($ch)) {

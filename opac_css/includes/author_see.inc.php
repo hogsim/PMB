@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: author_see.inc.php,v 1.76 2015-07-09 10:21:31 mbertin Exp $
+// $Id: author_see.inc.php,v 1.76.2.2 2015-10-16 10:55:52 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,14 +37,14 @@ if($id){
 	//récupération de la liste...
 	// affichage des notices associées
 	
-	$records_list = "";
+	$records_list = "<h3><span class=\"aut_details_liste_titre\">";
 	if($ourAuteur->type == 72) {
 		//Congrès
-		$records_list.= pmb_bidi("<h3>$msg[documents_disponibles_meme_congres]");
+		$records_list.= pmb_bidi($msg[documents_disponibles_meme_congres]);
 	} else {
-		$records_list.= pmb_bidi("<h3>$msg[documents_disponibles_meme_auteur]");
+		$records_list.= pmb_bidi($msg[documents_disponibles_meme_auteur]);
 	}
-	$records_list.= "</h3>\n";
+	$records_list.= "</span></h3>\n";
 	
 	//droits d'acces emprunteur/notice
 	$acces_j='';
@@ -276,5 +276,11 @@ if($id){
 				});
 			</script>";
 		}
+		//Formulaire "FACTICE" pour l'application du comparateur et du filetre multiple...
+		$str.= '
+<form name="form_values" style="display:none;" method="post" action="?lvl=more_results&mode=extended">
+	<input type="hidden" name="from_see" value="1" />
+	'.facette_search_compare::form_write_facette_compare().'
+</form>';
 	}
 }

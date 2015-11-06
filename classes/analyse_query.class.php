@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: analyse_query.class.php,v 1.60 2015-06-09 14:28:50 jpermanne Exp $
+// $Id: analyse_query.class.php,v 1.60.2.1 2015-09-14 07:20:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -1063,7 +1063,7 @@ class analyse_query {
 						//pour les grosses volumétrie, on essaye d'etre plus efficace
 						switch($table_mot){
 							case "notices_mots_global_index" :
-								$query =" select count(id_notice) from notices";
+								$query =" select count(notice_id) from notices";
 								break;
 							default :
 								$query = "select count(distinct ".$field_id.") from ".$table_mot;

@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.2 2012-08-16 15:21:08 arenou Exp $ -->
+$Id: fr_FR.xml,v 1.2.10.1 2015-09-15 16:23:37 apetithomme Exp $ -->
 
 <XMLlist>
 	<entry code="planificateur_sync_liste">Liste des entrepôts</entry>
@@ -16,7 +16,8 @@ $Id: fr_FR.xml,v 1.2 2012-08-16 15:21:08 arenou Exp $ -->
 	<entry code="planificateur_stop_sync">Synchronisation arrêtée</entry>
 	<entry code="planificateur_abort_sync">Synchronisation annulée</entry>
 	<entry code="error_parameters">Erreur de paramétrage de la tâche</entry>
-	<entry code="planificateur_sync_import">Import automatique des notices synchronisées</entry>	
+	<entry code="planificateur_sync_import">Import automatique des notices synchronisées</entry>
+	<entry code="planificateur_sync_delete">Suppression automatique des notices supprimées du serveur</entry>
 	<!--<entry code="sync_report_error">Erreur durant l'exécution de la tâche</entry>
 	<entry code="sync_report_success">Tâche réalisée avec succès</entry>
 --></XMLlist>

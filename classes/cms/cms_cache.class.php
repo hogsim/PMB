@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_cache.class.php,v 1.4 2014-07-17 14:49:08 abacarisse Exp $
+// $Id: cms_cache.class.php,v 1.4.4.1 2015-10-08 14:32:53 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -76,5 +76,11 @@ final class cms_cache{
 	 */
 	private function __destruct() {
 		self::$cms_cache_arrayObject=null;
+	}
+	
+	public static function clean_cache(){
+		global $dbh;
+		
+		pmb_mysql_query("TRUNCATE TABLE cms_cache_cadres");
 	}
 }

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: expl.inc.php,v 1.32 2015-06-11 07:29:47 jpermanne Exp $
+// $Id: expl.inc.php,v 1.32.2.1 2015-08-14 10:30:03 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -25,6 +25,7 @@ $ex_query = clean_string($ex_query);
 $EAN = '';
 $isbn = '';
 $code = '';
+$rqt_bulletin = 0;
 
 if(isEAN($ex_query)) {
 	// la saisie est un EAN -> on tente de le formater en ISBN
@@ -202,7 +203,7 @@ if ($rqt_bulletin!=1) {
 			print $end_result_liste;
 		} else {
 			$notice = pmb_mysql_fetch_object($myQuery);
-			print "<div class=\"row\"><div class=\"msg-perio\">".$msg[recherche_encours]."</div></div>";
+			print "<div class=\"row\"><div class=\"msg-perio\">".$msg['recherche_encours']."</div></div>";
 			// un seul résultat : je balance le user direct sur la notice concernée
 			print "<script type=\"text/javascript\">";
 			print "document.location = \"./catalog.php?categ=isbd&id=".$notice->notice_id."\"";

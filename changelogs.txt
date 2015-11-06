@@ -1,0 +1,478 @@
+************************************************************************************************************************
+************************************************************************************************************************
+************************************************************************************************************************
+************************************************************************************************************************
+*                                    CHANGE_LOG_4.2.2                                                                  *
+************************************************************************************************************************
+************************************************************************************************************************
+************************************************************************************************************************
+************************************************************************************************************************
+
+
+*******************
+ACTIONS
+
+------
+Divers
+------
+ 
+* Mise à jour de la documentation livrée avec PMB
+Mise à jour des fichiers du dossier pmb/doc
+
+
+*******************
+ANOMALIES
+
+--------------
+Administration
+--------------
+
+* Page blanche en pointage des importés
+Correction de l'inclusion des fichiers de calcul d'ISBN.
+
+* L'action d'encodage des mots de passe lecteurs ne traite pas tous les lecteurs
+L'action Encoder les mots de passe lecteurs pour la connexion à l'Opac dans Administration > Outils > Nettoyage de base  ne traitait pas tous les lecteurs de la base.
+
+* Taille de champs en base de données
+Augmentation des champs blob en mediumblob : empr_expl (table logopac), empr_expl (table statopac) et session (table opac_sessions)
+
+* Nettoyage de base : auteurs
+Correction de la fonction d'effacement des auteurs inutilisés qui provoquait un blocage.
+
+* Import fichiers Prisme
+Rendre possible l'import d'un fichier txt Prisme dans un PMB en utf-8
+
+* Encodage des mots de passe lecteurs
+Correction d'une boucle infinie sur l'encodage des mots de passe en nettoyage de base dans certains cas de synchronisation externe.
+
+* Planificateur : blocage selon la configuration
+Correction de l'erreur si le paramètre z39.50 import_modele est à func_other_customfields.inc.php
+
+* Sauvegarde : prise en compte des champs de type geometry
+Correction de la sauvegarde des champs de type geometry qui bloquaient la restauration.
+
+* Mise à jour du schéma de la base de données
+Mise à jour du schéma de la base de données dans la version 5.19
+
+---------
+Autorités
+---------
+
+* Affichage des autorités liées
+Correction de l'affichage ISBD des éditeurs.
+
+---------
+Catalogue
+---------
+
+* Recherche multi-critères sur date de publication
+Correction des requêtes erronées sur la recherche par date de publication, pour les critères <, <=, > et >=.
+
+* Vérification de l'url associée bloque la page
+Passage du script en asynchrone.
+
+* Ne pas modifier la date de mise à jour des notices lors du calcul des nouveautés
+Lorsque que l'on enlève une notice des nouveautés, sa date de modification ne doit pas être modifiée.
+
+* Affichage champ personnalisé de type sélecteur d'autorité
+Correction de l'affichage du champ pour les notices dépliables.
+
+* Notices nouveautés
+Affichage de l'icone Nouveautés pour les notices
+
+* Indexation catégories et champ personnalisé d'autorité catégorie
+Ne pas stocker en session le dernier thésaurus utilisé quand l'appel se fait sur un champ personnalisé d'autorité catégorie.
+
+* Envoi de recherche et documents numériques
+Pouvoir envoyer les documents numériques sans les exemplaires.
+
+* Actions rapides sur les paniers
+Relooking du sélecteur d'action rapide sur les paniers
+
+* Grille de catalogage et  ordinateurs Apple
+La combinaison ctrl+clic étant transformée en clic droit sur les ordinateurs Apple, ajout de la possibilité de faire cmd(anciennement pomme)+clic pour le même résultat.
+
+-----------
+Circulation
+-----------
+
+* Transferts : retour de prêt suite à une réservation
+En retour de prêt, l'exemplaire est retournable immédiatement dans sa localisation d'origine si le transfert fait suite à une réservation.
+
+* Filtres relances
+Retour du filtre sur les catégories qui n'apparaissait plus.
+
+* Relances : changement de libellé pour la colonne Lettre imprimée
+Libellé changé à Lettre imprimée / Mail pour les libellés français et Printed letters / Mails pour les libellés anglais.
+
+* Problème avec la suppression par panier des lecteurs qui ont une réservation validée
+Blocage de la suppression si le lecteur possède une réservation validée.
+
+* Mise en panier d'emprunteurs
+Indication du nombre d'emprunteurs ajoutés dans un panier.
+
+* Erreur sur le prêt autonome à l'OPAC
+Reprise de la fonction d'origine self_checkout.
+Création d'une fonction spécifique pour bibloto.
+Mise à jour du manifest.
+
+--------
+Demandes
+--------
+
+* Dans le module demande les champs personnalisés de type requete SQL ne sont pas cherchables
+Le sélecteur d'un champ personnalisé de type Liste de choix à partir d'une requête était vide.
+
+------
+Divers
+------
+
+* Echec du gestionnaire des tâches + Import en double des champs personnalisés (Z39.50 et Connecteurs)
+Avec certains couples de fonctions d'import (paramètre import_modele dans Paramètres généraux et Options z39.50) le planificateur des tâches n'était pas fonctionnel.
+Lors d'un import de notices (par les connecteurs ou le z39.50) et en passant par le formulaire, des champs personnalisés étaient parfois importés en double.
+
+* Curl : options et proxy
+Possibilité de créer des tableaux d'options curl et de domaines où l'on ne doit pas utiliser le proxy. Tableaux à créer dans config_local.inc.php (gestion + opac)
+
+* Restauration d'une sauvegarde
+Correction du problème de restauration des données en base par la procédure emergency.
+
+* Inclusion d'un fichier d'image inexistant
+En gestion le fichier notification_empty.png n'est pas présent dans tous les styles mais il est dans le dossier images. 
+
+---
+DSI
+---
+
+* Veille : création d'article, de notice ou de rubrique
+Correction des liens vers les articles et les rubriques. Mise à jour du libellé du bouton après création d'article, de notice ou de rubrique.
+
+* Veille : lien vers les notices externes
+Correction du lien pour voir les notices externes
+
+* Modification équation de recherche en erreur si apostrophe dans le commentaire
+Correction de l'objet envoyé à la requête de mise à jour.
+
+--------
+Editions
+--------
+
+* Templates : correction de la fonction #expl_num_vign_reduit(); pour les notices de bulletin
+Correction de la fonction de template pour prendre en compte les notices de bulletin.
+
+* Documentation des fonctions de consolidation
+Mise à jour des fonctions manquantes dans la documentation.
+
+------
+Fiches
+------
+
+* Les fiches ne sont plus affichées
+Dans le module Fiches, les fiches n'étaient plus affichées.
+
+----
+OPAC
+----
+
+* Dépliage impossible des notices sous Internet Explorer
+Résolution d'une erreur javascript bloquant le dépliage des notices sous Internet Explorer
+
+* Correction sur le paramètre OPAC empr_code_info
+Le code HTML du paramètre empr_code_info ne s'affiche que si l'emprunteur est correctement identifié.
+
+* Filtre Abonnement actif dans le navigateur de périodique
+Correction de la page blanche et de l'erreur javascript si pas d'abonnement actif.
+
+* Ajout de notices triées au panier
+Prise en compte du tri effectif pour l'ajout de notices dans un panier
+
+* Recherche par fréquence d'apparition
+Correction des requêtes affichant la liste des résultats.
+
+* Div aut_details
+Ajout d'une classe sur l'affichage des div id_details liés à une bannette.
+
+* Navigateur de périodique : sélection du bon périodique
+Correction d'une erreur javascript dans le cas de l'affichage des notices au format Django
+
+* Répertoire temp de la visionneuse
+Le répertoire temp de la visionneuse a été supprimé par erreur du CVS le 03/06/15 dans la version de DEV.
+
+Le problème se retrouve aujourd'hui en 4.2 et en 4.3 DEV 
+
+* Ajout des attributs ALT et TITLE sur la vignette de la notice
+On affiche le titre de la notice dans la balise title, si celle-ci est vide.
+On affiche vignette dans la balise alt.
+
+* Photothèque : notice dans le panier
+Affichage de la bonne icone de panier si la notice est déjà présente.
+
+* Lenteurs suggestions
+Limitation des suggestions aux 5 premiers mots recherchés
+
+* Modification d'un classe d'affichage personnalisée
+Suppression de l'affichage des notes de contenu dans la classe abiodoc
+
+* Visionneuse des documents numériques de type URL
+Correction du non-affichage de certains documents de type URL
+
+* Avis bbcode
+Ajout d'un bouton pour écrire en rouge
+Ajout d'un bouton de liste à puce
+
+* Rang de réservation non affiché à l'Opac
+Lorsque l'on réserve une notice à l'Opac dans la fenêtre de prise en compte de la réservation le rang n'était plus affiché.
+
+* Ajout d'attribut class
+Classes ajoutées sur les H3 en historique de recherche et en affichage de panier.
+
+* Fatal error affichage Django + droit d'accès
+Fatal error générée avec le nouvel affichage des notices en activant les droits d'accès sur les documents numériques
+
+* Tableau des prêts à l'opac
+Correction du colspan selon le paramétrage.
+
+* Impression documents numériques
+Ne pas proposer l'impression des documents avec un statut spécifique.
+
+* Ajout de span pour l'application de la css
+Modification des fichiers liés à l'affichage des autorités à l'Opac pour ajouter des span autours des espaces et du titre des pages.
+
+* Authentification par pop-up
+Dysfonctionnement des cookies réglé.
+
+* Suppression de div vides
+Suppression du div facettes dans la pages de section et de localisation, et suppression du div lvl1 dans les pages d'autorité.
+
+* Import de notice dans zotero
+La série était affectée en collection (Zotero), elle est désormais concaténée au titre, comme dans l'affichage ISBD.
+La collection est affectée en collection (Zotero).
+La mention d'édition est affectée à l'édition (Zotero).
+Le permalink était affecté à l'URL (Zotero), il est remplacé par l'url associée.
+
+* Facettes dans les pages autorités
+Correction pour le comparateur et le filtrage multiple par facettes dans les pages d'autorités
+
+* Erreur javascript sur pop-up d'aide des facettes
+Le pop-up d'aide des facettes n'apparaissait que sur une comparaison active, il est désormais disponible avant comparaison.
+
+-------
+PORTAIL
+-------
+
+* Démarrage automatique du carrousel responsive
+Ajout du paramètre Transition automatique permettant le démarrage du carrousel responsive.
+
+* Modules veille documentaire : correction de la fonction rss_link
+Suppression du double slash dans l'url rss de la veille documentaire
+
+* Carrousel : temps de transition
+Correction de la prise en compte du temps de transition.
+
+* Carrousel Responsive : Erreur à la mise en cache 
+Correction d'une erreur JS apparaissant à l'affichage une fois mis en cache. 
+
+* Module liste de bannettes / construction du lien vers une bannette/une notice
+- La construction du lien vers une bannette n'était pas exploitée par Django.
+- Erreur dans la construction du lien vers la notice
+
+
+*******************
+DEVELOPPEMENTS
+
+--------------
+Administration
+--------------
+
+* Gestion des suppressions OAI
+Gestion des suppressions pour les connecteurs OAI entrants.
+Lors de l'import automatique des notices, suppression des notices liées aux enregistrements marqués comme supprimés sur le serveur.
+
+---------
+Catalogue
+---------
+
+* Nouvelle class de mappage des metas données
+Ajout d'une nouvelle classe intermédiaire de mappage des métadonnées issues d'un dépôt WebDav et les champs de la notice associée.
+Un nouveau champ dans le paramétrage d'un connecteur WebDav permet d'associer une classe spécifique à un dépôt.
+Les classes spécifiques doivent héritées cette classe et être déposées dans le répertoire <pmb>/classes/webdav_mapper
+
+------
+Divers
+------
+
+* Champs perso date répétables
+Rendre les champs perso de type date répétables
+
+* Champ perso texte i18n
+Création d'un champ perso répétable de type texte avec gestion de la langue
+
+--------
+Editions
+--------
+
+* Circulation simplifiée des périodiques
+La circulation simplifiée des périodiques permet de ne pas bulletiner des exemplaires qui doivent partir en circulation.
+Pour l'activer, il faut cocher Type de la circulation Simplifiée dans la gestion des abonnements.
+En Edition / Circulation Simplifiée, il y a deux formulaires:
+
+1)Impression des étiquettes de circulation
+
+Toutes les étiquettes de circulation des bulletins à recevoir entre deux dates sont imprimées.
+Le script d'impression /includes/simple_circ/custom_label_no_script.inc.php propose 2 formats d'étiquette (2*7 et 3*7)
+Il est personnalisable avec le paramètre serialcirc_simple_print_script
+Pour les étiquettes possédant plus d'un groupe de circulation, un codebarres est généré.
+
+2)Impression des listes de circulation
+
+les codebarres générés permettent d'imprimer des listes de destinataire complètes.
+Il suffit de les doucheter et d'accumuler les circulations. 
+l'impression se fait en PDF personalisable aussi.
+
+----
+OPAC
+----
+
+* Affichage Django dans les modes d'affichage des résultats de recherche
+Ajout du mode d'affichage Django pour les affichages multiples en résultat de recherche
+
+* Possibilité de désactiver la pagination dans les résultats de recherche
+Possibilité d'afficher tous les résultats de la recherche sur la même page.
+Ajout d'un paramètre pour définir un maximum de notices à afficher sur une même page.
+
+* Gestion des catégories dans l'affichage Django des notices
+Possibilité d'afficher les catégories dans les templates django de notices.
+Ajout de la classe authorities_collection afin de n'instancier qu'une seule fois les autorités qui apparaissent plusieurs fois dans la page.
+
+* Fonction de template django pour l'affichage des mois en format court
+Ajout d'une fonction django pour l'affichage des mois en format court (jan, fev, mars, avr...).
+Nom de la fonction : shortmonthletter
+
+-------
+Portail
+-------
+
+* Module liste de catégories
+Développement d'un module permettant de lister les formes retenues matchant la recherche via la forme rejetée.
+
+* Module liste de documents numériques
+Création d'un module de liste de documents numériques regroupables/hiérarchisables selon des facettes de notices
+
+* Module bannette
+Création d'un module d'affichage de bannette pour le portail
+
+* Module liste de veilles / construction du lien vers une veille
+Module liste de veilles :
+- Implémentation de la construction du lien vers une veille
+
+
+*******************
+EVOLUTIONS
+
+--------------
+Administration
+--------------
+
+* Affichage champ personnalisé basé sur les catégories
+Ajout d'une option au champ personnalisé permettant de tout afficher ou juste la dernière feuille de l'arbre.
+
+* Planificateur PMB : Substitution du catalog.xml 
+Substitution possible pour les types de tâches personnalisés
+
+* Calcul des droits d'accès
+La case à cocher Garder les droits spécifiques est cochée par défaut.
+
+---------
+Catalogue
+---------
+
+* Choix de la valeur par défaut du champ nouveauté dans les préférences utilisateurs
+La valeur par défaut du champ nouveauté en création de notice est paramétrable par utilisateur.
+
+* Recherche multi-critères
+Possibilité de sélectionner plusieurs autorités sur un même critère, avec choix de l'opérateur et/ou entre ces opérateurs.
+
+-----------
+Circulation
+-----------
+
+* Liste de circulation
+Les champs suivants sont désormais ajoutables à la fiche de circulation : catégorie, statut, code statistique, groupe.
+
+--------
+Demandes
+--------
+
+* Champs personnalisés Demandes
+Ajout de champs personnalisés sur le module Demandes
+
+--------
+Editions
+--------
+
+* Import/export de templates de notices
+L'import/export des templates de notices est désormais possible.
+
+* Evolution de la fonction #ellipse(); dans les templates de notices
+Possibilité de tronquer sur le nombre de caractères ou sur le nombre de mots.
+
+----
+OPAC
+----
+
+* Compte lecteur : export excel des prêts
+Ajout d'un bouton qui permet d'exporter les prêts en cours ou en retard au format excel avec mise en forme
+
+* Corrections pour l'affichage Django des notices
+Repli sur les templates du dossier common dans le cas des templates absents du dossier personnalisé.
+Correction du problème d'affichage du bouton d'ajout au panier quand on n'en a pas le droit.
+
+* Mécanique pour changer les images
+Nouvelle fonction dans misc.inc.php : get_url_icon(nom_icone);
+
+Cette fonction cherche l'icône dans cet ordre :
+- Répertoire images du style client
+- Répertoire images du style common
+- Sinon Répertoire images de l'OPAC
+
+Mis en place pour les icônes de panier et pour la no_image dans un carrousel du portail.
+
+* Création de messages pour le BBcode dans les avis
+Les libellés des boutons sont dans les fichiers de messages, donc substituables.
+
+* Suggestions : quantité et suggestions identiques
+Il est possible de saisir la quantité dans les suggestions. Les suggestions identiques sont autorisées si l'utilisateur est complètement anonyme : emprunteur non authentifié et adresse email non saisie.
+
+* Affichage django des notices / évolution du template common
+Ajout des catégories et des champs personnalisés
+
+* Historique : tout cocher/tout décocher et ordre des boutons
+Le bouton cocher toutes les cases devient cocher/tout décocher et est placé avant le bouton supprimer les recherches cochées.
+
+* Amélioration de requêtes pour l'affichage des périodiques à l'OPAC 
+Modification de requêtes dans la classe d'affichage pour l'affichage des notices de périodique à l'OPAC 
+
+-------
+Portail
+-------
+
+* Module liste de bannettes / ajout de méthodes pour la source de données
+Ajout des sources de données :
+- depuis un champ de type de contenu d'une rubrique
+- depuis un champ de type de contenu d'un article
+- sélecteur par la valeur d'un champ générique d'article
+- sélecteur par la valeur d'un champ générique de rubrique
+
+* Span de construction portail
+Ajout d'une classe cmsNoStyle sur les <span> représentant les cadres hors de la page courante du portail, en mode construction. 
+
+* Vider le cache
+Création d'un bouton pour vider le cache : celui-ci apparait en gestion du contenu éditorial, si un article ou une section est plus récent que le cache des cadres du portail.
+
+* Module liste d'items / utilisation des tags
+- Corrections pour l'affichage des tags pour la vue Django
+- Permettre de sélectionner une page pour la construction du lien vers le tag
+- Permettre de sélectionner une page pour la construction du lien vers l'item
+
+* Module liste d'items / Vue Django par Tags
+Nouvelle vue Django de liste d'items classés par Tags

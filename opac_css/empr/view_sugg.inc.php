@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: view_sugg.inc.php,v 1.12 2015-04-03 11:16:26 jpermanne Exp $
+// $Id: view_sugg.inc.php,v 1.12.4.1 2015-09-24 15:48:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -73,7 +73,7 @@ if($nbr){
 		
 		$sug = new suggestions($row->id_suggestion);
 		if($sug->get_explnum('id')){
-			$sug_form .="<td align='center'><i>".($sug->get_explnum('id') ? "<a href=\"$base_path/explnum_doc.php?explnumdoc_id=".$sug->get_explnum('id')."\" target=\"_LINK_\"><img src='$base_path/images/globe_orange.png' border='0' /></a>" : '' )."</i></td>";
+			$sug_form .="<td align='center'><i>".($sug->get_explnum('id') ? "<a href=\"$base_path/explnum_doc.php?explnumdoc_id=".$sug->get_explnum('id')."\" target=\"_LINK_\"><img src='".get_url_icon("globe_orange.png")."' border='0' /></a>" : '' )."</i></td>";
 		} else {
 			$sug_form .="<td></td>";
 		}

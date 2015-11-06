@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: facette_search.class.php,v 1.55 2015-05-26 08:21:38 apetithomme Exp $
+// $Id: facette_search.class.php,v 1.55.2.3 2015-10-20 07:40:14 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -76,7 +76,7 @@ class facettes{
 				$end_req_sql = "order by ".$type_sort." ".$order_sort." ".$limit;
 				
 				//AND (lang = '' OR lang = ".$lang.")
-				$req = "select distinct value ,count(id_notice) as nb_result from (SELECT value,id_notice FROM notices_fields_global_index 
+				$req = "select value ,count(distinct id_notice) as nb_result from (SELECT value,id_notice FROM notices_fields_global_index 
 					WHERE id_notice IN (".$tab_id_notice.")
 					AND code_champ = ".($this->tab_facettes_record[$i]['id_critere']+0)."
 					AND code_ss_champ = ".($this->tab_facettes_record[$i]['id_ss_critere']+0)."
@@ -384,6 +384,7 @@ class facettes{
 		global $base_path;
 		global $msg;
 		$script ="
+		<script src='$base_path/includes/javascript/select.js' type='text/javascript'></script>
 		<script> 		
 			function test(elmt_id){
 				var elmt_list=document.getElementById(elmt_id);
@@ -904,7 +905,7 @@ class facettes{
 				$image="";
 				
 				if (substr($opac_notice_reduit_format_similaire,0,1)!="H" && $opac_show_book_pics=='1') {
-					$image="<a href='".$opac_url_base."index.php?lvl=notice_display&id=".$notice_id."'>"."<img class='vignetteimg_simili' src='./images/no_image.jpg' hspace='4' vspace='2'></a>";
+					$image="<a href='".$opac_url_base."index.php?lvl=notice_display&id=".$notice_id."'>"."<img class='vignetteimg_simili' src='".get_url_icon("no_image.jpg")."' hspace='4' vspace='2'></a>";
 					
 					if ($r->thumbnail_url) {
 						$url_image_ok=$r->thumbnail_url;

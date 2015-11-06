@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: resa.inc.php,v 1.58 2015-06-24 15:36:20 dbellamy Exp $
+// $Id: resa.inc.php,v 1.58.2.1 2015-09-24 09:52:07 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -203,6 +203,7 @@ if ($opac_resa) {
 					if ($res_resa_OK['ERROR']) {
 						$message_resa = $msg["resa_failed"]." : ".$res_resa_OK['MESSAGE'] ;
 					} else {
+						$id_resa_ajoutee=0;
 						$requete2 = "SELECT COUNT(1) FROM resa WHERE resa_idempr=".$_SESSION["id_empr_session"]." AND resa_idnotice='".$id_notice."' and resa_idbulletin='".$id_bulletin."' ";
 						$result2 = @pmb_mysql_query($requete2, $dbh);
 						$nb = pmb_mysql_result($result2,0,0);
@@ -235,13 +236,14 @@ if ($opac_resa) {
 									$requete3 .= "VALUES ('".$_SESSION["id_empr_session"]."','$id_notice','$id_bulletin', SYSDATE())";
 								}
 								$result3 = @pmb_mysql_query($requete3, $dbh);
+								$id_resa_ajoutee = pmb_mysql_insert_id($dbh) ;
 								$message_resa = $msg["added_resa"];
 								alert_mail_users_pmb($id_notice, $id_bulletin, $_SESSION["id_empr_session"]) ;
 							} else {
 								$message_resa=$msg["resa_doc_no_reservable"] ;
 							}
 						}
-						$id_resa_ajoutee = pmb_mysql_insert_id($dbh) ;
+						
 						if ($id_resa_ajoutee) {
 							// Archivage de la résa: info lecteur et notice et nombre d'exemplaire
 							$rqt = "SELECT * FROM empr WHERE id_empr=".$_SESSION["id_empr_session"];

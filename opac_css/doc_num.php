@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: doc_num.php,v 1.46 2015-06-26 13:03:18 dbellamy Exp $
+// $Id: doc_num.php,v 1.46.2.2 2015-08-14 08:04:07 jpermanne Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -69,6 +69,9 @@ if($opac_opac_view_activate){
 			} else {
 				unset($_SESSION["last_sortnotices"]);
 			}
+			//comparateur de facettes : on ré-initialise
+			require_once($base_path.'/classes/facette_search_compare.class.php');
+			facette_search_compare::session_facette_compare(null,true);
 		}
 	}
 }
@@ -267,7 +270,34 @@ if( ($rights & 16 || (is_null($dom_2) && $expl_num["explnum_visible_opac"] && (!
 	}
 	
 	if ($ligne->explnum_mimetype=="URL") {
-		if ($ligne->explnum_url) header("Location: $ligne->explnum_url");
+		if ($ligne->explnum_url){
+			if($pmb_logs_activate){
+				global $log, $infos_notice, $infos_expl;
+
+				$rqt= " select empr_prof,empr_cp, empr_ville as ville, empr_year, empr_sexe, empr_login,  empr_date_adhesion, empr_date_expiration, count(pret_idexpl) as nbprets, count(resa.id_resa) as nbresa, code.libelle as codestat, es.statut_libelle as statut, categ.libelle as categ, gr.libelle_groupe as groupe,dl.location_libelle as location
+							from empr e
+							left join empr_codestat code on code.idcode=e.empr_codestat
+							left join empr_statut es on e.empr_statut=es.idstatut
+							left join empr_categ categ on categ.id_categ_empr=e.empr_categ
+							left join empr_groupe eg on eg.empr_id=e.id_empr
+							left join groupe gr on eg.groupe_id=gr.id_groupe
+							left join docs_location dl on e.empr_location=dl.idlocation
+							left join resa on e.id_empr=resa_idempr
+							left join pret on e.id_empr=pret_idempr
+							where e.empr_login='".addslashes($login)."'
+							group by resa_idempr, pret_idempr";
+				$res=pmb_mysql_query($rqt);
+				if($res){
+					$empr_carac = pmb_mysql_fetch_array($res);
+					$log->add_log('empr',$empr_carac);
+				}
+				$log->add_log('num_session',session_id());
+				$log->get_log["called_url"] = $ligne->explnum_url;
+				$log->get_log["type_url"] = "external_url_docnum";
+				$log->save();
+			}
+			header("Location: $ligne->explnum_url");
+		}
 		exit ;
 	}
 }else{

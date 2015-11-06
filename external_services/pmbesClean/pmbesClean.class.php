@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesClean.class.php,v 1.10 2015-07-17 15:02:23 dgoron Exp $
+// $Id: pmbesClean.class.php,v 1.10.2.1 2015-09-30 08:40:31 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -560,6 +560,28 @@ class pmbesClean extends external_services_api_class {
 	
 			$result .= $affected." ".htmlentities($msg["nettoyage_res_suppr_relations_pan3"], ENT_QUOTES, $charset);
 			$opt = pmb_mysql_query('OPTIMIZE TABLE caddie_content');
+			
+			//relation 8
+			$result .= "<h3>".htmlentities($msg["nettoyage_clean_blob"], ENT_QUOTES, $charset)."</h3>";
+			
+			$affected = 0;			
+			for($i=1;$i<=2;$i++){
+				if($i==1){
+					$table='logopac';
+				}else{
+					$table='statopac';
+				}
+				$query = "SELECT column_type FROM information_schema.columns WHERE table_schema = '".DATA_BASE."' AND table_name = '".$table."' AND column_name = 'empr_expl'";
+				$res = pmb_mysql_query($query);
+				$row = pmb_mysql_fetch_object($res);
+			
+				if ($row->column_type == 'blob') {
+					$query = pmb_mysql_query("ALTER TABLE ".$table." CHANGE empr_expl empr_expl MEDIUMBLOB NOT NULL");
+					$affected += pmb_mysql_affected_rows();
+				}
+			}
+			$result .= $affected." ".htmlentities($msg["nettoyage_res_suppr_blob"], ENT_QUOTES, $charset);
+			
 		} else {
 			$result .= sprintf($msg["planificateur_rights_bad_user_rights"], $PMBusername);
 		}

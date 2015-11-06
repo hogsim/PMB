@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: oai.class.php,v 1.23 2015-04-03 11:16:28 jpermanne Exp $
+// $Id: oai.class.php,v 1.23.4.1 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -245,17 +245,17 @@ class oai extends connector {
 	}
 	
 	function rec_record($record) {
-		global $charset,$base_path;
+		global $charset,$base_path, $dbh;
 		
 		$rec=new oai_record($record,$charset,$base_path."/admin/connecteurs/in/oai/xslt",$this->metadata_prefix,$this->xslt_transform,$this->sets_names);
 		$rec_uni=$rec->unimarc;
 		if ($rec->error) echo 'erreur!<br />';
-		if (!$rec->error) {
+		$ref = $rec->header["IDENTIFIER"];
+		if (!$rec->error && ($rec->header['STATUS'] != 'deleted')) {
 			//On a un enregistrement unimarc, on l'enregistre
 			$rec_uni_dom=new xml_dom($rec_uni,$charset);
 			if (!$rec_uni_dom->error) {
 				//Initialisation
-				$ref="";
 				$ufield="";
 				$usubfield="";
 				$field_order=0;
@@ -264,27 +264,19 @@ class oai extends connector {
 				$date_import=$rec->header["DATESTAMP"];
 				
 				$fs=$rec_uni_dom->get_nodes("unimarc/notice/f");
-				//Recherche du 001
-				if(is_array($fs)){
-					for ($i=0; $i<count($fs); $i++) {
-						if ($fs[$i]["ATTRIBS"]["c"]=="001") {
-							$ref=$rec_uni_dom->get_datas($fs[$i]);
-							break;
-						}
-					}
-				}
 				//Mise à jour 
 				if ($ref) {
 					//Si conservation des anciennes notices, on regarde si elle existe
 					if (!$this->del_old) {
 						$requete="select count(*) from entrepot_source_".$this->source_id." where ref='".addslashes($ref)."'";
-						$rref=pmb_mysql_query($requete);
+						$rref=pmb_mysql_query($requete, $dbh);
 						if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 					}
 					//Si pas de conservation des anciennes notices, on supprime
 					if ($this->del_old) {
 						$requete="delete from entrepot_source_".$this->source_id." where ref='".addslashes($ref)."'";
-						pmb_mysql_query($requete);
+						pmb_mysql_query($requete, $dbh);
+						$this->delete_from_external_count($this->source_id, $ref);
 					}
 					//Si pas de conservation ou reférence inexistante
 					if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {
@@ -298,14 +290,14 @@ class oai extends connector {
 						
 						//Récupération d'un ID
 						$requete="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$this->source_id." ".$ref)."', ".$this->source_id.")";
-						$rid=pmb_mysql_query($requete);
+						$rid=pmb_mysql_query($requete, $dbh);
 						if ($rid) $recid=pmb_mysql_insert_id();
 						
 						foreach($n_header as $hc=>$code) {
 							$requete="insert into entrepot_source_".$this->source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid) values(
 							'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 							'".$hc."','',-1,0,'".addslashes($code)."','',$recid)";
-							pmb_mysql_query($requete);
+							pmb_mysql_query($requete, $dbh);
 						}
 						
 						for ($i=0; $i<count($fs); $i++) {
@@ -321,7 +313,7 @@ class oai extends connector {
 									'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 									'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 									' ".addslashes(strip_empty_words($value))." ',$recid)";
-									pmb_mysql_query($requete);
+									pmb_mysql_query($requete, $dbh);
 								}
 							} else {
 								$value=$rec_uni_dom->get_datas($fs[$i]);
@@ -329,13 +321,18 @@ class oai extends connector {
 								'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 								'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 								' ".addslashes(strip_empty_words($value))." ',$recid)";
-								pmb_mysql_query($requete);
+								pmb_mysql_query($requete, $dbh);
 							}
 						}
 					}
 					$this->n_recu++;
 				}
 			}
+		} else if ($rec->header['STATUS'] == 'deleted') {
+			// On supprime les données de l'entrepôt
+			$requete="delete from entrepot_source_".$this->source_id." where ref='".addslashes($ref)."'";
+			pmb_mysql_query($requete, $dbh);
+			$this->delete_from_external_count($this->source_id, $ref);
 		}
 	}
 		

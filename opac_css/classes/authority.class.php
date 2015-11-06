@@ -2,9 +2,10 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: authority.class.php,v 1.3 2015-06-09 09:41:19 pmbs Exp $
+// $Id: authority.class.php,v 1.3.2.1 2015-09-28 15:23:44 apetithomme Exp $
 
 require_once($include_path."/h2o/pmb_h2o.inc.php");
+require_once($class_path."/authorities_collection.class.php");
 
 class authority {
 	
@@ -57,6 +58,23 @@ class authority {
 			$this->init_autlink_class();
 			$property = str_replace(":aut_link.","",$name);
 			$value = $this->generic_lookup($this->autlink_class, $property);
+		} else {
+			$attributes = explode('.', $name);
+			// On regarde si on a directement une instance d'objet, dans le cas des boucles for
+			if (is_object($obj = $context->getVariable(substr($attributes[0], 1))) && (count($attributes) > 1)) {
+				$value = $obj;
+				for ($i = 1; $i < count($attributes); $i++) {
+					// On regarde si c'est un tableau ou un objet
+					if (is_array($value)) {
+						$value = $value[$attributes[$i]];
+					} else if (is_object($value)) {
+						$value = $this->generic_lookup($value, $attributes[$i]);
+					} else {
+						$value = null;
+						break;
+					}
+				}
+			}
 		}
 		if(!$value){
 			$value = null;
@@ -91,7 +109,7 @@ class authority {
 			}
 			//on teste la propriété...
 			
-			if(!$value && property_exists($obj, $property_to_check)){
+			if(!$value && isset($obj->{$property_to_check})){
 				$value = $obj->{$property_to_check};
 			}
 			//on teste le getter...
@@ -129,46 +147,7 @@ class authority {
 	
 	private function init_authority_class(){
 		if(!$this->authority_class){
-			switch($this->get_type_autority()){
-				case "author" :
-					$this->load_class("author");
-					$this->authority_class = new auteur($this->get_id());
-					break;
-				case "publisher" :
-					$this->load_class("publisher");
-					$this->authority_class = new publisher($this->get_id());
-					break;
-				case "collection" :
-					$this->load_class("collection");
-					$this->authority_class = new collection($this->get_id());
-					break;
-				case "subcollection" :
-					$this->load_class("subcollection");
-					$this->authority_class = new subcollection($this->get_id());
-					break;
-				case "serie" :
-					$this->load_class("serie");
-					$this->authority_class = new serie($this->get_id());
-					break;
-				case "indexint" :
-					$this->load_class("indexint");
-					$this->authority_class = new indexint($this->get_id());
-					break;
-				case "titre_uniforme" :
-					$this->load_class("titre_uniforme");
-					$this->authority_class = new titre_uniforme($this->get_id());
-					break;
-				case "category" :
-					global $lang;
-					$this->load_class("categorie");
-					$this->authority_class = new categorie($this->get_id(),$lang);
-					break;
-				case "authperso" :
-					$this->load_class("authperso_authority");
-					$this->authority_class = new authperso_authority($this->get_id());
-					break;
-					
-			}
+			$this->authority_class = authorities_collection::get_authority($this->get_type_autority(), $this->get_id());
 		}
 	}
 	private function init_autlink_class(){

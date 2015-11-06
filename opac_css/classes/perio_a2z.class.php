@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: perio_a2z.class.php,v 1.62 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: perio_a2z.class.php,v 1.62.4.3 2015-09-24 15:48:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -437,7 +437,25 @@ function get_form($onglet_sel='1_1',$flag_empty=0,$flag_ajax=0){
 	$onglet_sel = $myArray[0];
 	$ongletSub_sel = $myArray[1];
 
-	if(!$this->onglets_contens) return"";
+	if(!$this->onglets_contens){
+		if($flag_ajax)$form=$a2z_tpl;
+		else $form="<div id='perio_a2z'>\n".$a2z_tpl."</div>";
+		$form = str_replace('!!perio_display!!',"", $form);
+		if($abt_actif) $check_abt_actif=" checked='checked' ";
+		else $check_abt_actif="";
+	
+		$form = str_replace('!!check_abt_actif!!',$check_abt_actif, $form);
+		$form = str_replace('!!onglet_sel!!',"", $form);
+		$form = str_replace('!!location!!',$this->location, $form);
+		$form = str_replace('!!surlocation!!',$this->surlocation, $form);
+		$form = str_replace('!!perio_display!!',"", $form);
+		$form=str_replace('!!a2z_onglets_list!!',"", $form);
+		$form=str_replace('!!a2z_onglets_sublist!!',"", $form);
+		$form=str_replace('!!perio_id_list!!',"", $form);
+		$form=str_replace('!!a2z_perio_list!!',"", $form);
+		$form = str_replace('!!filtre!!',"", $form);
+		return $form;
+	}
 	if($flag_ajax)$form=$avis_tpl_form1_script.$a2z_tpl;
 	else $form=$avis_tpl_form1_script."<div id='perio_a2z'>\n".$a2z_tpl."</div>";
 	$form_list="";
@@ -520,7 +538,7 @@ function get_form($onglet_sel='1_1',$flag_empty=0,$flag_ajax=0){
 									$req = "select abt_id from abts_abts  where num_notice=".$notice->notice_id." and date_fin >= CURDATE() ";
 									$res = pmb_mysql_query($req);
 									if (pmb_mysql_num_rows($res)) {
-										$perio = str_replace('!!abt_actif!!',"<img src='./images/check.png'>", $perio);									
+										$perio = str_replace('!!abt_actif!!',"<img src='".get_url_icon('check.png')."'>", $perio);									
 									}else{
 										$perio = str_replace('!!abt_actif!!',"", $perio);	
 									}
@@ -593,86 +611,91 @@ function get_onglet($onglet_sel='1_1'){
 	
 	$form=$a2z_tpl_ajax;
 	$form_list="";
-	foreach($this->onglets_sub_contens[$onglet_sel] as $onglet_num => $onglet){
-		if($onglet_num==$ongletSub_sel){
-			// onglet actif
-			$line = str_replace('!!onglet_class!!',"isbd_public_active", $line);
-			// liste des périodiques
-			$perio_list="";
-			$view=0;
-			$perio_id_list="";
-			if (is_array($onglet["id"])) {
-				//tri de la liste par titre
-				$serials_ids = implode(",", $onglet["id"]);
-				foreach($onglet["id"] as $id_brute){
-					if(pmb_substr($id_brute,0,2)=="es"){
-						//notice externe					
-						if( $filtre_select!=2){
-							// si cataloguée, on ne l'affiche pas. sauf si on filtre par fonds externe ($filtre_select!=2)
-							if ($this->get_doublon_ex($this->extract_external_id($id_brute))) continue;
-						}
-						$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->extract_external_id($id_brute));
-						$myQuery = pmb_mysql_query($requete, $dbh);
-						$source_id = pmb_mysql_result($myQuery, 0, 0);		
-						$query="select ufield,value from entrepot_source_$source_id where recid='".addslashes($this->extract_external_id($id_brute))."' and ((ufield='200' and usubfield='a') or (ufield='461' and usubfield='t') or (ufield='bl') or (ufield='hl')) ";						
-						$result = pmb_mysql_query($query,$dbh);
-						if ($result) {
-							while($row= pmb_mysql_fetch_object($result)){
-								$infos[$row->ufield] = $row->value;
+	if(count($this->onglets_sub_contens[$onglet_sel])){
+		foreach($this->onglets_sub_contens[$onglet_sel] as $onglet_num => $onglet){
+			if($onglet_num==$ongletSub_sel){
+				// onglet actif
+				$line = str_replace('!!onglet_class!!',"isbd_public_active", $line);
+				// liste des périodiques
+				$perio_list="";
+				$view=0;
+				$perio_id_list="";
+				if (is_array($onglet["id"])) {
+					//tri de la liste par titre
+					$serials_ids = implode(",", $onglet["id"]);
+					foreach($onglet["id"] as $id_brute){
+						if(pmb_substr($id_brute,0,2)=="es"){
+							//notice externe					
+							if( $filtre_select!=2){
+								// si cataloguée, on ne l'affiche pas. sauf si on filtre par fonds externe ($filtre_select!=2)
+								if ($this->get_doublon_ex($this->extract_external_id($id_brute))) continue;
 							}
-							switch($infos['bl'].$infos['hl']){
-								case "a2" :
-								case "s2" :
-									$tit1 = $infos['461'];
-									break;
-								default :
-									$tit1 = $infos['200'];
-									break;
-									
-							}
-							
-							$perio = $a2z_perio;						
-							$perio = str_replace('!!id!!',$id_brute, $perio);
-							$perio = str_replace('!!perio_title!!',$tit1, $perio);										
-							$perio = str_replace('!!abt_actif!!',$this->get_external_icon($id_brute), $perio);								
-							$perio_list.= $perio;
-							if(!$view){
-								$view++;
-								$form = str_replace('!!perio_display!!',$this->get_perio($id_brute), $form);
-							}						
-							
-						}	
-					}else{
-						$query = "select notice_id,tit1 from notices where notice_id =$id_brute";
-						//print $query."<br>";
-						$result = pmb_mysql_query($query,$dbh);
-						if ($result) {
-							if ($notice = pmb_mysql_fetch_object($result)) {
-								$perio = $a2z_perio;
-						
-								$perio = str_replace('!!id!!',$notice->notice_id, $perio);
-								$perio = str_replace('!!perio_title!!',$notice->tit1, $perio);
-						
-								$req = "select abt_id from abts_abts  where num_notice=".$notice->notice_id." and date_fin >= CURDATE() ";
-								$res = pmb_mysql_query($req);
-								if (pmb_mysql_num_rows($res)) {
-									$perio = str_replace('!!abt_actif!!',"<img src='./images/check.png'>", $perio);
-								}else{
-									$perio = str_replace('!!abt_actif!!',"", $perio);
+							$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->extract_external_id($id_brute));
+							$myQuery = pmb_mysql_query($requete, $dbh);
+							$source_id = pmb_mysql_result($myQuery, 0, 0);		
+							$query="select ufield,value from entrepot_source_$source_id where recid='".addslashes($this->extract_external_id($id_brute))."' and ((ufield='200' and usubfield='a') or (ufield='461' and usubfield='t') or (ufield='bl') or (ufield='hl')) ";						
+							$result = pmb_mysql_query($query,$dbh);
+							if ($result) {
+								while($row= pmb_mysql_fetch_object($result)){
+									$infos[$row->ufield] = $row->value;
 								}
+								switch($infos['bl'].$infos['hl']){
+									case "a2" :
+									case "s2" :
+										$tit1 = $infos['461'];
+										break;
+									default :
+										$tit1 = $infos['200'];
+										break;
+										
+								}
+								
+								$perio = $a2z_perio;						
+								$perio = str_replace('!!id!!',$id_brute, $perio);
+								$perio = str_replace('!!perio_title!!',$tit1, $perio);										
+								$perio = str_replace('!!abt_actif!!',$this->get_external_icon($id_brute), $perio);								
 								$perio_list.= $perio;
 								if(!$view){
 									$view++;
-									$form = str_replace('!!perio_display!!',$this->get_perio($notice->notice_id), $form);
+									$form = str_replace('!!perio_display!!',$this->get_perio($id_brute), $form);
+								}						
+								
+							}	
+						}else{
+							$query = "select notice_id,tit1 from notices where notice_id =$id_brute";
+							//print $query."<br>";
+							$result = pmb_mysql_query($query,$dbh);
+							if ($result) {
+								if ($notice = pmb_mysql_fetch_object($result)) {
+									$perio = $a2z_perio;
+							
+									$perio = str_replace('!!id!!',$notice->notice_id, $perio);
+									$perio = str_replace('!!perio_title!!',$notice->tit1, $perio);
+							
+									$req = "select abt_id from abts_abts  where num_notice=".$notice->notice_id." and date_fin >= CURDATE() ";
+									$res = pmb_mysql_query($req);
+									if (pmb_mysql_num_rows($res)) {
+										$perio = str_replace('!!abt_actif!!',"<img src='".get_url_icon('check.png')."'>", $perio);									
+									}else{
+										$perio = str_replace('!!abt_actif!!',"", $perio);
+									}
+									$perio_list.= $perio;
+									if(!$view){
+										$view++;
+										$form = str_replace('!!perio_display!!',$this->get_perio($notice->notice_id), $form);
+									}
 								}
 							}
 						}
 					}
 				}
 			}
-		}
-		$form_list.=$line;
-	}	
+			$form_list.=$line;
+		}	
+	}else{
+		$perio_list=$msg["a2z_abt_actif_filter_no_result"];
+		$form = str_replace('!!perio_display!!',"", $form);
+	}
 	$form=str_replace('!!perio_id_list!!',$perio_id_list, $form);	
 	$form=str_replace('!!a2z_perio_list!!',$perio_list, $form);	
 
@@ -782,6 +805,13 @@ function get_perio($id) {
 	global $bull_num_deb;
 	global $flag_no_get_bulletin;
 	global $recherche_ajax_mode;
+	
+	//on surcharge pour l'affichage des périos en affichage django
+	global $lvl;
+	global $opac_notices_format;
+	if($opac_notices_format==AFF_ETA_NOTICES_TEMPLATE_DJANGO){
+		$lvl='notice_display';
+	}
 
 	$flag_no_get_bulletin=1;
 	$opac_notices_depliable=0;

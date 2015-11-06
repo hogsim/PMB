@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial_tree.class.php,v 1.5 2015-04-03 11:16:21 jpermanne Exp $
+// $Id: cms_editorial_tree.class.php,v 1.5.4.1 2015-10-08 14:32:53 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -88,7 +88,20 @@ class cms_editorial_tree {
 	}
 	
 	public static function get_tree(){
-		global $cms_editorial_tree_content;
+		global $cms_editorial_tree_content,$dbh,$msg,$base_path;
+		
+		//Un article ou une rubrique plus récent que le cache ?
+		$rqt = "SELECT cache_cadre_create_date FROM cms_cache_cadres 
+				WHERE cache_cadre_create_date<(SELECT MAX(article_update_timestamp) FROM cms_articles) 
+				OR cache_cadre_create_date<(SELECT MAX(section_update_timestamp) FROM cms_sections) 
+				LIMIT 1";
+		$res = pmb_mysql_query($rqt,$dbh);
+		if(pmb_mysql_num_rows($res)){
+			$cms_editorial_tree_content = str_replace('!!cms_editorial_clean_cache_button!!', '<div data-dojo-type=\'dijit/form/Button\' data-dojo-props=\'id:"clean_cache_button",onclick:"if(confirm(\"'.$msg['cms_clean_cache_confirm'].'\")){document.location=\"'.$base_path.'/cms.php?categ=editorial&sub=list&action=clean_cache\";}"\'>'.$msg['cms_clean_cache'].'</div>', $cms_editorial_tree_content);
+		}else{
+			$cms_editorial_tree_content = str_replace("!!cms_editorial_clean_cache_button!!", "", $cms_editorial_tree_content);
+		}
+		
 		return $cms_editorial_tree_content;
 	}
 	

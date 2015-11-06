@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: perio_a2z.tpl.php,v 1.33 2013-11-25 14:29:34 ngantier Exp $
+// $Id: perio_a2z.tpl.php,v 1.33.6.1 2015-09-07 14:21:52 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -139,21 +139,27 @@ $a2z_tpl="
 			
 			id.innerHTML = memo_onglet[onglet];
 			var div_tags = document.getElementById('a2z_perio').getElementsByTagName('div');
-			".($opac_notice_enrichment ? "getEnrichment(div_tags[0].getAttribute('id').replace(/[^0-9]*/ig,''));" : "")."
+			if(div_tags[0]){
+				".($opac_notice_enrichment ? "getEnrichment(div_tags[0].getAttribute('id').replace(/[^0-9]*/ig,''));" : "")."
+			}
 			
 			var i=1;			
 			while(myOnglet=document.getElementById('onglet_' + i)){					
 				myOnglet.setAttribute('class', 'isbd_public_inactive');
 				i++;
 			}	
-			document.getElementById('onglet_'+onglet_num).setAttribute('class', 'isbd_public_active');
+			if(document.getElementById('onglet_'+onglet_num)){
+				document.getElementById('onglet_'+onglet_num).setAttribute('class', 'isbd_public_active');
+			}
 			
 			i=1;
 			while(myOngletSub=document.getElementById('ongletSub_' + i)){					
 				myOngletSub.setAttribute('style', 'display:none');
 				i++;
-			}	
-			document.getElementById('ongletSub_'+onglet_num).setAttribute('style', 'display:block');
+			}
+			if(document.getElementById('ongletSub_'+onglet_num)){	
+				document.getElementById('ongletSub_'+onglet_num).setAttribute('style', 'display:block');
+			}
 			
 			i=1;
 			while(myOngletSubList=document.getElementById('ongletSub_' + onglet_num + '_' + i)){					

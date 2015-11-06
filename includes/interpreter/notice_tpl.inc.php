@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_tpl.inc.php,v 1.84 2015-07-17 12:53:08 dgoron Exp $
+// $Id: notice_tpl.inc.php,v 1.84.2.5 2015-10-20 11:48:08 jpermanne Exp $
 require_once ($include_path . "/misc.inc.php");
 
 $func_format['b_empty']= aff_b_empty;
@@ -19,6 +19,7 @@ $func_format['parallel_title']= aff_parallel_title;
 $func_format['complement_title']= aff_complement_title;
 $func_format['typdoc']= aff_typdoc;
 $func_format['icondoc']= aff_icondoc;
+$func_format['iconcart']= aff_iconcart;
 $func_format['authors']= aff_auteurs;
 $func_format['author']= aff_auteur_principal;
 $func_format['author_1']= aff_auteur_autre;
@@ -60,6 +61,7 @@ $func_format['url']=aff_url;
 $func_format['p_perso']=aff_p_perso;
 $func_format['p_authperso']=aff_p_authperso;
 $func_format['notice_field']=aff_notice_field;
+$func_format['statut']=aff_statut;
 
 $func_format['extract_path']=aff_extract_path;
 $func_format['format_date']=aff_format_date;
@@ -156,10 +158,16 @@ function aff_p_perso($param) {
 	global $pmb_perso_sep;
 	if(!$parser_environnement['id_notice']) return "";
 	$notice=gere_global();	
-	if(!$param[1]) $field="VALUE";
-	else return $notice['notice_info']->parametres_perso[$param[0]]['TITRE'];
-	if (!$notice['notice_info']->parametres_perso[$param[0]][$field]) $notice['notice_info']->parametres_perso[$param[0]][$field]=array();
-	return implode($pmb_perso_sep,$notice['notice_info']->parametres_perso[$param[0]][$field]);	
+	if (!$param[1]) {
+		if (!$notice['notice_info']->parametres_perso[$param[0]]["VALUE"]) $notice['notice_info']->parametres_perso[$param[0]]["VALUE"]=array();
+		return implode($pmb_perso_sep,$notice['notice_info']->parametres_perso[$param[0]]["VALUE"]);
+	} elseif ($param[1] == 1) {
+		return $notice['notice_info']->parametres_perso[$param[0]]['TITRE'];
+	} elseif ($param[1] == 2) {
+		return implode($pmb_perso_sep,$notice['notice_info']->parametres_perso[$param[0]]["VALUE_IN_DATABASE"]);
+	}else{
+		return '';
+	}
 }
 
 function aff_p_authperso($param) {
@@ -735,6 +743,14 @@ function aff_icondoc($param) {
 	$notice=gere_global();
 
 	return $notice['notice_info']->memo_icondoc;
+}
+
+function aff_iconcart($param) {
+	global $parser_environnement;
+	if(!$parser_environnement['id_notice']) return "";
+	$notice=gere_global();
+
+	return $notice['notice_info']->memo_iconcart;
 }
 
 function aff_auteur_principal($param) {
@@ -2112,10 +2128,21 @@ function aff_ellipse($param) {
 	// $param[0] = chaine de caractère à réduire
 	// $param[1] = nb de caractères max à afficher
 	// $param[2] = chaine de remplacement
-	if (pmb_strlen($param[0]) <= $param[1]) {
-		return $param[0];
-	} else {
-		return pmb_substr_replace($param[0], $param[2], $param[1]);
+	// $param[3] = Tronquer sur nb de mots au lieu du nombre de caractères
+	if($param[3]){
+		$array_words=explode(" ",$param[0]);
+		if (count($array_words) <= $param[1]) {
+			return $param[0];
+		} else {
+			array_splice($array_words, $param[1]);
+			return implode(" ",$array_words).$param[2];
+		}
+	}else{
+		if (pmb_strlen($param[0]) <= $param[1]) {
+			return $param[0];
+		} else {
+			return pmb_substr_replace($param[0], $param[2], $param[1]);
+		}
 	}
 }
 
@@ -2201,8 +2228,17 @@ function aff_expl_num_vign_reduit($param) {
 	
 	global $parser_environnement,$msg;
 	if(!$parser_environnement['id_notice']) return "";
+	$notice=gere_global();
 	
 	$query = "SELECT explnum_id,explnum_mimetype,explnum_nom,explnum_nomfichier,explnum_url FROM explnum WHERE explnum_notice = '".$parser_environnement['id_notice']."'";
+	//S'il s'agit d'une notice de bulletin, l'exemplaire numérique est relié au bulletin
+	if($notice["notice_info"]->niveau_biblio=="b" && $notice["notice_info"]->niveau_hierar=="2"){
+		$result = pmb_mysql_query("SELECT bulletin_id FROM bulletins WHERE num_notice= '".$parser_environnement['id_notice']."'");
+		if($result && pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
+			$query = "SELECT explnum_id,explnum_mimetype,explnum_nom,explnum_nomfichier,explnum_url FROM explnum WHERE explnum_bulletin = '".$row->bulletin_id."'";
+		}
+	}
 	$result = pmb_mysql_query($query);
 	if ($result && pmb_mysql_num_rows($result)) {
 		if(pmb_mysql_num_rows($result) > 1){
@@ -2529,4 +2565,16 @@ function aff_titre_uniforme_with_tpl($param) {
 		}
 	}
 	return implode($param[1],$array_retour);
+}
+
+function aff_statut($param) {
+	global $parser_environnement;
+	if(!$parser_environnement['id_notice']) return "";
+	$notice=gere_global();
+
+	if (!$param[0]) {
+		return $notice["notice_info"]->memo_statut['id_notice_statut'];
+	} else {
+		return $notice["notice_info"]->memo_statut['gestion_statut_libelle'];
+	}
 }

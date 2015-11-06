@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: transfert.class.php,v 1.38 2015-07-16 10:07:37 jpermanne Exp $
+// $Id: transfert.class.php,v 1.38.2.1 2015-09-10 13:58:58 jpermanne Exp $
 
 if (stristr ( $_SERVER ['REQUEST_URI'], ".class.php" ))
 	die ( "no access" );
@@ -1063,7 +1063,8 @@ class transfert {
 			$rqt = "SELECT id_transfert, sens_transfert, num_location_source, num_location_dest,expl_location
 				FROM transferts, transferts_demande, exemplaires						
 				WHERE id_transfert=num_transfert and num_expl=expl_id  and num_expl='".$expl."' AND etat_demande=3 and etat_transfert=0" ;
-			$rqt.= " AND DATE_ADD(date_retour,INTERVAL -" . $transferts_nb_jours_alerte . " DAY)<=CURDATE()";
+			//Si c'est un transfert suite à une résa, le document est immédiatement transférable, sinon il est en dépôt jusqu'à la date d'alerte
+			$rqt.= " AND IF(origine=3,DATE_ADD(date_retour,INTERVAL -" . $transferts_nb_jours_alerte . " DAY)<=CURDATE(),1)";
 			$res = pmb_mysql_query( $rqt );
 			if (pmb_mysql_num_rows($res)){	
 				$obj_data = pmb_mysql_fetch_object($res);

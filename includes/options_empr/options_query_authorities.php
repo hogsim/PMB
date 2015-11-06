@@ -2,7 +2,7 @@
  // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: options_query_authorities.php,v 1.2 2013-02-20 16:29:45 ngantier Exp $
+// $Id: options_query_authorities.php,v 1.2.10.1 2015-09-10 07:41:58 jpermanne Exp $
 
 //Gestion des options de type text
 $base_path = "../..";
@@ -21,6 +21,7 @@ if ($first == 1) {
 	$param["DATA_TYPE"][0][value] = $DATA_TYPE;
 	
 	$param["ID_THES"][0][value] = $ID_THES;
+	$param["CATEG_SHOW"][0][value] = $CATEG_SHOW;
 	if ($MULTIPLE=="yes")
 		$param[MULTIPLE][0][value]="yes";
 	else
@@ -52,11 +53,13 @@ if ($first == 1) {
 	if($param["METHOD"]["0"]["value"])$method_checked[$param["METHOD"]["0"]["value"]]="checked";
 	else $method_checked[1]="checked";
 	$data_type_selected[$param["DATA_TYPE"]["0"]["value"]]="selected"; 
-	
+	if($param["CATEG_SHOW"]["0"]["value"])$categ_show_checked[$param["CATEG_SHOW"]["0"]["value"]]="checked";
+	else $categ_show_checked[0]="checked";
 	$multiple_checked="";
 	if ($MULTIPLE=="yes") $multiple_checked= "checked";
 	
 	$sel_thesaurus = '';
+	$opt_thesaurus = '';
 	if ($thesaurus_mode_pmb != 0) {	 //la liste des thesaurus n'est pas affichée en mode monothesaurus		
 		$liste_thesaurus = thesaurus::getThesaurusList();
 		$sel_thesaurus = "<select class='saisie-20em' id='id_thes' name='ID_THES' >";
@@ -72,6 +75,8 @@ if ($first == 1) {
 		$sel_thesaurus.= ">".htmlentities($msg['thes_all'],ENT_QUOTES, $charset)."</option>";
 		$sel_thesaurus.= "</select>&nbsp;";
 	}
+	$opt_thesaurus = "<input type='radio' name='CATEG_SHOW' value='0' ".$categ_show_checked[0].">".$msg["cp_auth_show_all"];
+	$opt_thesaurus .= "<br><input type='radio' name='CATEG_SHOW' value='1' ".$categ_show_checked[1].">".$msg["cp_auth_show_last"];
 	
 	//Formulaire	
 	$form="
@@ -108,6 +113,7 @@ if ($first == 1) {
 			<option value='8' ".$data_type_selected[8]." >".$msg['titre_uniforme_search']."</option>
 		</select>
 		$sel_thesaurus
+		<br>$opt_thesaurus
 		</td>
 		
 				

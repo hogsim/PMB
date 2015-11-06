@@ -4,22 +4,24 @@
 // | creator : Eric ROBERT                                                    |
 // | modified : ...                                                           |
 // +-------------------------------------------------+
-// $Id: func_agroparistech.inc.php,v 1.2 2013-03-13 07:35:26 mbertin Exp $
+// $Id: func_agroparistech.inc.php,v 1.2.10.1 2015-09-02 09:32:05 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 //EQUIVALENT DE FUNC_CATEGORY_AUTO + inversion dans les monos du 200$i et du 200$a
 require_once("func_category_auto.inc.php");
 
-require_once($base_path."/admin/import/func_agroparistech.inc.php");
-
 function z_recup_noticeunimarc_suite($notice) {
+	global $base_path;
+	require_once($base_path."/admin/import/func_agroparistech.inc.php");
 	recup_noticeunimarc_suite($notice);
 } 
 	
 function z_import_new_notice_suite() {
+	global $base_path;
+	require_once($base_path."/admin/import/func_agroparistech.inc.php");
 	import_new_notice_suite();
-} 
+}
 
 function traite_info_subst(&$obj){
 

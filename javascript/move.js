@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: move.js,v 1.15 2015-04-07 15:19:52 vtouchard Exp $
+// $Id: move.js,v 1.15.4.1 2015-10-15 07:53:24 jpermanne Exp $
 
 down=false;
 down_parent=false;
@@ -590,7 +590,7 @@ function move_parse_dom(rel) {
 			movables[i].onclick=function(e) {
 				var i;
 				var relp=relative;
-				if (e.ctrlKey) {
+				if (e.ctrlKey || e.metaKey) {
 					if (e.currentTarget.parentNode.getAttribute("invert")=="yes") relp=(!relative); else relp=relative;
 					if (document.getElementById("popup_onglet")) document.getElementById("popup_onglet").parentNode.removeChild(document.getElementById("popup_onglet"));
 					e.cancelBubble = true;
@@ -705,7 +705,7 @@ function move_parse_dom(rel) {
 			movables[i].onclick=function(e) {
 				var i;
 				var relp;
-				if (e.ctrlKey) {
+				if (e.ctrlKey || e.metaKey) {
 					if (e.currentTarget.getAttribute("invert")=="yes") relp=(!relative); else relp=relative;
 					if (document.getElementById("popup_onglet")) document.getElementById("popup_onglet").parentNode.removeChild(document.getElementById("popup_onglet"));
 					e.cancelBubble = true;

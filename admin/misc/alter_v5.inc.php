@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: alter_v5.inc.php,v 1.583 2015-07-24 13:27:11 touraine37 Exp $
+// $Id: alter_v5.inc.php,v 1.583.2.4 2015-09-11 12:53:24 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -1398,7 +1398,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"alter table docs_type add short_loan_duration");
 
 		//DB - correction origine notices
-		$rqt = "update notices set origine_catalogage='1' where origine_catalogage='0' ";
+		$rqt = "update notices set origine_catalogage='1', update_date=update_date where origine_catalogage='0' ";
 		echo traite_rqt($rqt,"alter table notices correct origine_catalogage");
 
 		//DB - ajout flag pret court dans table pret
@@ -4257,7 +4257,7 @@ switch ($action) {
 			}
 
 			//MB + CB - Renseigner les champs d'exemplaires transfert_location_origine et transfert_statut_origine pour les statistiques et si ils ne le sont pas déjà (lié aux améliorations pour les transferts)
-			$rqt = "UPDATE exemplaires SET transfert_location_origine=expl_location, transfert_statut_origine=expl_statut WHERE transfert_location_origine=0 AND transfert_statut_origine=0 AND expl_id NOT IN (SELECT num_expl FROM transferts_demande JOIN transferts ON (num_transfert=id_transfert AND etat_transfert=0))";
+			$rqt = "UPDATE exemplaires SET transfert_location_origine=expl_location, transfert_statut_origine=expl_statut, update_date=update_date WHERE transfert_location_origine=0 AND transfert_statut_origine=0 AND expl_id NOT IN (SELECT num_expl FROM transferts_demande JOIN transferts ON (num_transfert=id_transfert AND etat_transfert=0))";
 			echo traite_rqt($rqt,"update exemplaires transfert_location_origine transfert_statut_origine");
 			//NG - géolocalisation
 			$rqt = "ALTER TABLE notices ADD map_echelle_num int(10) unsigned NOT NULL default 0" ;
@@ -5107,10 +5107,10 @@ switch ($action) {
 			}
 
 			//JP - Renseigner les champs d'exemplaires transfert_location_origine et transfert_statut_origine pour les statistiques et si ils ne le sont pas déjà (ajout sur la requête en v5.17)
-			$rqt = "UPDATE exemplaires SET transfert_location_origine=expl_location WHERE transfert_location_origine=0 AND expl_id NOT IN (SELECT num_expl FROM transferts_demande JOIN transferts ON (num_transfert=id_transfert AND etat_transfert=0))";
+			$rqt = "UPDATE exemplaires SET transfert_location_origine=expl_location, update_date=update_date  WHERE transfert_location_origine=0 AND expl_id NOT IN (SELECT num_expl FROM transferts_demande JOIN transferts ON (num_transfert=id_transfert AND etat_transfert=0))";
 			echo traite_rqt($rqt,"update exemplaires transfert_location_origine");
 
-			$rqt = "UPDATE exemplaires SET transfert_statut_origine=expl_statut WHERE transfert_statut_origine=0 AND expl_id NOT IN (SELECT num_expl FROM transferts_demande JOIN transferts ON (num_transfert=id_transfert AND etat_transfert=0))";
+			$rqt = "UPDATE exemplaires SET transfert_statut_origine=expl_statut, update_date=update_date  WHERE transfert_statut_origine=0 AND expl_id NOT IN (SELECT num_expl FROM transferts_demande JOIN transferts ON (num_transfert=id_transfert AND etat_transfert=0))";
 			echo traite_rqt($rqt,"update exemplaires transfert_statut_origine");
 
 			// NG - Ajout paramètre indiquant la durée en jours de conservation des notices en tant que nouveauté
@@ -5158,7 +5158,7 @@ switch ($action) {
 			$rqt = "ALTER TABLE exemplaires ADD transfert_section_origine SMALLINT(5) NOT NULL default '0'" ;
 			echo traite_rqt($rqt,"ALTER TABLE exemplaires ADD transfert_section_origine ");
 
-			$rqt = "UPDATE exemplaires SET transfert_section_origine=expl_section WHERE transfert_section_origine=0 AND expl_id NOT IN (SELECT num_expl FROM transferts_demande JOIN transferts ON (num_transfert=id_transfert AND etat_transfert=0))";
+			$rqt = "UPDATE exemplaires SET transfert_section_origine=expl_section, update_date=update_date WHERE transfert_section_origine=0 AND expl_id NOT IN (SELECT num_expl FROM transferts_demande JOIN transferts ON (num_transfert=id_transfert AND etat_transfert=0))";
 			echo traite_rqt($rqt,"update exemplaires transfert_section_origine");
 
 			//AP Modification du commentaire d'opac_notices_format : Ajout des templates django
@@ -5718,7 +5718,7 @@ switch ($action) {
 					$code = $row->code;
 					$new_code = formatISBN($code);
 					if ($code!= $new_code){
-						pmb_mysql_query("UPDATE notices SET code='".addslashes($new_code)."' WHERE notice_id=".$row->notice_id);
+						pmb_mysql_query("UPDATE notices SET code='".addslashes($new_code)."', update_date=update_date WHERE notice_id=".$row->notice_id);
 					}
 				}
 			}
@@ -5729,6 +5729,16 @@ switch ($action) {
 			//JP - mise à jour des dates de validation des commandes
 			$rqt="UPDATE actes SET date_valid=date_acte WHERE statut>1 AND date_valid='0000-00-00'";
 			echo traite_rqt($rqt,"update actes date_validation ");
+			
+			$rqt = "update parametres set valeur_param='0' where type_param='pmb' and sstype_param='bdd_subversion' " ;
+			echo traite_rqt($rqt,"update pmb_bdd_subversion=0 into parametres");
+			$pmb_bdd_subversion=0;
+			
+			if ($pmb_subversion_database_as_it_shouldbe!=$pmb_bdd_subversion) {
+				// Info de déconnexion pour passer le add-on
+				$rqt = " select 1 " ;
+				echo traite_rqt($rqt,"<b><a href='".$base_path."/logout.php' target=_blank>VOUS DEVEZ VOUS DECONNECTER ET VOUS RECONNECTER POUR TERMINER LA MISE A JOUR  / YOU MUST DISCONNECT AND RECONNECT YOU TO COMPLETE UPDATE</a></b> ") ;
+			}
 			
 			// +-------------------------------------------------+
 			echo "</table>";

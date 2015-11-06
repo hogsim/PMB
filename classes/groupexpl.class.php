@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: groupexpl.class.php,v 1.6 2015-06-10 08:47:04 jpermanne Exp $
+// $Id: groupexpl.class.php,v 1.6.2.1 2015-10-03 10:01:10 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -259,8 +259,12 @@ class groupexpl {
 		}
 		
 		$items="";
+		$odd_even="odd";
 		foreach($this->info['expl'] as $expl){
 			$item=$groupexpl_form_list_line_tpl;
+			if($odd_even=='odd')$odd_even="even";
+			else $odd_even="odd";
+			$item=str_replace('!!odd_even!!',$odd_even, $item);
 			$item=str_replace('!!cb!!',$expl['cb'], $item);
 			if($expl['checked'])$checked="x";else $checked="";
 			$item=str_replace('!!checked!!',$checked, $item);

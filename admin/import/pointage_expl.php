@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pointage_expl.php,v 1.19 2015-04-16 11:39:22 jpermanne Exp $
+// $Id: pointage_expl.php,v 1.19.2.1 2015-09-03 13:20:50 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path="../..";                            
@@ -11,19 +11,19 @@ $base_title = "";
 require_once ("$base_path/includes/init.inc.php");  
 
 // les requis par pointage_expl.php ou ses sous modules
-include("$include_path/isbn.inc.php");
-include("$include_path/marc_tables/$pmb_indexation_lang/empty_words");
-include("$class_path/XMLlist.class.php");
-include("$class_path/lender.class.php");
-include("$class_path/docs_statut.class.php");
-include("$class_path/docs_section.class.php");
-include("$class_path/docs_location.class.php");
-include("$class_path/docs_type.class.php");
-include("$class_path/docs_codestat.class.php");
-include("$class_path/lender.class.php");
-include("$class_path/author.class.php");
-include("$class_path/serie.class.php");
-include("$include_path/templates/expl.tpl.php"); 
+require_once("$include_path/isbn.inc.php");
+require_once("$include_path/marc_tables/$pmb_indexation_lang/empty_words");
+require_once("$class_path/XMLlist.class.php");
+require_once("$class_path/lender.class.php");
+require_once("$class_path/docs_statut.class.php");
+require_once("$class_path/docs_section.class.php");
+require_once("$class_path/docs_location.class.php");
+require_once("$class_path/docs_type.class.php");
+require_once("$class_path/docs_codestat.class.php");
+require_once("$class_path/lender.class.php");
+require_once("$class_path/author.class.php");
+require_once("$class_path/serie.class.php");
+require_once("$include_path/templates/expl.tpl.php"); 
 require_once("$include_path/notice_authors.inc.php");
 require_once("$include_path/notice_categories.inc.php");
 

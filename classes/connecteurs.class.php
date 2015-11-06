@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // � 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: connecteurs.class.php,v 1.36 2015-04-03 13:57:45 dgoron Exp $
+// $Id: connecteurs.class.php,v 1.36.4.1 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -477,7 +477,7 @@ class connector {
 				$n_header['dt']=$rec['dt']['value'];
 				
 				//suppression des anciennes notices
-				$q="delete from external_count where source_id='".addslashes($this->get_id().' '.$this->source_id.' '.$ref)."' and recid='".$this->source_id."' ";
+				$q="delete from external_count where recid='".addslashes($this->get_id().' '.$this->source_id.' '.$ref)."' and source_id='".$this->source_id."' ";
 				pmb_mysql_query($q,$dbh);
 				$q="delete from entrepot_source_".$this->source_id." where ref='".addslashes($ref)."'";
 				pmb_mysql_query($q,$dbh);
@@ -517,6 +517,12 @@ class connector {
 		}
 	}
 	
+	protected function delete_from_external_count($source_id, $ref) {
+		global $dbh;
+		
+		$requete="delete from external_count where recid='".addslashes($this->get_id()." ".$source_id." ".$ref)."' and source_id = ".$source_id;
+		pmb_mysql_query($requete, $dbh);
+	}
 } 
 
 class connecteurs {

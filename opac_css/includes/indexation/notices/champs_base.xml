@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: champs_base.xml,v 1.24 2015-05-27 14:14:30 jpermanne Exp $ -->
+$Id: champs_base.xml,v 1.24.2.1 2015-09-09 08:03:10 mbertin Exp $ -->
 
 <indexation>
 
@@ -834,11 +834,17 @@ $Id: champs_base.xml,v 1.24 2015-05-27 14:14:30 jpermanne Exp $ -->
 			<tablefield name="extexplnum_minetype" id="02" pond="100">explnum_mimetype</tablefield>
 			<tablefield name="extexplnum_url" id="03" pond="100">explnum_url</tablefield>
 			<tablefield name="extexplnum_extfichier" id="04" pond="100">explnum_extfichier</tablefield>
+			<tablefield name="empr_statut_menu" id="05" pond="0">gestion_libelle</tablefield>
 			<link type="nn">
 				<table>bulletins</table>
 				<referencefield>bulletin_notice</referencefield>
 				<tablekey>bulletin_id</tablekey>
 				<externalfield>explnum_bulletin</externalfield>
+			</link>
+			<link type="n1">
+				<table>explnum_statut</table>
+				<tablekey>id_explnum_statut</tablekey>
+				<externalfield>explnum_docnum_statut</externalfield>
 			</link>
 		</table>-->
 	</field>

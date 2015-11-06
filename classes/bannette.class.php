@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette.class.php,v 1.152 2015-07-02 12:18:56 jpermanne Exp $
+// $Id: bannette.class.php,v 1.152.2.3 2015-10-06 15:36:18 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -25,9 +25,9 @@ require_once($class_path."/bannette_tpl.class.php");
 // définition de la classe de gestion des 'bannettes'
 class bannette {
 
-// ---------------------------------------------------------------
-//		propriétés de la classe
-// ---------------------------------------------------------------
+	// ---------------------------------------------------------------
+	//		propriétés de la classe
+	// ---------------------------------------------------------------
 	var $id_bannette=0;	
 	var $num_classement=1; 
 	var $nom_classement=""; 
@@ -65,12 +65,12 @@ class bannette {
 	var $prefixe_fichier = "prefix_";
 	var $param_export = array();
 	var	$group_pperso=0;
-	var $display_notice_in_every_group=1;			
+	var $display_notice_in_every_group=1;
 	var $archive_number=0;
-	var $group_type = 0; 
+	var $group_type = 0;
 	var	$statut_not_account=0;
-	var $field_type='';						
-	var $field_id=0;		
+	var $field_type='';
+	var $field_id=0;
 	var $group_pperso_order=array();
 	var $document_generate=0;
 	var $document_notice_tpl=0;
@@ -135,12 +135,12 @@ class bannette {
 			$this->num_panier = 0 ;
 			$this->limite_type = '' ;
 			$this->limite_nombre = 0 ;
-			$this->typeexport = ''; 
-			$this->group_pperso = 0; 
-			$this->group_type = 0;  
+			$this->typeexport = '';
+			$this->group_pperso = 0;
+			$this->group_type = 0;
 			$this->display_notice_in_every_group=1;
-			$this->statut_not_account = 0; 
-			$this->archive_number = 0; 			
+			$this->statut_not_account = 0;
+			$this->archive_number = 0;
 			$this->document_generate=0;
 			$this->document_notice_tpl=0;
 			$this->document_insert_docnum=0;
@@ -201,11 +201,11 @@ class bannette {
 				$this->bannette_opac_accueil= $temp->bannette_opac_accueil ;
 	 
 				$this->param_export			= unserialize($temp->param_export) ;
-				$this->compte_elements();			
+				$this->compte_elements();
 				$requete = "SELECt nom_classement FROM classements WHERE id_classement='".$this->num_classement."'" ;
 				$resultclass = pmb_mysql_query($requete, $dbh) or die ($requete."<br /> in bannette.class.php : ".pmb_mysql_error());
 				if ($temp = pmb_mysql_fetch_object($resultclass)) $this->nom_classement = $temp->nom_classement ;
-				else $this->nom_classement = "" ;		
+				else $this->nom_classement = "" ;
 			} else {
 				// pas de bannette avec cette clé
 			 	$this->id_bannette=0;
@@ -238,11 +238,11 @@ class bannette {
 				$this->limite_nombre = 0 ;
 				$this->typeexport = '' ;
 				$this->prefixe_fichier = "prefix_";
-				$this->group_pperso = 0; 
-				$this->group_type = 0;  
+				$this->group_pperso = 0;
+				$this->group_type = 0;
 				$this->display_notice_in_every_group=1;
-				$this->statut_not_account = 0; 
-				$this->archive_number=0;			
+				$this->statut_not_account = 0;
+				$this->archive_number=0;
 				$this->document_generate=0;
 				$this->document_notice_tpl=0;
 				$this->document_insert_docnum=0;
@@ -299,7 +299,7 @@ class bannette {
 		return str_replace("!!cms_categs!!",$categs,$dsi_desc_field);
 	}
 
-	function gen_facette_selection(){	
+	function gen_facette_selection(){
 		$facette = new bannette_facettes($this->id_bannette);
 		return $facette->gen_facette_selection();
 	}
@@ -314,14 +314,19 @@ class bannette {
 		global $dsi_bannette_form_abo, $dsi_bannette_form_selvars;
 		global $nom_prenom_abo;
 		global $dsi_bannette_notices_template, $PMBuserid;
-		global $form_cb;
+		global $form_cb, $id_classement;
+		global $page, $nbr_lignes, $nb_per_page;
 		
 		if ($type=="abo") $dsi_bannette_form = $dsi_bannette_form_abo ;
 		
 		if($this->id_bannette) {
-			$action = "./dsi.php?categ=bannettes&sub=$type&id_bannette=$this->id_bannette&suite=update";
-			$link_duplicate =  "<input type='button' class='bouton' value='".$msg['bannette_duplicate_bouton']."' onclick='document.location=\"./dsi.php?categ=bannettes&sub=$type&id_bannette=$this->id_bannette&suite=duplicate\"' />";
-			$link_annul = "<input type='button' class='bouton' value='$msg[76]' onClick=\"document.location='./dsi.php?categ=bannettes&sub=$type&id_bannette=&suite=search&form_cb=$form_cb';\" />";
+			$link_pagination = "";
+			if($page > 1) {
+				$link_pagination .= "&page=".$page."&nbr_lignes=".$nbr_lignes."&nb_per_page=".$nb_per_page;
+			}
+			$action = "./dsi.php?categ=bannettes&sub=$type&id_bannette=$this->id_bannette&suite=update&id_classement=$id_classement&form_cb=$form_cb$link_pagination";
+			$link_duplicate =  "<input type='button' class='bouton' value='".$msg['bannette_duplicate_bouton']."' onclick='document.location=\"./dsi.php?categ=bannettes&sub=$type&id_bannette=$this->id_bannette&suite=duplicate&id_classement=$id_classement&form_cb=$form_cb$link_pagination\"' />";
+			$link_annul = "<input type='button' class='bouton' value='$msg[76]' onClick=\"document.location='./dsi.php?categ=bannettes&sub=$type&id_bannette=&suite=search&id_classement=$id_classement&form_cb=$form_cb$link_pagination';\" />";
 			$button_delete = "<input type='button' class='bouton' value='$msg[63]' onClick=\"confirm_delete();\">";
 			$libelle = $msg['dsi_ban_form_modif'];
 		} else {
@@ -1232,7 +1237,7 @@ class bannette {
 					$this->data_document['sommaires']=$facette->build_document_data($notice_ids,$this->document_notice_tpl);
 					return;
 				} else {
-					$this->aff_document=$facette->build_document($notice_ids,$this->notice_tpl,$this->document_add_summary);
+					$this->aff_document=$facette->build_document($notice_ids,$this->document_notice_tpl,$this->document_add_summary);
 				}
 			}
 			if ($this->typeexport && !$use_limit) {
@@ -1288,26 +1293,26 @@ class bannette {
 						$tpl_document=str_replace('<!-- !!avis_notice!! -->', "", $tpl_document);
 					}				
 					if($this->document_group) {
-						
-						foreach($notice_group[$r->num_notice] as $id=>$cpDisplay){
+						if($notice_group[$r->num_notice]) {
+							foreach($notice_group[$r->num_notice] as $id=>$cpDisplay){
 							
-							if($this->display_notice_in_every_group){
-								$already_printed_document=array();
-							}
-							
-							if(!$tri_tpl_document[$notice_group[$r->num_notice][$id]] || !in_array($tpl_document, $tri_tpl_document[$notice_group[$r->num_notice][$id]])){
-								if(!in_array($r->num_notice, $already_printed_document)){
-									$tri_tpl_document[$notice_group[$r->num_notice][$id]][]= $tpl_document;
-									$already_printed_document[]=$r->num_notice;
+								if($this->display_notice_in_every_group){
+									$already_printed_document=array();
 								}
-							}
 							
-							if($cpDisplay && !in_array($cpDisplay, $group_printed_document)) {
-								$group_printed_document[]=$cpDisplay;
-							}
+								if(!$tri_tpl_document[$notice_group[$r->num_notice][$id]] || !in_array($tpl_document, $tri_tpl_document[$notice_group[$r->num_notice][$id]])){
+									if(!in_array($r->num_notice, $already_printed_document)){
+										$tri_tpl_document[$notice_group[$r->num_notice][$id]][]= $tpl_document;
+										$already_printed_document[]=$r->num_notice;
+									}
+								}
 							
+								if($cpDisplay && !in_array($cpDisplay, $group_printed_document)) {
+									$group_printed_document[]=$cpDisplay;
+								}
+							
+							}
 						}
-						
 					}else{
 						
 						if(!in_array($r->num_notice, $already_printed_document)){
@@ -1394,7 +1399,7 @@ class bannette {
 			    	else $aff_document.= "<div class='hr_group'><hr /></div>";			
 			    	$index++;
 			    	if($this->bannette_tpl_num){
-			    		$this->data_document['sommaires'][$index]['level']=$index;
+			    		$this->data_document['sommaires'][$index]['level']=1;
 			    		$this->data_document['sommaires'][$index]['title']=$titre;
 			    	}
 					$aff_document.= "<a name='[$index]'></a><h1>".$index." - ".$titre."</h1>";	
@@ -1404,7 +1409,7 @@ class bannette {
 					foreach ($liste as $val) {
 					    $aff_document.=$val;
 				    	if($this->bannette_tpl_num){
-				    		$this->data_document['sommaires'][$index]['records'][]['render']=$val;
+				    		$this->data_document['sommaires'][$index]['records'][$nb]['render']=$val;
 				    	}
 					    if(++$nb < count($liste)){
 					    	if(!$this->notice_tpl) {
@@ -1441,7 +1446,7 @@ class bannette {
 		    	else $resultat_aff.= "<div class='hr_group'><hr /></div>";	
 		    	$index++;
 		    	if($this->bannette_tpl_num){
-		    		$this->data_document['sommaires'][$index]['level']=$index;
+		    		$this->data_document['sommaires'][$index]['level']=1;
 		    		$this->data_document['sommaires'][$index]['title']=$titre;
 		    	}
 				$resultat_aff.= "<a name='[$index]'></a><h1>".$index." - ".$titre."</h1>";	
@@ -1450,7 +1455,7 @@ class bannette {
 				foreach ($liste as $val) {
 				    $resultat_aff.=$val;
 			    	if($this->bannette_tpl_num){
-			    		$this->data_document['sommaires'][$index]['records'][]['render']=$val;
+			    		$this->data_document['sommaires'][$index]['records'][$nb]['render']=$val;
 			    	}
 			    	if(++$nb < count($liste)){
 			    		if(!$this->notice_tpl) {

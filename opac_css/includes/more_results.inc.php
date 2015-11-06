@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: more_results.inc.php,v 1.58 2011-10-26 09:31:34 fgautier Exp 
+// $Id: more_results.inc.php,v 1.81.2.2 2015-09-28 15:23:35 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -221,15 +221,18 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 	$catal_navbar .= "<div id='navbar'><hr />\n<center>".printnavbar($page, $nbepages, $url_page,$action)."</center></div>";
 
 	$active_facette = 0;
+	$nav_displayed = ($recordmodes ? $recordmodes->is_nav_displayed($recordmodes->get_current_mode()) : true);
 	
 	switch($mode) {
 		case 'tous':
 			$active_facette = 1;
+			if (!$nav_displayed) $opac_search_results_per_page = $opac_max_results_on_a_page;
 			require_once($base_path.'/search/level2/tous.inc.php');
 			break;
 		case 'titre':
 		case 'title':
 			$active_facette = 1;
+			if (!$nav_displayed) $opac_search_results_per_page = $opac_max_results_on_a_page;
 			require_once($base_path.'/search/level2/title.inc.php');
 			break;
 		case 'auteur':
@@ -255,10 +258,12 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 			break;
 		case 'abstract':
 			$active_facette = 1;
+			if (!$nav_displayed) $opac_search_results_per_page = $opac_max_results_on_a_page;
 			require_once($base_path.'/search/level2/abstract.inc.php');
 			break;
 		case 'keyword':
 			$active_facette = 1;
+			if (!$nav_displayed) $opac_search_results_per_page = $opac_max_results_on_a_page;
 			if ($search_type=="extended_search") $search_type="";
 			require_once($base_path.'/search/level2/keyword.inc.php');
 			break;
@@ -266,6 +271,7 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 			//On annule la navigation par critères simples
 			$_SESSION["level1"]=array();
 			$active_facette = 1;
+			if (!$nav_displayed) $opac_search_results_per_page = $opac_max_results_on_a_page;
 			require_once($base_path.'/search/level2/extended.inc.php');
 			break;
 		case 'external':
@@ -404,4 +410,4 @@ switch ($search_type) {
 print pmb_bidi($form);
 
 // affichage du navigateur si besoin (recherche affiliées off ou multi-critère (pagin géré dans le lvl2)
-if( $mode != 'extended' && (!$opac_allow_affiliate_search || $mode == 'external' || $mode == 'docnum')) print $catal_navbar; 
+if( $mode != 'extended' && (!$opac_allow_affiliate_search || $mode == 'external' || $mode == 'docnum') && ($nav_displayed === true)) print $catal_navbar; 

@@ -7,7 +7,7 @@
 		© 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs
 		(voir www.sigb.net)
 		****************************************************************************************
-		$Id: fr_FR.xml,v 1.7 2015-05-11 12:19:36 jpermanne Exp $
+		$Id: fr_FR.xml,v 1.7.2.1 2015-10-13 08:01:50 ngantier Exp $
 	-->
 
 <XMLlist>
@@ -30,4 +30,5 @@
 	<entry code="webdav_allow_web">Autoriser l'interface web</entry>
 	<entry code="webdav_default_docnum_statut">Statut par défaut du document numérique à sa création</entry>
 	<entry code="webdav_select_tree_elem">Sélectionnez un élément</entry>
+	<entry code="webdav_metasMapper_class">Choix de la classe pour le traitement des metas données</entry>
 </XMLlist>

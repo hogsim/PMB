@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.12 2015-06-24 15:36:20 dbellamy Exp $
+// $Id: main.inc.php,v 1.12.2.1 2015-08-14 10:30:03 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -82,7 +82,7 @@ switch ($categ) {
 				print $layout_begin;
 
 				if(!check_record($id_notice,$id_bulletin)) {
-					error_message($msg[350], $msg['resa_unknown_record'], 1 , './circ.php');
+					error_message($msg[350], $msg['resa_unknown_record'], 1 , './circ.php?');
 					break;
 				}
 				
@@ -116,7 +116,7 @@ switch ($categ) {
 					}
 					$form_loc_retrait.= '</tbody></table>';
 				} else {
-						error_message($msg[350], $msg['resa_planning_no_item_available'], 1 , './circ.php');
+						error_message($msg[350], $msg['resa_planning_no_item_available'], 1 , "./circ.php?categ=resa_planning&resa_action=search_resa&mode=0&id_empr=$id_empr&groupID=$groupID");
 						break;
 				}
 				$form_resa_dates = str_replace ('!!resa_qty!!', sprintf($msg['resa_planning_qty_requested'],$nb_items),$form_resa_dates);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2014 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: docwatch_watch.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
+// $Id: docwatch_watch.class.php,v 1.3.4.1 2015-08-28 09:15:54 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -507,7 +507,7 @@ class docwatch_watch extends docwatch_root{
 			'desc' => $this->desc,
 			'logo_url' => $this->logo_url,
 			'last_date' => $this->last_date,
-			'rss_link' => $opac_url_base."/docwatch?id=".$this->get_id(),
+			'rss_link' => $opac_url_base."docwatch?id=".$this->get_id(),
 			'category' => $categories,
 			'items' => $items
 		);

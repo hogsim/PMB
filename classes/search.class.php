@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.192 2015-06-23 08:07:39 jpermanne Exp $
+// $Id: search.class.php,v 1.192.2.1 2015-10-13 07:58:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //Classe de gestion des recherches avancees
@@ -288,73 +288,98 @@ class search {
 						global $thesaurus_mode_pmb;
 						if($ajax == "categories_mul" and $thesaurus_mode_pmb == 1){
 							$fnamevar_id = "linkfield=\"fieldvar_".$n."_".$search."[id_thesaurus][]\"";
+							$fnamevar_id_js = "fieldvar_".$n."_".$search."[id_thesaurus][]";
 						}else{
 							$fnamevar_id = "";
+							$fnamevar_id_js = "";
 						}
 						$op = "op_".$i."_".$search;
 						global $$op;
 						global $lang;
-						$r= "
-						<input id='$fnamesans' name='$fname' value='".htmlentities($v[0],ENT_QUOTES,$charset)."' type='hidden' />
-						";
 						
-						if ($$op == "AUTHORITY"){
-							if($v[0]!= 0){
-								switch ($ff['INPUT_OPTIONS']['SELECTOR']){
-									case "auteur":
-										$aut=new auteur($v[0]);
-										if($aut->rejete) $libelle = $aut->name.', '.$aut->rejete;
-										else $libelle = $aut->name;
-										if($aut->date) $libelle .= " ($aut->date)";
-										break;
-									case "categorie":
-										$libelle = categories::getlibelle($v[0],$lang);
-										break;
-									case "editeur":
-										$ed = new editeur($v[0]);
-										$libelle=$ed->name;
-										if ($ed->ville) 
-											if ($ed->pays) $libelle.=" ($ed->ville - $ed->pays)";
-											else $libelle.=" ($ed->ville)";
-										break;
-									case "collection" :
-										$coll = new collection($v[0]);
-										$libelle = $coll->name;
-										break;
-									case "subcollection" :
-										$coll = new subcollection($v[0]);
-										$libelle = $coll->name;
-										break;
-									case "serie" :
-										$serie = new serie($v[0]);
-										$libelle = $serie->name;
-										break;
-									case "indexint" :
-										$indexint = new indexint($v[0]);
-										if ($indexint->comment) $libelle = $indexint->name." - ".$indexint->comment;
-										else $libelle = $indexint->name ;
-										if ($thesaurus_classement_mode_pmb != 0) {
-											$libelle="[".$indexint->name_pclass."] ".$libelle;
-										}
-										break;
-									case "titre_uniforme" :
-										$tu = new titre_uniforme($v[0]);
-										$libelle = $tu->name;
-										break;	
-									default :
-										$libelle = $v[0];
-										break;
-								}
-							}else $libelle = "";
-							$r.="<input autfield='$fname_id' onkeyup='fieldChanged(\"$fnamesans\",this.value,event)' callback='authoritySelected' completion='$ajax' $fnamevar_id id='$fnamesanslib' name='$fnamelib' value='".htmlentities($libelle,ENT_QUOTES,$charset)."' type='text' class='saisie-20emr'/>
-							";						
-						}else{
-							$r.="<input autfield='$fname_id' onkeyup='fieldChanged(\"$fnamesans\",this.value,event)' callback='authoritySelected' completion='$ajax' $fnamevar_id id='$fnamesanslib' name='$fnamelib' value='".htmlentities($v[0],ENT_QUOTES,$charset)."' type='text' />
-							";
+						$nb_values=count($v);
+						if(!$nb_values){
+							//Création de la ligne
+							$nb_values=1;
 						}
-						$r.= "<input type='hidden' value='".($fieldvar['authority_id'][0] ?$fieldvar['authority_id'][0] : "")."' id='$fname_aut_id' name='$fname_name_aut_id' />
-						<input name='$fname_id' id='$fname_id' value='".($fieldvar['id'][0] ?$fieldvar['id'][0] : "")."' type='hidden'>
-						<input class='bouton' value='...' id='$fnamesans"."_authority_selector' onclick=\"openPopUp('./select.php?what=$selector&caller=search_form&mode=un&$p1=$fname_id&$p2=$fnamelib&deb_rech='+".pmb_escape()."(document.getElementById('$fnamesanslib').value)+'&callback=authoritySelected&infield=$fnamesans', 'select_author0', 400, 400, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\" type=\"button\">";
+						$nb_max_aut=$nb_values-1;
+						
+						$r= "<input type='hidden' id='$fnamesans"."_max_aut' value='".$nb_max_aut."'>";
+						$r.= "<input class='bouton' value='...' id='$fnamesans"."_authority_selector' onclick=\"openPopUp('./select.php?what=$selector&caller=search_form&mode=un&p1=".$fname_id."_0&p2=".$fnamesanslib."_0&deb_rech='+".pmb_escape()."(document.getElementById('".$fnamesanslib."_0').value)+'&callback=authoritySelected&infield=".$fnamesans."_0', 'select_author0', 400, 400, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\" type=\"button\">";
+						$r.= "<input class='bouton' type='button' value='+' onclick='add_line(\"$fnamesans\")'>";
+
+						$r.= "<div id='el$fnamesans'>";
+						
+						for($inc=0;$inc<$nb_values;$inc++){
+							$r.="<input id='".$fnamesans."_".$inc."' name='$fname' value='".htmlentities($v[$inc],ENT_QUOTES,$charset)."' type='hidden' />";
+							
+							if ($$op == "AUTHORITY"){
+								if($v[$inc]!= 0){
+									switch ($ff['INPUT_OPTIONS']['SELECTOR']){
+										case "auteur":
+											$aut=new auteur($v[$inc]);
+											if($aut->rejete) $libelle = $aut->name.', '.$aut->rejete;
+											else $libelle = $aut->name;
+											if($aut->date) $libelle .= " ($aut->date)";
+											break;
+										case "categorie":
+											$libelle = categories::getlibelle($v[$inc],$lang);
+											break;
+										case "editeur":
+											$ed = new editeur($v[$inc]);
+											$libelle=$ed->name;
+											if ($ed->ville) 
+												if ($ed->pays) $libelle.=" ($ed->ville - $ed->pays)";
+												else $libelle.=" ($ed->ville)";
+											break;
+										case "collection" :
+											$coll = new collection($v[$inc]);
+											$libelle = $coll->name;
+											break;
+										case "subcollection" :
+											$coll = new subcollection($v[$inc]);
+											$libelle = $coll->name;
+											break;
+										case "serie" :
+											$serie = new serie($v[$inc]);
+											$libelle = $serie->name;
+											break;
+										case "indexint" :
+											$indexint = new indexint($v[$inc]);
+											if ($indexint->comment) $libelle = $indexint->name." - ".$indexint->comment;
+											else $libelle = $indexint->name ;
+											if ($thesaurus_classement_mode_pmb != 0) {
+												$libelle="[".$indexint->name_pclass."] ".$libelle;
+											}
+											break;
+										case "titre_uniforme" :
+											$tu = new titre_uniforme($v[$inc]);
+											$libelle = $tu->name;
+											break;	
+										default :
+											$libelle = $v[$inc];
+											break;
+									}
+								}else{
+									$libelle = "";
+								}
+								$r.="<input autfield='".$fname_id."_".$inc."' onkeyup='fieldChanged(\"".$fnamesans."\",".$inc.",this.value,event)' callback='authoritySelected' completion='$ajax' $fnamevar_id id='".$fnamesanslib."_".$inc."' name='$fnamelib' value='".htmlentities($libelle,ENT_QUOTES,$charset)."' type='text' class='saisie-20emr'/>
+								";						
+							}else{
+								$r.="<input autfield='".$fname_id."_".$inc."' onkeyup='fieldChanged(\"".$fnamesans."\",".$inc.",this.value,event)' callback='authoritySelected' completion='$ajax' $fnamevar_id id='".$fnamesanslib."_".$inc."' name='$fnamelib' value='".htmlentities($v[$inc],ENT_QUOTES,$charset)."' type='text' />
+								";
+							}
+							$r.= "<input class='bouton' type='button' onclick='this.form.".$fnamesanslib."_".$inc.".value=\"\";this.form.".$fnamesans."_".$inc.".value=\"0\";' value='X'>";
+							$r.= "<input type='hidden' value='".($fieldvar['authority_id'][$inc] ?$fieldvar['authority_id'][$inc] : "")."' id='".$fname_aut_id."_".$inc."' name='$fname_name_aut_id' />";
+							$r.= "<input name='$fname_id' id='".$fname_id."_".$inc."' value='".htmlentities($v[$inc],ENT_QUOTES,$charset)."' type='hidden'><br>";
+						}
+						$r.= "</div>";
+						if($nb_values>1){
+							$r.="<script>
+									document.getElementById('op_".$i."_".$search."').disabled=true;
+									operators_to_enable.push('op_".$i."_".$search."');
+								</script>";
+						}
     				break;
     			case "text":
     				if (substr($ff['INPUT_OPTIONS']["PLACEHOLDER"],0,4)=="msg:") {
@@ -554,6 +579,15 @@ class search {
 			  		  			if($input["VALUE"][0]["value"] == $fieldvar[$varname][0]) $r.="checked";			  		  			
 			  		  			$r.="/>\n";
 			  		  			break;
+		  		  			case "radio" :
+	  		  					if ((!$fieldvar[$varname])&&($default)) $fieldvar[$varname][0]=$default;
+	  		  					foreach($input["OPTIONS"][0]["LABEL"] as $radio_value){
+			  		  				$r.="&nbsp;<input type=\"radio\" name=\"fieldvar_".$n."_".$search."[".$varname."][]\" value=\"".$radio_value["VALUE"]."\" ";
+			  		  				if($radio_value["VALUE"] == $fieldvar[$varname][0]) $r.="checked";
+			  		  				$r.="/>".htmlentities($msg[substr($radio_value["value"],4,strlen($radio_value["value"])-4)],ENT_QUOTES,$charset);
+	  		  					}
+	  		  					$r.="\n";
+		  		  				break;
 			  		  		case "hidden":
 			  		  			if ((!$fieldvar[$varname])&&($default)) $fieldvar[$varname][0]=$default;
 			  		  			if(is_array($input["VALUE"][0])) $hidden_value=$input["VALUE"][0]["value"]; 
@@ -709,6 +743,19 @@ class search {
 					$field = array();
 					$field[0] = "";
 				}
+				// si sélection d'autorité et champ vide : on ne doit pas le prendre en compte
+				if($$op=='AUTHORITY'){
+					$suppr=false;
+					foreach($field as $k=>$v){
+						if($v==0){
+							unset($field[$k]);
+							$suppr=true;
+						}
+					}
+					if($suppr){
+						$field = array_values($field);
+					}
+				}
 				//Pour chaque valeur du champ
 				for ($j=0; $j<count($field); $j++) {
 					//Pour chaque requete
@@ -830,8 +877,10 @@ class search {
 						}
 						if ($z<(count($q)-2)) pmb_mysql_query($main);
 					}		
-					
-					if($q["DEFAULT_OPERATOR"]){
+
+					if($fieldvar["operator_between_multiple_authorities"]){
+						$operator=$fieldvar["operator_between_multiple_authorities"][0];
+					} elseif($q["DEFAULT_OPERATOR"]){
 						$operator=$q["DEFAULT_OPERATOR"];
 					} else {
 						$operator = ($pmb_multi_search_operator?$pmb_multi_search_operator:"or");
@@ -1195,6 +1244,22 @@ class search {
     		
     		if (!is_array($fieldvar)) $fieldvar=array();
     		
+    		// si sélection d'autorité et champ vide : on ne doit pas le prendre en compte
+    		if($$op=='AUTHORITY'){
+    			$suppr=false;
+    			foreach($field as $k=>$v){
+    				if($v==0){
+    					unset($field[$k]);
+    					unset($fieldvar[$k]);
+    					$suppr=true;
+    				}
+    			}
+    			if($suppr){
+    				$field = array_values($field);
+    				$fieldvar = array_values($field);
+    			}
+    		}
+    		
     		$r.="<input type='hidden' name='search[]' value='".htmlentities($search[$i],ENT_QUOTES,$charset)."'/>";
     		$r.="<input type='hidden' name='".$inter."' value='".htmlentities($$inter,ENT_QUOTES,$charset)."'/>";
     		$r.="<input type='hidden' name='".$op."' value='".htmlentities($$op,ENT_QUOTES,$charset)."'/>";
@@ -1277,8 +1342,12 @@ class search {
     			$ff=$this->fixedfields[$s[1]];
 	 			$q_index=$ff["QUERIES_INDEX"];
 	 			$q=$ff["QUERIES"][$q_index[$$op]];
-    			if ($q["DEFAULT_OPERATOR"])
-    				$operator_multi=$q["DEFAULT_OPERATOR"];
+	 			if($fieldvar["operator_between_multiple_authorities"]){
+	 				$operator_multi=$fieldvar["operator_between_multiple_authorities"][0];
+	 			} else {
+		 			if ($q["DEFAULT_OPERATOR"])
+		    			$operator_multi=$q["DEFAULT_OPERATOR"];
+	 			}
     			switch ($this->fixedfields[$s[1]]["INPUT_TYPE"]) {
     				case "list":
     					$options=$this->fixedfields[$s[1]]["INPUT_OPTIONS"]["OPTIONS"][0];
@@ -1332,7 +1401,11 @@ class search {
     						if(is_numeric($field[$j]) && ($$op == "AUTHORITY")){
 								switch ($ff['INPUT_OPTIONS']['SELECTOR']){
 									case "categorie":
-										$field[$j] = categories::getlibelle($field[$j],$lang);
+										$thes = thesaurus::getByEltId($field[$j]);
+										$field[$j] = categories::getlibelle($field[$j],$lang)." [".$thes->libelle_thesaurus."]";
+										if(isset($fieldvar["id_thesaurus"])){
+											unset($fieldvar["id_thesaurus"]);
+										}
 										break;
 									case "auteur":
 										$aut=new auteur($field[$j]);
@@ -2459,7 +2532,7 @@ class search {
     		$search_form = str_replace("!!limit_search!!","",$search_form);
     		$limit_search = "";
     	}
-    	if ($pmb_extended_search_auto) $r="<select name='add_field' id='add_field' onChange=\"if (this.form.add_field.value!='') { this.form.action='$url'; this.form.target=''; $limit_search this.form.submit();} else { alert('".htmlentities($msg["multi_select_champ"],ENT_QUOTES,$charset)."'); }\" >\n";
+    	if ($pmb_extended_search_auto) $r="<select name='add_field' id='add_field' onChange=\"if (this.form.add_field.value!='') { enable_operators();this.form.action='$url'; this.form.target=''; $limit_search this.form.submit();} else { alert('".htmlentities($msg["multi_select_champ"],ENT_QUOTES,$charset)."'); }\" >\n";
     	else $r="<select name='add_field' id='add_field'>\n";
     	$r.="<option value='' style='color:#000000'>".htmlentities($msg["multi_select_champ"],ENT_QUOTES,$charset)."</font></option>\n";
 
@@ -2616,7 +2689,7 @@ class search {
     			$op="op_".$i."_".$search[$i];
     			global $$op;
     			if ($f[0]=="f") {	
-     				$r.="<select name='op_".$n."_".$search[$i]."'";
+     				$r.="<select name='op_".$n."_".$search[$i]."' id='op_".$n."_".$search[$i]."'";
 					//gestion des autorités
 					$onchange ="";
 
@@ -2692,7 +2765,7 @@ class search {
     			if($this->limited_search) 
     				$script_limit = " this.form.limited_search.value='0'; ";
     			else $script_limit = "";
-    			$r.="<td ".(in_array("6",$notdisplaycol)?"style='display:none;'":"")."><span class='search_cancel'>".(!$delnotallowed?"<input type='button' class='bouton' value='".$msg["raz"]."' onClick=\"this.form.delete_field.value='".$n."'; this.form.action='$url'; this.form.target=''; $script_limit this.form.submit();\">":"&nbsp;")."</td>";//Colonne 6
+    			$r.="<td ".(in_array("6",$notdisplaycol)?"style='display:none;'":"")."><span class='search_cancel'>".(!$delnotallowed?"<input type='button' class='bouton' value='".$msg["raz"]."' onClick=\"enable_operators(); this.form.delete_field.value='".$n."'; this.form.action='$url'; this.form.target=''; $script_limit this.form.submit();\">":"&nbsp;")."</td>";//Colonne 6
     			$r.="</tr>\n";
     			$n++;
     		}
@@ -2754,57 +2827,79 @@ class search {
 
 			//callback du selecteur d'opérateur
 			function operatorChanged(field,operator){
-				var selector = document.getElementById('field_'+field+'_authority_selector')
-				var f_lib = document.getElementById('field_'+field+'_lib');
-				var f_id = document.getElementById('field_'+field+'_id');
-				var f = document.getElementById('field_'+field);	
-				var authority_id = document.getElementById('fieldvar_'+field+'_authority_id');
-				if(operator == 'AUTHORITY'){
-	//				f_lib.setAttribute('class','saisie-20emr');
-	//				if(authority_id.value != 0) f.value = authority_id.value;
-				}else{
-					f_lib.removeAttribute('class');
-					f.value = f_lib.value; 
+				for(i=0;i<=document.getElementById('field_'+field+'_max_aut').value;i++){
+					var selector = document.getElementById('field_'+field+'_authority_selector')
+					var f_lib = document.getElementById('field_'+field+'_lib_'+i);
+					var f_id = document.getElementById('field_'+field+'_id_'+i);
+					var f = document.getElementById('field_'+field+'_'+i);
+					var authority_id = document.getElementById('fieldvar_'+field+'_authority_id');
+					if(operator == 'AUTHORITY'){
+		//				f_lib.setAttribute('class','saisie-20emr');
+		//				if(authority_id.value != 0) f.value = authority_id.value;
+					}else{
+						f_lib.removeAttribute('class');
+						f.value = f_lib.value; 
+					}
 				}
 			}
 
 			//callback du selecteur AJAX pour les autorités
 			function authoritySelected(infield){
+				//on enlève le dernier _X
+				var tmp_infield = infield.split('_');
+				var tmp_infield_length = tmp_infield.length;
+				//var inc = tmp_infield[tmp_infield_length-1];
+				tmp_infield.pop();
+				infield = tmp_infield.join('_');
 				//pour assurer la compatibilité avec le selecteur AJAX
 				infield=infield.replace('_lib','');
 				infield=infield.replace('_authority_label','');
-				var searchField = document.getElementById(infield);
-				var f_lib = document.getElementById(infield+'_lib');
-				var f_id = document.getElementById(infield+'_id');
+				
 				var op_name =infield.replace('field','op');
 				var op_selector = document.forms['search_form'][op_name];
-				var authority_id = document.getElementById(infield.replace('field','fieldvar')+'_authority_id');
 				//on passe le champ en selecteur d'autorité !
 				for (var i=0 ; i<op_selector.options.length ; i++){
 					if(op_selector.options[i].value == 'AUTHORITY')
 						op_selector.options[i].selected = true;
 				}
-				f_lib.setAttribute('class','saisie-20emr');
-				searchField.value=f_id.value;
-				authority_id.value= f_id.value;
+				for(i=0;i<=document.getElementById(infield+'_max_aut').value;i++){
+					var searchField = document.getElementById(infield+'_'+i);
+					var f_lib = document.getElementById(infield+'_lib'+'_'+i);
+					var f_id = document.getElementById(infield+'_id'+'_'+i);
+					var authority_id = document.getElementById(infield.replace('field','fieldvar')+'_authority_id'+'_'+i);
+					
+					f_lib.setAttribute('class','saisie-20emr');
+					if(f_id.value==''){
+						f_id.value=0;
+					}
+					searchField.value=f_id.value;
+					authority_id.value= f_id.value;
+				}			
 			}
 	
 			//callback sur la saisie libre 
-			function fieldChanged(id,value,e){
+			function fieldChanged(id,inc,value,e){
 				var ma_touche;
 				if(window.event){
 					ma_touche=window.event.keyCode;
 				}else{
 					ma_touche=e.keyCode;
 				}
-				var f_lib = document.getElementById(id+'_lib');
-				var f_id = document.getElementById(id+'_id');
-				var f = document.getElementById(id);		
-				var authority_id = document.getElementById(id.replace('field','fieldvar')+'_authority_id');
-				var selector = document.forms['search_form'][id.replace('field','op')];
+				
+				var f_lib = document.getElementById(id+'_lib_'+inc);
+				var f_id = document.getElementById(id+'_id_'+inc);
+				var f = document.getElementById(id+'_'+inc);		
+				var authority_id = document.getElementById(id.replace('field','fieldvar')+'_authority_id'+'_'+inc);
+
+				var selector = document.forms['search_form'][id.replace('field','op')];		
 				if (selector.options[selector.selectedIndex].value != 'AUTHORITY')
 					f.value = value;
 				else if(ma_touche != 13){
+					var max_aut=document.getElementById(id+'_max_aut').value;
+					if(max_aut>0){
+						//Plus d'un champ : on bloque
+						return;
+					}
 					f_lib.setAttribute('class','ext_search_txt');
 					for (var i=0 ; i<selector.options.length ; i++){
 						if (selector.options[i].value == 'BOOLEAN')
@@ -2814,6 +2909,91 @@ class search {
 					authority_id.value = '';
 				}
 			}		
+				
+			function add_line(fnamesans){
+
+				fname=fnamesans+'[]';
+				fname_id=fnamesans+'_id';
+				fnamesanslib=fnamesans+'_lib';
+				fnamelib=fnamesans+'_lib[]';
+				fname_name_aut_id=fnamesans+'[authority_id][]';
+				fname_name_aut_id=fname_name_aut_id.replace('field','fieldvar');
+				fname_aut_id=fnamesans+'_authority_id';
+				fname_aut_id=fname_aut_id.replace('field','fieldvar');
+				op=fnamesans.replace('field','op');
+				
+				template = document.getElementById('el'+fnamesans);
+				inc=document.getElementById(fnamesans+'_max_aut').value;
+				inc++;
+		        line=document.createElement('div');
+		  
+				f_id = document.createElement('input');
+				f_id.setAttribute('id',fnamesans+'_'+inc);
+				f_id.setAttribute('name',fname);
+				f_id.setAttribute('value','');
+				f_id.setAttribute('type','hidden');
+						
+				f_lib = document.createElement('input');
+				f_lib.setAttribute('autfield',fname_id+'_'+inc);
+				f_lib.setAttribute('onkeyup','fieldChanged(\''+fnamesans+'\',\''+inc+'\',this.value,event)');
+				f_lib.setAttribute('callback','authoritySelected');
+				if(document.getElementById(fnamesanslib+'_0').getAttribute('completion')){
+					f_lib.setAttribute('completion',document.getElementById(fnamesanslib+'_0').getAttribute('completion'));
+				}
+				f_lib.setAttribute('id',fnamesanslib+'_'+inc);
+				f_lib.setAttribute('name',fnamelib);
+				f_lib.setAttribute('value','');
+				f_lib.setAttribute('type','text');
+				if(document.getElementById(fnamesanslib+'_0').getAttribute('linkfield')){
+					f_lib.setAttribute('linkfield',document.getElementById(fnamesanslib+'_0').getAttribute('linkfield'));
+				}
+				if (document.getElementById(op).options[document.getElementById(op).selectedIndex].value == 'AUTHORITY'){
+					f_lib.setAttribute('class','saisie-20emr');
+				}
+						
+				f_del = document.createElement('input');
+				f_del.setAttribute('class','bouton');
+				f_del.setAttribute('type','button');
+				f_del.setAttribute('onclick','document.getElementById(\''+fnamesanslib+'_'+inc+'\').value=\'\';document.getElementById(\''+fnamesans+'_'+inc+'\').value=\'0\';');
+				f_del.setAttribute('value','X');
+				
+				f_aut = document.createElement('input');
+				f_aut.setAttribute('type','hidden');
+				f_aut.setAttribute('value','');
+				f_aut.setAttribute('id',fname_aut_id+'_'+inc);
+				f_aut.setAttribute('name',fname_name_aut_id);
+				
+				f_id2 = document.createElement('input');
+				f_id2.setAttribute('type','hidden');
+				f_id2.setAttribute('value','');
+				f_id2.setAttribute('id',fname_id+'_'+inc);
+				f_id2.setAttribute('name',fname_id);
+		        	        
+		        line.appendChild(f_id);
+		        line.appendChild(f_lib);
+		        line.appendChild(f_del);
+		        line.appendChild(f_aut);
+		        line.appendChild(f_id2);
+		        
+		        template.appendChild(line);
+						
+				ajax_pack_element(f_lib);
+		
+		        document.getElementById(fnamesans+'_max_aut').value=inc;
+				
+				//Plus d'un champ : on bloque
+				var selector = document.getElementById(op);
+				selector.disabled=true;
+				operators_to_enable.push(op);
+			}
+				
+			function enable_operators(){
+				if(operators_to_enable.length>0){
+					for	(index = 0; index < operators_to_enable.length; index++) {
+					    document.getElementById(operators_to_enable[index]).disabled=false;
+					}
+				}
+			}
 			
 		</script>";
 
@@ -3300,8 +3480,12 @@ class search {
     			$ff=$this->fixedfields[$s[1]];
 	 			$q_index=$ff["QUERIES_INDEX"];
 	 			$q=$ff["QUERIES"][$q_index[$$op]];
-    			if ($q["DEFAULT_OPERATOR"])
-    				$operator_multi=$q["DEFAULT_OPERATOR"];
+	 			if($fieldvar["operator_between_multiple_authorities"]){
+	 				$operator_multi=$fieldvar["operator_between_multiple_authorities"][0];
+	 			} else {
+	 				if ($q["DEFAULT_OPERATOR"])
+	 					$operator_multi=$q["DEFAULT_OPERATOR"];
+	 			}
     			switch ($this->fixedfields[$s[1]]["INPUT_TYPE"]) {
     				case "list":
     					$options=$this->fixedfields[$s[1]]["INPUT_OPTIONS"]["OPTIONS"][0];

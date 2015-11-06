@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: common.tpl.php,v 1.198 2015-06-22 08:29:09 jpermanne Exp $
+// $Id: common.tpl.php,v 1.198.2.3 2015-10-12 08:34:12 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -224,7 +224,7 @@ if (!$_COOKIE['PhpMyBibli-COOKIECONSENT']) {
 		}
 		$std_header.="
 		</script>
-		<script type='text/javascript' src='".$include_path."/javascript/script_analytics.js' />
+		<script type='text/javascript' src='".$include_path."/javascript/script_analytics.js'></script>
 		<script type='text/javascript'>
 			scriptAnalytics.CookieConsent.start();
 		</script>
@@ -269,9 +269,12 @@ if($opac_visionneuse_allow) {
 }
 
 $std_header.="
-	<script type='text/javascript' src='$include_path/javascript/http_request.js'></script>
-	
-	";
+	<script type='text/javascript' src='$include_path/javascript/http_request.js'></script>";
+
+if ($_COOKIE['PhpMyBibli-COOKIECONSENT'] != "false" && $pmb_logs_activate) {
+	$std_header.="
+	<script type='text/javascript' src='$include_path/javascript/track_clicks.js'></script>";
+}
 
 $std_header.="
 	!!enrichment_headers!!
@@ -430,6 +433,41 @@ $inclus_header.= "
 		}
 	}
 </script>";
+if (!$_COOKIE['PhpMyBibli-COOKIECONSENT']) {
+	if ($opac_script_analytics || $opac_show_social_network || $pmb_logs_activate) {
+		$inclus_header.="
+		<script type='text/javascript'>
+			var msg_script_analytics_content = '".addslashes($msg["script_analytics_content"])."';
+			var msg_script_analytics_inform_title = '".addslashes($msg["script_analytics_inform_title"])."';
+			var msg_script_analytics_inform_content = '".addslashes($msg["script_analytics_inform_content"])."';
+			var msg_script_analytics_inform_ask_opposite = '".addslashes($msg["script_analytics_inform_ask_opposite"])."';
+			var msg_script_analytics_inform_ask_accept = '".addslashes($msg["script_analytics_inform_ask_accept"])."';
+			var msg_script_analytics_content_opposed = '".addslashes($msg["script_analytics_content_opposed"])."';
+		";
+		if ($opac_url_more_about_cookies) {
+			$inclus_header.="var script_analytics_content_link_more = '<a href=\'".$opac_url_more_about_cookies."\' target=\'_blank\'>".addslashes($msg["script_analytics_content_link_more"])."</a>';";
+		} else {
+			$inclus_header.="var script_analytics_content_link_more = '';";
+		}
+		$inclus_header.="
+		</script>
+		<script type='text/javascript' src='".$include_path."/javascript/script_analytics.js'></script>
+		<script type='text/javascript'>
+			scriptAnalytics.CookieConsent.start();
+		</script>
+		";
+	}
+}
+if ($_COOKIE['PhpMyBibli-COOKIECONSENT'] != "false") {
+	if ($opac_script_analytics) {
+		eval("\$opac_script_analytics=\"".str_replace("\"","\\\"",$opac_script_analytics)."\";");
+		$inclus_header.= $opac_script_analytics;
+	}
+}
+//Opposition à l'utilisation des cookies, désactivation des partages sur les réseaux sociaux
+if ($_COOKIE['PhpMyBibli-COOKIECONSENT'] == "false") {
+	$opac_show_social_network = 0;
+}
 if($opac_show_social_network){
 	
 	if($opac_param_social_network){
@@ -453,6 +491,10 @@ if($opac_allow_simili_search){
 if($opac_visionneuse_allow) {
 	$inclus_header.="
 	<script type='text/javascript' src='".$opac_url_base."/visionneuse/javascript/visionneuse.js'></script>";
+}
+if ($_COOKIE['PhpMyBibli-COOKIECONSENT'] != "false" && $pmb_logs_activate) {
+	$inclus_header.="
+	<script type='text/javascript' src='$include_path/javascript/track_clicks.js'></script>";
 }
 
 $inclus_header.="
@@ -800,9 +842,9 @@ switch($opac_allow_simili_search){
 }
 
 if($opac_recherche_ajax_mode){
-	$begin_result_liste = "<span class=\"expandAll\"><a href='javascript:expandAll_ajax(".$opac_recherche_ajax_mode.");$simili_search_call'><img class='img_plusplus' src='./images/expand_all.gif' border='0' id='expandall'></a></span>&nbsp;<span class=\"collapseAll\"><a href='javascript:collapseAll()'><img class='img_moinsmoins' src='./images/collapse_all.gif' border='0' id='collapseall'></a></span>" ;
+	$begin_result_liste = "<span class=\"expandAll\"><a href='javascript:expandAll_ajax(".$opac_recherche_ajax_mode.");$simili_search_call'><img class='img_plusplus' src='./images/expand_all.gif' border='0' id='expandall'></a></span><span class=\"espaceResultSearch\">&nbsp;</span><span class=\"collapseAll\"><a href='javascript:collapseAll()'><img class='img_moinsmoins' src='./images/collapse_all.gif' border='0' id='collapseall'></a></span>" ;
 }else{
-	$begin_result_liste = "<span class=\"expandAll\"><a href='javascript:expandAll()'><img class='img_plusplus' src='./images/expand_all.gif' border='0' id='expandall'></a></span>&nbsp;<span class=\"collapseAll\"><a href='javascript:collapseAll()'><img class='img_moinsmoins' src='./images/collapse_all.gif' border='0' id='collapseall'></a></span>" ;
+	$begin_result_liste = "<span class=\"expandAll\"><a href='javascript:expandAll()'><img class='img_plusplus' src='./images/expand_all.gif' border='0' id='expandall'></a></span><span class=\"espaceResultSearch\">&nbsp;</span><span class=\"collapseAll\"><a href='javascript:collapseAll()'><img class='img_moinsmoins' src='./images/collapse_all.gif' border='0' id='collapseall'></a></span>" ;
 }
 $affich_tris_result_liste .= sort::show_tris_selector();
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: acquisition.inc.php,v 1.14 2015-04-03 11:16:27 jpermanne Exp $
+// $Id: acquisition.inc.php,v 1.14.4.1 2015-08-13 08:05:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -23,7 +23,10 @@ while ($row=pmb_mysql_fetch_object($list_bib)) {
 	$tab_bib[1][]=$row->raison_sociale;
 }		
 
-echo window_title($database_window_title.$msg[acquisition_menu].$msg[1003].$msg[1001]);
+//si on arrive par print_acquisition.php, pas d'entêtes
+if (!$acquisition_no_html) {
+	echo window_title($database_window_title.$msg[acquisition_menu].$msg[1003].$msg[1001]);
+}
 
 switch($categ) {
 	case 'ach':

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: z3950.class.php,v 1.18 2015-04-03 11:16:29 jpermanne Exp $
+// $Id: z3950.class.php,v 1.18.4.1 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -428,6 +428,7 @@ class z3950 extends connector {
 			if ($this->del_old) {
 				$requete="delete from entrepot_source_$source_id where ref='".addslashes($ref)."'";
 				pmb_mysql_query($requete);
+				$this->delete_from_external_count($source_id, $ref);
 			}
 			//Si pas de conservation ou reférence inexistante
 			if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {

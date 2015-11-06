@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_view_carousel_responsive.xml,v 1.1 2014-11-17 13:41:53 arenou Exp $ -->
+$Id: cms_module_common_view_carousel_responsive.xml,v 1.1.4.1 2015-08-26 10:08:14 jpermanne Exp $ -->
 
 <XMLlist>
 	<entry code='cms_module_common_view_carousel_mode'>Mode d'affichage</entry>
@@ -19,7 +19,7 @@ $Id: cms_module_common_view_carousel_responsive.xml,v 1.1 2014-11-17 13:41:53 ar
 	<entry code='cms_module_common_view_carousel_display_min_quantity'>Nombre d'éléments minimum par page</entry>
 	<entry code='cms_module_common_view_carousel_slide_quantity'>Nombre d'éléments déplacés</entry>
 	<entry code='cms_module_common_view_carousel_autostart'>Démarrage automatique</entry>
-	<entry code='cms_module_common_view_carousel_autohover'>Pause au survol de la sourie</entry>
+	<entry code='cms_module_common_view_carousel_autohover'>Pause au survol de la souris</entry>
 	<entry code='cms_module_common_view_carousel_pager'>Affiche le paginateur</entry>
 	<entry code='cms_module_common_view_carousel_yes'>Oui</entry>
 	<entry code='cms_module_common_view_carousel_no'>Non</entry>
@@ -60,4 +60,5 @@ $Id: cms_module_common_view_carousel_responsive.xml,v 1.1 2014-11-17 13:41:53 ar
 	<entry code='cms_module_common_view_carousel_auto_direction_next'>Vers le suivant</entry>
 	<entry code='cms_module_common_view_carousel_no_image'>Image à utiliser par défaut</entry>	
 	<entry code='cms_module_common_view_carousel_no_image_desc'>Lien vers l'image "no-image"</entry>
+	<entry code='cms_module_common_view_carousel_autotransition'>Transition automatique</entry>
 </XMLlist>

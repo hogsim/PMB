@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource.class.php,v 1.27 2015-05-28 15:29:09 arenou Exp $
+// $Id: cms_module_common_datasource.class.php,v 1.27.2.4 2015-10-07 12:46:15 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -305,6 +305,9 @@ class cms_module_common_datasource extends cms_module_root{
 			case "sections" :
 				$result = $this->filter_sections($datas);
 				break;
+			case "explnums" :
+				$result = $this->filter_explnums($datas);
+				break;
 			default :
 				//si on est pas avec une entité connue, on s'en charge quand même...
 				if(method_exists($this,"filter_".$type)){
@@ -334,12 +337,7 @@ class cms_module_common_datasource extends cms_module_root{
 			$notices_ids = $filter->get_results();
 			//les données sont déjà filtrées...dont on s'assure que ca ne bouge pas !
 			$tmpdatas = explode(",",$notices_ids);
-			$finaldatas = array();
-			for($i=0 ; $i<count($datas) ; $i++){
-				if(in_array($datas[$i],$tmpdatas)){
-					$finaldatas[] = $datas[$i];
-				}
-			}
+			$finaldatas = array_intersect($datas, $tmpdatas);
 		}
 		return $finaldatas;
 	}
@@ -452,6 +450,33 @@ class cms_module_common_datasource extends cms_module_root{
 			}
 		}
 		return $tree;
+	}
+	
+	protected function filter_explnums($datas=array()){
+	    global $dbh;
+	    global $class_path;
+	    global $gestion_acces_active;
+	    global $gestion_acces_empr_docnum;
+	    
+	    $filtered_datas = array();
+	    if(count($datas)){
+		    $acces='';
+	        $restrict = '';
+	        if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+	            require_once("$class_path/acces.class.php");
+	        	$ac = new acces();
+	        	$dom_3 = $ac->setDomain(3);
+	        	$acces = $dom_3->getJoin($_SESSION['id_empr_session'],16,'explnum_id');
+	        } else {
+	        	$restrict= "and explnum_docnum_statut in (select id_explnum_statut from explnum_statut where (explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
+	        }
+	        $explnum = 'select explnum_id from explnum '.$acces.' where explnum_id in('.implode(',', $datas).') '.$restrict.'  ';
+	        $result = pmb_mysql_query($explnum,$dbh);
+	        while($row = pmb_mysql_fetch_object($result)){
+	          $filtered_datas[] = $row->explnum_id;  
+	        }
+	    }
+	    return $filtered_datas;
 	}
 	
 	public function get_format_data_structure(){

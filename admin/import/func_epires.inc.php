@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_epires.inc.php,v 1.17 2015-04-03 11:16:23 jpermanne Exp $
+// $Id: func_epires.inc.php,v 1.17.4.1 2015-09-22 12:47:36 mbertin Exp $
 
 // DEBUT paramétrage propre à la base de données d'importation :
 require_once($class_path."/serials.class.php");
@@ -96,7 +96,7 @@ function import_new_notice_suite() {
 	}
 	
 	//Cas des périodiques
-	if (is_array($info_464)) {
+	if (is_array($info_464) && trim($info_464[0]['t'])) {
 		$requete="SELECT * FROM notices WHERE notice_id=$notice_id";
 		$resultat=pmb_mysql_query($requete);
 		$r=pmb_mysql_fetch_object($resultat);

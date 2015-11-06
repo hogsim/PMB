@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: misc.inc.php,v 1.63 2015-06-08 15:00:23 arenou Exp $
+// $Id: misc.inc.php,v 1.63.2.2 2015-09-17 15:14:13 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -738,19 +738,58 @@ function mail_bloc_adresse() {
 //CONFIGURATION DU PROXY POUR CURL
 //---------------------------------
 
-function configurer_proxy_curl(&$curl){
-	global $opac_curl_proxy;
+function configurer_proxy_curl(&$curl,$url_asked=''){
+	global $opac_curl_proxy,$curl_addon_array_options,$curl_addon_array_exclude_proxy;
 	
-	if($opac_curl_proxy!=''){
-		$param_proxy = explode(',',$opac_curl_proxy);
-		$adresse_proxy = $param_proxy[0];
-		$port_proxy = $param_proxy[1];
-		$user_proxy = $param_proxy[2];
-		$pwd_proxy = $param_proxy[3];
-		
-		curl_setopt($curl, CURLOPT_PROXY, $adresse_proxy);
-		curl_setopt($curl, CURLOPT_PROXYPORT, $port_proxy);
-		curl_setopt($curl, CURLOPT_PROXYUSERPWD, "$user_proxy:$pwd_proxy");
+	/*
+	* petit hack pour définir des options supplémentaires à curl
+	* les deux tableaux suivants peuvent être définis dans un fichier config_local.inc.php (attention, à reporter en gestion et opac)
+	*
+	* Exemple $curl_addon_array_options
+	*
+	* $curl_addon_array_options = array(
+	* 		CURLOPT_POST => 1,
+	* 		CURLOPT_HEADER => false,
+	* 		CURLOPT_POSTFIELDS => $data
+	* );
+	*
+	* Exemple $curl_addon_array_exclude_proxy
+	*
+	* $curl_addon_array_exclude_proxy = array(
+	* 		"domain1.com",
+	* 		"domain2.com"
+	* );
+	*
+	*/
+	
+	if(count($curl_addon_array_options)){
+		curl_setopt_array($curl, $curl_addon_array_options);
+	}
+	
+	$use_proxy = true;
+	if(trim($url_asked) && count($curl_addon_array_exclude_proxy)){
+		foreach($curl_addon_array_exclude_proxy as $domain){
+			$domain = str_replace('.','\.',$domain);
+			$domain = str_replace('/','\/',$domain);
+			if(preg_match('`'.$domain.'`', $url_asked)){
+				$use_proxy = false;
+				break;
+			}
+		}
+	}
+	
+	if($use_proxy){
+		if($opac_curl_proxy!=''){
+			$param_proxy = explode(',',$opac_curl_proxy);
+			$adresse_proxy = $param_proxy[0];
+			$port_proxy = $param_proxy[1];
+			$user_proxy = $param_proxy[2];
+			$pwd_proxy = $param_proxy[3];
+			
+			curl_setopt($curl, CURLOPT_PROXY, $adresse_proxy);
+			curl_setopt($curl, CURLOPT_PROXYPORT, $port_proxy);
+			curl_setopt($curl, CURLOPT_PROXYUSERPWD, "$user_proxy:$pwd_proxy");
+		}
 	}
 
 }
@@ -1020,4 +1059,19 @@ function compresscss($content,$file,$relocate=true){
 	// Remove whitespace
 	$content = str_replace(array("\r", "\n\n", "\t",), '', $content);
 	return $content;
+}
+
+function get_url_icon($icon, $use_opac_url_base=0) {
+	global $opac_url_base, $css;
+
+	if($use_opac_url_base) $url_base = $opac_url_base;
+	else $url_base = "./";
+	// on cherche celle du style, du common, sinon celle par défaut
+	if(file_exists("./styles/".$css."/images/".$icon)) {
+		return $url_base."styles/".$css."/images/".$icon;
+	} elseif(file_exists("./styles/common/images/".$icon)) {
+		return $url_base."styles/common/images/".$icon;
+	} else {
+		return $url_base."images/".$icon;
+	}
 }

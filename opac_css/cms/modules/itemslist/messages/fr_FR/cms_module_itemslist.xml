@@ -5,7 +5,9 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_itemslist.xml,v 1.1 2015-02-26 16:02:03 dgoron Exp $ -->
+$Id: cms_module_itemslist.xml,v 1.1.4.1 2015-10-13 07:44:54 dgoron Exp $ -->
 
 <XMLlist>
+	<entry code='cms_module_itemslist_view_django'>Vue Django</entry>
+	<entry code='cms_module_itemslist_view_django_by_tags'>Vue Django par Tags</entry>
 </XMLlist>

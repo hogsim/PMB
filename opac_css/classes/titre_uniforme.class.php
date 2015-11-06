@@ -2,11 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titre_uniforme.class.php,v 1.17 2015-06-19 07:31:05 vtouchard Exp $
+// $Id: titre_uniforme.class.php,v 1.17.2.1 2015-09-28 15:23:44 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($class_path."/notice.class.php");
+require_once($class_path."/authorities_collection.class.php");
 
 /*
  *  Classe recopiée de la gestion, allégée des méthodes inutiles en OPAC
@@ -197,8 +198,8 @@ class titre_uniforme {
 					'id' => $resp_tu->author_id,
 					'fonction' => $resp_tu->responsability_tu_fonction,
 					'responsability' => $resp_tu->responsability_tu_type,
-					'objet' => new auteur($resp_tu->author_id)
-			) ;			
+					'objet' => authorities_collection::get_authority('author', $resp_tu->author_id)
+			) ;
 		}
 		$res["responsabilites"] = $responsabilites ;
 		$res["auteurs"] = $auteurs ;
@@ -423,7 +424,7 @@ class titre_uniforme {
 		for ($i = 0 ; $i < count($as) ; $i++) {
 			$indice = $as[$i] ;
 			$auteur_0 = $this->responsabilites["auteurs"][$indice] ;
-			$auteur = new auteur($auteur_0["id"]);
+			$auteur = authorities_collection::get_authority('author', $auteur_0["id"]);
 			if($i>0)$this->tu_isbd.= " / ";
 			$this->tu_isbd.= $auteur->display.". ";
 		}

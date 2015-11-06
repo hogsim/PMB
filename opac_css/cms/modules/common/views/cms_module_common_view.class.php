@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view.class.php,v 1.12 2015-04-03 11:16:23 jpermanne Exp $
+// $Id: cms_module_common_view.class.php,v 1.12.4.1 2015-08-26 10:08:14 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -114,23 +114,8 @@ class cms_module_common_view extends cms_module_root{
 			$headers[] = "<!-- Inclusion JQuery pour le portail-->";
 			$headers[] = "<script type='text/javascript' src='./cms/modules/common/includes/javascript/jquery-2.1.1.min.js"."'></script>";
 		}
-		if($this->use_dojo){
-			$headers[] = "<link rel='stylesheet' type='text/css' href='./includes/javascript/dojo/dijit/themes/".$this->dojo_theme."/".$this->dojo_theme.".css' />";
-			$headers[]= "
-			<script type='text/javascript'>
-				dojoConfig = {
-					has: {
-			            'dojo-firebug': false,
-			            'dojo-debug-messages': false
-        			},
-					parseOnLoad : true,
-					locale : '".substr($lang,0,2)."',
-					deps: ['dojo/parser']
-				}
-			</script>
-			";
-			$headers[]= "<script src='./includes/javascript/dojo/dojo/dojo.js'/>";
-			$headers[]= "
+
+		$headers[]= "
 			<script type='text/javascript'>
 				dojo.addOnLoad(function (){
 					//on ajoute la class pour le style...
@@ -139,7 +124,6 @@ class cms_module_common_view extends cms_module_root{
 					dojo.publish('init',['cms_dojo_init',{}]);
 				});
 			</script>";
-		}
 		return $headers;
 	}
 	

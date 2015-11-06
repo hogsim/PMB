@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_perso.tpl.php,v 1.3 2015-05-15 12:30:51 jpermanne Exp $
+// $Id: search_perso.tpl.php,v 1.3.2.1 2015-10-04 06:16:51 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -37,7 +37,7 @@ $tpl_search_perso_liste_tableau = "
 ";
 
 $tpl_search_perso_liste_tableau_ligne = "
-<tr class='!!pair_impair!!' '!!tr_surbrillance!!'  style='cursor: pointer'>
+<tr class='!!pair_impair!!' !!tr_surbrillance!! style='cursor: pointer'>
 	<td !!td_javascript!! >!!directlink!!</td>
 	<td !!td_javascript!! >!!name!!</td>
 	<td !!td_javascript!! >!!shortname!!</td>

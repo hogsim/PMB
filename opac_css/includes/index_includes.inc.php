@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: index_includes.inc.php,v 1.103 2015-06-18 13:27:54 jpermanne Exp $
+// $Id: index_includes.inc.php,v 1.103.2.3 2015-10-15 08:18:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -103,6 +103,9 @@ if($opac_opac_view_activate){
 			} else {
 				unset($_SESSION["last_sortnotices"]);
 			}
+			//comparateur de facettes : on ré-initialise
+			require_once($base_path.'/classes/facette_search_compare.class.php');
+			facette_search_compare::session_facette_compare(null,true);
 		}
 	}
 }
@@ -290,7 +293,7 @@ require_once($base_path.'/includes/navigator.inc.php');
 
 $link_to_print_search_result = "<span class=\"printSearchResult\">
 <a href='#' onClick=\"openPopUp('".$base_path."/print.php?lvl=search&current_search=".($_SESSION['last_query']+0)."','print',500,600,-2,-2,'scrollbars=yes,menubar=0'); w.focus(); return false;\">
-	<img src='".$base_path."/images/print.gif' border='0' align='bottom' alt=\"".$msg["histo_print"]."\" title=\"".$msg["histo_print"]."\"/>
+	<img src='".get_url_icon('print.gif')."' border='0' align='bottom' alt=\"".$msg["histo_print"]."\" title=\"".$msg["histo_print"]."\"/>
 </a>
 </span>";
 
@@ -610,10 +613,10 @@ if ($opac_show_bandeaugauche==0) {
 		$facette=str_replace("!!title_block_facette!!",$msg["label_title_facette"],$facette);
 		$facette=str_replace("!!lst_facette!!",$str,$facette);
 		$lvl1=str_replace("!!lst_lvl1!!",$str_lvl1,$lvl1);
-	}else if(strpos($lvl,"_see")!==false){
+	}else if(strpos($lvl,"_see")!==false && $lvl!="section_see"){
 		$facette=str_replace("!!title_block_facette!!",$msg["label_title_facette"],$facette);
 		$facette=str_replace("!!lst_facette!!",$str,$facette);
-		$lvl1=str_replace("!!lst_lvl1!!",$str_lvl1,$lvl1);
+		$lvl1="";
 	}else if ($lvl=="faq") {
 		//au plus simple...
 		if(!is_object($faq) || get_class($faq) != "faq"){

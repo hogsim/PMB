@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: webdav.class.php,v 1.17 2015-05-11 12:19:36 jpermanne Exp $
+// $Id: webdav.class.php,v 1.17.2.1 2015-10-13 08:01:50 ngantier Exp $
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 global $class_path, $include_path,$javascript_path;
@@ -125,7 +125,9 @@ class webdav_source extends connecteur_out_source {
 		if(!$this->config['restricted_user_write_permission']){
 			$this->config['restricted_user_write_permission'] = array();
 		}
-
+		if(!$this->config['metasMapper_class']){
+			$this->config['metasMapper_class'] = "";
+		}
 		if(!$this->config['upload_rep']){
 			global $PMBuserid;
 			$query = "select deflt_upload_repertoire from users where userid = ".$PMBuserid;
@@ -334,6 +336,13 @@ class webdav_source extends connecteur_out_source {
 			</div>
 			<div class='row'>&nbsp;</div>
 			<div class='row'>
+				<label for='default_statut'>".htmlentities($this->msg['webdav_metasMapper_class'],ENT_QUOTES,$charset)."</label>
+			</div>
+			<div class='row'>		
+				<input type='text' name='metasMapper_class' value='".htmlentities($this->config['metasMapper_class'],ENT_QUOTES,$charset)."'/>
+			</div>
+			<div class='row'>&nbsp;</div>
+			<div class='row'>
 				<label for='default_statut'>".htmlentities($this->msg['webdav_default_statut'],ENT_QUOTES,$charset)."</label>
 			</div>
 			<div class='row'>";
@@ -431,6 +440,7 @@ class webdav_source extends connecteur_out_source {
 		global $up_place;
 		global $allow_web;
 		global $default_docnum_statut;
+		global $metasMapper_class;
 
 		parent::update_config_from_form();
 		$this->config['included_sets'] = $included_sets;
@@ -447,6 +457,7 @@ class webdav_source extends connecteur_out_source {
 		$this->config['up_place'] = $up_place;
 		$this->config['allow_web'] = $allow_web;
 		$this->config['default_docnum_statut'] = $default_docnum_statut;
+		$this->config['metasMapper_class'] = $metasMapper_class;
 		return;
 	}
 }

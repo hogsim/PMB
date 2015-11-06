@@ -2,12 +2,13 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesSync.class.php,v 1.5 2015-04-03 11:16:28 jpermanne Exp $
+// $Id: pmbesSync.class.php,v 1.5.4.2 2015-09-15 16:23:37 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($class_path."/external_services.class.php");
 require_once($class_path."/connecteurs.class.php");
+require_once($class_path."/notice.class.php");
 
 class pmbesSync extends external_services_api_class {
 	var $error=false;		//Y-a-t-il eu une erreur
@@ -73,7 +74,7 @@ class pmbesSync extends external_services_api_class {
 	}
 	
 	/* Lancement de la synchronisation */
-	function doSync($id_connector, $id_source,$auto_import = false, $id_tache='', $callback_listen_command=NULL, $callback_deals_command=NULL) {
+	function doSync($id_connector, $id_source,$auto_import = false, $id_tache='', $callback_listen_command=NULL, $callback_deals_command=NULL, $auto_delete = false) {
 		global $base_path, $dbh,$PMBuserid, $PMBusername, $msg, $charset;
 
 		if ((!$id_connector) || (!$id_source))
@@ -176,6 +177,17 @@ class pmbesSync extends external_services_api_class {
 							if(pmb_mysql_num_rows($res)) $recid = pmb_mysql_result($res,0,0);
 							$req= "insert into notices_externes set num_notice = '".$id_notice."', recid = '".$recid."'";
 							pmb_mysql_query($req);
+						}
+					}
+				}
+				if (!$conn->error && $auto_delete) {
+					// On gère la suppression des notices qui ne sont plus présentes dans l'entrepôt
+					$query = "select distinct num_notice from notices_externes left join external_count on notices_externes.recid = external_count.recid where rid is null and notices_externes.recid like '% ".$id_source." %'";
+					$result = pmb_mysql_query($query, $dbh);
+					if ($result && pmb_mysql_num_rows($result)) {
+						while ($row = pmb_mysql_fetch_object($result)) {
+							// suppression de la notice
+							notice::del_notice($row->num_notice);
 						}
 					}
 				}

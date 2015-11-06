@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_includes.inc.php,v 1.95 2015-07-16 09:04:29 jpermanne Exp $
+// $Id: empr_includes.inc.php,v 1.95.2.2 2015-08-28 08:58:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -56,6 +56,9 @@ if($opac_opac_view_activate){
 			} else {
 				unset($_SESSION["last_sortnotices"]);
 			}
+			//comparateur de facettes : on ré-initialise
+			require_once($base_path.'/classes/facette_search_compare.class.php');
+			facette_search_compare::session_facette_compare(null,true);
 		}
 	}
 }
@@ -169,7 +172,7 @@ if (!$dest) {
 	
 	require_once($class_path."/serialcirc_empr.class.php");
 	
-	if ($opac_empr_code_info) print $opac_empr_code_info;
+	if ($opac_empr_code_info && $log_ok) print $opac_empr_code_info;
 }
 
 if (!$tab) {

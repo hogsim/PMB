@@ -2,10 +2,9 @@
 // +-------------------------------------------------+
 // Â© 2002-2014 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: docwatch_item.class.php,v 1.30 2015-04-03 11:16:21 jpermanne Exp $
+// $Id: docwatch_item.class.php,v 1.30.4.3 2015-10-09 13:49:22 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
-
 
 require_once($class_path."/notice.class.php");
 require_once($class_path."/docwatch/docwatch_watch.class.php");
@@ -154,8 +153,16 @@ class docwatch_item{
 	 */
 	protected $source;
 	
+	/**
+	 * Format ISBD des catégories
+	 */
 	protected $descriptors_isbd;
+	
+	/**
+	 * Format ISBD des tags
+	 */
 	protected $tags_isbd;
+	
 	/**
 	 * @return void
 	 * @access public
@@ -345,7 +352,7 @@ class docwatch_item{
 	}  
 	
 	public function get_tags_isbd() {
-	  return $this->tags_isbd;
+	  	return $this->tags_isbd;
 	}
 	
 	public function create_notice() {		
@@ -386,7 +393,7 @@ class docwatch_item{
 			
 			foreach ($this->descriptors as $num_categ => $label){
 				$query = "insert into notices_categories set notcateg_notice = '".$num_notice."', num_noeud='".$num_categ."'";
-				pmb_mysql_query($query, $dbh);				
+				pmb_mysql_query($query, $dbh);
 			}
 			
 			$query = "update docwatch_items set	item_num_notice = '".$num_notice."' where id_item = '".$this->id."'";
@@ -440,7 +447,7 @@ class docwatch_item{
 			
 			$this->set_num_section($section->id);
 			
-			return array('id'=>$section->id, 'title'=> $this->title,'link'=>"");
+			return array('id'=>$section->id, 'title'=> $this->title,'link'=>"./cms.php?categ=section&sub=edit&id=".$section->id);
 		}
 	}
 	
@@ -479,7 +486,7 @@ class docwatch_item{
 		
 			$this->set_num_article($article->id);
 			
-			return array('id'=>$article->id, 'title'=> $this->title,'link'=>"");		
+			return array('id'=>$article->id, 'title'=> $this->title,'link'=>"./cms.php?categ=article&sub=edit&id=".$article->id);		
 		}
 	}
 	
@@ -539,7 +546,6 @@ class docwatch_item{
 				$this->num_watch = $row->item_num_watch;
 				if($this->publication_date =="0000-00-00 00:00:00") $this->publication_date="";
 				$this->tags = array();
-				$this->descriptors = array();
 				$query = "select docwatch_items_tags.num_tag, docwatch_tags.tag_title from docwatch_items_tags join docwatch_tags on docwatch_items_tags.num_tag = docwatch_tags.id_tag where docwatch_items_tags.num_item = '".$this->id."'";	
 				$result = pmb_mysql_query($query, $dbh);
 				if (pmb_mysql_num_rows($result)) {
@@ -552,11 +558,15 @@ class docwatch_item{
 						$this->tags_isbd.= $row->tag_title;
 					}
 				}
+				$this->descriptors = array();
 				$query = "select docwatch_items_descriptors.num_noeud, categories.libelle_categorie from docwatch_items_descriptors join categories on docwatch_items_descriptors.num_noeud = categories.num_noeud where langue='".$lang."' and docwatch_items_descriptors.num_item ='".$this->id."'";
 				$result = pmb_mysql_query($query, $dbh);
 				if (pmb_mysql_num_rows($result)) {
 					while($row=pmb_mysql_fetch_object($result)){
-						$this->descriptors[$row->num_noeud]= $row->libelle_categorie;
+						$this->descriptors[] = array(
+								"id" => $row->num_noeud,
+								"label" => $row->libelle_categorie
+						);
 						if($this->descriptors_isbd)$this->descriptors_isbd.="; ";
 						$this->descriptors_isbd.= $row->libelle_categorie;
 					}
@@ -597,7 +607,7 @@ class docwatch_item{
 	} // end of member function gen_hash
 	
 	/**
-	 * Fonction de suppression d'un item
+	 * Fonction de sauvegarde d'un item
 	 * @return boolean
 	 */
 	public function save(){
@@ -673,35 +683,35 @@ class docwatch_item{
 			if(!pmb_mysql_query($query, $dbh)){
 				return false;
 			}
-			if(count($data["categs"]))
-			foreach($data["categs"] as $id){
-				$query = "insert into docwatch_items_descriptors set num_noeud='".$id."', num_item = '".$this->id."' ";
-				pmb_mysql_query($query, $dbh);
-			}		
-			
+			if(count($data["descriptors"])) {
+				foreach($data["descriptors"] as $id){
+					$query = "insert into docwatch_items_descriptors set num_noeud='".$id."', num_item = '".$this->id."' ";
+					pmb_mysql_query($query, $dbh);
+				}		
+			}
 			$query = "delete from docwatch_items_tags where num_item = '".$this->id."' ";
 			if(!pmb_mysql_query($query, $dbh)){
 				return false;
 			}
-			if(count($data["tags"]))
-			foreach($data["tags"] as $label){
-				if($charset != 'utf-8'){
-					$label=utf8_decode($label);
-				}
-				$query = "select id_tag from docwatch_tags where tag_title = '".addslashes($label)."'";
-				$result = pmb_mysql_query($query, $dbh);
-				if (!pmb_mysql_num_rows($result)) {				
-					$query = "insert into docwatch_tags set tag_title = '".addslashes($label)."'";
-					 pmb_mysql_query($query, $dbh);
-					 $num_tag = pmb_mysql_insert_id();
-				}else{
-					$row=pmb_mysql_fetch_object($result);
-					$num_tag=$row->id_tag;
-				}				
-				$query = "insert into docwatch_items_tags set num_tag='".$num_tag."', num_item = '".$this->id."' ";
-				pmb_mysql_query($query, $dbh);
-			}	
-			
+			if(count($data["tags"])) {
+				foreach($data["tags"] as $label){
+					if($charset != 'utf-8'){
+						$label=utf8_decode($label);
+					}
+					$query = "select id_tag from docwatch_tags where tag_title = '".addslashes($label)."'";
+					$result = pmb_mysql_query($query, $dbh);
+					if (!pmb_mysql_num_rows($result)) {
+						$query = "insert into docwatch_tags set tag_title = '".addslashes($label)."'";
+					 	pmb_mysql_query($query, $dbh);
+					 	$num_tag = pmb_mysql_insert_id();
+					}else{
+						$row=pmb_mysql_fetch_object($result);
+						$num_tag=$row->id_tag;
+					}
+					$query = "insert into docwatch_items_tags set num_tag='".$num_tag."', num_item = '".$this->id."' ";
+					pmb_mysql_query($query, $dbh);
+				}	
+			}
 			$this->fetch_datas();
 			return true;
 		}
@@ -720,13 +730,7 @@ class docwatch_item{
 	}
 	
 	public function get_normalized_item(){
-		$categs=array();
-		foreach ($this->descriptors as $id=>$label){
-			$categs[]=array(
-				"id" => $id,
-				"label" => $label
-			);
-		}
+		
 		$publication_date="";
 		$formated_publication_date="";
 		if($this->publication_date)	$publication_date=formatdate($this->publication_date,1);		
@@ -754,7 +758,7 @@ class docwatch_item{
 					"interesting"=>$this->interesting,
 					"descriptors_isbd"=>$this->descriptors_isbd,
 					"tags_isbd"=>$this->tags_isbd,
-					"categs"=>$categs,
+					"descriptors"=>$this->descriptors,
 					"tags"=>$this->tags
 				);
 		
@@ -762,10 +766,10 @@ class docwatch_item{
 			$retour['record_link'] = "./catalog.php?categ=isbd&id=".$this->num_notice;
 		}
 		if($this->num_article){
-			$retour['article_link'] = $this->num_article;
+			$retour['article_link'] = "./cms.php?categ=article&sub=edit&id=".$this->num_article;
 		}
 		if($this->num_section){
-			$retour['section_link'] = $this->num_section;
+			$retour['section_link'] = "./cms.php?categ=section&sub=edit&id=".$this->num_section;
 		}
 		return $retour;
 	}
@@ -821,8 +825,8 @@ class docwatch_item{
 										'desc' => $msg['cms_module_item_datasource_desc_descriptor_id']
 								),
 								array(
-										'var' => "descriptors[i].name",
-										'desc' => $msg['cms_module_item_datasource_desc_descriptor_name']
+										'var' => "descriptors[i].label",
+										'desc' => $msg['cms_module_item_datasource_desc_descriptor_label']
 								),
 								array(
 										'var' => "descriptors[i].comment",
@@ -843,8 +847,8 @@ class docwatch_item{
 										'desc' => $msg['cms_module_item_datasource_desc_tag_id']
 								),
 								array(
-										'var' => "tags[i].name",
-										'desc' => $msg['cms_module_item_datasource_desc_tag_name']
+										'var' => "tags[i].label",
+										'desc' => $msg['cms_module_item_datasource_desc_tag_label']
 								)
 						)
 				),

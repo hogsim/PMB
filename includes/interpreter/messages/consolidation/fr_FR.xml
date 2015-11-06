@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
+$Id: fr_FR.xml,v 1.1.2.1 2015-09-22 08:31:55 jpermanne Exp $ -->
 
 <!DOCTYPE XMLlist SYSTEM "../../../../includes/XMLlist.dtd" >
 <XMLlist>
@@ -16,6 +16,8 @@ $Id: fr_FR.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
   <entry code="classdocnum">Fonctions sur les documents numériques</entry>
   <entry code="classmulticritere">Fonctions pour la multicritère</entry>
   <entry code="classtypepage">Fonctions de classification des types de page</entry>
+  <entry code="classurlexternes">Fonctions sur les urls externes</entry>
+  <entry code="classnoticesbulletins">Fonctions sur les notices et les bulletins</entry>
    
   
   <!-- #mots_saisis($param,$parser); -->
@@ -69,14 +71,24 @@ $Id: fr_FR.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
   <entry code="var_server_output_description"></entry>
   
   <!-- #type_page($param, $parser); -->
-  <entry code="type_page_description">Retourne le type de page consultée</entry>
+  <entry code="type_page_description">Fonction qui permet de classifier le type des pages selon un code</entry>
   <entry code="type_page_input_description"></entry>
   <entry code="type_page_output_description"></entry>
   
   <!-- #sous_type_page($param, $parser); -->
-  <entry code="sous_type_page_description">Fonction qui permet de classifier le sous type des pages selon un code </entry>
+  <entry code="sous_type_page_description">Fonction qui permet de classifier le sous type des pages selon un code</entry>
   <entry code="sous_type_page_input_description"></entry>
   <entry code="sous_type_page_output_description"></entry>
+  
+  <!-- #type_page_lib($param, $parser); -->
+  <entry code="type_page_lib_description">Retourne le libellé du type de page consultée</entry>
+  <entry code="type_page_lib_input_description"></entry>
+  <entry code="type_page_lib_output_description"></entry>
+  
+  <!-- #sous_type_page_lib($param, $parser); -->
+  <entry code="sous_type_page_lib_description">Retourne le libellé du sous-type de page consultée</entry>
+  <entry code="sous_type_page_lib_input_description"></entry>
+  <entry code="sous_type_page_lib_output_description"></entry>
   
   <!-- #multi_libelle($param, $parser); -->
   <entry code="multi_libelle_description">Affiche le libelle des champs sélectionnés dans la multicritere</entry>
@@ -258,6 +270,11 @@ $Id: fr_FR.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
   <entry code="nb_categories_input_description"></entry>
   <entry code="nb_categories_output_description"></entry>
   
+  <!-- #nb_collections($param, $parser); -->
+  <entry code="nb_collections_description">Affiche le nombre de collections</entry>
+  <entry code="nb_collections_input_description"></entry>
+  <entry code="nb_collections_output_description"></entry>
+  
   <!-- #nb_subcollections($param, $parser); -->
   <entry code="nb_subcollections_description">Affiche le nombre de sous collections</entry>
   <entry code="nb_subcollections_input_description"></entry>
@@ -335,6 +352,11 @@ $Id: fr_FR.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
   <entry code="explnum_notice_input_description"></entry>
   <entry code="explnum_notice_output_description"></entry>
   
+  <!-- #explnum_notice_type($param, $parser); -->
+  <entry code="explnum_notice_type_description">Type de la notice reliée au document numérique</entry>
+  <entry code="explnum_notice_type_input_description"></entry>
+  <entry code="explnum_notice_type_output_description"></entry>
+  
   <!-- #explnum_bulletin($param, $parser); -->
   <entry code="explnum_bulletin_description">Id du bulletin relié au document numérique</entry>
   <entry code="explnum_bulletin_input_description"></entry>
@@ -344,5 +366,39 @@ $Id: fr_FR.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
   <entry code="explnum_id_description">Id du document numérique</entry>
   <entry code="explnum_id_input_description"></entry>
   <entry code="explnum_id_output_description"></entry>
+  
+  
+  
+  
+  <!-- ****************                Fonctions sur les documents numériques                  ****************** -->
+  
+  
+  
+  <!-- #url_externe($param, $parser); -->
+  <entry code="url_externe_description">Retourne l'url externe cliquée</entry>
+  <entry code="url_externe_input_description"></entry>
+  <entry code="url_externe_output_description"></entry>
+  
+  <!-- #url_externe_type($param, $parser); -->
+  <entry code="url_externe_type_description">Retourne le type d'url externe cliquée</entry>
+  <entry code="url_externe_type_input_description"></entry>
+  <entry code="url_externe_type_output_description"></entry>
+  
+  
+  
+  
+  <!-- ****************                Fonctions sur les notices et les bulletins                  ****************** -->
+  
+  
+  
+  <!-- #notice_id($param, $parser); -->
+  <entry code="notice_id_description">Retourne l'identifiant de la notice cliquée ou développée</entry>
+  <entry code="notice_id_input_description"></entry>
+  <entry code="notice_id_output_description"></entry>
+  
+  <!-- #bulletin_id($param, $parser); -->
+  <entry code="bulletin_id_description">Retourne l'identifiant du bulletin cliqué ou développé</entry>
+  <entry code="bulletin_id_input_description"></entry>
+  <entry code="bulletin_id_output_description"></entry>
     
 </XMLlist>

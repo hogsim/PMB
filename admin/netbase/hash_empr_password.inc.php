@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: hash_empr_password.inc.php,v 1.1 2015-06-02 13:24:51 dgoron Exp $
+// $Id: hash_empr_password.inc.php,v 1.1.2.2 2015-09-25 14:32:11 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -25,15 +25,17 @@ if(!$count) {
 
 print "<br /><br /><h2 align='center'>".htmlentities($msg["hash_empr_password"], ENT_QUOTES, $charset)."</h2>";
 
-$query = pmb_mysql_query("SELECT id_empr, empr_password, empr_login FROM empr where empr_password_is_encrypted=0 LIMIT $start, $lot");
-if(pmb_mysql_num_rows($query)) {
+$query = pmb_mysql_query("SELECT id_empr, empr_password, empr_login FROM empr where empr_password_is_encrypted=0 LIMIT $lot");
+// start <= count : test supplémentaire pour s'assurer de ne pas boucler à l'infini
+// problème rencontré : login vide et 2 login identiques (en théorie impossible)
+if(pmb_mysql_num_rows($query) && ($start <= $count)) {
 
 	if (!$start) {
 		$requete = "CREATE TABLE if not exists empr_passwords (
 			id_empr INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 			empr_password VARCHAR( 255 ) NOT NULL default '')";
 		pmb_mysql_query($requete, $dbh);
-		$requete = "INSERT INTO empr_passwords SELECT id_empr, empr_password FROM empr where empr_password_is_encrypted=0";
+		$requete = "INSERT IGNORE INTO empr_passwords SELECT id_empr, empr_password FROM empr where empr_password_is_encrypted=0";
 		pmb_mysql_query($requete, $dbh);
 	}
 	

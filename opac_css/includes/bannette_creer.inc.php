@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette_creer.inc.php,v 1.26 2015-05-20 11:22:31 jpermanne Exp $
+// $Id: bannette_creer.inc.php,v 1.26.2.1 2015-09-14 09:14:30 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,7 +15,7 @@ require_once($base_path."/includes/bannette_func.inc.php");
 // afin de résoudre un pb d'effacement de la variable $id_empr par empr_included, bug à trouver
 if (!$id_empr) $id_empr=$_SESSION["id_empr_session"] ;
 
-print "<div id='aut_details'>\n";
+print "<div id='aut_details' class='aut_details_bannette'>\n";
 
 print "<h3><span>".$msg['dsi_bt_bannette_priv']."</span></h3>\n";
 

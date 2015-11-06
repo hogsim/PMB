@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: publisher.class.php,v 1.22 2015-04-03 11:16:18 jpermanne Exp $
+// $Id: publisher.class.php,v 1.22.4.2 2015-09-24 15:48:15 dgoron Exp $
 
 // définition de la classe de gestion des 'editeurs'
 
@@ -162,7 +162,7 @@ class publisher {
 		$print = str_replace("!!cp!!", $this->cp, $print);
 		$print = str_replace("!!ville!!", $this->ville, $print);
 		$print = str_replace("!!pays!!", $this->pays, $print);
-		if ($this->web) $print = str_replace("!!site_web!!", "<a href='$this->web' target='_blank'><img src='./images/globe.gif' border='0' /></a>", $print);
+		if ($this->web) $print = str_replace("!!site_web!!", "<a href='$this->web' target='_blank' type='external_url_autor'><img src='".get_url_icon("globe.gif")."' border='0' /></a>", $print);
 		else $print = str_replace("!!site_web!!", "", $print);
 		$print = str_replace("!!isbd!!", $this->isbd_entry, $print);
 		$print = str_replace("!!aut_comment!!", $this->ed_comment, $print);

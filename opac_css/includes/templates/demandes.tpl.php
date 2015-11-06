@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes.tpl.php,v 1.15 2015-03-11 11:20:00 ngantier Exp $
+// $Id: demandes.tpl.php,v 1.15.4.1 2015-09-11 12:50:41 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -121,7 +121,9 @@ $form_filtre_demande .="
 			</div>
 		</div>";
 $form_filtre_demande .="
-		<div class='row'></div>	
+		<div class='row'></div>
+		!!champs_perso!!
+		<div class='row'></div>
 	</div>
 	<div class='row'></div>
 	<div class='row'>
@@ -263,6 +265,8 @@ $form_liste_demande.="
 					<th>".$msg['demandes_date_butoir']."</th>
 					<th>".$msg['demandes_user']."</th>
 					<th>".$msg['demandes_progression']."</th>
+					!!header_champs_perso!!
+					<th>".$msg['demandes_linked_record']."</th>
 					$demandes_notice_auto_tpl
 				</tr>
 				!!liste_dmde!!				
@@ -290,6 +294,8 @@ $form_liste_demande.="
 					<th>".$msg['demandes_titre']."</th>
 					!!entete_etat!!
 					<th>".$msg['demandes_date_dmde']."</th>
+					!!header_champs_perso!!
+					<th>".$msg['demandes_linked_record']."</th>
 					$demandes_notice_auto_tpl
 				</tr>
 				!!liste_dmde!!				
@@ -379,7 +385,7 @@ $form_modif_demande = "
 				$date_echeance_tpl
 			</div>
 		</div>
-		<div class='row'></div>	
+		<div class='row'>&nbsp;</div>	
 	</div>
 	<div class='row'>
 		<div class='left'>
@@ -478,6 +484,10 @@ $form_consult_dmde = "
 			</div>
 		</div>
 		<div class='row'></div>
+		<div class='row'>
+			!!champs_perso!!
+		</div>
+		<div class='row'>&nbsp;</div>
 	</div>
 	
 	<div class='row'>
@@ -533,6 +543,10 @@ $form_consult_dmde = "
 			</div>
 		</div>	
 		<div class='row'></div>
+		<div class='row'>
+			!!champs_perso!!
+		</div>
+		<div class='row'>&nbsp;</div>
 	</div>
 	
 	<div class='row'>

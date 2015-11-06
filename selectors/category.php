@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.php,v 1.17 2014-03-13 12:55:10 dbellamy Exp $
+// $Id: category.php,v 1.17.6.1 2015-09-16 12:09:41 jpermanne Exp $
 //
 // Affichage de la zone de recherche et choix du mode de navigation dans les catégories
 
@@ -19,7 +19,7 @@ include_once ("$javascript_path/misc.inc.php");
 print reverse_html_entities();
 
 // la variable $caller, passée par l'URL, contient le nom du form appelant
-$base_url = "category.php?caller=$caller&p1=$p1&p2=$p2&no_display=$no_display&bt_ajouter=$bt_ajouter&dyn=$dyn&keep_tilde=$keep_tilde&parent=&callback=".$callback."&infield=".$infield
+$base_url = "category.php?caller=$caller&p1=$p1&p2=$p2&perso_id=$perso_id&no_display=$no_display&bt_ajouter=$bt_ajouter&dyn=$dyn&keep_tilde=$keep_tilde&parent=&callback=".$callback."&infield=".$infield
 			."&max_field=".$max_field."&field_id=".$field_id."&field_name_id=".$field_name_id."&add_field=".$add_field."&id_thes_unique=$id_thes_unique&autoindex_class=autoindex_record";
 require_once("$base_path/selectors/templates/category.tpl.php");
  
@@ -34,7 +34,7 @@ else{
 	switch ($caller) {
 		case 'notice' :
 			if (!$id_thes) $id_thes = thesaurus::getNoticeSessionThesaurusId();
-			thesaurus::setNoticeSessionThesaurusId($id_thes);
+			if ($perso_id>0) thesaurus::setNoticeSessionThesaurusId($id_thes);
 			break;
 		case 'categ_form' :
 			if (!$id_thes) $id_thes = thesaurus::getSessionThesaurusId();
@@ -126,7 +126,7 @@ if(!$parent) $parent=0;
 print "
 <script type='text/javascript' >
 	parent.document.getElementsByTagName( 'frameset' )[ 0 ].rows = '135,*' ;
-	parent.category_browse.location='$src?caller=$caller&p1=$p1&p2=$p2&no_display=$no_display&bt_ajouter=$bt_ajouter&dyn=$dyn&keep_tilde=$keep_tilde&parent=$parent&id2=$id2&id_thes=$id_thes&user_input=".rawurlencode(stripslashes($user_input))."&f_user_input=".rawurlencode(stripslashes($f_user_input))."&callback=".$callback."&infield=".$infield
+	parent.category_browse.location='$src?caller=$caller&p1=$p1&p2=$p2&perso_id=$perso_id&no_display=$no_display&bt_ajouter=$bt_ajouter&dyn=$dyn&keep_tilde=$keep_tilde&parent=$parent&id2=$id2&id_thes=$id_thes&user_input=".rawurlencode(stripslashes($user_input))."&f_user_input=".rawurlencode(stripslashes($f_user_input))."&callback=".$callback."&infield=".$infield
 		."&max_field=".$max_field."&field_id=".$field_id."&field_name_id=".$field_name_id."&add_field=".$add_field."&id_thes_unique=".$id_thes_unique."&autoindex_class=autoindex_record';
 </script>\n";
 print $sel_footer;

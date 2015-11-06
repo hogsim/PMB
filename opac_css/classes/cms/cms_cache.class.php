@@ -73,4 +73,10 @@ final class cms_cache{
 	private function __destruct() {
 		self::$cms_cache_arrayObject=null;
 	}
+	
+	public static function clean_cache(){
+		global $dbh;
+		
+		pmb_mysql_query("TRUNCATE TABLE cms_cache_cadres");
+	}
 }

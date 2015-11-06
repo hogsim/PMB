@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage.ext.class.php,v 1.237 2015-06-04 09:04:35 dgoron Exp $
+// $Id: notice_affichage.ext.class.php,v 1.237.2.3 2015-09-22 07:46:58 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -870,7 +870,7 @@ class notice_affichage_mw extends notice_affichage {
 		
 		$basket="<img src='".$opac_url_base."mw/images/commun/cale.gif' border='0' width='1' height='8' /><br /><div style='float:left;'>";
 		if ($this->cart_allowed) {
-			$basket.="<a href='cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."' target='cart_info'><img src='".$opac_url_base."mw/images/commun/basket_small_20x20.gif' border='0' align='absmiddle' title=\"".$msg[notice_title_basket]."\" alt=\"".$msg[notice_title_basket]."\" />".$msg[notice_bt_panier]."</a>";
+			$basket.="<a href='cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."' target='cart_info' title=\"".$msg[notice_title_basket]."\"><img src='".$opac_url_base."mw/images/commun/basket_small_20x20.gif' border='0' align='absmiddle' alt=\"".$msg[notice_title_basket]."\" />".$msg[notice_bt_panier]."</a>";
 		}
 		 if (($opac_avis_allow && $opac_avis_allow != 2) || ($_SESSION["user_code"] && $opac_avis_allow == 2)) {//Avis
 				$basket.="&nbsp;&nbsp;<a href='#' onclick=\"javascript:open('avis.php?todo=liste&noticeid=$this->notice_id','avis','width=520,height=290,scrollbars=yes,resizable=yes')\"><img src='".$opac_url_base."mw/images/commun/avis.gif' align='absmiddle' border='0' />".$msg[notice_bt_avis]."</a><br /><br />";
@@ -965,7 +965,7 @@ class notice_affichage_mw extends notice_affichage {
 		
 		$basket="<img src='".$opac_url_base."mw/images/commun/cale.gif' border='0' width='1' height='8'><br /><div style='float:left;'>";
 		if ($this->cart_allowed) {
-			$basket.="<a href='cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."' target='cart_info'><img src='".$opac_url_base."mw/images/commun/basket_small_20x20.gif' border='0' align='absmiddle' title=\"".$msg[notice_title_basket]."\" alt=\"".$msg[notice_title_basket]."\" />".$msg[notice_bt_panier]."</a>";
+			$basket.="<a href='cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."' target='cart_info' title=\"".$msg[notice_title_basket]."\"><img src='".$opac_url_base."mw/images/commun/basket_small_20x20.gif' border='0' align='absmiddle' alt=\"".$msg[notice_title_basket]."\" />".$msg[notice_bt_panier]."</a>";
 		}
 		if ($opac_avis_allow){	//Avis
 				$basket.="&nbsp;&nbsp;<a href='#' onclick=\"javascript:open('avis.php?todo=liste&noticeid=$this->notice_id','avis','width=520,height=290,scrollbars=yes,resizable=yes')\"><img src='".$opac_url_base."mw/images/commun/avis.gif' align='absmiddle' border='0'>".$msg[notice_bt_avis]."</a>";
@@ -1152,11 +1152,11 @@ class notice_affichage_livrjeunes extends notice_affichage {
 		
 		if ($this->cart_allowed){
 			if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 		
@@ -1382,11 +1382,11 @@ class notice_affichage_abiodoc extends notice_affichage {
 		$this->notice_childs = $this->genere_notice_childs();
 		if ($this->cart_allowed){
 			if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src=\"".$opac_url_base."images/basket_small_20x20.gif\" border=\"0\" title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".$opac_url_base."images/basket_small_20x20.gif\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 		
@@ -1652,11 +1652,11 @@ class notice_affichage_abiodoc extends notice_affichage {
 		
 		if ($this->cart_allowed){
 		if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 		
@@ -2299,6 +2299,94 @@ class notice_affichage_abiodoc extends notice_affichage {
 		return $entry;
 	
 	}
+	
+	function aff_suite() {
+		global $msg;
+		global $charset;
+		global $opac_allow_tags_search, $opac_permalink, $opac_url_base;
+		global $opac_map_activate;
+	
+		// afin d'éviter de recalculer un truc déjà calculé...
+		if ($this->affichage_suite_flag) return $this->affichage_suite ;
+	
+		//Espace
+		//$ret.="<tr class='tr_spacer'><td colspan='2' class='td_spacer'>&nbsp;</td></tr>";
+	
+		// toutes indexations
+		$ret_index = "";
+		// Catégories
+		if ($this->categories_toutes) $ret_index .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['categories_start']."</span></td><td>".$this->categories_toutes."</td></tr>";
+	
+		// Concepts
+		$concepts_list = new skos_concepts_list();
+		if ($concepts_list->set_concepts_from_object(TYPE_NOTICE, $this->notice_id)) {
+			$ret_index .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['concepts_start']."</span></td><td>".skos_view_concepts::get_list_in_notice($concepts_list)."</td></tr>";
+		}
+	
+		// Affectation du libellé mots clés ou tags en fonction de la recherche précédente
+		if($opac_allow_tags_search == 1) $libelle_key = $msg['tags'];
+		else $libelle_key = 	$msg['motscle_start'];
+	
+		// indexation libre
+		$mots_cles = $this->do_mots_cle() ;
+		if($mots_cles) $ret_index.= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$libelle_key."</span></td><td>".nl2br($mots_cles)."</td></tr>";
+	
+		// indexation interne
+		if($this->notice->indexint) {
+			$indexint = new indexint($this->notice->indexint);
+			$ret_index.= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['indexint_start']."</span></td><td>".inslink($indexint->name,  str_replace("!!id!!", $this->notice->indexint, $this->lien_rech_indexint))." ".nl2br(htmlentities($indexint->comment,ENT_QUOTES, $charset))."</td></tr>" ;
+		}
+		if ($ret_index) {
+			$ret.=$ret_index;
+			//$ret.="<tr class='tr_spacer'><td colspan='2' class='td_spacer'>&nbsp;</td></tr>";
+		}
+	
+		// résumé
+		if($this->notice->n_resume) $ret .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['n_resume_start']."</span></td><td class='td_resume'>".nl2br($this->notice->n_resume)."</td></tr>";
+	
+		// note de contenu
+		//if($this->notice->n_contenu) $ret .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['n_contenu_start']."</span></td><td>".nl2br(htmlentities($this->notice->n_contenu,ENT_QUOTES, $charset))."</td></tr>";
+	
+		//Champs personalisés
+		$perso_aff = "" ;
+		if (!$this->p_perso->no_special_fields) {
+			// $this->memo_perso_ permet au affichages personalisés dans notice_affichage_ex de gagner du temps
+			if(!$this->memo_perso_) $this->memo_perso_=$this->p_perso->show_fields($this->notice_id);
+			for ($i=0; $i<count($this->memo_perso_["FIELDS"]); $i++) {
+				$p=$this->memo_perso_["FIELDS"][$i];
+				if ($p['OPAC_SHOW'] && $p["AFF"]) $perso_aff .="<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".strip_tags($p["TITRE"])."</span></td><td>".$p["AFF"]."</td></tr>";
+			}
+		}
+		$ret .= $perso_aff ;
+	
+		if ($this->notice->lien) {
+			//$ret.="<tr class='tr_spacer'><td colspan='2' class='td_spacer'>&nbsp;</td></tr>";
+			$ret.="<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg["lien_start"]."</span></td><td>" ;
+			if (substr($this->notice->eformat,0,3)=='RSS') {
+				$ret .= affiche_rss($this->notice->notice_id) ;
+			} else {
+				if (strlen($this->notice->lien)>80) {
+					$ret.="<a href=\"".$this->notice->lien."\" target=\"top\" class='lien856' type=\"external_url_notice\">".htmlentities(substr($this->notice->lien, 0, 80),ENT_QUOTES,$charset)."</a>&nbsp;[...]";
+				} else {
+					$ret.="<a href=\"".$this->notice->lien."\" target=\"top\" class='lien856' type=\"external_url_notice\">".htmlentities($this->notice->lien,ENT_QUOTES,$charset)."</a>";
+				}
+				//$ret.="</td></tr>";
+			}
+			$ret.="</td></tr>";
+			if ($this->notice->eformat && substr($this->notice->eformat,0,3)!='RSS') $ret.="<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg["eformat_start"]."</span></td><td>".htmlentities($this->notice->eformat,ENT_QUOTES,$charset)."</td></tr>";
+		}
+		// Permalink avec Id
+		if ($opac_permalink) {
+			if($this->notice->niveau_biblio != "b"){
+				$ret.= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg["notice_permalink"]."</span></td><td><a href='".$opac_url_base."index.php?lvl=notice_display&id=".$this->notice_id."'>".substr($opac_url_base."index.php?lvl=notice_display&id=".$this->notice_id,0,80)."</a></td></tr>";
+			}else {
+				$ret.= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg["notice_permalink"]."</span></td><td><a href='".$opac_url_base."index.php?lvl=bulletin_display&id=".$this->bulletin_id."'>".substr($opac_url_base."index.php?lvl=bulletin_display&id=".$this->bulletin_id,0,80)."</a></td></tr>";
+			}
+		}
+		$this->affichage_suite = $ret ;
+		$this->affichage_suite_flag = 1 ;
+		return $ret;
+	} // fin aff_suite()
 		
 
 }
@@ -3980,11 +4068,11 @@ class notice_affichage_crips extends notice_affichage {
 		$this->notice_childs = $this->genere_notice_childs();
 		if ($this->cart_allowed){
 			if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src=\"".$opac_url_base."images/basket_small_20x20.gif\" border=\"0\" title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".$opac_url_base."images/basket_small_20x20.gif\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 		
@@ -4241,11 +4329,11 @@ class notice_affichage_crips extends notice_affichage {
 		
 		if ($this->cart_allowed){
 			if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 		
@@ -4672,6 +4760,7 @@ class notice_affichage_crips extends notice_affichage {
 		global $opac_book_pics_url ;
 		global $opac_book_pics_msg;
 		global $opac_url_base ;
+		global $msg;
 				
 		if ($this->notice->code || $this->notice->thumbnail_url) {
 			if ($opac_show_book_pics=='1' && ($opac_book_pics_url || $this->notice->thumbnail_url)) {
@@ -4683,7 +4772,7 @@ class notice_affichage_crips extends notice_affichage {
 				if(strpos($this->notice->thumbnail_url,"AFFICHES_VIGNETTES") !== false){
 					$hauteur_vig = "";				
 				} else $hauteur_vig= " height=\"150px\" ";
-				if ($depliable) $image = "<img src='".$opac_url_base."images/vide.png' hspace='4' vspace='2' $hauteur_vig isbn='".$code_chiffre."' url_image='".$url_image."' border='1px solid #ccccff' vigurl=\"".$this->notice->thumbnail_url."\" />";
+				if ($depliable) $image = "<img src='".$opac_url_base."images/vide.png' hspace='4' vspace='2' $hauteur_vig isbn='".$code_chiffre."' url_image='".$url_image."' border='1px solid #ccccff' vigurl=\"".$this->notice->thumbnail_url."\"  alt='".$msg["opac_notice_vignette_alt"]."'/>";
 				else {
 					if ($this->notice->thumbnail_url) {
 						$url_image_ok=$this->notice->thumbnail_url;
@@ -4692,7 +4781,10 @@ class notice_affichage_crips extends notice_affichage {
 						$url_image_ok = str_replace("!!noticecode!!", $code_chiffre, $url_image) ;
 						$title_image_ok = htmlentities($opac_book_pics_msg, ENT_QUOTES, $charset);
 					}
-					$image = "<img src='".$url_image_ok."' title=\"".$title_image_ok."\" $hauteur_vig align='right' hspace='4' vspace='2' />";
+					if(!trim($title_image_ok)){
+						$title_image_ok = htmlentities($this->notice->tit1, ENT_QUOTES, $charset);
+					}
+					$image = "<img src='".$url_image_ok."' title=\"".$title_image_ok."\" $hauteur_vig align='right' hspace='4' vspace='2'  alt='".$msg["opac_notice_vignette_alt"]."'/>";
 				}
 			} else $image="" ;
 			if ($image) {
@@ -5664,7 +5756,7 @@ class notice_affichage_commande_copie extends notice_affichage {
 		$this->premier = $premier ;
 		$this->double_ou_simple = 2 ;
 		$this->notice_childs = $this->genere_notice_childs();
-		if ($this->cart_allowed) $basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\" class=\"img_basket\"><img src=\"".$opac_url_base."images/basket_small_20x20.gif\" border=\"0\" title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\"></a>"; 
+		if ($this->cart_allowed) $basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".$opac_url_base."images/basket_small_20x20.gif\" border=\"0\" alt=\"".$msg['notice_title_basket']."\"></a>"; 
 		else $basket="";
 		
 		//add tags
@@ -5770,7 +5862,7 @@ class notice_affichage_commande_copie extends notice_affichage {
 		if ($cart_aff_case_traitement) $case_a_cocher = "<input type='checkbox' value='!!id!!' name='notice[]'/>&nbsp;";
 		else $case_a_cocher = "" ;
 		
-		if ($this->cart_allowed) $basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\" class=\"img_basket\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\"></a>"; 
+		if ($this->cart_allowed) $basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\"></a>"; 
 		else $basket="";
 		
 		//add tags
@@ -6155,11 +6247,11 @@ class notice_affichage_ireps extends notice_affichage {
 		$this->notice_childs = $this->genere_notice_childs();
 		if ($this->cart_allowed){
 			if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src=\"".$opac_url_base."/styles/ireps/images/panier.png\" border=\"0\" title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".$opac_url_base."/styles/ireps/images/panier.png\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a>";
 			} 
 		}else $basket="";
 		
@@ -6419,11 +6511,11 @@ class notice_affichage_ireps extends notice_affichage {
 		
 		if ($this->cart_allowed){
 			if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src='".$opac_url_base."/styles/ireps/images/panier.png' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."/styles/ireps/images/panier.png' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 		
@@ -10272,11 +10364,11 @@ class notice_affichage_cconstitutionnel extends notice_affichage {
 		
 		if ($this->cart_allowed){
 			if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 		
@@ -10505,11 +10597,11 @@ class notice_affichage_cconstitutionnel extends notice_affichage {
 		
 		if ($this->cart_allowed){
 			if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
-				$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+				$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1; 
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\" /></a>"; 
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>"; 
 			}
 		}else $basket="";
 	

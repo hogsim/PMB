@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.tpl.php,v 1.28 2015-03-09 15:52:12 dgoron Exp $
+// $Id: category.tpl.php,v 1.28.4.1 2015-10-13 07:58:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -197,21 +197,65 @@ function set_parent_w(f_caller, id_value, libelle_value,w,callback,id_thesaurus)
 		if(callback)
 			w.opener[callback]('$infield');
 	} else {
-		w.opener.document.forms[f_caller].elements['$p1'].value=id_value;
-		w.opener.document.forms[f_caller].elements['$p2'].value=reverse_html_entities(libelle_value);
 		var p1 = '$p1';
-		var theselector = w.opener.document.getElementById(p1.replace('field','fieldvar').replace('_id','')+'[id_thesaurus][]');
-		if(theselector){
-			for (var i=1 ; i< theselector.options.length ; i++){
-				if (theselector.options[i].value == id_thesaurus){
-					theselector.options[i].selected = true;
+		var p2 = '$p2';
+		//on enlève le dernier _X
+		var tmp_p1 = p1.split('_');
+		var tmp_p1_length = tmp_p1.length;
+		tmp_p1.pop();
+		var p1bis = tmp_p1.join('_');
+		
+		var tmp_p2 = p2.split('_');
+		var tmp_p2_length = tmp_p2.length;
+		tmp_p2.pop();
+		var p2bis = tmp_p2.join('_');
+		
+		var max_aut = w.opener.document.getElementById(p1bis.replace('id','max_aut'));
+		if(max_aut){
+			var trouve=false;
+			var trouve_id=false;
+			for(i_aut=0;i_aut<=max_aut.value;i_aut++){
+				if(w.opener.document.getElementById(p1bis+'_'+i_aut).value==0){
+					w.opener.document.getElementById(p1bis+'_'+i_aut).value=id_value;
+					w.opener.document.getElementById(p2bis+'_'+i_aut).value=reverse_html_entities(libelle_value);
+					trouve=true;
 					break;
+				}else if(w.opener.document.getElementById(p1bis+'_'+i_aut).value==id_value){
+					trouve_id=true;
 				}
 			}
-		}
-		if(callback)
-			w.opener[callback]('$infield');
-		//parent.parent.close();
+			if(!trouve && !trouve_id){
+				w.opener.add_line(p1bis.replace('_id',''));
+				w.opener.document.getElementById(p1bis+'_'+i_aut).value=id_value;
+				w.opener.document.getElementById(p2bis+'_'+i_aut).value=reverse_html_entities(libelle_value);
+			}
+			var theselector = w.opener.document.getElementById(p1.replace('field','fieldvar').replace('_id','')+'[id_thesaurus][]');
+			if(theselector){
+				for (var i=1 ; i< theselector.options.length ; i++){
+					if (theselector.options[i].value == id_thesaurus){
+						theselector.options[i].selected = true;
+						break;
+					}
+				}
+			}
+			if(callback)
+				w.opener[callback](p1bis.replace('_id','')+'_'+i_aut);
+		}else {
+			w.opener.document.getElementById('$p1').value=id_value;
+			w.opener.document.getElementById('$p2').value=reverse_html_entities(libelle_value);
+			var theselector = w.opener.document.getElementById(p1.replace('field','fieldvar').replace('_id','')+'[id_thesaurus][]');
+			if(theselector){
+				for (var i=1 ; i< theselector.options.length ; i++){
+					if (theselector.options[i].value == id_thesaurus){
+						theselector.options[i].selected = true;
+						break;
+					}
+				}
+			}
+			if(callback)
+				w.opener[callback]('$infield');
+			//parent.parent.close();
+		}		
 	}
 }
 -->

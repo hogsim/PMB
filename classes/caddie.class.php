@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: caddie.class.php,v 1.48 2015-06-19 09:23:03 jpermanne Exp $
+// $Id: caddie.class.php,v 1.48.2.1 2015-10-16 14:47:09 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -815,27 +815,32 @@ function verif_bull_item($bull,$forcage=array()) {
 	}
 	
 	static function show_actions($id_caddie = 0, $type_caddie = 'NOTI') {
-		global $msg,$cart_action_selector;
-		
-		$liste_actions = "<option value='' selected='selected'></option>";
-		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=supprpanier&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_suppr_panier"]."</option>";
-		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=transfert&action=transfert&object_type=NOTI&idcaddie=".$id_caddie."&item='>".$msg["caddie_menu_action_transfert"]."</option>";
-		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=edition&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_edition"]."</option>";
+		global $msg,$cart_action_selector,$cart_action_selector_line;
+
+		//Le tableau des actions possibles
+		$array_actions = array();
+		$array_actions[] = array('msg' => $msg["caddie_menu_action_suppr_panier"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=supprpanier&action=choix_quoi&object_type=NOTI&idcaddie='.$id_caddie.'&item=0');
+		$array_actions[] = array('msg' => $msg["caddie_menu_action_transfert"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=transfert&action=transfert&object_type=NOTI&idcaddie='.$id_caddie.'&item=');
+		$array_actions[] = array('msg' => $msg["caddie_menu_action_edition"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=edition&action=choix_quoi&object_type=NOTI&idcaddie='.$id_caddie.'&item=0');
 		if ($type_caddie == "EXPL") {
-			$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=impr_cote&action=choix_quoi&object_type=EXPL&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_impr_cote"]."</option>";
+			$array_actions[] = array('msg' => $msg["caddie_menu_action_impr_cote"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=impr_cote&action=choix_quoi&object_type=EXPL&idcaddie='.$id_caddie.'&item=0');
 		}
-		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=export&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_export"]."</option>";
-		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=expdocnum&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_exp_docnum"]."</option>";
-		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=selection&action=&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_selection"]."</option>";
-		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=supprbase&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_suppr_base"]."</option>";
-		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=reindex&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_reindex"]."</option>";
+		$array_actions[] = array('msg' => $msg["caddie_menu_action_export"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=export&action=choix_quoi&object_type=NOTI&idcaddie='.$id_caddie.'&item=0');
+		$array_actions[] = array('msg' => $msg["caddie_menu_action_exp_docnum"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=expdocnum&action=choix_quoi&object_type=NOTI&idcaddie='.$id_caddie.'&item=0');
+		$array_actions[] = array('msg' => $msg["caddie_menu_action_selection"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=selection&action=&object_type=NOTI&idcaddie='.$id_caddie.'&item=0');
+		$array_actions[] = array('msg' => $msg["caddie_menu_action_suppr_base"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=supprbase&action=choix_quoi&object_type=NOTI&idcaddie='.$id_caddie.'&item=0');
+		$array_actions[] = array('msg' => $msg["caddie_menu_action_reindex"], 'location' => './catalog.php?categ=caddie&sub=action&quelle=reindex&action=choix_quoi&object_type=NOTI&idcaddie='.$id_caddie.'&item=0');
 		
-		$to_show = $cart_action_selector;
-		$to_show = str_replace("!!object_id!!",$id_caddie,$to_show);
-		$to_show = str_replace("!!object_type!!",$type_caddie,$to_show);
-		$to_show = str_replace("!!actions_liste!!",$liste_actions,$to_show);
-		$to_show = str_replace("!!lib_action!!",$msg["caddie_menu_action"],$to_show);
-		$to_show = str_replace("!!msg_object_action!!",$msg["caddie_menu_action"],$to_show);
+		//On crée les lignes du menu
+		$lines = '';
+		foreach($array_actions as $item_action){
+			$tmp_line = str_replace('!!cart_action_selector_line_location!!',$item_action['location'],$cart_action_selector_line);
+			$tmp_line = str_replace('!!cart_action_selector_line_msg!!',$item_action['msg'],$tmp_line);
+			$lines.= $tmp_line;
+		}
+		
+		//On récupère le template
+		$to_show = str_replace('!!cart_action_selector_lines!!',$lines,$cart_action_selector);
 		
 		return $to_show;
 	}

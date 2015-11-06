@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: parametres_perso.class.php,v 1.25 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: parametres_perso.class.php,v 1.25.4.1 2015-09-11 12:50:41 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -256,6 +256,35 @@ class parametres_perso {
 		$field[PREFIX]=$this->prefix;
 		eval("\$r=".$aff_list_empr_search[$this->t_fields[$id][TYPE]]."(\$field,\$check_scripts,\$field_name);");
 		return $r;
+	}
+	
+	//Lecture des champs de recherche
+	function read_search_fields_from_form() {
+	
+		$perso=array();
+		reset($this->t_fields);
+		while (list($key,$val)=each($this->t_fields)) {
+			if($this->t_fields[$key]["SEARCH"]) {
+				$t=array();
+				$t["DATATYPE"]=$val["DATATYPE"];
+				$t["NAME"]=$val["NAME"];
+				$t["TITRE"]=$val["TITRE"];
+				$name = $this->t_fields[$key]["NAME"];
+				$values = array();
+				if($val["NAME"] == $name) {
+					global $$name;
+					$value=$$name;
+					for ($i=0; $i<count($value); $i++) {
+						if($value[$i]) {
+							$values[] = $value[$i];
+						}
+					}
+				}
+				$t["VALUE"]=$values;
+				$perso["FIELDS"][]=$t;
+			}
+		}
+		return $perso;
 	}
 }
 

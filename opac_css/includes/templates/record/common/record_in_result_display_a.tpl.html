@@ -1,3 +1,5 @@
+<!-- $Id: record_in_result_display_a.tpl.html,v 1.4.2.3 2015-10-07 15:14:21 apetithomme Exp $ -->
+
 <div class="parentNotCourte">
 	{% if global.cart_aff_case_traitement %}
 		<input type='checkbox' value='{{ record.id }}' name='notice[]'/>
@@ -5,9 +7,11 @@
 
 	<!-- Vignette de la notice -->
 	<div class="vignetteimgNot">
-		<div class="vignetteDocNot">
-			<img class="vignetteNot" src= "{% if record.get_picture_url %}{{ record.get_picture_url }}{% else %}./styles/common/images/no_image.jpg{% endif %}" />
-		</div>
+		{% if record.get_picture_url %}
+			<div class="vignetteDocNot">
+				<img class="vignetteNot" src= "{{ record.get_picture_url }}" />
+			</div>
+		{% endif %}
 		<p class="typeDoc_notCourte">
 			{{ record.biblio_doc }}
 		</p>
@@ -46,7 +50,7 @@
 			
 			{% if record.bul_info.bulletin_id %}
 				<div class="in_notCourte">
-					<span>{{ msg.dans_start }} </span> <!-- Titre du périodique-->
+					<span>{{ msg.dans_start }} </span> <!-- Titre du periodique-->
 					<span><a href="{{ record.liens_opac.lien_rech_bulletin | replace '!!id!!' record.bul_info.bulletin_id }}" title="{{ record.bul_info.title }} ({{ record.bul_info.numero }} {{ record.bul_info.date }})">{{ record.bul_info.title }} ({{ record.bul_info.numero }} {{ record.bul_info.date }})</a></span>
 				</div>
 			{% endif %}
@@ -70,7 +74,7 @@
 	
 	<div class="panier_avis_notCourte">
 	
-		<!-- Statut particulier (nouveauté)-->
+		<!-- Statut particulier (nouveaute)-->
 		{% if record.new %}
 			<div class="statutPartN">
 				<span class="imgStatutPartN"><img class="imgStatutPartN" src="./styles/common/images/new_w.png" border="0" alt="{{ msg.record_display_new }}"/></span><span class="StatutPartN">{{ msg.record_display_new }}</span>
@@ -78,7 +82,7 @@
 		{% endif %}
 	
 		
-		{% if global.opac_cart_allow %}
+		{% if record.cart_allow %}
 			{% if global.lvl != 'show_cart' %}
 				<!-- Ajouter au panier -->
 				<div class="onglet_basketNotCourte">
@@ -96,7 +100,7 @@
 	
 	<div class="footer_notice">
 		{% if record.availability.availability != 'none' %}
-			<!-- Bouton de réservation -->
+			<!-- Bouton de reservation -->
 			{% if record.resas_datas.flag_resa_visible %}
 				{% if record.resas_datas.flag_resa_possible %}
 					{% if !record.resas_datas.flag_max_resa %}
@@ -109,19 +113,19 @@
 				{% endif %}
 			{% endif %}
 		
-		<!-- Voir les disponibilités -->
+		<!-- Voir les disponibilites -->
 			<div class="dispoLien_notice">
 				<a href="{{ record.permalink }}#zone_exemplaires">
 					{% if record.availability.availability == 'available' %}
-						<span class="notice_dispo">{{ msg.available }}<span>
+						<span class="notice_dispo">{{ msg.available }}</span>
 					{% else %}
 						{% if record.availability.availability == 'reserved' %}
 							<span class="notice_reservee">{{ msg.expl_reserve }}</span>
 						{% else %}
 							{% if record.availability.availability == 'unavailable' %}
-								<span class="notice_nonDispo">{{ msg.record_display_expl_unavailable }}<span>
+								<span class="notice_nonDispo">{{ msg.record_display_expl_unavailable }}</span>
 							{% else %}
-								<span class="notice_deRetour">{{ msg.record_display_expl_out }}{{ record.availability.next_return | format 'd M Y' }}<span>
+								<span class="notice_deRetour">{{ msg.record_display_expl_out }}{{ record.availability.next_return | format 'd M Y' }}</span>
 							{% endif %}
 						{% endif %}
 					{% endif %}

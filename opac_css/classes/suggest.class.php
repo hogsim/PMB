@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggest.class.php,v 1.9 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: suggest.class.php,v 1.9.4.1 2015-09-16 11:12:40 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");
@@ -118,6 +118,10 @@ class suggest {
 	function findWords() {
 		$this->cleanInputString = $this->cleanString($this->inputString);
 		$this->arrayWords = str_word_count($this->cleanInputString,1);
+		//on nettoie les doublons éventuels
+		$this->arrayWords = array_values(array_unique($this->arrayWords));
+		//on limite le nombre de mots cherchés
+		$this->arrayWords = array_slice($this->arrayWords,0,5);
 		if(count($this->arrayWords)){
 			$this->findAndPermuteSimilars();
 		}
@@ -366,14 +370,16 @@ class suggest {
 				}
 				$this->arrayResults=array_merge($tmpArray,$this->arrayResults);	
 				//limitation des résultats et gestion de l'affichage
+				$arrayUniqueAffiche=array();
 				foreach($this->arrayResults as $key=>$value){
-					if ($key<$this->maxSuggestions) {
-						//champ dans lequel la valeur a été trouvée
-						$this->arrayResults[$key]["field_name"]=$this->tbChampBase[$value["field_subfield"]];
+					if (count($arrayUniqueAffiche)<$this->maxSuggestions && !in_array($value["field_content"],$arrayUniqueAffiche)) {
+						//champ dans lequel la valeur a été trouvée : 27/08/2015 on n'affiche plus le champs
+						//$this->arrayResults[$key]["field_name"]=$this->tbChampBase[$value["field_subfield"]];
 						//passage en gras des mots
 						$this->arrayResults[$key]["field_content"]=$this->markBold($value["field_content"],implode("|",$search));
 						//pour les occurences trop longues, juste les mots en gras
 						$this->arrayResults[$key]["field_content_search"]=$this->listFoundWords($this->arrayResults[$key]["field_content"]);
+						$arrayUniqueAffiche[]=$value["field_content"];
 					} else {
 						unset($this->arrayResults[$key]);
 					}

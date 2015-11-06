@@ -1,7 +1,7 @@
  /* +--------------------------------------------------------------------------+
 // ? 2002-2013 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: common.css,v 1.86 2015-06-01 07:48:35 apetithomme Exp $ */
+// $Id: common.css,v 1.86.2.1 2015-09-30 15:35:03 wlair Exp $ */
 
 
 /* ---------------------------------------------------------------------------*/
@@ -1224,8 +1224,8 @@ div.tabs {
 /*                       MODIFICATIONS POUR L'IMRPESSION                      */
 /*                                                                            */
 /* pour l'impression, masquage de tags                                        */
-/* n�cessite n�cessite @media screen sur #main (uniquement racine)            */
-/* n�cessite n�cessite @media screen sur #container (uniquement racine)       */
+/* necessite necessite @media screen sur #main (uniquement racine)            */
+/* necessite necessite @media screen sur #container (uniquement racine)       */
 /* ---------------------------------------------------------------------------*/
 /* ---------------------------------------------------------------------------*/
 
@@ -1853,38 +1853,47 @@ td.first_collumn img {
 	
 }
 .rss_articles{
-    width: 48%;
-	
-    background-color: rgba(255, 255, 255, 0.59);
-    float: left;
-    height: 195px;
-    margin-bottom: 10px;
-    margin-left: 1.5%;
+    width: auto;
+    background-color: #fff;
+    float: none;
+    height: auto;
+    margin: 0px 0px 10px 0px;
     list-style: none;
+    border: solid 1px #bbb;
+    font-size: 1.2em;
+    line-height: 20px;
+    position: relative;
+    padding: 0px 15px 17px 15px;
 }
 .rss_articles p{
-	width: 42%;
-	float: left;
+	width: auto;
+	float: none;
 	margin: 0px;
-	font-size: 13px;
+	font-size: 1.2em;
 	line-height: normal;
-	padding: 2%;
+	padding: 7px 17px;
 }
 .rss_descriptions{
-	height: 180px;
-	text-align: right;
+	height: auto;
+	text-align: justify;
 	background-color: transparent;
-	margin-right: 1%;
-	margin-top: 2%;
-	max-width: 50%;
+	max-width: 100%;
 	overflow: hidden;
+	position: static;
 }
 .rss_articles img{
 	display:block;
 	border: solid 2px #A5A5A5;
-
-	max-height: 97%;
-	max-width: 95%;
+	float: left;
+	margin: 0px 20px 0px 0px;
+	max-width: 200px;
+	left: 17px;
+	max-height: 170px;
+}
+.rss_articles:after{
+	content:"";
+	display:block;
+	clear:both;
 }
 #main_rss_item #aut_see {
 	
@@ -1918,7 +1927,7 @@ td.first_collumn img {
 }
 
 /* ---------------------------------------------------------------------------*/
-/*                            Affichage accessibilit�                         */
+/*                            Affichage accessibilitee                        */
 /* ---------------------------------------------------------------------------*/
 
 #accessibility {

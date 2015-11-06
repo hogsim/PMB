@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: curl.class.php,v 1.13 2013-04-11 08:07:13 mbertin Exp $
+// $Id: curl.class.php,v 1.13.10.1 2015-09-11 08:53:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -170,7 +170,7 @@ class Curl {
 			$this->header_detect=0;					
 			curl_setopt($this->handle, CURLOPT_WRITEFUNCTION,array(&$this,'saveBodyInFile'));
 		}	
-		configurer_proxy_curl($this->handle);			
+		configurer_proxy_curl($this->handle,str_replace(" ","%20",preg_replace("/#.*$/","",$url)));			
 		
 		# Format custom headers for this request and set CURL option
 		$headers = array();

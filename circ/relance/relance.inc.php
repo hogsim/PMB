@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: relance.inc.php,v 1.81 2015-06-28 14:36:09 Alexandre Exp $
+// $Id: relance.inc.php,v 1.81.2.1 2015-09-15 07:26:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -732,7 +732,7 @@ if (($empr_sort_rows)||($empr_show_rows)||($empr_filter_rows)) {
 			}
 		}
 	}
-	$filter=new filter_list("empr","empr_list","b,n,c,cs,g","b,n,g".$localisation.",2,3,cs".$loc_expl.$filter_p_perso,"n,g");
+	$filter=new filter_list("empr","empr_list","b,n,c,cs,g","b,n,c,g".$localisation.",2,3,cs".$loc_expl.$filter_p_perso,"n,g");
 	if ($pmb_lecteurs_localises) {
 		$lo="f".$filter->fixedfields["l"]["ID"];
 		global $$lo;

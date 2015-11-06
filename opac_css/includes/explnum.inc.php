@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum.inc.php,v 1.45 2015-04-17 14:22:24 ngantier Exp $
+// $Id: explnum.inc.php,v 1.45.2.2 2015-09-24 15:48:15 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once($class_path."/auth_popup.class.php");
@@ -122,6 +122,11 @@ function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='') {
 	if ($no_notice && !$no_bulletin) $requete .= "explnum_notice='$no_notice' ";
 	elseif (!$no_notice && $no_bulletin) $requete .= "explnum_bulletin='$no_bulletin' ";
 	elseif ($no_notice && $no_bulletin) $requete .= "explnum_bulletin='$no_bulletin' or explnum_notice='$no_notice' ";
+	if($no_notice)
+		$requete .= "union SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier, explnum_docnum_statut
+			FROM explnum, bulletins
+			WHERE bulletin_id = explnum_bulletin
+			AND bulletins.num_notice='".$no_notice."'";
 	if ($opac_explnum_order) $requete .= " order by ".$opac_explnum_order;
 	else $requete .= " order by explnum_mimetype, explnum_nom, explnum_id ";
 	$res = pmb_mysql_query($requete, $dbh);
@@ -211,7 +216,7 @@ function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='') {
 				
 				if ($expl->explnum_vignette) $obj="<img src='".$opac_url_base."vig_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' border='0'>";
 					else // trouver l'icone correspondant au mime_type
-						$obj="<img src='".$opac_url_base."images/mimetype/".icone_mimetype($expl->explnum_mimetype, $expl->explnum_extfichier)."' alt='$alt' title='$alt' border='0'>";		
+						$obj="<img src='".get_url_icon('mimetype/'.icone_mimetype($expl->explnum_mimetype, $expl->explnum_extfichier), 1)."' alt='$alt' title='$alt' border='0'>";		
 				$expl_liste_obj = "<center>";
 				
 				$obj_suite="$statut_libelle_div
@@ -390,7 +395,7 @@ function show_explnum_per_id($explnum_id, $link_explnum = "") {
 							
 			if ($explnum->explnum_vignette) $obj="<img src='".$opac_url_base."vig_num.php?explnum_id=$explnum->explnum_id' alt='$alt' title='$alt' border='0'>";
 				else // trouver l'icone correspondant au mime_type
-					$obj="<img src='".$opac_url_base."images/mimetype/".icone_mimetype($explnum->explnum_mimetype, $explnum->explnum_extfichier)."' alt='$alt' title='$alt' border='0'>";		
+					$obj="<img src='".get_url_icon('mimetype/'.icone_mimetype($explnum->explnum_mimetype, $explnum->explnum_extfichier), 1)."' alt='$alt' title='$alt' border='0'>";		
 			$explnum_liste_obj = "<center>";
 			
 			$obj.="$statut_libelle_div

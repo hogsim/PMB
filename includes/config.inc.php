@@ -2,14 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: config.inc.php,v 1.208 2015-07-24 13:27:11 touraine37 Exp $
+// $Id: config.inc.php,v 1.208.2.7 2015-10-15 09:35:03 jpermanne Exp $
 
 // fichier de configuration générale
 
 $pmb_version = "</b>4.2.1</b>";
 $pmb_version_brut = "4.2.1";
 $pmb_version_database_as_it_should_be = "v5.19";
-$pmb_subversion_database_as_it_shouldbe = "0";
+$pmb_subversion_database_as_it_shouldbe = "7";
 
 $pmb_version_web = "http://www.sigb.net/config.inc.php" ;
 
@@ -101,7 +101,7 @@ $backup_dir = "backups";
 
 // est stockée en base mais par défaut, si vide ...
 if (!isset($pmb_opac_url)) $pmb_opac_url = "./opac_css/";
-	
+
 /* Nbre d'enregistrements affichés par page */
 /* autorités */                  /* each was 10 */
 $nb_per_page_author = 20 ;

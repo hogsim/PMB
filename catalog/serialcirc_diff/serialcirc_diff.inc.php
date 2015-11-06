@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff.inc.php,v 1.9 2015-04-03 11:16:28 jpermanne Exp $
+// $Id: serialcirc_diff.inc.php,v 1.9.4.1 2015-09-22 13:17:41 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,6 +15,7 @@ switch($sub){
 		if($action=='save'){		
 			$data['circ_type']=$circ_type; // rotative ou étoile
 			$data['virtual_circ']=$virtual_circ; //  virtuelle
+			$data['simple_circ']=$simple_circ; //  simplifiée
 			$data['no_ret_circ']=$no_ret_circ; 
 			$data['duration']=$duration;
 			$data['checked']=$checked;

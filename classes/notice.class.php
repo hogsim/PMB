@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice.class.php,v 1.201 2015-06-18 11:13:17 jpermanne Exp $
+// $Id: notice.class.php,v 1.201.2.1 2015-10-15 09:35:03 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -108,6 +108,7 @@ if ( ! defined( 'NOTICE_CLASS' ) ) {
 			global $dbh;
 			global $msg;
 			global $include_path, $class_path ;
+			global $deflt_notice_is_new;
 			
 			//On nettoie la variable de liens entre notices
 			$this->notice_link=array();
@@ -292,6 +293,7 @@ if ( ! defined( 'NOTICE_CLASS' ) ) {
 						 */
 					}
 				}
+				$this->is_new = $deflt_notice_is_new;
 				// penser au test d'existence de la notice sur code-barre
 				return;
 			}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_typepage_opac.class.php,v 1.7 2015-04-10 15:28:16 jpermanne Exp $
+// $Id: cms_module_common_datasource_typepage_opac.class.php,v 1.7.2.1 2015-08-13 07:30:45 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -64,7 +64,8 @@ class cms_module_common_datasource_typepage_opac {
 			"cms" => 25,
 			"extend" => 26,
 			"result_docnum" => 27, 
-			"accueil" => 28 
+			"accueil" => 28, 
+			"ajax" => 29 
 		);
 		
 		//pour le panier
@@ -98,6 +99,11 @@ class cms_module_common_datasource_typepage_opac {
 		//Document numérique
 		if(strpos($url,'doc_num.php') || strpos($url,'doc_num_data.php') || strpos($url,'visionneuse.php')){
 			return $page['doc_num'];
+		}
+		
+		//appel AJAX
+		if(strpos($url,'ajax.php')) {
+			return $page['ajax'];
 		}
 	
 		$type_page='';
@@ -358,6 +364,29 @@ class cms_module_common_datasource_typepage_opac {
 		} else {
 			$tags='';
 		}
+		
+		//appel AJAX - Log expand notice
+		if(strpos($url,'ajax.php') && (strpos($url,'storage') || strpos($url,'expand_notice'))) {
+			switch($biblio){
+				case 's':
+					return '2902';
+					break;
+				case 'b':
+					return '2903';
+					break;
+				case 'a':
+					return '2904';
+					break;
+				default:
+					return '2901';
+					break;
+			}
+		}
+		
+		//appel AJAX - Log url externe
+		if(strpos($url,'ajax.php') && strpos($url,'log')) {
+			return '3001';
+		}
 	
 		$search_type='';
 		switch($niveau){
@@ -375,6 +404,7 @@ class cms_module_common_datasource_typepage_opac {
 				break;
 			case 'concept_see':
 				$search_type =  '509';
+				break;
 			case 'more_results':
 				if($tab=='affiliate'){
 					$search_type = '306';

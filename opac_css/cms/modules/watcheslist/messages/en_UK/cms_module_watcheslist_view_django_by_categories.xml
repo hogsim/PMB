@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_watcheslist_view_django_by_categories.xml,v 1.1 2015-06-16 10:25:29 pmbs Exp $ -->
+$Id: cms_module_watcheslist_view_django_by_categories.xml,v 1.1.2.1 2015-10-09 13:31:42 dgoron Exp $ -->
 
 <XMLlist>
 	<entry code="cms_module_watcheslist_view_django_by_categories_categories_desc">Table of sortings</entry>
@@ -14,4 +14,6 @@ $Id: cms_module_watcheslist_view_django_by_categories.xml,v 1.1 2015-06-16 10:25
 	<entry code="cms_module_watcheslist_view_django_by_categories_categories_watches_desc">Table of watches linked to this sorting</entry>
 	<entry code="cms_module_watcheslist_view_django_by_categories_categories_children_desc">Children sortings (The data structure is the same as the one of the sorting table et recursive)</entry>
 	<entry code="cms_module_watcheslist_view_django_by_categories_watches_desc">Table of unsorted watches</entry>
+	<entry code="cms_module_watcheslist_view_django_by_categories_build_watch_link">Construction du lien vers une veille</entry>
+	<entry code="cms_module_watcheslist_view_django_by_categories_watch_link_desc">Lien vers la veille</entry>
 </XMLlist>

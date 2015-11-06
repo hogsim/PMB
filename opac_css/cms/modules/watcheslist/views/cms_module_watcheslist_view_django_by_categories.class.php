@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_watcheslist_view_django_by_categories.class.php,v 1.6 2015-06-04 08:06:53 arenou Exp $
+// $Id: cms_module_watcheslist_view_django_by_categories.class.php,v 1.6.2.1 2015-10-09 13:31:42 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -18,7 +18,7 @@ class cms_module_watcheslist_view_django_by_categories extends cms_module_common
     <li><a href='{{watch.rss_link}}' target='_blank'>{{watch.title}}</a></li>
    {% endfor %}
   </ul>
-  <!-- Cascade pour la récursion....-->		
+  <!-- Cascade pour la recursion....-->		
   {% for sub_category in category.children %}
    <div>
     <h4>{{sub_category.title}}</h4>
@@ -27,7 +27,7 @@ class cms_module_watcheslist_view_django_by_categories extends cms_module_common
       <li><a href='{{watch.rss_link}}' target='_blank'>{{watch.title}}</a></li>
      {% endfor %}
     </ul>
-    <!-- Cascade pour la récursion....-->
+    <!-- Cascade pour la recursion....-->
     {% for sub_category2 in sub_category.children %}
 	 <div>
       <h4>{{sub_category2.title}}</h4>
@@ -36,7 +36,7 @@ class cms_module_watcheslist_view_django_by_categories extends cms_module_common
         <li><a href='{{watch.rss_link}}' target='_blank'>{{watch.title}}</a></li>
        {% endfor %}
       </ul>
-      <!-- Cascade pour la récursion....-->
+      <!-- Cascade pour la recursion....-->
       {% for sub_category3 in sub_category2.children %}
 				
       {% endfor %}
@@ -55,7 +55,27 @@ class cms_module_watcheslist_view_django_by_categories extends cms_module_common
  </ul>
 </div>";
 	}
-		
+	
+	public function get_form(){
+		$form="
+		<div class='row'>
+			<div class='colonne3'>
+				<label for='cms_module_watcheslist_view_django_by_categories_link'>".$this->format_text($this->msg['cms_module_watcheslist_view_django_by_categories_build_watch_link'])."</label>
+			</div>
+			<div class='colonne-suite'>";
+		$form.= $this->get_constructor_link_form("watch");
+		$form.="
+			</div>
+		</div>";
+		$form.= parent::get_form();
+		return $form;
+	}
+	
+	public function save_form(){
+		$this->save_constructor_link_form("watch");
+		return parent::save_form();
+	}
+	
 	public function render($datas){
 		$newdatas = $new_datas['categories'] = array();
 		//récupération des ids des classements de veilles...
@@ -66,6 +86,7 @@ class cms_module_watcheslist_view_django_by_categories extends cms_module_common
 			}else{
 				$newdatas['watches'][]=$datas['watches'][$i];
 			}
+			$datas['watches'][$i]['link'] = $this->get_constructed_link('watch',$datas['watches'][$i]['id']);
 		}
 		$categories = array_unique($categories);
 		//on récupère les parents jusque la racine....

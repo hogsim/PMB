@@ -2,9 +2,11 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: resa_planning.class.php,v 1.6 2015-06-24 15:36:20 dbellamy Exp $
+// $Id: resa_planning.class.php,v 1.6.2.1 2015-08-24 13:25:36 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
+
+require_once($class_path.'/resa.class.php');
 
 class resa_planning{
 
@@ -166,7 +168,7 @@ class resa_planning{
 	}
 
 
-	//Transformation des previsions en reservations
+	//Transformation prevision en reservation(s)
 	public function to_resa() {
 
 		global $dbh;
@@ -187,6 +189,42 @@ class resa_planning{
 			$q = 'insert into resa (resa_idempr,resa_idnotice,resa_idbulletin,resa_date,resa_date_debut,resa_date_fin,resa_loc_retrait,resa_planning_id_resa) '.
 					'values ('.$this->resa_idempr.','.$this->resa_idnotice.','.$this->resa_idbulletin.',"'.$d.'","'.$this->resa_date_debut.'","'.$this->resa_date_fin.'",'.$this->resa_loc_retrait.','.$this->id_resa.')';
 			$r = pmb_mysql_query($q,$dbh);
+			$id_resa = pmb_mysql_insert_id($dbh);
+
+			// Archivage de la résa: info lecteur et notice et nombre d'exemplaire
+			$q = "SELECT * FROM empr WHERE id_empr=".$this->resa_idempr;
+			$r = pmb_mysql_query($q,$dbh);
+			$empr = pmb_mysql_fetch_object($r);
+
+			$q = "SELECT count(*) FROM exemplaires where expl_notice=".$this->resa_idnotice." and expl_bulletin=".$this->resa_idbulletin;
+			$r = pmb_mysql_query($q, $dbh);
+			$nb_expl = pmb_mysql_result($r,0,0);
+
+			$q = "INSERT INTO resa_archive SET
+					resarc_id_empr = ".$this->resa_idempr.",
+					resarc_idnotice = ".$this->resa_idnotice.",
+					resarc_idbulletin = ".$this->resa_idbulletin.",
+					resarc_date = '".$d."',
+					resarc_debut = '".$this->resa_date_debut."',
+					resarc_fin = '".$this->resa_date_fin."',
+					resarc_loc_retrait = ".$this->resa_loc_retrait.",
+					resarc_from_opac= 0,
+					resarc_empr_cp ='".addslashes($empr->empr_cp)."',
+					resarc_empr_ville = '".addslashes($empr->empr_ville)."',
+					resarc_empr_prof = '".addslashes($empr->empr_prof)."',
+					resarc_empr_year = '".$empr->empr_year."',
+					resarc_empr_categ = ".$empr->empr_categ.",
+					resarc_empr_codestat = ".$empr->empr_codestat.",
+					resarc_empr_sexe = '".$empr->empr_sexe."',
+					resarc_empr_location = ".$empr->empr_location.",
+					resarc_expl_nb = $nb_expl,
+					resarc_resa_planning_id_resa = ".$this->id_resa;
+			pmb_mysql_query($q, $dbh);
+			$id_resarc = pmb_mysql_insert_id($dbh);
+			// Lier archive et résa pour suivre l'évolution de la résa
+			$query = "update resa SET resa_arc=$id_resarc where id_resa=".$id_resa;
+			pmb_mysql_query($query, $dbh);
+
 			$this->resa_remaining_qty--;
 		}
 		$this->save();

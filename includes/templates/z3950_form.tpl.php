@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: z3950_form.tpl.php,v 1.88 2015-06-12 13:19:28 jpermanne Exp $
+// $Id: z3950_form.tpl.php,v 1.88.2.1 2015-08-20 14:15:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -1593,7 +1593,20 @@ $ptab[10] = "
 	</div>
 	<div class='row'>
 	    <input type=text class='saisie-80em' id='f_thumbnail_url' name='f_thumbnail_url' value=\"!!thumbnail_url!!\" />
-	</div>
+	</div>";
+global $pmb_notice_img_folder_id;
+if($pmb_notice_img_folder_id)
+	$ptab[10].= "
+		<div id='el10Child_6' title='".htmlentities($msg[notice_img_load],ENT_QUOTES, $charset)."' movable='yes'>
+			<!--    Vignette upload    -->
+			<div id='el10Child_6a' class='row'>
+				<label for='f_img_load' class='etiquette'>$msg[notice_img_load]</label>!!message_folder!!
+			</div>
+			<div id='el10Child_6b' class='row'>
+				<input type='file' class='saisie-80em' id='f_img_load' name='f_img_load' rows='1' wrap='virtual' value='' />
+			</div>
+		</div>";
+$ptab[10] .= "
 	<div class='row'>
 	    <label for='f_notice_lang' class='etiquette'>".$msg["indexation_lang_select"]."</label>
 	</div>
@@ -1703,7 +1716,7 @@ $form_notice = "
 
 <h1>!!libelle_form!!</h1>
 <script src='javascript/ajax.js'></script>
-<form class='form-$current_module' id='notice' name='notice' method='post' action='!!action!!'>
+<form class='form-$current_module' id='notice' name='notice' method='post' action='!!action!!' enctype='multipart/form-data'>
 <!--!!form_title!!-->
 <div class='form-contenu'>
 <div class='row'>

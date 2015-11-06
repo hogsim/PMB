@@ -5,10 +5,11 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_view_bannetteslist.xml,v 1.1 2015-06-15 12:55:32 pmbs Exp $ -->
+$Id: cms_module_common_view_bannetteslist.xml,v 1.1.2.1 2015-10-09 15:07:38 dgoron Exp $ -->
 
 <XMLlist>
 	<entry code="cms_module_common_view_bannetteslist_build_bannette_link">Creation of the link to an SDI basket</entry>
+	<entry code="cms_module_common_view_bannetteslist_build_record_link">Construction du lien vers une notice</entry>
 	<entry code='cms_module_common_view_django_template_record_content'>Record template to use for the content</entry>
 	<entry code="cms_module_common_view_bannetteslist_build_bannette_nb_notices">Number of records to display per SDI basket</entry>
 	<entry code="cms_module_bannetteslist_view_bannetteslist_css">Linked CSS</entry>
@@ -17,6 +18,7 @@ $Id: cms_module_common_view_bannetteslist.xml,v 1.1 2015-06-15 12:55:32 pmbs Exp
 	<entry code="cms_module_bannetteslist_view_bannettes_name_desc">Title</entry>
 	<entry code="cms_module_bannetteslist_view_bannettes_comment_desc">Public comment</entry>
 	<entry code="cms_module_bannetteslist_view_bannettes_record_number_desc">Number of records</entry>
+	<entry code="cms_module_bannetteslist_view_bannettes_link_desc">Lien vers la bannette</entry>
 	<entry code="cms_module_bannetteslist_view_records_desc">List of records</entry>
 	<entry code="cms_module_bannetteslist_view_record_id_desc">Record ID</entry>
 	<entry code="cms_module_bannetteslist_view_record_title_desc">Record title</entry>

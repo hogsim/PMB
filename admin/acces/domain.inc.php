@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: domain.inc.php,v 1.7 2015-04-03 11:16:27 jpermanne Exp $
+// $Id: domain.inc.php,v 1.7.4.1 2015-10-02 08:37:08 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -203,7 +203,7 @@ function show_domain($id,$maj=false) {
 	value=\"".addslashes($msg['dom_prf_ini'])."\" class='bouton' />";
 	$form = str_replace('<!-- bt_app -->', $bt_app,$form);
 	
-	$chk_sav_spe_rights = "<input type='checkbox' id='chk_sav_spe_rights' name='chk_sav_spe_rights' value='1' />&nbsp;<label for='chk_sav_spe_rights' >".htmlentities($msg['dom_sav_spe_rights'], ENT_QUOTES, $charset)."</label>";
+	$chk_sav_spe_rights = "<input type='checkbox' id='chk_sav_spe_rights' name='chk_sav_spe_rights' value='1' checked='checked' />&nbsp;<label for='chk_sav_spe_rights' >".htmlentities($msg['dom_sav_spe_rights'], ENT_QUOTES, $charset)."</label>";
 	$form = str_replace('<!-- chk_sav_spe_rights -->', $chk_sav_spe_rights, $form);
 
 	//bouton raz droits calculés

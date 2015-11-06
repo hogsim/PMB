@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: manager.inc.php,v 1.4 2013-10-15 07:38:15 dgoron Exp $
+// $Id: manager.inc.php,v 1.4.6.1 2015-09-01 10:40:09 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,7 +14,7 @@ require_once($class_path."/tache_calendar.class.php");
 		$tasks = new taches();
 		
 		print "
-		<script>
+		<script type='text/javascript'>
 			function show_taches(id) {
 				if (document.getElementById(id).style.display=='none') {
 					document.getElementById(id).style.display='';
@@ -37,7 +37,7 @@ require_once($class_path."/tache_calendar.class.php");
 				}	
 			print "}
 		</script>
-		<script type=\"text/javascript\" src='".$base_path."/javascript/tablist.js'></script>
+		<script type='text/javascript' src='".$base_path."/javascript/tablist.js'></script>
 		<a href='javascript:expand_taches_all()'><img border='0' id='expandall' src='./images/expand_all.gif'></a>		
 		<a href='javascript:collapse_taches_all()'><img border='0' id='collapseall' src='".$base_path."/images/collapse_all.gif'></a>
 		<table>

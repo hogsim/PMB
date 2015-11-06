@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: notice_tpl_manifest.xml,v 1.2 2015-07-21 14:22:57 vdesiles Exp $ -->
+$Id: notice_tpl_manifest.xml,v 1.2.2.3 2015-10-20 11:48:08 jpermanne Exp $ -->
 <manifest>
 	<name>notice_tpl</name>
 	<description>msg:Notice_tpl_functions_description</description>
@@ -215,6 +215,14 @@ $Id: notice_tpl_manifest.xml,v 1.2 2015-07-21 14:22:57 vdesiles Exp $ -->
 			</inputs>
 			<outputs>
 				<description>msg:expl_num_with_tpl_output_description</description>
+			</outputs>
+		</method>
+		<method name="#iconcart();" rights="" version="1.0" comment="msg:iconcart_description" language_independant="true">
+			<inputs>
+				<description>msg:iconcart_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:iconcart_output_description</description>
 			</outputs>
 		</method>
 		<method name="#icondoc();" rights="" version="1.0" comment="msg:icondoc_description" language_independant="true">
@@ -505,7 +513,15 @@ $Id: notice_tpl_manifest.xml,v 1.2 2015-07-21 14:22:57 vdesiles Exp $ -->
 				<description>msg:serie_with_tpl_output_description</description>
 			</outputs>
 		</method>
-			<method name="#title();" rights="" version="1.0" comment="msg:title_description" language_independant="true">
+		<method name="#statut(param0);" rights="" version="1.0" comment="msg:statut_description" language_independant="true">
+			<inputs>
+				<description>msg:statut_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:statut_output_description</description>
+			</outputs>
+		</method>
+		<method name="#title();" rights="" version="1.0" comment="msg:title_description" language_independant="true">
 			<inputs>
 				<description>msg:title_input_description</description>
 			</inputs>
@@ -801,7 +817,7 @@ $Id: notice_tpl_manifest.xml,v 1.2 2015-07-21 14:22:57 vdesiles Exp $ -->
 		</methods>
 	<methods comment="msg:classoutils">
 	
-		<method name="#ellipse(param0,param1,param2);" rights="" version="1.0" comment="msg:ellipse_description" language_independant="true">
+		<method name="#ellipse(param0,param1,param2,param3);" rights="" version="1.0" comment="msg:ellipse_description" language_independant="true">
 			<inputs>
 				<description>msg:ellipse_input_description</description>
 			</inputs>

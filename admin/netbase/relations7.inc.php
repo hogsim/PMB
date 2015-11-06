@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: relations7.inc.php,v 1.10 2015-04-03 11:16:18 jpermanne Exp $
+// $Id: relations7.inc.php,v 1.10.4.1 2015-09-30 08:40:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -33,7 +33,6 @@ $affected_ll += pmb_mysql_affected_rows();
 $query = pmb_mysql_query("delete opac_liste_lecture from opac_liste_lecture left join empr on num_empr=id_empr where id_empr is null");
 $affected_ll += pmb_mysql_affected_rows();
 
-$spec = $spec - CLEAN_RELATIONS;
 $v_state .= "<br /><img src=../../images/d.gif hspace=3>".htmlentities($msg["nettoyage_suppr_relations"], ENT_QUOTES, $charset)." : ";
 $v_state .= $affected." ".htmlentities($msg["nettoyage_res_suppr_relations_pan3"], ENT_QUOTES, $charset);
 $opt = pmb_mysql_query('OPTIMIZE TABLE caddie_content');

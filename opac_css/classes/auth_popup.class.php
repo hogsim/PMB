@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: auth_popup.class.php,v 1.4 2014-04-11 12:55:52 dgoron Exp $
+// $Id: auth_popup.class.php,v 1.4.4.1 2015-10-14 08:55:14 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 // authentification via un "popup" à l'OPAC
@@ -29,6 +29,8 @@ class auth_popup {
 		global $callback_func;
 		global $callback_url,$new_tab;
 		
+		global $popup_header;
+		
 		$this->callback_func = $callback_func;
 		$this->callback_url = $callback_url;
 		$this->new_tab = $new_tab;
@@ -41,6 +43,7 @@ class auth_popup {
 				$ext_auth=false;
 				if (file_exists($base_path.'/includes/ext_auth.inc.php')) { $file_orig="empr.php"; require_once($base_path.'/includes/ext_auth.inc.php'); }
 				$log_ok = connexion_empr();
+				print $popup_header;
 				if($log_ok){
 					//réussie, on poursuit le tout...		
 					$this->success_callback();
@@ -50,6 +53,7 @@ class auth_popup {
 				break;
 			case 'get_form' :
 			default :
+				print $popup_header;
 				if(!$_SESSION['user_code']){
 					print $this->get_form();
 				}else{

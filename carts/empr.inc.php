@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr.inc.php,v 1.16 2015-04-03 11:16:26 jpermanne Exp $
+// $Id: empr.inc.php,v 1.16.4.1 2015-09-30 10:14:34 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -90,6 +90,12 @@ switch ($action) {
 				$filter->original_query=$requete;
 				if($idemprcaddie)$caddie[0]=$idemprcaddie;
 				if ($caddie) {
+					//on stocke les quantités avant
+					foreach($caddie  as $idemprcaddie) {
+						$myCart = new empr_caddie($idemprcaddie);
+						$myCart->compte_items();
+						$nb_items_before[$idemprcaddie]=$myCart->nb_item;
+					}
 					foreach($caddie  as $idemprcaddie) {							
 						$filter->filtered_query = stripslashes($filtered_query);
 						$filter->activate_filters();
@@ -103,6 +109,14 @@ switch ($action) {
 							}							
 						} // fin if filter->t_query	
 					} // fin if idemprcaddie
+					//on compte après
+					$message="";
+					foreach($caddie  as $idemprcaddie) {
+						$myCart = new empr_caddie($idemprcaddie);
+						$myCart->compte_items();
+						$message.=sprintf($msg["print_cart_n_added"]."\\n",($myCart->nb_item-$nb_items_before[$idemprcaddie]),$myCart->name);
+					}
+					print "<script>alert(\"$message\"); self.close();</script>";
 				} // fin if !$filster->error
 			}else{
 				$requete = "SELECT id_empr FROM empr ".stripslashes($clause);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sessions.inc.php,v 1.2 2015-05-19 14:29:28 apetithomme Exp $
+// $Id: sessions.inc.php,v 1.2.4.1 2015-10-07 12:46:15 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -26,6 +26,7 @@ function checkEmpr($SESSNAME, $allow=0,$user_connexion='') {
 	global $dbh;
 	global $checkempr_type_erreur ;
 	global $check_messages;
+	global $opac_duration_session_auth;
 	// par défaut : pas de session ouverte
 	$checkempr_type_erreur = CHECK_EMPR_NO_SESSION ;
 	
@@ -219,3 +220,33 @@ function sessionDelete($SESSNAME) {
 
 	}
 
+function check_anonymous_session($SESSNAME){
+	global $dbh;
+	global $check_messages;
+	// par défaut : pas de session ouverte
+	$checkempr_type_erreur = CHECK_EMPR_NO_SESSION ;
+	
+	// récupère les infos de session dans les cookies
+	$PHPSESSID = $_COOKIE["$SESSNAME-SESSID"];
+	$PHPSESSLOGIN = $_COOKIE["$SESSNAME-LOGIN"];
+	$PHPSESSNAME = $_COOKIE["$SESSNAME-SESSNAME"];
+	
+	// on récupère l'IP du client
+	$ip = $_SERVER['REMOTE_ADDR'];
+	
+	// recherche de la session ouverte dans la table
+	$query = "SELECT SESSID, login, IP, SESSstart, LastOn, SESSNAME FROM sessions WHERE ";
+	$query .= "SESSID='$PHPSESSID'";
+	$result = pmb_mysql_query($query, $dbh);
+	$numlignes = pmb_mysql_num_rows($result);	
+	if(!$numlignes){
+		startSession($SESSNAME, "");
+	}else{
+		// On remet LAstOn à jour
+		$t = time();
+		// on avait bien stocké le sessid, on va pouvoir remettre à jour le laston, avec sessid dans la clause where au lieu de id en outre.
+		$query = "UPDATE sessions SET LastOn='$t' WHERE sessid='$PHPSESSID' ";
+		$result = pmb_mysql_query($query, $dbh);
+	}
+		
+}

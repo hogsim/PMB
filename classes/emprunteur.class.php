@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: emprunteur.class.php,v 1.155 2015-07-06 13:05:45 jpermanne Exp $
+// $Id: emprunteur.class.php,v 1.155.2.1 2015-09-10 12:32:12 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -2057,7 +2057,7 @@ class emprunteur {
 		
 		$id_empr = 0;
 		if ($empr_login) {
-			$query = "select id_empr from empr where empr_login='".$empr_login."'";
+			$query = "select id_empr from empr where empr_login='".addslashes($empr_login)."'";
 			$result = pmb_mysql_query($query,$dbh);
 			if (pmb_mysql_num_rows($result) == 1) {
 				$id_empr = pmb_mysql_result($result, 0, "id_empr");
@@ -2066,10 +2066,10 @@ class emprunteur {
 		if ($id_empr) {
 			$rqt = "show tables like 'empr_passwords'";
 			if (pmb_mysql_num_rows(mysql_query($rqt,$dbh))) {
-				$q = "update empr_passwords set empr_password='".$empr_password."' where id_empr='".$id_empr."'";
+				$q = "update empr_passwords set empr_password='".addslashes($empr_password)."' where id_empr='".$id_empr."'";
 				pmb_mysql_query($q,$dbh);
 			}
-			$q = "update empr set empr_password='".password::gen_hash($empr_password, $id_empr)."', empr_password_is_encrypted = 1 where empr_login='".$empr_login."'";
+			$q = "update empr set empr_password='".addslashes(password::gen_hash($empr_password, $id_empr))."', empr_password_is_encrypted = 1 where empr_login='".addslashes($empr_login)."'";
 			pmb_mysql_query($q,$dbh);
 		}
 	}
@@ -2079,7 +2079,7 @@ class emprunteur {
 	
 		if (!$empr_login) return;
 	
-		$q = "update empr set empr_digest='".md5($empr_login.":".md5($pmb_url_base).":".$empr_password)."' where empr_login='".$empr_login."'";
+		$q = "update empr set empr_digest='".addslashes(md5($empr_login.":".md5($pmb_url_base).":".$empr_password))."' where empr_login='".addslashes($empr_login)."'";
 		pmb_mysql_query($q,$dbh);
 	
 	}

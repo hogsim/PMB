@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: consolidation_manifest.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
+$Id: consolidation_manifest.xml,v 1.1.2.1 2015-09-22 08:31:55 jpermanne Exp $ -->
 <manifest>
 	<name>Consolidation</name>
 	<description>msg:Notice_tpl_functions_description</description>
@@ -109,6 +109,22 @@ $Id: consolidation_manifest.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
 			</inputs>
 			<outputs>
 				<description>msg:sous_type_page_output_description</description>
+			</outputs>
+		</method>
+		<method name="#type_page_lib($param, $parser);" rights="" version="1.0" comment="msg:type_page_lib_description" language_independant="true">
+			<inputs>
+				<description>msg:type_page_lib_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:type_page_lib_output_description</description>
+			</outputs>
+		</method>
+		<method name="#sous_type_page_lib($param, $parser);" rights="" version="1.0" comment="msg:sous_type_page_lib_description" language_independant="true">
+			<inputs>
+				<description>msg:sous_type_page_lib_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:sous_type_page_lib_output_description</description>
 			</outputs>
 		</method>
 		
@@ -400,6 +416,14 @@ $Id: consolidation_manifest.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
 				<description>msg:nb_categories_output_description</description>
 			</outputs>
 		</method>
+		<method name="#nb_collections($param, $parser);" rights="" version="1.0" comment="msg:nb_collections_description" language_independant="true">
+			<inputs>
+				<description>msg:nb_collections_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:nb_collections_output_description</description>
+			</outputs>
+		</method>
 		<method name="#nb_subcollections($param, $parser);" rights="" version="1.0" comment="msg:nb_subcollections_description" language_independant="true">
 			<inputs>
 				<description>msg:nb_subcollections_input_description</description>
@@ -518,6 +542,14 @@ $Id: consolidation_manifest.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
 				<description>msg:explnum_notice_output_description</description>
 			</outputs>
 		</method>
+		<method name="#explnum_notice_type($param, $parser);" rights="" version="1.0" comment="msg:explnum_notice_type_description" language_independant="true">
+			<inputs>
+				<description>msg:explnum_notice_type_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:explnum_notice_type_output_description</description>
+			</outputs>
+		</method>
 		<method name="#explnum_bulletin($param, $parser);" rights="" version="1.0" comment="msg:explnum_bulletin_description" language_independant="true">
 			<inputs>
 				<description>msg:explnum_bulletin_input_description</description>
@@ -534,6 +566,44 @@ $Id: consolidation_manifest.xml,v 1.1 2015-07-24 12:52:42 vdesiles Exp $ -->
 				<description>msg:explnum_id_output_description</description>
 			</outputs>
 		</method>		
+	</methods>
+	<methods comment="msg:classurlexternes">
+	
+		<method name="#url_externe($param, $parser);" rights="" version="1.0" comment="msg:url_externe_description" language_independant="true">
+			<inputs>
+				<description>msg:url_externe_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:url_externe_output_description</description>
+			</outputs>
+		</method>
+		<method name="#url_externe_type($param, $parser);" rights="" version="1.0" comment="msg:url_externe_type_description" language_independant="true">
+			<inputs>
+				<description>msg:url_externe_type_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:url_externe_type_output_description</description>
+			</outputs>
+		</method>
+	</methods>
+	<methods comment="msg:classnoticesbulletins">
+	
+		<method name="#notice_id($param, $parser);" rights="" version="1.0" comment="msg:notice_id_description" language_independant="true">
+			<inputs>
+				<description>msg:notice_id_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:notice_id_output_description</description>
+			</outputs>
+		</method>
+		<method name="#bulletin_id($param, $parser);" rights="" version="1.0" comment="msg:bulletin_id_description" language_independant="true">
+			<inputs>
+				<description>msg:bulletin_id_input_description</description>
+			</inputs>
+			<outputs>
+				<description>msg:bulletin_id_output_description</description>
+			</outputs>
+		</method>
 	</methods>
 		
 </manifest>

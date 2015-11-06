@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rss_func.inc.php,v 1.8 2015-06-03 07:28:13 jpermanne Exp $
+// $Id: rss_func.inc.php,v 1.8.2.1 2015-09-11 08:53:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -67,7 +67,7 @@ function lit_fichier_rss($url_fichier) {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-		configurer_proxy_curl($ch);
+		configurer_proxy_curl($ch,$url_fichier);
 		$res=curl_exec($ch);
 		curl_close($ch);
 	} else {

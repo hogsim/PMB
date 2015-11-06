@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage.phototheque.class.php,v 1.30 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: notice_affichage.phototheque.class.php,v 1.30.4.5 2015-09-24 15:48:15 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -284,7 +284,7 @@ class notice_affichage_custom_mixte_photos extends notice_affichage
 			if (substr($this->notice->eformat,0,3)=='RSS') {
 				$ret .= affiche_rss($this->notice->notice_id) ;
 			} else {
-				$ret.="<a href=\"".$this->notice->lien."\" target=\"top\">".htmlentities($this->notice->lien,ENT_QUOTES,$charset)."</a></td></tr>";
+				$ret.="<a href=\"".$this->notice->lien."\" target=\"top\" type=\"external_url_notice\">".htmlentities($this->notice->lien,ENT_QUOTES,$charset)."</a></td></tr>";
 			}
 			$ret.="</td></tr>";
 			if ($this->notice->eformat && substr($this->notice->eformat,0,3)!='RSS') $ret.="<tr><td align='right' class='bg-grey'><b>".$msg["eformat_start"]."</b></td><td>".htmlentities($this->notice->eformat,ENT_QUOTES,$charset)."</td></tr>";
@@ -454,13 +454,18 @@ function genere_simple($depliable=1, $what='ISBD') {
 	if ($cart_aff_case_traitement) $case_a_cocher = "<input type='checkbox' value='!!id!!' name='notice[]'/>&nbsp;";
 	else $case_a_cocher = "" ;
 	
-	if ($this->cart_allowed) $basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode($this->notice_header)."\" target=\"cart_info\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg[notice_title_basket]."\" alt=\"".$msg[notice_title_basket]."\"></a>"; 
-	else $basket="";
+	if ($this->cart_allowed){
+		if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
+			$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".get_url_icon('basket_exist.gif', 1)."\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+		} else {
+			$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode($this->notice_header)."\" target=\"cart_info\" title=\"".$msg[notice_title_basket]."\"><img src='".get_url_icon("basket_small_20x20.gif", 1)."' align='absmiddle' border='0' alt=\"".$msg[notice_title_basket]."\"></a>";
+		}
+	}
 
 	 //Avis
-	 if (($opac_avis_allow && $opac_avis_allow !=2) || ($_SESSION["user_code"] && $opac_avis_allow == 2)) $basket.="&nbsp;&nbsp;<a href='#' onclick=\"open('avis.php?todo=liste&noticeid=$this->notice_id','avis','width=520,height=290,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/avis.png' align='absmiddle' border='0' title=\"".$msg[notice_title_avis]."\" alt=\"".$msg[notice_title_avis]."\"></a>";	 
+	 if (($opac_avis_allow && $opac_avis_allow !=2) || ($_SESSION["user_code"] && $opac_avis_allow == 2)) $basket.="&nbsp;&nbsp;<a href='#' onclick=\"open('avis.php?todo=liste&noticeid=$this->notice_id','avis','width=520,height=290,scrollbars=yes,resizable=yes'); return false;\"><img src='".get_url_icon('avis.png', 1)."' align='absmiddle' border='0' title=\"".$msg[notice_title_avis]."\" alt=\"".$msg[notice_title_avis]."\"></a>";	 
 	//add tags
-	if (($opac_allow_add_tag==1)||(($opac_allow_add_tag==2)&&($_SESSION["user_code"])&&($allow_tag))) $basket.="&nbsp;&nbsp;<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png'align='absmiddle' border='0' title=\"".$msg[notice_title_tag]."\" alt=\"".$msg[notice_title_tag]."\"></a>";
+	if (($opac_allow_add_tag==1)||(($opac_allow_add_tag==2)&&($_SESSION["user_code"])&&($allow_tag))) $basket.="&nbsp;&nbsp;<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".get_url_icon('tag.png', 1)."'align='absmiddle' border='0' title=\"".$msg[notice_title_tag]."\" alt=\"".$msg[notice_title_tag]."\"></a>";
 	if ($basket) $basket="<div>".$basket."</div>";
 
 	if ($this->notice->niveau_biblio=="s") 
@@ -476,7 +481,7 @@ function genere_simple($depliable=1, $what='ISBD') {
 			<div id=\"el!!id!!Parent\" class=\"notice-parent\">\n
 		$case_a_cocher";
 		if ($icon) $template.="
-				<img src=\"".$opac_url_base."images/$icon\" />";
+				<img src=\"".get_url_icon($icon, 1)."\" />";
 		$template.="
     		<span class=\"notice-heada\">!!heada!!</span>
 		    <center>!!DOCNUM1!!</center>\n
@@ -490,7 +495,7 @@ function genere_simple($depliable=1, $what='ISBD') {
 			<div id=\"el!!id!!Parent\" class=\"notice-parent\">\n
     	$case_a_cocher";
 		if ($icon) $template.="
-				<img src=\"".$opac_url_base."images/$icon\" />";
+				<img src=\"".get_url_icon($icon, 1)."\" />";
 		$template.="
     		<span class=\"heada\">!!heada!!</span><br />
 	    	</div>			

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mono_display.class.php,v 1.255 2015-07-16 10:03:11 jpermanne Exp $
+// $Id: mono_display.class.php,v 1.255.2.4 2015-10-13 08:01:50 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -571,10 +571,10 @@ function do_isbd() {
 		if ($this->expl) {
 			$this->isbd .= "<br /><b>${msg[285]}</b> (".$this->nb_expl.")";
 			$this->isbd .= $this->show_expl_per_notice($this->notice->notice_id, $this->link_expl);
-			if ($this->show_explnum) {
-				$explnum_assoc = show_explnum_per_notice($this->notice->notice_id, 0,$this->link_explnum);
-				if ($explnum_assoc) $this->isbd .= "<b>$msg[explnum_docs_associes]</b>".$explnum_assoc;
-			}
+		}
+		if ($this->show_explnum) {
+			$explnum_assoc = show_explnum_per_notice($this->notice->notice_id, 0,$this->link_explnum);
+			if ($explnum_assoc) $this->isbd .= "<b>$msg[explnum_docs_associes]</b>".$explnum_assoc;
 		}
 		if($this->show_resa) {
 			$aff_resa=resa_list ($this->notice_id, 0, 0) ;
@@ -975,6 +975,14 @@ function do_header() {
 		if ($use_opac_url_base)	$this->icondoc="<img src=\"".$opac_url_base."images/$icon\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
 		else $this->icondoc="<img src=\"".$base_path."/images/$icon\" alt=\"$info_bulle_icon\" title=\"$info_bulle_icon\" align='top' />";
     }
+    
+    //Icone nouveauté
+    $icon = "icone_nouveautes.png";
+    if($this->notice->notice_is_new){
+    	$info_bulle_icon_new=$msg["notice_is_new_gestion"];
+		if ($use_opac_url_base)	$this->icon_is_new="<img src=\"".$opac_url_base."images/$icon\" alt=\"$info_bulle_icon_new\" title=\"$info_bulle_icon_new\" align='top' />";
+		else $this->icon_is_new="<img src=\"".$base_path."/images/$icon\" alt=\"$info_bulle_icon_new\" title=\"$info_bulle_icon_new\" align='top' />";
+    }
 
 	if ($this->notice->statut) {
 		$rqt_st = "SELECT class_html , gestion_libelle FROM notice_statut WHERE id_notice_statut='".$this->notice->statut."' ";
@@ -1139,6 +1147,7 @@ function do_header() {
 	if($this->action) {
 		$this->header = "<a href=\"".$this->action."\">".$this->header.'</a>';
 	}
+	if ($this->icon_is_new) $this->header = $this->header." ".$this->icon_is_new;
 	if ($this->notice->niveau_biblio=='b') {
 		$rqt="select tit1, date_format(date_date, '".$msg["format_date"]."') as aff_date_date, bulletin_numero as num_bull from bulletins,notices where bulletins.num_notice='".$this->notice_id."' and notices.notice_id=bulletins.bulletin_notice";
 		$execute_query=pmb_mysql_query($rqt);
@@ -1501,7 +1510,7 @@ function show_expl_per_notice($no_notice, $link_expl='',$expl_bulletin=0 ) {
 							<table border='0' class='expl-list'>
 								$tr_loc
 							</table>";
-						$tr_surloc.=gen_plus('surlocation_without_expl'.$key,$surloc["libelle"],$tpl_surloc,0);
+						$tr_surloc.=gen_plus('surlocation_without_expl'.$key.'_'.$no_notice,$surloc["libelle"],$tpl_surloc,0);
 						$tr_surloc.="</td></tr>";
 					}
 					$tpl = "
@@ -1560,10 +1569,11 @@ function do_image(&$entree) {
 			$url_image = $prefix_url_image."getimage.php?url_image=".urlencode($url_image)."&amp;noticecode=!!noticecode!!&amp;vigurl=".urlencode($this->notice->thumbnail_url) ;
 			if ($depliable) $image = "<img class='img_notice' id='PMBimagecover".$this->notice_id."' src='".$prefix_url_image."images/vide.png' align='right' hspace='4' vspace='2' isbn='".$code_chiffre."' url_image='".$url_image."' vigurl=\"".$this->notice->thumbnail_url."\">";
 			else {
-				$url_image_ok = str_replace("!!noticecode!!", $code_chiffre, $url_image) ;
 				if ($this->notice->thumbnail_url) {
+					$url_image_ok=$this->notice->thumbnail_url;
 					$title_image_ok="";
-				} else {
+				} else {				
+					$url_image_ok = str_replace("!!noticecode!!", $code_chiffre, $url_image) ;	
 					$title_image_ok = htmlentities($pmb_book_pics_msg, ENT_QUOTES, $charset) ;
 				}
 				$image = "<img class='img_notice' id='PMBimagecover".$this->notice_id."' src='".$url_image_ok."' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2'>";

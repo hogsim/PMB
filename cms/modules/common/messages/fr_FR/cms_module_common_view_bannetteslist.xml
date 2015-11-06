@@ -5,10 +5,11 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_view_bannetteslist.xml,v 1.1 2014-09-16 13:52:54 ngantier Exp $ -->
+$Id: cms_module_common_view_bannetteslist.xml,v 1.1.6.1 2015-10-09 15:07:38 dgoron Exp $ -->
 
 <XMLlist>
 	<entry code="cms_module_common_view_bannetteslist_build_bannette_link">Construction du lien vers une bannette</entry>
+	<entry code="cms_module_common_view_bannetteslist_build_record_link">Construction du lien vers une notice</entry>
 	<entry code='cms_module_common_view_django_template_record_content'>Template de notice à utiliser pour le content</entry>
 	<entry code="cms_module_common_view_bannetteslist_build_bannette_nb_notices">Nombre de notices à afficher par bannette</entry>
 	<entry code="cms_module_bannetteslist_view_bannetteslist_css">CSS associée</entry>
@@ -17,6 +18,7 @@ $Id: cms_module_common_view_bannetteslist.xml,v 1.1 2014-09-16 13:52:54 ngantier
 	<entry code="cms_module_bannetteslist_view_bannettes_name_desc">Titre</entry>
 	<entry code="cms_module_bannetteslist_view_bannettes_comment_desc">Commentaire publique</entry>
 	<entry code="cms_module_bannetteslist_view_bannettes_record_number_desc">Nombre de notices</entry>
+	<entry code="cms_module_bannetteslist_view_bannettes_link_desc">Lien vers la bannette</entry>
 	<entry code="cms_module_bannetteslist_view_records_desc">Liste des notices</entry>
 	<entry code="cms_module_bannetteslist_view_record_id_desc">ID de la notice</entry>
 	<entry code="cms_module_bannetteslist_view_record_title_desc">Titre de la notice</entry>

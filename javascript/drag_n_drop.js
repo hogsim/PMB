@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: drag_n_drop.js,v 1.23 2015-01-15 11:07:30 vtouchard Exp $
+// $Id: drag_n_drop.js,v 1.23.4.1 2015-10-15 08:27:51 jpermanne Exp $
 
 
 /*
@@ -147,7 +147,7 @@ function getCoordinate(e) {
 function mouse_down_draggable(e) {
 	//On annule tous les comportements par defaut du navigateur (ex : selection de texte)
 	if (!e) var e=window.event;
-	if (e.ctrlKey) return;
+	if (e.ctrlKey || e.metaKey) return;
 	if (!e) var e=window.event;
 	if (e.stopPropagation) {
 		e.preventDefault();

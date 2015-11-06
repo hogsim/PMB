@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes.class.php,v 1.39 2015-04-03 11:16:20 jpermanne Exp $
+// $Id: demandes.class.php,v 1.39.4.1 2015-09-11 12:50:41 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -17,6 +17,7 @@ require_once("$class_path/explnum.class.php");
 require_once($class_path."/audit.class.php");
 
 require_once($class_path."/acces.class.php");
+require_once($class_path."/parametres_perso.class.php");
 
 /*
  * Classe de gestion des demandes
@@ -297,6 +298,28 @@ class demandes {
 			$act_form = "./demandes.php?categ=gestion";
 
 		}
+		$p_perso=new parametres_perso("demandes");
+		if (!$p_perso->no_special_fields) {
+			$c=0;
+			$perso="<hr />";
+			$perso_=$p_perso->show_editable_fields($this->id_demande);
+			for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+				$p=$perso_["FIELDS"][$i];
+				if ($c==0) $perso.="<div class='row'>";
+				$perso.="<div class='colonne2'><label for='".$p["NAME"]."' class='etiquette'>".$p["TITRE"]."</label><div class='row'>".$p["AFF"]."</div></div>";
+				$c++;
+				if ($c==2) {
+					$perso.="</div>";
+					$c=0;
+				}
+			}
+			if ($c==1) $perso.="<div class='colonne2'>&nbsp;</div></div>";
+			$perso=$perso_["CHECK_SCRIPTS"]."\n".$perso;
+		} else {
+			$perso="<script>function check_form() { return true; }</script>";
+		}
+		$form_modif_demande = str_replace("!!champs_perso!!",$perso,$form_modif_demande);
+		
 		$form_modif_demande = str_replace('!!form_action!!',$act_form,$form_modif_demande);
 		$form_modif_demande = str_replace('!!cancel_action!!',$act_cancel,$form_modif_demande);
 		print $form_modif_demande;
@@ -372,7 +395,37 @@ class demandes {
 		$sel_loc.= "</select>";
 		$form_filtre_demande = str_replace('!!localisation!!',$sel_loc,$form_filtre_demande);
 		
+		$p_perso=new parametres_perso("demandes");
+		if (!$p_perso->no_special_fields) {
+			$c=0;
+			$perso_=$p_perso->show_search_fields();
+			for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+				$p=$perso_["FIELDS"][$i];
+				if ($c==0) $perso.="<div class='row'>";
+				$perso.="<div class='colonne3'><label for='".$p["NAME"]."' class='etiquette'>".$p["TITRE"]."</label><div class='row'>".$p["AFF"]."</div></div>";
+				$c++;
+				if ($c==3) {
+					$perso.="</div>";
+					$c=0;
+				}
+			}
+			if ($c==1) {
+				$perso.="<div class='colonne2'>&nbsp;</div><div class='colonne2'>&nbsp;</div></div>";
+			} elseif ($c==2) {
+				$perso.="<div class='colonne2'>&nbsp;</div></div>";
+			}
+		}
+		$form_filtre_demande = str_replace("!!champs_perso!!",$perso,$form_filtre_demande);
+		
 		print $form_filtre_demande;
+		
+		$header_champs_perso = "";
+		reset($p_perso->t_fields);
+		$nb_cp_column = 0;
+		while (list($key,$val)=each($p_perso->t_fields)) {
+			$header_champs_perso .= "<th>".htmlentities($val["TITRE"],ENT_QUOTES,$charset)."</th>";
+			$nb_cp_column++;
+		}
 		
 		//Formulaire de la liste
 		$req = self::getQueryFilter($idetat,$iduser,$idempr,$user_input,$date_debut,$date_fin, $id_theme, $id_type,$dmde_loc);
@@ -473,6 +526,11 @@ class demandes {
 						<img src=\"./images/jauge.png\" height='15px' width=\"".$dmde->progression."%\" title='".$dmde->progression."%' />
 						</span>
 					</td>";
+					$perso_=$p_perso->show_fields($dmde->id_demande);
+					for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+						$p=$perso_["FIELDS"][$i];
+						$liste .= "<td>".nl2br($p["AFF"])."</td>";
+					}
 					if($dmde->num_notice)
 						$liste .= "<td><a href='./catalog.php?categ=isbd&id=$dmde->num_notice'><img border='0' align='middle' src='./images/notice.gif' alt='".htmlentities($msg['demandes_see_notice'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_see_notice'],ENT_QUOTES,$charset)."'></a></td>";
 					else $liste .= "<td></td>";
@@ -483,7 +541,7 @@ class demandes {
 				//Le détail de l'action, contient les notes
 				$liste .="<tr id=\"action".$dmde->id_demande."Child\" style=\"display:none\">
 				<td></td>
-				<td colspan=\"13\" id=\"action".$dmde->id_demande."ChildTd\">";
+				<td colspan=\"".($nb_cp_column+13)."\" id=\"action".$dmde->id_demande."ChildTd\">";
 					
 				$liste .="</td>
 				</tr>";
@@ -504,6 +562,7 @@ class demandes {
 		} else {
 			$liste .= "<tr><td>".$msg['demandes_liste_vide']."</td></tr>";
 		}
+		$form_liste_demande = str_replace('!!header_champs_perso!!',$header_champs_perso,$form_liste_demande);
 		$form_liste_demande = str_replace('!!btn_etat!!',$states_btn,$form_liste_demande);
 		$form_liste_demande = str_replace('!!btn_attribue!!',$affectation_btn,$form_liste_demande);
 		$form_liste_demande = str_replace('!!btn_suppr!!',$btn_suppr,$form_liste_demande);
@@ -650,6 +709,16 @@ class demandes {
 			if($pmb_type_audit) audit::insert_creation(AUDIT_DEMANDE,$demande->id_demande);
 		}
 		
+		//Vérification des champs personalisés
+		$p_perso=new parametres_perso("demandes");
+		$nberrors=$p_perso->check_submited_fields();
+		if ($nberrors) {
+			error_message_history("",$p_perso->error_message,1);
+		} else {
+			//Insertion des champs personalisés
+			$p_perso->rec_fields_perso($demande->id_demande);
+		}
+		
 		//MAJ des users de la demande
 		self::save_demandes_users($demande);
 	}
@@ -685,6 +754,9 @@ class demandes {
 			join demandes_actions da on eda.num_action=da.id_action
 			where da.num_demande=".$demande->id_demande;
 			pmb_mysql_query($req, $dbh);
+			// suppression des valeurs de CP
+			$p_perso=new parametres_perso("demandes");
+			$p_perso->delete_values($demande->id_demande);
 			// suppression de la demande
 			$req = "delete from demandes where id_demande='".$demande->id_demande."'"; 
 			pmb_mysql_query($req,$dbh);
@@ -842,6 +914,20 @@ class demandes {
 			$params[] = $loc;		
 		}
 		
+		//Champs perso
+		$join_cp="";
+		$p_perso=new parametres_perso("demandes");
+		$perso_=$p_perso->read_search_fields_from_form();
+		if(count($perso_["FIELDS"])) {
+			for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+				$p=$perso_["FIELDS"][$i];
+				if(is_array($p["VALUE"]) && count($p["VALUE"])) {
+					$join_cp .= " join demandes_custom_values as d_c_v_".$i." on (d_c_v_".$i.".demandes_custom_origine=d.id_demande)";
+					$join_cp .= " and d_c_v_".$i.".demandes_custom_".$p["DATATYPE"]." IN ('".implode("','", $p["VALUE"])."') ";
+				}
+			}
+		}
+		
 		if($params) $clause = "where ".implode(" and ",$params);
 		$req = "select id_demande
 				from demandes d 
@@ -851,6 +937,7 @@ class demandes {
 				left join users on (du.num_user=userid and du.users_statut=1)
 				$join_filtre_user
 				$join_loc
+				$join_cp
 				$clause
 				group by id_demande
 				order by date_demande desc";
@@ -900,6 +987,22 @@ class demandes {
 		$form_consult_dmde = str_replace('!!iddemande!!',$this->id_demande,$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!theme_dmde!!',htmlentities($this->theme_libelle,ENT_QUOTES,$charset),$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!type_dmde!!',htmlentities($this->type_libelle,ENT_QUOTES,$charset),$form_consult_dmde);
+		
+		//Champs personalisés
+		$perso_aff = "" ;
+		$p_perso = new parametres_perso("demandes");
+		if (!$p_perso->no_special_fields) {
+			$perso_=$p_perso->show_fields($this->id_demande);
+			for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
+				$p=$perso_["FIELDS"][$i];
+				if ($p["AFF"]) $perso_aff .="<br />".$p["TITRE"]." ".nl2br($p["AFF"]);
+			}
+		}
+		if ($perso_aff) {
+			$form_consult_dmde = str_replace("!!champs_perso!!",$perso_aff,$form_consult_dmde);
+		} else {
+			$form_consult_dmde = str_replace("!!champs_perso!!","",$form_consult_dmde);
+		}
 		
 		//afficher la liste des boutons de changement d'état
 		if(($this->etat_demande && sizeof($this->users)) || $demandes_init_workflow!=="2"){

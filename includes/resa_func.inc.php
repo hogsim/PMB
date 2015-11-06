@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: resa_func.inc.php,v 1.124 2015-07-17 12:26:15 jpermanne Exp $
+// $Id: resa_func.inc.php,v 1.124.2.1 2015-08-24 13:25:36 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -66,12 +66,15 @@ function resa_list ($idnotice=0, $idbulletin=0, $idempr=0, $order="", $where = "
 		$sql_loc_resa_from=", resa_loc ";
 	}
 
-	$sql="SELECT resa_idnotice, resa_idbulletin, resa_date, resa_date_debut, resa_date_fin, resa_cb, resa_confirmee, resa_idempr, ifnull(expl_cote,'') as expl_cote, empr_nom, empr_prenom, empr_cb, location_libelle, resa_loc_retrait, ";
+	$sql ="SELECT resa_idnotice, resa_idbulletin, resa_date, resa_date_debut, resa_date_fin, resa_cb, resa_confirmee, resa_idempr, ifnull(expl_cote,'') as expl_cote, empr_nom, empr_prenom, empr_cb, location_libelle, resa_loc_retrait, resa_planning_id_resa,";
 	$sql.=" trim(concat(if(series_m.serie_name <>'', if(notices_m.tnvol <>'', concat(series_m.serie_name,', ',notices_m.tnvol,'. '), concat(series_m.serie_name,'. ')), if(notices_m.tnvol <>'', concat(notices_m.tnvol,'. '),'')), ";
 	$sql.=" if(series_s.serie_name <>'', if(notices_s.tnvol <>'', concat(series_s.serie_name,', ',notices_s.tnvol,'. '), series_s.serie_name), if(notices_s.tnvol <>'', concat(notices_s.tnvol,'. '),'')), ";
 	$sql.="	ifnull(notices_m.tit1,''),ifnull(notices_s.tit1,''),' ',ifnull(bulletin_numero,''), if (mention_date, concat(' (',mention_date,')') ,''))) as tit, id_resa, ";
 	$sql.=" ifnull(notices_m.typdoc,notices_s.typdoc) as typdoc, ";
-	$sql.=" IF(resa_date_fin>=sysdate() or resa_date_fin='0000-00-00',0,1) as perimee, date_format(resa_date_debut, '".$msg["format_date"]."') as aff_resa_date_debut, if(resa_date_fin='0000-00-00', '', date_format(resa_date_fin, '".$msg["format_date"]."')) as aff_resa_date_fin, date_format(resa_date, '".$msg["format_date"]."') as aff_resa_date " ;
+	$sql.=" IF(resa_date_fin>=sysdate() or resa_date_fin='0000-00-00',0,1) as perimee,";
+	$sql.=" date_format(resa_date_debut, '".$msg["format_date"]."') as aff_resa_date_debut,";
+	$sql.=" if(resa_date_fin='0000-00-00', '', date_format(resa_date_fin, '".$msg["format_date"]."')) as aff_resa_date_fin,";
+	$sql.=" date_format(resa_date, '".$msg["format_date"]."') as aff_resa_date " ;
 	$sql.=" FROM ((((resa LEFT JOIN notices AS notices_m ON resa_idnotice = notices_m.notice_id ";
 	$sql.=" LEFT JOIN series AS series_m ON notices_m.tparent_id = series_m.serie_id ) ";
 	$sql.=" LEFT JOIN bulletins ON resa_idbulletin = bulletins.bulletin_id) ";
@@ -80,7 +83,6 @@ function resa_list ($idnotice=0, $idbulletin=0, $idempr=0, $order="", $where = "
 	$sql.=" LEFT JOIN exemplaires ON resa_cb = exemplaires.expl_cb), ";
 	$sql.=" empr, docs_location $sql_loc_resa_from ";
 	$sql.=" WHERE resa_idempr = id_empr AND idlocation = empr_location ";
-	//$sql.= 'where 1 ';
 	$sql.=$sql_suite;
 
 	if ($idempr)
@@ -985,7 +987,7 @@ function affecte_cb ($cb,$id_resa=0) {
 	}
 		*/
 
-	if($obj_resa->resa_date_fin=='0000-00-00' || $obj->resa_planning_id_resa) {
+	if($obj_resa->resa_date_fin=='0000-00-00' || $obj_resa->resa_planning_id_resa==0) {
 		$nb_days = get_time($obj_resa->resa_idempr,$obj->expl_notice,$obj->expl_bulletin) ;
 		$rqt_date = "select date_add(sysdate(), INTERVAL '$nb_days' DAY) as date_fin ";
 		$resultatdate = pmb_mysql_query($rqt_date);

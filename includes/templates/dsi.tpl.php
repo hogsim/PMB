@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dsi.tpl.php,v 1.72 2015-07-03 13:43:33 dgoron Exp $
+// $Id: dsi.tpl.php,v 1.72.2.1 2015-08-11 10:33:33 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -838,10 +838,10 @@ $dsi_bannette_equation_assoce = "
 		<input type='hidden' name='id_bannette' value='!!id_bannette!!' />
 		<input type='hidden' name='faire' value='enregistrer' />
 		<input type='hidden' name='form_cb' value=\"!!form_cb_hidden!!\" />
-		<input type='button' class='bouton' value=\"$msg[bt_retour]\" onClick=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=&suite=search&form_cb=!!form_cb!!';\" />
+		<input type='button' class='bouton' value=\"$msg[bt_retour]\" onClick=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=&suite=search!!link_pagination!!&form_cb=!!form_cb!!';\" />
 		</div>
 	<div class='right'>
-		<input type='button' class='bouton' value=\"".$msg[dsi_ban_affect_lecteurs]."\" onclick=\"document.location='./dsi.php?categ=bannettes&sub=pro&suite=affect_lecteurs&id_bannette=!!id_bannette!!&form_cb=!!form_cb!!'\"/>
+		<input type='button' class='bouton' value=\"".$msg[dsi_ban_affect_lecteurs]."\" onclick=\"document.location='./dsi.php?categ=bannettes&sub=pro&suite=affect_lecteurs!!link_pagination!!&id_bannette=!!id_bannette!!&form_cb=!!form_cb!!'\"/>
 		</div>
 	</div>
 <div class='row'></div>
@@ -923,10 +923,10 @@ $dsi_bannette_lecteurs_assoce = "
 		<input type='hidden' name='quoi' value=\"!!selected!!\" />
 		<input type='hidden' name='faire' value='enregistrer' />
 		<input type='hidden' name='form_cb' value=\"!!form_cb_hidden!!\" />
-		<input type='button' class='bouton' value=\"$msg[bt_retour]\" onClick=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=&suite=search&form_cb=!!form_cb!!';\" />
+		<input type='button' class='bouton' value=\"$msg[bt_retour]\" onClick=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=&suite=search!!link_pagination!!&form_cb=!!form_cb!!';\" />
 		</div>
 	<div class='right'>
-		<input type='button' class='bouton' value=\"".$msg[dsi_ban_affect_equation]."\" onclick=\"document.location='./dsi.php?categ=bannettes&sub=pro&suite=affect_equation&id_bannette=!!id_bannette!!&form_cb=!!form_cb!!'\"/>
+		<input type='button' class='bouton' value=\"".$msg[dsi_ban_affect_equation]."\" onclick=\"document.location='./dsi.php?categ=bannettes&sub=pro&suite=affect_equation!!link_pagination!!&id_bannette=!!id_bannette!!&form_cb=!!form_cb!!'\"/>
 		</div>
 	</div>
 <div class='row'></div>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: run_task.php,v 1.7 2015-04-03 11:16:26 jpermanne Exp $
+// $Id: run_task.php,v 1.7.4.1 2015-09-24 09:12:21 dgoron Exp $
 
 $base_path="..";
 $base_title="";
@@ -81,7 +81,11 @@ function run_task($id_tache, $type_tache, $id_planificateur, $num_es_user, $conn
 	}
 	$proxy=$es->get_proxy($PMBuserid,$array_functions);
 
-	$filename = $base_path."/admin/planificateur/catalog.xml";
+	if (file_exists($base_path."/admin/planificateur/catalog_subst.xml")) {
+		$filename = $base_path."/admin/planificateur/catalog_subst.xml";
+	} else {
+		$filename = $base_path."/admin/planificateur/catalog.xml";
+	}
 	$xml=file_get_contents($filename);
 	$param=_parser_text_no_function_($xml,"CATALOG");
 	

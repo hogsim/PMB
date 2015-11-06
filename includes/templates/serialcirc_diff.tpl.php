@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff.tpl.php,v 1.22 2015-03-20 09:06:14 ngantier Exp $
+// $Id: serialcirc_diff.tpl.php,v 1.22.4.1 2015-09-22 13:17:41 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -286,7 +286,9 @@ $serialcirc_diff_form_option="
 		<input type='hidden' id='form_type' name='form_type' value='option_form' />
 
 		<div class='row'>				
-			".htmlentities($msg["serialcirc_diff_option_form_param_circ_type_title"], ENT_QUOTES, $charset)."
+			".htmlentities($msg["serialcirc_diff_option_form_param_circ_type_title"], ENT_QUOTES, $charset)."			
+			<input type='checkbox' id='simple_circ' name='simple_circ' value='1' !!simple_circ_checked!! onclick='serialcirc_diff_option_form_param_circ_simple_change();'/>".htmlentities($msg["serialcirc_diff_option_form_param_simple_circ"], ENT_QUOTES, $charset)."
+		
 			<input type='radio' name='circ_type' value='0' !!circ_type_checked_0!! />&nbsp;".htmlentities($msg["serialcirc_diff_option_form_param_circ_type_rotative"], ENT_QUOTES, $charset)."
 			<input type='radio' name='circ_type' value='1' !!circ_type_checked_1!! />&nbsp;".htmlentities($msg["serialcirc_diff_option_form_param_circ_type_etoile"], ENT_QUOTES, $charset)."
 			<input type='checkbox' id='virtual_circ' name='virtual_circ' value='1' !!virtual_checked!! onclick='serialcirc_diff_option_form_param_change();'/>".htmlentities($msg["serialcirc_diff_option_form_param_circ_type_virtuelle"], ENT_QUOTES, $charset)."

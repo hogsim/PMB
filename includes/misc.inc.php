@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: misc.inc.php,v 1.128 2015-07-07 12:30:59 jpermanne Exp $
+// $Id: misc.inc.php,v 1.128.2.2 2015-09-11 08:53:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -317,12 +317,24 @@ function detectFormatDate($date_a_convertir,$compl="01"){
 		$format = str_replace ($msg["format_date_input_separator"],"",$format);
 		list($date[substr($format,0,1)],$date[substr($format,1,1)],$date[substr($format,2,1)]) = sscanf($date_a_convertir,$msg["format_date_short_input"]);
 		if ($date['Y'] && $date['m']){
-		 $date = sprintf("%04d-%02d-%02s",$date['Y'],$date['m'],$compl);		
+			if ($compl == "min") {
+				$date = sprintf("%04d-%02d-%02s",$date['Y'],$date['m'],"01");
+			} elseif ($compl == "max") {
+				$date = sprintf("%04d-%02d-%02s",$date['Y'],$date['m'],date("t",mktime( 0, 0, 0, $date['m'], 1, $date['Y'] )));
+			} else{
+				 $date = sprintf("%04d-%02d-%02s",$date['Y'],$date['m'],$compl);
+			}		
 		}else{
 			$date = "0000-00-00";
 		}
 	}elseif(preg_match(getDatePattern("year"),$date_a_convertir,$matches)){
-		$date = $matches[0]."-".$compl."-".$compl;
+		if ($compl == "min") {
+			$date = $matches[0]."-01-01";
+		} elseif ($compl == "max") {
+			$date = $matches[0]."-12-31";
+		} else{
+			$date = $matches[0]."-".$compl."-".$compl;
+		}
 	}else{
 		$format = str_replace ("%",".",$msg["format_date"]);
 		$format = str_replace ("-","",$format);
@@ -349,7 +361,7 @@ function detectFormatDate($date_a_convertir,$compl="01"){
 				$correct_year = substr(date("Y"),0,2).$matches[1];
 			}
 			if(substr($format,-1) == "Y"){
-				$date = detectFormatDate(substr($date_a_convertir,0,-2).$correct_year,compl);
+				$date = detectFormatDate(substr($date_a_convertir,0,-2).$correct_year,$compl);
 			}
 		}else{
 			$date = "0000-00-00";
@@ -1096,19 +1108,58 @@ function clean_tags($tags) {
 //CONFIGURATION DU PROXY POUR CURL
 //---------------------------------
 
-function configurer_proxy_curl(&$curl){
-	global $pmb_curl_proxy;
+function configurer_proxy_curl(&$curl,$url_asked=''){
+	global $pmb_curl_proxy,$curl_addon_array_options,$curl_addon_array_exclude_proxy;
 	
-	if($pmb_curl_proxy!=''){
-		$param_proxy = explode(',',$pmb_curl_proxy);
-		$adresse_proxy = $param_proxy[0];
-		$port_proxy = $param_proxy[1];
-		$user_proxy = $param_proxy[2];
-		$pwd_proxy = $param_proxy[3];
-		
-		curl_setopt($curl, CURLOPT_PROXY, $adresse_proxy);
-		curl_setopt($curl, CURLOPT_PROXYPORT, $port_proxy);
-		curl_setopt($curl, CURLOPT_PROXYUSERPWD, "$user_proxy:$pwd_proxy");
+	/*
+	 * petit hack pour définir des options supplémentaires à curl
+	 * les deux tableaux suivants peuvent être définis dans un fichier config_local.inc.php (attention, à reporter en gestion et opac)
+	 * 
+	 * Exemple $curl_addon_array_options
+	 * 
+	 * $curl_addon_array_options = array(
+	 * 		CURLOPT_POST => 1,
+	 * 		CURLOPT_HEADER => false,
+	 * 		CURLOPT_POSTFIELDS => $data
+	 * );
+	 * 
+	 * Exemple $curl_addon_array_exclude_proxy
+	 * 
+	 * $curl_addon_array_exclude_proxy = array(
+	 * 		"domain1.com",
+	 * 		"domain2.com"
+	 * );
+	 * 
+	 */
+	
+	if(count($curl_addon_array_options)){
+		curl_setopt_array($curl, $curl_addon_array_options);
+	}
+	
+	$use_proxy = true;
+	if(trim($url_asked) && count($curl_addon_array_exclude_proxy)){
+		foreach($curl_addon_array_exclude_proxy as $domain){
+			$domain = str_replace('.','\.',$domain);
+			$domain = str_replace('/','\/',$domain);
+			if(preg_match('`'.$domain.'`', $url_asked)){
+				$use_proxy = false;
+				break;
+			}
+		}
+	}
+	
+	if($use_proxy){
+		if($pmb_curl_proxy!=''){
+			$param_proxy = explode(',',$pmb_curl_proxy);
+			$adresse_proxy = $param_proxy[0];
+			$port_proxy = $param_proxy[1];
+			$user_proxy = $param_proxy[2];
+			$pwd_proxy = $param_proxy[3];
+			
+			curl_setopt($curl, CURLOPT_PROXY, $adresse_proxy);
+			curl_setopt($curl, CURLOPT_PROXYPORT, $port_proxy);
+			curl_setopt($curl, CURLOPT_PROXYUSERPWD, "$user_proxy:$pwd_proxy");
+		}
 	}
 
 }

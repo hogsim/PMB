@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: resa_planning_func.inc.php,v 1.26 2015-06-25 12:50:03 dbellamy Exp $
+// $Id: resa_planning_func.inc.php,v 1.26.2.1 2015-08-24 13:25:36 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -174,11 +174,13 @@ function planning_list($idnotice=0, $idbulletin=0, $idempr=0, $order='', $where=
 
 		case LECTEUR_INFO_GESTION:
 			$aff_final .= "<form class='form-".$current_module."' name='check_resa_planning' action='' method='post' >" ;
+			$clause .= " AND resa_remaining_qty!=0 ";
 			break;
 
 
 		case NO_INFO_GESTION:
 		default:
+			$clause .= " AND resa_remaining_qty!=0 ";
 			break;
 	}
 

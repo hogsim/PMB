@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sort.inc.php,v 1.1 2014-01-17 09:02:40 dgoron Exp $
+// $Id: sort.inc.php,v 1.1.8.1 2015-09-24 15:48:15 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -40,7 +40,7 @@ switch($sub){
 				$display .= $sort->sauvegarder('','',$temp);
 				if (substr($display,0,8)=="<script>") {
 					$tmpStr = $sort->show_tris_form();
-					$tmpStr = str_replace("<!--bouton close-->","<a href='#' onClick='parent.kill_frame_expl();return false;'><img src='" . $base_path . "/images/close.gif' border='0' align='right'></a></div>",$tmpStr);
+					$tmpStr = str_replace("<!--bouton close-->","<a href='#' onClick='parent.kill_frame_expl();return false;'><img src='".get_url_icon('close.gif')."' border='0' align='right'></a></div>",$tmpStr);
 			    	$tmpStr = str_replace("!!page_en_cours!!",urlencode($page_en_cours),$tmpStr);
 			    	$tmpStr = str_replace("!!page_en_cours1!!",$page_en_cours,$tmpStr);
 			    	$tmpStr = str_replace("!!action_suppr_tris!!", "get_sort_content(1, sortSupprIds('cases_a_cocher','cases_suppr'));", $tmpStr);
@@ -58,7 +58,7 @@ switch($sub){
 			}
 		} else {
 			$tmpStr = $sort->show_tris_form();
-			$tmpStr = str_replace("<!--bouton close-->","<a href='#' onClick='parent.kill_sort_frame();return false;'><img src='" . $base_path . "/images/close.gif' border='0' align='right'></a></div>",$tmpStr);
+			$tmpStr = str_replace("<!--bouton close-->","<a href='#' onClick='parent.kill_sort_frame();return false;'><img src='".get_url_icon('close.gif')."' border='0' align='right'></a></div>",$tmpStr);
 			$tmpStr=str_replace("!!page_en_cours!!",urlencode($page_en_cours),$tmpStr);
 			$tmpStr=str_replace("!!page_en_cours1!!",$page_en_cours,$tmpStr);
 			$tmpStr = str_replace("!!action_suppr_tris!!", "get_sort_content(1, sortSupprIds('cases_a_cocher','cases_suppr'));", $tmpStr);

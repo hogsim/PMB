@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: author.class.php,v 1.96 2015-06-18 14:31:56 arenou Exp $
+// $Id: author.class.php,v 1.96.2.1 2015-09-21 12:33:35 jpermanne Exp $
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");
 	
@@ -494,7 +494,7 @@ if (! defined('AUTEUR_CLASS')) {
 			}
 			audit::delete_audit(AUDIT_AUTHOR, $this->id);
 			// effacement dans l'entrepot rdf
-			author::delete_enrichment($id);
+			auteur::delete_enrichment($id);
 			// effacement dans la table des auteurs
 			$requete = "DELETE FROM authors WHERE author_id='$this->id' ";
 			pmb_mysql_query($requete, $dbh);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: user_modif.inc.php,v 1.53 2015-06-05 12:36:58 dgoron Exp $
+// $Id: user_modif.inc.php,v 1.53.2.1 2015-10-15 09:35:03 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -252,6 +252,12 @@ while ($i < pmb_mysql_num_fields($res_param)) {
 				$deflt_user.="</div></div>\n" ;
 				
 			} elseif ($field=="deflt_notice_replace_keep_categories") {
+				$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n
+					<div class='colonne_suite'>
+						".$msg[39]." <input type='radio' name='form_$field' value='0' ".(!$field_values[$i] ? "checked='checked'" : "")." />
+						".$msg[40]." <input type='radio' name='form_$field' value='1' ".($field_values[$i] ? "checked='checked'" : "")." />
+					</div></div>\n" ;
+			} elseif ($field=="deflt_notice_is_new") {
 				$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n
 					<div class='colonne_suite'>
 						".$msg[39]." <input type='radio' name='form_$field' value='0' ".(!$field_values[$i] ? "checked='checked'" : "")." />

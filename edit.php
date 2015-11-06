@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: edit.php,v 1.59 2015-04-03 11:16:23 jpermanne Exp $
+// $Id: edit.php,v 1.59.4.1 2015-09-22 13:17:41 ngantier Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -208,6 +208,10 @@ switch($categ) {
 				include("./edit/serials_manq.inc.php");
 				break;
 			*/
+			case "simple_circ" :
+				echo "<h1>".$msg["1150"]."&nbsp;:&nbsp;".$msg["serial_simple_circ_edit"]."</h1>";
+				include("./edit/serials_simple_circ.inc.php");
+				break;
 			case "collect" :
 			default :
 				$sub = "collect" ;

@@ -2,12 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: subcollection.class.php,v 1.12 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: subcollection.class.php,v 1.12.4.1 2015-09-28 15:23:44 apetithomme Exp $
 
 // définition de la classe de gestion des 'sous-collections'
 
 if ( ! defined( 'SUB_COLLECTION_CLASS' ) ) {
   define( 'SUB_COLLECTION_CLASS', 1 );
+
+require_once($class_path."/authorities_collection.class.php");
 
 class subcollection {
 
@@ -101,7 +103,7 @@ class subcollection {
 	function get_otherdata()
 	{
 		if ($this->parent) {
-			$parentcoll = new collection($this->parent);
+			$parentcoll = authorities_collection::get_authority('collection', $this->parent);
 			$this->parent_libelle = $parentcoll->name;
 			$this->parent_isbd = $parentcoll->isbd_entry;
 			$this->publisher = $parentcoll->parent;

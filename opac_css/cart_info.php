@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart_info.php,v 1.64 2015-05-05 11:54:07 dgoron Exp $
+// $Id: cart_info.php,v 1.64.2.3 2015-09-17 15:14:13 dgoron Exp $
 
 //Actions et affichage du résultat pour un panier de l'opac
 $base_path=".";
@@ -133,7 +133,7 @@ print "<script type='text/javascript'>
 print "<script type='text/javascript' src='".$include_path."/javascript/cart.js'></script>";
 $vide_cache=filemtime("./styles/".$css."/".$css.".css");
 print "<link rel=\"stylesheet\" href=\"./styles/".$css."/".$css.".css?".$vide_cache."\" />
-<span class='img_basket'><img src='images/basket_small_20x20.gif' border='0' valign='center'/></span>&nbsp;";
+<span class='img_basket'><img src='".get_url_icon("basket_small_20x20.gif")."' border='0' valign='center'/></span>&nbsp;";
 $cart_=$_SESSION["cart"];
 if (!count($cart_)) $cart_=array();
 
@@ -162,38 +162,62 @@ if (($id)&&(!$lvl)) {
 			switch ($mode) {
 				case "tous" :
 					$searcher = new searcher_all_fields(stripslashes($user_query));
-					$notices = $searcher->get_result();		
+					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
+						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					}else{
+						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+					}
+					if(count($notices)){
+						$notices = implode(",",$notices);
+					}
 					add_notices_to_cart($notices);
 					break;
 				case "title":	
 				case "titre":
 					$searcher = new searcher_title(stripslashes($user_query));
-					$notices = $searcher->get_result();		
+					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
+						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					}else{
+						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+					}
+					if(count($notices)){
+						$notices = implode(",",$notices);
+					}
 					add_notices_to_cart($notices);
 					break;
 				case "keyword":
 					$searcher = new searcher_keywords(stripslashes($user_query));
-					$notices = $searcher->get_result();		
+					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
+						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					}else{
+						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+					}
+					if(count($notices)){
+						$notices = implode(",",$notices);
+					}
 					add_notices_to_cart($notices);
 					break;
 				case "abstract":
 					$searcher = new searcher_abstract(stripslashes($user_query));
-					$notices = $searcher->get_result();		
+					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
+						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					}else{
+						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+					}
+					if(count($notices)){
+						$notices = implode(",",$notices);
+					}
 					add_notices_to_cart($notices);
 					break;
 				case "extended":
-					$es=new search();
-					$table=$es->make_search();
-					$notices = '';
-					$q="select distinct notice_id from $table ";	
-					$res = pmb_mysql_query($q,$dbh);	
-					if(pmb_mysql_num_rows($res)){
-						while ($row = pmb_mysql_fetch_object($res)){						
-							if ($notices != "") $notices.= ",";
-							$notices.= $row->notice_id;
-						}
-						$fr = new filter_results($notices);
-						$notices = $fr->get_results();
+					$searcher = new searcher_extended(stripslashes($user_query));
+					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
+						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					}else{
+						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+					}
+					if(count($notices)){
+						$notices = implode(",",$notices);
 					}
 					add_notices_to_cart($notices);
 					break;

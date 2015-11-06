@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.1 2015-02-26 16:02:04 dgoron Exp $ -->
+$Id: manifest.xml,v 1.1.4.1 2015-10-13 07:44:54 dgoron Exp $ -->
 
 <manifest>
 	<name>Liste d'items (Veille documentaire)</name>
@@ -22,6 +22,7 @@ $Id: manifest.xml,v 1.1 2015-02-26 16:02:04 dgoron Exp $ -->
 		</datasources>
 		<views>
 			<view>cms_module_itemslist_view_django</view>
+			<view>cms_module_itemslist_view_django_by_tags</view>
 		</views>
 		<conditions>
 			<condition>cms_module_common_condition_global_var</condition>

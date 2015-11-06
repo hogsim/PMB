@@ -2,10 +2,10 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: input_epires.inc.php,v 1.7 2015-04-03 11:16:27 jpermanne Exp $
+// $Id: input_epires.inc.php,v 1.7.4.1 2015-09-22 12:47:36 mbertin Exp $
 
 function _get_n_notices_($fi,$file_in,$input_params,$origine) {
-	global $base_path;
+	global $base_path,$charset;
 	//pmb_mysql_query("delete from import_marc");
 	
 	$first=true;
@@ -19,7 +19,15 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 		//Recherche de +++
 		$pos_deb=strpos($content,"+++");
 		while (($pos_deb===false)&&(!feof($fi))) {
-			$content.=fread($fi,4096);
+			$tmp_content=fread($fi,4096);
+			if($_SESSION["encodage_fic_source"]){//On a forcé l'encodage
+				if(($charset == "utf-8") && ($_SESSION["encodage_fic_source"] == "iso8859")){
+					$tmp_content=utf8_encode($tmp_content);
+				}elseif(($charset == "iso-8859-1" && ($_SESSION["encodage_fic_source"] == "utf8"))){
+					$tmp_content=utf8_decode($tmp_content);
+				}
+			}
+			$content.=$tmp_content;
 			$content=str_replace("!\r\n ","",$content);
 			$content=str_replace("!\r ","",$content);
 			$content=str_replace("!\n ","",$content);

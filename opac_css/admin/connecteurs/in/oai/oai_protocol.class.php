@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: oai_protocol.class.php,v 1.7 2014-02-13 13:54:35 mbertin Exp $
+// $Id: oai_protocol.class.php,v 1.7.6.1 2015-09-11 08:53:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -610,7 +610,7 @@ class oai_protocol {
     	//Réinitialisation du "retry_after"
 		$this->retry_after="";    	
     	
-		configurer_proxy_curl($ch);	
+		configurer_proxy_curl($ch,$url);	
 		
     	//Explosion des arguments de la requête pour ceux qui ne respectent pas la norme !!
     	$query=substr($url,strpos($url,"?")+1);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: aut_link.class.php,v 1.12 2015-04-03 11:16:20 jpermanne Exp $
+// $Id: aut_link.class.php,v 1.12.4.1 2015-09-25 14:53:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 // gestion des liens entre autorités
@@ -220,7 +220,7 @@ class aut_link {
 				if($aut["reciproc"]) $check="checked='checked'"; else $check="";
 				$form_suivant=str_replace("!!aut_link_reciproc!!",$check,$form_suivant);	
 				$form_suivant=str_replace("!!aut_link!!",$i,$form_suivant);
-				$form_suivant=str_replace("!!aut_link_libelle!!",htmlentities($aut["libelle"],ENT_QUOTES, $charset),$form_suivant);
+				$form_suivant=str_replace("!!aut_link_libelle!!",htmlentities($aut["libelle"],ENT_QUOTES, $charset,false),$form_suivant);
 				$form_suivant=str_replace("!!aut_link_table!!",$aut["to"],$form_suivant);
 				$form_suivant=str_replace("!!aut_link_id!!",$aut["to_num"],$form_suivant);
 				$form_suivant=str_replace("!!aut_link_comment!!",$aut["comment"],$form_suivant);

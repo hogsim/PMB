@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: visionneuse.php,v 1.32 2015-04-03 11:16:25 jpermanne Exp $
+// $Id: visionneuse.php,v 1.32.4.1 2015-10-01 13:35:53 arenou Exp $
 $base_path = ".";
 $include_path ="$base_path/includes";
 $class_path ="$base_path/classes";
@@ -16,14 +16,15 @@ require_once($base_path.'/includes/opac_mysql_connect.inc.php');
 $dbh = connection_mysql();
 require_once($base_path."/includes/session.inc.php");
 //vraiment plein...
+
+require_once($include_path.'/misc.inc.php');
+
 require_once($base_path.'/includes/start.inc.php');
 require_once($base_path.'/includes/divers.inc.php');
 require_once($include_path.'/templates/common.tpl.php');
 require_once($base_path."/includes/includes_rss.inc.php");
 require_once($class_path."/cms/cms_cache.class.php");
 //c'est bon, on peut commencer...
-
-require_once($include_path.'/misc.inc.php');
 
 // si paramétrage authentification particulière et pour la re-authentification ntlm
 if (file_exists($base_path.'/includes/ext_auth.inc.php')) require_once($base_path.'/includes/ext_auth.inc.php');

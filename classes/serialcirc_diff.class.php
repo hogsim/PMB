@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff.class.php,v 1.23 2015-04-03 11:16:19 jpermanne Exp $
+// $Id: serialcirc_diff.class.php,v 1.23.4.1 2015-09-22 13:17:41 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,6 +23,7 @@ class serialcirc_diff {
 	var $num_abt=0;
 	var $circ_type=0; // rotative, étoile
 	var $virtual_circ=0; // virtuelle
+	var $simple_circ=0; // simplifiée
 	var $no_ret_circ=0; // pas de retour sur site
 	
 	var $num_periodicite=0;
@@ -89,6 +90,7 @@ class serialcirc_diff {
 				$r=pmb_mysql_fetch_object($resultat);						
 				$this->circ_type=$r->serialcirc_type; // rotative ou étoile
 				$this->virtual_circ=$r->serialcirc_virtual; // virtuelle
+				$this->simple_circ=$r->serialcirc_simple; // virtuelle
 				$this->no_ret_circ=$r->serialcirc_no_ret; 
 				$this->duration=$r->serialcirc_duration;
 				$this->checked=$r->serialcirc_checked;
@@ -187,6 +189,7 @@ class serialcirc_diff {
 		if(!$data){
 			$data['circ_type']=0;
 			$data['virtual_circ']=0;
+			$data['simple_circ']=0;
 			$data['no_ret_circ']+=0;
 			$data['duration']=0;
 			$data['checked']=0;
@@ -201,6 +204,7 @@ class serialcirc_diff {
 		}else{
 			$data['circ_type']+=0;
 			$data['virtual_circ']+=0;
+			$data['simple_circ']+=0;
 			$data['no_ret_circ']+=0;
 			$data['duration']+=0;
 			$data['checked']+=0;
@@ -219,6 +223,7 @@ class serialcirc_diff {
 				num_serialcirc_abt=".$this->num_abt.",
 				serialcirc_type=".$data['circ_type'].",
 				serialcirc_virtual=".$data['virtual_circ'].",
+				serialcirc_simple=".$data['simple_circ'].",
 				serialcirc_no_ret=".$data['no_ret_circ'].",
 				serialcirc_duration=".$data['duration'].",
 				serialcirc_checked=".$data['checked'].",
@@ -238,6 +243,7 @@ class serialcirc_diff {
 				num_serialcirc_abt=".$this->num_abt.",
 				serialcirc_type=".$data['circ_type'].",
 				serialcirc_virtual=".$data['virtual_circ'].",
+				serialcirc_simple=".$data['simple_circ'].",
 				serialcirc_no_ret=".$data['no_ret_circ'].",
 				serialcirc_duration=".$data['duration'].",
 				serialcirc_checked=".$data['checked'].",
@@ -730,13 +736,15 @@ class serialcirc_diff {
 		//circ vituelle
 		if($this->virtual_circ)$checked=" checked='checked' "; else $checked="";
 		$form=str_replace("!!virtual_checked!!", $checked,$form);	
+		// circ simplifiée
+		if($this->simple_circ)$checked=" checked='checked' "; else $checked="";
+		$form=str_replace("!!simple_circ_checked!!", $checked,$form);	
 			
 		if($this->no_ret_circ)$checked=" checked='checked' "; else $checked="";
 		$form=str_replace("!!no_ret_circ_checked!!", $checked,$form);		
 		
 		if($this->virtual_circ) $display='block'; else $display='none';		
-		$form=str_replace("!!display_virtual_circ_part!!",$display,$form);
-		
+		$form=str_replace("!!display_virtual_circ_part!!",$display,$form);	
 		
 		$form=str_replace("!!duration!!",$this->duration,$form);
 		
@@ -747,8 +755,7 @@ class serialcirc_diff {
 		}else{
 			$form=str_replace("!!retard_mode_checked_0!!","",$form);
 			$form=str_replace("!!retard_mode_checked_1!!"," checked='checked' ",$form);	
-		}
-		
+		}		
 		
 		if($this->checked)$checked=" checked='checked' "; else $checked="";
 		$form=str_replace("!!checked_checked!!",$checked,$form);
@@ -814,6 +821,7 @@ class serialcirc_diff {
 			num_serialcirc_abt=".$abt_to_id.",
 			serialcirc_type=".$this->circ_type.",
 			serialcirc_virtual=".$this->virtual_circ.",
+			serialcirc_simple=".$this->simple_circ.",
 			serialcirc_no_ret=".$this->no_ret_circ.",
 			serialcirc_duration=".$this->duration.",
 			serialcirc_checked=".$this->checked.",

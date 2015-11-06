@@ -3,7 +3,7 @@
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // | creator : Emmanuel PACAUD < emmanuel.pacaud@univ-poitiers.fr>            |
 // +-------------------------------------------------+
-// $Id: z3950_notice.class.php,v 1.173 2015-06-12 09:31:13 jpermanne Exp $
+// $Id: z3950_notice.class.php,v 1.173.2.1 2015-08-20 14:15:05 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -222,6 +222,9 @@ class z3950_notice {
 	var $bt_undo_value = '';
 	var $bt_undo_action='';
 	
+	//upload_vignette
+	var $flag_upload_vignette="";
+	
 	function z3950_notice ($type, $marc = NULL, $source_id=0) {
 		
 		$type = strtolower ($type);
@@ -260,6 +263,7 @@ class z3950_notice {
 		global $gestion_acces_active, $gestion_acces_user_notice, $gestion_acces_empr_notice;
 		global $res_prf, $chk_rights;
 		global $pmb_synchro_rdf;
+		global $opac_url_base,$pmb_notice_img_folder_id;
 		
 		
 		if($this->bibliographic_level=="s" && $this->hierarchic_level=="2"){
@@ -575,6 +579,22 @@ class z3950_notice {
 		//$opac_enrichment_bnf_sparql=1;
 		
 		$titre_uniforme=notice::getAutomaticTu($notice_retour);
+		
+		//Traitement upload vignette
+		if (trim($this->flag_upload_vignette)) {
+			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
+			}
+			//le fichier
+			if (file_exists($rep->repertoire_path.$this->flag_upload_vignette)) {
+				rename($rep->repertoire_path.$this->flag_upload_vignette,$rep->repertoire_path."img_".$notice_retour);
+			}
+			//le champ
+			$rqt_upd = "UPDATE notices SET thumbnail_url='".addslashes($opac_url_base."getimage.php?noticecode=&vigurl=&notice_id=".$notice_retour)."' WHERE notice_id=".$notice_retour;
+			$res_ins = @pmb_mysql_query($rqt_upd, $dbh);
+		}
 		
 		// Mise à jour des index de la notice
 		notice::majNotices($notice_retour);
@@ -1926,6 +1946,31 @@ class z3950_notice {
 		$form_notice = str_replace('!!tab9!!', $ptab[9], $form_notice);
 
 		// champs de gestion
+		global $pmb_notice_img_folder_id;
+		$message_folder="";
+		if($pmb_notice_img_folder_id){
+			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
+			$res = pmb_mysql_query($req);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
+				if(!is_dir($rep->repertoire_path)){
+					$notice_img_folder_error=1;
+				}
+			}else $notice_img_folder_error=1;
+			if($notice_img_folder_error){
+				if (SESSrights & ADMINISTRATION_AUTH){
+					$requete = "select * from parametres where gestion=0 and type_param='pmb' and sstype_param='notice_img_folder_id' ";
+					$res = pmb_mysql_query($requete);
+					$i=0;
+					if($param=pmb_mysql_fetch_object($res)) {
+						$message_folder=" <a class='erreur' href='./admin.php?categ=param&action=modif&id_param=".$param->id_param."' >".$msg['notice_img_folder_admin_no_access']."</a> ";
+					}
+				}else{
+					$message_folder=$msg['notice_img_folder_no_access'];
+				}
+			}
+		}
+		$ptab[10] = str_replace('!!message_folder!!',$message_folder, $ptab[10]);
 		
 		// langue de la notice
 		global $lang,$xmlta_indexation_lang;
@@ -2056,6 +2101,7 @@ class z3950_notice {
 			$f_orinot_nom, $f_orinot_pays,
 			$form_notice_statut, $f_commentaire_gestion, $f_thumbnail_url ;
 		global $categ_pas_trouvee, $pmb_keyword_sep, $categorisation_type,$indexation_lang; 
+		global $pmb_notice_img_folder_id,$opac_url_base,$item;
 
 		global $pmb_use_uniform_title;
 		if ($pmb_use_uniform_title) {
@@ -2413,6 +2459,68 @@ class z3950_notice {
 		$this->commentaire_gestion  = $f_commentaire_gestion ;
 		$this->indexation_lang = $indexation_lang ;
 		$this->thumbnail_url		= $f_thumbnail_url;
+		
+		// vignette de la notice uploadé dans un répertoire
+		if($_FILES['f_img_load']['name'] && $pmb_notice_img_folder_id){
+			$poids_fichier_max=1024*1024;//Limite la taille de l'image à 1 Mo
+			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
+				$filename_output=$rep->repertoire_path."img_es_".$item;
+			}
+			if (($fp=@fopen($_FILES['f_img_load']['tmp_name'], "rb")) && $filename_output) {
+				$image="";
+				$size=0;
+				$flag=true;
+				while (!feof($fp)) {
+					$image.=fread($fp,4096);
+					$size=strlen($image);
+					if ($size>$poids_fichier_max) {
+						$flag=false;
+						break;
+					}
+				}
+				if ($flag) {
+					if ($img=imagecreatefromstring($image)) {
+						if(!($pmb_notice_img_pics_max_size*1)) $pmb_notice_img_pics_max_size=100;
+						$redim=false;
+						if (imagesx($img) >= imagesy($img)) {
+							if(imagesx($img) <= $pmb_notice_img_pics_max_size){
+								$largeur=imagesx($img);
+								$hauteur=imagesy($img);
+							}else{
+								$redim=true;
+								$largeur=$pmb_notice_img_pics_max_size;
+								$hauteur = ($largeur*imagesy($img))/imagesx($img);
+							}
+						} else {
+							if(imagesy($img) <= $pmb_notice_img_pics_max_size){
+								$hauteur=imagesy($img);
+								$largeur=imagesx($img);
+							}else{
+								$redim=true;
+								$hauteur=$pmb_notice_img_pics_max_size;
+								$largeur = ($hauteur*imagesx($img))/imagesy($img);
+							}
+						}
+						if($redim){
+							$dest = imagecreatetruecolor($largeur,$hauteur);
+							imagecopyresampled($dest, $img, 0, 0, 0, 0, $largeur, $hauteur,imagesx($img),imagesy($img));
+							imagepng($dest,$filename_output);
+							imagedestroy($dest);
+						}else{
+							imagepng($img,$filename_output);
+						}
+						imagedestroy($img);
+						$thumbnail_url=$opac_url_base."getimage.php?noticecode=&vigurl=&notice_id=es_".$item;
+		
+						$this->thumbnail_url = $thumbnail_url;
+						$this->flag_upload_vignette = "img_es_".$item;
+					}
+				}
+			}
+		}
 		
 		//Document Numérique
 		global $doc_num_count;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_affichage.class.php,v 1.12 2015-04-03 11:16:18 jpermanne Exp $
+// $Id: explnum_affichage.class.php,v 1.12.4.1 2015-09-24 15:48:15 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -94,7 +94,7 @@ class explnum_affichage{
 				
 				if ($expl->explnum_vignette) $obj="<img src='".$opac_url_base."/vig_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' border='0'>";
 				else // trouver l'icone correspondant au mime_type
-					$obj="<img src='".$opac_url_base."/images/mimetype/".icone_mimetype($expl->explnum_mimetype, $expl->explnum_extfichier)."' alt='$alt' title='$alt' border='0'>";		
+					$obj="<img src='".get_url_icon('mimetype/'.icone_mimetype($expl->explnum_mimetype, $expl->explnum_extfichier), 1)."' alt='$alt' title='$alt' border='0'>";		
 				
 				$lien="";
 				if($expl->explnum_notice)

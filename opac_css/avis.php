@@ -4,7 +4,7 @@
 // © 2006 mental works / www.mental-works.com contact@mental-works.com
 // 	complètement repris et corrigé par PMB Services
 // +-------------------------------------------------+
-// $Id: avis.php,v 1.45 2015-07-17 14:04:46 jpermanne Exp $
+// $Id: avis.php,v 1.45.2.1 2015-09-24 15:48:15 dgoron Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -165,10 +165,10 @@ switch($todo) {
 			while ($loc = pmb_mysql_fetch_object($r)) {
 				$etoiles="";
 				for ($i = 1; $i <= $loc->note; $i++) {
-					$etoiles.="<img border=0 src='images/star.png' align='absmiddle'>";
+					$etoiles.="<img border=0 src='".get_url_icon('star.png')."' align='absmiddle'>";
 				}
 				for ( $j = round($loc->note);$j <= $cpt_star ; $j++) {
-					$etoiles .= "<img border=0 src='images/star_unlight.png' align='absmiddle'>";
+					$etoiles .= "<img border=0 src='".get_url_icon('star_unlight.png')."' align='absmiddle'>";
 				}
 
 				echo "<hr /><div class='row'>

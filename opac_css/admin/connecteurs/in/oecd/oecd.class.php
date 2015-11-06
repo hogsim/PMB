@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // � 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: oecd.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
+// $Id: oecd.class.php,v 1.3.4.1 2015-09-11 08:53:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -211,7 +211,7 @@ class oecd extends connector {
 			// configuration des options CURL
 			curl_setopt($ch, CURLOPT_URL, $addr);	
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);	 	
-			configurer_proxy_curl($ch);	
+			configurer_proxy_curl($ch,$addr);	
 		 	$html=curl_exec($ch);	 	
 	 		if (!$html) {
 	 			$sortir=1;

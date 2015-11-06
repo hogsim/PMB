@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: update_notice.inc.php,v 1.99 2015-06-11 13:46:41 gueluneau Exp $
+// $Id: update_notice.inc.php,v 1.99.2.1 2015-09-08 08:26:56 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -166,7 +166,7 @@ if ($acces_m==0) {
 	}
 	// clean des vieilles nouveautés
 	if($pmb_newrecord_timeshift){
-		$req_old="UPDATE notices SET notice_date_is_new ='', notice_is_new=0 where notice_date_is_new !='0000-00-00 00:00:00' and (notice_date_is_new < now() - interval $pmb_newrecord_timeshift day )";
+		$req_old="UPDATE notices SET notice_date_is_new ='', notice_is_new=0, update_date=update_date where notice_date_is_new !='0000-00-00 00:00:00' and (notice_date_is_new < now() - interval $pmb_newrecord_timeshift day )";
 		mysql_query($req_old, $dbh);
 	}
 	$p_perso=new parametres_perso("notices");

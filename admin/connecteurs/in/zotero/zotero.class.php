@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: zotero.class.php,v 1.2 2015-04-03 11:16:29 jpermanne Exp $
+// $Id: zotero.class.php,v 1.2.4.1 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -262,6 +262,7 @@ class zotero extends connector {
 					//Suppression anciennes notices
 					$q="delete from entrepot_source_".$this->source_id." where ref='".addslashes($ref)."'";
 					@pmb_mysql_query($q,$dbh);
+					$this->delete_from_external_count($this->source_id, $ref);
 
 					//Insertion de l'entête
 					$n_header["rs"]=$rec_uni_dom->get_value("unimarc/notice/rs");

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette_tpl.class.php,v 1.4 2015-05-13 14:59:57 dgoron Exp $
+// $Id: bannette_tpl.class.php,v 1.4.2.2 2015-10-06 15:36:18 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -214,21 +214,29 @@ class bannette_tpl {
 		$this->update($value); 		
 	}
 	
-	public static function gen_tpl_select($select_name="form_bannette_tpl", $selected_id=0, $onchange="") {		
+	public static function gen_tpl_select($select_name="form_bannette_tpl", $selected_id=0, $onchange="", $invisible_default=0) {		
 		global $msg;
 		
 		$requete = "SELECT bannettetpl_id, concat(bannettetpl_name,'. ',bannettetpl_comment) as nom  FROM bannette_tpl ORDER BY bannettetpl_name ";
-		return gen_liste ($requete, "bannettetpl_id", "nom", $select_name, $onchange, $selected_id, 0, $msg["bannette_tpl_list_default"], 0,$msg["bannette_tpl_list_default"], 0) ;
+		if($invisible_default) {
+			return gen_liste ($requete, "bannettetpl_id", "nom", $select_name, $onchange, $selected_id, 0, $msg["bannette_tpl_list_default"], "","", 0) ;
+		} else {
+			return gen_liste ($requete, "bannettetpl_id", "nom", $select_name, $onchange, $selected_id, 0, $msg["bannette_tpl_list_default"], 0,$msg["bannette_tpl_list_default"], 0) ;
+		}	
 	}	
 	
 	public static function render($id, $data) {	
-		global $dbh;
+		global $dbh, $charset;
 		$requete = "SELECT * FROM bannette_tpl WHERE bannettetpl_id='".$id."' LIMIT 1 ";
 		$result = @pmb_mysql_query($requete, $dbh);
 		if(pmb_mysql_num_rows($result)) {
 			$temp = pmb_mysql_fetch_object($result);
 			
-			return H2o::parseString($temp->bannettetpl_tpl)->render($data);			
+			$data_to_return = H2o::parseString($temp->bannettetpl_tpl)->render($data);
+			if ($charset !="utf-8") {
+				$data_to_return = utf8_decode($data_to_return);
+			}
+			return $data_to_return;			
 		}
 	}
 

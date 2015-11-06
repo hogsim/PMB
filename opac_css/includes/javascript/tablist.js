@@ -1,7 +1,7 @@
 //+-------------------------------------------------+
 //© 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 //+-------------------------------------------------+
-//$Id: tablist.js,v 1.24 2015-04-18 13:15:01 dgoron Exp $
+//$Id: tablist.js,v 1.24.2.1 2015-08-26 07:55:23 jpermanne Exp $
 
 //gestion des listes "collapsibles" en Javascript
 
@@ -11,10 +11,27 @@ var imgClosed = new Image();
 imgClosed.src = './getgif.php?nomgif=plus';*/
 var expandedDb = '';
 
-var expandNotice=new Event('expandnotice');
-var expandAllNotices=new Event('expandallnotices');
+var expandNotice;
+var expandAllNotices;
 records_read = new Array();
 
+try{
+	expandNotice=new Event('expandnotice');
+	expandAllNotices=new Event('expandallnotices');
+}
+catch(err){	
+	if(document.createEvent){
+		expandNotice = document.createEvent('HTMLEvents');
+		expandNotice.initEvent('expandnotice',true,true);
+		expandAllNotices = document.createEvent('HTMLEvents');
+		expandAllNotices.initEvent('expandallnotices',true,true);
+	}else if(document.createEventObject){// IE < 9
+		expandNotice = document.createEventObject();
+		expandNotice.eventType = 'expandnotice';
+		expandAllNotices = document.createEventObject();
+		expandAllNotices.eventType = 'expandallnotices';
+	}
+}
 if (document.body.addEventListener) {
 	document.body.addEventListener("expandnotice",function(e) { storageBase(e); },false);
 	document.body.addEventListener("expandallnotices",function(e) { storageAll(e); },false);

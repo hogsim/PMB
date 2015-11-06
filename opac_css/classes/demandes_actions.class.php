@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes_actions.class.php,v 1.12 2015-05-15 10:33:42 dgoron Exp $
+// $Id: demandes_actions.class.php,v 1.12.2.1 2015-09-24 15:48:15 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -572,11 +572,11 @@ class demandes_actions{
 				$liste.="<div $onclick class='form-list-actions ".$pair_impair."' ".$tr_javascript.$style." >";
 				$liste.="<div style=\"float:left;padding-top: 6px;\">";
 				if($action->actions_read_opac == 1){
-					$liste .= "<img hspace=\"3\" border=\"0\" ".$onclick." title=\"\" id=\"read".$action->id_action."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" style='display:none;margin:0 5px'>
-								<img style=\"margin:0 5px\" hspace=\"3\" border=\"0\" ".$onclick." title=\"\" id=\"read".$action->id_action."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\">";
+					$liste .= "<img hspace=\"3\" border=\"0\" ".$onclick." title=\"\" id=\"read".$action->id_action."Img1\" name=\"imRead\" class=\"img_plus\" src=\"".get_url_icon('notification_empty.png')."\" style='display:none;margin:0 5px'>
+								<img style=\"margin:0 5px\" hspace=\"3\" border=\"0\" ".$onclick." title=\"\" id=\"read".$action->id_action."Img2\" name=\"imRead\" class=\"img_plus\" src=\"".get_url_icon('notification_new.png')."\">";
 				} else {
-					$liste .= "<img style=\";margin:0 5px\" hspace=\"3\" border=\"0\" ".$onclick." title=\"\" id=\"read".$action->id_action."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" >
-								<img hspace=\"3\" border=\"0\" ".$onclick." title=\"\" id=\"read".$action->id_action."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\" style='display:none;margin:0 5px'>";
+					$liste .= "<img style=\";margin:0 5px\" hspace=\"3\" border=\"0\" ".$onclick." title=\"\" id=\"read".$action->id_action."Img1\" name=\"imRead\" class=\"img_plus\" src=\"".get_url_icon('notification_empty.png')."\" >
+								<img hspace=\"3\" border=\"0\" ".$onclick." title=\"\" id=\"read".$action->id_action."Img2\" name=\"imRead\" class=\"img_plus\" src=\"".get_url_icon('notification_new.png')."\" style='display:none;margin:0 5px'>";
 				}
 
 				foreach($action->workflow->getTypeList() as $id=>$value){

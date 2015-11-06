@@ -4,15 +4,15 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.2 2015-07-21 14:22:57 vdesiles Exp $ -->
+$Id: fr_FR.xml,v 1.2.2.4 2015-10-20 11:48:08 jpermanne Exp $ -->
 
 <!DOCTYPE XMLlist SYSTEM "../../../../includes/XMLlist.dtd" >
 <XMLlist>
   
 <!-- nom des catégoriesl -->
   <entry code="classbib">Fonctions bibliographiques</entry>
-  <entry code="classnoti">Fonctions communes à tous les types de notices</entry>
-  <entry code="classserial">Fonctions pour les articles, les notices de bulletins et les périodiques</entry>
+  <entry code="classnoti">Fonctions pour les articles, les notices de bulletins et les périodiques</entry>
+  <entry code="classserial">Fonctions pour les notices liées</entry>
   <entry code="classcond">Fonctions conditionnelles</entry>
   <entry code="classoutils">Fonctions outils</entry>
 
@@ -29,13 +29,13 @@ $Id: fr_FR.xml,v 1.2 2015-07-21 14:22:57 vdesiles Exp $ -->
   <entry code="author_output_description"></entry>
 
 <!--#author_1(param0,param1);-->
-  <entry code="author_1_description">Affiche les auteurs de la notice</entry>
-  <entry code="author_1_input_description">param0 = séparateur entre auteur, " ; " si vide
+  <entry code="author_1_description">Affiche les autres auteurs de la notice</entry>
+  <entry code="author_1_input_description">param0 = séparateur entre auteurs, " ; " si vide
 param1 = nombre maxi d'auteurs secondaires à afficher</entry>
   <entry code="author_1_output_description"></entry>
   
 <!--#author_2(param0,param1);-->
-  <entry code="author_2_description">Affiche les auteurs de la notice</entry>
+  <entry code="author_2_description">Affiche les auteurs secondaires de la notice</entry>
   <entry code="author_2_input_description">param0 = séparateur entre auteur, " ; " si vide
 param1 = nombre maxi d'auteurs secondaires à afficher</entry>
   <entry code="author_2_output_description"></entry>
@@ -43,17 +43,15 @@ param1 = nombre maxi d'auteurs secondaires à afficher</entry>
 <!--#authors(param0,param1,param2,param3,param4,param5,param6,param7);-->
   <entry code="authors_description">Affiche les auteurs de la notice</entry>
   <entry code="authors_input_description">
-param0 = 0=principal seul, 1=principal+autres, 2=tous,
-3=autres, 4=secondaires, 5=autres+secondaires
+param0 = 0=principal seul, 1=principal+autres, 2=tous, 3=autres, 4=secondaires, 5=autres+secondaires
 param1 = nombre maxi d'auteurs à afficher, 0=tous
 param2 = séparateur entre auteurs
 param3 = séparateur entre principal/autres/secondaires
 param4 = afficher la fonction : 0=non, 1=toujours
-param5 = afficher "et al." si plus d'auteurs que le maxiafficher fixé en param1, 1=oui 0=non
-param6 = 0, l'affichage de la fonction se fait après une
-virgule. 1, la fonction s'affiche entre parenthèse.
-param7 = filtrage des auteurs par leur fonction. Inscrirecode de la fonction disponible dans le fichier
-includes/marc_tables/fr_FR/function.xml</entry>
+param5 = afficher "et al." si le nb d'auteurs est supérieur au param1, 1=oui 0=non
+param6 = 0, l'affichage de la fonction se fait après une virgule. 1, la fonction s'affiche entre parenthèse.
+param7 = filtrage des auteurs par leur fonction. Inscrire le code de la fonction disponible dans le fichier includes/marc_tables/fr_FR/function.xml
+  </entry>
   <entry code="authors_output_description"></entry>
   
 <!--#authors_by_type(param0,param1,param2,param3,param4,param5,param6);-->
@@ -64,49 +62,42 @@ param1 = nombre maxi d'auteurs à afficher, 0=tous
 param2 = séparateur entre auteurs
 param3 = séparateur entre principal/autres/secondaires
 param4 = afficher la fonction : 0=non, 1=toujours
-param5 = afficher "et al." si plus d'auteurs que le maxi
-param6 = 70=physique, 71=collectivités, 72=congrès (séparpar une virgule)
+param5 = afficher "et al." si le nb d'auteurs est supérieur au param1, 1=oui 0=non
+param6 = 70=physique, 71=collectivités, 72=congrès (séparé par une virgule)
   </entry>
   <entry code="authors_by_type_output_description"></entry>
   
 <!--#authors_by_type_dir(param0,param1,param2,param3,param4,param5,param6);-->
-  <entry code="authors_by_type_dir_description">Affiche les auteurs de la notice en fonction de leur typ(physique, collectivités, congrès) en renvoyant la mention dientre parenthèses pour le ou les directeurs de publicatio(code 651)</entry>
+  <entry code="authors_by_type_dir_description">Affiche les auteurs de la notice en fonction de leur type (physique, collectivités, congrès) en renvoyant la mention dite entre parenthèses pour le ou les directeurs de publication(code 651)</entry>
   <entry code="authors_by_type_dir_input_description">
 param0 = 0=principal seul, 1=principal+autres, 2=tou3=autres, 4=secondaires, 5=autres+secondaires
 param1 = nombre maxi d'auteurs à afficher, 0=tous
 param2 = séparateur entre auteurs
 param3 = séparateur entre principal/autres/secondaires
 param4 = afficher la fonction : 0=non, 1=toujours
-param5 = afficher "et al." si plus d'auteurs que le maxi
-param6 = 70=physique, 71=collectivités, 72=congrès (séparpar une virgule...)
+param5 = afficher "et al." si le nb d'auteurs est supérieur au param1, 1=oui 0=non
+param6 = 70=physique, 71=collectivités, 72=congrès (séparé par une virgule...)
   </entry>
   <entry code="authors_by_type_dir_output_description"></entry>
 
 <!--#authors_by_type_with_tpl(param0,param1,param2,param3,param4,param5,param6,param7,param8);-->
   <entry code="authors_by_type_with_tpl_description">Affiche les auteurs de la notice en fonction de leur type (physique, collectivités, congrès), selon une mise en forme à définir</entry>
   <entry code="authors_by_type_with_tpl_input_description">
-param0 = 0=principal seul, 1=principal+autres, 2=tous,
-3=autres, 4=secondaires, 5=autres+secondaires
+param0 = 0=principal seul, 1=principal+autres, 2=tous, 3=autres, 4=secondaires, 5=autres+secondaires
 param1 = nombre maxi d'auteurs à afficher, 0=tous
 param2 = séparateur entre auteurs
 param3 = séparateur entre principal/autres/secondaires
 param4 = afficher la fonction : 0=non, 1=toujours
-param5 = afficher "et al." si plus d'auteurs que le maxi :
-0=non, 1=oui
-param6 = 70=physique, 71=collectivités, 72=congrès (séparé
-par une virgule)
-param7 = template pour l'affichage des auteurs, à définir à
-partir des éléments suivants :
-{name} = nom ou élément d'entrée
-{rejete} = prénom ou élément rejeté
-{function} = fonction de l'auteur dans la notice
-{author_comment} = commentaire
-{p_perso|cp_name|VALUE} permet d'afficher un champ
-perso avec cp_name=nom du champ perso et la troisième
-valeur =TITRE ou VALUE
+param5 = afficher "et al." si le nb d'auteurs est supérieur au param1, 1=oui 0=non : 0=non, 1=oui
+param6 = 70=physique, 71=collectivités, 72=congrès (séparé par une virgule)
+param7 = template pour l'affichage des auteurs, à définir à partir des éléments suivants :
+	{name} = nom ou élément d'entrée
+	{rejete} = prénom ou élément rejeté
+	{function} = fonction de l'auteur dans la notice
+	{author_comment} = commentaire
+	{p_perso|cp_name|VALUE} permet d'afficher un champ perso avec cp_name=nom du champ perso et la troisième valeur =TITRE ou VALUE
 param8 = filtrage des auteurs par leur fonction (optionnel).
-Inscrire le code de la fonction disponible dans le fichier
-includes/marc_tables/fr_FR/function.xml
+Inscrire le code de la fonction disponible dans le fichier includes/marc_tables/fr_FR/function.xml
   </entry>
   <entry code="authors_by_type_with_tpl_output_description">
 Exemple :
@@ -129,12 +120,10 @@ Si 0, retourne l'isbd de toutes les autorités perso
     
 <!--#avis(param0,param1,param2);-->
   <entry code="avis_description">
-Affiche les avis de la notice sous la forme :
-"Note Sujet, date emprunteur, Commentaire"
+Affiche les avis de la notice sous la forme : "Note Sujet, date emprunteur, Commentaire"
   </entry>
   <entry code="avis_input_description">
- param0 = mode d'affichage de la note : 0=non visible,
-1=étoiles, 2=étoiles+texte
+param0 = mode d'affichage de la note : 0=non visible, 1=étoiles, 2=étoiles+texte
 param1 = afficher le nom du lecteur : 0=non, 1=oui
 param2 = nombre maxi d'avis à afficher, 0=tous
   </entry>
@@ -145,17 +134,16 @@ param2 = nombre maxi d'avis à afficher, 0=tous
   <entry code="avis_with_tpl_input_description">
 param0 = nombre maxi d'avis à afficher, 0=tous
 param1 = séparateur entre avis
-param2 = template pour l'affichage des avis, à définir à
-partir des éléments suivants :
-{id_avis} = identifiant
-{sujet} = sujet de l'avis
-{commentaire} = commentaire
-{note} = note chiffrée
-{note_textuelle} = note textuelle
-{ladate} = date de l'avis
-{empr_login} = login du lecteur auteur de l'avis
-{empr_nom} = nom du lecteur
-{empr_prenom} = prénom du lecteur
+param2 = template pour l'affichage des avis, à définir à partir des éléments suivants :
+	{id_avis} = identifiant
+	{sujet} = sujet de l'avis
+	{commentaire} = commentaire
+	{note} = note chiffrée
+	{note_textuelle} = note textuelle
+	{ladate} = date de l'avis
+	{empr_login} = login du lecteur auteur de l'avis
+	{empr_nom} = nom du lecteur
+	{empr_prenom} = prénom du lecteur
   </entry>
   <entry code="avis_with_tpl_output_description"></entry>
 
@@ -173,8 +161,7 @@ param4 = afficher le nom du ou des thésaurus en entête, 0 ou 1
 <!--#categories_with_tpl(param0,param1,param2,param3,param4,param5);-->
   <entry code="categories_with_tpl_description">Affichage des catégories (descripteurs) issues des thésaurus</entry>
   <entry code="categories_with_tpl_input_description">
-param0 = id du ou des thésaurus (séparés par une virgule), 0
-pour tous
+param0 = id du ou des thésaurus (séparés par une virgule), 0 pour tous
 param1 = séparateur entre catégories
 param2 = séparateur entre thésaurus
 param3 = langue à prendre en compte
@@ -196,13 +183,13 @@ param4 = afficher le nom du ou des thésaurus en entête, 0 ou 1
   <entry code="collection_with_tpl_description">Affiche la collection de la notice selon une mise en forme à définir</entry>
   <entry code="collection_with_tpl_input_description"> 
 param0 = template pour l'affichage de la collection, à définir à partir des éléments suivants :
-{id} = identifiant
-{name} = nom de la collection
-{editeur} = nom de l'éditeur de la collection
-{issn} = ISSN de la collection
-{collection_web} = URL du site web
-{collection_link} = URL du site web (cliquable)
-{display} = affiche "Nom de la collection (Nom de l'éditeur)"
+	{id} = identifiant
+	{name} = nom de la collection
+	{editeur} = nom de l'éditeur de la collection
+	{issn} = ISSN de la collection
+	{collection_web} = URL du site web
+	{collection_link} = URL du site web (cliquable)
+	{display} = affiche "Nom de la collection (Nom de l'éditeur)"
   </entry>
   <entry code="collection_with_tpl_output_description">
 Exemple :
@@ -242,39 +229,34 @@ param0 = nombre maxi d'exemplaires à afficher, 0=tous
 param1 = séparateur
 param2 = champ demandé
 param3 = critères de filtrage des exemplaires au format :
-[champ1=valeur1;valeur2,champ2=valeur1]
-Liste des champs et des valeurs possibles pour les paramètres
-2 et 3 :
-expl_id : identifiant de l'exemplaire
-expl_cb : code-barres
-expl_cote : cote
-expl_typdoc : identifiant du support
-tdoc_libelle : libellé du support
-expl_location : identifiant de la localisation
-location_libelle : libellé de la localisation
-expl_section : identifiant de la section
-section_libelle : libellé de la section
-expl_statut : identifiant du statut
-statut_libelle : libellé du statut
-expl_owner : identifiant du propriétaire
-lender_libelle : libellé du propriétaire
-expl_codestat : identifiant du code statistique
-codestat_libelle : libellé du code statistique
-expl_note : message exemplaire
-expl_comment : commentaire non bloquant
-expl_date_retour : date de retour
-expl_date_depot : date de dépôt
-pret_flag : 1 = exemplaire empruntable, 0 =exemplaire non
-empruntable
-nom_du_champ_perso : affiche la valeur de ce champ
+	[champ1=valeur1;valeur2,champ2=valeur1]
+Liste des champs et des valeurs possibles pour les paramètres 2 et 3 :
+	expl_id : identifiant de l'exemplaire
+	expl_cb : code-barres
+	expl_cote : cote
+	expl_typdoc : identifiant du support
+	tdoc_libelle : libellé du support
+	expl_location : identifiant de la localisation
+	location_libelle : libellé de la localisation
+	expl_section : identifiant de la section
+	section_libelle : libellé de la section
+	expl_statut : identifiant du statut
+	statut_libelle : libellé du statut
+	expl_owner : identifiant du propriétaire
+	lender_libelle : libellé du propriétaire
+	expl_codestat : identifiant du code statistique
+	codestat_libelle : libellé du code statistique
+	expl_note : message exemplaire
+	expl_comment : commentaire non bloquant
+	expl_date_retour : date de retour
+	expl_date_depot : date de dépôt
+	pret_flag : 1 = exemplaire empruntable, 0 =exemplaire non empruntable
+	nom_du_champ_perso : affiche la valeur de ce champ
   </entry>
   <entry code="expl_by_field_output_description">
 Exemples :
-#expl_by_field(1,'',expl_cote); = affiche la cote du premier
-exemplaire
-#expl_by_field(0, / ,expl_cb,[expl_location=1]); = affiche les
-codes-barres de tous les exemplaire de la localisation avec
-identifiant = 1
+#expl_by_field(1,'',expl_cote); = affiche la cote du premier exemplaire
+#expl_by_field(0, / ,expl_cb,[expl_location=1]); = affiche les codes-barres de tous les exemplaire de la localisation avec identifiant = 1
   </entry>
   
 <!--#expl_with_tpl(param0,param1,param2,param3);-->
@@ -282,41 +264,34 @@ identifiant = 1
   <entry code="expl_with_tpl_input_description">
 param0 = nombre d'élément maximum
 param1 = séparateur entre exemplaires
-param2 = template d'affichage avec les valeurs ci-dessous.
-attention, ces valeurs doivent être entre crochets. La cote
-s'inscrit donc {expl_cote}
+param2 = template d'affichage avec les valeurs ci-dessous. attention, ces valeurs doivent être entre crochets. La cote s'inscrit donc {expl_cote}
 param3 = critères de filtrage des exemplaires
 [champ1=valeur1;valeur2,champ2=valeur1] format accepté:
-expl_location=1
- ou
- [expl_location=1;2]
-[expl_location=1;2,expl_section=2;3]
-expl_id : identifiant de l'exemplaire
-expl_cb : code-barres
-expl_cote : cote
-expl_typdoc : identifiant du support
-tdoc_libelle : libellé du support
-expl_location : identifiant de la localisation
-location_libelle : libellé de la localisation
-expl_section : identifiant de la section
-section_libelle : libellé de la section
-expl_statut : identifiant du statut
-statut_libelle : libellé du statut
-expl_owner : identifiant du propriétaire
-lender_libelle : libellé du propriétaire
-expl_codestat : identifiant du code statistique
-codestat_libelle : libellé du code statistique
-expl_note : message exemplaire
-expl_comment : commentaire non bloquant
-expl_date_retour : date de retour
-expl_date_depot : date de dépôt
-pret_flag : 1 = exemplaire empruntable, 0 =exemplaire non
-empruntable
+	expl_location=1 ou [expl_location=1;2] [expl_location=1;2,expl_section=2;3]
+	expl_id : identifiant de l'exemplaire
+	expl_cb : code-barres
+	expl_cote : cote
+	expl_typdoc : identifiant du support
+	tdoc_libelle : libellé du support
+	expl_location : identifiant de la localisation
+	location_libelle : libellé de la localisation
+	expl_section : identifiant de la section
+	section_libelle : libellé de la section
+	expl_statut : identifiant du statut
+	statut_libelle : libellé du statut
+	expl_owner : identifiant du propriétaire
+	lender_libelle : libellé du propriétaire
+	expl_codestat : identifiant du code statistique
+	codestat_libelle : libellé du code statistique
+	expl_note : message exemplaire
+	expl_comment : commentaire non bloquant
+	expl_date_retour : date de retour
+	expl_date_depot : date de dépôt
+	pret_flag : 1 = exemplaire empruntable, 0 =exemplaire non empruntable
   </entry>
   <entry code="expl_with_tpl_output_description">
 Exemple :
-#expl_by_field(0, / ,{expl_cb} : {location_libelle},);affiche cote : localisation pour tous les exemplaires d'une
-notice.
+#expl_by_field(0, / ,{expl_cb} : {location_libelle},);affiche cote : localisation pour tous les exemplaires d'une notice.
   </entry>
   
 <!--#expl_num(param0);-->
@@ -328,30 +303,27 @@ notice.
   <entry code="expl_num_vign_reduit_description">Affiche les documents numériques associés à la notice, selon l'affichage réduit OPAC.</entry>
   <entry code="expl_num_vign_reduit_input_description">
 param0 = gestion des droits OPAC : 0=non, 1=oui
-param1 = texte de l'infobulle dans le cas où il y a plusieudocuments numériques, si vide c'est celui par défaut qui eutilisé
-param2 = URL de l'image dans le cas où il y a plusieudocuments numériques, si vide c'est celle par défaut qui eutilisée
-param3 = texte de l'infobulle dans le cas où il n'y a qu'un sedocument numérique, si vide c'est celui par défaut qui eutilisé
-param4 = URL de l'image dans le cas où il n'y a qu'un sedocument numérique, si vide c'est celle par défaut qui eutilisée
+param1 = texte de l'infobulle dans le cas où il y a plusieurs documents numériques, si vide c'est celui par défaut qui est utilisé
+param2 = URL de l'image dans le cas où il y a plusieurs documents numériques, si vide c'est celle par défaut qui est utilisé
+param3 = texte de l'infobulle dans le cas où il n'y a qu'un seul document numérique, si vide c'est celui par défaut qui est utilisé
+param4 = URL de l'image dans le cas où il n'y a qu'un seul document numérique, si vide c'est celle par défaut qui est utilisé
   </entry>
   <entry code="expl_num_vign_reduit_output_description"></entry>
   
 <!--#expl_num_with_tpl(param0,param1,param2,param3,param4,param5);-->
   <entry code="expl_num_with_tpl_description">Affiche les documents numériques associés à la notice, selon une mise en forme à définir.</entry>
   <entry code="expl_num_with_tpl_input_description">
-param0 = nombre maxi de documents numériques à afficher,
-0=tous
+param0 = nombre maxi de documents numériques à afficher,0=tous
 param1 = séparateur
-param2 = 0 : tous les documents, 1 : documents sans statut
-spécifique, 2 : documents avec statut spécifique
-param3 = template pour l'affichage des documents
-numériques, à définir à partir des éléments suivants :
-{explnum_id} = identifiant
-{explnum_nom} = nom du document numérique
-{explnum_mimetype} = format (Mimetype)
-{explnum_url} = URL renseignée dans le document numérique
-{explnum_nomfichier} = nom du fichier sélectionné dansdocument numérique
+param2 = 0 : tous les documents, 1 : documents sans statut spécifique, 2 : documents avec statut spécifique
+param3 = template pour l'affichage des documents numériques, à définir à partir des éléments suivants :
+	{explnum_id} = identifiant
+	{explnum_nom} = nom du document numérique
+	{explnum_mimetype} = format (Mimetype)
+	{explnum_url} = URL renseignée dans le document numérique
+	{explnum_nomfichier} = nom du fichier sélectionné dansdocument numérique
 param3 = gestion des droits OPAC : 0=non, 1=oui
-param4 = filtre par MimeType (séparer par une virguleplusieurs valeurs), si vide pas de filtre.
+param4 = filtre par MimeType (séparer par une virgule plusieurs valeurs), si vide pas de filtre.
 Les MimeTypes sont définis dans le fichier pmb/includes/mime_types/fr_FR.xml
 Valeurs les plus fréquentes : application/pdf,application/x-pdf, image/png, image/x-png, image/jpg,image/jpeg, application/msword, application/vnd.ms-excel,
 application/ms-excel, application/x-msexcel,application/vnd.ms-powerpoint, application/ms-powerpoint,application/mspowerpoint, application/openoffice, URL,
@@ -360,10 +332,14 @@ application/epub+zip
   <entry code="expl_num_with_tpl_output_description">
 Exemple :
 Pour obtenir les noms des fichiers PDF :
-#expl_num_with_tpl(0,/,0,{explnum_nom_fichier},1,
-application/pdf\,application/x-pdf);
+#expl_num_with_tpl(0,/,0,{explnum_nom_fichier},1,application/pdf\,application/x-pdf);
   </entry>
-  
+
+<!--#iconcart();-->
+  <entry code="iconcart_description">Affiche l'icône du panier en fonction de sa présence ou non dans le panier de l'usager.</entry>
+  <entry code="iconcart_input_description"></entry>
+  <entry code="iconcart_output_description"></entry>
+
 <!--#icondoc();-->
   <entry code="icondoc_description">Affiche l'icône du type de document de la notice.</entry>
   <entry code="icondoc_input_description"></entry>
@@ -397,15 +373,13 @@ param5 = afficher le commentaire, 0 ou 1
 param0 = séparateur
 param1 = afficher le nom du plan de classement, 0 ou 1
 param2 = séparateur
-param3 = template pour l'affichage de l'indexation décimale,
-à définir à partir des éléments suivants :
-{indexint_id} = identifiant de l'indexation
-{name} = libellé
-{comment} = commentaire
-{display} = affiche le libellé suivi du commentaire.
-{isbd_entry_lien_gestion} = affiche l'indexation avec un lien
-vers la gestion
-{name_pclass} = nom du plan de classement.
+param3 = template pour l'affichage de l'indexation décimale, à définir à partir des éléments suivants :
+	{indexint_id} = identifiant de l'indexation
+	{name} = libellé
+	{comment} = commentaire
+	{display} = affiche le libellé suivi du commentaire.
+	{isbd_entry_lien_gestion} = affiche l'indexation avec un lien vers la gestion
+	{name_pclass} = nom du plan de classement.
   </entry>
   <entry code="indexint_with_tpl_output_description"></entry>
   
@@ -445,10 +419,8 @@ vers la gestion
   <entry code="map_equinoxe_output_description"></entry>
   
 <!--#map_isbd();-->
-  <entry code="map_isbd_description">Affiche l'ISBD des champs de géoréférencement, sous la
-forme suivante :
-. - Echelles ; Projections. Références (Coordonées)
-(Equinoxe)
+  <entry code="map_isbd_description">Affiche l'ISBD des champs de géoréférencement, sous la forme suivante :
+	. - Echelles ; Projections. Références (Coordonées)(Equinoxe)
   </entry>
   <entry code="map_isbd_input_description"></entry>
   <entry code="map_isbd_output_description"></entry>
@@ -469,12 +441,9 @@ forme suivante :
 <entry code="mention_edition_output_description"></entry>
 
 <!--#nb_expl_available();-->
-<entry code="nb_expl_available_description">Affiche plusieurs colonnes avec:</entry>
-<entry code="nb_expl_available_input_description">
-Nombre total d'exemplaires | Nombre d'exemplaires
-disponibles | Date de retour du premier exemplaire si au
-moins un en prêt
-</entry>
+<entry code="nb_expl_available_description">Affiche plusieurs colonnes avec:
+Nombre total d'exemplaires | Nombre d'exemplaires disponibles | Date de retour du premier exemplaire si au moins un en prêt</entry>
+<entry code="nb_expl_available_input_description"></entry>
 <entry code="nb_expl_available_output_description"></entry>
 
 <!--#note();-->
@@ -483,8 +452,8 @@ moins un en prêt
   <entry code="note_output_description"></entry>
   
 <!--#note_avg();-->
-  <entry code="note_avg_description">Affiche sous forme de colonnes</entry>
-  <entry code="note_avg_input_description">Nombre d'avis|Moyenne des avis</entry>
+  <entry code="note_avg_description">Affiche sous forme de colonnes: Nombre d'avis|Moyenne des avis</entry>
+  <entry code="note_avg_input_description"></entry>
   <entry code="note_avg_output_description"></entry>
   
 <!--#notice_field(champ);-->
@@ -502,15 +471,17 @@ Exemple :
 
 <!--#p_perso(champ,option);-->
   <entry code="p_perso_description">Affiche le champ personnalisé de notice :</entry>
-  <entry code="p_perso_input_description">- champ : nom du champ personnalisé
-- option : si 0, retourne la valeur du champ dans la noticesinon retourne le titre du champ à l'affichage
+  <entry code="p_perso_input_description">
+  - champ : nom du champ personnalisé
+  - option : si 0, retourne la valeur du champ dans la notice sinon retourne le titre du champ à l'affichage
   </entry>
   <entry code="p_perso_output_description"></entry>
   
 <!--#p_authperso(nom_du_champ,[séparateur,limite,1]);-->
   <entry code="p_authperso_description">Affiche les informations provenant des autorités persos</entry>
-  <entry code="p_authperso_input_description">- séparateur : si vide, PMB utilise le paramètre "perso_sep" dans les paramètres généraux.
-limite : nombre maximum de valeurs retournées, 0 ou vide pour illimité.
+  <entry code="p_authperso_input_description">
+- séparateur : si vide, PMB utilise le paramètre "perso_sep" dans les paramètres généraux.
+- limite : nombre maximum de valeurs retournées, 0 ou vide pour illimité.
 Le dernier argument à 1 signifie que l'on veut afficher le titre à la place de la valeur.
   </entry>
   <entry code="p_authperso_output_description">
@@ -545,8 +516,8 @@ Exemple :
   <entry code="permalink_output_description"></entry>
   
 <!--#publisher();-->
-  <entry code="publisher_description">Affiche le premier éditeur de la notice</entry>
-  <entry code="publisher_input_description"> au format "Vill(Adresse, Pays) : nom de l'éditeur" ou "[S.l.] : Noml'éditeur" si pas de lieu d'édition.</entry>
+  <entry code="publisher_description">Affiche le premier éditeur de la notice au format "Vill(Adresse, Pays) : nom de l'éditeur" ou "[S.l.] : Noml'éditeur" si pas de lieu d'édition.</entry>
+  <entry code="publisher_input_description"></entry>
   <entry code="publisher_output_description"></entry>
   
 <!--#publisher_name();-->
@@ -560,8 +531,8 @@ Exemple :
   <entry code="publisher_place_output_description"></entry>
   
 <!--#publisher_1();-->
-  <entry code="publisher_1_description">Affiche le second éditeur de la notice</entry>
-  <entry code="publisher_1_input_description">au format "Vill(Adresse, Pays) : nom de l'éditeur" ou "[S.l.] : Noml'éditeur" si pas de lieu d'édition.</entry>
+  <entry code="publisher_1_description">Affiche le second éditeur de la notice au format "Vill(Adresse, Pays) : nom de l'éditeur" ou "[S.l.] : Noml'éditeur" si pas de lieu d'édition.</entry>
+  <entry code="publisher_1_input_description"></entry>
   <entry code="publisher_1_output_description"></entry>
   
 <!--#publisher_1_name();-->
@@ -578,19 +549,18 @@ Exemple :
   <entry code="publisher_with_tpl_description">Affiche le premier éditeur de la notice selon une mise en forme à définir</entry>
   <entry code="publisher_with_tpl_input_description">
 param0 = template pour l'affichage de l'éditeur, à définir à partir des éléments suivants :
-{id} = identifiant
-{name} = nom de l'éditeur
-{adr1} = adresse (ligne 1)
-{adr2} = adresse (ligne 2)
-{cp} = code postal
-{ville} = ville
-{pays} = pays
-{web} = URL du site web
-{link} = URL du site web (cliquable)
-{display} = affiche "Nom de l'éditeur" ou "Ville : Nom de
-l'éditeur" ou "Ville [Pays] : Nom de l'éditeur"
-{ed_comment} = commentaire
-{p_perso|cp_name|VALUE} permet d'afficher un champ perso avec cp_name=nom du champ perso et la troisième valeur =TITRE ou VALUE
+	{id} = identifiant
+	{name} = nom de l'éditeur
+	{adr1} = adresse (ligne 1)
+	{adr2} = adresse (ligne 2)
+	{cp} = code postal
+	{ville} = ville
+	{pays} = pays
+	{web} = URL du site web
+	{link} = URL du site web (cliquable)
+	{display} = affiche "Nom de l'éditeur" ou "Ville : Nom de l'éditeur" ou "Ville [Pays] : Nom de l'éditeur"
+	{ed_comment} = commentaire
+	{p_perso|cp_name|VALUE} permet d'afficher un champ perso avec cp_name=nom du champ perso et la troisième valeur =TITRE ou VALUE
   </entry>
   <entry code="publisher_with_tpl_output_description">
 Exemple :
@@ -612,8 +582,8 @@ Pour obtenir l'URL de la page éditeur :
   <entry code="serie_with_tpl_description">Affiche la série de la notice selon une mise en forme à définir</entry>
   <entry code="serie_with_tpl_input_description">
 param0 = template pour l'affichage de la série, à définir à partir des éléments suivants :
-{id} = identifiant
-{name} = nom de la série
+	{id} = identifiant
+	{name} = nom de la série
   </entry>
   <entry code="serie_with_tpl_output_description">
 Exemple :
@@ -621,41 +591,45 @@ Pour obtenir l'URL de la page série :
 #serie_with_tpl(./index.php?lvl=serie_see&amp;id={id});
   </entry> 
   
+<!--#statut(param0);-->
+  <entry code="statut_description">Affiche le statut de la notice</entry>
+  <entry code="statut_input_description">
+param0 = 0 : identifiant du statut, 1 : libellé du statut
+  </entry>
+  <entry code="statut_output_description"></entry>
+  
 <!--#title();-->
   <entry code="title_description">Affiche le titre de la notice.</entry>
   <entry code="title_input_description"></entry>
   <entry code="title_output_description">
 Exemples pour les monographies :
-Titre propre
-Titre de série, numéro dans la série. Titre propre
-Titre de série. Titre propre
-Exemples pour les notices de bulletins :
-Numéro - libellé de période - Titre du bulletin (BulletinTitre du périodique, numéro [date de parution du bulletinformat JJ/MM/AAAA])
-Numéro (Bulletin de Titre du périodique, numéro [dateparution du bulletin au format JJ/MM/AAAA])
-dad
+	Titre propre
+	Titre de série, numéro dans la série. Titre propre
+	Titre de série. Titre propre
+	Exemples pour les notices de bulletins :
+	Numéro - libellé de période - Titre du bulletin (BulletinTitre du périodique, numéro [date de parution du bulletinformat JJ/MM/AAAA])
+	Numéro (Bulletin de Titre du périodique, numéro [dateparution du bulletin au format JJ/MM/AAAA])
   </entry>
 
 <!-- #titre_uniforme_with_tpl(param0,param1,param2,param3,param4);-->
-  <entry code="titre_uniforme_with_tpl_description">Affiche le(s) titre(s) uniforme(s) de la notice selon une mise en forme à définirparam0 : nombre max de TU à afficher</entry>
+  <entry code="titre_uniforme_with_tpl_description">Affiche le(s) titre(s) uniforme(s) de la notice selon une mise en forme à définir</entry>
   <entry code="titre_uniforme_with_tpl_input_description">
+param0 : nombre max de TU à afficher
 param1 : séparateurs entre les TU
 param2 : séparateur entre les valeurs d'un même champ
-param3 : format d'affichage des auteurs 0 : nom, prénom | 1 :
-nom, prénom (dates)| 2 : nom, prénom, fonction | 3 : nom,
-prénom (dates), fonction
-param4 : template d'affichage du TU à définir à partir des
-éléments suivants :
-{id} = identifiant{name} = nom du TU
-{auteurs} = auteurs du TU
-{form} = forme du TU
-{date} = date du TU
-{place} = lieu d'origine du TU
-{comment} = résumé
-{intended_termination} = complétude visée
-{intended_audience} = public visé
-{history} = histoire du TU
-{context} = contexte du TU
-{tu_isbd} = affichage isdb du TU
+param3 : format d'affichage des auteurs 0 : nom, prénom | 1 :nom, prénom (dates)| 2 : nom, prénom, fonction | 3 : nom,prénom (dates), fonction
+param4 : template d'affichage du TU à définir à partir des éléments suivants :
+	{id} = identifiant{name} = nom du TU
+	{auteurs} = auteurs du TU
+	{form} = forme du TU
+	{date} = date du TU
+	{place} = lieu d'origine du TU
+	{comment} = résumé
+	{intended_termination} = complétude visée
+	{intended_audience} = public visé
+	{history} = histoire du TU
+	{context} = contexte du TU
+	{tu_isbd} = affichage isdb du TU
   </entry>
   <entry code="titre_uniforme_with_tpl_output_description"></entry>
   
@@ -679,7 +653,7 @@ param4 : template d'affichage du TU à définir à partir des
  
  
  
-										<!-- ******************    Fonctions communes à tous les types de notices   ******************--> 
+										<!-- ********Fonctions pour les articles, les notices de bulletins et les périodiques********--> 
 										<!-- **************************************************************************************** -->
 										 
  
@@ -695,59 +669,29 @@ param4 : template d'affichage du TU à définir à partir des
   <entry code="bull_for_art_expl_num_vign_reduit_description">Permet d'aller chercher le(s) document(s) numérique(s) d'un bulletin à partir d'un article et de le(s) visualiser selon l'affichage réduit OPAC.</entry>
   <entry code="bull_for_art_expl_num_vign_reduit_input_description">
 param0 = gestion des droits OPAC : 0=non, 1=oui
-param1 = texte de l'infobulle dans le cas où il y a plusieurs
-documents numériques, si vide c'est celui par défaut qui est utilisé
-param2 = URL de l'image dans le cas où il y a plusieurs
-documents numériques, si vide c'est celle par défaut qui est utilisée
-param3 = texte de l'infobulle dans le cas où il n'y a qu'un seul
-document numérique, si vide c'est celui par défaut qui est utilisé
-param4 = URL de l'image dans le cas où il n'y a qu'un seul
-document numérique, si vide c'est celle par défaut qui est utilisée
+param1 = texte de l'infobulle dans le cas où il y a plusieurs documents numériques, si vide c'est celui par défaut qui est utilisé
+param2 = URL de l'image dans le cas où il y a plusieurs documents numériques, si vide c'est celle par défaut qui est utilisée
+param3 = texte de l'infobulle dans le cas où il n'y a qu'un seul document numérique, si vide c'est celui par défaut qui est utilisé
+param4 = URL de l'image dans le cas où il n'y a qu'un seul document numérique, si vide c'est celle par défaut qui est utilisée
   </entry>
   <entry code="bull_for_art_expl_num_vign_reduit_output_description"></entry>
   
 <!-- #bull_for_art_expl_num_with_tpl(param0,param1,param2,param3,param4,param5);-->
   <entry code="bull_for_art_expl_num_with_tpl_description">Permet d'aller chercher le(s) document(s) numérique(s) d'un bulletin à partir d'un article, et de les afficher selon une mise en forme à définir</entry>
   <entry code="bull_for_art_expl_num_with_tpl_input_description">
-param0 = nombre maxi de documents numériques à afficher,
-0=tous
+param0 = nombre maxi de documents numériques à afficher,0=tous
 param1 = séparateur
-param2 = 0 : tous les documents, 1 : documents sans statut
-spécifique, 2 : documents avec statut spécifique
-param3 = template pour l'affichage des documents numériques, à
-définir à partir des éléments suivants :
-{explnum_id} = identifiant
-{explnum_nom} = nom du document numérique
-{explnum_mimetype} = format (Mimetype)
-{explnum_url} = URL renseignée dans le document numérique
-{explnum_nomfichier} = nom du fichier sélectionné dans le
-document numérique
+param2 = 0 : tous les documents, 1 : documents sans statut spécifique, 2 : documents avec statut spécifique
+param3 = template pour l'affichage des documents numériques, à définir à partir des éléments suivants :
+		{explnum_id} = identifiant
+		{explnum_nom} = nom du document numérique
+		{explnum_mimetype} = format (Mimetype)
+		{explnum_url} = URL renseignée dans le document numérique
+		{explnum_nomfichier} = nom du fichier sélectionné dans le document numérique
 param3 = gestion des droits OPAC : 0=non, 1=oui
-param4 = filtre par MimeType (séparer par une virgule si
-plusieurs valeurs), si vide pas de filtre.
-Les
- MimeTypes
- sont
- définis
- dans
- le
- fichier
-pmb/includes/mime_types/fr_FR.xml
-Valeurs les plus fréquentes : application/pdf, application/x-pdf,
-image/png,
- image/x-png,
- image/jpg,
- image/jpeg,
-application/msword,
- application/vnd.ms-excel,
-application/ms-excel,
- application/x-msexcel,
-application/vnd.ms-powerpoint,
- application/ms-powerpoint,
-application/mspowerpoint,
- application/openoffice,
- URL,
-application/epub+zip
+param4 = filtre par MimeType (séparer par une virgule si plusieurs valeurs), si vide pas de filtre.
+Les MimeTypes sont définis dans le fichier pmb/includes/mime_types/fr_FR.xml
+Valeurs les plus fréquentes : application/pdf, application/x-pdf, image/png, image/x-png, image/jpg, image/jpeg, application/msword, application/vnd.ms-excel, application/ms-excel, application/x-msexcel, application/vnd.ms-powerpoint, application/ms-powerpoint, application/mspowerpoint, application/openoffice, URL, application/epub+zip
   </entry>
   <entry code="bull_for_art_expl_num_with_tpl_output_description">
 Exemple :
@@ -757,21 +701,13 @@ application/pdf\,application/x-pdf);
   </entry>
   
 <!--#collstate();-->
-  <entry code="collstate_description">Affiche un tableau HTML contenant les informations des
-états des collections d'une notice de périodique :
-surlocalisation, localisation, emplacement, cote, support,
-statut, origine, collection, lacunes
-  </entry>
+  <entry code="collstate_description">Affiche un tableau HTML contenant les informations des états des collections d'une notice de périodique : surlocalisation, localisation, emplacement, cote, support, statut, origine, collection, lacunes</entry>
   <entry code="collstate_input_description"></entry>
   <entry code="collstate_output_description"></entry>
 
  <!--#date_bulletin();-->
   <entry code="date_bulletin_description">
-Affiche le libellé de période et la date du bulletin au
-format "Libellé de période (JJ/MM/AAAA)" ou
-"JJ/MM/AAAA" si pas de libellé de période (pour articles
-et notices de bulletins).  
-  </entry>
+Affiche le libellé de période et la date du bulletin au format "Libellé de période (JJ/MM/AAAA)" ou "JJ/MM/AAAA" si pas de libellé de période (pour articles et notices de bulletins).</entry>
   <entry code="date_bulletin_input_description"></entry>
   <entry code="date_bulletin_output_description"></entry>
   
@@ -800,7 +736,7 @@ et notices de bulletins).
  
  
  
-										<!-- *****   Fonctions pour les articles, les notices de bulletins et les périodiques   ******--> 
+										<!-- *****                          Fonctions pour les notices liées                    ******--> 
 										<!-- **************************************************************************************** -->
 										 
  
@@ -820,12 +756,10 @@ et notices de bulletins).
 <!--#group(param0,param1,param2,#{param3};);-->
   <entry code="group_description">Affiche des informations groupées d'une ou plusieurs notices à partir de leur identifiant, selon les paramètres :</entry>
   <entry code="group_input_description">
-param0 : tableau d'identifiants des notices à afficher => à
-utiliser avec la fonction #linked_id();
+param0 : tableau d'identifiants des notices à afficher => à utiliser avec la fonction #linked_id();
 param1 : nombre de notices à afficher, 0 pour tout afficher
 param2 : séparateur entre les notices
-param3 : fonctions de templates pour l'affichage des
-notices, à mettre entre #{};
+param3 : fonctions de templates pour l'affichage des notices, à mettre entre #{};
   </entry>
   <entry code="group_output_description">
 Exemple :
@@ -836,36 +770,29 @@ Exemple :
   </entry>
 
 <!--#linked_id(param0,param1);-->
-  <entry code="linked_id_description">À utiliser avec la fonction #group();</entry>
+  <entry code="linked_id_description">(À utiliser avec la fonction #group();)Renvoie un tableau d'identifiants de notices liées selon les paramètres :</entry>
   <entry code="linked_id_input_description">
-Renvoie un tableau d'identifiants de notices liées selon les paramètres :
 param0 : sens de la relation
 Valeurs possibles :
-up = montante
-down = descendante
-both = horizontale
-param1 : types de relation séparés par une virgule : utiliser
-les codes correspondants aux relations, définis dans les
-f i c h i e r s
-pmb/includes/marc_tables/fr_FR/relationtypeup.xml
- et
-relationtypedown.xml
+	up = montante
+	down = descendante
+	both = horizontale
+param1 : types de relation séparés par une virgule : utiliser les codes correspondants aux relations, définis dans les fichiers pmb/includes/marc_tables/fr_FR/relationtypeup.xml et relationtypedown.xml
 Valeurs par défaut (Unimarc) :
-a = in / contenu
-b = est un bulletin de / bulletins
-c = fait partie de / est composé de
-d = contenu dans / contient
-e = supplément de / suppléments
-f = titre précédent / titre suivant
-g = titre suivant / titre précédent
-h = traduit sous le titre / traduction de
-i = traduction de / traduit sous le titre
-j = accompagne / est accompagné de
+	a = in / contenu
+	b = est un bulletin de / bulletins
+	c = fait partie de / est composé de
+	d = contenu dans / contient
+	e = supplément de / suppléments
+	f = titre précédent / titre suivant
+	g = titre suivant / titre précédent
+	h = traduit sous le titre / traduction de
+	i = traduction de / traduit sous le titre
+	j = accompagne / est accompagné de
   </entry>
   <entry code="linked_id_output_description">
 Exemple :
-#linked_id(up,a,d); = identifiants de la ou des notices mères
-avec les relations de type 'in' et 'contenu dans'
+#linked_id(up,a,d); = identifiants de la ou des notices mères avec les relations de type 'in' et 'contenu dans'
   </entry>
   
 <!--#parents_authors_by_type_with_tpl(param0,param1,param2,param3,param4,param5,param6,param7);-->
@@ -876,15 +803,13 @@ param1 = nombre maxi d'auteurs à afficher
 param2 = séparateur entre auteurs
 param3 = séparateur entre principal/autres/secondaires
 param4 = afficher la fonction : 0=non, 1=toujours
-param5 = afficher "et al." si plus d'auteurs que le maxi
-param6 = 70=physique, 71=collectivités, 72=congrès
-(séparé par une virgule)
-param7 = template pour l'affichage des auteurs, à définir à
-partir des éléments suivants :
-{name} = nom ou élément d'entrée
-{rejete} = prénom ou élément rejeté
-{function} = fonction de l'auteur dans la notice
-{author_comment} = commentaire
+param5 = afficher "et al." si le nb d'auteurs est supérieur au param1, 1=oui 0=non
+param6 = 70=physique, 71=collectivités, 72=congrès (séparé par une virgule)
+param7 = template pour l'affichage des auteurs, à définir à partir des éléments suivants :
+	{name} = nom ou élément d'entrée
+	{rejete} = prénom ou élément rejeté
+	{function} = fonction de l'auteur dans la notice
+	{author_comment} = commentaire
   </entry>
   <entry code="parents_authors_by_type_with_tpl_output_description"></entry>
 
@@ -919,11 +844,9 @@ partir des éléments suivants :
   <entry code="parents_year_publication_output_description"></entry>
   
  <!--#serial_linked_id(param0);-->
-  <entry code="serial_linked_id_description">À utiliser avec la fonction #group(); Renvoie un tableau d'identifiants de notices liées selon les paramètres : </entry>
+  <entry code="serial_linked_id_description">À utiliser avec la fonction #group(); Renvoie un tableau d'identifiants de notices liées selon le paramètre : </entry>
   <entry code="serial_linked_id_input_description">
-param0 : Sens de la relation.
-Choisir entre s pour périodique, b pour bulletin ou a
-pour article.
+param0 : Sens de la relation. Choisir entre s pour périodique, b pour bulletin ou a pour article.
   </entry>
   <entry code="serial_linked_id_output_description"></entry>
  
@@ -932,7 +855,7 @@ pour article.
  
 
 
-										<!-- ******************      Fonctions pour les notices mères / filles      ******************-->
+										<!-- ******************      Fonctions conditionnelles      ******************-->
 										<!-- **************************************************************************************** -->
 										 
  
@@ -957,7 +880,7 @@ pour article.
   <entry code="if_output_description"></entry>
 
 <!--#ifequal(param0,param1,param2,param3);-->
-  <entry code="ifequal_description"> AUCUNE DESCRIPTION POUR LE MOMENT</entry>
+  <entry code="ifequal_description"></entry>
   <entry code="ifequal_input_description">
 param0,param1 : chaînes à comparer
 param2 : valeur si égales
@@ -996,16 +919,18 @@ param3 : valeur si différentes
 
 
 
-<!--#ellipse(param0,param1,param2);-->
-  <entry code="ellipse_description">Affiche une partie de la chaîne param0 selon un nombre de caractères à définir, avec choix des caractères de fin.</entry>
+<!--#ellipse(param0,param1,param2,param3);-->
+  <entry code="ellipse_description">Affiche une partie de la chaîne param0 selon un nombre de mots ou de caractères à définir, avec le choix des caractères de fin.</entry>
   <entry code="ellipse_input_description">
 param0 = chaîne de caractères
-param1 = nombre maximum de caractères à afficher
+param1 = nombre maximum de mots ou de caractères à afficher
 param2 = chaîne de remplacement
+param3 = 0 ou rien : tronquer sur le nombre de caractères / 1 : tronquer sur le nombre de mots
   </entry>
   <entry code="ellipse_output_description">
 Exemple :
 #ellipse(#resume();,100,...); = affiche les 100 premiers caractères du résumé suivis de &#39;...&#39;
+#ellipse(#resume();,10,...,1); = affiche les 10 premiers mots du résumé suivis de &#39;...&#39;
   </entry>
 
 <!--#extract_path(param0,param1);-->
@@ -1017,33 +942,30 @@ param1 = expression
   <entry code="extract_path_output_description"></entry>
   
 <!--#gen_tpl(tableau,texte,option);-->
-  <entry code="gen_tpl_description">Le paramètre tableau est composé d'un ensemble de clés et de valeurs.  
+  <entry code="gen_tpl_description">Le paramètre tableau est composé d'un ensemble de clés et de valeurs.
+  Pour chaque valeur de tableau, la fonction retourne le texte après y avoir remplacé :
+	- les motifs !!cle!! par les valeurs correspondantes
+	- les motifs !!p_perso_cle!! par les valeurs de champs personnalisés correspondantes
+	- les motifs !!parity!! par odd ou even
   </entry>
-  <entry code="gen_tpl_input_description">
-Pour chaque valeur de tableau, la fonction retourne le
-texte après y avoir remplacé :
-- les motifs !!cle!! par les valeurs correspondantes
-- les motifs !!p_perso_cle!! par les valeurs de champs
-personnalisés correspondantes
-- les motifs !!parity!! par odd ou even
-  </entry>
+  <entry code="gen_tpl_input_description"></entry>
   <entry code="gen_tpl_output_description"></entry>
 
 <!--#gen_plus(titre,contenu,option);-->
-  <entry code="gen_plus_description">Affiche un bloc dépliable plié ou déplié avec :</entry>
-  <entry code="gen_plus_input_description">
-- titre: titre du bloc (seule partie visible si le bloc est plié)
-- contenu : contenu du bloc (visible si le bloc est déplié)
-- option : 0=bloc plié, 1=bloc déplié
+  <entry code="gen_plus_description">Affiche un bloc dépliable plié ou déplié avec :
+  	- titre: titre du bloc (seule partie visible si le bloc est plié)
+	- contenu : contenu du bloc (visible si le bloc est déplié)
+	- option : 0=bloc plié, 1=bloc déplié
   </entry>
+  <entry code="gen_plus_input_description"></entry>
   <entry code="gen_plus_output_description"></entry>
   
 <!--#header_link(titre,option);-->
-  <entry code="header_link_description">Renvoie un lien vers la notice dans l'OPAC avec :</entry>
-  <entry code="header_link_input_description">
-- titre: titre du lien
-- option : affichage de l'url associée si 2
+  <entry code="header_link_description">Renvoie un lien vers la notice dans l'OPAC avec :
+	- titre: titre du lien
+	- option : affichage de l'url associée si 2
   </entry>
+  <entry code="header_link_input_description"></entry>
   <entry code="header_link_output_description"></entry>
   
 <!--#lastchr(param0);-->
@@ -1054,8 +976,7 @@ personnalisés correspondantes
 <!--#msg(param0);-->
   <entry code="msg_description">Affiche un message de l'OPAC selon la langue de l'interface.</entry>
   <entry code="msg_input_description">
-param0 = code du message, voir les fichiers XML par
-langue dans le répertoire pmb/opac_css/includes/messages
+param0 = code du message, voir les fichiers XML par langue dans le répertoire pmb/opac_css/includes/messages
   </entry>
   <entry code="msg_output_description"></entry>
   
@@ -1087,14 +1008,10 @@ param2 = expression
   <entry code="substr_description">Affiche une partie de la chaîne param0</entry>
   <entry code="substr_input_description">
 param0 : chaîne de caractères
-param1 : numéro du caractère de début de la sous-chaîne
-à extraire
-param2 : numéro du caractère de fin de la sous-chaîne à
-extraire. param2 est facultatif, si absent la sous-chaîne
-aura pour fin le dernier caractère de param0.
+param1 : numéro du caractère de début de la sous-chaîne à extraire
+param2 : numéro du caractère de fin de la sous-chaîne à extraire. param2 est facultatif, si absent la sous-chaîne aura pour fin le dernier caractère de param0.
   </entry>
   <entry code="substr_output_description"></entry>
-pourles notices mères / filles
 <!--#trim(param0);-->
   <entry code="trim_description">Affiche param0 après avoir supprimé les espaces avant et après la chaîne de caractères.</entry>
   <entry code="trim_input_description">param0 : chaîne de caractères</entry>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: toutapprendre.class.php,v 1.3 2015-04-03 11:16:24 jpermanne Exp $
+// $Id: toutapprendre.class.php,v 1.3.4.2 2015-09-15 14:32:56 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -234,7 +234,7 @@ class toutapprendre extends connector {
 		// configuration des options CURL
 		curl_setopt($ch, CURLOPT_URL, $addr);	
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);	 	
-		configurer_proxy_curl($ch);	
+		configurer_proxy_curl($ch,$addr);	
 	 	$xml=curl_exec($ch);	
 	 	
 	 	if($charset=='utf-8') $xml = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]'.
@@ -359,6 +359,7 @@ class toutapprendre extends connector {
 			if ($this->del_old) {
 				$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."' ";
 				pmb_mysql_query($requete);
+				$this->delete_from_external_count($source_id, $ref);
 			}
 			//Si pas de conservation ou reférence inexistante
 			if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: extended.inc.php,v 1.87 2015-07-09 10:21:31 mbertin Exp $
+// $Id: extended.inc.php,v 1.87.2.1 2015-10-16 10:55:52 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -79,6 +79,10 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 		
 		$_SESSION["lq_facette"]=$_SESSION["facette"];
 		$_SESSION["lq_facette_search"]["lq_search"]=search::serialize_search();
+	}else if( $from_see == 1 && $filtre_compare == "compare"){
+		//from_see est un élément posté dans un formulaire d'une page d'autorité 
+		//il flage l'origine qui nécessite une reconstruction de l'environnement de la multi-critère pour faire les filtres multiples ou le comparateur
+		facettes::make_facette_search_env();
 	}
 	$lib_recherche=$es->make_human_query();
 	

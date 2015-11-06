@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: print_docnum.inc.php,v 1.6 2015-04-18 14:21:33 dgoron Exp $
+// $Id: print_docnum.inc.php,v 1.6.2.1 2015-10-08 09:16:43 jpermanne Exp $
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 //gestion des droits
@@ -22,9 +22,9 @@ function doc_num_get_list($id_notices){
 	$cpt_doc_num=0;
 	foreach($id_notices as $notice_id){
 		
-		$query = "SELECT explnum_id from explnum where explnum_notice=$notice_id and explnum_mimetype IN ('application/pdf','application/x-pdf') ";
+		$query = "SELECT explnum_id from explnum where explnum_statut=0 and explnum_notice=$notice_id and explnum_mimetype IN ('application/pdf','application/x-pdf') ";
 		$query .= " union ";
-		$query .= " select explnum_id from explnum ,bulletins where explnum_bulletin=bulletin_id and num_notice=$notice_id and explnum_mimetype IN ('application/pdf','application/x-pdf')";
+		$query .= " select explnum_id from explnum ,bulletins where explnum_statut=0 and explnum_bulletin=bulletin_id and num_notice=$notice_id and explnum_mimetype IN ('application/pdf','application/x-pdf')";
 		$result = pmb_mysql_query($query,$dbh);
 		$nb_result = pmb_mysql_num_rows($result) ;
 		if (!$nb_result)	continue;		

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liste_lecture.class.php,v 1.23 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: liste_lecture.class.php,v 1.23.4.1 2015-09-24 15:48:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -393,17 +393,17 @@ class liste_lecture {
 				if($liste->public) 
 					$affichage_liste .= " 
 					&nbsp;<span>
-							<img border=0 align='middle' src='".$opac_url_base."images/group.png' title=\"".$msg['list_lecture_partagee']."\"/>
+							<img border=0 align='middle' src='".get_url_icon('group.png', 1)."' title=\"".$msg['list_lecture_partagee']."\"/>
 						</span>";	
 				if($liste->read_only)
 					$affichage_liste .= " 
 					&nbsp;<span>
-							<img border=0 align='middle' src='".$opac_url_base."images/b_no_edit.png' title=\"".$msg['list_lecture_readonly']."\"/>
+							<img border=0 align='middle' src='".get_url_icon('b_no_edit.png', 1)."' title=\"".$msg['list_lecture_readonly']."\"/>
 						</span>";	
 				if($liste->confidential)
 					$affichage_liste .= " 
 					&nbsp;<span>
-							<img border=0 align='middle' src='".$opac_url_base."images/lock.png' title=\"".$msg['list_lecture_confidential']."\"/>
+							<img border=0 align='middle' src='".get_url_icon('lock.png', 1)."' title=\"".$msg['list_lecture_confidential']."\"/>
 						</span>";		
 				$affichage_liste .= "</div>";
 			}
@@ -549,14 +549,14 @@ class liste_lecture {
 				<input type='checkbox' class='checkbox' id='cb$liste->id_liste' name='list_ck[]' value='$liste->id_liste' $check $disable />";
 				$titre_liste = " ( $liste->empr_prenom $liste->empr_nom  )";
 			if($liste->read_only){
-				$img_ro = "&nbsp;<span><img border=0 align='top' src='".$opac_url_base."images/b_no_edit.png' title=\"".$msg['list_lecture_readonly']."\" id='img_ro_$liste->id_liste' /></span>";
+				$img_ro = "&nbsp;<span><img border=0 align='top' src='".get_url_icon('b_no_edit.png', 1)."' title=\"".$msg['list_lecture_readonly']."\" id='img_ro_$liste->id_liste' /></span>";
 			} else $img_ro = "";	
 			if($confidential)
 				$affichage_liste .= "&nbsp;<span><a $div_action href='#' onclick='return false;'>".htmlentities($liste->nom_liste,ENT_QUOTES,$charset)."</a>$font<label for='cb$liste->id_liste' >".htmlentities($titre_liste,ENT_QUOTES,$charset)."</label>$font_end</span>$div_description";
 			else 
 				$affichage_liste .=	"&nbsp;<span><a $div_action href='./index.php?lvl=show_list&sub=consultation&id_liste=$liste->id_liste'>".htmlentities($liste->nom_liste,ENT_QUOTES,$charset)."</a>$font<label for='cb$liste->id_liste' >".htmlentities($titre_liste,ENT_QUOTES,$charset)." </label>$font_end</span>$div_description";
 			
-			if($icone) $affichage_liste .= "<span><img border=0 align='top' src='".$opac_url_base."images/$icone' title=\"$title\" id='img_confi_$liste->id_liste' /></span>";
+			if($icone) $affichage_liste .= "<span><img border=0 align='top' src='".get_url_icon($icone, 1)."' title=\"$title\" id='img_confi_$liste->id_liste' /></span>";
 			$affichage_liste .= $img_ro;
 			$affichage_liste .= "</div>";
 			$affichage_liste .= "<div id='maillist_$liste->id_liste'></div>";

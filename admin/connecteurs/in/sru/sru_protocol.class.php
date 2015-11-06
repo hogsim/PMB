@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sru_protocol.class.php,v 1.4 2010-06-12 14:23:45 erwanmartin Exp $
+// $Id: sru_protocol.class.php,v 1.4.14.1 2015-09-11 08:53:14 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -858,7 +858,7 @@ class sru_get_data {
     	//Reinitialisation du "retry_after"
 		$this->retry_after="";    	
     	
-		configurer_proxy_curl($ch);	
+		configurer_proxy_curl($ch,$url);	
 		
     	//Explosion des arguments de la requï¿½te pour ceux qui ne respectent pas la norme !!
     	$query=substr($url,strpos($url,"?")+1);

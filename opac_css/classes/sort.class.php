@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sort.class.php,v 1.48 2015-06-25 09:38:28 jpermanne Exp $
+// $Id: sort.class.php,v 1.48.2.2 2015-10-12 08:34:12 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");
@@ -415,7 +415,7 @@ class sort {
 		$sortArray = explode(" ",$opac_default_sort_list);
 		//Mode Ajax
 		if ($sortArray[0] == 0) {
-			$tris_selector = "&nbsp;<script type='text/javascript' src='./includes/javascript/select.js'></script>
+			$tris_selector = "<span class=\"espaceResultSearch\">&nbsp;</span><script type='text/javascript' src='./includes/javascript/select.js'></script>
 						<script>
 							var ajax_get_sort=new http_request();
 			
@@ -437,7 +437,7 @@ class sort {
 									sort_view.parentNode.removeChild(sort_view);
 							}
 						</script>
-						<span class=\"triSelector\"><a onClick='show_layer(); get_sort_content();' alt=\"".$msg['tris_dispos']."\" title=\"".$msg['tris_dispos']."\" style='cursor : pointer;'><img src='./images/orderby_az.gif' align='bottom' hspace='3' border='0' id='sort_icon'></a></span>";
+						<span class=\"triSelector\"><a onClick='show_layer(); get_sort_content();' alt=\"".$msg['tris_dispos']."\" title=\"".$msg['tris_dispos']."\" style='cursor : pointer;'><img src='".get_url_icon('orderby_az.gif')."' align='bottom' hspace='3' border='0' id='sort_icon'></a></span>";
 		} elseif ($sortArray[0] == 1) {
 			global $sort;
 			
@@ -447,7 +447,7 @@ class sort {
 			if ($sort != "") $sel_sort = $sort;
  			else $sel_sort = -1;
 			// creation du tableau de la liste des tris enregistrés
-			$tris_selector = "&nbsp;<span class=\"triSelector\"><select name='tri_selector' id='tri_selector' onChange='applySort(this.options[this.selectedIndex].value)'>";
+			$tris_selector = "<span class=\"espaceResultSearch\">&nbsp;</span><span class=\"triSelector\"><select name='tri_selector' id='tri_selector' onChange='applySort(this.options[this.selectedIndex].value)'>";
 			//affichage des enregistrements de tris possibles
 			$sort = new sort('notices','session');
 			$sort->dSort->initParcoursTris($sort);
@@ -470,9 +470,9 @@ class sort {
 				}
 				document.location = maPage;
 			}
-			</script>&nbsp;";
+			</script><span class=\"espaceResultSearch\">&nbsp;</span>";
 		} else {
-			$tris_selector = "&nbsp;<span class=\"triSelector\"><a href='index.php?lvl=sort&page_en_cours=!!page_en_cours!!' alt=\"".$msg['tris_dispos']."\" title=\"".$msg['tris_dispos']."\"><img src='./images/orderby_az.gif' align='bottom' hspace='3' border='0' id='sort_icon'></a></span>";
+			$tris_selector = "<span class=\"espaceResultSearch\">&nbsp;</span><span class=\"triSelector\"><a href='index.php?lvl=sort&page_en_cours=!!page_en_cours!!' alt=\"".$msg['tris_dispos']."\" title=\"".$msg['tris_dispos']."\"><img src='".get_url_icon('orderby_az.gif')."' align='bottom' hspace='3' border='0' id='sort_icon'></a></span>";
 		}
 
 		return $tris_selector;

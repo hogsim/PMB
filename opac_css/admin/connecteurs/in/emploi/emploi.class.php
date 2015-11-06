@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: emploi.class.php,v 1.3 2015-06-02 09:46:58 jpermanne Exp $
+// $Id: emploi.class.php,v 1.3.2.1 2015-09-11 08:53:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -195,7 +195,7 @@ class emploi extends connector {
 		// configuration des options CURL
 		curl_setopt($ch, CURLOPT_URL, $addr);	
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);	 	
-		configurer_proxy_curl($ch);	
+		configurer_proxy_curl($ch,$addr);	
 	 	$html=curl_exec($ch);	 	
  		if (!$html) {
  			$sortir=1; 			
@@ -218,7 +218,7 @@ class emploi extends connector {
 
 		 		curl_setopt($ch, CURLOPT_URL, $link);	
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);	 	
-				configurer_proxy_curl($ch);	
+				configurer_proxy_curl($ch,$link);	
  				$html_notice_complete=curl_exec($ch);	 	
 		 		
 	//	 		http://travail-emploi.gouv.fr/IMG/pdf/2012-035.pdf

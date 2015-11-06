@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: author.class.php,v 1.29 2015-06-10 08:46:55 pmbs Exp $
+// $Id: author.class.php,v 1.29.2.2 2015-09-24 15:48:16 dgoron Exp $
 
 // définition de la classe de gestion des 'auteurs'
 
@@ -185,7 +185,7 @@ function get_otherdata() {
 		}
 		if($this->date) $this->isbd_entry .= ' ('.$this->date.')';
 	}
-	if($this->author_web) $this->author_web_link = " <a href='$this->author_web' target='_blank'><img src='./images/globe.gif' border='0' /></a>";
+	if($this->author_web) $this->author_web_link = " <a href='$this->author_web' target='_blank' type='external_url_autor'><img src='".get_url_icon("globe.gif")."' border='0' /></a>";
 	else $this->author_web_link = "" ;
 
 }
@@ -340,7 +340,7 @@ function print_resume($level = 2,$css='') {
 	$print = str_replace("!!pays!!", $this->pays, $print);
 	$print = str_replace("!!numero!!", $this->numero, $print);
 	$print = str_replace("!!subdivision!!", $this->subdivision, $print);
-	if ($this->author_web) $print = str_replace("!!site_web!!", "<a href='$this->author_web' target='_blank'><img src='./images/globe.gif' border='0' /></a>", $print);
+	if ($this->author_web) $print = str_replace("!!site_web!!", "<a href='$this->author_web' target='_blank' type='external_url_autor'><img src='".get_url_icon("globe.gif")."' border='0' /></a>", $print);
 		else $print = str_replace("!!site_web!!", "", $print);
 	$print = str_replace("!!date!!", $this->date, $print);
 	$print = str_replace("!!aut_comment!!", nl2br($this->author_comment), $print);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // � 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: toutapprendre.class.php,v 1.2 2015-04-03 11:16:28 jpermanne Exp $
+// $Id: toutapprendre.class.php,v 1.2.4.1 2015-09-11 08:53:14 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -179,7 +179,7 @@ class toutapprendre extends connector {
 		// configuration des options CURL
 		curl_setopt($ch, CURLOPT_URL, $addr);	
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);	 	
-		configurer_proxy_curl($ch);	
+		configurer_proxy_curl($ch,$addr);	
 	 	$xml=curl_exec($ch);	
 	 	
 	 	if($charset=='utf-8') $xml = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]'.

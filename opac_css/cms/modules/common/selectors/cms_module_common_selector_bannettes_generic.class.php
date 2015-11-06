@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_bannettes_generic.class.php,v 1.1 2014-09-16 13:52:54 ngantier Exp $
+// $Id: cms_module_common_selector_bannettes_generic.class.php,v 1.1.6.1 2015-09-16 14:30:35 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");
@@ -16,7 +16,11 @@ class cms_module_common_selector_bannettes_generic extends cms_module_common_sel
 	
 	public function get_sub_selectors(){
 		return array(
-			"cms_module_common_selector_bannettes"
+			"cms_module_common_selector_bannettes",
+			"cms_module_common_selector_type_section",
+			"cms_module_common_selector_type_article",
+			"cms_module_common_selector_type_article_generic",
+			"cms_module_common_selector_type_section_generic"
 		);
 	}
 /*,

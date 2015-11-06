@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: admin.tpl.php,v 1.210 2015-06-26 13:15:14 dgoron Exp $
+// $Id: admin.tpl.php,v 1.210.2.1 2015-09-11 12:50:41 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -816,6 +816,11 @@ $admin_menu_demandes ="
 	<span".ongletSelect("categ=demandes&sub=type").">
 		<a title='".htmlentities($msg["demandes_type"],ENT_QUOTES,$charset)."' href='./admin.php?categ=demandes&sub=type'>
 			".$msg["demandes_type"]."
+		</a>
+	</span>
+	<span".ongletSelect("categ=demandes&sub=perso").">
+		<a title='".htmlentities($msg["admin_menu_demandes_perso"],ENT_QUOTES,$charset)."' href='./admin.php?categ=demandes&sub=perso'>
+			".$msg["admin_menu_demandes_perso"]."
 		</a>
 	</span>
 </div>";

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- $Id: search_fields_gestion.xml,v 1.13 2015-05-07 07:36:37 jpermanne Exp $ -->
+<!-- $Id: search_fields_gestion.xml,v 1.13.2.3 2015-10-13 07:58:20 jpermanne Exp $ -->
 
 	<!-- 
 	Copie multi-criteres de gestion utilisée pour le calcul des vues 
@@ -149,6 +149,15 @@
 		</field>
 		<field title="msg:234" id="2">
 			<input type="authoritie" ajax="authors" selector="auteur" p1="param1" p2="param2"/>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<query for="BOOLEAN" booleanSearch="yes">
 				<main><![CDATA[select responsability_notice as notice_id, !!pert_term!! as pert from responsability, authors where (!!where_term!!) and responsability_author=author_id group by notice_id]]></main>
 				<table>authors</table>
@@ -205,6 +214,15 @@
 		</field>	
 		<field title="msg:searcher_publisher" id="3">
 			<input type="authoritie" ajax="publishers" selector="editeur" p1="p1" p2="p2"/>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<query for="BOOLEAN" booleanSearch="yes">
 				<main><![CDATA[select notice_id, !!pert_term!! as pert from notices, publishers where (!!where_term!!) and (ed_id=ed1_id or ed_id=ed2_id) group by notice_id]]></main>
 				<table>publishers</table>
@@ -237,16 +255,16 @@
 			<query for="EQ" detectDate="__">
 				<main><![CDATA[select distinct notice_id from notices where date_parution like '!!p!!']]></main>
 			</query>
-			<query for="LT" detectDate="00">
+			<query for="LT" detectDate="min">
 				<main><![CDATA[select distinct notice_id from notices where (date_parution<'!!p!!' and date_parution>'0000-00-00')]]></main>
 			</query>
-			<query for="GT" detectDate="__">
+			<query for="GT" detectDate="max">
 				<main><![CDATA[select distinct notice_id from notices where date_parution>'!!p!!']]></main>
 			</query>
-			<query for="LTEQ" detectDate="__">
+			<query for="LTEQ" detectDate="min">
 				<main><![CDATA[select distinct notice_id from notices where (date_parution<='!!p!!' and date_parution>'0000-00-00')]]></main>
 			</query>
-			<query for="GTEQ" detectDate="01">
+			<query for="GTEQ" detectDate="max">
 				<main><![CDATA[select distinct notice_id from notices where date_parution>='!!p!!']]></main>
 			</query>
 			<query for="ISEMPTY" detectDate="01">
@@ -277,6 +295,15 @@
 		</field>
 		<field title="msg:searcher_coll" id="4">
 			<input type="authoritie" ajax="collections" selector="collection" p1="p1" p2="p2"/>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<query for="BOOLEAN" booleanSearch="yes">
 				<main><![CDATA[select notice_id,!!pert_term!! as pert from notices, collections where (!!where_term!!) and (coll_id=collection_id) group by notice_id]]></main>
 				<table>collections</table>
@@ -305,6 +332,15 @@
 		</field>
 		<field title="msg:searcher_subcoll" id="5">
 			<input type="authoritie" ajax="subcollections" selector="subcollection" p1="p1" p2="p2"/>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<query for="BOOLEAN" booleanSearch="yes">
 				<main><![CDATA[select notice_id, !!pert_term!! as pert from notices, sub_collections where (!!where_term!!) and (subcoll_id=sub_coll_id) group by notice_id]]></main>
 				<table>sub_collections</table>
@@ -333,6 +369,15 @@
 		</field>
 		<field title="msg:serie_query" id="6">
 			<input type="authoritie" ajax="serie" selector="serie" p1="param1" p2="param2"/>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<query for="BOOLEAN" booleanSearch="yes">
 				<main><![CDATA[select notice_id, !!pert_term!! as pert from notices, series where (!!where_term!!) and (tparent_id=serie_id) group by notice_id]]></main>
 				<table>series</table>
@@ -375,6 +420,15 @@
 		</field>
 		<field title="msg:titre_uniforme_search" id="51">
 			<input type="authoritie" ajax="titre_uniforme" selector="titre_uniforme" p1="param1" p2="param2"/>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<query for="BOOLEAN" booleanSearch="yes">
 				<main><![CDATA[select ntu_num_notice as notice_id, !!pert_term!! as pert from notices_titres_uniformes, titres_uniformes where (!!where_term!!) and ntu_num_tu=tu_id group by notice_id]]></main>
 				<table>titres_uniformes</table>
@@ -533,6 +587,15 @@
 					<query allChoice="yes" titleAllChoice="msg:thes_all">select id_thesaurus, libelle_thesaurus from thesaurus</query>
 				</input>
 			</variable>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<variable name="langue_defaut" type="calculated">
 				<calc type="value_from_query">
 					<query>select group_concat(langue_defaut SEPARATOR "','") as langue_defaut, 1 from thesaurus where id_thesaurus in (!!id_thesaurus!!) group by 2</query>
@@ -657,6 +720,15 @@
 				<value visibility="no">0</value>
 			</var>
 			<input type="authoritie" ajax="categories_mul" selector="categorie" p1="p1" p2="p2"/>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<variable name="lang" type="global"/>
 			<variable name="thesaurus_defaut" type="global"/>
 			<variable name="id_thesaurus" type="input" comment="Thésaurus">
@@ -733,6 +805,15 @@
 		</field>
 		<field title="msg:indexint_menu_title" id="12">
 			<input type="authoritie" ajax="indexint_mul" selector="indexint" p1="param1" p2="param2"/>
+			<variable name= "operator_between_multiple_authorities" type="input" comment="msg:operator_between_multiple_authorities">
+				<default type="value">or</default>
+				<input type="radio">
+					<options>
+						<label value="or">msg:operator_between_multiple_authorities_or</label>
+						<label value="and">msg:operator_between_multiple_authorities_and</label>
+					</options>
+				</input>
+			</variable>
 			<query for="BOOLEAN" booleanSearch="yes">
 				<main><![CDATA[select notice_id, !!pert_term!! as pert from notices, indexint where (!!where_term!!) and (indexint=indexint_id) group by notice_id]]></main>
 				<table>indexint</table>
@@ -968,6 +1049,17 @@
 			</query>
 			<query for="ISNOTEMPTY" regDiacrit="yes">
 				<main><![CDATA[select distinct notice_id from notices  where (eformat not like '')]]></main>
+			</query>
+		</field>
+		<field title="msg:notice_is_new_search" id="91">
+			<input type="list">
+				<options>
+					<option value="0">msg:39</option>
+					<option value="1">msg:40</option>										
+				</options>	
+			</input>
+			<query for="EQ" regDiacrit="yes">
+				<main><![CDATA[select distinct notice_id from notices where notice_is_new = '!!p!!']]></main>
 			</query>
 		</field>
 		<field title="msg:recherche_relationtypeup" id="47" separator="msg:recherche_relation">

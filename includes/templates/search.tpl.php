@@ -2,14 +2,15 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.tpl.php,v 1.29 2013-10-23 14:56:51 dgoron Exp $
+// $Id: search.tpl.php,v 1.29.6.1 2015-10-13 07:58:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
 //Template du formulaire de recherches avancées
 $search_form="
 <script src=\"javascript/ajax.js\"></script>
-<form class='form-$current_module' name='search_form' action='!!url!!' method='post' onsubmit=\"valid_form_extented_search();\" >
+<script>var operators_to_enable = new Array();</script>
+<form class='form-$current_module' name='search_form' action='!!url!!' method='post' onsubmit=\"enable_operators();valid_form_extented_search();\" >
 	<h3><div class='left'>".($mode==8?$msg["search_expl"]:(($mode==6||$categ=='consult')?$msg["search_extended"]:($_SESSION["ext_type"]=="simple"?$msg["connecteurs_external_simple"]:($current_module=="circ"?$msg["search_emprunteur"]:$msg["connecteurs_external_multi"]))))."</div><!--!!precise_h3!!--><div class='row'></div></h3>
 	<div class='form-contenu'>
 		<!--!!before_form!!--> 

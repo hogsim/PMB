@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesEmpr.class.php,v 1.11 2015-06-12 12:59:30 mbertin Exp $
+// $Id: pmbesEmpr.class.php,v 1.11.2.1 2015-08-04 15:48:17 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -41,7 +41,7 @@ class pmbesEmpr extends external_services_api_class {
 				
 				if($i==0) $sql_filters=" where ";
 				else {
-					if($filter['operateur'])
+					if($filter['separator'])
 						$sql_filters.=" ".$filter['separator']." ";
 					else
 						$sql_filters.=" and ";

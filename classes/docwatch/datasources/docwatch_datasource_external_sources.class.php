@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2014 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: docwatch_datasource_external_sources.class.php,v 1.2 2015-04-03 11:16:25 jpermanne Exp $
+// $Id: docwatch_datasource_external_sources.class.php,v 1.2.4.1 2015-09-07 13:18:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -54,7 +54,7 @@ class docwatch_datasource_external_sources extends docwatch_datasource{
 					$record["title"] = $z->titles[0];
 					$record["summary"] = $z->abstract_note;
 					$record["content"] = $z->content_note;
-					$record["url"] = $pmb_opac_url."index.php?lvl=notice_display&id=".$item;
+					$record["url"] = $z->link_url;
 					$record["logo_url"] = $z->thumbnail_url;
 					$query = "select distinct date_import from entrepot_source_".$z->source_id." where recid=".$item;
 					$result = pmb_mysql_query($query,$dbh);

@@ -4,18 +4,19 @@
 // | creator : Eric ROBERT                                                    |
 // | modified : ...                                                           |
 // +-------------------------------------------------+
-// $Id: func_bretagne.inc.php,v 1.8 2015-04-03 11:16:22 jpermanne Exp $
+// $Id: func_bretagne.inc.php,v 1.8.4.1 2015-09-02 09:32:05 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
-// DEBUT paramétrage propre à la base de données d'importation :
-require_once($base_path."/admin/import/func_bretagne.inc.php");
-
 function z_recup_noticeunimarc_suite($notice) {
+	global $base_path;
+	require_once($base_path."/admin/import/func_bretagne.inc.php");
 	recup_noticeunimarc_suite($notice);
 } // fin recup_noticeunimarc_suite = fin récupération des variables propres à la bretagne
 	
 function z_import_new_notice_suite() {
+	global $base_path;
+	require_once($base_path."/admin/import/func_bretagne.inc.php");
 	import_new_notice_suite();
 } // fin import_new_notice_suite
 			

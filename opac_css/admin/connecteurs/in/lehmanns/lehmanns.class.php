@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lehmanns.class.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
+// $Id: lehmanns.class.php,v 1.3.4.1 2015-09-11 08:53:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -604,7 +604,7 @@ class lehmanns extends connector {
 			curl_setopt($ch, CURLOPT_URL, $addr);
 			if ($params["TIMEOUT"]) curl_setopt($ch, CURLOPT_TIMEOUT,(integer)$params["TIMEOUT"]);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	 		configurer_proxy_curl($ch);
+	 		configurer_proxy_curl($ch,$addr);
 	 		$cexec=curl_exec($ch);
 	 		if (!$cexec) {
 	 			$this->error=true;

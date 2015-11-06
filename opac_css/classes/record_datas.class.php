@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: record_datas.class.php,v 1.18 2015-06-05 14:55:39 apetithomme Exp $
+// $Id: record_datas.class.php,v 1.18.2.5 2015-10-20 13:01:37 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -10,17 +10,12 @@ require_once($class_path."/acces.class.php");
 require_once($class_path."/map/map_objects_controler.class.php");
 require_once($class_path."/map_info.class.php");
 require_once($class_path."/parametres_perso.class.php");
-require_once($class_path."/author.class.php");
-require_once($class_path."/categorie.class.php");
 require_once($class_path."/tu_notice.class.php");
 require_once($class_path."/marc_table.class.php");
 require_once($class_path."/collstate.class.php");
 require_once($class_path."/enrichment.class.php");
 require_once($class_path."/skos/skos_concepts_list.class.php");
-require_once($class_path."/indexint.class.php");
-require_once($class_path."/collection.class.php");
-require_once($class_path."/subcollection.class.php");
-require_once($class_path."/publisher.class.php");
+require_once($class_path."/authorities_collection.class.php");
 
 if (!count($tdoc)) $tdoc = new marc_list('doctype');
 
@@ -158,7 +153,7 @@ class record_datas {
 	
 	/**
 	 * Catégories
-	 * @var array
+	 * @var categorie
 	 */
 	private $categories;
 	
@@ -378,6 +373,18 @@ class record_datas {
 	 */
 	private $articles;
 	
+	/**
+	 * Données de demandes
+	 * @var array
+	 */
+	private $demands_datas;
+	
+	/**
+	 * Panier autorisé selon paramètres PMB et utilisateur connecté
+	 * @var boolean
+	 */
+	private $cart_allow;
+	
 	public function __construct($id) {
 		global $gestion_acces_active,$gestion_acces_empr_notice,$gestion_acces_empr_docnum;
 		global $to_print;
@@ -554,16 +561,23 @@ class record_datas {
 
 	/**
 	 * Retourne les paramètres persos
-	 * @return parametres_perso
+	 * @return array
 	 */
 	public function get_p_perso() {
 		if (!$this->p_perso) {
 			global $memo_p_perso_notices;
 				
+			$this->p_perso = array();
+				
 			if (!$memo_p_perso_notices) {
-				$memo_p_perso_notices = $this->p_perso = new parametres_perso("notices");
-			} else {
-				$this->p_perso = $memo_p_perso_notices;
+				$memo_p_perso_notices = new parametres_perso("notices");
+			}
+			$ppersos = $memo_p_perso_notices->show_fields($this->id);
+			// Filtre ceux qui ne sont pas visibles à l'OPAC ou qui n'ont pas de valeur
+			foreach ($ppersos['FIELDS'] as $pperso) {
+				if ($pperso['OPAC_SHOW'] && $pperso['AFF']) {
+					$this->p_perso[] = $pperso;
+				}
 			}
 		}
 		return $this->p_perso;
@@ -577,8 +591,11 @@ class record_datas {
 		global $hide_explnum;
 		global $gestion_acces_active,$gestion_acces_empr_notice, $gestion_acces_empr_docnum;
 
-		if (($gestion_acces_active == 1) && ($gestion_acces_empr_notice == 1)) {
+		if (($gestion_acces_active == 1) && (($gestion_acces_empr_notice == 1) || ($gestion_acces_empr_docnum == 1))) {
 			$ac = new acces();
+		}
+		
+		if (($gestion_acces_active == 1) && ($gestion_acces_empr_notice == 1)) {
 			$this->dom_2= $ac->setDomain(2);
 			if ($hide_explnum) {
 				$this->rights = $this->dom_2->getRights($_SESSION['id_empr_session'],$this->id,4);
@@ -648,7 +665,7 @@ class record_datas {
 				$this->responsabilites['responsabilites'][] = $notice->responsability_type ;
 				$info_bulle="";
 				if($notice->author_type==72 || $notice->author_type==71) {
-					$congres=new auteur($notice->author_id);
+					$congres = authorities_collection::get_authority('author', $notice->author_id);
 					$auteur_isbd=$congres->isbd_entry;
 					$auteur_titre=$congres->display;
 					$info_bulle=" title='".$congres->info_bulle."' ";
@@ -698,7 +715,7 @@ class record_datas {
 					$indice = $as[$i];
 					$auteur_1 = $this->responsabilites["auteurs"][$indice];
 					if($auteur_1["type"]==72 || $auteur_1["type"]==71) {
-						$congres=new auteur($auteur_1["id"]);
+						$congres = authorities_collection::get_authority('author', $auteur_1["id"]);
 						$aut1_libelle[]=$congres->display;
 					} else {
 						$aut1_libelle[]= $auteur_1["auteur_titre"];
@@ -774,158 +791,56 @@ class record_datas {
 		return $this->visu_explnum_abon;
 	}
 
+	/**
+	 * Retourne les catégories de la notice
+	 * @return categorie Tableau des catégories
+	 */
 	public function get_categories() {
-		global $opac_thesaurus, $opac_categories_categ_in_line, $pmb_keyword_sep, $opac_categories_affichage_ordre;
-		global $dbh,$opac_thesaurus_defaut;
-		global $lang,$opac_categories_show_only_last;
-		global $categories_memo,$libelle_thesaurus_memo;
-		global $categories_top;
+		if (!isset($this->categories)) {
+			global $dbh, $opac_categories_affichage_ordre, $opac_categories_show_only_last;
 
-		$categ_repetables = array() ;
-		if(!count($categories_top)) {
-			$q = "select num_thesaurus,id_noeud from noeuds where num_parent in(select id_noeud from noeuds where autorite='TOP') ";
-			$r = pmb_mysql_query($q, $dbh);
-			while(($res = pmb_mysql_fetch_object($r))) {
-				$categories_top[]=$res->id_noeud;
-			}
-		}
-		$requete = "select * from (
-				select libelle_thesaurus, if (catlg.num_noeud is null, catdef.libelle_categorie, catlg.libelle_categorie ) as categ_libelle, if (catlg.num_noeud is null, catdef.comment_public, catlg.comment_public ) as comment_public, noeuds.id_noeud , noeuds.num_parent, langue_defaut,id_thesaurus, if(catdef.langue = '".$lang."',2, if(catdef.langue= thesaurus.langue_defaut ,1,0)) as p, ordre_vedette, ordre_categorie
-						FROM ((noeuds
-						join thesaurus ON thesaurus.id_thesaurus = noeuds.num_thesaurus
-						left join categories as catdef on noeuds.id_noeud=catdef.num_noeud and catdef.langue = thesaurus.langue_defaut
-						left join categories as catlg on catdef.num_noeud = catlg.num_noeud and catlg.langue = '".$lang."'))
-								,notices_categories
-								where ";
-		if(!$opac_thesaurus && $opac_thesaurus_defaut)$requete .=" thesaurus.id_thesaurus='".$opac_thesaurus_defaut."' AND ";
-		$requete .=" notices_categories.num_noeud=noeuds.id_noeud and notices_categories.notcateg_notice=".$this->id." order by id_thesaurus, noeuds.id_noeud, p desc) as list_categ group by id_noeud";
-		if ($opac_categories_affichage_ordre==1) $requete .= " order by ordre_vedette, ordre_categorie";
-
-		$result_categ=@pmb_mysql_query($requete);
-		if (pmb_mysql_num_rows($result_categ)) {
-			while(($res_categ = pmb_mysql_fetch_object($result_categ))) {
-				$libelle_thesaurus=$res_categ->libelle_thesaurus;
-				$categ_id=$res_categ->id_noeud 	;
-				$libelle_categ=$res_categ->categ_libelle ;
-				$comment_public=$res_categ->comment_public ;
-				$num_parent=$res_categ->num_parent ;
-				$langue_defaut=$res_categ->langue_defaut ;
-				$categ_head=0;
-				if(in_array($categ_id,$categories_top))$categ_head=1;
-
-				if ($opac_categories_show_only_last || $categ_head) {
-					if ($opac_thesaurus) $catalog_form="[".$libelle_thesaurus."] ".$libelle_categ;
-					// Si il y a présence d'un commentaire affichage du layer
-					$result_com = categorie::zoom_categ($categ_id, $comment_public);
-					$libelle_aff_complet = inslink($libelle_categ,  str_replace("!!id!!", $categ_id, $this->lien_rech_categ), $result_com['java_com']);
-					$libelle_aff_complet .= $result_com['zoom'];
-
-					if ($opac_thesaurus) $categ_repetables[$libelle_thesaurus][] =$libelle_aff_complet;
-					else $categ_repetables['MONOTHESAURUS'][] =$libelle_aff_complet ;
-
-				} else {
-					if(!$categories_memo[$categ_id]) {
-						$anti_recurse[$categ_id]=1;
-						$path_table='';
-						$requete = "
-								select id_noeud as categ_id,
-								num_noeud, num_parent as categ_parent, libelle_categorie as categ_libelle,
-								num_renvoi_voir as categ_see,
-								note_application as categ_comment,
-								if(langue = '".$lang."',2, if(langue= '".$langue_defaut."' ,1,0)) as p
-										FROM noeuds, categories where id_noeud ='".$num_parent."'
-												AND noeuds.id_noeud = categories.num_noeud
-												order by p desc limit 1";
-
-						$result=@pmb_mysql_query($requete);
-						if (pmb_mysql_num_rows($result)) {
-							$parent = pmb_mysql_fetch_object($result);
-							$anti_recurse[$parent->categ_id]=1;
-							$path_table[] = array(
-									'id' => $parent->categ_id,
-									'libelle' => $parent->categ_libelle);
-
-							// on remonte les ascendants
-							while (($parent->categ_parent)&&(!$anti_recurse[$parent->categ_parent])) {
-								$requete = "select id_noeud as categ_id, num_noeud, num_parent as categ_parent, libelle_categorie as categ_libelle,	num_renvoi_voir as categ_see, note_application as categ_comment, if(langue = '".$lang."',2, if(langue= '".$langue_defaut."' ,1,0)) as p
-										FROM noeuds, categories where id_noeud ='".$parent->categ_parent."'
-												AND noeuds.id_noeud = categories.num_noeud
-												order by p desc limit 1";
-								$result=@pmb_mysql_query($requete);
-								if (pmb_mysql_num_rows($result)) {
-									$parent = pmb_mysql_fetch_object($result);
-									$anti_recurse[$parent->categ_id]=1;
-									$path_table[] = array(
-											'id' => $parent->categ_id,
-											'libelle' => $parent->categ_libelle);
-								} else {
-									break;
-								}
-							}
-							$anti_recurse=array();
-						} else $path_table=array();
-						// ceci remet le tableau dans l'ordre général->particulier
-						$path_table = array_reverse($path_table);
-						if(sizeof($path_table)) {
-							$temp_table='';
-							while(list($xi, $l) = each($path_table)) {
-								$temp_table[] = $l['libelle'];
-							}
-							$parent_libelle = join(':', $temp_table);
-							$catalog_form = $parent_libelle.':'.$libelle_categ;
-						} else {
-							$catalog_form = $libelle_categ;
+			$this->categories = array();
+			
+			// Tableau qui va nous servir à trier alphabétiquement les catégories
+			if (!$opac_categories_affichage_ordre) $sort_array = array();
+			
+			$query = "select distinct num_noeud from notices_categories where notcateg_notice = ".$this->id." order by ordre_vedette, ordre_categorie";
+			$result = pmb_mysql_query($query, $dbh);
+			if ($result && pmb_mysql_num_rows($result)) {
+				while ($row = pmb_mysql_fetch_object($result)) {
+					/* @var $object categorie */
+					$object = authorities_collection::get_authority('category', $row->num_noeud);
+					$format_label = $object->libelle;
+					
+					// On ajoute les parents si nécessaire
+					if (!$opac_categories_show_only_last) {
+						$parent_id = $object->parent;
+						while ($parent_id && ($parent_id != 1) && (!in_array($parent_id, array($object->thes->num_noeud_racine, $object->thes->num_noeud_nonclasses, $object->thes->num_noeud_orphelins)))) {
+							$parent = authorities_collection::get_authority('category', $parent_id);
+							$format_label = $parent->libelle.':'.$format_label;
+							$parent_id = $parent->parent;
 						}
-						// pour libellé complet mais sans le nom du thésaurus
-						$libelle_aff_complet = $catalog_form ;
-
-						// Si il y a présence d'un commentaire affichage du layer
-						$result_com = categorie::zoom_categ($categ_id, $comment_public);
-						$libelle_aff_complet = inslink($libelle_aff_complet,  str_replace("!!id!!", $categ_id, $this->lien_rech_categ), $result_com['java_com']);
-						$libelle_aff_complet .= $result_com['zoom'];
-						if ($opac_thesaurus) $categ_repetables[$libelle_thesaurus][] =$libelle_aff_complet;
-						else $categ_repetables['MONOTHESAURUS'][] =$libelle_aff_complet ;
-
-						$categories_memo[$categ_id]=$libelle_aff_complet;
-						$libelle_thesaurus_memo[$categ_id]=$libelle_thesaurus;
-
-					} else {
-						if ($opac_thesaurus) $categ_repetables[$libelle_thesaurus_memo[$categ_id]][] =$categories_memo[$categ_id];
-						else $categ_repetables['MONOTHESAURUS'][] =$categories_memo[$categ_id] ;
+					}
+					$categorie = array(
+							'object' => $object,
+							'format_label' => $format_label
+					);
+					if (!$opac_categories_affichage_ordre) {
+						$sort_array[$object->thes->id_thesaurus][] = strtoupper(convert_diacrit($format_label));
+					}
+					$this->categories[$object->thes->id_thesaurus][] = $categorie;
+				}
+				// On tri par ordre alphabétique
+				if (!$opac_categories_affichage_ordre) {
+					foreach ($this->categories as $thes_id => &$categories) {
+						array_multisort($sort_array[$thes_id], $categories);
 					}
 				}
+				// On tri par index de thésaurus
+				ksort($this->categories);
 			}
 		}
-
-		while (list($nom_tesaurus, $val_lib)=each($categ_repetables)) {
-			//c'est un tri par libellé qui est demandé
-			if ($opac_categories_affichage_ordre==0){
-				$tmp=array();
-				foreach ( $val_lib as $key => $value ) {
-					$tmp[$key]=strip_tags($value);
-				}
-				$tmp=array_map("convert_diacrit",$tmp);//On enlève les accents
-				$tmp=array_map("strtoupper",$tmp);//On met en majuscule
-				asort($tmp);//Tri sur les valeurs en majuscule sans accent
-				foreach ( $tmp as $key => $value ) {
-					$tmp[$key]=$val_lib[$key];//On reprend les bons couples clé / libellé
-				}
-				$val_lib=$tmp;
-			}
-			if ($opac_thesaurus) {
-				if (!$opac_categories_categ_in_line) {
-					$categ_repetables_aff = "[".$nom_tesaurus."]".implode("<br />[".$nom_tesaurus."]",$val_lib) ;
-				}else {
-					$categ_repetables_aff = "<b>".$nom_tesaurus."</b><br />".implode(" $pmb_keyword_sep ",$val_lib) ;
-				}
-			} elseif (!$opac_categories_categ_in_line) {
-				$categ_repetables_aff = implode("<br />",$val_lib) ;
-			} else {
-				$categ_repetables_aff = implode(" $pmb_keyword_sep ",$val_lib) ;
-			}
-			if($categ_repetables_aff) $tmpcateg_aff .= "$categ_repetables_aff<br />";
-		}
-		return $this->categories_toutes = $tmpcateg_aff;
+		return $this->categories;
 	}
 	
 	/**
@@ -1024,17 +939,33 @@ class record_datas {
 			$this->nb_bulletins = 0;
 			
 			if($this->notice->opac_visible_bulletinage){
-				$query = "SELECT count(bulletin_id) FROM bulletins where bulletin_id in(
-					SELECT bulletin_id FROM bulletins WHERE bulletin_notice='".$this->id."' and num_notice=0
-					) or bulletin_id in(
-					SELECT bulletin_id FROM bulletins,notice_statut, notices WHERE bulletin_notice='".$this->id."'
-					and notice_id=num_notice
-					and statut=id_notice_statut
-					and((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")) ";
-				$result = pmb_mysql_query($query,$dbh);
-				if(pmb_mysql_num_rows($result)){
-					//Renvoie le nombre de bulletins
-					$this->nb_bulletins = pmb_mysql_result($result,0,0);
+				//Droits d'accès
+				if (is_null($this->dom_2)) {
+					$acces_j='';
+					$statut_j=',notice_statut';
+					$statut_r="and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")";
+				} else {
+					$acces_j = $this->dom_2->getJoin($_SESSION['id_empr_session'],4,'notice_id');
+					$statut_j = "";
+					$statut_r = "";
+				}
+				
+				//Bulletins sans notice
+				$req="SELECT bulletin_id FROM bulletins WHERE bulletin_notice='".$this->id."' and num_notice=0";
+				$res = pmb_mysql_query($req,$dbh);
+				if($res){
+					$this->nb_bulletins+=pmb_mysql_num_rows($res);
+				}
+				
+				//Bulletins avec notice
+				$req="SELECT bulletin_id FROM bulletins 
+					JOIN notices ON notice_id=num_notice AND num_notice!=0 
+					".$acces_j." ".$statut_j." 
+					WHERE bulletin_notice='".$this->id."' 
+					".$statut_r."";
+				$res = pmb_mysql_query($req,$dbh);
+				if($res){
+					$this->nb_bulletins+=pmb_mysql_num_rows($res);
 				}
 			}
 		}
@@ -1050,16 +981,42 @@ class record_datas {
 			global $dbh;
 			
 			if($this->notice->opac_visible_bulletinage){
-				$query = "SELECT * FROM bulletins where bulletin_id in(
-					SELECT bulletin_id FROM bulletins WHERE bulletin_notice='".$this->id."' and num_notice=0
-					) or bulletin_id in(
-					SELECT bulletin_id FROM bulletins,notice_statut, notices WHERE bulletin_notice='".$this->id."'
-					and notice_id=num_notice
-					and statut=id_notice_statut
-					and((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")) ";
-				$result = pmb_mysql_query($query,$dbh);
-				if($result && pmb_mysql_num_rows($result)){
-					while($r=pmb_mysql_fetch_object($result)){
+				//Droits d'accès
+				if (is_null($this->dom_2)) {
+					$acces_j='';
+					$statut_j=',notice_statut';
+					$statut_r="and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")";
+				} else {
+					$acces_j = $this->dom_2->getJoin($_SESSION['id_empr_session'],4,'notice_id');
+					$statut_j = "";
+					$statut_r = "";
+				}
+				
+				//Bulletins sans notice
+				$req="SELECT * FROM bulletins WHERE bulletin_notice='".$this->id."' and num_notice=0";
+				$res = pmb_mysql_query($req,$dbh);
+				if($res && pmb_mysql_num_rows($res)){
+					while($r=pmb_mysql_fetch_object($res)){
+						$this->bulletins[] = array(
+								'id' => $r->bulletin_id,
+								'numero' => $r->bulletin_numero,
+								'mention_date' => $r->mention_date,
+								'date_date' => $r->date_date,
+								'bulletin_titre' => $r->bulletin_titre,
+								'num_notice' => $r->num_notice
+						);
+					}
+				}
+				
+				//Bulletins avec notice
+				$req="SELECT bulletins.* FROM bulletins
+				JOIN notices ON notice_id=num_notice AND num_notice!=0
+				".$acces_j." ".$statut_j."
+				WHERE bulletin_notice='".$this->id."'
+				".$statut_r."";
+				$res = pmb_mysql_query($req,$dbh);
+				if($res && pmb_mysql_num_rows($res)){
+					while($r=pmb_mysql_fetch_object($res)){
 						$this->bulletins[] = array(
 								'id' => $r->bulletin_id,
 								'numero' => $r->bulletin_numero,
@@ -1084,18 +1041,11 @@ class record_datas {
 			global $dbh;
 			
 			$this->nb_bulletins_docnums = 0;
-			
-			$bull_in_perio = "SELECT bulletin_id FROM bulletins,notice_statut, notices WHERE bulletin_notice='".$this->id."'
-					and notice_id=num_notice
-					and statut=id_notice_statut
-					and((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":")");
+	
+			//La gestion des droits se fait dans la visionneuse
 			$query = "SELECT count(explnum_id) FROM explnum
-						WHERE explnum_bulletin IN (
-							SELECT bulletin_id FROM bulletins, notice_statut, notices
-							WHERE bulletin_notice='".$this->id."' and num_notice=0 AND notice_id=bulletin_notice AND statut=id_notice_statut
-							AND ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":")")."
-								)
-								OR explnum_bulletin IN ($bull_in_perio)";
+							JOIN bulletins ON explnum_bulletin=bulletin_id
+							WHERE bulletin_notice='".$this->id."' ";
 			$result = pmb_mysql_query($query, $dbh);
 			if(!pmb_mysql_error() && pmb_mysql_num_rows($result)){
 				$this->nb_bulletins_docnums =  pmb_mysql_result($result,0,0);
@@ -1114,16 +1064,38 @@ class record_datas {
 			
 			$this->open_to_search = 0;
 		
-			$query = "SELECT * FROM bulletins where bulletin_id in(
-				select bulletin_id from bulletins join analysis on analysis_bulletin=bulletin_id where bulletin_notice='".$this->id."'
-				union
-				SELECT bulletin_id FROM bulletins,notice_statut, notices WHERE bulletin_notice='".$this->id."'
-				and notice_id=num_notice
-				and statut=id_notice_statut
-				and((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"")."))";
-			$result = pmb_mysql_query($query,$dbh);
-			if($result && pmb_mysql_num_rows($result)){
-				$this->open_to_search =  pmb_mysql_num_rows($result);
+			//Droits d'accès
+			if (is_null($this->dom_2)) {
+				$acces_j='';
+				$statut_j=',notice_statut';
+				$statut_r="and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")";
+			} else {
+				$acces_j = $this->dom_2->getJoin($_SESSION['id_empr_session'],4,'notice_id');
+				$statut_j = "";
+				$statut_r = "";
+			}
+			
+			//Articles
+			$req="SELECT bulletin_id FROM bulletins 
+					JOIN analysis ON analysis_bulletin=bulletin_id 
+					JOIN notices ON analysis_notice=notice_id 
+					".$acces_j." ".$statut_j." 
+					WHERE bulletin_notice='".$this->id."' 
+					".$statut_r."";
+			$res = pmb_mysql_query($req,$dbh);
+			if($res){
+				$this->open_to_search+=pmb_mysql_num_rows($res);
+			}
+		
+			//Notices de bulletin
+			$req="SELECT bulletin_id FROM bulletins 
+					JOIN notices ON notice_id=num_notice AND num_notice!=0 
+					".$acces_j." ".$statut_j." 
+					WHERE bulletin_notice='".$this->id."' 
+					".$statut_r."";
+			$res = pmb_mysql_query($req,$dbh);
+			if($res){
+				$this->open_to_search+=pmb_mysql_num_rows($res);
 			}
 		}
 		return $this->open_to_search;
@@ -1191,11 +1163,11 @@ class record_datas {
 	 */
 	public function get_publishers() {
 		if(!count($this->publishers) && $this->notice->ed1_id){
-			$publisher = new publisher($this->notice->ed1_id);
+			$publisher = authorities_collection::get_authority('publisher', $this->notice->ed1_id);
 			$this->publishers[]=$publisher;
 		
 			if ($this->notice->ed2_id) {
-				$publisher = new publisher($this->notice->ed2_id);
+				$publisher = authorities_collection::get_authority('publisher', $this->notice->ed2_id);
 				$this->publishers[]=$publisher;
 			}
 		}
@@ -1332,7 +1304,7 @@ class record_datas {
 	 */
 	public function get_indexint() {
 		if(!$this->indexint && $this->notice->indexint) {
-			$this->indexint = new indexint($this->notice->indexint);
+			$this->indexint = authorities_collection::get_authority('indexint', $this->notice->indexint);
 		}
 		return $this->indexint;
 	}
@@ -1399,7 +1371,7 @@ class record_datas {
 	 */
 	public function get_collection() {
 		if (!$this->collection && $this->notice->coll_id) {
-			$this->collection = new collection($this->notice->coll_id);
+			$this->collection = authorities_collection::get_authority('collection', $this->notice->coll_id);
 		}
 		return $this->collection;
 	}
@@ -1410,7 +1382,7 @@ class record_datas {
 	 */
 	public function get_subcollection() {
 		if (!$this->subcollection && $this->notice->subcoll_id) {
-			$this->subcollection = new subcollection($this->notice->subcoll_id);
+			$this->subcollection = authorities_collection::get_authority('subcollection', $this->notice->subcoll_id);
 		}
 		return $this->subcollection;
 	}
@@ -1455,6 +1427,10 @@ class record_datas {
 		return $this->notice->n_gen;
 	}
 	
+	/**
+	 * Retourne le permalink
+	 * @return string
+	 */
 	public function get_permalink() {
 		if (!$this->permalink) {
 			global $opac_url_base;
@@ -1470,10 +1446,7 @@ class record_datas {
 	}
 	
 	/**
-	 * Retourne les exemplaires
-	 * @param string $type type de document
-	 * @param int $id Identifiant de la notice
-	 * @param int $bull_id Identifiant du bulletin
+	 * Retourne les données d'exemplaires
 	 * @return array
 	 */
 	public function get_expls_datas() {
@@ -1820,6 +1793,7 @@ class record_datas {
 				}
 			}
 		}
+		if (!$this->picture_url) $this->picture_url = get_url_icon("no_image.jpg");
 		return $this->picture_url;
 	}
 	
@@ -1966,8 +1940,14 @@ class record_datas {
 		return $this->relations_down;
 	}
 	
+	/**
+	 * Retourne les dépouillements
+	 * @return string Tableau des affichage des articles
+	 */
 	public function get_articles() {
 		if (!isset($this->articles)) {
+			global $dbh;
+			
 			$this->articles = array();
 			
 			$bul_info = $this->get_bul_info();
@@ -1982,5 +1962,57 @@ class record_datas {
 			}
 		}
 		return $this->articles;
+	}
+	
+	/**
+	 * Retourne les données de demandes
+	 * @return string Tableau des données ['themes' => ['id', 'label'], 'types' => ['id', 'label']]
+	 */
+	public function get_demands_datas() {
+		if (!isset($this->demands_datas)) {
+			global $dbh;
+			
+			$this->demands_datas = array(
+					'themes' => array(),
+					'types' => array()
+			);
+			
+			// On va chercher les thèmes
+			$query = "select id_theme, libelle_theme from demandes_theme";
+			$result = pmb_mysql_query($query, $dbh);
+			if ($result && pmb_mysql_num_rows($result)) {
+				while ($theme = pmb_mysql_fetch_object($result)) {
+					$this->demands_datas['themes'][] = array(
+							'id' => $theme->id_theme,
+							'label' => $theme->libelle_theme
+					);
+				}
+			}
+			
+			// On va chercher les types
+			$query = "select id_type, libelle_type from demandes_type";
+			$result = pmb_mysql_query($query, $dbh);
+			if ($result && pmb_mysql_num_rows($result)) {
+				while ($theme = pmb_mysql_fetch_object($result)) {
+					$this->demands_datas['types'][] = array(
+							'id' => $theme->id_type,
+							'label' => $theme->libelle_type
+					);
+				}
+			}
+		}
+		return $this->demands_datas;
+	}
+	
+	/**
+	 * 
+	 */
+	public function is_cart_allow() {
+		if (!isset($this->cart_allow)) {
+			global $opac_cart_allow, $opac_cart_only_for_subscriber;
+			
+			$this->cart_allow = ($opac_cart_allow && (!$opac_cart_only_for_subscriber || ($opac_cart_only_for_subscriber && $_SESSION["user_code"])));
+		}
+		return $this->cart_allow;
 	}
 }

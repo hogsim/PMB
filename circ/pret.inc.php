@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pret.inc.php,v 1.114 2015-06-26 13:15:12 dgoron Exp $
+// $Id: pret.inc.php,v 1.114.2.1 2015-08-24 13:25:36 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,6 +15,7 @@ require_once("$class_path/expl.class.php");
 require_once("$class_path/transfert.class.php");
 require_once($class_path."/ajax_pret.class.php");
 require_once("$class_path/groupexpl.class.php");
+require_once("$class_path/resa_planning.class.php");
 require_once("$class_path/pret_parametres_perso.class.php");
 
 // define pour différent flags de situation document
@@ -840,10 +841,10 @@ function check_document($id_expl, $id_empr) {
 	// cas des prévisions
 	if($pmb_resa_planning) {
 
-		//On compte les prévisions et validées sur ce document à des dates ultérieures
+		//On compte les prévisions validées sur ce document à des dates ultérieures
 		$q = "select count(*) from resa_planning ";
 		$q.= "where resa_idnotice=".$expl->notice." and resa_idbulletin=".$expl->bulletin." ";
-		$q.= "and resa_validee=1 ";
+		$q.= "and resa_validee=1 and resa_remaining_qty!=0 ";
 		// En fonction de la localisation de l'exemplaire courant si les prévisions sont localisées
 		if ($pmb_location_resa_planning) {
 			$q.= "and resa_loc_retrait in (0,$expl->expl_location) ";
@@ -904,20 +905,33 @@ function add_pret($id_empr, $id_expl, $cb_doc,$resarc_id=0,$short_loan=0) {
 	global $pmb_pret_date_retour_adhesion_depassee;
 	global $pmb_short_loan_management;
 	global $pmb_transferts_actif;
+	global $pmb_resa_planning;
+	
+	$resarc_id+=0;
+	
 	/* on prépare la date de début*/
-
 	$pret_date = today();
 
-	/* on cherche la durée du prêt */
-	if ($pmb_short_loan_management && $short_loan) {
-		if($pmb_quotas_avances) {
-			//Initialisation de la classe
-			$qt=new quota("SHORT_LOAN_TIME_QUOTA");
-			$struct["READER"]=$id_empr;
-			$struct["EXPL"]=$id_expl;
-			$duree_pret=$qt->get_quota_value($struct);
-			if ($duree_pret==-1) $duree_pret=0;
-		} else {
+	$duree_pret=0;
+	// calcul de la duree du pret si la date de fin est definie par les previsions
+	if($resarc_id && $pmb_resa_planning==1) {
+		$q = 'select datediff(resarc_fin,"'.$pret_date.'") from resa_archive where resarc_id ='.$resarc_id.' and resarc_resa_planning_id_resa!=0 limit 1';
+		$r = pmb_mysql_query($q, $dbh);
+		if(pmb_mysql_num_rows($r)) {
+			$duree_pret = pmb_mysql_result($r,0,0);
+		}
+	}
+	if(!$duree_pret) {	
+		/* on cherche la durée du prêt */
+		if ($pmb_short_loan_management && $short_loan) {
+			if($pmb_quotas_avances) {
+				//Initialisation de la classe
+				$qt=new quota("SHORT_LOAN_TIME_QUOTA");
+				$struct["READER"]=$id_empr;
+				$struct["EXPL"]=$id_expl;
+				$duree_pret=$qt->get_quota_value($struct);
+				if ($duree_pret==-1) $duree_pret=0;
+			} else {
 				$query = "SELECT short_loan_duration as duree_pret";
 				$query.= " FROM exemplaires, docs_type";
 				$query.= " WHERE expl_id='".$id_expl;
@@ -925,27 +939,30 @@ function add_pret($id_empr, $id_expl, $cb_doc,$resarc_id=0,$short_loan=0) {
 				$result = @ pmb_mysql_query($query, $dbh) or die("can't SELECT exemplaires ".$query);
 				$expl_properties = pmb_mysql_fetch_object($result);
 				$duree_pret = $expl_properties -> duree_pret;
-		}
-	} else {
-		if($pmb_quotas_avances) {
-			//Initialisation de la classe
-			$qt=new quota("LEND_TIME_QUOTA");
-			$struct["READER"]=$id_empr;
-			$struct["EXPL"]=$id_expl;
-			$duree_pret=$qt->get_quota_value($struct);
-			if ($duree_pret==-1) $duree_pret=0;
+			}
 		} else {
-				$query = "SELECT duree_pret";
-				$query.= " FROM exemplaires, docs_type";
-				$query.= " WHERE expl_id='".$id_expl;
-				$query.= "' and idtyp_doc=expl_typdoc LIMIT 1";
-				$result = @ pmb_mysql_query($query, $dbh) or die("can't SELECT exemplaires ".$query);
-				$expl_properties = pmb_mysql_fetch_object($result);
-				$duree_pret = $expl_properties -> duree_pret;
+			if($pmb_quotas_avances) {
+				//Initialisation de la classe
+				$qt=new quota("LEND_TIME_QUOTA");
+				$struct["READER"]=$id_empr;
+				$struct["EXPL"]=$id_expl;
+				$duree_pret=$qt->get_quota_value($struct);
+				if ($duree_pret==-1) $duree_pret=0;
+			} else {
+					$query = "SELECT duree_pret";
+					$query.= " FROM exemplaires, docs_type";
+					$query.= " WHERE expl_id='".$id_expl;
+					$query.= "' and idtyp_doc=expl_typdoc LIMIT 1";
+					$result = @ pmb_mysql_query($query, $dbh) or die("can't SELECT exemplaires ".$query);
+					$expl_properties = pmb_mysql_fetch_object($result);
+					$duree_pret = $expl_properties -> duree_pret;
+			}
 		}
 	}
 	// calculer la date de retour prévue, tenir compte de la date de fin d'adhésion
-	if (!$duree_pret) $duree_pret="0" ;
+	if (!$duree_pret) {
+		$duree_pret='0' ;
+	}
 	if($pmb_pret_date_retour_adhesion_depassee) {
 		$rqt_date = "select empr_date_expiration,if(empr_date_expiration>date_add('".$pret_date."', INTERVAL '$duree_pret' DAY),0,1) as pret_depasse_adhes, date_add('".$pret_date."', INTERVAL '$duree_pret' DAY) as date_retour from empr where id_empr='".$id_empr."'";
 	} else {
@@ -1129,15 +1146,18 @@ function del_resa($id_empr, $id_notice, $id_bulletin, $cb_encours_de_pret) {
 		$id_notice = 0;
 	if (!$id_bulletin)
 		$id_bulletin = 0;
-	$rqt = "select resa_cb, id_resa from resa where resa_idnotice='".$id_notice."' and resa_idbulletin='".$id_bulletin."'  and resa_idempr='".$id_empr."' ";
+	$rqt = "select resa_cb, id_resa, resa_planning_id_resa from resa where resa_idnotice='".$id_notice."' and resa_idbulletin='".$id_bulletin."'  and resa_idempr='".$id_empr."' ";
 	$res = pmb_mysql_query($rqt, $dbh);
 	$obj = pmb_mysql_fetch_object($res);
 	$cb_recup = $obj->resa_cb;
 	$id_resa = $obj->id_resa;
 
-	// suppression
+	// suppression resa
 	$rqt = "delete from resa where id_resa='".$id_resa."' ";
 	$res = pmb_mysql_query($rqt, $dbh);
+
+	// suppression de la prévision associée à la resa
+	resa_planning::delete($obj->resa_planning_id_resa);
 
 	// si on delete une resa à partir d'un prêt, on invalide la résa qui était validée avec le cb, mais on ne change pas les dates, ça sera fait par affect_cb
 	$rqt_invalide_resa = "update resa set resa_cb='' where resa_cb='".$cb_encours_de_pret."' " ;

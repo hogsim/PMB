@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: aligastore_protocol.class.php,v 1.4 2009-02-05 10:06:40 kantin Exp $
+// $Id: aligastore_protocol.class.php,v 1.4.18.1 2015-09-11 08:53:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -471,7 +471,7 @@ class aligastore_get_data {
 		
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		
-		configurer_proxy_curl($ch);	
+		configurer_proxy_curl($ch,$url);	
 
 		$n_try=0;
 		$data =  $cexec=curl_exec($ch);

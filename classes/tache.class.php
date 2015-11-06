@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tache.class.php,v 1.9 2015-04-03 11:16:20 jpermanne Exp $
+// $Id: tache.class.php,v 1.9.4.2 2015-09-24 09:12:21 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -327,7 +327,7 @@ class tache {
 			$requete="insert into planificateur (num_type_tache, libelle_tache, desc_tache, num_user, param, statut, rep_upload, path_upload, perio_heure, 
 				perio_minute, perio_jour_mois, perio_jour, perio_mois) 
 				values(".$type_task_id.",'".addslashes($task_name)."','".addslashes($task_desc)."',
-				'".$form_users."','".$params."','".$task_active."','".$id_rep."','".$path_name."','".$task_perio_heure."','".$task_perio_minute."',
+				'".$form_users."','".addslashes($params)."','".$task_active."','".$id_rep."','".$path_name."','".$task_perio_heure."','".$task_perio_minute."',
 				'".htmlentities($task_perio_quotidien, ENT_QUOTES,$charset)."','".htmlentities($task_perio_hebdo, ENT_QUOTES,$charset)."','".htmlentities($task_perio_mensuel, ENT_QUOTES,$charset)."')";
 			pmb_mysql_query($requete, $dbh);
 			$planificateur_id = pmb_mysql_insert_id();
@@ -338,7 +338,7 @@ class tache {
 				libelle_tache = '".addslashes($task_name)."',
 				desc_tache = '".addslashes($task_desc)."',
 				num_user = '".$form_users."',
-				param = '".$params."',
+				param = '".addslashes($params)."',
 				statut = '".$task_active."',
 				rep_upload = '".$id_rep."',
 				path_upload = '".$path_name."',
@@ -785,7 +785,11 @@ class taches {
 	
 	function taches() {
 		global $base_path;
-		$filename = $base_path."/admin/planificateur/catalog.xml";
+		if (file_exists($base_path."/admin/planificateur/catalog_subst.xml")) {
+			$filename = $base_path."/admin/planificateur/catalog_subst.xml";
+		} else {
+			$filename = $base_path."/admin/planificateur/catalog.xml";
+		}
 		$this->parse_catalog($filename);
 	}
 	

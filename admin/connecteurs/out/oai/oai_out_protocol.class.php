@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: oai_out_protocol.class.php,v 1.13 2015-06-19 14:03:50 apetithomme Exp $
+// $Id: oai_out_protocol.class.php,v 1.13.2.1 2015-09-15 14:32:56 apetithomme Exp $
 //There be komodo dragons
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
@@ -912,7 +912,7 @@ class oai_out_server {
 					$deletion_transient_duration = $this->oai_source_object->deletion_management_transient_duration;
 					break;
 				case 2 :
-					$deletion = "permanent";
+					$deletion = "persistent";
 					break;
 				default :
 					$deletion = "none";

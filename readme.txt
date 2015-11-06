@@ -3,11 +3,9 @@ Ceci est le fichier README.TXT pour la distribution courante de PMB
 
 PMB est diffusé suivant les termes de la Licence Publique Générale GNU (GPL) version 2.0.
 
-Pour toute question ou commentaire sur cette application, vous pouvez contacter les développeurs du projet:
+Pour toute question ou commentaire sur cette application, vous pouvez contacter les développeurs et la communauté du projet:
 
-Eric Robert (eric@plumereau.com)
-Florent TETART (florent@plumereau.com)
-Gautier MICHELIN (gautier.michelin@tiscali.fr)
+http://www.sigb.net
 
 ATTENTION :
 

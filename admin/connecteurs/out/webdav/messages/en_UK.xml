@@ -7,7 +7,7 @@
 		© 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs
 		(voir www.sigb.net)
 		****************************************************************************************
-		$Id: en_UK.xml,v 1.1 2015-06-15 12:55:35 pmbs Exp $
+		$Id: en_UK.xml,v 1.1.2.1 2015-10-13 08:01:50 ngantier Exp $
 	-->
 
 <XMLlist>
@@ -29,4 +29,5 @@
 	<entry code="webdav_base_uri">Base URI of the webdav server</entry>
 	<entry code="webdav_allow_web">Allow the web interface</entry>
 	<entry code="webdav_default_docnum_statut">Default status of the digital document at its creation</entry>
+	<entry code="webdav_metasMapper_class">Choix de la classe pour le traitement des metas données</entry>
 </XMLlist>

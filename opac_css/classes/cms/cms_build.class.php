@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_build.class.php,v 1.65 2015-06-18 12:59:39 arenou Exp $
+// $Id: cms_build.class.php,v 1.65.2.2 2015-09-30 13:43:13 vtouchard Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -271,7 +271,7 @@ class cms_build{
 					$result = pmb_mysql_query($query);
 					$row = pmb_mysql_fetch_object($result);
 					
-					$html ="<span id='".$cadre->build_obj."' type='cms_module_hidden' cadre_style='".$cadre->build_css."'><div id='".$cadre->build_obj."_conteneur' class='cms_module_hidden' style='display:none'>".$row->cadre_name."<div style='".$cadre->build_css."'></div></div></pan>";
+					$html ="<span id='".$cadre->build_obj."' class='cmsNoStyles' type='cms_module_hidden' cadre_style='".$cadre->build_css."'><div id='".$cadre->build_obj."_conteneur' class='cms_module_hidden' style='display:none'>".$row->cadre_name."<div style='".$cadre->build_css."'></div></div></pan>";
 					$tmp_dom = new domDocument();
 					if($charset == "utf-8"){
 						@$tmp_dom->loadHTML("<?xml version='1.0' encoding='$charset'>".$html);
@@ -336,7 +336,7 @@ class cms_build{
 		}else{
 			if($cadre->build_type == "cadre" && $cadre->empty == 1 && $_SESSION["cms_build_activate"]){
 				
-				$html ="<span id='".$cadre->build_obj."' type='cms_module_hidden' cadre_style='".$cadre->build_css."'><div id='".$cadre->build_obj."_conteneur' class='cms_module_hidden' style='display:none'>".$cadre->build_obj."<div style='".$cadre->build_css."'></div></div></pan>";
+				$html ="<span id='".$cadre->build_obj."' class='cmsNoStyles' type='cms_module_hidden' cadre_style='".$cadre->build_css."'><div id='".$cadre->build_obj."_conteneur' class='cms_module_hidden' style='display:none'>".$cadre->build_obj."<div style='".$cadre->build_css."'></div></div></pan>";
 				$tmp_dom = new domDocument();
 				if($charset == "utf-8"){
 					@$tmp_dom->loadHTML("<?xml version='1.0' encoding='$charset'>".$html);
@@ -392,9 +392,9 @@ class cms_build{
 						$this->cadre_no_in_page[]=$cadres[$i];	
 					}
 				}
-			}else if($cadres[$i]->build_fixed || $this->dom->getElementById($cadres[$i]->build_obj)){
+			}else if($this->dom->getElementById($cadres[$i]->build_obj)){
 				$cadres_dom[] = $cadres[$i];
-			}else if(!$this->dom->getElementById($cadres[$i]->build_obj)){
+			}else{
 				$cadres[$i]->empty=1;
 				$cadres_dom[] = $cadres[$i];
 				$this->cadre_no_in_page[]=$cadres[$i];
