@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export_param.class.php,v 1.6.6.1 2014-06-02 08:46:28 dgoron Exp $
+// $Id: export_param.class.php,v 1.8 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -296,7 +296,7 @@ class export_param {
 		}
 		if (count($requetes)) {
 			foreach($requetes as $rqt){
-				mysql_query($rqt,$dbh);
+				pmb_mysql_query($rqt,$dbh);
 			}
 		}
 		return;

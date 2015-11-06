@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bul_delete.inc.php,v 1.19 2012-11-06 08:45:42 ngantier Exp $
+// $Id: bul_delete.inc.php,v 1.20 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -20,8 +20,8 @@ if ($bul_id && $gestion_acces_active==1 && $gestion_acces_user_notice==1) {
 	$dom_1= $ac->setDomain(1);
 	$acces_j = $dom_1->getJoin($PMBuserid,8,'bulletin_notice');
 	$q = "select count(1) from bulletins $acces_j where bulletin_id = $bul_id ";
-	$r = mysql_query($q, $dbh);
-	if(mysql_result($r,0,0)==0) {
+	$r = pmb_mysql_query($q, $dbh);
+	if(pmb_mysql_result($r,0,0)==0) {
 		$acces_m=0;
 	}
 }
@@ -31,16 +31,16 @@ if ($acces_m==0) {
 } else {
 	print "<div class=\"row\"><div class=\"msg-perio\">".$msg['catalog_notices_suppression']."</div></div>";
 	
-	$sql_circ = mysql_query("select 1 from serialcirc_expl,exemplaires,bulletins where num_serialcirc_expl_id =expl_id and expl_bulletin=bulletin_id and bulletin_id=$bul_id ") ;
-	if (mysql_num_rows($sql_circ)) {
+	$sql_circ = pmb_mysql_query("select 1 from serialcirc_expl,exemplaires,bulletins where num_serialcirc_expl_id =expl_id and expl_bulletin=bulletin_id and bulletin_id=$bul_id ") ;
+	if (pmb_mysql_num_rows($sql_circ)) {
 		// gestion erreur: circulation en cours
 		error_message($msg[416], $msg["serialcirc_bull_no_del"], 1, "catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=$bul_id");		
 	} else{
 		
 		$requete = "select 1 from pret, exemplaires, bulletins where bulletin_id='$bul_id' ";
 		$requete .="and pret_idexpl=expl_id and expl_bulletin=bulletin_id ";
-		$result=@mysql_query($requete);
-		if (mysql_num_rows($result)) {
+		$result=@pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($result)) {
 			// gestion erreur pret en cours
 			error_message($msg[416], $msg[impossible_bull_del_pret], 1, "catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=$bul_id");
 		

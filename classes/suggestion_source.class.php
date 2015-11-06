@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestion_source.class.php,v 1.1 2009-07-31 14:37:10 kantin Exp $
+// $Id: suggestion_source.class.php,v 1.2 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -25,8 +25,8 @@ class suggestion_source{
 			$this->libelle_source ='';
 		} else {
 			$req="select libelle_source from suggestions_source where id_source='".$this->id_source."'";
-			$res = mysql_query($req,$dbh);
-			$src = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			$src = pmb_mysql_fetch_object($res);
 			$this->libelle_source = $src->libelle_source;
 		}
 	}
@@ -99,8 +99,8 @@ class suggestion_source{
 		</tr>";
 		$tab_src =array();
 		$req = "select * from suggestions_source order by libelle_source";
-		$res=mysql_query($req,$dbh);
-		while ($row = mysql_fetch_object($res)){
+		$res=pmb_mysql_query($req,$dbh);
+		while ($row = pmb_mysql_fetch_object($res)){
 			$tab_src[$row->id_source] = $row->libelle_source;
 		}
 		
@@ -137,7 +137,7 @@ class suggestion_source{
 		} else {
 			$req="update suggestions_source set libelle_source='".$libelle."' where id_source='".$this->id_source."'";
 		}		
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	}
 	
 	//Suppression d'une source
@@ -150,7 +150,7 @@ class suggestion_source{
 			$error=true;
 		} else {		
 			$req="delete from suggestions_source where id_source='".$this->id_source."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 		
 		return $error;
@@ -162,8 +162,8 @@ class suggestion_source{
 		global $dbh;
 		
 		$q = "select count(1) from suggestions where sugg_source = '".$this->id_source."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 }

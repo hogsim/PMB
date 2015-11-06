@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: editions_state.tpl.php,v 1.2.6.1 2015-01-08 08:10:25 jpermanne Exp $
+// $Id: editions_state.tpl.php,v 1.3 2015-01-08 08:14:00 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

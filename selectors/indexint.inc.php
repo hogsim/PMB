@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: indexint.inc.php,v 1.36 2013-12-27 09:27:30 dgoron Exp $
+// $Id: indexint.inc.php,v 1.37 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,14 +19,14 @@ if (!$id_pclass && !$num_pclass && $thesaurus_classement_defaut){
 	
 if ($thesaurus_classement_mode_pmb) { //classement indexation décimale autorisé en parametrage
 	$q = "select id_pclass,name_pclass from pclassement where typedoc like '%$typdoc%' order by name_pclass";
-	$r = mysql_query($q, $dbh);	
+	$r = pmb_mysql_query($q, $dbh);	
 	
 	$toprint_typdocfield = "<select id='id_pclass' name='id_pclass' ";
 	$toprint_typdocfield.= "onchange = \"document.location = '".$base_url."&id_pclass='+document.getElementById('id_pclass').value; \">" ;
 	$pclass_url="&typdoc=$typdoc";
 	$nb=0;
 
-	while ($row = mysql_fetch_object($r)) {
+	while ($row = pmb_mysql_fetch_object($r)) {
 		$toprint_typdocfield .= "<option value='$row->id_pclass'";
 		//Si $id_pclass pas défini, prendre l'id par défaut
 		if ($id_pclass==$row->id_pclass) {
@@ -154,8 +154,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 				$requete="select count(distinct indexint_id) from indexint,pclassement where indexint_name like '".str_replace("*","%",$user_input)."' and indexint_id!='$no_display' $pclass_and_req";
 			}
 		}
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = @mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	} else $nbr_lignes=1;
 	
 	if(!$page) $page=1;
@@ -175,8 +175,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 				}
 			}
 		} else $requete="select * from indexint,pclassement where indexint_id='".$id."' $pclass_and_req";
-		$res = @mysql_query($requete, $dbh);
-		while(($indexint=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($indexint=pmb_mysql_fetch_object($res))) {
 			if ($indexint->indexint_comment) $entry = $indexint->indexint_name." - ".$indexint->indexint_comment;
 			else $entry = $indexint->indexint_name ;
 			if ($thesaurus_classement_mode_pmb != 0) { //classement indexation décimale autorisé en parametrage
@@ -187,7 +187,7 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 				$entry</a>");
 			print "<br />";
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);

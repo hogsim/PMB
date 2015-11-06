@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: autoindex_term.class.php,v 1.4 2014-02-27 17:12:40 dbellamy Exp $
+// $Id: autoindex_term.class.php,v 1.6 2015-04-18 13:01:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -85,9 +85,9 @@ class autoindex_term {
 		
 		//Recherche des termes voir_aussi vers ce terme
 		$q = "select num_noeud_orig from voir_aussi where num_noeud_dest=".$this->id;
-		$r = mysql_query($q, $dbh);
-		if(mysql_num_rows) {
-			while($row = mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($q, $dbh);
+		if(pmb_mysql_num_rows($r)) {
+			while($row = pmb_mysql_fetch_object($r)) {
 				if($row->num_noeud_orig) {
 					$this->see_also[]=$row->num_noeud_orig;
 				}

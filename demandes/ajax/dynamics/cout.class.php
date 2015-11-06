@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cout.class.php,v 1.2 2010-02-23 16:27:22 kantin Exp $
+// $Id: cout.class.php,v 1.3 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -39,8 +39,8 @@ class cout{
 		global $msg, $charset,$pmb_gestion_devise,$dbh;
 		
 		$rqt = "select cout from demandes_actions where id_action='".$this->idobjet."'";
-		$res = mysql_query($rqt,$dbh);
-		$act = mysql_fetch_object($res);
+		$res = pmb_mysql_query($rqt,$dbh);
+		$act = pmb_mysql_fetch_object($res);
 		
 		$display ="";
 		$submit = "<input type='submit' class='bouton' name='soumission' id='soumission' value='".$msg['demandes_valid_progression']."'/>";
@@ -60,7 +60,7 @@ class cout{
 		global $dbh, $cout, $pmb_gestion_devise;		
 		
 		$req = "update demandes_actions set cout='".$cout."' where id_action='".$this->idobjet."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		
 		switch($this->champ_sortie){
 			default :

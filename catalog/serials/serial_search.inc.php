@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serial_search.inc.php,v 1.27 2013-12-11 15:49:46 dgoron Exp $
+// $Id: serial_search.inc.php,v 1.28 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -78,8 +78,8 @@ if ($issn_query) {
 $where.="niveau_biblio='s' AND niveau_hierar='1'";
 
 $requete_count = "select count(distinct notice_id) from notices $acces_j where $where ";
-$count_query = mysql_query($requete_count, $dbh); 
-$nbr_lignes = mysql_result ($count_query, 0, 0);
+$count_query = pmb_mysql_query($requete_count, $dbh); 
+$nbr_lignes = pmb_mysql_result($count_query, 0, 0);
 
 
 print $message_search;
@@ -97,7 +97,7 @@ if (!$nbr_lignes) {
 	$requete.= "WHERE $where ";
 	$requete.= "group by notice_id ORDER BY pert desc,index_sew LIMIT $debut,$nb_per_page_a_search";
 	
-	$myQuery=mysql_query($requete, $dbh);
+	$myQuery=pmb_mysql_query($requete, $dbh);
 	
 	print "<div class='row'>";
 	$recherche_ajax_mode=0;
@@ -108,7 +108,7 @@ if (!$nbr_lignes) {
 		print "<b>${msg[233]}</b>&nbsp;".htmlentities(stripslashes($user_query),ENT_QUOTES,$charset)." => ".$nbr_lignes." ".$msg["search_resultat"];
 	}
 	
-	while($perio=mysql_fetch_object($myQuery)) {
+	while($perio=pmb_mysql_fetch_object($myQuery)) {
 		if($nb++>5)$recherche_ajax_mode=1;
 		$edPerio = "";
    		if($perio->ed1_id) {
@@ -134,8 +134,8 @@ if (!$nbr_lignes) {
 		// la recherche ne renvoit qu'un résultat -> on y va direct
 		
 		$requete = "SELECT notice_id FROM notices $acces_j WHERE $where limit 1";
-		$myQuery = mysql_query($requete, $dbh);
+		$myQuery = pmb_mysql_query($requete, $dbh);
 		       		
-		$perio=mysql_fetch_object($myQuery);
+		$perio=pmb_mysql_fetch_object($myQuery);
 		show_serial_info($perio->notice_id, 0, 0);
 }

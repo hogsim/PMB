@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: zbib.inc.php,v 1.11 2009-05-04 14:50:05 kantin Exp $
+// $Id: zbib.inc.php,v 1.12 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -49,13 +49,13 @@ function show_zbib($dbh)
 
 	// affichage du tableau des z_bib
 	$requete = "SELECT bib_id, bib_nom, base, search_type, count(*) as nb_attr FROM z_bib left outer join z_attr on bib_id=attr_bib_id group by bib_id, bib_nom, base, search_type ORDER BY bib_nom, base, search_type ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -108,8 +108,8 @@ switch($action) {
 	case 'update':
 	// no duplication
 	$requete = " SELECT count(1) FROM z_bib WHERE (bib_nom='$form_nom' AND bib_id!='$id' )  LIMIT 1 ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_result($res, 0, 0);
 	if ($nbr > 0) {
 			error_form_message($form_nom.$msg["docs_label_already_used"]);
 	} else {
@@ -120,19 +120,19 @@ switch($action) {
 					search_type='$form_search_type', url='$form_url', port='$form_port', 
 					format='$form_format', auth_user='$form_user', 
 					auth_pass='$form_password', sutrs_lang='$form_sutrs', fichier_func='$form_zfunc' WHERE bib_id=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				$requete = "INSERT INTO z_bib (bib_nom, search_type, url, port, base, format, auth_user, auth_pass, sutrs_lang, fichier_func) VALUES ('$form_nom', '$form_search_type', '$form_url', '$form_port', '$form_base', '$form_format', '$form_user', '$form_password', '$form_sutrs', '$form_zfunc') ";
-				$res = mysql_query($requete, $dbh);
-				$id_insert=mysql_insert_id();
+				$res = pmb_mysql_query($requete, $dbh);
+				$id_insert=pmb_mysql_insert_id();
 				$requete = "INSERT INTO z_attr (attr_bib_id,  attr_libelle, attr_attr) VALUES ('$id_insert', 'sujet', '21') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete = "INSERT INTO z_attr (attr_bib_id,  attr_libelle, attr_attr) VALUES ('$id_insert', 'auteur', '1003') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete = "INSERT INTO z_attr (attr_bib_id,  attr_libelle, attr_attr) VALUES ('$id_insert', 'isbn', '7') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete = "INSERT INTO z_attr (attr_bib_id,  attr_libelle, attr_attr) VALUES ('$id_insert', 'titre', '4') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				}
 			}
 		}
@@ -149,9 +149,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT bib_id, bib_nom, base, search_type, url, port, format, auth_user, auth_pass, sutrs_lang, fichier_func FROM z_bib WHERE bib_id=$id ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				zbib_form($row->bib_nom, $row->base, $row->search_type, $row->url, $row->port, $row->format, $row->auth_user, $row->auth_pass, $row->sutrs_lang, $id, $row->fichier_func);
 			} else {
 				show_zbib($dbh);
@@ -163,9 +163,9 @@ switch($action) {
 	case 'del':
 		if($id) {
 			$requete = "DELETE FROM z_bib WHERE bib_id=$id ";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			$requete = "DELETE FROM z_attr WHERE attr_bib_id=$id ";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			show_zbib($dbh);
 			} else show_zbib($dbh);
 		break;

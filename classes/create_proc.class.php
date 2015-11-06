@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2005 Guillaume Boitel g.boitel@wanadoo.fr
 // +-------------------------------------------------+
-// $Id: create_proc.class.php,v 1.7 2009-05-16 11:22:56 dbellamy Exp $
+// $Id: create_proc.class.php,v 1.8 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -613,7 +613,7 @@ class create_proc {
 		// insertion de la procédure dans la base de données
 		$dbh = connection_mysql();
 		$req = "INSERT INTO procs (name, requete, comment, autorisations, parameters) VALUES ('".$this->nom_proc."', '".addslashes($requete)."', '".$this->comment."', '".implode(" ",$this->userautorisation)."', '".addslashes($param_var)."')";
-		$result = mysql_query($req, $dbh);
+		$result = pmb_mysql_query($req, $dbh);
 		
 		// on n'utilse pas le template prévu pour cette étape
 		$create_proc_form="
@@ -680,9 +680,9 @@ class create_proc {
 		// récupération des utilisateurs
 		$dbh = connection_mysql();
 		$requete_users = "SELECT userid, username FROM users order by username ";
-		$res_users = mysql_query($requete_users, $dbh);
+		$res_users = pmb_mysql_query($requete_users, $dbh);
 		$autorisation=array();
-		while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+		while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 			$autorisation[]=array(0,$all_userid,$all_username);
 			}
 		$autorisations_users="";

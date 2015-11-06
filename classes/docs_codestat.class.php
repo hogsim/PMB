@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: docs_codestat.class.php,v 1.7 2013-04-11 08:08:11 mbertin Exp $
+// $Id: docs_codestat.class.php,v 1.8 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -49,10 +49,10 @@ function getData() {
 	/* récupération des informations du code statistique */
 
 	$requete = 'SELECT * FROM docs_codestat WHERE idcode='.$this->id.' LIMIT 1;';
-	$result = @mysql_query($requete, $dbh);
-	if(!mysql_num_rows($result)) return;
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(!pmb_mysql_num_rows($result)) return;
 		
-	$data = mysql_fetch_object($result);
+	$data = pmb_mysql_fetch_object($result);
 	$this->id = $data->idcode;		
 	$this->libelle = $data->codestat_libelle;
 	$this->statisdoc_codage_import = $data->statisdoc_codage_import;
@@ -79,9 +79,9 @@ function import($data) {
 		}
 	// check sur les éléments du tableau
 	
-	$long_maxi = mysql_field_len(mysql_query("SELECT codestat_libelle FROM docs_codestat limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT codestat_libelle FROM docs_codestat limit 1"),0);
 	$data['codestat_libelle'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['codestat_libelle']))),0,$long_maxi));
-	$long_maxi = mysql_field_len(mysql_query("SELECT statisdoc_codage_import FROM docs_codestat limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT statisdoc_codage_import FROM docs_codestat limit 1"),0);
 	$data['statisdoc_codage_import'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['statisdoc_codage_import']))),0,$long_maxi));
 
 	if($data['statisdoc_owner']=="") $data['statisdoc_owner'] = 0;
@@ -96,9 +96,9 @@ function import($data) {
 	
 	/* vérification que le code statistique existe */
 	$query = "SELECT idcode FROM docs_codestat WHERE statisdoc_codage_import='${key1}' and statisdoc_owner = '${key2}' LIMIT 1 ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't SELECT docs_codestat ".$query);
-	$docs_codestat  = mysql_fetch_object($result);
+	$docs_codestat  = pmb_mysql_fetch_object($result);
 
 	/* le code statistique de doc existe, on retourne l'ID */
 	if($docs_codestat->idcode) return $docs_codestat->idcode;
@@ -109,10 +109,10 @@ function import($data) {
 	$query .= "codestat_libelle='".$key0."', ";
 	$query .= "statisdoc_codage_import='".$key1."', ";
 	$query .= "statisdoc_owner='".$key2."' ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't INSERT into docs_codestat ".$query);
 
-	return mysql_insert_id($dbh);
+	return pmb_mysql_insert_id($dbh);
 
 	} /* fin méthode import */
 
@@ -132,9 +132,9 @@ static function gen_combo_box ( $selected ) {
 	$option_premier_code="";
 	$option_premier_info="";
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete) or die (mysql_error()." ".$requete);
+	$resultat_liste=pmb_mysql_query($requete) or die (pmb_mysql_error()." ".$requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\">\n" ;
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 	} else {
@@ -145,11 +145,11 @@ static function gen_combo_box ( $selected ) {
 		}
 		$i=0;
 		while ($i<$nb_liste) {
-			$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-			if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+			$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+			if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 				$gen_liste_str.="selected" ;
 				}
-			$gen_liste_str.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
+			$gen_liste_str.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
 			$i++;
 		}
 	}

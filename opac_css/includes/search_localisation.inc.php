@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_localisation.inc.php,v 1.4 2013-12-19 09:25:20 dgoron Exp $
+// $Id: search_localisation.inc.php,v 1.5 2015-04-03 11:16:16 jpermanne Exp $
 
 // Permet de positioner par défaut le sélecteur de localisation en recherche sur la localisation du lecteur
 // s'il est connecté. Paramétrer opac_search_other_function
@@ -18,9 +18,9 @@ function search_other_function_filters() {
 	$r.="<select name='recherche_loc'>";
 	$r.="<option value='0'>".htmlentities($msg["search_loc_all_site"],ENT_QUOTES,$charset)."</option>";
 	$requete="select location_libelle,idlocation from docs_location where location_visible_opac=1";
-	$result = mysql_query($requete, $dbh);
-	if (mysql_numrows($result)){
-		while (($loc = mysql_fetch_object($result))) {
+	$result = pmb_mysql_query($requete, $dbh);
+	if (pmb_mysql_num_rows($result)){
+		while (($loc = pmb_mysql_fetch_object($result))) {
 			$selected="";
 			if ($recherche_loc==$loc->idlocation) {$selected="selected";}
 			$r.= "<option value='$loc->idlocation' $selected>$loc->location_libelle</option>";
@@ -66,8 +66,8 @@ function search_other_function_human_query($n) {
 	$recherche_loc=$_SESSION["recherche_loc".$n];
 	if ($recherche_loc) {
 		$requete="select location_libelle from docs_location where idlocation='".$recherche_loc."' limit 1";
-		$res=mysql_query($requete);
-		$r=$msg["search_history_localisation_title"].@mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete);
+		$r=$msg["search_history_localisation_title"].@pmb_mysql_result($res,0,0);
 	}
 	return $r;
 }

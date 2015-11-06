@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: recall.php,v 1.11 2013-11-04 09:18:01 dgoron Exp $
+// $Id: recall.php,v 1.12 2014-12-09 13:40:35 ngantier Exp $
 
 header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
 header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
@@ -12,6 +12,7 @@ session_name("pmb".$_COOKIE['PhpMyBibli-SESSID']);
 session_start();
 $_SESSION["last_required"]=$_GET["t"];
 if (!isset($current) || $current!==false) $_SESSION["CURRENT"]=$_GET["current"];
+$_SESSION["MAP_CURRENT"]=$_SESSION["CURRENT"];
 if ($_GET["tri"]) $_SESSION["tri"]=$_GET["tri"]; else $_SESSION["tri"]="";
 //Appel du mode recherche externe
 if (isset($_GET["external"]) && $_GET["external"]==1) {

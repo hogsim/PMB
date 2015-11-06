@@ -2,12 +2,13 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rec_history.inc.php,v 1.32.6.1 2014-10-31 08:34:48 mbertin Exp $
+// $Id: rec_history.inc.php,v 1.37 2015-04-16 16:09:56 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 global $base_path,$include_path,$class_path,$msg;
 require_once($base_path."/classes/search.class.php");
+require_once($base_path."/classes/authperso.class.php");
 
 //Enregistrement de l'historique en fonction du type de recherche
 function rec_history() {
@@ -17,6 +18,7 @@ function rec_history() {
 	switch ($search_type) {
 		case "simple_search":
 			global $user_query;
+			global $map_emprises_query;
 			global $look_TITLE,
 	       		$look_AUTHOR,
 	      	 	$look_PUBLISHER,
@@ -29,12 +31,14 @@ function rec_history() {
 	       		$look_ABSTRACT,
 	       		$look_ALL,
 	       		$look_DOCNUM,
-	       		$look_CONTENT;
+	       		$look_CONTENT,
+				$look_CONCEPT;
 	       	global $typdoc,$l_typdoc;
 	     
 			$_SESSION["nb_queries"]=$_SESSION["nb_queries"]+1;
 			$n=$_SESSION["nb_queries"];
 			$_SESSION["user_query".$n]=$user_query;
+			$_SESSION["map_emprises_query".$n]=$map_emprises_query;
 			$_SESSION["typdoc".$n]=$typdoc;
 			$_SESSION["look_TITLE".$n]=$look_TITLE;
 	       	$_SESSION["look_AUTHOR".$n]=$look_AUTHOR;
@@ -48,10 +52,14 @@ function rec_history() {
 	       	$_SESSION["look_ABSTRACT".$n]=$look_ABSTRACT;
 	       	$_SESSION["look_CONTENT".$n]=$look_CONTENT;
 	       	$_SESSION["look_DOCNUM".$n]=$look_DOCNUM;
+	       	$_SESSION["look_CONCEPT".$n]=$look_CONCEPT;
 	       	$_SESSION["look_ALL".$n]=$look_ALL;
 	       	$_SESSION["search_type".$n]=$search_type;
 	       	$_SESSION["l_typdoc".$n]=$l_typdoc;
 	       	$_SESSION["level1".$n]=$_SESSION["level1"];
+	       	
+	       	$authpersos=new authpersos();
+	       	$authpersos->rec_history($n);
 	       	if ($opac_search_other_function) search_other_function_rec_history($n);
 	       	
 			break;
@@ -108,6 +116,7 @@ function get_history($n) {
 	switch ($search_type) {
 		case "simple_search":
 			global $user_query;
+			global $map_emprises_query;
 			global $look_TITLE,
 	       		$look_AUTHOR,
 	      	 	$look_PUBLISHER,
@@ -120,10 +129,12 @@ function get_history($n) {
 	       		$look_ABSTRACT,
 	       		$look_DOCNUM,
 	       		$look_ALL,
-	       		$look_CONTENT;
+	       		$look_CONTENT,
+				$look_CONCEPT;
 	       	global $typdoc,$l_typdoc;
 	       	
 			$user_query=$_SESSION["user_query".$n];
+			$map_emprises_query=$_SESSION["map_emprises_query".$n];
 			$typdoc=$_SESSION["typdoc".$n];
 			$look_TITLE=$_SESSION["look_TITLE".$n];
 	       	$look_AUTHOR=$_SESSION["look_AUTHOR".$n];
@@ -137,9 +148,14 @@ function get_history($n) {
 	       	$look_ABSTRACT=$_SESSION["look_ABSTRACT".$n];
 	       	$look_ALL=$_SESSION["look_ALL".$n];
 	       	$look_DOCNUM=$_SESSION["look_DOCNUM".$n];
-	       	$look_CONTENT=$_SESSION["look_CONTENT".$n];			
+	       	$look_CONTENT=$_SESSION["look_CONTENT".$n];
+	       	$look_CONCEPT=$_SESSION["look_CONCEPT".$n];
 	       	$l_typdoc=$_SESSION["l_typdoc".$n];
 	       	$_SESSION["level1"]=$_SESSION["level1".$n];
+	       	
+	       	$authpersos=new authpersos();
+	       	$authpersos->get_history($n);
+	       	
 	       	if ($opac_search_other_function) search_other_function_get_history($n);
 	       	
 			break;
@@ -202,6 +218,10 @@ function get_human_query($n) {
 			if ($_SESSION["look_ALL".$n]) $r1.=$msg["tous"]." ".($opac_indexation_docnum_allfields ? "[".$msg[docnum_search_with]."] " : '');
 			if ($_SESSION["look_DOCNUM".$n]) $r1.=$msg["docnum"]." ";
 			if ($_SESSION["look_CONTENT".$n]) $r1.=" ";
+			if ($_SESSION["look_CONCEPT".$n]) $r1.=$msg["skos_concept"]." ";
+	       	$authpersos=new authpersos();
+	        $r1.=$authpersos->get_human_query($n);
+	       	
 			if ($_SESSION["typdoc".$n]) {
 				$doctype = new marc_list('doctype');
 				$r2=sprintf($msg["simple_search_history_doc_type"],$doctype->table[$_SESSION["typdoc".$n]]);
@@ -211,6 +231,11 @@ function get_human_query($n) {
 				if ($r3) $r2.=", ".$r3;
 			}
 			$r=sprintf($msg["simple_search_history"],stripslashes($_SESSION["user_query".$n]),$r1,$r2);
+			
+			if($_SESSION["map_emprises_query".$n]){
+				$r.=$msg["map_history_emprises"]. implode(" ", $_SESSION["map_emprises_query".$n]);
+			}
+				
 			break;
 		case "extended_search":
 			$r=sprintf($msg["extended_search_history"],stripslashes($_SESSION["human_query".$n]));
@@ -251,68 +276,83 @@ function get_human_query_level_two($n) {
 			case 'categ_see':
 				$categ_id=$_SESSION["notice_view".$n]["search_id"];
 				$requete="select libelle_categorie from categories where num_noeud=".$categ_id;
-				$r_cat=mysql_query($requete);
-				if (@mysql_num_rows($r_cat)) {
-					$valeur_champ=mysql_result($r_cat,0,0);
+				$r_cat=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_cat)) {
+					$valeur_champ=pmb_mysql_result($r_cat,0,0);
 				}
 				$r1=$msg["category"]." ";
 			break;
 			case 'author_see':
 				$author_id=$_SESSION["notice_view".$n]["search_id"];
 				$requete="select concat(author_name,', ',author_rejete) from authors where author_id=".$author_id;
-				$r_author=mysql_query($requete);
-				if (@mysql_num_rows($r_author)) {
-					$valeur_champ=mysql_result($r_author,0,0);
+				$r_author=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_author)) {
+					$valeur_champ=pmb_mysql_result($r_author,0,0);
 				}
 				$r1=$msg["author_search"]." ";
 			break;
 			case 'indexint_see':
 				$indexint_id=$_SESSION["notice_view".$n]["search_id"];
 				$requete="select indexint_name from indexint where indexint_id=".$indexint_id;
-				$r_indexint=mysql_query($requete);
-				if (@mysql_num_rows($r_indexint)) {
-					$valeur_champ=mysql_result($r_indexint,0,0);
+				$r_indexint=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_indexint)) {
+					$valeur_champ=pmb_mysql_result($r_indexint,0,0);
 				}
 				$r1=$msg["indexint_search"]." ";
 			break;
 			case 'publisher_see':
 				$publisher_id=$_SESSION["notice_view".$n]["search_id"];
 				$requete="select ed_name from publishers where ed_id=".$publisher_id;
-				$r_pub=mysql_query($requete);
-				if (@mysql_num_rows($r_pub)) {
-					$valeur_champ=mysql_result($r_pub,0,0);
+				$r_pub=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_pub)) {
+					$valeur_champ=pmb_mysql_result($r_pub,0,0);
 				}
 				$r1=$msg["publisher_search"]." ";
 			break;		
 			case 'titre_uniforme_see':
 				$titre_uniforme_id=$_SESSION["notice_view".$n]["search_id"];
 				$requete="select tu_name from publishers where tu_id=".$titre_uniforme_id;
-				$r_tu=mysql_query($requete);
-				if (@mysql_num_rows($r_tu)) {
-					$valeur_champ=mysql_result($r_tu,0,0);
+				$r_tu=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_tu)) {
+					$valeur_champ=pmb_mysql_result($r_tu,0,0);
 				}
 				$r1=$msg["titre_uniforme_search"]." ";
 			break;
 			case 'coll_see':
 				$coll_id=$_SESSION["notice_view".$n]["search_id"];
 				$requete="select collection_name from collections where collection_id=".$coll_id;
-				$r_coll=mysql_query($requete);
-				if (@mysql_num_rows($r_coll)) {
-					$valeur_champ=mysql_result($r_coll,0,0);
+				$r_coll=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_coll)) {
+					$valeur_champ=pmb_mysql_result($r_coll,0,0);
 				}
 				$r1=$msg["coll_search"]." ";
 			break;
 			case 'subcoll_see':
 				$subcoll_id=$_SESSION["notice_view".$n]["search_id"];
 				$requete="select sub_coll_name from sub_collections where sub_coll_id=".$subcoll_id;
-				$r_subcoll=mysql_query($requete);
-				if (@mysql_num_rows($r_subcoll)) {
-					$valeur_champ=mysql_result($r_subcoll,0,0);
+				$r_subcoll=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_subcoll)) {
+					$valeur_champ=pmb_mysql_result($r_subcoll,0,0);
 				}
 				$r1=$msg["subcoll_search"]." ";
 			break;
 			case 'docnum':
 				$r1=$msg["docnum"];
+				break;
+			case 'concept_see':
+				$concept_id=$_SESSION["notice_view".$n]["search_id"];
+				$requete="select value from skos_field_global_index where code_champ = 1 and code_ss_champ = 1 and id_item = ".$concept_id;
+				$r_concept=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_concept)) {
+					$valeur_champ=pmb_mysql_result($r_concept,0,0);
+				}
+				$r1=$msg["skos_concept"]." ";
+				break;
+			case 'authperso_see':
+				$auth_id=$_SESSION["notice_view".$n]["search_id"];
+				$ourAuth = new authperso_authority($auth_id);
+				$r1 = $ourAuth->info['authperso']['name']." ";
+				$valeur_champ = $ourAuth->info['isbd'];
 				break;
 		}
 		if ($_SESSION["typdoc".$n]) {
@@ -324,6 +364,9 @@ function get_human_query_level_two($n) {
 			if ($r3) $r2.=", ".$r3;
 		}
 		$r=sprintf($msg["simple_search_history"],(!$valeur_champ?stripslashes($_SESSION["user_query".$n]):$valeur_champ),$r1,$r2);
+		if($_SESSION["map_emprises_query".$n]){
+			$r.=$msg["map_history_emprises"]. implode(" ", $_SESSION["map_emprises_query".$n]);
+		}
 	} else {
 		$r= get_human_query($n);
 	}
@@ -414,7 +457,7 @@ function rec_last_history() {
 			}
 			break;
 		case "extended_search":
-			if (!$facette_test) {
+			if (!$facette_test || (strpos($_SERVER['HTTP_REFERER'],$_SESSION['last_authority']['lvl']) !== false && $_SESSION['last_authority']['need_new_search'])) {
 				$_SESSION["lq_page"]=$page_;
 				$_SESSION["lq_affiliate_page"]=$affiliate_page;
 				$_SESSION["lq_catalog_page"]=$catalog_page;
@@ -451,6 +494,11 @@ function get_last_history() {
 	
 	$search_type=$_SESSION["search_type".$_SESSION["last_query"]];
 	$facette_test=$_SESSION["lq_facette_test"];
+
+	if($search_type == "module" && count($_SESSION['facette'] == 0)){
+		header("Location: ./index.php?lvl=".$_SESSION['last_module_search']['search_mod']."&id=".$_SESSION['last_module_search']['search_id']);
+	}
+
 	switch ($search_type) {
 		case "simple_search":
 			if (!$facette_test) {
@@ -475,6 +523,37 @@ function get_last_history() {
 				if ($opac_search_other_function) search_other_function_get_history($_SESSION["last_query"]);
 			}
 			break;
+		case "module" :
+			global $mode;
+			$mode = "extended";
+			global $search;
+			$search[0]="s_1";
+			$op_="EQ";
+			 
+			//operateur
+			$op="op_0_".$search[0];
+			global $$op;
+			$$op=$op_;
+				
+			//contenu de la recherche
+			$field="field_0_".$search[0];
+			$field_=array();
+			$field_[0]=$_SESSION['last_query'];
+			global $$field;
+			$$field=$field_;
+				
+			//opérateur inter-champ
+			$inter="inter_0_".$search[0];
+			global $$inter;
+			$$inter="";
+				
+			//variables auxiliaires
+			$fieldvar_="fieldvar_0_".$search[0];
+			global $$fieldvar_;
+			$$fieldvar_="";
+			$fieldvar=$$fieldvar_;
+			
+			break;
 		case "extended_search":
 			global $page,$mode,$catalog_page,$affiliate_page;
 			get_history($_SESSION["last_query"]);
@@ -493,6 +572,31 @@ function get_last_history() {
 		$mode=$_SESSION["lq_facette_search"]["lq_mode"];
 		search::unserialize_search($_SESSION["lq_facette_search"]["lq_search"]);
 		$_SESSION["notice_view".$_SESSION["last_query"]]=$_SESSION["lq_facette_search"]["lq_notice_view"];
+	}
+}
+/**
+ * Stocke la dernière autorité consultée dans la session
+ * 
+ * @return void
+ */
+function rec_last_authorities(){
+	global $lvl,$id,$page,$from;
+
+	$_SESSION["last_module_search"]["search_mod"]="$lvl";
+	$_SESSION["last_module_search"]["search_id"]=$id;
+	$_SESSION["last_module_search"]["search_page"]=$page;
+	$_SESSION["last_module_search"]['need_new_search'] = true;
+
+	if($from == "search"){
+		$_SESSION["last_module_search"]['need_new_search'] = false;
+		if ($_SESSION["last_query"]) {
+			$n=$_SESSION["last_query"];
+		} else {
+			$n=$_SESSION["nb_queries"];
+		}
+		$_SESSION["notice_view".$n]["search_mod"]="$lvl";
+		$_SESSION["notice_view".$n]["search_id"]=$id;
+		$_SESSION["notice_view".$n]["search_page"]=$page;
 	}
 }
 ?>

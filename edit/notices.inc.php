@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notices.inc.php,v 1.17 2013-11-28 16:07:04 dgoron Exp $
+// $Id: notices.inc.php,v 1.18 2015-04-24 14:20:58 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -26,7 +26,7 @@ switch($sub) {
 				$worksheet->write(2,8,$msg[294]);
 				$worksheet->write(2,9,$msg[232]);
 				if ($pmb_transferts_actif=="1") $worksheet->write(2,10,$msg["edit_resa_loc_retrait"]);
-				
+
 				$tableau_resa = resa_list_resa_a_traiter () ;
 				$line = 0;
 				for ($j=0; $j< count($tableau_resa); $j++) {
@@ -34,7 +34,7 @@ switch($sub) {
 					if ($no_notice!=$tableau_resa[$j]['resa_idnotice'] || $no_bulletin!=$tableau_resa[$j]['resa_idbulletin']) {
 						$no_notice=$tableau_resa[$j]['resa_idnotice'] ;
 						$no_bulletin=$tableau_resa[$j]['resa_idbulletin'] ;
-						$tableau_expl_dispo = expl_dispo ($no_notice, $no_bulletin) ;							
+						$tableau_expl_dispo = expl_dispo ($no_notice, $no_bulletin) ;
 					}
 					if (count($tableau_expl_dispo)) {
 						for ($i=0;$i<count($tableau_expl_dispo);$i++) {
@@ -104,16 +104,16 @@ switch($sub) {
 					}
 				}
 				if ($aff_final) print "<table border='0'>$aff_final</table>";
-				
+
 				break;
 			default:
 				echo "<h1>".$msg[350]."&nbsp;&gt;&nbsp;".$msg['edit_resa_menu_a_traiter']."</h1>";
-				
+
 				// affichage du résultat
 				echo "
 				<form class='form-$current_module' id='form-$current_module-list' name='form-$current_module-list' action='$page_url?categ=$categ&sub=$sub&limite_page=$limite_page&numero_page=$numero_page' method=post>
 				<div class='left'>
-				
+
 				</div>
 				<div class='right'>
 				<img  src='./images/tableur.gif' border='0' align='top' onMouseOver ='survol(this);' onclick=\"start_export('TABLEAU');\" alt='Export tableau EXCEL' title='Export tableau EXCEL'/>&nbsp;&nbsp;
@@ -136,11 +136,11 @@ switch($sub) {
 					echo $msg["edit_resa_expl_available_filter"]."&nbsp;";
 					echo gen_liste ("SELECT idlocation, location_libelle FROM docs_location order by location_libelle", "idlocation", "location_libelle", "f_dispo_loc", "document.forms['form-$current_module-list'].dest.value='';document.forms['form-$current_module-list'].submit();", $f_dispo_loc, -1,"",0, $msg["all_location"]);
 				}
-				
+
 				echo "&nbsp;&nbsp;<input type='hidden' name='dest' value='' />";
 				echo "
 				<div class='row'></div></form><br />";
-				
+
 				$aff_final .= "<tr>
 								<th>".$msg[366]."</th>
 								<th>".$msg["empr_nom_prenom"]."</th>
@@ -180,7 +180,7 @@ switch($sub) {
 								<td>".$tableau_expl_dispo[$i]['expl_cb']."</td>";
 								if ($pmb_transferts_actif=="1") $aff_final .= "<td>".$tableau_resa[$j]['loc_retrait_libelle']."</td>";
 								$aff_final .= "</tr>";
-							}	
+							}
 						}
 					}
 				}
@@ -192,7 +192,7 @@ switch($sub) {
 		break;
 	case "resa_planning" :
 		echo "<h1>".$msg[350]."&nbsp;&gt;&nbsp;".$msg['edit_resa_planning_menu']."</h1>";
-		print planning_list (0, 0, "", EDIT_INFO_GESTION) ;
+		print planning_list (0, 0, 0, '','', EDIT_INFO_GESTION) ;
 		break;
 	case "resa" :
 	default:

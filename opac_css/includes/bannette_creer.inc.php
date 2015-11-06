@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette_creer.inc.php,v 1.22 2014-02-26 10:32:53 dgoron Exp $
+// $Id: bannette_creer.inc.php,v 1.26 2015-05-20 11:22:31 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -21,9 +21,13 @@ print "<h3><span>".$msg['dsi_bt_bannette_priv']."</span></h3>\n";
 
 if ($enregistrer==1 && !$nom_bannette) $enregistrer = 2 ;
 if (!$enregistrer) {
+	search::unhistorize_search();
 	search::strip_slashes();
 	$equation = search::serialize_search();
-} else $equation = stripslashes($equation) ;
+} else {
+	$equation = stripslashes($equation) ;
+	search::unserialize_search($equation);
+}
 
 if ($equation) {
 	// on arrive de la rech multi-critères
@@ -34,13 +38,13 @@ if ($equation) {
 
 		$rqt_equation = "insert into equations (id_equation, num_classement, nom_equation, comment_equation, requete, proprio_equation) ";
 		$rqt_equation.= "VALUES (0,0,'".addslashes($equ_human)."','$qui -> $nom_bannette','".addslashes($equation)."', $id_empr)" ;
-		mysql_query($rqt_equation);
-		$id_equation = mysql_insert_id() ;
+		pmb_mysql_query($rqt_equation);
+		$id_equation = pmb_mysql_insert_id() ;
 		
 		// paramétrage OPAC: choix du nom de la bibliothèque comme expéditeur
 		$requete = "select location_libelle, email, adr1, cp, town from empr, docs_location where empr_location=idlocation and id_empr='$id_empr' ";
-		$res = mysql_query($requete, $dbh);
-		$loc=mysql_fetch_object($res) ;
+		$res = pmb_mysql_query($requete, $dbh);
+		$loc=pmb_mysql_fetch_object($res) ;
 	
 		if (!$periodicite || $periodicite>200) $periodicite=15 ;
 		$entete_email = "<SPAN style=\'FONT-SIZE: 11pt; FONT-FAMILY: Arial\'>".addslashes($msg['dsi_priv_mail_1'])."!!public!!</SPAN><br /><br /><SPAN style=\'FONT-SIZE: 10pt; FONT-FAMILY: Arial\'>".addslashes($msg['dsi_priv_mail_2'])." «&nbsp;".addslashes($msg['empr_my_account'])."&nbsp;» > «&nbsp;".addslashes($msg['dsi_bannette_acceder'])."&nbsp;»&nbsp;:&nbsp; !!public!! - !!date!! </SPAN><br /><br />" ;
@@ -65,16 +69,19 @@ if ($equation) {
 		$rqt_bannette.= "    groupe_lecteurs=0, ";
 		$rqt_bannette.= "    nb_notices_diff=30, "; 
 		$rqt_bannette.= "    typeexport='$typeexport', "; 
+		if(trim($dsi_private_bannette_notices_template)){
+			$rqt_bannette.= "    notice_tpl='$dsi_private_bannette_notices_template', ";
+		} 
 		$rqt_bannette.= "    update_type='C', "; 
 		$rqt_bannette.= "    prefixe_fichier='$nom_bannette' "; 
-		mysql_query($rqt_bannette);
-		$id_bannette = mysql_insert_id() ;
+		pmb_mysql_query($rqt_bannette);
+		$id_bannette = pmb_mysql_insert_id() ;
 		
 		$rqt_bannette_equation = "INSERT INTO bannette_equation (num_bannette, num_equation) VALUES ($id_bannette, $id_equation)" ;
-		mysql_query($rqt_bannette_equation);
+		pmb_mysql_query($rqt_bannette_equation);
 		
 		$rqt_bannette_abon = "INSERT INTO bannette_abon (num_bannette, num_empr, actif) VALUES ($id_bannette, $id_empr, 0)" ;
-		mysql_query($rqt_bannette_abon);
+		pmb_mysql_query($rqt_bannette_abon);
 		
 		// bannette créée, on supprime le bouton des rech multicritères
 		$_SESSION['abon_cree_bannette_priv'] = 0 ;
@@ -88,9 +95,6 @@ if ($equation) {
 		print pmb_bidi($bannette->remplir());
 		$bannette->diffuser($equ_human);
 	} else {
-		$s = new search() ;
-		$equ_human = $s->make_serialized_human_query($equation) ;
-		
 		if ($opac_allow_bannette_export) {
 			$exp = start_export::get_exports();
 			$liste_exports = "<tr>

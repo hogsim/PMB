@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: level1_search.class.php,v 1.6.2.1 2014-07-02 13:48:59 mbertin Exp $
+// $Id: level1_search.class.php,v 1.10 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -64,12 +64,12 @@ class level1_search {
 		
 		$tri = 'order by pert desc, index_author';
 		$pert=$members["select"]." as pert";
-		$auteurs = mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='70' ", $dbh);
-		$nb_result_auteurs_physiques = mysql_result($auteurs, 0 , 0);
-		$auteurs = mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='71' ", $dbh);
-		$nb_result_auteurs_collectivites = mysql_result($auteurs, 0 , 0);
-		$auteurs = mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='72' ", $dbh);
-		$nb_result_auteurs_congres = mysql_result($auteurs, 0 , 0);
+		$auteurs = pmb_mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='70' ", $dbh);
+		$nb_result_auteurs_physiques = pmb_mysql_result($auteurs, 0 , 0);
+		$auteurs = pmb_mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='71' ", $dbh);
+		$nb_result_auteurs_collectivites = pmb_mysql_result($auteurs, 0 , 0);
+		$auteurs = pmb_mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='72' ", $dbh);
+		$nb_result_auteurs_congres = pmb_mysql_result($auteurs, 0 , 0);
 		$nb_result_auteurs=$nb_result_auteurs_physiques+$nb_result_auteurs_collectivites+$nb_result_auteurs_congres;
 
 		if($nb_result_auteurs_physiques == $nb_result_auteurs) {
@@ -151,8 +151,8 @@ class level1_search {
 		$tri = 'order by pert desc, index_publisher';
 		$pert=$members["select"]." as pert";
 		
-		$editeurs = mysql_query("SELECT COUNT(distinct ed_id) FROM publishers $clause", $dbh);
-		$nb_result_editeurs = mysql_result($editeurs, 0 , 0); 
+		$editeurs = pmb_mysql_query("SELECT COUNT(distinct ed_id) FROM publishers $clause", $dbh);
+		$nb_result_editeurs = pmb_mysql_result($editeurs, 0 , 0); 
 		
 		if ($nb_result_editeurs) {
 			//définition du formulaire
@@ -192,8 +192,8 @@ class level1_search {
 		$tri = "order by pert desc, index_tu";
 		$pert=$members["select"]." as pert";
 		
-		$tu = mysql_query("SELECT COUNT(distinct tu_id) FROM titres_uniformes $clause", $dbh);
-		$nb_result_titres_uniformes = mysql_result($tu, 0 , 0); 
+		$tu = pmb_mysql_query("SELECT COUNT(distinct tu_id) FROM titres_uniformes $clause", $dbh);
+		$nb_result_titres_uniformes = pmb_mysql_result($tu, 0 , 0); 
 	
 		if ($nb_result_titres_uniformes) {
 			//définition du formulaire...
@@ -231,8 +231,8 @@ class level1_search {
 		$tri = 'order by pert desc, index_coll';
 		$pert=$members["select"]." as pert";
 		
-		$collections = mysql_query("SELECT COUNT(distinct collection_id) FROM collections $clause", $dbh);
-		$nb_result_collections = mysql_result($collections, 0 , 0);
+		$collections = pmb_mysql_query("SELECT COUNT(distinct collection_id) FROM collections $clause", $dbh);
+		$nb_result_collections = pmb_mysql_result($collections, 0 , 0);
 		
 		if ($nb_result_collections) {
 			//définition du formulaire...
@@ -269,8 +269,8 @@ class level1_search {
 		$tri = 'order by pert desc, index_sub_coll';
 		$pert=$members["select"]." as pert";
 		
-		$subcollections = mysql_query("SELECT COUNT(sub_coll_id) FROM sub_collections $clause", $dbh);
-		$nb_result_subcollections = mysql_result($subcollections, 0 , 0); 
+		$subcollections = pmb_mysql_query("SELECT COUNT(sub_coll_id) FROM sub_collections $clause", $dbh);
+		$nb_result_subcollections = pmb_mysql_result($subcollections, 0 , 0); 
 		
 		if ($nb_result_subcollections) {
 			//définition du formulaire
@@ -296,13 +296,13 @@ class level1_search {
     	$first_clause.= "categories.libelle_categorie not like '~%' ";
 
 		$q = 'drop table if exists catjoin ';
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$q = 'create  temporary table catjoin ( ';
 		$q.= "num_thesaurus int(3) unsigned not null default '0', ";
 		$q.= "num_noeud int(9) unsigned not null default '0', ";
 		$q.= 'key (num_noeud,num_thesaurus) ';
 		$q.= ") ENGINE=MyISAM ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		
 		
 		
@@ -334,7 +334,7 @@ class level1_search {
 				//$q.=" WHERE noeuds.num_thesaurus='".$id_thesaurus."' AND not_use_in_indexation='0' AND if(catlg.num_noeud is null, ".$members_catdef["where"].", ".$members_catlg["where"].") AND if(catlg.num_noeud is null,catdef.libelle_categorie not like '~%',catlg.libelle_categorie not like '~%')";
 				$q.=" WHERE noeuds.num_thesaurus='".$id_thesaurus."' AND if(catlg.num_noeud is null, ".$members_catdef["where"].", ".$members_catlg["where"].") AND if(catlg.num_noeud is null,catdef.libelle_categorie not like '~%',catlg.libelle_categorie not like '~%')";
 			}
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 		}
 		
 		$clause = '';
@@ -352,8 +352,8 @@ class level1_search {
 		
 		$q = 'select count(distinct catjoin.num_noeud) from catjoin '.$clause;
 		
-		$r=mysql_query($q);
-		$nb_result_categories = mysql_result($r, 0 , 0);
+		$r=pmb_mysql_query($q);
+		$nb_result_categories = pmb_mysql_result($r, 0 , 0);
 		
 		if ($nb_result_categories) {
 			$form = "<form name=\"search_categorie\" action=\"./index.php?lvl=more_results\" method=\"post\">";
@@ -392,8 +392,8 @@ class level1_search {
 		$tri = 'order by pert desc, index_indexint';
 		$pert=$members["select"]." as pert";
 		
-		$indexint = mysql_query("SELECT COUNT(distinct indexint_id) FROM indexint $clause", $dbh);
-		$nb_result_indexint = mysql_result($indexint, 0 , 0);
+		$indexint = pmb_mysql_query("SELECT COUNT(distinct indexint_id) FROM indexint $clause", $dbh);
+		$nb_result_indexint = pmb_mysql_result($indexint, 0 , 0);
 
 		if ($nb_result_indexint) {
 			//définition du formulaire
@@ -545,21 +545,20 @@ class level1_search {
 			$q_docnum_bull_notice = "select explnum_id from bulletins, explnum, notices $statut_j $acces_j $clause_bull_num_notice";
 			
 			$q_docnum = "select count(explnum_id) from ( $q_docnum_noti UNION $q_docnum_bull UNION $q_docnum_bull_notice) as uni	";
-			$docnum = mysql_query($q_docnum, $dbh);
+			$docnum = pmb_mysql_query($q_docnum, $dbh);
 			$nb_result_docnum=0;
-			if($docnum && mysql_num_rows($docnum)){
-				$nb_result_docnum = mysql_result($docnum, 0, 0);
+			if($docnum && pmb_mysql_num_rows($docnum)){
+				$nb_result_docnum = pmb_mysql_result($docnum, 0, 0);
 			}
-			
 			
 			$req_typdoc_noti="select distinct typdoc from explnum,notices $statut_j $acces_j $clause group by typdoc"; 
 			$req_typdoc_bull = "select distinct typdoc from bulletins, explnum,notices $statut_j $acces_j $clause_bull group by typdoc";  
 			$req_typdoc_bull_num_notice = "select distinct typdoc from bulletins, explnum,notices $statut_j $acces_j $clause_bull_num_notice group by typdoc";  
 			$req_typdoc = "($req_typdoc_noti) UNION ($req_typdoc_bull) UNION ($req_typdoc_bull_num_notice)";
-			$res_typdoc = mysql_query($req_typdoc, $dbh);	
+			$res_typdoc = pmb_mysql_query($req_typdoc, $dbh);	
 			$t_typdoc=array();
-			if($res_typdoc && mysql_num_rows($res_typdoc)){
-				while (($tpd=mysql_fetch_object($res_typdoc))) {
+			if($res_typdoc && pmb_mysql_num_rows($res_typdoc)){
+				while (($tpd=pmb_mysql_fetch_object($res_typdoc))) {
 					$t_typdoc[]=$tpd->typdoc;
 				}
 			}
@@ -583,14 +582,53 @@ class level1_search {
 			}
 		}
     }
+
+    function search_concepts() {
+    	global $opac_search_other_function,$typdoc,$charset,$dbh;
+    	global $opac_stemming_active;
+    	// on regarde comment la saisie utilisateur se présente
+    	$clause = '';
+    	$add_notice = '';
+    
+    	$aq=new analyse_query(stripslashes($this->user_query),0,0,1,0,$opac_stemming_active);
+    	$clause.= "where (value like '%".stripslashes($user_query)."%') and code_champ = 1";
+    
+    	if ($opac_search_other_function) $add_notice=search_other_function_clause();
+    	if ($typdoc || $add_notice) $clause = ',notices, index_concept '.$clause.' and num_concept=id_item and notice_id=num_object and type_object=1';
+    	if ($typdoc) $clause.=" and typdoc='".$typdoc."' ";
+    	if ($add_notice) $clause.= ' and notice_id in ('.$add_notice.')';
+
+		$tri = 'order by pert desc, value';
+		$pert= "(value like '%".stripslashes($user_query)."%') as pert";
+
+		$nb_result_concepts=pmb_mysql_result(pmb_mysql_query("SELECT COUNT(distinct id_item) FROM skos_fields_global_index ".$clause, $dbh),0,0);
+    
+    	if ($nb_result_concepts) {
+    		//définition du formulaire
+    		$form = "<div style=search_result><form name=\"search_publishers\" action=\"./index.php?lvl=more_results\" method=\"post\">";
+    		$form .= "<input type=\"hidden\" name=\"user_query\" value=\"".htmlentities(stripslashes($this->user_query),ENT_QUOTES,$charset)."\">\n";
+    		if (function_exists("search_other_function_post_values")){ $form .=search_other_function_post_values(); }
+    		$form .= "<input type=\"hidden\" name=\"mode\" value=\"concept\">\n";
+    		$form .= "<input type=\"hidden\" name=\"search_type_asked\" value=\"simple_search\">\n";
+    		$form .= "<input type=\"hidden\" name=\"count\" value=\"".$nb_result_concepts ."\">\n";
+    		$form .= "<input type=\"hidden\" name=\"clause\" value=\"".htmlentities($clause,ENT_QUOTES,$charset)."\">";
+    		$form .= "<input type=\"hidden\" name=\"pert\" value=\"".htmlentities($pert,ENT_QUOTES,$charset)."\">\n";
+    		$form .= "<input type=\"hidden\" name=\"tri\" value=\"".htmlentities($tri,ENT_QUOTES,$charset)."\"></form>\n";
+    		$form .= "</div>";
+    			
+    		$_SESSION["level1"]["concept"]["form"]=$form;
+    		$_SESSION["level1"]["concept"]["count"]=$nb_result_concepts;
+    	}
+    	return $nb_result_concepts;
+    }
     
     function make_search() {
     	global $opac_modules_search_title,$opac_modules_search_author,$opac_modules_search_publisher;
     	global $opac_modules_search_titre_uniforme,$opac_modules_search_collection,$opac_modules_search_subcollection;
     	global $opac_modules_search_category,$opac_modules_search_indexint,$opac_modules_search_keywords;
-    	global $opac_modules_search_abstract,$opac_modules_search_docnum,$opac_modules_search_all;
+    	global $opac_modules_search_abstract,$opac_modules_search_docnum,$opac_modules_search_all, $opac_modules_search_concept;
     	global $look_TITLE,$look_AUTHOR,$look_PUBLISHER,$look_TITRE_UNIFORME,$look_COLLECTION,$look_SUBCOLLECTION;
-    	global $look_CATEGORY,$look_INDEXINT,$look_KEYWORDS,$look_ABSTRACT,$look_DOCNUM,$look_ALL;
+    	global $look_CATEGORY,$look_INDEXINT,$look_KEYWORDS,$look_ABSTRACT,$look_DOCNUM,$look_ALL, $look_CONCEPT;
     	global $user_query;
 
     	$this->user_query=$user_query;
@@ -635,7 +673,13 @@ class level1_search {
 		if ($opac_modules_search_docnum && $look_DOCNUM) {
 			$total_results += $this->search_docnums();
 		}
-
+		if ($opac_modules_search_concept && $look_CONCEPT) {
+			$total_results += $this->search_concepts();
+		}
+		
+		$authpersos=new authpersos();
+		$total_results +=$authpersos->search_authperso($this->user_query);
+		
 		/*if ($opac_modules_search_all && $look_ALL) {
 			require_once($base_path.'/search/level1/tous.inc.php');	
 			$total_results += $nb_result;

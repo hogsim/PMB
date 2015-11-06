@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ticket-pret.inc.php,v 1.18 2009-05-16 11:11:53 dbellamy Exp $
+// $Id: ticket-pret.inc.php,v 1.19 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,7 +32,7 @@ date_edition(10,70+$offsety);
 
 if ($cb_doc == "") {
 	$rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_idexpl=expl_id order by pret_date " ;
-	$req = mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 
+	$req = pmb_mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 
 	
 	$ourPDF->SetXY (10,80+$offsety);
 	$ourPDF->setFont($pmb_pdf_font, 'BI', 20);
@@ -42,7 +42,7 @@ if ($cb_doc == "") {
 	$nb_par_page = 10;
 	$nb_1ere_page = 7;
 	$taille_bloc = 18 ;
-	while ($data = mysql_fetch_array($req)) {
+	while ($data = pmb_mysql_fetch_array($req)) {
 		if ($nb_page==0 && $i<$nb_1ere_page) {
 				$pos_page = 100+$offsety+$taille_bloc*$i;
 				}
@@ -59,8 +59,8 @@ if ($cb_doc == "") {
 
 	// Impression des réservations en cours
 	$rqt = "select resa_idnotice, resa_idbulletin from resa where resa_idempr='".$id_empr."' " ;
-	$req = mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 
-	if (mysql_num_rows($req) > 0) {
+	$req = pmb_mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 
+	if (pmb_mysql_num_rows($req) > 0) {
 		if ($nb_page==0 && $i<$nb_1ere_page) {
 				$pos_page = 100+$offsety+$taille_bloc*$i;
 				}
@@ -76,7 +76,7 @@ if ($cb_doc == "") {
 		$ourPDF->setFont($pmb_pdf_font, 'BI', 20);
 		$ourPDF->multiCell(190, 20, $msg["documents_reserves"], 0, 'L', 0);
 		
-		while ($data = mysql_fetch_array($req)) {
+		while ($data = pmb_mysql_fetch_array($req)) {
 		if ($nb_page==0 && $i<$nb_1ere_page) {
 				$pos_page = 100+$offsety+$taille_bloc*$i;
 				}

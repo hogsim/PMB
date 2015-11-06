@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesLoans.class.php,v 1.2 2011-12-28 11:31:02 pmbs Exp $
+// $Id: pmbesLoans.class.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -66,10 +66,10 @@ class pmbesLoans extends external_services_api_class {
 				$requete = $filter->query;						
 			}
 	
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 							
 			$result = array();
-			while ($row=mysql_fetch_assoc($resultat)) {
+			while ($row=pmb_mysql_fetch_assoc($resultat)) {
 				$result = array(
 					"id_empr" => $row["id_empr"],
 					"empr_cb" => $row["empr_cb"],
@@ -94,9 +94,9 @@ class pmbesLoans extends external_services_api_class {
 			$requete.=" and id_empr in (".implode(",",$t_empr).") ";
 			//$requete.= $loc_filter;
 			$requete.= "and pret_retour<now() and pret_idempr=id_empr and pret_idexpl=expl_id group by id_empr";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			$not_all_mail=0;
-			while ($r=mysql_fetch_object($resultat)) {
+			while ($r=pmb_mysql_fetch_object($resultat)) {
 				$amende=new amende($r->id_empr);
 				$level=$amende->get_max_level();
 				$niveau_min=$level["level_min"];
@@ -115,16 +115,16 @@ class pmbesLoans extends external_services_api_class {
 		
 		if (SESSrights & CIRCULATION_AUTH) {
 			$req="TRUNCATE TABLE cache_amendes";
-			mysql_query($req);
+			pmb_mysql_query($req);
 			$requete = "select id_empr from empr, pret, exemplaires where 1 ";
 			if (!isset($t_empr)) $t_empr[] = "0";
 			$requete.=" and id_empr in (".implode(",",$t_empr).") ";
 			//$requete.= $loc_filter;
 			$requete.= "and pret_retour<now() and pret_idempr=id_empr and pret_idexpl=expl_id group by id_empr";
 	
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			$not_all_mail=0;
-			while ($r=mysql_fetch_object($resultat)) {
+			while ($r=pmb_mysql_fetch_object($resultat)) {
 				$amende=new amende($r->id_empr);
 				$level=$amende->get_max_level();
 				$niveau_min=$level["level_min"];
@@ -136,8 +136,8 @@ class pmbesLoans extends external_services_api_class {
 			
 			$req ="select id_empr  from empr, pret, exemplaires, empr_categ where 1 ";
 			$req.= "and pret_retour<CURDATE() and pret_idempr=id_empr and pret_idexpl=expl_id and id_categ_empr=empr_categ group by id_empr";
-			$res=mysql_query($req);
-			while ($r=mysql_fetch_object($res)) {
+			$res=pmb_mysql_query($req);
+			while ($r=pmb_mysql_fetch_object($res)) {
 				$relance_liste.=get_relance($r->id_empr);
 			}
 	
@@ -219,13 +219,13 @@ class pmbesLoans extends external_services_api_class {
 				$sql = $sql." LIMIT ".$limite_mysql.", ".$limite_page; 
 			}
 								
-			$res = mysql_query($sql, $dbh);
+			$res = pmb_mysql_query($sql, $dbh);
 			if (!$res) {
 				return false;
 	//			throw new Exception("Not found: Error");	
 			}
 
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result = array(
 					"aff_pret_date" => utf8_normalize($row["aff_pret_date"]),
 					"aff_pret_retour" => utf8_normalize($row["aff_pret_retour"]),
@@ -285,11 +285,11 @@ class pmbesLoans extends external_services_api_class {
 //			$sql = $sql." LIMIT ".$limite_mysql.", ".$limite_page; 
 //		}
 //		
-//		$res = mysql_query($sql, $dbh);
+//		$res = pmb_mysql_query($sql, $dbh);
 //		if (!$res)
 //			throw new Exception("Not found: Error");
 //
-//		while ($row = mysql_fetch_assoc($res)) {
+//		while ($row = pmb_mysql_fetch_assoc($res)) {
 //			$result = array(
 //				"aff_pret_date" => utf8_normalize($row["aff_pret_date"]),
 //				"aff_pret_retour" => utf8_normalize($row["aff_pret_retour"]),
@@ -349,12 +349,12 @@ class pmbesLoans extends external_services_api_class {
 				$sql = $sql." LIMIT ".$limite_mysql.", ".$limite_page; 
 			} 
 			// on lance la requête (mysql_query)  
-			$res = mysql_query($sql, $dbh);
+			$res = pmb_mysql_query($sql, $dbh);
 	
 			if (!$res)
 				throw new Exception("Not found: Error");
 			
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result = array(
 					"id_groupe" => utf8_normalize($row["id_groupe"]),
 					"libelle_groupe" => utf8_normalize($row["libelle_groupe"]),
@@ -417,15 +417,15 @@ class pmbesLoans extends external_services_api_class {
 		else $order_by= "";
 
 		$rqt="select id_empr, concat(empr_nom,' ',empr_prenom) as  empr_name, empr_cb, empr_mail, empr_tel1, empr_sms, count(pret_idexpl) as empr_nb, $pdflettreretard_impression_tri from empr, pret, exemplaires where $restrict_localisation pret_retour<curdate() and pret_idempr=id_empr  and pret_idexpl=expl_id group by id_empr $order_by";							
-		$req=mysql_query($rqt);
-		while ($r = mysql_fetch_object($req)) {
+		$req=pmb_mysql_query($rqt);
+		while ($r = pmb_mysql_fetch_object($req)) {
 			if (($pmb_gestion_financiere)&&($pmb_gestion_amende)) {
 				$amende=new amende($r->id_empr);
 				$level=$amende->get_max_level();
 				$niveau_min=$level["level_min"];
 				$printed=$level["printed"];
 				if ($printed==2) $printed=0;
-				mysql_query("update pret set printed=1 where printed=2 and pret_idempr=".$r->id_empr);
+				pmb_mysql_query("update pret set printed=1 where printed=2 and pret_idempr=".$r->id_empr);
 				$not_mail=true;
 				if ((($mailretard_priorite_email==1)&&($r->empr_mail))&&($niveau_min<3)) $not_mail=false;
 				if ((($print_all || !$printed)&&($niveau_min))&&($not_mail)) {
@@ -500,9 +500,9 @@ class pmbesLoans extends external_services_api_class {
 
 		//requete par rapport à un groupe d'emprunteurs
 		$rqt1 = "select empr_id from empr_groupe, empr, pret where groupe_id='".$id_groupe."' and empr_groupe.empr_id=empr.id_empr and pret.pret_idempr=empr_groupe.empr_id group by empr_id order by empr_nom, empr_prenom";
-		$req1 = mysql_query($rqt1);
+		$req1 = pmb_mysql_query($rqt1);
 
-		while ($data1=mysql_fetch_array($req1)) {
+		while ($data1=pmb_mysql_fetch_array($req1)) {
 			$id_empr=$data1['empr_id'];	
 			if ($nb_page==0 && $indice_page==$nb_1ere_page) {
 				$ourPDF->addPage();
@@ -521,9 +521,9 @@ class pmbesLoans extends external_services_api_class {
 
 			//requete par rapport à un emprunteur
 			$rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_idexpl=expl_id order by pret_date " ;	
-			$req = mysql_query($rqt);
+			$req = pmb_mysql_query($rqt);
 			
-			while ($data = mysql_fetch_array($req)) {
+			while ($data = pmb_mysql_fetch_array($req)) {
 				if ($nb_page==0 && $indice_page==$nb_1ere_page) {
 					$ourPDF->addPage();
 					$nb_page++;
@@ -585,8 +585,8 @@ class pmbesLoans extends external_services_api_class {
 		
 		//requete par rapport à un emprunteur
 		$rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_idexpl=expl_id order by pret_date " ;	
-		$req = mysql_query($rqt);
-		$count = mysql_num_rows($req);
+		$req = pmb_mysql_query($rqt);
+		$count = pmb_mysql_num_rows($req);
 		
 		$ourPDF->addPage();
 		//$ourPDF->SetMargins(10,10,10);
@@ -609,7 +609,7 @@ class pmbesLoans extends external_services_api_class {
 		$nb_1ere_page = 19;
 		$taille_bloc = 12 ;
 		
-		while ($data = mysql_fetch_array($req)) {
+		while ($data = pmb_mysql_fetch_array($req)) {
 			if ($nb_page==0 && $i<$nb_1ere_page) {
 				$pos_page = 35+$offsety+$taille_bloc*$i;
 				}
@@ -624,7 +624,7 @@ class pmbesLoans extends external_services_api_class {
 			$i++;
 			}
 
-		mysql_free_result($req);
+		pmb_mysql_free_result($req);
 		
 		return $ourPDF;
 	}
@@ -653,8 +653,8 @@ class pmbesLoans extends external_services_api_class {
 		$ourPDF->SetMargins($marge_page_gauche,$marge_page_gauche);
 		if($empr_sms_msg_retard) {
 			$rqt="select concat(empr_nom,' ',empr_prenom) as  empr_name, empr_mail, empr_tel1, empr_sms from empr where id_empr='".$id_empr."' and empr_tel1!='' and empr_sms=1";							
-			$req=mysql_query($rqt);
-			if ($r = mysql_fetch_object($req)) {
+			$req=pmb_mysql_query($rqt);
+			if ($r = pmb_mysql_fetch_object($req)) {
 				if ($r->empr_tel1 && $r->empr_sms) {
 					$res_envoi_sms=send_sms(0, $niveau_relance, $r->empr_tel1,$empr_sms_msg_retard);
 				}
@@ -692,35 +692,35 @@ class pmbesLoans extends external_services_api_class {
 //		if ($id_groupe) {
 //			//requete par rapport à un groupe d'emprunteurs
 //			$rqt1 = "select id_empr, empr_nom, empr_prenom from empr_groupe, empr, pret where groupe_id='".$id_groupe."' and empr_groupe.empr_id=empr.id_empr and pret.pret_idempr=empr_groupe.empr_id group by empr_id order by empr_nom, empr_prenom";
-//			$req1 = mysql_query($rqt1) or die($msg['err_sql'].'<br />'.$rqt1.'<br />'.mysql_error());
+//			$req1 = pmb_mysql_query($rqt1) or die($msg['err_sql'].'<br />'.$rqt1.'<br />'.pmb_mysql_error());
 //		}
 //		
 //		if ($id_empr) {
 //			//requete par rapport à un emprunteur
 //			$rqt1 = "select id_empr, empr_nom, empr_prenom from empr_groupe, empr, pret where id_empr='".$id_empr."' and empr_groupe.empr_id=empr.id_empr and pret.pret_idempr=empr_groupe.empr_id group by empr_id order by empr_nom, empr_prenom";
-//			$req1 = mysql_query($rqt1) or die($msg['err_sql'].'<br />'.$rqt1.'<br />'.mysql_error());
+//			$req1 = pmb_mysql_query($rqt1) or die($msg['err_sql'].'<br />'.$rqt1.'<br />'.pmb_mysql_error());
 //		}
 		if ($ident) {
 			if ($type_send == 1) {
 				//requete par rapport à un emprunteur
 				$rqt1 = "select id_empr, empr_nom, empr_prenom from empr_groupe, empr, pret where id_empr='".$ident."' and empr_groupe.empr_id=empr.id_empr and pret.pret_idempr=empr_groupe.empr_id group by empr_id order by empr_nom, empr_prenom";
-				$req1 = mysql_query($rqt1);		
+				$req1 = pmb_mysql_query($rqt1);		
 			} else if ($type_send == 2) {
 				//requete par rapport à un groupe d'emprunteurs
 				$rqt1 = "select id_empr, empr_nom, empr_prenom from empr_groupe, empr, pret where groupe_id='".$ident."' and empr_groupe.empr_id=empr.id_empr and pret.pret_idempr=empr_groupe.empr_id group by empr_id order by empr_nom, empr_prenom";
-				$req1 = mysql_query($rqt1);
+				$req1 = pmb_mysql_query($rqt1);
 			}
 		}
-		while ($data1=mysql_fetch_array($req1)) {
+		while ($data1=pmb_mysql_fetch_array($req1)) {
 			$id_empr=$data1['id_empr'];	
 			$texte_mail.=$data1['empr_nom']." ".$data1['empr_prenom']."\r\n\r\n";
 	
 			//Récupération des exemplaires
 			$rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_idexpl=expl_id order by pret_date " ;
-			$req = mysql_query($rqt); 
+			$req = pmb_mysql_query($rqt); 
 	
 			$i=0;
-			while ($data = mysql_fetch_array($req)) {
+			while ($data = pmb_mysql_fetch_array($req)) {
 		
 				/* Récupération des infos exemplaires et prêt */
 				$requete = "SELECT notices_m.notice_id as m_id, notices_s.notice_id as s_id, expl_cb, pret_date, pret_retour, tdoc_libelle, section_libelle, location_libelle, trim(concat(ifnull(notices_m.tit1,''),ifnull(notices_s.tit1,''),' ',ifnull(bulletin_numero,''), if (mention_date, concat(' (',mention_date,')') ,''))) as tit, ";
@@ -730,8 +730,8 @@ class pmbesLoans extends external_services_api_class {
 				$requete.= "FROM (((exemplaires LEFT JOIN notices AS notices_m ON expl_notice = notices_m.notice_id ) LEFT JOIN bulletins ON expl_bulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id), docs_type, docs_section, docs_location, pret ";
 				$requete.= "WHERE expl_cb='".$data['expl_cb']."' and expl_typdoc = idtyp_doc and expl_section = idsection and expl_location = idlocation and pret_idexpl = expl_id  ";
 		
-				$res = mysql_query($requete,$dbh);
-				$expl = mysql_fetch_object($res);
+				$res = pmb_mysql_query($requete,$dbh);
+				$expl = pmb_mysql_fetch_object($res);
 		
 				$responsabilites=array() ;
 				$header_aut = "" ;
@@ -777,8 +777,8 @@ class pmbesLoans extends external_services_api_class {
 		
 		/* Récupération du nom, prénom et mail de l'utilisateur */
 		$requete="select id_empr, empr_mail, empr_nom, empr_prenom from empr where id_empr=$id_empr";
-		$res=mysql_query($requete);
-		$coords=mysql_fetch_object($res);
+		$res=pmb_mysql_query($requete);
+		$coords=pmb_mysql_fetch_object($res);
 		$headers .= "Content-type: text/plain; charset=".$charset."\n";
 		$res_envoi=mailpmb($coords->empr_prenom." ".$coords->empr_nom, $coords->empr_mail, $objet,$texte_mail, $biblio_name, $biblio_email,$headers, "", $PMBuseremailbcc,1);
 	
@@ -905,9 +905,9 @@ class pmbesLoans extends external_services_api_class {
 				$location_biblio = $deflt2docs_location;
 			}
 			$query = "select name, adr1,adr2,cp,town,state,country,phone,email,website,logo from docs_location where idlocation=".$location_biblio;
-			$res = mysql_query($query,$dbh);
-			if (mysql_num_rows($res) == 1) {
-				$row = mysql_fetch_object($res);
+			$res = pmb_mysql_query($query,$dbh);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$row = pmb_mysql_fetch_object($res);
 				$biblio_name = $row->name;
 				$biblio_adr1 = $row->adr1;
 				$biblio_adr2 = $row->adr2;

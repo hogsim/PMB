@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rss_see.inc.php,v 1.4.8.2 2014-09-30 09:45:07 mbertin Exp $
+// $Id: rss_see.inc.php,v 1.5 2014-09-30 09:48:10 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

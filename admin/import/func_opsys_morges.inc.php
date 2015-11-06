@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_opsys_morges.inc.php,v 1.4 2013-04-11 08:02:52 mbertin Exp $
+// $Id: func_opsys_morges.inc.php,v 1.5 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -54,21 +54,21 @@ function create_categ($th,$num_parent, $libelle, $index,$num_aut='') {
 function del_notice($item) {
 	global $dbh ;
 	$requete_suppr = "delete from analysis where analysis_notice='".$item."' ";
-	$result_suppr = @mysql_query($requete_suppr, $dbh);
+	$result_suppr = @pmb_mysql_query($requete_suppr, $dbh);
 	$requete_suppr = "delete from notices_categories WHERE notcateg_notice='".$item."' ";
-	$result_suppr = @mysql_query($requete_suppr, $dbh);
+	$result_suppr = @pmb_mysql_query($requete_suppr, $dbh);
 	$requete_suppr = "delete from notices_langues WHERE num_notice='".$item."' ";
-	$result_suppr = @mysql_query($requete_suppr, $dbh);
+	$result_suppr = @pmb_mysql_query($requete_suppr, $dbh);
 	$requete_suppr = "delete from responsability WHERE responsability_notice='".$item."' ";
-	$result_suppr = @mysql_query($requete_suppr, $dbh);
+	$result_suppr = @pmb_mysql_query($requete_suppr, $dbh);
 	$requete_suppr = "delete from bannette_contenu WHERE num_notice='".$item."' ";
-	$result_suppr = @mysql_query($requete_suppr, $dbh);
+	$result_suppr = @pmb_mysql_query($requete_suppr, $dbh);
 	$requete_suppr = "delete from audit WHERE object_id='".$item."' and type_obj=1 ";
-	$result_suppr = @mysql_query($requete_suppr, $dbh);
+	$result_suppr = @pmb_mysql_query($requete_suppr, $dbh);
 	$requete_suppr = "delete from notices_custom_values WHERE notices_custom_origine='".$item."' ";
-	$result_suppr = @mysql_query($requete_suppr, $dbh);
+	$result_suppr = @pmb_mysql_query($requete_suppr, $dbh);
 	$requete_suppr = "delete from notices where notice_id='".$item."' ";
-	$result_suppr = @mysql_query($requete_suppr, $dbh);
+	$result_suppr = @pmb_mysql_query($requete_suppr, $dbh);
 }
 
 $tpl_beforeupload_expl = "
@@ -226,11 +226,11 @@ function update_authors_num_opsys($aut_ ,$responsability_type)
 			$aut_i_p=str_replace('&',"",$aut_[$i]['p']);
 			$requete="select author_id from authors, responsability where author_name='".addslashes($aut_[$i][a])."' and author_rejete='".addslashes($aut_[$i][b])."' 
 				and responsability_notice='$notice_id' and responsability_author = author_id";
-			$result=mysql_query($requete);
-			if($row = mysql_fetch_row($result)){
+			$result=pmb_mysql_query($requete);
+			if($row = pmb_mysql_fetch_row($result)){
 				$author_id=$row[0];
 				$requete="update authors set author_comment='".addslashes($aut_[$i][3])."' where author_id='$author_id' ";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				
 				if($aut_i_4>=900) {
 					$index='';
@@ -248,12 +248,12 @@ function update_authors_num_opsys($aut_ ,$responsability_type)
 					} 						
 					$requete="update responsability SET responsability_fonction='$index' where responsability_notice='$notice_id'
 					and responsability_author = $author_id and responsability_fonction=".$aut_i_4;
-					$result=mysql_query($requete);
+					$result=pmb_mysql_query($requete);
 				}					
 									
 				if ($aut_i_p!="") {
 					$requete="delete from responsability where responsability_fonction='' and responsability_author = $author_id and responsability_type=$responsability_type and  responsability_notice='$notice_id'";
-					$result=mysql_query($requete);	
+					$result=pmb_mysql_query($requete);	
 					$index='';
 					if($table_responsability_function)foreach ($table_responsability_function as $key=>$val) {
 						if($table_responsability_function[$key]==$aut_i_p) {
@@ -269,7 +269,7 @@ function update_authors_num_opsys($aut_ ,$responsability_type)
 					} 
 					//$requete="update responsability SET responsability_fonction='$index' where responsability_notice='$notice_id' and responsability_author = $author_id";
 					$requete="insert into responsability SET responsability_fonction='$index' , responsability_notice='$notice_id' , responsability_author = $author_id, responsability_type=$responsability_type";
-					$result=mysql_query($requete);						
+					$result=pmb_mysql_query($requete);						
 				} 
 			
 
@@ -313,34 +313,34 @@ function import_new_notice_suite() {
 	// prix dvd et video
 	if($info_345_d[0]) {
 		$requete="update notices set prix='".addslashes($info_345_d[0])."' where notice_id='$notice_id' ";
-		mysql_query($requete);	
+		pmb_mysql_query($requete);	
 	}
 	// EAN
 	if($info_071_a[0]) {
 		$requete="update notices set code='".addslashes($info_071_a[0])."' where notice_id='$notice_id' ";
-		mysql_query($requete);	
+		pmb_mysql_query($requete);	
 	}	
 	// Producteur -> Editeur
 	if($info_071_b[0]) {
 		
 		$nom = $info_071_b[0];		
 		$requete="select ed_id from publishers where ed_name='".addslashes($nom)."' ";
-		$result=mysql_query($requete);
-		if($row = mysql_fetch_row($result)){
+		$result=pmb_mysql_query($requete);
+		if($row = pmb_mysql_fetch_row($result)){
 			$ed_id=$row[0];	
 		} else {
 			$requete = "insert into publishers SET ed_name='$nom', ";	
 			$requete .= "index_publisher=' ".strip_empty_words($nom)." '";
-			mysql_query($requete);	
-			$ed_id=mysql_insert_id();
+			pmb_mysql_query($requete);	
+			$ed_id=pmb_mysql_insert_id();
 		}		
 		$requete="update notices set ed1_id='".$ed_id."' where notice_id='$notice_id' ";
-		mysql_query($requete);	
+		pmb_mysql_query($requete);	
 	}	
 	// 345_c Matériel d'accompagnement
 	if($accomp_345_c[0]) {
 		$requete="update notices set accomp='".addslashes($accomp_345_c[0])."' where notice_id='$notice_id' ";
-		mysql_query($requete);	
+		pmb_mysql_query($requete);	
 	}
 	update_authors_num_opsys($aut_700,0);
 	update_authors_num_opsys($aut_701,1);
@@ -356,17 +356,17 @@ function import_new_notice_suite() {
 	if($info_675_a[0]) {
 		$indexint_id = indexint::import(clean_string($info_675_a[0]));
 		$requete="update notices set indexint='$indexint_id' where notice_id='$notice_id' ";
-		mysql_query($requete);	
+		pmb_mysql_query($requete);	
 	}
 	
 	if ($aut_700[0][a]!="") {
 		if ($aut_700[0][3]!="") {
 			$requete="select author_id from authors where author_name='".addslashes($aut_700[0][a])."' and author_rejete='".addslashes($aut_700[0][b])."' ";
-			$result=mysql_query($requete);
-			if($row = mysql_fetch_row($result)){
+			$result=pmb_mysql_query($requete);
+			if($row = pmb_mysql_fetch_row($result)){
 				$author_id=$row[0];
 				$requete="update authors set author_comment='".addslashes($aut_700[0][3])."' where author_id='$author_id' ";
-				mysql_query($requete);	
+				pmb_mysql_query($requete);	
 			}	
 		}		
 	}	
@@ -374,15 +374,15 @@ function import_new_notice_suite() {
 	if ($sous_coll=='1'&& $collection_225[0]['a']!="" && $collection_225[1]['a']!="") {
 			
 		$q="select coll_id from notices where notice_id='$notice_id' ";
-		$r=mysql_query($q, $dbh);
-		$coll_id = mysql_result($r,0,0);
+		$r=pmb_mysql_query($q, $dbh);
+		$coll_id = pmb_mysql_result($r,0,0);
 		if ($coll_id!='0') { 
 			/* sous collection */
 			$subcollec['name']=clean_string($collection_225[1]['a']);
 			$subcollec['coll_parent']=$coll_id;
 			$subcoll_id = subcollection::import($subcollec);
 			$requete="update notices set subcoll_id='$subcoll_id' where notice_id='$notice_id' ";
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 			
 		}
 	}
@@ -396,69 +396,69 @@ function import_new_notice_suite() {
 	if(($type_opsys=='UMO:13') ){
 		$requete="update notices set niveau_biblio='b', niveau_hierar='2' where notice_id='$notice_id' ";
 		//print "$requete <br />";
-		mysql_query($requete);	
+		pmb_mysql_query($requete);	
 	}	
 	if(($type_opsys=='UMO:23') || ($type_opsys=='UMO:3')) { // Titre de périodique
 		$requete="select * from notices_custom_values where notices_custom_small_text='".$num_opsys."'";	
 		//print "new $type_opsys:    $requete <br />";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		//Notice existe-t-elle comme notice temporaire?
-		if (@mysql_num_rows($resultat)) {
+		if (@pmb_mysql_num_rows($resultat)) {
 			//Si oui, récupération id notice temporaire a supprimer	
-			$old_n=mysql_fetch_object($resultat);
+			$old_n=pmb_mysql_fetch_object($resultat);
 			$notice_id_old=$old_n->notices_custom_origine;
 			// modifie les anciennes relations sur la vrai notice
 			$requete="update notices_relations set linked_notice='$notice_id' where linked_notice='$notice_id_old' ";
 			//print "$requete <br />";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			
 			$requete="update bulletins set bulletin_notice='$notice_id' where bulletin_notice='$notice_id_old' ";
 			//print "$requete <br />";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			
 			$requete="update notices set niveau_biblio='s', niveau_hierar='1' where notice_id='$notice_id' ";
 			//print "$requete <br />";
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 					
 			// suppression de la notice temporaire
 			$requete="delete from notices where notice_id=".$notice_id_old;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$requete="delete from notices_custom_values where notices_custom_origine='".$notice_id_old."'";	
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			//print "$requete <br />";					
 		} else {
 			$requete="update notices set niveau_biblio='s', niveau_hierar='1' where notice_id='$notice_id' ";
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 		}	
 	} else if(($type_opsys=='UMO:41') || ($type_opsys=='UMO:42')){	 // Dépouillement (hors article)
 		//Rien
 	} else if($type_opsys=='UMO:43'){	 // Dépouillement article de périodique		
 		$requete="select * from notices_custom_values where notices_custom_small_text='".$num_opsys."'";	
 		//print "new $type_opsys:    $requete <br />";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		//Notice existe-t-elle comme notice temporaire?
-		if (@mysql_num_rows($resultat)) {
+		if (@pmb_mysql_num_rows($resultat)) {
 			//Si oui, récupération id notice temporaire a supprimer	
-			$old_n=mysql_fetch_object($resultat);
+			$old_n=pmb_mysql_fetch_object($resultat);
 			$notice_id_old=$old_n->notices_custom_origine;
 			// modifie les anciennes relations sur la vrai notice
 					
 			$requete="update analysis set analysis_notice='$notice_id' where analysis_notice='$notice_id_old' ";
 			//print "$requete <br />";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			
 			$requete="update notices set niveau_biblio='a', niveau_hierar='2' where notice_id='$notice_id' ";
 			//print "$requete <br />";
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 					
 			// suppression de la notice temporaire
 			$requete="delete from notices where notice_id=".$notice_id_old;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$requete="delete from notices_custom_values where notices_custom_origine='".$notice_id_old."'";	
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 		} else {
 			$requete="update notices set niveau_biblio='a', niveau_hierar='2' where notice_id='$notice_id' ";
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 			//print "$requete <br />";
 		}	
 				
@@ -467,21 +467,21 @@ function import_new_notice_suite() {
 		if((($flag_titre_serie_recuperation)&&($is_serie))||(!$is_serie)) {
 			$requete="select * from notices_custom_values where notices_custom_small_text='".$num_opsys."'";	
 			//print "new $type_opsys:    $requete <br />";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			//Notice existe-t-elle comme notice temporaire?
-			if (@mysql_num_rows($resultat)) {
+			if (@pmb_mysql_num_rows($resultat)) {
 				//Si oui, récupération id notice temporaire a supprimer	
-				$old_n=mysql_fetch_object($resultat);
+				$old_n=pmb_mysql_fetch_object($resultat);
 				$notice_id_old=$old_n->notices_custom_origine;
 				// modifie les anciennes relations sur la vrai notice
 				$requete="update notices_relations set linked_notice='$notice_id' where linked_notice='$notice_id_old' ";
 				//print "$requete <br />";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				// suppression de la notice temporaire
 				$requete="delete from notices where notice_id=".$notice_id_old;
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$requete="delete from notices_custom_values where notices_custom_origine='".$notice_id_old."'";	
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				//print "$requete <br />";					
 			} 
 		} else if ($is_serie) { // suprimer la notice car on en veut pas
@@ -500,7 +500,7 @@ function import_new_notice_suite() {
 			} 
 			/* ajout de l'indexation à la notice dans la table notices_categories*/
 			$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$resultat."' " ;
-			$res_ajout = @mysql_query($rqt_ajout, $dbh);
+			$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		}
 	}
 	
@@ -515,7 +515,7 @@ function import_new_notice_suite() {
 		} 
 		/* ajout de l'indexation à la notice dans la table notices_categories*/
 		$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$resultat."' " ;
-		$res_ajout = @mysql_query($rqt_ajout, $dbh);
+		$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		
 	}	
 	
@@ -527,19 +527,19 @@ function import_new_notice_suite() {
 			//vérification de l'existence des categs, sinon création 
 			$requete="select indexint_id from indexint where indexint_name='".addslashes($info_686_a[0])."' and num_pclass='2'";
 			//print "$requete <br />"; 
-			$result=mysql_query($requete);	
-			if($row = mysql_fetch_row($result)){
+			$result=pmb_mysql_query($requete);	
+			if($row = pmb_mysql_fetch_row($result)){
 				$indexint_id=$row[0];
 			} else {
 				$requete="insert into indexint SET indexint_name='".addslashes($info_686_a[0])."', num_pclass='2' ";
 				//print "$requete <br />"; 
-				mysql_query($requete);	
-				$indexint_id=mysql_insert_id();
+				pmb_mysql_query($requete);	
+				$indexint_id=pmb_mysql_insert_id();
 			}		
 					
 			$requete="update notices set indexint='$indexint_id' where notice_id='$notice_id' ";	
 		//	print "$requete <br />"; 	
-			@mysql_query($requete, $dbh);
+			@pmb_mysql_query($requete, $dbh);
 			
 	}
 	
@@ -639,7 +639,7 @@ function import_new_notice_suite() {
 		
 		/* ajout de l'indexation à la notice dans la table notices_categories*/
 		$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$resultat."' " ;
-		$res_ajout = @mysql_query($rqt_ajout, $dbh);
+		$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		
 
 	}	
@@ -648,26 +648,26 @@ function import_new_notice_suite() {
 	if( substr($mots_cles,0,2)== ' ;')$mots_cles=substr($mots_cles,2);
 	$mots_cles ? $index_matieres = strip_empty_words($mots_cles) : $index_matieres = '';
 	$rqt_maj = "update notices set index_l='".addslashes($mots_cles)."', index_matieres=' ".addslashes($index_matieres)." ' where notice_id='$notice_id' " ;
-	$res_ajout = mysql_query($rqt_maj, $dbh);
+	$res_ajout = pmb_mysql_query($rqt_maj, $dbh);
 	
 	// insert du param perso mémorisant le numero Opsys de la notice
 	if(!$id_notices_custom_opsys) {
 		$rqt="select idchamp from notices_custom where name='num_opsys'";
-		$res = mysql_query($rqt, $dbh);
-		if ($res && ($r = mysql_fetch_object($res)))	$id_notices_custom_opsys= $r->idchamp;
+		$res = pmb_mysql_query($rqt, $dbh);
+		if ($res && ($r = pmb_mysql_fetch_object($res)))	$id_notices_custom_opsys= $r->idchamp;
 		$rqt="select idchamp from notices_custom where name='type_opsys'";
-		$res = mysql_query($rqt, $dbh);
-		if ($res && ($r = mysql_fetch_object($res)))	$id_notices_custom_type_opsys= $r->idchamp;		
+		$res = pmb_mysql_query($rqt, $dbh);
+		if ($res && ($r = pmb_mysql_fetch_object($res)))	$id_notices_custom_type_opsys= $r->idchamp;		
 	}
 		
 	$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values($id_notices_custom_opsys,$notice_id,'".addslashes($num_opsys)."')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values($id_notices_custom_type_opsys,$notice_id,'".addslashes($type_opsys)."')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	
 	$requete="select * from notices where notice_id=$notice_id";
-	$resultat=mysql_query($requete);
-	$r=mysql_fetch_object($resultat);
+	$resultat=pmb_mysql_query($requete);
+	$r=pmb_mysql_fetch_object($resultat);
 	
 	// $flag_depouillements_464_doc_sonore //	$flag_depouillements_464_doc_imprime=0;
 	// Traiter les dépouillement du champ 464
@@ -712,8 +712,8 @@ function import_new_notice_suite() {
 				for ($j=0; $j<sizeof($a_464); $j++) {	
 					if($_3_464[$j]) {
 						$requete="select author_id from authors where author_comment='".addslashes($_3_464[$j])."' ";			 
-						$result=mysql_query($requete);	
-						if($row = mysql_fetch_row($result)){
+						$result=pmb_mysql_query($requete);	
+						if($row = pmb_mysql_fetch_row($result)){
 							$author_id=$row[0];
 							//print $author_id."<br />";
 							
@@ -723,16 +723,16 @@ function import_new_notice_suite() {
 					if($a_464[$j] != '...') {
 						$requete="insert into notices set typdoc='$r->typdoc', tit1 ='".addslashes($a_464[$j])."',tit2 ='".addslashes($e_464[$j])."', niveau_biblio='$niveau_biblio',niveau_hierar='$niveau_hierar'  ";
 						//if ($type_opsys="UMO:2") print $requete ."<br />";
-						mysql_query($requete);
-						$depouille_id=mysql_insert_id();
+						pmb_mysql_query($requete);
+						$depouille_id=pmb_mysql_insert_id();
 						if ($depouille_id) {
 							//link notice
 							$requete="insert into notices_relations set num_notice='$depouille_id', linked_notice ='$notice_id', relation_type='a' ";
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 							if( $author_id ) {
 								$requete="insert into responsability SET responsability_fonction='070' , responsability_notice='$depouille_id' , responsability_author = $author_id, responsability_type=0";
 								//print $requete."<br />";
-								$result=mysql_query($requete);
+								$result=pmb_mysql_query($requete);
 							}		
 						}
 					}	
@@ -749,12 +749,12 @@ function import_new_notice_suite() {
 				}	
 				$requete="insert into notices set typdoc='$r->typdoc', tit1 ='".addslashes($a_464)."',tit2 ='".addslashes($e_464)."', niveau_biblio='$niveau_biblio',niveau_hierar='$niveau_hierar'  ";
 				//if ($type_opsys="UMO:2") print $requete ."<br />";
-				mysql_query($requete);
-				$depouille_id=mysql_insert_id();
+				pmb_mysql_query($requete);
+				$depouille_id=pmb_mysql_insert_id();
 				if ($depouille_id) {
 					//link notice
 					$requete="insert into notices_relations set num_notice='$depouille_id', linked_notice ='$notice_id', relation_type='a' ";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 			} 	
 			*/
@@ -773,56 +773,56 @@ function import_new_notice_suite() {
 				if($flag_titre_serie_recuperation) { // que si on veut 
 					$requete="select notices_custom_origine from notices_custom_values where notices_custom_small_text='".$info_461_3[$_3]."'";
 					//print "$requete  <br />";
-					$resultat=mysql_query($requete);
+					$resultat=pmb_mysql_query($requete);
 					//Notice chapeau existe-t-elle ?
-					if (@mysql_num_rows($resultat)) {
+					if (@pmb_mysql_num_rows($resultat)) {
 						//Si oui, récupération id
-						$chapeau_id=mysql_result($resultat,0,0);					
+						$chapeau_id=pmb_mysql_result($resultat,0,0);					
 					} else {
 						$niveau_biblio='m';
 						$niveau_hierar='1';
 						// Création de la notice temporaire chapeau
 						$requete="insert into notices set typdoc='$r->typdoc', tit1 ='".addslashes($info_461_t[$a])."' , niveau_biblio='$niveau_biblio',niveau_hierar='$niveau_hierar'  ";
 						//print "$requete  <br />";			
-						mysql_query($requete);
-						$chapeau_id=mysql_insert_id();
+						pmb_mysql_query($requete);
+						$chapeau_id=pmb_mysql_insert_id();
 						$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values($id_notices_custom_opsys,$chapeau_id,'".addslashes($info_461_3[$_3])."')";
 						//print "$requete <br />";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}	
 					if ($chapeau_id) {
 						//link notice
 						$requete="insert into notices_relations set num_notice='$notice_id', linked_notice ='$chapeau_id', relation_type='a' ";
 						//print "$requete  <br />";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}		
 				}	
 			break;				
 			case 'UMO:13': // bulletin  de périodique
 				$requete="select notices_custom_origine from notices_custom_values where notices_custom_small_text='".$info_461_3[$_3]."'";
 				//print "$requete  <br />";
-				$resultat=mysql_query($requete);
+				$resultat=pmb_mysql_query($requete);
 				//Notice chapeau existe-t-elle ?
-				if (@mysql_num_rows($resultat)) {
+				if (@pmb_mysql_num_rows($resultat)) {
 					//Si oui, récupération id
-					$chapeau_id=mysql_result($resultat,0,0);					
+					$chapeau_id=pmb_mysql_result($resultat,0,0);					
 				} else {
 					$niveau_biblio='s';
 					$niveau_hierar='1';
 					// Création de la notice temporaire chapeau
 					$requete="insert into notices set typdoc='$r->typdoc', tit1 ='".addslashes($info_461_t[$a])."' , niveau_biblio='$niveau_biblio',niveau_hierar='$niveau_hierar'  ";
 					//print "$requete  <br />";			
-					mysql_query($requete);
-					$chapeau_id=mysql_insert_id();
+					pmb_mysql_query($requete);
+					$chapeau_id=pmb_mysql_insert_id();
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values($id_notices_custom_opsys,$chapeau_id,'".addslashes($info_461_3[$_3])."')";
 					//print "$requete <br />";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}	
 				if ($chapeau_id) {
 					//link notice
 					$requete="insert into notices_relations set num_notice='$notice_id', linked_notice ='$chapeau_id', relation_type='b' , rank ='1'";
 					//print "$requete  <br />";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 										
 					// création bulletin
 					$info=array();
@@ -850,55 +850,55 @@ function import_new_notice_suite() {
 			case 'UMO:1': case 'UMO:2': case 'UMO:8':				
 				$requete="select notices_custom_origine from notices_custom_values where notices_custom_small_text='".$info_462_3[$_3]."'";
 				//print "$requete  <br />";
-				$resultat=mysql_query($requete);
+				$resultat=pmb_mysql_query($requete);
 				//Notice chapeau existe-t-elle ?
-				if (@mysql_num_rows($resultat)) {
+				if (@pmb_mysql_num_rows($resultat)) {
 					//Si oui, récupération id
-					$chapeau_id=mysql_result($resultat,0,0);					
+					$chapeau_id=pmb_mysql_result($resultat,0,0);					
 				} else {
 					$niveau_biblio='m';
 					$niveau_hierar='0';
 					// Création de la notice temporaire chapeau
 					$requete="insert into notices set typdoc='$r->typdoc', tit1 ='".addslashes($info_462_t[$a])."' , niveau_biblio='$niveau_biblio',niveau_hierar='$niveau_hierar'  ";
 					//print "$requete  <br />";			
-					mysql_query($requete);
-					$chapeau_id=mysql_insert_id();
+					pmb_mysql_query($requete);
+					$chapeau_id=pmb_mysql_insert_id();
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values($id_notices_custom_opsys,$chapeau_id,'".addslashes($info_462_3[$_3])."')";
 					//print "$requete <br />";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}	
 				if ($chapeau_id) {
 					//link notice
 					$requete="insert into notices_relations set num_notice='$notice_id', linked_notice ='$chapeau_id', relation_type='a' ";
 					//print "$requete  <br />";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}		
 			break;				
 			case 'UMO:13': // bulletin de périodique => création des articles
 				$requete="select notices_custom_origine from notices_custom_values where notices_custom_small_text='".$info_462_3[$_3]."'";
 				//print "$requete  <br />";
-				$resultat=mysql_query($requete);
+				$resultat=pmb_mysql_query($requete);
 				//Notice article existe-t-elle ?
-				if (@mysql_num_rows($resultat)) {
+				if (@pmb_mysql_num_rows($resultat)) {
 					//Si oui, récupération id
-					$article_id=mysql_result($resultat,0,0);					
+					$article_id=pmb_mysql_result($resultat,0,0);					
 				} else {
 					$niveau_biblio='a';
 					$niveau_hierar='2';
 					// Création de la notice temporaire de l'article
 					$requete="insert into notices set typdoc='$r->typdoc', tit1 ='".addslashes($info_462_t[$a])."' , niveau_biblio='$niveau_biblio',niveau_hierar='$niveau_hierar'  ";
 					//print "$requete  <br />";			
-					mysql_query($requete);
-					$article_id=mysql_insert_id();
+					pmb_mysql_query($requete);
+					$article_id=pmb_mysql_insert_id();
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values($id_notices_custom_opsys,$article_id,'".addslashes($info_462_3[$_3])."')";
 					//print "$requete <br />";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}	
 				if ($article_id) {
 					//lien article de bulletin créé dans table analitique
 					$requete="insert into analysis set analysis_bulletin='$bulletin_id', analysis_notice ='$article_id' ";
 					//print "$requete  <br />";		
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}											
 			break;		 															
 			default:
@@ -920,8 +920,8 @@ function gen_date($bul_date,$ed_date) {
 			$mysql_date = $year.'-'.$month.'-'.$day;				
 		} else {
 			$rqt= "SELECT curdate()";
-		 	if($result=mysql_query($rqt))
-				if($row = mysql_fetch_row($result))	$mysql_date = $row[0];
+		 	if($result=pmb_mysql_query($rqt))
+				if($row = pmb_mysql_fetch_row($result))	$mysql_date = $row[0];
 		}	
 		return $mysql_date;	
 	}	
@@ -954,13 +954,13 @@ function gen_date($bul_date,$ed_date) {
 	
 	$date = $year.'-'.$month.'-'.$day;
 	$rqt= "SELECT DATE_ADD('" .$date. "', INTERVAL 0 YEAR)";
-	if($result=mysql_query($rqt))
-		if($row = mysql_fetch_row($result))	$mysql_date= $row[0];
+	if($result=pmb_mysql_query($rqt))
+		if($row = pmb_mysql_fetch_row($result))	$mysql_date= $row[0];
 	
 	if(!$mysql_date) {
 		$rqt= "SELECT curdate()";
- 		if($result=mysql_query($rqt))
-			if($row = mysql_fetch_row($result))	$mysql_date = $row[0];	
+ 		if($result=pmb_mysql_query($rqt))
+			if($row = pmb_mysql_fetch_row($result))	$mysql_date = $row[0];	
 	}	
 	return $mysql_date;	
 }
@@ -1067,34 +1067,34 @@ function traite_exemplaires () {
 		if(($type_opsys=='UMO:13') ){
 			$requete="update exemplaires set expl_notice='0', expl_bulletin='$bulletin_id' where expl_id='$expl_id' ";
 			//print "$requete <br />";
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 		}      
 		
 		if(!$id_expl_fournisseur_opsys) {
 			$rqt="select idchamp from expl_custom where name='fournisseur'";
-			$res = mysql_query($rqt, $dbh);
-			if ($res && ($r = mysql_fetch_object($res)))	$id_expl_fournisseur_opsys= $r->idchamp;
+			$res = pmb_mysql_query($rqt, $dbh);
+			if ($res && ($r = pmb_mysql_fetch_object($res)))	$id_expl_fournisseur_opsys= $r->idchamp;
 		}			
 		if(!$id_expl_inventaire_opsys) {
 			$rqt="select idchamp from expl_custom where name='inventaire'";
-			$res = mysql_query($rqt, $dbh);
-			if ($res && ($r = mysql_fetch_object($res)))	$id_expl_inventaire_opsys= $r->idchamp;		
+			$res = pmb_mysql_query($rqt, $dbh);
+			if ($res && ($r = pmb_mysql_fetch_object($res)))	$id_expl_inventaire_opsys= $r->idchamp;		
 		}
 		//inventaire en champ perso
 		if($field=$info_995[$nb_expl]['6']) {		
 			$requete="insert into expl_custom_values (expl_custom_champ,expl_custom_origine,expl_custom_small_text) values($id_expl_inventaire_opsys,$expl_id,'".addslashes($field)."')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}   
 		//Fournisseur en champ perso
 		if($field=$info_995[$nb_expl]['7']) {		
 			$requete="insert into expl_custom_values (expl_custom_champ,expl_custom_origine,expl_custom_small_text) values($id_expl_fournisseur_opsys,$expl_id,'".addslashes($field)."')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		} 
 		//Date de création
 		if($field=$info_995[$nb_expl]['8']) {		
 			$requete="update exemplaires set create_date='$field 12:00:00' where expl_id='$expl_id' ";
 			//print $requete;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}   
 
 	} // fin for

@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: move.js,v 1.12 2013-04-12 09:25:31 mbertin Exp $
+// $Id: move.js,v 1.15 2015-04-07 15:19:52 vtouchard Exp $
 
 down=false;
 down_parent=false;
@@ -353,6 +353,14 @@ function save_all(e) {
 }
 
 function move_fields(domXML) {
+	var need_parse = false;
+	if(typeof(dojo) == "object"){
+		var widgets = dijit.registry.toArray();
+		for(var i=0 ; i<widgets.length ; i++){
+			widgets[i].destroy(true);
+			need_parse = true;
+		}
+  	}
 	root=domXML.getElementsByTagName("formpage");
 	relative=root[0].getAttribute("relative");
 	if (relative=="yes") relative=true; else relative=false;
@@ -442,6 +450,9 @@ function move_fields(domXML) {
 		}
 	}
 	parent_onglet.style.visibility="visible";
+	if(need_parse){
+		dojo.parser.parse();
+	}
 }
 
 function move_getted_pos() {
@@ -449,7 +460,11 @@ function move_getted_pos() {
 		if (requete["get_notice"].status=="200") {
 			var formatpage=requete["get_notice"].responseXML;
 			if (formatpage) {
+				var startOfMove=new Event('movestart');
+				document.body.dispatchEvent(startOfMove);
 				move_fields(formatpage);
+				var endOfMove=new Event('moveend');
+				document.body.dispatchEvent(endOfMove);
 			}
 		} else formatpage=null;
 	}
@@ -769,7 +784,7 @@ function move_parse_dom(rel) {
 document.onclick=function(e) {
 	if (e) {
 		if (e.target.nodeType==1)
-			if  ((e.target.parentNode.getAttribute("id")!="popup_onglet")&&(e.target.getAttribute("id")!="popup_onglet"))
+			if  ((e.target.parentNode)&&(e.target.parentNode.getAttribute("id")!="popup_onglet")&&(e.target.getAttribute("id")!="popup_onglet"))
 				if (document.getElementById("popup_onglet")) document.getElementById("popup_onglet").parentNode.removeChild(document.getElementById("popup_onglet"));
 	}
 }

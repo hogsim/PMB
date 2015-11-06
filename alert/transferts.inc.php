@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: transferts.inc.php,v 1.3 2009-05-16 11:12:02 dbellamy Exp $
+// $Id: transferts.inc.php,v 1.4 2015-04-03 11:16:25 jpermanne Exp $
 
 
 if (stristr ( $_SERVER ['REQUEST_URI'], ".inc.php" ))
@@ -45,8 +45,8 @@ function cpt_transferts($clause_where) {
 			"WHERE " . $clause_where . " " . 
 			"LIMIT 1";
 	//echo $rqt."<br />";
-	$req = mysql_query ( $rqt ) or die ( $msg ["err_sql"] . "<br />" . $rqt . "<br />" . mysql_error () );
-	$nb_limite = mysql_num_rows ( $req );
+	$req = pmb_mysql_query( $rqt ) or die ( $msg ["err_sql"] . "<br />" . $rqt . "<br />" . pmb_mysql_error() );
+	$nb_limite = pmb_mysql_num_rows( $req );
 	
 	return $nb_limite;
 }

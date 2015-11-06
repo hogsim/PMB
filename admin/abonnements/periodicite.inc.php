@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: periodicite.inc.php,v 1.4 2012-09-28 07:34:54 dgoron Exp $
+// $Id: periodicite.inc.php,v 1.5 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -38,12 +38,12 @@ function show_statut($dbh) {
 	// affichage du tableau des périodicités
 	$requete = "SELECT periodicite_id, libelle, duree, unite, seuil_periodicite, retard_periodicite,consultation_duration  ";
 	$requete .= "FROM abts_periodicites ORDER BY libelle ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -115,24 +115,24 @@ switch($action) {
 		if (($retard_periodicite>=$seuil_periodicite)||($retard_periodicite==0)) {
 			if ($id) {
 				$requete = "UPDATE abts_periodicites SET libelle='$libelle',duree='$duree',unite='$unite', seuil_periodicite='$seuil_periodicite', retard_periodicite='$retard_periodicite', retard_periodicite='$retard_periodicite' , consultation_duration='$consultation_duration' WHERE periodicite_id='$id' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_statut($dbh);
 			} else {
-				$requete1=mysql_query("SELECT count(*) FROM abts_periodicites WHERE libelle='$libelle'");
+				$requete1=pmb_mysql_query("SELECT count(*) FROM abts_periodicites WHERE libelle='$libelle'");
 				if ($requete1)
 				{
-					$result1=mysql_fetch_array($requete1);
+					$result1=pmb_mysql_fetch_array($requete1);
 					if ($result1[0]==0) {
 						$requete = "INSERT INTO abts_periodicites SET libelle='$libelle',duree='$duree',unite='$unite', seuil_periodicite='$seuil_periodicite', retard_periodicite='$retard_periodicite' , consultation_duration='$consultation_duration' ";
-						$res = mysql_query($requete, $dbh);
+						$res = pmb_mysql_query($requete, $dbh);
 						show_statut($dbh);
 					} else {
 						error_message_history(	$msg[periodicite_existante], $msg[periodicite_existante], 1);	
 					}	
-					mysql_free_result($requete1);
+					pmb_mysql_free_result($requete1);
 				} else {
 					print $msg['err_sql']."\n";
-					print mysql_error();
+					print pmb_mysql_error();
 				}
 			}
 		} else {
@@ -146,9 +146,9 @@ switch($action) {
 	case 'modif':
 		if ($id) {
 			$requete = "SELECT libelle, duree, unite, retard_periodicite, seuil_periodicite,consultation_duration FROM abts_periodicites WHERE periodicite_id='$id'";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				statut_form($id, $row->libelle, $row->duree, $row->unite, $row->seuil_periodicite, $row->retard_periodicite, $row->consultation_duration);
 			} 
 		}else {
@@ -158,12 +158,12 @@ switch($action) {
 	case 'del':
 		if ($id) {
 			$total = 0;
-			$total = mysql_result(mysql_query("select count(1) from abts_modeles where num_periodicite ='".$id."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from abts_modeles where num_periodicite ='".$id."' ", $dbh), 0, 0);
 			if ($total==0) {
 				$requete = "DELETE FROM abts_periodicites WHERE periodicite_id='$id' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete = "OPTIMIZE TABLE abts_periodicites ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_statut($dbh);
 				} else {
 					error_message(	$msg[noti_statut_noti], $msg[noti_statut_used], 1, 'admin.php?categ=abonnements&sub=periodicite&action=');

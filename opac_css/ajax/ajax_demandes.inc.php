@@ -2,28 +2,27 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_demandes.inc.php,v 1.6 2012-02-13 13:17:49 dgoron Exp $
+// $Id: ajax_demandes.inc.php,v 1.12 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 
-require_once($base_path."/classes/demandes_action.class.php");
+require_once($base_path."/classes/demandes.class.php");
+require_once($base_path."/classes/demandes_actions.class.php");
+require_once($base_path."/classes/demandes_notes.class.php");
 require_once($base_path."/includes/templates/demandes.tpl.php");
+require_once($base_path."/includes/templates/demandes_actions.tpl.php");
+require_once($base_path."/includes/templates/demandes_notes.tpl.php");
 require_once($base_path."/includes/mail.inc.php");
 
 switch($quoifaire){
-	
-	case 'show_form':
-		show_form($id,$type);	
-	break;
-	case 'save_ask':
-		save_ask($id,$type);	
-	break;
-	case 'add_note':
-		add_note();
+	case 'show_list_action':
+		$demande=new demandes($id_demande,false);
+		ajax_http_send_response(demandes_actions::show_list_actions($demande->actions,$id_demande,0,false));
 		break;
-	case 'save_note':
-		save_note($id_action,$id_note,$id_demande);
+	case 'show_dialog':
+		$action=new demandes_actions($id_action,false);
+		ajax_http_send_response(demandes_notes::show_dialog($action->notes, $action->id_action,$action->num_demande,"demandes-show_consult_form"));
 		break;
 }
 
@@ -88,7 +87,7 @@ function show_form($id,$type){
  */
 function save_ask($id,$type){
 	
-	global $dbh, $sujet, $detail, $date_rdv,$id_empr;
+	global $dbh, $sujet, $detail, $date_rdv,$id_empr, $pmb_type_audit;
 	
 	$date = date("Y-m-d",time());
 	if($type=='ask'){
@@ -102,7 +101,8 @@ function save_ask($id,$type){
 			num_demande = '".$id."',
 			actions_num_user ='".$id_empr."',
 			actions_type_user=1,
-			actions_read=1	
+			actions_read=1,
+			actions_read_gestion=1	
 		";
 	} elseif($type=='info'){
 		$req = "insert into demandes_actions set 
@@ -115,7 +115,8 @@ function save_ask($id,$type){
 			num_demande = '".$id."',
 			actions_num_user ='".$id_empr."',
 			actions_type_user=1,
-			actions_read=1		
+			actions_read=1,
+			actions_read_gestion=1	
 		";
 	} elseif($type=='rdv'){
 		$req = "insert into demandes_actions set 
@@ -128,15 +129,20 @@ function save_ask($id,$type){
 			num_demande = '".$id."',
 			actions_num_user ='".$id_empr."',
 			actions_type_user=1	,
-			actions_read=1		
+			actions_read=1,
+			actions_read_gestion=1		
 		";
 	}
-	mysql_query($req,$dbh);
-	$idaction = mysql_insert_id();
+	pmb_mysql_query($req,$dbh);
+	$idaction = pmb_mysql_insert_id();
+	if($pmb_type_audit) audit::insert_creation(AUDIT_ACTION,$idaction);
 	
 	$dmde_act = new demandes_action($id,$idaction);
 	$display = $dmde_act->getContenuForm();
-		
+
+	$update_dmde = "update demandes set dmde_read_gestion='1' where id_demande=".$id;
+	pmb_mysql_query($update_dmde,$dbh);
+	
 	ajax_http_send_response($display);
 	
 }
@@ -148,8 +154,8 @@ function add_note(){
 	global $msg,$dbh, $id_action;
 	
 	$req = "select type_action from demandes_actions where id_action='".$id_action."'";
-	$res = mysql_query($req,$dbh);
-	$action = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req,$dbh);
+	$action = pmb_mysql_fetch_object($res);
 	if($action->type_action == '1'){
 		$titre = $msg['demandes_notes_question_form'];
 	} else $titre = $msg['demandes_notes_form'];
@@ -178,7 +184,7 @@ function add_note(){
 function save_note($idaction, $idnote=0, $id_demande=0){
 	
 	global $contenu,$dbh, $charset, $id_empr;
-	global $demandes_email_demandes;
+	global $demandes_email_demandes, $pmb_type_audit;
 	
 	$date = date("Y-m-d",time());
 	$req = " insert into demandes_notes 
@@ -186,16 +192,30 @@ function save_note($idaction, $idnote=0, $id_demande=0){
 		date_note='".$date."',";
 	if($idnote) $req .= "num_note_parent='".$idnote."',";
 	$req .= " num_action='".$idaction."',";
-	$req .= " notes_num_user='".$id_empr."', notes_type_user=1 ";	
-	mysql_query($req,$dbh);
+	$req .= " notes_num_user='".$id_empr."', notes_type_user=1, ";	
+	$req .= " notes_read_gestion=1";
+	pmb_mysql_query($req,$dbh);
 	
 	$req_up = "update demandes_actions set actions_read=1 where id_action='".$idaction."'";
-	mysql_query($req_up,$dbh);
+	pmb_mysql_query($req_up,$dbh);
 	
 	$dmde_act = new demandes_action($id_demande,$idaction);
 	$display = $dmde_act->getContenuForm();
 	
 	if ($demandes_email_demandes) $dmde_act->send_alert_by_mail($id_empr,$idnote);
+	if($pmb_type_audit && $idnote) {
+		audit::insert_modif(AUDIT_NOTE,$idnote);
+	} elseif ($pmb_type_audit && !$idnote){
+		$idnote = pmb_mysql_insert_id($dbh);
+		audit::insert_creation(AUDIT_NOTE,$idnote);
+	}
+	
+	// création d'une nouvelle note => alerte sur l'action + la demande
+	$req_up1 = "update demandes_actions set actions_read_gestion='1' where id_action='".$idaction."';";
+	$req_up2= "update demandes inner join demandes_actions on demandes_actions.num_demande = demandes.id_demande set demandes.dmde_read_gestion='1' where demandes_actions.id_action='".$idaction."'";
+	
+	pmb_mysql_query($req_up1,$dbh);
+	pmb_mysql_query($req_up2,$dbh);
 	
 	ajax_http_send_response($display);
 }

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.1 2011-06-13 08:18:52 gueluneau Exp $
+// $Id: search.class.php,v 1.2 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -42,13 +42,13 @@ class periodique_search {
     	//Affichage de la liste des périodiques
     	if (!$this->is_empty($valeur)) {
     		$requete="select tit1 from notices where notice_id=".$valeur[0];
-    		$r=mysql_query($requete);
-    		return "<b><i>".mysql_result($r,0,0)."</i></b><input type='hidden' name='field_".$this->n_ligne."_s_".$this->id."[]' value='".$valeur[0]."'/>";
+    		$r=pmb_mysql_query($requete);
+    		return "<b><i>".pmb_mysql_result($r,0,0)."</i></b><input type='hidden' name='field_".$this->n_ligne."_s_".$this->id."[]' value='".$valeur[0]."'/>";
     	} else {
     		$r="<select name='field_".$this->n_ligne."_s_".$this->id."[]'>";
     		$requete="select notice_id,tit1 from notices where niveau_biblio='s' order by index_sew";
-    		$res_perio=mysql_query($requete);
-    		while ($t_perio=mysql_fetch_object($res_perio)) {
+    		$res_perio=pmb_mysql_query($requete);
+    		while ($t_perio=pmb_mysql_fetch_object($res_perio)) {
     			$r.="<option value='".$t_perio->notice_id."'".($valeur[0]==$t_perio->notice_id?" selected='selected'":"").">".htmlentities($t_perio->tit1,ENT_QUOTES,$charset)."</option>";
     		}
     		$r.="</select>";
@@ -70,10 +70,10 @@ class periodique_search {
     	$valeur=$$valeur_;
     	
     	if (!$this->is_empty($valeur)) {
-    		mysql_query("create temporary table t_s_perio (notice_id integer unsigned not null)");
+    		pmb_mysql_query("create temporary table t_s_perio (notice_id integer unsigned not null)");
     		$requete="insert into t_s_perio select distinct analysis_notice from analysis join bulletins on (analysis_bulletin=bulletin_id) join notices on (bulletin_notice=notice_id and notice_id=".$valeur[0].")";
-    		mysql_query($requete);
- 			mysql_query("alter table t_s_perio add primary key(notice_id)");
+    		pmb_mysql_query($requete);
+ 			pmb_mysql_query("alter table t_s_perio add primary key(notice_id)");
     	}
 		return "t_s_perio"; 
     }
@@ -91,8 +91,8 @@ class periodique_search {
     	$tit=array();
     	if (!$this->is_empty($valeur)) {
     		$requete="select tit1 from notices where notice_id=".$valeur[0];
-    		$r=mysql_query($requete);
-    		$tit[0]=mysql_result($r,0,0);
+    		$r=pmb_mysql_query($requete);
+    		$tit[0]=pmb_mysql_result($r,0,0);
     	} else $tit[0]="[vide]";
 		return $tit;    
     }

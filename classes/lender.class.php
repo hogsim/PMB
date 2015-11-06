@@ -49,10 +49,10 @@ function getData() {
 		$this->idlender	= 0;
 		$this->lender_libelle =	"";
 	} else {
-		$requete = "SELECT idlender, lender_libelle FROM lenders WHERE idlender='".$this->idlender."' LIMIT 1 " or die (mysql_error());
-		$result = mysql_query($requete, $dbh);
-		if(mysql_num_rows($result)) {
-			$temp = mysql_fetch_object($result);
+		$requete = "SELECT idlender, lender_libelle FROM lenders WHERE idlender='".$this->idlender."' LIMIT 1 " or die (pmb_mysql_error());
+		$result = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($result)) {
+			$temp = pmb_mysql_fetch_object($result);
 			$this->idlender		= $temp->idlender;
 			$this->lender_libelle		= $temp->lender_libelle;
 		} else {
@@ -79,9 +79,9 @@ static function gen_combo_box ( $selected ) {
 	$option_premier_code="";
 	$option_premier_info="";
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete);
+	$resultat_liste=pmb_mysql_query($requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\">\n" ;
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 	} else {
@@ -92,11 +92,11 @@ static function gen_combo_box ( $selected ) {
 		}
 		$i=0;
 		while ($i<$nb_liste) {
-			$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-			if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+			$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+			if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 				$gen_liste_str.="selected" ;
 			}
-			$gen_liste_str.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
+			$gen_liste_str.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
 			$i++;
 		}
 	}
@@ -118,7 +118,7 @@ function import($data) {
 	}
 	// check sur les éléments du tableau
 	
-	$long_maxi = mysql_field_len(mysql_query("SELECT lender_libelle FROM lenders limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT lender_libelle FROM lenders limit 1"),0);
 	$data['lender_libelle'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['lender_libelle']))),0,$long_maxi));
 
 	if($data['lender_libelle']=="") return 0;
@@ -128,9 +128,9 @@ function import($data) {
 	
 	/* vérification que le lender existe */
 	$query = "SELECT idlender FROM lenders WHERE lender_libelle='${key0}' LIMIT 1 ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't SELECT lenders ".$query);
-	$lenders  = mysql_fetch_object($result);
+	$lenders  = pmb_mysql_fetch_object($result);
 
 	/* le lender existe, on retourne l'ID */
 	if($lenders->idlender) return $lenders->idlender;
@@ -138,10 +138,10 @@ function import($data) {
 	// id non-récupérée, il faut créer la forme.
 	
 	$query  = "INSERT INTO lenders SET lender_libelle='".$key0."' ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't INSERT into lenders ".$query);
 
-	return mysql_insert_id($dbh);
+	return pmb_mysql_insert_id($dbh);
 
 } /* fin méthode import */
 

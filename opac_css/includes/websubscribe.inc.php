@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: websubscribe.inc.php,v 1.5.2.2 2014-05-19 13:16:26 arenou Exp $
+// $Id: websubscribe.inc.php,v 1.9 2015-06-02 13:24:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "inc.php")) die("no access");
 
@@ -18,10 +18,11 @@ define('PBINSC_PARAM'	,    8);
 
 require_once($base_path."/includes/templates/websubscribe.tpl.php");
 require_once($base_path."/includes/bannette_func.inc.php");
+require_once("$class_path/emprunteur.class.php");
 
 function generate_form_inscription() {
 	global $subs_form_create, $msg ;
-	global $f_nom, $f_prenom, $f_email, $f_login, $f_password ;
+	global $f_nom, $f_prenom, $f_email;
 	global $f_msg, $f_adr1, $f_adr2, $f_cp, $f_ville, $f_pays, $f_tel1;
 	
 	$subs_form_create = str_replace ("!!f_nom!!",				stripslashes($f_nom),						$subs_form_create);
@@ -40,7 +41,7 @@ function generate_form_inscription() {
 	$subs_form_create = str_replace ("!!f_loc!!",				docs_location::gen_combo_box_empr ("", 0),	$subs_form_create);
 	$subs_form_create = str_replace ("!!others_informations!!",	prepare_post_others_informations(),			$subs_form_create);
 	return $subs_form_create;
-	}
+}
 
 function verif_validite_compte() {
 	global $dbh, $msg, $opac_default_lang ;
@@ -52,16 +53,16 @@ function verif_validite_compte() {
 	$ret=array();
 
 	$rqt = "select id_empr from empr where empr_mail like '%".$f_email."%' ";
-	$res = mysql_query($rqt,$dbh);
-	if (mysql_num_rows($res)>0) {
+	$res = pmb_mysql_query($rqt,$dbh);
+	if (pmb_mysql_num_rows($res)>0) {
 		$ret[0]=PBINSC_MAIL;
 		$ret[1]=str_replace("!!email!!",urlencode($f_email),$msg[subs_pb_email]);
 		return $ret ;
 	}
 
 	$rqt = "select id_empr from empr where empr_login ='".$f_login."' ";
-	$res = mysql_query($rqt,$dbh);
-	if (mysql_num_rows($res)>0) {
+	$res = pmb_mysql_query($rqt,$dbh);
+	if (pmb_mysql_num_rows($res)>0) {
 		$ret[0]=PBINSC_LOGIN;
 		$ret[1]=str_replace("!!f_login!!",$f_login,$msg[subs_pb_login]).generate_form_inscription();
 		return $ret ;
@@ -94,8 +95,8 @@ function verif_validite_compte() {
 	$pe_emprcb='wwwtmp'.rand(0,100000);
 	// durée d'adhésion de la categ web
 	$rqt="select duree_adhesion from empr_categ where id_categ_empr='".$opac_websubscribe_empr_categ."' ";
-	$res = mysql_query($rqt,$dbh);
-	$obj=mysql_fetch_object($res);
+	$res = pmb_mysql_query($rqt,$dbh);
+	$obj=pmb_mysql_fetch_object($res);
 	$duree_adhesion=$obj->duree_adhesion;
 
 	global $pmb_lecteurs_localises,$opac_websubscribe_show_location;
@@ -143,9 +144,12 @@ function verif_validite_compte() {
 		$rqt.=",empr_subscription_action = '".addslashes(serialize(array()))."'";
 	}
 	
-	$res = mysql_query($rqt,$dbh) or die (mysql_error()."<br /><br />$rqt");
-	$id_empr = mysql_insert_id();
-				
+	$res = pmb_mysql_query($rqt,$dbh) or die (pmb_mysql_error()."<br /><br />$rqt");
+	$id_empr = pmb_mysql_insert_id();
+	
+	emprunteur::update_digest($f_login,$f_password);
+	emprunteur::hash_password($f_login,$f_password);
+	
 	if ($id_empr) {
 		//redefine empr.empr_cb   
 		$pe_emprcb='www'.$id_empr;
@@ -159,8 +163,8 @@ function verif_validite_compte() {
 			$prefix = $opac_websubscribe_num_carte_auto_array[3];
 		
 			$rqt =  "SELECT CAST(SUBSTRING(empr_cb,".($long_prefixe+1).") AS UNSIGNED) AS max_cb, SUBSTRING(empr_cb,1,".($long_prefixe*1).") AS prefixdb FROM empr ORDER BY max_cb DESC limit 0,1" ; // modif f cerovetti pour sortir dernier code barre tri par ASCII
-			$res = mysql_query($rqt, $dbh);
-			$cb_initial = mysql_fetch_object($res);
+			$res = pmb_mysql_query($rqt, $dbh);
+			$cb_initial = pmb_mysql_fetch_object($res);
 			$pe_emprcb = ($cb_initial->max_cb*1)+1;
 			if (!$nb_chiffres) $nb_chiffres=strlen($pe_emprcb);
 			if (!$prefix) $prefix = $cb_initial->prefixdb;
@@ -179,7 +183,7 @@ function verif_validite_compte() {
 			}
 		}
 		$rqt = "UPDATE empr SET empr_cb='$pe_emprcb' WHERE id_empr='$id_empr'";
-		$res = mysql_query($rqt, $dbh) or die (mysql_error()."<br /><br />$rqt");
+		$res = pmb_mysql_query($rqt, $dbh) or die (pmb_mysql_error()."<br /><br />$rqt");
 
 		// envoyer le mail de demande de confirmation
 		global $opac_biblio_name,$opac_biblio_email,$opac_url_base ;
@@ -203,9 +207,9 @@ function verif_validite_compte() {
 		
 		//alerte pour les utilisateurs
 		$query_users = "select nom, prenom, user_email from users where user_email like('%@%') and user_alert_subscribemail=1";
-		$result_users = @mysql_query($query_users, $dbh);
+		$result_users = @pmb_mysql_query($query_users, $dbh);
 		if ($result_users) {
-			if (mysql_num_rows($result_users) > 0) {
+			if (pmb_mysql_num_rows($result_users) > 0) {
 				global $pmb_url_base;
 				$obj = str_replace("!!biblio_name!!",$opac_biblio_name,$msg[subs_alert_user_mail_obj]) ;
 				$obj = str_replace("!!empr_name!!", stripslashes($f_nom),$obj);
@@ -216,7 +220,7 @@ function verif_validite_compte() {
 				$empr_link = str_replace("!!pmb_url_base!!",$pmb_url_base,$msg[subs_alert_user_mail_empr_link]) ;
 				$empr_link = str_replace("!!empr_cb!!",$pe_emprcb,$empr_link);
 				$corps = str_replace("!!empr_link!!", $empr_link,$corps);
-				while ($user=@mysql_fetch_object($result_users)) {
+				while ($user=@pmb_mysql_fetch_object($result_users)) {
 					@mailpmb(trim($user->prenom." ".$user->nom), $user->user_email,$obj,$corps,$opac_biblio_name, $opac_biblio_email, $headers);
 				}
 			}
@@ -241,41 +245,42 @@ function verif_validation_compte() {
 	$ret=array();
 
 	$rqt = "select id_empr, if(date_add(empr_creation, INTERVAL $opac_websubscribe_valid_limit HOUR)>=sysdate(),1,0) as not_depasse, empr_password, cle_validation, empr_subscription_action from empr where empr_login ='".$login."' and empr_statut='".$opac_websubscribe_empr_status_array[0]."' "; 
-	$res = mysql_query($rqt,$dbh) or die (mysql_error()."<br /><br />$rqt");
-	if (mysql_num_rows($res)>0) {
+	$res = pmb_mysql_query($rqt,$dbh) or die (pmb_mysql_error()."<br /><br />$rqt");
+	if (pmb_mysql_num_rows($res)>0) {
 		// trouvé !
-		$obj=mysql_fetch_object($res);
+		$obj=pmb_mysql_fetch_object($res);
 		if ($obj->not_depasse) {
 			// validation pas dépassée
 			if ($obj->cle_validation==$cle_validation) {
 				$subscription_action = unserialize($obj->empr_subscription_action);
 				$suite = get_html_subscription_action($subscription_action);
 				$rqt = "update empr set cle_validation='', empr_subscription_action= '', empr_statut='".$opac_websubscribe_empr_status_array[1]."' where empr_login='".$login."' ";
-				$res = mysql_query($rqt,$dbh) or die (mysql_error()."<br /><br />$rqt");
+				$res = pmb_mysql_query($rqt,$dbh) or die (pmb_mysql_error()."<br /><br />$rqt");
 				$ret[0]=PBINSC_OK;				
 				if($suite){
 					//on connecte avec une mini feinte...
 					global $emprlogin;
 					$emprlogin = $login;
-					global $password;
-					$password = $obj->empr_password;
-					$log_ok = connexion_empr();if ($log_ok){
+					global $encrypted_password;
+					$encrypted_password = $obj->empr_password;
+					$log_ok = connexion_empr();
+					if ($log_ok){
 						$ret[1] = str_replace("!!form_access_compte!!",$suite,$msg[subs_ok_validation]) ;
 					}else{
 						$form_access_compte=str_replace("!!login!!",$login,$form_access_compte) ;
-						$form_access_compte=str_replace("!!password!!",$obj->empr_password,$form_access_compte) ;
+						$form_access_compte=str_replace("!!encrypted_password!!",$obj->empr_password,$form_access_compte) ;
 						$ret[1] = str_replace("!!form_access_compte!!",$form_access_compte,$msg[subs_ok_validation]) ;
 					}
 				}else{
 					$form_access_compte=str_replace("!!login!!",$login,$form_access_compte) ;
-					$form_access_compte=str_replace("!!password!!",$obj->empr_password,$form_access_compte) ;
+					$form_access_compte=str_replace("!!encrypted_password!!",$obj->empr_password,$form_access_compte) ;
 					$ret[1] = str_replace("!!form_access_compte!!",$form_access_compte,$msg[subs_ok_validation]) ;
 				}
 				return $ret ;
 			} else {
 				// login Ok mais clé pas valide
 				$rqt = "delete from empr where empr_login='".$login."' ";
-				$res = mysql_query($rqt,$dbh) or die (mysql_error()."<br /><br />$rqt");
+				$res = pmb_mysql_query($rqt,$dbh) or die (pmb_mysql_error()."<br /><br />$rqt");
 				$ret[0]=PBINSC_CLE;
 				$ret[1]=$msg[subs_pb_cle];
 				return $ret ;
@@ -283,7 +288,7 @@ function verif_validation_compte() {
 		} else {
 			// dépassée
 			$rqt = "delete from empr where empr_login='".$login."' ";
-			$res = mysql_query($rqt,$dbh) or die (mysql_error()."<br /><br />$rqt");
+			$res = pmb_mysql_query($rqt,$dbh) or die (pmb_mysql_error()."<br /><br />$rqt");
 			$ret[0]=PBINSC_INVALID;
 			$ret[1]=$msg[subs_pb_invalid];
 			return $ret ;

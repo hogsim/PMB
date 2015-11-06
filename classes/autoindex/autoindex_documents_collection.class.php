@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: autoindex_documents_collection.class.php,v 1.3 2014-02-27 17:12:40 dbellamy Exp $
+// $Id: autoindex_documents_collection.class.php,v 1.4 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -93,17 +93,17 @@ class autoindex_documents_collection {
 					} 
 					$q_dt = "select count(distinct id_notice) from notices_mots_global_index where num_word=".addslashes($word->id)." and ".$q_where;
 //echo $q_dt."\r\n";
-					$r_dt = mysql_query($q_dt, $dbh);
-					if (mysql_num_rows($r_dt)) {
-						$dt = mysql_result($r_dt,0,0);
+					$r_dt = pmb_mysql_query($q_dt, $dbh);
+					if (pmb_mysql_num_rows($r_dt)) {
+						$dt = pmb_mysql_result($r_dt,0,0);
 					}
 					//rien trouvé dans le fonds et le mot sans langue existe
 					if(!$dt && $word->wo_lang_id) {
 						$q_dt = "select count(distinct id_notice) from notices_mots_global_index where num_word=".addslashes($word->wo_lang_id)." and ".$q_where;
 //echo $q_dt."\r\n";
-						$r_dt = mysql_query($q_dt, $dbh);
-						if (mysql_num_rows($r_dt)) {
-							$dt = mysql_result($r_dt,0,0);
+						$r_dt = pmb_mysql_query($q_dt, $dbh);
+						if (pmb_mysql_num_rows($r_dt)) {
+							$dt = pmb_mysql_result($r_dt,0,0);
 						}
 					}
 						
@@ -135,9 +135,9 @@ class autoindex_documents_collection {
 		
 		if (is_null($this->d)) {
 			$q_d = "select count(*) from notices";
-			$r_d = mysql_query($q_d, $dbh);
-			if (mysql_num_rows($r_d)) {
-				$this->d = mysql_result($r_d,0,0);
+			$r_d = pmb_mysql_query($q_d, $dbh);
+			if (pmb_mysql_num_rows($r_d)) {
+				$this->d = pmb_mysql_result($r_d,0,0);
 			} else {
 				$this->d = 0;
 			}
@@ -193,17 +193,17 @@ class autoindex_documents_collection {
 			
 			$q_dt = "select count(distinct id_notice) from words join notices_mots_global_index on num_word=id_word where stem='".addslashes($stem->label)."' and lang='".$stem->lang."' "." and ".$q_where;
 // echo $q_dt."\r\n";
-			$r_dt = mysql_query($q_dt, $dbh);
-			if (mysql_num_rows($r_dt)) {
-				$dt = mysql_result($r_dt,0,0);
+			$r_dt = pmb_mysql_query($q_dt, $dbh);
+			if (pmb_mysql_num_rows($r_dt)) {
+				$dt = pmb_mysql_result($r_dt,0,0);
 			}
 			//rien trouvé dans le fonds, essai avec le stem sans langue
 			if(!$dt) {
 				$q_dt = "select count(distinct id_notice) from words join notices_mots_global_index on num_word=id_word where stem='".addslashes($stem->label)."' and lang='' "." and ".$q_where;
 // echo $q_dt."\r\n";
-				$r_dt = mysql_query($q_dt, $dbh);
-				if (mysql_num_rows($r_dt)) {
-					$dt = mysql_result($r_dt,0,0);
+				$r_dt = pmb_mysql_query($q_dt, $dbh);
+				if (pmb_mysql_num_rows($r_dt)) {
+					$dt = pmb_mysql_result($r_dt,0,0);
 				}
 			}
 

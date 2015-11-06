@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sauv_lieu.class.php,v 1.9 2007-03-10 09:25:49 touraine37 Exp $
+// $Id: sauv_lieu.class.php,v 1.10 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -46,8 +46,8 @@ class sauv_lieu {
 		// we must avoid duplication also when changing a pre-existents destination
 		//$requete="select sauv_lieu_id from sauv_lieux where sauv_lieu_nom='".$this->sauv_lieu_nom."'";
 		$requete="select sauv_lieu_id from sauv_lieux where (sauv_lieu_nom='".$this->sauv_lieu_nom."' and sauv_lieu_id !='".$this -> sauv_lieu_id."')";
-		$resultat=mysql_query($requete) or die(mysql_error());
-		if (mysql_num_rows($resultat)!=0) {
+		$resultat=pmb_mysql_query($requete) or die(pmb_mysql_error());
+		if (pmb_mysql_num_rows($resultat)!=0) {
 			echo "<script>alert(\"".$msg["sauv_lieux_valid_form_error_duplicate_name"]."\"); history.go(-1);</script>";
 			exit();
 		}
@@ -66,20 +66,20 @@ class sauv_lieu {
 				if ($this -> sauv_lieu_id == "") {
 					$this->verifName();
 					$requete = "insert into sauv_lieux (sauv_lieu_nom,sauv_lieu_url) values('','')";
-					mysql_query($requete) or die(mysql_error());
-					$this -> sauv_lieu_id = mysql_insert_id();
+					pmb_mysql_query($requete) or die(pmb_mysql_error());
+					$this -> sauv_lieu_id = pmb_mysql_insert_id();
 					$first="";
 				}
 				//Update avec les données rfeçues
 				$this->verifName();
 				$requete = "update sauv_lieux set sauv_lieu_nom='".$this -> sauv_lieu_nom."', sauv_lieu_url='".$this -> sauv_lieu_url."', sauv_lieu_protocol='".$this -> sauv_lieu_protocol."',sauv_lieu_host='".$this -> sauv_lieu_host."',sauv_lieu_login='".$this -> sauv_lieu_login."', sauv_lieu_password='".$this -> sauv_lieu_password."' where sauv_lieu_id=".$this -> sauv_lieu_id;
-				mysql_query($requete) or die(mysql_error());
+				pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$first="";
 				break;
 				//Supprimer
 			case "delete" :
 				$requete = "delete from sauv_lieux where sauv_lieu_id=".$this -> sauv_lieu_id;
-				mysql_query($requete) or die(mysql_error());
+				pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$this -> sauv_lieu_id = "";
 				$first = 0;
 				break;
@@ -109,9 +109,9 @@ class sauv_lieu {
 			if ($this -> sauv_lieu_id) {
 				//Récupération des données de la fiche
 				$requete = "select sauv_lieu_nom,sauv_lieu_url,sauv_lieu_protocol, sauv_lieu_host, sauv_lieu_login, sauv_lieu_password from sauv_lieux where sauv_lieu_id=".$this -> sauv_lieu_id;
-				$resultat = mysql_query($requete);
-				if (mysql_num_rows($resultat) != 0)
-					list ($this -> sauv_lieu_nom, $this -> sauv_lieu_url, $this -> sauv_lieu_protocol, $this->sauv_lieu_host, $this -> sauv_lieu_login, $this -> sauv_lieu_password) = mysql_fetch_row($resultat);
+				$resultat = pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat) != 0)
+					list ($this -> sauv_lieu_nom, $this -> sauv_lieu_url, $this -> sauv_lieu_protocol, $this->sauv_lieu_host, $this -> sauv_lieu_login, $this -> sauv_lieu_password) = pmb_mysql_fetch_row($resultat);
 				//$form = "<center><b>".$this -> sauv_lieu_nom."</b></center>".$form;
 				$form = str_replace("!!quel_lieu!!", $this -> sauv_lieu_nom, $form);
 				$form = str_replace("!!delete!!", "<input type=\"submit\" value=\"".$msg["sauv_supprimer"]."\" onClick=\"if (confirm('".$msg["sauv_lieux_confirm_delete"]."')) { this.form.act.value='delete'; return true; } else { return false; }\" class=\"bouton\">", $form);
@@ -149,8 +149,8 @@ class sauv_lieu {
 
 		//Récupération de la liste
 		$requete = "select sauv_lieu_id, sauv_lieu_nom, sauv_lieu_protocol from sauv_lieux order by sauv_lieu_nom";
-		$resultat = mysql_query($requete, $dbh) or die(mysql_error());
-		while ($res = mysql_fetch_object($resultat)) {
+		$resultat = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error());
+		while ($res = pmb_mysql_fetch_object($resultat)) {
 			$tree.= "<tr><td class='brd'>";
 			switch ($res -> sauv_lieu_protocol) {
 				case "ftp" :

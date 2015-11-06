@@ -3,14 +3,16 @@
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // | creator : Emmanuel PACAUD < emmanuel.pacaud@univ-poitiers.fr>            |
 // +-------------------------------------------------+
-// $Id: z3950_notice.class.php,v 1.157.2.5 2015-06-12 09:33:46 jpermanne Exp $
+// $Id: z3950_notice.class.php,v 1.173 2015-06-12 09:31:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($class_path."/parametres_perso.class.php");
 require_once($class_path."/notice.class.php");
 require_once($base_path."/catalog/z3950/manual_categorisation.inc.php");
-require_once("$include_path/marc_tables/$pmb_indexation_lang/empty_words");
+if ($pmb_indexation_lang) {
+	require_once("$include_path/marc_tables/$pmb_indexation_lang/empty_words");
+}
 require_once("$include_path/isbn.inc.php");
 require_once("$class_path/iso2709.class.php");
 require_once("$class_path/author.class.php");
@@ -30,6 +32,9 @@ require_once("$class_path/serials.class.php");
 require_once($class_path."/notice_doublon.class.php");
 require_once("$class_path/origin_authorities.class.php");
 require_once($class_path."/synchro_rdf.class.php");
+require_once("$class_path/docs_section.class.php");
+require_once("$class_path/docs_codestat.class.php");
+require_once("$class_path/docs_type.class.php");
 
 //Recherche de la fonction auxiliaire d'intégration
 if(!$modele) {
@@ -208,6 +213,7 @@ class z3950_notice {
 	
 	var $thumbnail_url = "";
 	var $doc_nums = array();
+	var $exemplaires = array();
 	
 	var $message_retour="";
 	var $notice="";
@@ -255,9 +261,16 @@ class z3950_notice {
 		global $res_prf, $chk_rights;
 		global $pmb_synchro_rdf;
 		
+		
+		if($this->bibliographic_level=="s" && $this->hierarchic_level=="2"){
+			$this->bibliographic_level = "b";
+		}
+			
+		
+		
 		$new_notice = 0;
 		$notice_retour = 0;
-		$long_maxi = mysql_field_len(mysql_query ("SELECT code FROM notices limit 1") ,0);
+		$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT code FROM notices limit 1") ,0);
 		$isbn = rtrim (substr ($this->isbn, 0, $long_maxi));
 		if ($isbn != "") {
 			if (isISBN($isbn)) {
@@ -269,12 +282,12 @@ class z3950_notice {
 			}
 			$sql_rech="select notice_id from notices where code = '".$isbn."' ";
 			if ($isbn1) $sql_rech.=" or code='".$isbn1."' ";
-			$sql_result_rech = mysql_query ($sql_rech) or die ("Couldn't select notice ! = ".$sql_rech);
-			if (mysql_num_rows($sql_result_rech) == 0) {
+			$sql_result_rech = pmb_mysql_query($sql_rech) or die ("Couldn't select notice ! = ".$sql_rech);
+			if (pmb_mysql_num_rows($sql_result_rech) == 0) {
 				$new_notice=1; 
 			} else {
 				$new_notice=0;
-				$lu = mysql_fetch_array($sql_result_rech);
+				$lu = pmb_mysql_fetch_array($sql_result_rech);
 				$notice_retour = $lu['notice_id'];
 			}
 		} else {
@@ -433,9 +446,8 @@ class z3950_notice {
 			'".$date_parution_z3950."',
 			'".$this->indexation_lang."'
 		 )";
-		
-		$sql_result_ins = mysql_query($sql_ins) or die ("Couldn't insert into table notices : ".$sql_ins);
-		$notice_retour = mysql_insert_id();
+		$sql_result_ins = pmb_mysql_query($sql_ins) or die ("Couldn't insert into table notices : ".$sql_ins);
+		$notice_retour = pmb_mysql_insert_id();
 		audit::insert_creation (AUDIT_NOTICE, $notice_retour) ;
 						
 		if ($gestion_acces_active==1) {
@@ -455,7 +467,7 @@ class z3950_notice {
 		// purge de la base des responsabilités de la notice intégrée...
 		if ($notice_retour) {
 			$rqt_del = "delete from responsability where responsability_notice='$notice_retour'" ;
-			$sql_result_del = mysql_query($rqt_del) or die ("Couldn't purge table responsability : ".$rqt_del);
+			$sql_result_del = pmb_mysql_query($rqt_del) or die ("Couldn't purge table responsability : ".$rqt_del);
 		}
 		$rqt_ins = "insert into responsability (responsability_author, responsability_notice, responsability_fonction, responsability_type, responsability_ordre ) VALUES ";
 		for ($i=0 ; $i<sizeof($this->aut_array) ; $i++ ){
@@ -485,7 +497,7 @@ class z3950_notice {
 				$this->aut_array[$i]["id"] = auteur::import($aut);
 			if ($this->aut_array[$i]["id"]) {
 				$rqt = $rqt_ins . " (".$this->aut_array[$i]["id"].",".$notice_retour.",'".$this->aut_array[$i]['fonction']."',".$this->aut_array[$i]['responsabilite']."," . $i . ") " ; 
-				$res_ins = mysql_query($rqt, $dbh);
+				$res_ins = pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		// traitement des titres uniformes	
@@ -500,13 +512,13 @@ class z3950_notice {
 		// traitement des langues
 		// langues de la publication
 		$rqt_del = "delete from notices_langues where num_notice='$notice_retour' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		if (is_array($this->language_code) && count($this->language_code)) {
 			$rqt_ins = "insert into notices_langues (num_notice, type_langue, code_langue, ordre_langue) VALUES ";
 			foreach($this->language_code as $ordre_lang=>$code_lang) {
 				if ($code_lang) {
 					$rqt = $rqt_ins . " ('$notice_retour',0, '$code_lang', $ordre_lang) " ;
-					$res_ins = @mysql_query($rqt, $dbh);
+					$res_ins = @pmb_mysql_query($rqt, $dbh);
 				} 
 			}
 		}
@@ -517,7 +529,7 @@ class z3950_notice {
 			foreach($this->original_language_code as $ordre_lang=>$code_lang) {
 				if ($code_lang) {
 					$rqt = $rqt_ins . " ('$notice_retour',1, '$code_lang', $ordre_lang) " ;
-					$res_ins = @mysql_query($rqt, $dbh);
+					$res_ins = @pmb_mysql_query($rqt, $dbh);
 				} 
 			}
 		}
@@ -527,7 +539,7 @@ class z3950_notice {
 			traite_categories_enreg($notice_retour,$this->categories);			
 		} else {
 			$rqt_del = "delete from notices_categories where notcateg_notice='$notice_retour' ";
-			$res_del = @mysql_query($rqt_del, $dbh);
+			$res_del = @pmb_mysql_query($rqt_del, $dbh);
 			
 			$rqt_ins = "insert into notices_categories (notcateg_notice, num_noeud, ordre_categorie) VALUES ";
 			
@@ -539,7 +551,7 @@ class z3950_notice {
 				}				
 			}
 			$rqt_ins .= implode(",", $rqt_ins_values);
-			$res_ins = @mysql_query($rqt_ins, $dbh);
+			$res_ins = @pmb_mysql_query($rqt_ins, $dbh);
 		}
 		
 		//Traitement des champs personnalisés (du formulaire !!!)
@@ -558,6 +570,12 @@ class z3950_notice {
 			$notice_tmp="";
 		}
 		
+		//Recherche du titre uniforme automatique
+		//global $opac_enrichment_bnf_sparql;
+		//$opac_enrichment_bnf_sparql=1;
+		
+		$titre_uniforme=notice::getAutomaticTu($notice_retour);
+		
 		// Mise à jour des index de la notice
 		notice::majNotices($notice_retour);
 		// Mise à jour de la table notices_global_index
@@ -567,26 +585,17 @@ class z3950_notice {
 		//Calcul de la signature
 		$sign= new notice_doublon();
 		$val= $sign->gen_signature($notice_retour);
-		mysql_query("update notices set signature='$val' where notice_id=".$notice_retour, $dbh);
+		pmb_mysql_query("update notices set signature='$val' where notice_id=".$notice_retour, $dbh);
 	
-		//Documents numériques
-		foreach($this->doc_nums as $doc_num) {
-			if (!$doc_num['a'])
-				continue;
-			if ($doc_num['__nodownload__']) {
-				explnum_add_url($notice_retour, $doc_num['b'], $doc_num['a']);
-			} else {
-				explnum_add_from_url($notice_retour, $doc_num['b'], $doc_num['a'], true, $this->source_id, $doc_num['f'], $doc_num['p']);
-			}
-		}
-		
 		//synchro_rdf
 		if($pmb_synchro_rdf){
 			$synchro_rdf = new synchro_rdf();
 		}
 		//Si on catalogue un article on recrée l'arborescence
 		global $biblio_notice;
-		if($biblio_notice == 'art'){	
+		//TODO AR 
+		//gérer le cas du bulletin (revient à intégrer le pério uniquement)
+		if($biblio_notice == 'art'){
 			//Perios
 			if(!$this->perio_id){
 				$new_perio = new serial();
@@ -601,14 +610,14 @@ class z3950_notice {
 					$synchro_rdf->addRdf($this->perio_id,0);
 				}
 			}
-			
+				
 			//Bulletin
 			if($this->bull_id){
-				$req_art = "insert into analysis set analysis_bulletin='".$this->bull_id."', 
+				$req_art = "insert into analysis set analysis_bulletin='".$this->bull_id."',
 					analysis_notice='".$notice_retour."'";
-				mysql_query($req_art,$dbh);
+				pmb_mysql_query($req_art,$dbh);
 				$req = "update bulletins set bulletin_notice='".$this->perio_id."' where bulletin_id='".$this->bull_id."'";
-				mysql_query($req,$dbh);
+				pmb_mysql_query($req,$dbh);
 			} else {
 				$new_bull = new bulletinage(0,$this->perio_id);
 				$values = array();
@@ -618,13 +627,171 @@ class z3950_notice {
 				$values['bul_titre'] = $this->bull_titre;
 				$new_bull->update($values);
 				$this->bull_id =$new_bull->bulletin_id;
-				$req_art = "insert into analysis set analysis_bulletin='".$this->bull_id."', 
+				$req_art = "insert into analysis set analysis_bulletin='".$this->bull_id."',
 					analysis_notice='".$notice_retour."'";
-				mysql_query($req_art,$dbh);
+				pmb_mysql_query($req_art,$dbh);
 				//synchro_rdf
 				if($pmb_synchro_rdf){
 					$synchro_rdf->addRdf(0,$this->bull_id);
 				}
+			}
+		}else if($biblio_notice == "bull"){
+			//Perios
+			if(!$this->perio_id){
+				$new_perio = new serial();
+				$values=array();
+				$values['tit1'] = $this->perio_titre;
+				$values['code'] = $this->perio_issn;
+				$values['niveau_biblio'] = "s";
+				$values['niveau_hierar'] = "1";
+				$this->perio_id = $new_perio->update($values);
+				//synchro_rdf
+				if($pmb_synchro_rdf){
+					$synchro_rdf->addRdf($this->perio_id,0);
+				}
+			}
+			if(!$this->bull_id){
+				$new_bull = new bulletinage(0,$this->perio_id);
+				$values = array();
+				$values['bul_no'] = $this->bull_num;
+				$values['bul_date'] = $this->bull_mention;
+				$values['date_date'] = $this->bull_date;
+				$values['bul_titre'] = $this->bull_titre;
+				$new_bull->update($values);
+				$this->bull_id =$new_bull->bulletin_id;
+				
+				//synchro_rdf
+				if($pmb_synchro_rdf){
+					$synchro_rdf->addRdf(0,$this->bull_id);
+				}
+// 				$req = "update bulletins set bulletin_notice='".$this->perio_id."',num_notice='".$notice_retour."'  where bulletin_id='".$this->bull_id."'";
+// 				pmb_mysql_query($req,$dbh);				//Faire un update en mettant l'id de la notice crée
+				//file_put_contents('php://stderr', print_r($this->bull_id, true));
+			}
+			if($this->bull_notice){
+				$notice_bulletin = new notice();
+				$notice_bulletin->del_notice($notice_retour);
+				$notice_retour = $this->bull_notice;
+			}
+			//Mise à jour de la table bulletins, ajout de la relation entre le bulletins et sa notice
+			$req = "update bulletins set bulletin_notice='".$this->perio_id."',num_notice='".$notice_retour."'  where bulletin_id='".$this->bull_id."'";
+			pmb_mysql_query($req,$dbh);
+			
+			//Insertion dans la table notices_relation, ajout de la relatioin entre la notice de bulletin et la notice de perio
+			$req = "insert into notices_relations (num_notice, linked_notice, relation_type,rank) values('".$notice_retour."', '".$this->perio_id."', 'b','1')";
+			pmb_mysql_query($req,$dbh);
+			
+		}
+		
+		//file_put_contents('php://stderr', print_r($notice_retour."\n", true));
+		//Exemplaires
+		if (count($this->exemplaires)) {
+//			global $section_995, $typdoc_995, $codstatdoc_995;
+// 			, $nb_expl_ignores;
+			$section_995_=new marc_list("section_995");
+			$section_995=$section_995_->table;
+			$typdoc_995_=new marc_list("typdoc_995");
+			$typdoc_995=$typdoc_995_->table;
+			$codstatdoc_995_=new marc_list("codstatdoc_995");
+			$codstatdoc_995=$codstatdoc_995_->table;
+// 			$nb_expl_ignores=0;
+			
+			global $deflt_docs_statut, $deflt_docs_location, $deflt_lenders;
+			foreach($this->exemplaires as $info_expl) {
+				/* RAZ expl */
+				$expl = array();
+					
+				if ($notice_retour) {
+					/* préparation du tableau à passer à la méthode */
+					$expl['cb'] = $info_expl['f'];
+						
+					
+					//TODO AR
+					// les raccrocher au bulletin et non sa notice
+					// dans un second temps
+					if($this->bibliographic_level=="s" && $this->hierarchic_level=="2"){
+						if($this->bull_id){
+							$expl['notice'] = 0;
+							$expl['bulletin'] = $this->bull_id;
+						}else if (!$this->bull_id && $notice_retour){
+							$expl['notice'] = $notice_retour;
+							$expl['bulletin'] = 0;
+						}	
+					}else{
+						$expl['notice'] = $notice_retour;
+						$expl['bulletin']	= 0;
+					}
+					
+					
+					//$expl['bulletin']	= 0;
+			
+					// $expl['typdoc']     = $info_995['r']; à chercher dans docs_typdoc
+					$data_doc=array();
+					//$data_doc['tdoc_libelle'] = $info_995['r']." -Type doc importé (".$book_lender_id.")";
+					$data_doc['tdoc_libelle'] = $typdoc_995[$info_expl['r']];
+					if (!$data_doc['tdoc_libelle']) $data_doc['tdoc_libelle'] = "\$r non conforme -".$info_expl['r']."-" ;
+					$data_doc['duree_pret'] = 0 ; /* valeur par défaut */
+					$data_doc['tdoc_codage_import'] = $info_expl['r'] ;
+					if ($tdoc_codage) $data_doc['tdoc_owner'] = $deflt_lenders ;
+					else $data_doc['tdoc_owner'] = 0 ;
+					$expl['typdoc'] = docs_type::import($data_doc);
+			
+					$expl['cote'] = $info_expl['k'];
+			
+					// $expl['section']    = $info_995['q']; à chercher dans docs_section
+					$data_doc=array();
+					$info_expl['q']=trim($info_expl['q']);
+					if (!$info_expl['q'])
+						$info_expl['q'] = "u";
+					$data_doc['section_libelle'] = $section_995[$info_expl['q']];
+					$data_doc['sdoc_codage_import'] = $info_expl['q'] ;
+					if ($sdoc_codage) $data_doc['sdoc_owner'] = $deflt_lenders ;
+					else $data_doc['sdoc_owner'] = 0 ;
+					$expl['section'] = docs_section::import($data_doc);
+					
+					$expl['statut'] = $deflt_docs_statut;
+			
+					if ($info_expl['a']) {
+						$expl['location'] = $info_expl['a'];
+					} else {
+						$expl['location'] = $deflt_docs_location;
+					}
+			
+					// $expl['codestat']   = $info_995['q']; 'q' utilisé, éventuellement à fixer par combo_box
+					$data_doc=array();
+					//$data_doc['codestat_libelle'] = $info_995['q']." -Pub visé importé (".$book_lender_id.")";
+					$data_doc['codestat_libelle'] = $codstatdoc_995[$info_expl['q']];
+					$data_doc['statisdoc_codage_import'] = $info_expl['q'] ;
+					if ($statisdoc_codage) $data_doc['statisdoc_owner'] = $deflt_lenders ;
+					else $data_doc['statisdoc_owner'] = 0 ;
+					$expl['codestat'] = docs_codestat::import($data_doc);
+					
+					$expl['note'] = $info_expl['u'];
+					$expl['expl_owner'] = $deflt_lenders ;
+					
+					if ($info_expl['m']) $expl['date_depot'] = substr($info_expl['m'],0,4)."-".substr($info_expl['m'],4,2)."-".substr($info_expl['m'],6,2) ;
+					if ($info_expl['n']) $expl['date_retour'] = substr($info_expl['n'],0,4)."-".substr($info_expl['n'],4,2)."-".substr($info_expl['n'],6,2) ;
+				
+					exemplaire::import($expl);
+				}
+			}
+			
+		}
+		
+		
+		//Documents numériques
+		global $deflt_explnum_statut;
+		foreach($this->doc_nums as $doc_num) {
+			if (!$doc_num['a'])
+				continue;
+			if (!$doc_num['s'])
+				$doc_num['s'] = $deflt_explnum_statut;
+			if ($doc_num['__nodownload__']) {
+				if($this->bibliographic_level=="b" && $this->hierarchic_level=="2") explnum_add_url($notice_retour, $this->bull_id, $doc_num['b'], $doc_num['a'], $doc_num['s']); 
+				else explnum_add_url($notice_retour, 0, $doc_num['b'], $doc_num['a'], $doc_num['s']);
+			} else {
+				if($this->bibliographic_level=="b" && $this->hierarchic_level=="2") explnum_add_from_url($notice_retour,$this->bull_id, $doc_num['b'], $doc_num['a'], true, $this->source_id, $doc_num['f'], $doc_num['p'], $doc_num['s']);
+				else explnum_add_from_url($notice_retour, 0, $doc_num['b'], $doc_num['a'], true, $this->source_id, $doc_num['f'], $doc_num['p'], $doc_num['s']);
 			}
 		}
 		
@@ -745,14 +912,14 @@ class z3950_notice {
 		//print_r($this->categories);
 		//echo "</pre>";
 		//exit;
-		$sql_result_ins = mysql_query($sql_ins) or die ("Couldn't update notices : ".$sql_ins);
+		$sql_result_ins = pmb_mysql_query($sql_ins) or die ("Couldn't update notices : ".$sql_ins);
 		$notice_retour = $id_notice ;
 		audit::insert_modif (AUDIT_NOTICE, $id_notice) ;
 		
 		// purge de la base des responsabilités de la notice intégrée...
 		if ($notice_retour) {
 			$rqt_del = "delete from responsability where responsability_notice='$notice_retour'" ;
-			$sql_result_del = mysql_query($rqt_del) or die ("Couldn't purge table responsability : ".$rqt_del);
+			$sql_result_del = pmb_mysql_query($rqt_del) or die ("Couldn't purge table responsability : ".$rqt_del);
 			}
 		$rqt_ins = "insert into responsability (responsability_author, responsability_notice, responsability_fonction, responsability_type, responsability_ordre) VALUES ";
 		for ($i=0 ; $i<sizeof($this->aut_array) ; $i++ ){
@@ -782,7 +949,7 @@ class z3950_notice {
 				$this->aut_array[$i]["id"] = auteur::import($aut);
 			if ($this->aut_array[$i]["id"]) {
 				$rqt = $rqt_ins . " (".$this->aut_array[$i]["id"].",".$notice_retour.",'".$this->aut_array[$i]['fonction']."',".$this->aut_array[$i]['responsabilite'].",".$i.") " ; 
-				$res_ins = mysql_query($rqt, $dbh);
+				$res_ins = pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
@@ -792,7 +959,7 @@ class z3950_notice {
 		}
 		else {
 			$rqt_del = "delete from notices_categories where notcateg_notice='$notice_retour' ";
-			$res_del = @mysql_query($rqt_del, $dbh);
+			$res_del = @pmb_mysql_query($rqt_del, $dbh);
 			
 			$rqt_ins = "insert into notices_categories (notcateg_notice, num_noeud, ordre_categorie) VALUES ";
 			
@@ -804,19 +971,19 @@ class z3950_notice {
 				}				
 			}
 			$rqt_ins .= implode(",", $rqt_ins_values);
-			$res_ins = @mysql_query($rqt_ins, $dbh);
+			$res_ins = @pmb_mysql_query($rqt_ins, $dbh);
 		}
 		
 		// traitement des langues
 		// langues de la publication
 		$rqt_del = "delete from notices_langues where num_notice='$notice_retour' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		if (is_array($this->language_code) && count($this->language_code)) {
 			$rqt_ins = "insert into notices_langues (num_notice, type_langue, code_langue, ordre_langue) VALUES ";
 			foreach($this->language_code as $ordre_lang=>$code_lang) {
 				if ($code_lang) {
 					$rqt = $rqt_ins . " ('$notice_retour',0, '$code_lang', $ordre_lang) " ;
-					$res_ins = @mysql_query($rqt, $dbh);
+					$res_ins = @pmb_mysql_query($rqt, $dbh);
 				} 
 			}
 		}
@@ -826,7 +993,7 @@ class z3950_notice {
 			foreach($this->original_language_code as $ordre_lang=>$code_lang) {
 				if ($code_lang) {
 					$rqt = $rqt_ins . " ('$notice_retour',1, '$code_lang', $ordre_lang) " ;
-					$res_ins = @mysql_query($rqt, $dbh);
+					$res_ins = @pmb_mysql_query($rqt, $dbh);
 				} 
 			}
 		}
@@ -840,7 +1007,7 @@ class z3950_notice {
 		if (function_exists('z_recup_noticeunimarc_suite') && function_exists('recup_noticeunimarc_suite')) {
 			//Suppression des champs persos
 			$requete="delete from notices_custom_values where notices_custom_origine=".$notice_retour;
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 			$notice_id=$notice_retour;
 			z_recup_noticeunimarc_suite($notice_org);
 			z_import_new_notice_suite();
@@ -857,7 +1024,7 @@ class z3950_notice {
 		foreach($this->doc_nums as $doc_num) {
 			if (!$doc_num["a"])
 				continue;
-			explnum_add_from_url($notice_retour, $doc_num["b"], $doc_num["a"], false,$this->source_id, $doc_num["f"]);
+			explnum_add_from_url($notice_retour, $this->bull_id, $doc_num["b"], $doc_num["a"], false,$this->source_id, $doc_num["f"],'', $doc_num["s"]);
 		}
 		
 		//synchro_rdf
@@ -906,16 +1073,16 @@ class z3950_notice {
 				$numrows = 0;
 				if ($this->aut_array[$as]["date"]) {
 					$sql_author_find = "SELECT author_id, author_name, author_rejete, author_date FROM authors WHERE author_name = '".addslashes($this->aut_array[$as]["entree"])."' AND author_rejete = '".addslashes($this->aut_array[$as]["rejete"])."' AND author_type = '".$this->aut_array[$as]["type_auteur"]."' AND author_date ='".addslashes($this->aut_array[$as]["date"])."'";
-					$res = mysql_query($sql_author_find);
-					$numrows = mysql_num_rows($res);
+					$res = pmb_mysql_query($sql_author_find);
+					$numrows = pmb_mysql_num_rows($res);
 				}
 				if (!$numrows) {
 					$sql_author_find = "SELECT author_id, author_name, author_rejete, author_date FROM authors WHERE author_name = '".addslashes($this->aut_array[$as]["entree"])."' AND author_rejete = '".addslashes($this->aut_array[$as]["rejete"])."' AND author_type = '".$this->aut_array[$as]["type_auteur"]."'";
-					$res = mysql_query($sql_author_find);
-					$numrows = mysql_num_rows($res);					
+					$res = pmb_mysql_query($sql_author_find);
+					$numrows = pmb_mysql_num_rows($res);					
 				}
 				if ($numrows == 1) {
-					$existing_author = mysql_fetch_array($res);
+					$existing_author = pmb_mysql_fetch_array($res);
 					$existing_author_id = $existing_author["author_id"];
 				}
 				else $existing_author_id = 0;
@@ -963,16 +1130,16 @@ class z3950_notice {
 				$numrows = 0;
 				if ($this->aut_array[$as]["date"]) {
 					$sql_author_find = "SELECT author_id, author_name, author_rejete, author_date FROM authors WHERE author_name = '".addslashes($this->aut_array[$as]["entree"])."' AND author_rejete = '".addslashes($this->aut_array[$as]["rejete"])."' AND author_type = '".$this->aut_array[$as]["type_auteur"]."' AND author_date ='".addslashes($this->aut_array[$as]["date"])."'";
-					$res = mysql_query($sql_author_find);
-					$numrows = mysql_num_rows($res);
+					$res = pmb_mysql_query($sql_author_find);
+					$numrows = pmb_mysql_num_rows($res);
 				}
 				if (!$numrows) {
 					$sql_author_find = "SELECT author_id, author_name, author_rejete, author_date FROM authors WHERE author_name = '".addslashes($this->aut_array[$as]["entree"])."' AND author_rejete = '".addslashes($this->aut_array[$as]["rejete"])."' AND author_type = '".$this->aut_array[$as]["type_auteur"]."'";
-					$res = mysql_query($sql_author_find);
-					$numrows = mysql_num_rows($res);					
+					$res = pmb_mysql_query($sql_author_find);
+					$numrows = pmb_mysql_num_rows($res);					
 				}
 				if ($numrows == 1) {
-					$existing_author = mysql_fetch_array($res);
+					$existing_author = pmb_mysql_fetch_array($res);
 					$existing_author_id = $existing_author["author_id"];
 				}
 				else $existing_author_id = 0;
@@ -1022,16 +1189,16 @@ class z3950_notice {
 				$numrows = 0;
 				if ($this->aut_array[$as]["date"]) {
 					$sql_author_find = "SELECT author_id, author_name, author_rejete, author_date FROM authors WHERE author_name = '".addslashes($this->aut_array[$as]["entree"])."' AND author_rejete = '".addslashes($this->aut_array[$as]["rejete"])."' AND author_type = '".$this->aut_array[$as]["type_auteur"]."' AND author_date ='".addslashes($this->aut_array[$as]["date"])."'";
-					$res = mysql_query($sql_author_find);
-					$numrows = mysql_num_rows($res);
+					$res = pmb_mysql_query($sql_author_find);
+					$numrows = pmb_mysql_num_rows($res);
 				}
 				if (!$numrows) {
 					$sql_author_find = "SELECT author_id, author_name, author_rejete, author_date FROM authors WHERE author_name = '".addslashes($this->aut_array[$as]["entree"])."' AND author_rejete = '".addslashes($this->aut_array[$as]["rejete"])."' AND author_type = '".$this->aut_array[$as]["type_auteur"]."'";
-					$res = mysql_query($sql_author_find);
-					$numrows = mysql_num_rows($res);					
+					$res = pmb_mysql_query($sql_author_find);
+					$numrows = pmb_mysql_num_rows($res);					
 				}
 				if ($numrows == 1) {
-					$existing_author = mysql_fetch_array($res);
+					$existing_author = pmb_mysql_fetch_array($res);
 					$existing_author_id = $existing_author["author_id"];
 				}
 				else $existing_author_id = 0;
@@ -1107,27 +1274,27 @@ class z3950_notice {
 		//On tente avec toutes les infos
 		if ($this->editors[0]['name'] && $this->editors[0]['ville']) {
 			$sql_find_publisher = "SELECT ed_id,ed_ville,ed_name FROM publishers WHERE ed_name = '".addslashes($this->editors[0]['name'])."' AND ed_ville = '".addslashes($this->editors[0]['ville'])."'";
-			$res = mysql_query($sql_find_publisher);
-			if (mysql_num_rows($res) == 1) {
-				$existing_publisher = mysql_fetch_array($res);
+			$res = pmb_mysql_query($sql_find_publisher);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$existing_publisher = pmb_mysql_fetch_array($res);
 				$existing_publisher_id = $existing_publisher["ed_id"];
 			}			
 		}
 		//Non? Le nom sans ville peut être alors?
 		if (!$existing_publisher_id && $this->editors[0]['name']){
 			$sql_find_publisher = "SELECT ed_id,ed_ville,ed_name FROM publishers WHERE ed_name = '".addslashes($this->editors[0]['name'])."' AND ed_ville = ''";
-			$res = mysql_query($sql_find_publisher);
-			if (mysql_num_rows($res) == 1) {
-				$existing_publisher = mysql_fetch_array($res);
+			$res = pmb_mysql_query($sql_find_publisher);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$existing_publisher = pmb_mysql_fetch_array($res);
 				$existing_publisher_id = $existing_publisher["ed_id"];
 			}
 		}
 		//Juste le nom alors?
 		if (!$existing_publisher_id && $this->editors[0]['name'] && !$this->editors[0]['ville']){
 			$sql_find_publisher = "SELECT ed_id,ed_ville,ed_name FROM publishers WHERE ed_name = '".addslashes($this->editors[0]['name'])."'";
-			$res = mysql_query($sql_find_publisher);
-			if (mysql_num_rows($res) == 1) {
-				$existing_publisher = mysql_fetch_array($res);
+			$res = pmb_mysql_query($sql_find_publisher);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$existing_publisher = pmb_mysql_fetch_array($res);
 				$existing_publisher_id = $existing_publisher["ed_id"];
 			}
 		}
@@ -1157,27 +1324,27 @@ class z3950_notice {
 		//On tente avec toutes les infos
 		if ($this->editors[1]['name'] && $this->editors[1]['ville']) {
 			$sql_find_publisher2 = "SELECT ed_id,ed_ville,ed_name FROM publishers WHERE ed_name = '".addslashes($this->editors[1]['name'])."' AND ed_ville = '".addslashes($this->editors[1]['ville'])."'";
-			$res = mysql_query($sql_find_publisher2);
-			if (mysql_num_rows($res) == 1) {
-				$existing_publisher2 = mysql_fetch_array($res);
+			$res = pmb_mysql_query($sql_find_publisher2);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$existing_publisher2 = pmb_mysql_fetch_array($res);
 				$existing_publisher_id2 = $existing_publisher2["ed_id"];
 			}			
 		}
 		//Non? Le nom sans ville peut être alors?
 		if (!$existing_publisher_id2 && $this->editors[1]['name']){
 			$sql_find_publisher2 = "SELECT ed_id,ed_ville,ed_name FROM publishers WHERE ed_name = '".addslashes($this->editors[1]['name'])."' AND ed_ville = ''";
-			$res = mysql_query($sql_find_publisher2);
-			if (mysql_num_rows($res) == 1) {
-				$existing_publisher2 = mysql_fetch_array($res);
+			$res = pmb_mysql_query($sql_find_publisher2);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$existing_publisher2 = pmb_mysql_fetch_array($res);
 				$existing_publisher_id2 = $existing_publisher2["ed_id"];
 			}
 		}
 		//Juste le nom alors?
 		if (!$existing_publisher_id2 && $this->editors[1]['name'] && !$this->editors[1]['ville']){
 			$sql_find_publisher2 = "SELECT ed_id,ed_ville,ed_name FROM publishers WHERE ed_name = '".addslashes($this->editors[1]['name'])."'";
-			$res = mysql_query($sql_find_publisher2);
-			if (mysql_num_rows($res) == 1) {
-				$existing_publisher2 = mysql_fetch_array($res);
+			$res = pmb_mysql_query($sql_find_publisher2);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$existing_publisher2 = pmb_mysql_fetch_array($res);
 				$existing_publisher_id2 = $existing_publisher2["ed_id"];
 			}
 		}
@@ -1207,9 +1374,9 @@ class z3950_notice {
 		//Collection
 		if ($existing_publisher_id && $this->collection['name']) {
 			$sql_collection_find = "SELECT collection_id, collection_name FROM collections WHERE collection_name = '".addslashes($this->collection['name'])."' AND collection_parent = '".$existing_publisher_id."'";
-			$res = mysql_query($sql_collection_find);
-			if (mysql_num_rows($res) == 1) {
-				$existing_collection = mysql_fetch_array($res);
+			$res = pmb_mysql_query($sql_collection_find);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$existing_collection = pmb_mysql_fetch_array($res);
 				$existing_collection_id = $existing_collection["collection_id"];
 			}
 			else $existing_collection_id = 0;			
@@ -1233,9 +1400,9 @@ class z3950_notice {
 		//Sous Collection
 		if ($existing_collection_id && $this->subcollection['name']) {
 			$sql_subcollection_find = "SELECT sub_coll_id, sub_coll_name FROM sub_collections WHERE sub_coll_name = '".addslashes($this->subcollection['name'])."' AND sub_coll_parent = '".$existing_collection_id."'";
-			$res = mysql_query($sql_subcollection_find) or die(mysql_error()."<br />$sql_subcollection_find");
-			if (mysql_num_rows($res) == 1) {
-				$existing_subcollection = mysql_fetch_array($res);
+			$res = pmb_mysql_query($sql_subcollection_find) or die(pmb_mysql_error()."<br />$sql_subcollection_find");
+			if (pmb_mysql_num_rows($res) == 1) {
+				$existing_subcollection = pmb_mysql_fetch_array($res);
 				$existing_subcollection_id = $existing_subcollection["sub_coll_id"];
 			}
 			else $existing_subcollection_id = 0;
@@ -1282,14 +1449,14 @@ class z3950_notice {
 
 		// indexation interne
 		$pclassement_sql = "SELECT * FROM pclassement";
-		$res = mysql_query($pclassement_sql);
-		$pclassement_count = mysql_num_rows($res);
+		$res = pmb_mysql_query($pclassement_sql);
+		$pclassement_count = pmb_mysql_num_rows($res);
 		if (!$pclassement_count)
 			$pclassement_count = 1;
 
 		if ($pclassement_count > 1) {
 			$pclassements = array();
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$pclassements[] = array("id" => $row["id_pclass"], "name" => $row["name_pclass"]);
 			}
 
@@ -1305,10 +1472,10 @@ class z3950_notice {
 		$ptab[6] = str_replace("!!multiple_pclass_combo_box!!", $pclassement_combobox, $ptab[6]);
 
 		$index_int_sql = "SELECT indexint_name, indexint_comment, indexint_id, name_pclass FROM indexint LEFT JOIN pclassement ON (pclassement.id_pclass = indexint.num_pclass) WHERE indexint_name = '".addslashes($this->dewey[0])."'";
-		$res = mysql_query($index_int_sql, $dbh);
-		$num_rows = mysql_num_rows($res);
+		$res = pmb_mysql_query($index_int_sql, $dbh);
+		$num_rows = pmb_mysql_num_rows($res);
 		if ($num_rows == 1) {
-			$the_row = mysql_fetch_assoc($res);
+			$the_row = pmb_mysql_fetch_assoc($res);
 			z3950_notice::substitute ("indexint", $the_row["indexint_name"].': '.$the_row["indexint_comment"], $ptab[6]);
 			z3950_notice::substitute ("indexint_id", $the_row["indexint_id"], $ptab[6]);
 			
@@ -1319,7 +1486,7 @@ class z3950_notice {
 		else if ($num_rows > 1) {
 			
 			$index_ints = array();
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = pmb_mysql_fetch_assoc($res)) {
 				$index_ints[] = array("id" => $row["indexint_id"], "name" => $row["indexint_name"], "comment" => $row["indexint_comment"], "pclass" => $row["name_pclass"]);
 			}
 			
@@ -1501,28 +1668,28 @@ class z3950_notice {
 			$req="select notice_id, tit1 from notices where niveau_biblio='s' and niveau_hierar='1' 
 					and tit1='".addslashes($this->perio_titre[0])."'
 					and code='".addslashes($this->perio_issn[0])."' limit 1";
-			$res_perio = mysql_query($req,$dbh);
-			$num_rows_perio = mysql_num_rows($res_perio);
+			$res_perio = pmb_mysql_query($req,$dbh);
+			$num_rows_perio = pmb_mysql_num_rows($res_perio);
 		}
 		if (!$num_rows_perio){
 			if($this->perio_titre[0]){
 				$req="select notice_id, tit1 from notices where niveau_biblio='s' and niveau_hierar='1' 
 					and tit1='".addslashes($this->perio_titre[0])."'
 					limit 1";
-				$res_perio = mysql_query($req,$dbh);
-				$num_rows_perio = mysql_num_rows($res_perio);
+				$res_perio = pmb_mysql_query($req,$dbh);
+				$num_rows_perio = pmb_mysql_num_rows($res_perio);
 			}
 		}
 		if (!$num_rows_perio){
 			if($this->perio_issn[0]){
 				$req="select notice_id, tit1 from notices where niveau_biblio='s' and niveau_hierar='1' 
 						and code='".addslashes($this->perio_issn[0])."' limit 1";
-				$res_perio = mysql_query($req,$dbh);
-				$num_rows_perio = mysql_num_rows($res_perio);
+				$res_perio = pmb_mysql_query($req,$dbh);
+				$num_rows_perio = pmb_mysql_num_rows($res_perio);
 			}
 		}	
 		if ($num_rows_perio == 1) {
-			$perio_found = mysql_fetch_object($res_perio);
+			$perio_found = pmb_mysql_fetch_object($res_perio);
 			$idperio = $perio_found->notice_id;
 			$zone_article_form  = str_replace("!!f_perio_existing!!",htmlentities($perio_found->tit1,ENT_QUOTES,$charset),$zone_article_form );
 			$zone_article_form  = str_replace("!!f_perio_existing_id!!",$perio_found->notice_id,$zone_article_form );
@@ -1540,34 +1707,34 @@ class z3950_notice {
 		$num_rows_bull=0;
 		if($this->bull_num[0] && $idperio){
 			$req="select bulletin_id, bulletin_numero,date_date,mention_date from bulletins where bulletin_notice='".$idperio."' and  bulletin_numero like '%".addslashes($this->bull_num[0])."%' ";
-			$res_bull = mysql_query($req,$dbh);
-			$num_rows_bull = mysql_num_rows($res_bull);
+			$res_bull = pmb_mysql_query($req,$dbh);
+			$num_rows_bull = pmb_mysql_num_rows($res_bull);
 		}
 		if(!$num_rows_bull && $this->bull_date[0] && $idperio){
 			$req="select bulletin_id, bulletin_numero,date_date,mention_date from bulletins where bulletin_notice='".$idperio."' and date_date='".addslashes($this->bull_date[0])."' ";
-			$res_bull = mysql_query($req,$dbh);
-			$num_rows_bull = mysql_num_rows($res_bull);
+			$res_bull = pmb_mysql_query($req,$dbh);
+			$num_rows_bull = pmb_mysql_num_rows($res_bull);
 		}elseif(($num_rows_bull > 1) && $this->bull_date[0] && $idperio){
 			$req="select bulletin_id, bulletin_numero,date_date,mention_date from bulletins where bulletin_notice='".$idperio."' and date_date='".addslashes($this->bull_date[0])."' and  bulletin_numero like '%".addslashes($this->bull_num[0])."%' ";
-			$res_bull = mysql_query($req,$dbh);
-			$num_rows_bull = mysql_num_rows($res_bull);
+			$res_bull = pmb_mysql_query($req,$dbh);
+			$num_rows_bull = pmb_mysql_num_rows($res_bull);
 		}
 		if(!$num_rows_bull && $this->bull_mention[0] && $idperio){
 			$req="select bulletin_id, bulletin_numero,date_date,mention_date from bulletins where bulletin_notice='".$idperio."' and mention_date='".addslashes($this->bull_mention[0])."' ";
-			$res_bull = mysql_query($req,$dbh);
-			$num_rows_bull = mysql_num_rows($res_bull);
+			$res_bull = pmb_mysql_query($req,$dbh);
+			$num_rows_bull = pmb_mysql_num_rows($res_bull);
 		}elseif(($num_rows_bull > 1) && $this->bull_mention[0] && $idperio){
 			if($this->bull_date[0]){
 				$req="select bulletin_id, bulletin_numero,date_date,mention_date from bulletins where bulletin_notice='".$idperio."' and date_date='".addslashes($this->bull_date[0])."' and mention_date='".addslashes($this->bull_mention[0])."' ";
 			}else{
 				$req="select bulletin_id, bulletin_numero,date_date,mention_date from bulletins where bulletin_notice='".$idperio."' and mention_date='".addslashes($this->bull_mention[0])."' and  bulletin_numero like '%".addslashes($this->bull_num[0])."%' ";
 			}
-			$res_bull = mysql_query($req,$dbh);
-			$num_rows_bull = mysql_num_rows($res_bull);
+			$res_bull = pmb_mysql_query($req,$dbh);
+			$num_rows_bull = pmb_mysql_num_rows($res_bull);
 		}
 		
 		if ($num_rows_bull) {
-			$bull_found = mysql_fetch_object($res_bull);
+			$bull_found = pmb_mysql_fetch_object($res_bull);
 			$f_bull_existing=trim($bull_found->bulletin_numero);
 			if(!$f_bull_existing && trim($bull_found->date_date)){
 				$f_bull_existing="[".trim($bull_found->date_date)."]";
@@ -1786,8 +1953,8 @@ class z3950_notice {
 		global $deflt_integration_notice_statut;
 		if ($id_notice) {
 			$rqt_statut="select statut from notices where notice_id='$id_notice' ";
-			$res_statut=mysql_query($rqt_statut);
-			$stat = mysql_fetch_object($res_statut) ;
+			$res_statut=pmb_mysql_query($rqt_statut);
+			$stat = pmb_mysql_fetch_object($res_statut) ;
 			$select_statut = gen_liste_multiple ("select id_notice_statut, gestion_libelle from notice_statut order by 2", "id_notice_statut", "gestion_libelle", "id_notice_statut", "form_notice_statut", "", $stat->statut, "", "","","",0) ;
 			} else {
 				$select_statut = gen_liste_multiple ("select id_notice_statut, gestion_libelle from notice_statut order by 2", "id_notice_statut", "gestion_libelle", "id_notice_statut", "form_notice_statut", "", $deflt_integration_notice_statut, "", "","","",0) ;
@@ -1803,22 +1970,27 @@ class z3950_notice {
 		$upload_doc_num="";
 		if($this->source_id){
 			$requete="select * from connectors_sources where source_id=".$this->source_id."";
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);
 				if(!$r->upload_doc_num) $upload_doc_num = "checked";
 			}	
-		}		
-		foreach ($this->doc_nums as $doc_num) {
-			$docnum_info = $ptab[1111];
-//			$alink = '<a target="_blank" href="'.htmlspecialchars($doc_num["a"]).'">'.htmlspecialchars($doc_num["a"]).'</a>';
-			$docnum_info = str_replace('!!docnum_url!!', htmlspecialchars($doc_num["a"],ENT_QUOTES, $charset), $docnum_info);
-			$docnum_info = str_replace('!!docnum_caption!!', htmlspecialchars($doc_num["b"],ENT_QUOTES, $charset), $docnum_info);
-			$docnum_info = str_replace('!!docnum_filename!!', htmlspecialchars($doc_num["f"],ENT_QUOTES, $charset), $docnum_info);
-			$docnum_info = str_replace('!!docnumid!!', $count, $docnum_info);
-			$docnum_info = str_replace('!!upload_doc_num!!', $upload_doc_num, $docnum_info);
-			$docnum_infos .= $docnum_info;
-			$count++;
+		}
+		if (count($this->doc_nums)) {
+			global $deflt_explnum_statut;
+			$statutlist = gen_liste_multiple ("select id_explnum_statut, gestion_libelle from explnum_statut order by 2", "id_explnum_statut", "gestion_libelle", "id_explnum_statut", "doc_num_statut!!docnumid!!", "", $deflt_explnum_statut, "", "","","",0);		
+			foreach ($this->doc_nums as $doc_num) {
+				$docnum_info = $ptab[1111];
+// 				$alink = '<a target="_blank" href="'.htmlspecialchars($doc_num["a"]).'">'.htmlspecialchars($doc_num["a"]).'</a>';
+				$docnum_info = str_replace('!!docnum_url!!', htmlspecialchars($doc_num["a"],ENT_QUOTES, $charset), $docnum_info);
+				$docnum_info = str_replace('!!docnum_caption!!', htmlspecialchars($doc_num["b"],ENT_QUOTES, $charset), $docnum_info);
+				$docnum_info = str_replace('!!docnum_filename!!', htmlspecialchars($doc_num["f"],ENT_QUOTES, $charset), $docnum_info);
+				$docnum_info = str_replace('!!docnum_statutlist!!', $statutlist, $docnum_info);
+				$docnum_info = str_replace('!!docnumid!!', $count, $docnum_info);
+				$docnum_info = str_replace('!!upload_doc_num!!', $upload_doc_num, $docnum_info);
+				$docnum_infos .= $docnum_info;
+				$count++;
+			}
 		}
 		if (!$docnum_infos)
 			$docnum_infos = $msg["noticeintegre_nodocnum"];
@@ -2254,6 +2426,8 @@ class z3950_notice {
 				global $$docnum_caption_name;
 				$docnum_url_name = "doc_num_url".$i;
 				global $$docnum_url_name;
+				$docnum_statut_name = "doc_num_statut".$i;
+				global $$docnum_statut_name;
 				$docnum_nodownload_name = "doc_num_nodownload".$i;
 				global $$docnum_nodownload_name;
 				if ($$docnum_nodownload_name)
@@ -2261,7 +2435,7 @@ class z3950_notice {
 				else
 					$nodownload = 0;
 									
-				$this->doc_nums[] = array("a" => $$docnum_url_name, "b" => $$docnum_caption_name, "f" => $$docnum_filename_name, "__nodownload__" => $nodownload);
+				$this->doc_nums[] = array("a" => $$docnum_url_name, "b" => $$docnum_caption_name, "f" => $$docnum_filename_name, "__nodownload__" => $nodownload, "s" => $$docnum_statut_name);
 			}
 		}
 		
@@ -2332,19 +2506,21 @@ class z3950_notice {
 	
 	// fonction d'intégration de l'origine de l'autorité (pratiquement identique à keep_authority_infos dans pmb/admin/import/import.finc.php)
 	function insert_authority_infos($authority_number,$type,$id_origin_authority,$authority_infos=array()){
+		global $opac_enrichment_bnf_sparql;
+		
 		//on a un numéro d'autorité, on regarde si on l'a déjà rencontré
 		$num_authority=$authority_infos['id'];
 		$query = "select id_authority_source,num_authority from authorities_sources where authority_number = '".$authority_number."' and num_origin_authority='".$id_origin_authority."' and authority_type = '".$type."'";
-		$result = mysql_query($query) or die("can't select authorities_sources :".$query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query) or die("can't select authorities_sources :".$query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			$num_authority = $row->num_authority;
 			$num_authority_source= $row->id_authority_source;
 			// on cherche la préférence... dès fois que...
 			$query = "select id_authority_source, num_authority from authorities_sources where authority_number = '".$authority_number."' and authority_type = '".$type."' and authority_favorite = 1";
-			$result = mysql_query($query) or die("can't select authorities_sources :".$query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query) or die("can't select authorities_sources :".$query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$num_authority = $row->num_authority;
 				$num_authority_source= $row->id_authority_source;
 			}
@@ -2378,8 +2554,12 @@ class z3950_notice {
 			authority_type = '$type',
 			num_origin_authority = ".$id_origin_authority.",
 			import_date = now()";
-			mysql_query($query) or die("can't insert authorities_sources :".$query);
-			$num_authority_source = mysql_insert_id();
+			pmb_mysql_query($query) or die("can't insert authorities_sources :".$query);
+			$num_authority_source = pmb_mysql_insert_id();
+////////////////////////////////////////////////////////////////
+			if(($opac_enrichment_bnf_sparql) && ($type=='author')){
+				auteur::author_enrichment($num_authority);
+			}
 		}
 		return $num_authority;
 	}
@@ -2715,6 +2895,7 @@ class z3950_notice {
 					$editeur_lieu=$record->get_subfield_array_array($cle, "a");
 					$editeur_nom=$record->get_subfield_array_array($cle, "c");
 					$editeur_date=$record->get_subfield_array($cle, "d");
+					$editeur_date_machine=$record->get_subfield_array($cle, "h");
 					break;
 				case "215": /* description */
 					$subfield = $record->get_subfield($cle,"a");
@@ -2748,7 +2929,7 @@ class z3950_notice {
 					$collection_411 = $record->get_subfield($cle,"t","v","x");
 					break;
 				case "461": /* series ou perios*/
-					if($this->bibliographic_level == 'a' && $this->hierarchic_level == '2'){
+					if(($this->bibliographic_level == 'a' || $this->bibliographic_level == 'b' || $this->bibliographic_level == 's')  && $this->hierarchic_level == '2'){
 						$perio = $record->get_subfield($cle,"t","x","v","d","e");
 						$this->perio_titre = $record->get_subfield_array($cle,"t");
 						$this->perio_issn = $record->get_subfield_array($cle,"x");
@@ -2777,7 +2958,12 @@ class z3950_notice {
 					$this->info_503 = $record->get_subfield($cle,"a","e","f","h","m","n");
 					$this->info_503_d = $record->get_subfield_array_array($cle,"d");
 					$this->info_503_j = $record->get_subfield_array_array($cle,"j");				
-					break;					
+					break;	
+				case "530":
+					$perio530a=$record->get_subfield_array($cle, 'a');
+					break;
+					//TODO AR
+					//recup 530 (voir import_unimarc_lien)
 				case "600": // 600 PERSONAL NAME USED AS SUBJECT
 					$this->info_600_3=$record->get_subfield_array_array($cle,"3");
 					$this->info_600_a=$record->get_subfield_array_array($cle,"a");
@@ -2910,6 +3096,7 @@ class z3950_notice {
 					break;
 				case "995": /* infos de la BDP */
 					$info_995 = $record->get_subfield($cle,"a","b","c","d","f","k","m","n","o","r","u");
+					$this->exemplaires = $info_995;
 					break;
 				case "896": /* Thumbnail */
 					$this->thumbnail_url = $record->get_subfield($cle,"a");
@@ -2929,7 +3116,6 @@ class z3950_notice {
 		//Récupération des catégories en lien avec le fichier xml
 		category_auto::get_info_categ($record);
 		$this->isbn = $this->process_isbn ($isbn[0]);
-
 		if (function_exists("traite_categories_from_unimarc")) {
 			$this->categories = traite_categories_from_unimarc($this);
 		}
@@ -3071,16 +3257,18 @@ class z3950_notice {
 		
 		/* traitement des éditeurs */
 		$editor=array();
-		foreach ( $editeur_nom as $key_nom1 => $nom1 ) {
-			foreach ( $nom1 as $key_nom2 => $nom2 ) {
-				$mon_ed=array();
-				$mon_ed["c"]=$nom2;
-		
-				if($editeur_lieu[$key_nom1][$key_nom2]){
-					$mon_ed["a"]=$editeur_lieu[$key_nom1][$key_nom2];
+		if (is_array($editeur_nom)) {
+			foreach ( $editeur_nom as $key_nom1 => $nom1 ) {
+				foreach ( $nom1 as $key_nom2 => $nom2 ) {
+					$mon_ed=array();
+					$mon_ed["c"]=$nom2;
+			
+					if($editeur_lieu[$key_nom1][$key_nom2]){
+						$mon_ed["a"]=$editeur_lieu[$key_nom1][$key_nom2];
+					}
+	
+					$editor[]=$mon_ed;
 				}
-
-				$editor[]=$mon_ed;
 			}
 		}
 		$this->year=clean_string($editeur_date[0]);
@@ -3134,6 +3322,35 @@ class z3950_notice {
 		$this->collection['name']=del_more_garbage($this->collection['name']);
 		$this->subcollection['name']=del_more_garbage($this->subcollection['name']);
 		
+		//TODO AR
+		//nettoyage si notice de bulletin (voir import_unimarc_lien)
+		//TEST si perio_titre vide -> recup 530
+		if($this->bibliographic_level=="s" && $this->hierarchic_level=="2"){
+			if(!$this->perio_titre && $perio530a) {
+				$this->perio_titre = $perio530a;
+			}
+			
+			if(!$this->bull_titre && $tit_200a){
+			  $this->bull_titre = array(clean_string($tit_200a[0]));
+			}
+			
+			//file_put_contents('php://stderr', print_r($tit_200a[0], true));
+			if(!$this->bull_num && $this->serie_200){
+				$this->bull_num = array(clean_string ($this->serie_200[0]['h']));
+			}
+			
+			if(!$this->bull_date && $editeur_date_machine){	
+				$this->bull_date =  array($editeur_date_machine[0]);
+			}
+			if(!$this->bull_mention && $editeur_date){	
+				$this->bull_mention =  array(clean_string($editeur_date[0]));
+			}
+			//file_put_contents('php://stderr', print_r($this->bull_mention, true));
+			//file_put_contents('php://stderr', print_r($this->bull_date, true));
+			$this->serie_200 = array();
+		}
+		
+		
 		/* Series  TODO: Check if it's Ok */
 		$this->serie = clean_string ($serie[0]['t']);
 		if ($this->serie){
@@ -3165,6 +3382,10 @@ class z3950_notice {
 		$this->link_format = $ressource[0]["q"];
 
 		/* Titles processing */
+		if (!$tit_200a) $tit_200a=array();
+		if (!$tit_200c) $tit_200c=array();
+		if (!$tit_200d) $tit_200d=array();
+		if (!$tit_200e) $tit_200e=array();
 		$tit[0]['a'] = implode (" ; ",$tit_200a);
 		$tit[0]['c'] = implode (" ; ",$tit_200c);
 		$tit[0]['d'] = implode (" ; ",$tit_200d);
@@ -3222,7 +3443,7 @@ class z3950_notice {
 	 */
 	function var_to_post($no_download='1'){
 		
-		global $dbh, $deflt_notice_statut;
+		global $dbh, $deflt_integration_notice_statut;
 		
 		$this->document_type = 	addslashes($this->document_type);
 		$this->isbn = addslashes($this->isbn);	
@@ -3247,7 +3468,7 @@ class z3950_notice {
 		$this->content_note = addslashes($this->content_note);
 		$this->abstract_note = addslashes($this->abstract_note) ;
 		$this->internal_index = addslashes($this->internal_index); 
-		$this->statut = $deflt_notice_statut ;
+		$this->statut = $deflt_integration_notice_statut ;
 		$this->commentaire_gestion = addslashes($this->commentaire_gestion); 
 		$this->indexation_lang = addslashes($this->indexation_lang); 
 		$this->thumbnail_url = addslashes($this->thumbnail_url) ;
@@ -3273,28 +3494,28 @@ class z3950_notice {
 				$req="select notice_id, tit1, code from notices where niveau_biblio='s' and niveau_hierar='1' 
 						and tit1='".$this->perio_titre."'
 						and code='".$this->perio_issn."' limit 1";
-				$res_perio = mysql_query($req,$dbh);
-				$num_rows_perio = mysql_num_rows($res_perio);
+				$res_perio = pmb_mysql_query($req,$dbh);
+				$num_rows_perio = pmb_mysql_num_rows($res_perio);
 			}
 			if (!$num_rows_perio){
 				if($this->perio_titre){
 					$req="select notice_id, tit1, code from notices where niveau_biblio='s' and niveau_hierar='1' 
 						and tit1='".$this->perio_titre."'
 						limit 1";
-					$res_perio = mysql_query($req,$dbh);
-					$num_rows_perio = mysql_num_rows($res_perio);
+					$res_perio = pmb_mysql_query($req,$dbh);
+					$num_rows_perio = pmb_mysql_num_rows($res_perio);
 				}
 			}
 			if (!$num_rows_perio){
 				if($this->perio_issn){
 					$req="select notice_id, tit1, code from notices where niveau_biblio='s' and niveau_hierar='1' 
 							and code='".$this->perio_issn."' limit 1";
-					$res_perio = mysql_query($req,$dbh);
-					$num_rows_perio = mysql_num_rows($res_perio);
+					$res_perio = pmb_mysql_query($req,$dbh);
+					$num_rows_perio = pmb_mysql_num_rows($res_perio);
 				}
 			}	
 			if ($num_rows_perio == 1) {
-				$perio_found = mysql_fetch_object($res_perio);
+				$perio_found = pmb_mysql_fetch_object($res_perio);
 				$this->perio_titre = addslashes($perio_found->tit1);
 				$this->perio_issn = addslashes($perio_found->code);
 				$this->perio_id = addslashes($perio_found->notice_id);
@@ -3303,34 +3524,34 @@ class z3950_notice {
 			$num_rows_bull=0;
 			if($this->bull_num && $this->perio_id){
 				$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre from bulletins where bulletin_notice='".$this->perio_id."' and  bulletin_numero like '%".$this->bull_num."%' ";
-				$res_bull = mysql_query($req,$dbh);
-				$num_rows_bull = mysql_num_rows($res_bull);
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
 			}
 			if(!$num_rows_bull && $this->bull_date && $this->perio_id){
 				$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre from bulletins where bulletin_notice='".$this->perio_id."' and date_date='".$this->bull_date."' ";
-				$res_bull = mysql_query($req,$dbh);
-				$num_rows_bull = mysql_num_rows($res_bull);
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
 			}elseif(($num_rows_bull > 1) && $this->bull_date && $this->perio_id){
 				$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre from bulletins where bulletin_notice='".$this->perio_id."' and date_date='".$this->bull_date."' and  bulletin_numero like '%".$this->bull_num."%' ";
-				$res_bull = mysql_query($req,$dbh);
-				$num_rows_bull = mysql_num_rows($res_bull);
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
 			}
 			if(!$num_rows_bull && $this->bull_mention && $this->perio_id){
 				$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre from bulletins where bulletin_notice='".$this->perio_id."' and mention_date='".$this->bull_mention."' ";
-				$res_bull = mysql_query($req,$dbh);
-				$num_rows_bull = mysql_num_rows($res_bull);
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
 			}elseif(($num_rows_bull > 1) && $this->bull_mention[0] && $idperio){
 				if($this->bull_date[0]){
 					$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre from bulletins where bulletin_notice='".$this->perio_id."' and date_date='".$this->bull_date."' and mention_date='".$this->bull_mention."' ";
 				}else{
 					$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre from bulletins where bulletin_notice='".$this->perio_id."' and mention_date='".$this->bull_mention."' and  bulletin_numero like '%".$this->bull_num."%' ";
 				}
-				$res_bull = mysql_query($req,$dbh);
-				$num_rows_bull = mysql_num_rows($res_bull);
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
 			}
 		
 			if ($num_rows_bull == 1) {
-				$bull_found = mysql_fetch_object($res_bull);
+				$bull_found = pmb_mysql_fetch_object($res_bull);
 				$this->bull_titre = addslashes($bull_found->bulletin_titre);
 				$this->bull_date = addslashes($bull_found->date_date);
 				$this->bull_mention = addslashes($bull_found->mention_date);
@@ -3340,13 +3561,104 @@ class z3950_notice {
 			
 			global $biblio_notice;
 			$biblio_notice = "art";
-		} 		
+		} 
+
+		//TODO AR
+		//si bulletin, inspiré de juste au dessus, retrouver le pério, checker si le bulletin existe déjà, mettre la global biblio_notice à bull
+		if($this->bibliographic_level == 's' && $this->hierarchic_level=='2'){
+			//Pério et bulletin
+			$this->perio_titre = addslashes($this->perio_titre[0]);
+			$this->perio_issn = addslashes($this->perio_issn[0]);
+			$this->bull_titre = addslashes($this->bull_titre[0]);
+			$this->bull_date = addslashes($this->bull_date[0]);
+			$this->bull_mention = addslashes($this->bull_mention[0]);
+			$this->bull_num = addslashes($this->bull_num[0]);
+			
+			//On cherche si le perio existe
+			if($this->perio_titre && $this->perio_issn){			
+				$req="select notice_id, tit1, code from notices where niveau_biblio='s' and niveau_hierar='1' 
+						and tit1='".$this->perio_titre."'
+						and code='".$this->perio_issn."' limit 1";
+				$res_perio = pmb_mysql_query($req,$dbh);
+				$num_rows_perio = pmb_mysql_num_rows($res_perio);
+			}
+			if (!$num_rows_perio){
+				if($this->perio_titre){
+					$req="select notice_id, tit1, code from notices where niveau_biblio='s' and niveau_hierar='1' 
+						and tit1='".$this->perio_titre."'
+						limit 1";
+					$res_perio = pmb_mysql_query($req,$dbh);
+					$num_rows_perio = pmb_mysql_num_rows($res_perio);
+				}
+			}
+			if (!$num_rows_perio){
+				if($this->perio_issn){
+					$req="select notice_id, tit1, code from notices where niveau_biblio='s' and niveau_hierar='1' 
+							and code='".$this->perio_issn."' limit 1";
+					$res_perio = pmb_mysql_query($req,$dbh);
+					$num_rows_perio = pmb_mysql_num_rows($res_perio);
+				}
+			}	
+			if ($num_rows_perio == 1) {
+				$perio_found = pmb_mysql_fetch_object($res_perio);
+				$this->perio_titre = addslashes($perio_found->tit1);
+				$this->perio_issn = addslashes($perio_found->code);
+				$this->perio_id = addslashes($perio_found->notice_id);
+			} 
+			//On cherche si le bulletin existe
+			$num_rows_bull=0;
+			if($this->bull_num && $this->perio_id){
+				$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, num_notice from bulletins where bulletin_notice='".$this->perio_id."' and  bulletin_numero like '%".$this->bull_num."%' ";
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
+			}
+			if(!$num_rows_bull && $this->bull_date && $this->perio_id){
+				$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, num_notice from bulletins where bulletin_notice='".$this->perio_id."' and date_date='".$this->bull_date."' ";
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
+				//file_put_contents('php://stderr', print_r("ibn date periodid", true));
+			}elseif(($num_rows_bull > 1) && $this->bull_date && $this->perio_id){
+				$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, num_notice from bulletins where bulletin_notice='".$this->perio_id."' and date_date='".$this->bull_date."' and  bulletin_numero like '%".$this->bull_num."%' ";
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
+			}
+			if(!$num_rows_bull && $this->bull_mention && $this->perio_id){
+				$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, num_notice from bulletins where bulletin_notice='".$this->perio_id."' and mention_date='".$this->bull_mention."' ";
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
+			}elseif(($num_rows_bull > 1) && $this->bull_mention[0] && $idperio){
+				if($this->bull_date[0]){
+					$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, num_notice from bulletins where bulletin_notice='".$this->perio_id."' and date_date='".$this->bull_date."' and mention_date='".$this->bull_mention."' ";
+				}else{
+					$req="select bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, num_notice from bulletins where bulletin_notice='".$this->perio_id."' and mention_date='".$this->bull_mention."' and  bulletin_numero like '%".$this->bull_num."%' ";
+				}
+				$res_bull = pmb_mysql_query($req,$dbh);
+				$num_rows_bull = pmb_mysql_num_rows($res_bull);
+			}
+		
+			if ($num_rows_bull == 1) {
+				$bull_found = pmb_mysql_fetch_object($res_bull);
+				$this->bull_titre = addslashes($bull_found->bulletin_titre);
+				$this->bull_date = addslashes($bull_found->date_date);
+				$this->bull_mention = addslashes($bull_found->mention_date);
+				$this->bull_num = addslashes($bull_found->bulletin_numero);
+				$this->bull_id = $bull_found->bulletin_id;
+				$this->bull_notice = $bull_found->num_notice;
+				//Recupérer id de notice, et avant d'appeler insert_in_database -> vérifier que la valeur n'est pas remplie
+				//file_put_contents('php://stderr', print_r("bulletin trouve", true));
+			}
+			
+			global $biblio_notice;
+			$biblio_notice = "bull";
+			
+		}
+		
 		
 		if($this->source_id){
 			$requete="select upload_doc_num from connectors_sources where source_id=".$this->source_id."";
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);
 				if($r->upload_doc_num){
 					$no_download=0;
 				}else{

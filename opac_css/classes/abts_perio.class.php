@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts_perio.class.php,v 1.1 2011-07-08 14:12:40 ngantier Exp $
+// $Id: abts_perio.class.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,16 +30,16 @@ function fetch_data() {
 		from perio_relance, abts_abts, docs_location
 		where  location_id=idlocation and rel_abt_num=abt_id and num_notice=".$this->serial_id." and rel_comment_opac!='' group by rel_abt_num,rel_date_parution,rel_libelle_numero order by rel_nb desc";		
 
-	$result = mysql_query($req);
-	if(mysql_num_rows($result)){
+	$result = pmb_mysql_query($req);
+	if(pmb_mysql_num_rows($result)){
 		$tr_class="";
-		while($r = mysql_fetch_object($result)) {	
+		while($r = pmb_mysql_fetch_object($result)) {	
 			$surloc_libelle="";
 			if($opac_sur_location_activate && $r->surloc_num ){
 				$req="select surloc_libelle from sur_location where surloc_id = ".$r->surloc_num;
-				$res_surloc = mysql_query($req);
-				if(mysql_num_rows($res_surloc)){
-					$surloc= mysql_fetch_object($res_surloc);
+				$res_surloc = pmb_mysql_query($req);
+				if(pmb_mysql_num_rows($res_surloc)){
+					$surloc= pmb_mysql_fetch_object($res_surloc);
 					$surloc_libelle=$surloc->surloc_libelle." / ";
 				}
 			}			

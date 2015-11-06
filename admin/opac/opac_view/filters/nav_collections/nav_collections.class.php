@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: nav_collections.class.php,v 1.2 2013-11-06 14:11:05 dgoron Exp $
+// $Id: nav_collections.class.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -21,18 +21,18 @@ class nav_collections {
 			
 		$this->selected_list=array();
 		$req="SELECT * FROM opac_filters where opac_filter_view_num=".$this->id_vue." and  opac_filter_path='".$this->path."' ";
-		$myQuery = mysql_query($req, $dbh);
-		if(mysql_num_rows($myQuery)){
-			$r=mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($req, $dbh);
+		if(pmb_mysql_num_rows($myQuery)){
+			$r=pmb_mysql_fetch_object($myQuery);
 			$param=unserialize($r->opac_filter_param);
 			$this->selected_list=$param["selected"];
 		}				
-		$myQuery = mysql_query("SELECT * FROM docs_location order by location_libelle ", $dbh);
+		$myQuery = pmb_mysql_query("SELECT * FROM docs_location order by location_libelle ", $dbh);
 		$this->liste_item=array();
 		$link="";
 		$i=0;
-		if(mysql_num_rows($myQuery)){
-			while(($r=mysql_fetch_object($myQuery))) {
+		if(pmb_mysql_num_rows($myQuery)){
+			while(($r=pmb_mysql_fetch_object($myQuery))) {
 				$this->liste_item[$i]=new stdClass();
 				$this->liste_item[$i]->id=$r->idlocation;
 				$this->liste_item[$i]->name=$r->location_libelle ;
@@ -87,7 +87,7 @@ class nav_collections {
 		global $dbh;
 
 		$req="delete FROM opac_filters where opac_filter_view_num=".$this->id_vue." and  opac_filter_path='".$this->path."' ";
-		$myQuery = mysql_query($req, $dbh);
+		$myQuery = pmb_mysql_query($req, $dbh);
 		
 		$param=array();
 		$selected_list=array();
@@ -101,7 +101,7 @@ class nav_collections {
 		$param["selected"]=$selected_list;
 		$param=addslashes(serialize($param));		
 		$req="insert into opac_filters set opac_filter_view_num=".$this->id_vue." ,  opac_filter_path='".$this->path."', opac_filter_param='$param' ";
-		$myQuery = mysql_query($req, $dbh);
+		$myQuery = pmb_mysql_query($req, $dbh);
 	}	
 	
 }

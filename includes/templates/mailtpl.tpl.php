@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mailtpl.tpl.php,v 1.3 2014-02-26 14:01:34 dgoron Exp $
+// $Id: mailtpl.tpl.php,v 1.5 2015-06-11 14:17:59 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -33,9 +33,9 @@ $mailtpl_form_selvars="
 <select name='selvars_id' id='selvars_id'>
 	<option value=!!empr_name!!>".$msg["selvars_empr_name"]."</option>
 	<option value=!!empr_first_name!!>".$msg["selvars_empr_first_name"]."</option>
+	<option value=!!empr_sexe!!>".$msg["selvars_empr_civilite"]."</option>
 	<option value=!!empr_cb!!>".$msg["selvars_empr_cb"]."</option>
 	<option value=!!empr_login!!>".$msg["selvars_empr_login"]."</option>
-	<option value=!!empr_password!!>".$msg["selvars_empr_password"]."</option>
 	<option value=!!empr_mail!!>".$msg["selvars_empr_mail"]."</option>
 	<option value=!!empr_loans!!>".$msg["selvars_empr_loans"]."</option>
 	<option value=!!empr_resas!!>".$msg["selvars_empr_resas"]."</option>

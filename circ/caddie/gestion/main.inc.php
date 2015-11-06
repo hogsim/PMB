@@ -2,10 +2,11 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.6 2010-04-15 12:50:03 erwanmartin Exp $
+// $Id: main.inc.php,v 1.7 2015-03-30 07:14:52 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
+require_once("$class_path/classementGen.class.php") ;
 
 switch ($quoi) {
 	case 'razpointage':
@@ -49,6 +50,14 @@ switch ($quoi) {
 		$empr_menu_panier_gestion = str_replace('!!sous_menu_choisi!!', $msg["remote_procedures_circ_title"], $empr_menu_panier_gestion);
 		print $empr_menu_panier_gestion ;
 		include ("./circ/caddie/gestion/remote_procs.inc.php");
+		break;
+	case "classementGen" :
+		echo window_title($database_window_title.$msg[empr_caddie_menu]." : ".$msg["classementGen_list_libelle"]);
+		$empr_menu_panier_gestion = str_replace('!!sous_menu_choisi!!', $msg["classementGen_list_libelle"], $empr_menu_panier_gestion);
+		print $empr_menu_panier_gestion ;
+		$baseLink="./circ.php?categ=caddie&sub=gestion&quoi=classementGen";
+		$categ="empr_caddie";
+		include($include_path.'/classementGen.inc.php');
 		break;
 	case 'panier':
 	default:

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.php,v 1.31.2.1 2014-04-17 12:19:33 dgoron Exp $
+// $Id: main.php,v 1.34 2015-05-18 09:34:21 dgoron Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -16,10 +16,10 @@ require_once ("$base_path/includes/init.inc.php");
 if (!checkUser('PhpMyBibli')) {
 	//Vérification que l'utilisateur existe dans PMB
 	$query = "SELECT userid,username FROM users WHERE username='$user'";
-	$result = mysql_query($query, $dbh);
-	if (mysql_num_rows($result)) {
+	$result = pmb_mysql_query($query, $dbh);
+	if (pmb_mysql_num_rows($result)) {
 		//Récupération du mot de passe
-		$dbuser=mysql_fetch_object($result);
+		$dbuser=pmb_mysql_fetch_object($result);
 		
 		//Autentification externe si nécéssaire
 		if ((file_exists("$include_path/external_admin_auth.inc.php"))&&($dbuser->userid!=1)) {
@@ -27,8 +27,8 @@ if (!checkUser('PhpMyBibli')) {
 		} else {
 			// on checke si l'utilisateur existe et si le mot de passe est OK
 			$query = "SELECT count(1) FROM users WHERE username='$user' AND pwd=password('$password') ";
-			$result = mysql_query($query, $dbh);
-			$valid_user = mysql_result($result, 0, 0);
+			$result = pmb_mysql_query($query, $dbh);
+			$valid_user = pmb_mysql_result($result, 0, 0);
 		}
 	}
 } else 
@@ -51,6 +51,7 @@ $messages = new XMLlist("$include_path/messages/$lang.xml", 0);
 $messages->analyser();
 $msg = $messages->table;
 require("$include_path/templates/common.tpl.php");  
+header ("Content-Type: text/html; charset=$charset");
 
 if ((!$param_licence)||($pmb_bdd_version!=$pmb_version_database_as_it_should_be)||($pmb_subversion_database_as_it_shouldbe!=$pmb_bdd_subversion)) {
 	require_once("$include_path/templates/main.tpl.php");
@@ -83,7 +84,7 @@ if ((!$param_licence)||($pmb_bdd_version!=$pmb_version_database_as_it_should_be)
 	print $main_layout_end;
 	print $footer;
 
-	mysql_close($dbh);
+	pmb_mysql_close($dbh);
 	exit ;
 }
 
@@ -97,4 +98,4 @@ require_once($include_path."/misc.inc.php");
 
 go_first_tab();
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);

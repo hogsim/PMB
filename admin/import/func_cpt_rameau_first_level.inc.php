@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_cpt_rameau_first_level.inc.php,v 1.5 2011-09-27 14:56:15 gueluneau Exp $
+// $Id: func_cpt_rameau_first_level.inc.php,v 1.6 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -90,7 +90,7 @@ function import_new_notice_suite() {
 		} 
 		/* ajout de l'indexation à la notice dans la table notices_categories*/
 		$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$resultat."', ordre_categorie=".($i-1) ;
-		$res_ajout = @mysql_query($rqt_ajout, $dbh);
+		$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 	}
 } // fin import_new_notice_suite
 			

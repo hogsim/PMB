@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // � 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: encaissement.php,v 1.12.2.1 2014-05-12 15:24:21 dbellamy Exp $
+// $Id: encaissement.php,v 1.14 2015-04-03 11:16:23 jpermanne Exp $
 
 //Liste des trabsactions d'un compte
 $base_path="..";
@@ -180,10 +180,10 @@ switch ($act) {
 				$cpte->update_solde();
 				if(!$transacash_num){					
 					$req="select MAX(transacash_num) from transactions where compte_id=".$cpte->id_compte."";
-					$resultat=mysql_query($req);
-					if ($transacash_num=mysql_result($resultat,0,0)){
+					$resultat=pmb_mysql_query($req);
+					if ($transacash_num=pmb_mysql_result($resultat,0,0)){
 						$req="update transactions set transacash_num = $transacash_num where compte_id=".$cpte->id_compte." and transacash_num=0";
-						mysql_query($req);						
+						pmb_mysql_query($req);						
 					}
 				}
 				$cpte->cashdesk_memo_encaissement($id_transaction,$transacash_num,$somme);		
@@ -270,7 +270,7 @@ switch ($act) {
 				if (($typ_special==1)&&($credit_perte)) {
 					//Ajout d'un transaction debit pour le compte 0
 					$requete="insert into transactions (compte_id,user_id,user_name,machine,date_enrgt,date_prevue,date_effective,montant,sens,realisee,commentaire,encaissement) values(0,$PMBuserid,'".$PMBusername."','".$_SERVER["REMOTE_ADDR"]."', now(), now(), now(), ".($somme*1).", -1, 1,'#".$id_transaction."# : ".$commentaire."',0)";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				//Decaissement
 				if (($typ_special==4)&&($dec_perte)) {
@@ -279,7 +279,7 @@ switch ($act) {
 						$cpte->validate_transaction($id_transaction_1);
 						//Debit sur le compte 0
 						$requete="insert into transactions (compte_id,user_id,user_name,machine,date_enrgt,date_prevue,date_effective,montant,sens,realisee,commentaire,encaissement) values(0,$PMBuserid,'".$PMBusername."','".$_SERVER["REMOTE_ADDR"]."', now(), now(), now(), ".($somme*1).", -1, 1,'#".$id_transaction_1."# : ".sprintf($msg["finance_enc_tr_lib_lost"],"#".$id_transaction."#")." : ".stripslashes($commentaire)."',0)";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}
 				}
 				$cpte->update_solde();

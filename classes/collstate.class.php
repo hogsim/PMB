@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collstate.class.php,v 1.16 2014-02-07 14:05:12 mbertin Exp $
+// $Id: collstate.class.php,v 1.17 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -38,8 +38,8 @@ function fetch_data() {
 	global $explr_invisible, $explr_visible_unmod, $explr_visible_mod, $pmb_droits_explr_localises ;
 	global $pmb_sur_location_activate;
 
-	$myQuery = mysql_query("SELECT * FROM collections_state WHERE collstate_id='".$this->id."' LIMIT 1", $dbh);
-	$mycoll= mysql_fetch_object($myQuery);
+	$myQuery = pmb_mysql_query("SELECT * FROM collections_state WHERE collstate_id='".$this->id."' LIMIT 1", $dbh);
+	$mycoll= pmb_mysql_fetch_object($myQuery);
 
 	$this->serial_id=$mycoll->id_serial;
 	$this->location_id=$mycoll->location_id;
@@ -53,17 +53,17 @@ function fetch_data() {
 	$this->lacune=$mycoll->collstate_lacune;
 	$this->statut=$mycoll->collstate_statut;
 
-	$myQuery = mysql_query("SELECT * FROM arch_emplacement WHERE archempla_id='".$this->emplacement."' LIMIT 1", $dbh);
-	$myempl= mysql_fetch_object($myQuery);
+	$myQuery = pmb_mysql_query("SELECT * FROM arch_emplacement WHERE archempla_id='".$this->emplacement."' LIMIT 1", $dbh);
+	$myempl= pmb_mysql_fetch_object($myQuery);
 	$this->emplacement_libelle=$myempl->archempla_libelle;
 
-	$myQuery = mysql_query("SELECT * FROM arch_type WHERE archtype_id='".$this->type."' LIMIT 1", $dbh);
-	$mytype= mysql_fetch_object($myQuery);
+	$myQuery = pmb_mysql_query("SELECT * FROM arch_type WHERE archtype_id='".$this->type."' LIMIT 1", $dbh);
+	$mytype= pmb_mysql_fetch_object($myQuery);
 	$this->type_libelle=$mytype->archtype_libelle;
 
 	// Lecture des statuts
-	$myQuery = mysql_query("SELECT * FROM arch_statut WHERE archstatut_id='".$this->statut."' LIMIT 1", $dbh);
-	$mystatut= mysql_fetch_object($myQuery);
+	$myQuery = pmb_mysql_query("SELECT * FROM arch_statut WHERE archstatut_id='".$this->statut."' LIMIT 1", $dbh);
+	$mystatut= pmb_mysql_fetch_object($myQuery);
 	$this->statut_gestion_libelle=$mystatut->archstatut_gestion_libelle;
 	$this->statut_opac_libelle=$mystatut->archstatut_opac_libelle;
 	$this->statut_visible_opac=$mystatut->archstatut_visible_opac;
@@ -71,8 +71,8 @@ function fetch_data() {
 	$this->statut_visible_gestion=$mystatut->archstatut_visible_gestion;
 	$this->statut_class_html=$mystatut->archstatut_class_html;
 
-	$myQuery = mysql_query("select location_libelle, surloc_num from docs_location where idlocation='".$this->location_id."' LIMIT 1", $dbh);
-	$mylocation= mysql_fetch_object($myQuery);
+	$myQuery = pmb_mysql_query("select location_libelle, surloc_num from docs_location where idlocation='".$this->location_id."' LIMIT 1", $dbh);
+	$mylocation= pmb_mysql_fetch_object($myQuery);
 	$this->location_libelle=$mylocation->location_libelle;
 
 	if ($pmb_droits_explr_localises) {
@@ -88,8 +88,8 @@ function fetch_data() {
 	
 	if ($pmb_sur_location_activate) {
 		$this->surloc_id = $mylocation->surloc_num;
-		$myQuery = mysql_query("select surloc_libelle from sur_location where surloc_id='".$this->surloc_id."' LIMIT 1", $dbh);
-		$mysurloc = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("select surloc_libelle from sur_location where surloc_id='".$this->surloc_id."' LIMIT 1", $dbh);
+		$mysurloc = pmb_mysql_fetch_object($myQuery);
 		$this->surloc_libelle=$mysurloc->surloc_libelle;
 	}
 }
@@ -104,11 +104,11 @@ function get_callstate_isbd() {
 		$select_location=",location_libelle";
 	}
 	$rqt="select state_collections $select_location from collections_state $table_location where id_serial=".$this->serial_id.$restrict_location;
-	$execute_query=mysql_query($rqt);
-	if (mysql_num_rows($execute_query)) {
+	$execute_query=pmb_mysql_query($rqt);
+	if (pmb_mysql_num_rows($execute_query)) {
 		$bool=false;
 		$affichage="<br /><strong>".$msg["4001"]."</strong><br />";
-		while (($r=mysql_fetch_object($execute_query))) {
+		while (($r=pmb_mysql_fetch_object($execute_query))) {
 			if ($r->state_collections) {
 				if ($r->location_libelle) $affichage .= "<strong>".$r->location_libelle."</strong> : ";
 				$affichage .= str_replace("\n","<br />",$r->state_collections)."<br />\n";
@@ -143,14 +143,14 @@ function get_display_list($base_url,$filtre,$debut=0,$page=0, $type=0,$form=1,$n
 	
 	//On compte les bulletins à afficher
 	$rqt="SELECT count( collstate_id) FROM collections_state WHERE $restrict_location ".($location?"(location_id='$location') and ":"")." id_serial='".$this->serial_id."' ";
-	$myQuery = mysql_query($rqt, $dbh);
-	$nbr_lignes = mysql_result($myQuery,0,0);
+	$myQuery = pmb_mysql_query($rqt, $dbh);
+	$nbr_lignes = pmb_mysql_result($myQuery,0,0);
 
 	$req="SELECT  collstate_id , location_id FROM collections_state LEFT JOIN docs_location ON location_id=idlocation ".$join_sur_loc." LEFT JOIN arch_emplacement ON collstate_emplacement=archempla_id WHERE $restrict_location ".($location?"(location_id='$location') and ":"")."
 	id_serial='".$this->serial_id."' ORDER BY ".$order_sur_loc." ".($pmb_etat_collections_localise?"location_libelle, ":"")."archempla_libelle, collstate_cote "
 	.(($no_pagination)?'':"LIMIT $debut,$nb_per_page_a_search");
-	$myQuery = mysql_query($req, $dbh);
-	if((mysql_num_rows($myQuery))) {
+	$myQuery = pmb_mysql_query($req, $dbh);
+	if((pmb_mysql_num_rows($myQuery))) {
 		
 		if ($pmb_sur_location_activate) {
 			$tpl_collstate_liste[$type] = str_replace('<!-- surloc -->',$tpl_collstate_surloc_liste,$tpl_collstate_liste[$type]);
@@ -158,7 +158,7 @@ function get_display_list($base_url,$filtre,$debut=0,$page=0, $type=0,$form=1,$n
 		}
 		
 		$parity=1;
-		while(($coll = mysql_fetch_object($myQuery))) {
+		while(($coll = pmb_mysql_fetch_object($myQuery))) {
 			$my_collstate=new collstate($coll->collstate_id);
 /*
 	Avoir comment gerer un + pour des grands etats de collections
@@ -225,7 +225,7 @@ function update($value) {
 	}
 	if($this->id) {
 		// modif
-		$no_erreur=mysql_query("UPDATE collections_state SET $fields WHERE collstate_id=".$this->id, $dbh);
+		$no_erreur=pmb_mysql_query("UPDATE collections_state SET $fields WHERE collstate_id=".$this->id, $dbh);
 		if(!$no_erreur) {
 			error_message($msg["collstate_add_collstate"], $msg["collstate_add_error"],1);
 			exit;
@@ -233,8 +233,8 @@ function update($value) {
 
 	} else {
 		// create
-		$no_erreur=mysql_query("INSERT INTO collections_state SET $fields ", $dbh);
-		$this->id = mysql_insert_id($dbh);
+		$no_erreur=pmb_mysql_query("INSERT INTO collections_state SET $fields ", $dbh);
+		$this->id = pmb_mysql_insert_id($dbh);
 		if(!$no_erreur) {
 			error_message($msg["collstate_edit_collstate"], $msg["collstate_add_error"],1);
 			exit;
@@ -385,19 +385,19 @@ function delete() {
 		//On nettoye l'index
 		if(!$this->serial_id){
 			$req="SELECT id_serial FROM collections_state WHERE collstate_id='".$this->id."'";
-			$res=mysql_query($req,$dbh);
-			if($res && mysql_num_rows($res)){
-				$this->serial_id=mysql_result($res,0,0);
+			$res=pmb_mysql_query($req,$dbh);
+			if($res && pmb_mysql_num_rows($res)){
+				$this->serial_id=pmb_mysql_result($res,0,0);
 			}
 		}
 		//elimination des champs persos
 		$p_perso=new parametres_perso("collstate");
 		$p_perso->delete_values($this->id);
-		mysql_query("DELETE from collections_state WHERE collstate_id='".$this->id."' ", $dbh);
+		pmb_mysql_query("DELETE from collections_state WHERE collstate_id='".$this->id."' ", $dbh);
 	} else if($this->serial_id) {
-		$myQuery = mysql_query("SELECT collstate_id FROM collections_state WHERE id_serial='".$this->serial_id."' ", $dbh);
-		if((mysql_num_rows($myQuery))) {
-			while(($coll = mysql_fetch_object($myQuery))) {
+		$myQuery = pmb_mysql_query("SELECT collstate_id FROM collections_state WHERE id_serial='".$this->serial_id."' ", $dbh);
+		if((pmb_mysql_num_rows($myQuery))) {
+			while(($coll = pmb_mysql_fetch_object($myQuery))) {
 				$my_collstate=new collstate($coll->collstate_id);
 				$my_collstate->delete();
 			}

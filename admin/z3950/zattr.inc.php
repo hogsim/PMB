@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: zattr.inc.php,v 1.11 2009-05-16 11:12:04 dbellamy Exp $
+// $Id: zattr.inc.php,v 1.12 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,9 +37,9 @@ function show_zattr($dbh, $bib_id) {
 	// affichage du tableau des z_attr
 
 	$requete = "SELECT attr_bib_id,  attr_libelle,  attr_attr  FROM z_attr where attr_bib_id ='$bib_id' ORDER BY attr_libelle,  attr_attr ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 	
 	// loading the localized attributes labels
 	$la = new XMLlist($include_path."/marc_tables/z3950attributes.xml", 0);
@@ -48,7 +48,7 @@ function show_zattr($dbh, $bib_id) {
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -120,18 +120,18 @@ function zattr_form($zbib_id="", $zattr_libelle="", $zattr_attr="") {
 	}
 
 $requete = "SELECT bib_nom, base, search_type FROM z_bib where bib_id ='$bib_id' or bib_id='$form_attr_bib_id' ";
-$res = mysql_query($requete, $dbh);
-$row=mysql_fetch_object($res);
+$res = pmb_mysql_query($requete, $dbh);
+$row=pmb_mysql_fetch_object($res);
 echo "<hr /><strong>$row->bib_nom - $row->base - $row->search_type</strong><hr />";
 switch($action) {
 	case 'update':
 		if(!empty($form_attr_bib_id) && !empty($form_attr_libelle) && !empty($form_attr_attr)) {
 			if($bib_id) {
 				$requete = "UPDATE z_attr SET attr_libelle='$form_attr_libelle', attr_attr='$form_attr_attr' WHERE attr_bib_id='$bib_id' and attr_libelle='$form_attr_libelle' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				} else {
 					$requete = "INSERT INTO z_attr (attr_bib_id,  attr_libelle, attr_attr) VALUES ('$form_attr_bib_id', '$form_attr_libelle', '$form_attr_attr') ";
-					$res = mysql_query($requete, $dbh);
+					$res = pmb_mysql_query($requete, $dbh);
 					$bib_id = $form_attr_bib_id ;
 					}
 			}
@@ -147,9 +147,9 @@ switch($action) {
 	case 'modif':
 		if($bib_id){
 			$requete = "SELECT attr_bib_id, attr_libelle, attr_attr FROM z_attr WHERE attr_bib_id=$bib_id and attr_libelle='$attr_libelle' ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				zattr_form ($row->attr_bib_id, $row->attr_libelle, $row->attr_attr );
 				} else {
 					show_zattr($dbh,$bib_id);
@@ -161,7 +161,7 @@ switch($action) {
 	case 'del':
 		if (($bib_id) && ($attr_libelle)) {
 			$requete = "DELETE FROM z_attr WHERE attr_bib_id='$bib_id' and attr_libelle='$attr_libelle' ";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			show_zattr($dbh,$bib_id);
 			} else show_zattr($dbh,$bib_id);
 		break;

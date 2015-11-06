@@ -3,7 +3,7 @@
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // | creator : Yves PRATTER                                                   |
 // +-------------------------------------------------+
-// $Id: explnum_doc.php,v 1.6 2012-09-06 08:00:12 ngantier Exp $
+// $Id: explnum_doc.php,v 1.7 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path     = ".";                            
@@ -20,15 +20,15 @@ require_once ("$include_path/explnum.inc.php");
 
 $req_docnum = "SELECT explnum_doc_nomfichier, explnum_doc_mimetype, explnum_doc_data, explnum_doc_extfichier,explnum_doc_url as url
 			FROM explnum_doc WHERE id_explnum_doc = '$explnumdoc_id' ";
-$resultat = mysql_query($req_docnum, $dbh);
-$nb_res = mysql_num_rows($resultat) ;
+$resultat = pmb_mysql_query($req_docnum, $dbh);
+$nb_res = pmb_mysql_num_rows($resultat) ;
 
 if (!$nb_res) {
 	header("Location: images/mimetype/unknown.gif");
 	exit ;
 } 
 	
-$ligne = mysql_fetch_object($resultat);
+$ligne = pmb_mysql_fetch_object($resultat);
 if ($ligne->explnum_doc_data) {
 	create_tableau_mimetype() ;
 	$name=$_mimetypes_bymimetype_[$ligne->explnum_mimetype]["plugin"] ;

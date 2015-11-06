@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_sugg.inc.php,v 1.4 2014-01-08 04:36:32 touraine37 Exp $
+// $Id: ajax_sugg.inc.php,v 1.5 2015-04-03 11:16:29 jpermanne Exp $
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once($class_path."/suggestions_origine.class.php");
@@ -34,15 +34,15 @@ function mod_origine(){
 	}
 	$list_user = "";
 	$req_select = suggestions_origine::listOccurences($id_sugg);
-	$res = mysql_query($req_select,$dbh);
+	$res = pmb_mysql_query($req_select,$dbh);
 	$nb_user = 0;
-	while(($user = mysql_fetch_object($res))){
+	while(($user = pmb_mysql_fetch_object($res))){
 		switch($user->type_origine){
 			default:
 				case '0' :
 				 	$requete_user = "SELECT userid, nom, prenom FROM users where userid = '".$user->origine."'";
-					$res_user = mysql_query($requete_user, $dbh);
-					$row_user=mysql_fetch_row($res_user);
+					$res_user = pmb_mysql_query($requete_user, $dbh);
+					$row_user=pmb_mysql_fetch_row($res_user);
 					$lib_orig = $row_user[1];
 					if ($row_user[2]) $lib_orig.= ", ".$row_user[2];
 					$suppr_click = "onClick=\"if(confirm('".$msg['confirm_suppr_origine']."')){ ajax_suppr_origine('".$user->origine."','".$user->type_origine."');}\"";					
@@ -51,8 +51,8 @@ function mod_origine(){
 					break;
 				case '1' :
 				 	$requete_empr = "SELECT id_empr, empr_nom, empr_prenom FROM empr where id_empr = '".$user->origine."'";
-					$res_empr = mysql_query($requete_empr, $dbh);
-					$row_empr=mysql_fetch_row($res_empr);
+					$res_empr = pmb_mysql_query($requete_empr, $dbh);
+					$row_empr=pmb_mysql_fetch_row($res_empr);
 					$lib_orig = $row_empr[1];
 					if ($row_empr[2]) $lib_orig.= ", ".$row_empr[2];
 					$suppr_click = "onClick=\"if(confirm('".$msg['confirm_suppr_origine']."')){ ajax_suppr_origine('".$user->origine."','".$user->type_origine."');}\"";
@@ -74,9 +74,9 @@ function mod_origine(){
 		<input type='button' id='creator_btn_orig_ajax' class='bouton_small' value='...' onclick=\"openPopUp('./select.php?what=origine&caller=sug_modif_form&param1=orig&param2=creator_lib_orig_ajax&param3=typ&param4=&param5=&param6=&callback=ajax_origine&deb_rech='+document.getElementById('creator_lib_orig_ajax').value, 'select_creator_orig', 400, 400, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\" />";
 	$list_user .= $ajout_create;
 	  
-	if(mysql_num_rows($res) > 1){
+	if(pmb_mysql_num_rows($res) > 1){
 		$result = gen_plus('ori_ajax',$msg['suggest_creator']. " (".($nb_user-1).")",$list_user,0);
-	} else if(mysql_num_rows($res) == 1){
+	} else if(pmb_mysql_num_rows($res) == 1){
 		$result = $list_user;
 	}
 	

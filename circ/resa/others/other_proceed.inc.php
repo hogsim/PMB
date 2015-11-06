@@ -5,7 +5,7 @@
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
-// $Id: other_proceed.inc.php,v 1.9 2009-05-16 11:12:03 dbellamy Exp $
+// $Id: other_proceed.inc.php,v 1.10 2015-04-03 11:16:29 jpermanne Exp $
 // Armelle : a priori plus utilisé
 // la couleur pour la mise en évidence des mots trouvés
 $high_color = "#800080";
@@ -65,8 +65,8 @@ if($ourSearch->nbr_rows == 0) {
 	print $begin_result_liste;
 
 	// boucle de fetch des notices
-	$res = @mysql_query($requete, $dbh);
-	while(($n=mysql_fetch_object($res))) { 
+	$res = @pmb_mysql_query($requete, $dbh);
+	while(($n=pmb_mysql_fetch_object($res))) { 
 		if($n->niveau_biblio != 's' && $n->niveau_biblio != 'a') {
 			// notice de monographie
 			$link = "./circ.php?categ=resa&id_empr=$id_empr&groupID=$groupID&id_notice=!!id!!";;

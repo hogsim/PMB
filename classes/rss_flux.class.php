@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rss_flux.class.php,v 1.13 2013-12-06 11:12:02 abacarisse Exp $
+// $Id: rss_flux.class.php,v 1.14 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -75,9 +75,9 @@ class rss_flux {
 		} else {
 			$requete = "SELECT id_rss_flux, nom_rss_flux, link_rss_flux, descr_rss_flux, lang_rss_flux, copy_rss_flux, editor_rss_flux, webmaster_rss_flux, ttl_rss_flux, img_url_rss_flux, img_title_rss_flux, img_link_rss_flux, format_flux, export_court_flux,tpl_rss_flux ";
 			$requete .= "FROM rss_flux WHERE id_rss_flux='".$this->id_rss_flux."' " ;
-			$result = mysql_query($requete, $dbh) or die ($requete."<br /> in rss_flux.class.php : ".mysql_error());
-			if(mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);
+			$result = pmb_mysql_query($requete, $dbh) or die ($requete."<br /> in rss_flux.class.php : ".pmb_mysql_error());
+			if(pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);
 			 	$this->id_rss_flux			= $temp->id_rss_flux ;
 				$this->nom_rss_flux			= $temp->nom_rss_flux ;
 				$this->link_rss_flux 		= $temp->link_rss_flux ;     
@@ -191,9 +191,9 @@ class rss_flux {
 		if ($PMBuserid!=1) $rqt.=" and (autorisations='$PMBuserid' or autorisations like '$PMBuserid %' or autorisations like '% $PMBuserid %' or autorisations like '% $PMBuserid') ";
 		$rqt.=" order by name ";
 		
-		$result = mysql_query($rqt, $dbh) or die ($rqt."<br /> in rss_flux.class.php : ".mysql_error());
+		$result = pmb_mysql_query($rqt, $dbh) or die ($rqt."<br /> in rss_flux.class.php : ".pmb_mysql_error());
 		$paniers = "";
-		while (($contenant = mysql_fetch_object($result))) {
+		while (($contenant = pmb_mysql_fetch_object($result))) {
 			if (array_search($contenant->id_obj,$this->num_paniers)!==false) $checked="checked" ; 
 				else $checked="" ;
 			$paniers .= "<div class='usercheckbox'>
@@ -204,9 +204,9 @@ class rss_flux {
 		$dsi_flux_form = str_replace('!!paniers!!', $paniers,  $dsi_flux_form);
 		
 		$rqt="select id_bannette as id_obj, nom_bannette as name_obj from bannettes where proprio_bannette=0 order by nom_bannette ";
-		$result = mysql_query($rqt, $dbh) or die ($rqt."<br /> in rss_flux.class.php : ".mysql_error());
+		$result = pmb_mysql_query($rqt, $dbh) or die ($rqt."<br /> in rss_flux.class.php : ".pmb_mysql_error());
 		$bannettes = "";
-		while (($contenant = mysql_fetch_object($result))) {
+		while (($contenant = pmb_mysql_fetch_object($result))) {
 			if (array_search($contenant->id_obj,$this->num_bannettes)!==false) $checked="checked" ; 
 				else $checked="" ;
 			$bannettes .= "<div class='usercheckbox'>
@@ -234,10 +234,10 @@ class rss_flux {
 		if (!$this->id_rss_flux) return $msg[dsi_flux_no_access]; // impossible d'acceder 
 	
 		$requete = "delete from rss_flux_content WHERE num_rss_flux='$this->id_rss_flux'";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 	
 		$requete = "delete from rss_flux WHERE id_rss_flux='$this->id_rss_flux'";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 	}
 	
 	
@@ -273,17 +273,17 @@ class rss_flux {
 		$req .= "format_flux       ='".$temp->format_flux        ."' " ;
 	
 		$req.=$clause ;
-		$res = mysql_query($req, $dbh) or die ($req) ;
-		if (!$this->id_rss_flux) $this->id_rss_flux = mysql_insert_id() ;
+		$res = pmb_mysql_query($req, $dbh) or die ($req) ;
+		if (!$this->id_rss_flux) $this->id_rss_flux = pmb_mysql_insert_id() ;
 		if (!$this->id_rss_flux) die ("Pb grave pendant l'enregistrement du flux");
 		
-		mysql_query("delete from rss_flux_content where num_rss_flux='$this->id_rss_flux' " ) ;
+		pmb_mysql_query("delete from rss_flux_content where num_rss_flux='$this->id_rss_flux' " ) ;
 		for ($i=0;$i<count($temp->num_paniers);$i++) {
-			mysql_query("insert into rss_flux_content set num_rss_flux='$this->id_rss_flux', type_contenant='CAD', num_contenant='".$temp->num_paniers[$i]."' " ) ;
+			pmb_mysql_query("insert into rss_flux_content set num_rss_flux='$this->id_rss_flux', type_contenant='CAD', num_contenant='".$temp->num_paniers[$i]."' " ) ;
 		}
 	
 		for ($i=0;$i<count($temp->num_bannettes);$i++) {
-			mysql_query("insert into rss_flux_content set num_rss_flux='$this->id_rss_flux', type_contenant='BAN', num_contenant='".$temp->num_bannettes[$i]."' " ) ;
+			pmb_mysql_query("insert into rss_flux_content set num_rss_flux='$this->id_rss_flux', type_contenant='BAN', num_contenant='".$temp->num_bannettes[$i]."' " ) ;
 		}
 	}
 	
@@ -299,15 +299,15 @@ class rss_flux {
 		$this->num_bannettes=array();
 	
 		$req_nb = "SELECT num_contenant from rss_flux_content WHERE num_rss_flux='".$this->id_rss_flux."' and type_contenant='CAD' " ;
-		$res_nb = mysql_query($req_nb, $dbh) or die ($req_nb."<br /> in rss_flux.class.php : ".mysql_error());
-		while (($res = mysql_fetch_object($res_nb))) {
+		$res_nb = pmb_mysql_query($req_nb, $dbh) or die ($req_nb."<br /> in rss_flux.class.php : ".pmb_mysql_error());
+		while (($res = pmb_mysql_fetch_object($res_nb))) {
 			$this->num_paniers[]=$res->num_contenant ;
 			$this->nb_paniers++ ;
 		}
 		
 		$req_nb = "SELECT num_contenant from rss_flux_content WHERE num_rss_flux='".$this->id_rss_flux."' and type_contenant='BAN' " ;
-		$res_nb = mysql_query($req_nb, $dbh) or die ($req_nb."<br /> in rss_flux.class.php : ".mysql_error());
-		while (($res = mysql_fetch_object($res_nb))) {
+		$res_nb = pmb_mysql_query($req_nb, $dbh) or die ($req_nb."<br /> in rss_flux.class.php : ".pmb_mysql_error());
+		while (($res = pmb_mysql_fetch_object($res_nb))) {
 			$this->num_bannettes[]=$res->num_contenant ;
 			$this->nb_bannettes++ ;
 		}

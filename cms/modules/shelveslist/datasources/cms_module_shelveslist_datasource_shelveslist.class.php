@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_shelveslist_datasource_shelveslist.class.php,v 1.3.4.1 2014-08-06 15:29:16 mbertin Exp $
+// $Id: cms_module_shelveslist_datasource_shelveslist.class.php,v 1.6 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -53,19 +53,19 @@ class cms_module_shelveslist_datasource_shelveslist extends cms_module_common_da
 // 					$query .= " order by ".$this->parameters["sort_by"];
 // 					if ($this->parameters["sort_order"] != "") $query .= " ".$this->parameters["sort_order"];
 // 				} 
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
 					$return = array();
-					while($row=mysql_fetch_object($result)){
+					while($row=pmb_mysql_fetch_object($result)){
 						$link_rss = "";
 						$query2 = "select num_rss_flux from ((select etagere_id, group_concat(distinct caddie_id order by caddie_id asc separator ',') as gc0 from etagere_caddie group by etagere_id) a0 join (select num_rss_flux, group_concat(distinct num_contenant order by num_contenant asc separator ',') as gc1 from rss_flux_content where type_contenant='CAD' group by num_rss_flux) a1 on (a0.gc0 like a1.gc1)) where etagere_id = $row->idetagere";
-						$result2 = mysql_query($query2);
-						if (mysql_num_rows($result2)) {
-							while ($row2 = mysql_fetch_object($result2)) {
+						$result2 = pmb_mysql_query($query2);
+						if (pmb_mysql_num_rows($result2)) {
+							while ($row2 = pmb_mysql_fetch_object($result2)) {
 								$link_rss = "./rss.php?id=".$row2->num_rss_flux;
 							}
 						}
-						$return[] = array("id" => $row->idetagere, "name" => $row->name, "comment" => $row->comment, "link_rss" => $link_rss);
+						$return[] = array("id" => $row->idetagere, "name" => $row->name, "comment" => $row->comment, "link_rss" => $link_rss, "link" => $this->get_constructed_link("shelve",$row->idetagere));
 					}
 				}
 			}

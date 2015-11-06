@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: account.php,v 1.54 2014-01-13 08:07:15 arenou Exp $
+// $Id: account.php,v 1.57 2015-06-05 12:36:58 dgoron Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -20,6 +20,16 @@ require_once("$class_path/actes.class.php");
 require_once("$class_path/suggestions_map.class.php");
 require_once("$class_path/lignes_actes_statuts.class.php");
 
+require_once("$class_path/onto/common/onto_common_uri.class.php");
+require_once("$class_path/onto/onto_store_arc2.class.php");
+require_once("$class_path/onto/onto_handler.class.php");
+require_once("$class_path/onto/onto_root_ui.class.php");
+require_once("$class_path/onto/common/onto_common_ui.class.php");
+require_once("$class_path/onto/common/onto_common_controler.class.php");
+require_once("$class_path/onto/skos/onto_skos_concept_ui.class.php");
+require_once("$class_path/onto/skos/onto_skos_controler.class.php");
+require_once("$class_path/onto/onto_param.class.php");
+
 print $menu_bar;
 print $extra2;
 print $account_layout;
@@ -32,15 +42,15 @@ if(!$modified) {
 	$user_params = get_account_info(SESSlogin);
 	// constitution des paramètres utilisateurs
 	$requete_param = "SELECT * FROM users WHERE userid='$PMBuserid' LIMIT 1 ";
-	$res_param = mysql_query($requete_param, $dbh);
-	$field_values = mysql_fetch_row ( $res_param );
+	$res_param = pmb_mysql_query($requete_param, $dbh);
+	$field_values = pmb_mysql_fetch_row( $res_param );
 	
 	$param_user="<div class='row'><b>".$msg["1500"]."</b></div>\n";
 	$deflt_user="<div class='row'><b>".$msg["1501"]."</b></div>\n";
 
 	$i = 0;
-	while ($i < mysql_num_fields($res_param)) {
-		$field = mysql_field_name($res_param, $i) ;
+	while ($i < pmb_mysql_num_fields($res_param)) {
+		$field = pmb_mysql_field_name($res_param, $i) ;
 		$field_deb = substr($field,0,6);
 		switch ($field_deb) {
 
@@ -85,16 +95,16 @@ if(!$modified) {
 					if ($pmb_droits_explr_localises && $explr_visible_mod) $where_clause_explr = "where idlocation in (".$explr_visible_mod.")";
 					else $where_clause_explr = "";
 					$rqtloc = "SELECT idlocation FROM docs_location $where_clause_explr order by location_libelle";
-					$resloc = mysql_query($rqtloc, $dbh);
-					while ($loc=mysql_fetch_object($resloc)) {
+					$resloc = pmb_mysql_query($rqtloc, $dbh);
+					while ($loc=pmb_mysql_fetch_object($resloc)) {
 						$requete = "SELECT idsection, section_libelle FROM docs_section, docsloc_section where idsection=num_section and num_location='$loc->idlocation' order by section_libelle";
-						$result = mysql_query($requete, $dbh);
-						$nbr_lignes = mysql_num_rows($result);
+						$result = pmb_mysql_query($requete, $dbh);
+						$nbr_lignes = pmb_mysql_num_rows($result);
 						if ($nbr_lignes) {			
 							if ($loc->idlocation==$deflt_docs_location ) $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:block\">\r\n";
 							else $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:none\">\r\n";
 							$selector .= "<select name='f_ex_section".$loc->idlocation."' id='f_ex_section".$loc->idlocation."'>\r\n";
-							while($line = mysql_fetch_row($result)) {
+							while($line = pmb_mysql_fetch_row($result)) {
 								$selector .= "<option value='$line[0]'";
 								$line[0] == $deflt_docs_section ? $selector .= ' SELECTED>' : $selector .= '>';
 					 			$selector .= htmlentities($line[1],ENT_QUOTES, $charset).'</option>\r\n';
@@ -111,11 +121,11 @@ if(!$modified) {
 				} elseif ($field=="deflt_upload_repertoire") { 
 					$selector = "";
 					$req = "select repertoire_id, repertoire_nom from upload_repertoire";
-					$res = mysql_query($req, $dbh);
+					$res = pmb_mysql_query($req, $dbh);
 					$selector .=  "<div id='upload_section'>";
 					$selector .= "<select name='form_deflt_upload_repertoire'>";
 					$selector .= "<option value='0'>".$msg[upload_repertoire_sql]."</option>";
-					while(($rep = mysql_fetch_object($res))){
+					while(($rep = pmb_mysql_fetch_object($res))){
 						$selector .= "<option value='".$rep->repertoire_id."'";
 						$selector .= (($deflt_upload_repertoire == $rep->repertoire_id) ? 'SELECTED' : '') . ">";
 						$selector .= htmlentities($rep->repertoire_nom,ENT_QUOTES,$charset)."</option>";
@@ -130,8 +140,8 @@ if(!$modified) {
 						</div>";		
 			 	} elseif($field=="deflt_import_thesaurus"){
 					$requete="select * from thesaurus order by 2";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$deflt_user.="" ;
 					} else {
@@ -143,7 +153,7 @@ if(!$modified) {
 									<select class='saisie-30em' name=\"form_".$field."\">";
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_row ( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 							$deflt_user.="<option value=\"".$liste_values[0]."\" " ;
 							if ($field_values[$i]==$liste_values[0]) {
 								$deflt_user.="selected" ;
@@ -163,8 +173,8 @@ if(!$modified) {
 					$deflt_user.=" value='1' name='form_$field'></div></div>\n" ;
 				} elseif ($field=="deflt_cashdesk"){
 					$requete="select * from cashdesk order by cashdesk_name";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$deflt_user.="" ;
 					} else {
@@ -176,7 +186,7 @@ if(!$modified) {
 									<select class='saisie-30em' name=\"form_".$field."\">";
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_object( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_object( $resultat_liste );
 							$deflt_user.="<option value=\"".$liste_values->cashdesk_id."\" " ;
 							if ($field_values[$i]==$liste_values->cashdesk_id) {
 								$deflt_user.="selected" ;
@@ -188,12 +198,69 @@ if(!$modified) {
 								</div>
 							</div>\n" ;
 					}
+				}elseif(($field=="deflt_concept_scheme")){
+					$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n";
+					$deflt_user.="<div class='colonne_suite'>";
+					
+					
+					$onto_store_config = array(
+							/* db */
+							'db_name' => DATA_BASE,
+							'db_user' => USER_NAME,
+							'db_pwd' => USER_PASS,
+							'db_host' => SQL_SERVER,
+							/* store */
+							'store_name' => 'ontology',
+							/* stop after 100 errors */
+							'max_errors' => 100,
+							'store_strip_mb_comp_str' => 0
+					);
+					$data_store_config = array(
+							/* db */
+							'db_name' => DATA_BASE,
+							'db_user' => USER_NAME,
+							'db_pwd' => USER_PASS,
+							'db_host' => SQL_SERVER,
+							/* store */
+							'store_name' => 'rdfstore',
+							/* stop after 100 errors */
+							'max_errors' => 100,
+							'store_strip_mb_comp_str' => 0
+					);
+					
+					$tab_namespaces=array(
+							"skos"	=> "http://www.w3.org/2004/02/skos/core#",
+							"dc"	=> "http://purl.org/dc/elements/1.1",
+							"dct"	=> "http://purl.org/dc/terms/",
+							"owl"	=> "http://www.w3.org/2002/07/owl#",
+							"rdf"	=> "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+							"rdfs"	=> "http://www.w3.org/2000/01/rdf-schema#",
+							"xsd"	=> "http://www.w3.org/2001/XMLSchema#",
+							"pmb"	=> "http://www.pmbservices.fr/ontology#"
+					);
+					
+					
+					$onto_handler = new onto_handler($class_path."/rdf/skos_pmb.rdf", "arc2", $onto_store_config, "arc2", $data_store_config,$tab_namespaces,'http://www.w3.org/2004/02/skos/core#prefLabel','http://www.w3.org/2004/02/skos/core#ConceptScheme');
+					
+					$params=new onto_param();
+					$params->concept_scheme=$deflt_concept_scheme;
+					$onto_controler=new onto_skos_controler($onto_handler, $params);
+					
+					$deflt_user.=onto_skos_concept_ui::get_scheme_list_selector($onto_controler, $params,true,'','form_deflt_concept_scheme');
+					$deflt_user.="</div></div>\n" ;
+					
+				} elseif ($field=="deflt_notice_replace_keep_categories") {
+					$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n
+						<div class='colonne_suite'>
+							".$msg[39]." <input type='radio' name='form_$field' value='0' ".(!$field_values[$i] ? "checked='checked'" : "")." />
+							".$msg[40]." <input type='radio' name='form_$field' value='1' ".($field_values[$i] ? "checked='checked'" : "")." />
+						</div></div>\n" ;
 				} else {
 					$deflt_table = substr($field,6);
 					if($deflt_table == "integration_notice_statut") $deflt_table= "notice_statut";
 					$requete="select * from ".$deflt_table." order by 2";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$deflt_user.="" ;
 					} else {
@@ -206,7 +273,7 @@ if(!$modified) {
 									
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_row ( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 							$deflt_user.="<option value=\"".$liste_values[0]."\" " ;
 							if ($field_values[$i]==$liste_values[0]) {
 								$deflt_user.="selected" ;
@@ -328,8 +395,8 @@ if(!$modified) {
 					// localisation des lecteurs
 					$deflt_table = substr($field,6);
 					$requete="select * from ".$deflt_table." order by 2";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$deflt_user.="" ;
 					} else {
@@ -342,7 +409,7 @@ if(!$modified) {
 									
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_row ( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 							$deflt_user.="<option value=\"".$liste_values[0]."\" " ;
 							if ($field_values[$i]==$liste_values[0]) {
 								$deflt_user.="selected" ;
@@ -355,8 +422,8 @@ if(!$modified) {
 				} else {
 					$deflt_table = substr($field,6);
 					$requete="select * from ".$deflt_table."  order by 2 ";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_numrows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$deflt_user.="" ;
 					} else {
@@ -369,7 +436,7 @@ if(!$modified) {
 									
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_row ( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 							$deflt_user.="<option value=\"".$liste_values[0]."\" " ;
 							if ($field_values[$i]==$liste_values[0]) {
 								$deflt_user.="selected" ;
@@ -480,9 +547,9 @@ if(!$modified) {
 						break;
 				}
 				if($q) {
-					$r=mysql_query($q, $dbh) or die ("<br />".mysql_error()."<br />".$q."<br />");
-					$nb=mysql_num_rows($r);
-					while($row=mysql_fetch_row($r)) {
+					$r=pmb_mysql_query($q, $dbh) or die ("<br />".pmb_mysql_error()."<br />".$q."<br />");
+					$nb=pmb_mysql_num_rows($r);
+					while($row=pmb_mysql_fetch_row($r)) {
 						$t[$row[0]]=$row[1];
 					}
 				}
@@ -580,11 +647,11 @@ if(!$modified) {
 	if ($form_deflt_thesaurus) thesaurus::setSessionThesaurusId($form_deflt_thesaurus);
 			
 	$requete_param = "SELECT * FROM users WHERE userid='$PMBuserid' LIMIT 1 ";
-	$res_param = mysql_query($requete_param, $dbh);
-	$field_values = mysql_fetch_row ( $res_param );
+	$res_param = pmb_mysql_query($requete_param, $dbh);
+	$field_values = pmb_mysql_fetch_row( $res_param );
 	$i = 0;
-	while ($i < mysql_num_fields($res_param)) {
-		$field = mysql_field_name($res_param, $i) ;
+	while ($i < pmb_mysql_num_fields($res_param)) {
+		$field = pmb_mysql_field_name($res_param, $i) ;
 		$field_deb = substr($field,0,6);
 		switch ($field_deb) {
 			case "deflt_" :
@@ -638,7 +705,7 @@ if(!$modified) {
 			$n_values ? $n_values .= ", $valeur=${values[$cle]}" : $n_values = "$valeur=${values[$cle]}";
 	    }
 		$requete = "UPDATE users SET $n_values $set , last_updated_dt=curdate() WHERE username='".SESSlogin."' ";
-		$result = @mysql_query($requete, $dbh);
+		$result = @pmb_mysql_query($requete, $dbh);
 		if($result) {
 			$loc = "index.php" ;
 			if (SESSrights & ADMINISTRATION_AUTH) 
@@ -665,4 +732,4 @@ print $extra;
 print $extra_info;
 print $footer;
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: origine_notice.class.php,v 1.5 2013-04-11 08:09:25 mbertin Exp $
+// $Id: origine_notice.class.php,v 1.6 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -47,10 +47,10 @@ function getData() {
 	/* récupération des informations du statut */
 
 	$requete = 'SELECT orinot_id, orinot_nom, orinot_pays, orinot_diffusion FROM origine_notice WHERE orinot_id='.$this->orinot_id.' ';
-	$result = @mysql_query($requete, $dbh);
-	if(!mysql_num_rows($result)) return;
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(!pmb_mysql_num_rows($result)) return;
 		
-	$data = mysql_fetch_object($result);
+	$data = pmb_mysql_fetch_object($result);
 	$this->orinot_nom = $data->orinot_nom;
 	$this->orinot_pays = $data->orinot_pays;
 	$this->orinot_diffusion = $data->orinot_diffusion;
@@ -74,9 +74,9 @@ function import($data) {
 		return 0;
 		}
 	// check sur les éléments du tableau
-	$long_maxi = mysql_field_len(mysql_query("SELECT orinot_nom FROM origine_notice "),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT orinot_nom FROM origine_notice "),0);
 	$data['nom'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['nom']))),0,$long_maxi));
-	$long_maxi = mysql_field_len(mysql_query("SELECT orinot_pays FROM origine_notice "),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT orinot_pays FROM origine_notice "),0);
 	$data['pays'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['pays']))),0,$long_maxi));
 
 	if($data['diffusion']=="") $data['diffusion'] = 1;
@@ -89,9 +89,9 @@ function import($data) {
 	
 	/* vérification que le statut existe */
 	$query = "SELECT orinot_id FROM origine_notice WHERE orinot_nom='${key0}' and orinot_pays = '${key1}' LIMIT 1 ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't SELECT origine_notice ".$query);
-	$origine_notice  = mysql_fetch_object($result);
+	$origine_notice  = pmb_mysql_fetch_object($result);
 
 	/* le statut de doc existe, on retourne l'ID */
 	if($origine_notice->orinot_id) return $origine_notice->orinot_id;
@@ -102,10 +102,10 @@ function import($data) {
 	$query .= "orinot_nom='".$key0."', ";
 	$query .= "orinot_pays='".$key1."', ";
 	$query .= "orinot_diffusion='".$key2."' ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't INSERT into origine_notice ".$query);
 
-	return mysql_insert_id($dbh);
+	return pmb_mysql_insert_id($dbh);
 
 	} /* fin méthode import */
 
@@ -125,9 +125,9 @@ static function gen_combo_box ( $selected ) {
 	$option_premier_code="";
 	$option_premier_info="";
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete);
+	$resultat_liste=pmb_mysql_query($requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\">\n" ;
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 		} else {
@@ -138,11 +138,11 @@ static function gen_combo_box ( $selected ) {
 				}
 			$i=0;
 			while ($i<$nb_liste) {
-				$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-				if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+				$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+				if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 					$gen_liste_str.="selected" ;
 					}
-				$gen_liste_str.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
+				$gen_liste_str.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
 				$i++;
 				}
 			}

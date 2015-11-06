@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: global_vars.inc.php,v 1.20 2013-04-08 14:40:45 mbertin Exp $
+// $Id: global_vars.inc.php,v 1.21 2015-05-06 13:28:43 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -129,6 +129,9 @@ if (isset($_SESSION["last_required"]) && ($_SESSION["last_required"])&&($REQUEST
 } else if (isset($_SESSION["PRINT_CART"]) && ($_SESSION["PRINT_CART"])&&(substr($REQUEST_URI,-14)=="print_cart.php")) {
 	$_POST=$_SESSION["PRINT_CART"]["POST"];
 	$_GET=$_SESSION["PRINT_CART"]["GET"];
+} else if (isset($_SESSION["DOWNLOAD"]) && ($_SESSION["DOWNLOAD"])&&(substr($REQUEST_URI,-12)=="download.php")) {
+	$_POST=$_SESSION["DOWNLOAD"]["POST"];
+	$_GET=$_SESSION["DOWNLOAD"]["GET"];
 }
 
 /* VERSION SUPER GLOBALS */

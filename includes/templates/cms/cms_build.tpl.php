@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_build.tpl.php,v 1.55.2.2 2014-12-21 15:40:18 Alexandre Exp $
+// $Id: cms_build.tpl.php,v 1.64 2015-03-31 12:46:27 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -77,10 +77,10 @@ $cms_edit_css="
 				if(parent.frames['opac_frame'].document.getElementById(id)) {
 					parent.frames['opac_frame'].document.getElementById(id).setAttribute('style','');
 					setTimeout(function() { cms_show_obj(id) },1000);
-				}	
+				}
 			}
 		}
-		
+
 	</script>
 
 	<div id='cms_edit_form' cms_edit_id='' >
@@ -272,7 +272,7 @@ $cms_objet_type_selection="
 	</div>
 	<div class='row'>
 		<input type='button'  class='bouton'  id='cms_drag_activate_button' active='' value='".$msg["cms_activer_drag_drop"]."'  onclick=\"cms_drag_activate_form(); return false;\">
-		<input type='button' class='bouton' value='".$msg["cms_build_reload"]."' onclick=\"cms_reload_opac(); return false;\">
+		<input type='button' class='bouton' value='".$msg["cms_build_reload"]."' onclick=\"cms_reload_opac(''); return false;\">
 	</div>
 	";
 
@@ -285,7 +285,11 @@ $cms_edit_objet="
 			cms_refresh_cadres_list();
 
 			var frame=document.getElementById('opac_frame');
+			var n=url.indexOf('database=',0);
+			if(n>0)url=url.substring(0,n);
+
 			document.getElementById('cms_navig_information').innerHTML=url;
+			document.getElementById('navbar_opac').value=url;
 		}
 		function cms_drag_activate_form(){
 			if(document.getElementById('cms_drag_activate_button').getAttribute('active') ){
@@ -339,6 +343,11 @@ $cms_build_cadres_not_in_page_tpl="
 		!!items!!
 	</table>
 ";
+$cms_build_cadres_not_in_cms_tpl="
+<table id='cms_portail_cadres_not_in_cms_list'>
+!!items!!
+</table>
+";
 
 $cms_build_cadre_tpl_item="
 <tr class='!!odd_even!!' style='cursor: pointer;' onmouseout=\"this.className='!!odd_even!!'\" onmouseover=\"this.className='surbrillance'\"
@@ -388,6 +397,32 @@ $cms_build_cadre_tpl_not_in_page_item="
 	</td>
 </tr>
 ";
+
+
+$cms_build_cadre_tpl_not_in_cms_item="
+<tr class='!!odd_even!!' style='cursor: pointer;' onmouseout=\"this.className='!!odd_even!!'\" onmouseover=\"this.className='surbrillance'\" >
+	<td>
+		<a onclick=\"!!load_page_opac!!cms_build_load_module('!!cadre_object!!','get_form',!!id_cadre!!);\" href='#' >
+			<img class='icon' width='16' height='16' title='".$msg["cms_build_edit_bt"]."' alt='".$msg["cms_build_page_add_bt"]."' src='./images/b_edit.png'  >
+		</a>
+		!!cadre_link!!
+		<div data-dojo-type='dijit/form/DropDownButton' style='float:right'>
+		    <span></span>
+		    <!-- The dialog portion -->
+		    <div data-dojo-type='dijit/TooltipDialog' id='ttDialog_!!id_cadre!!'>
+		    	<label class='etiquette' for='cadre_classement_list'>".$msg['cms_build_cadre_classement_list']."</label>
+		   		<br />
+				<select data-dojo-type='dijit/form/ComboBox' id='classement_!!id_cadre!!' name='classement_!!id_cadre!!'>
+				    !!classement_list!!
+				</select>
+		        <br />
+		 		<button data-dojo-type='dijit/form/Button'  onclick=\"cms_save_cadre_classement(!!id_cadre!!);return false; \"  type='submit'>".$msg["cms_build_cadre_classement_save"]."</button>
+		    </div>
+		</div>
+	</td>
+</tr>
+";
+
 
 $cms_build_pages_tpl="
 <script type='text/javascript'>
@@ -573,7 +608,7 @@ $cms_build_versions_tpl="
 
 $cms_build_versions_tpl_item="
 <a href='#' onclick=\"cms_build_version_edit_add('!!id!!');\"><img class='icon' width='16' height='16' title='".$msg["cms_build_version_edit_bt"]."' alt='".$msg["cms_build_version_edit_bt"]."' src='./images/b_edit.png'> </a>
-!!name!! !!opac_default!! !!cms_in_use!!<br/>
+<a href='./cms.php?categ=build&sub=block&opac_id=!!id!!&opac_view=!!opac_view_id!!'>!!name!!</a> !!opac_default!! !!cms_in_use!!<br/>
 ";
 
 $cms_build_versions_ajax_tpl="
@@ -613,6 +648,7 @@ $cms_build_version_form_ajax_tpl = "
 			var opac_default='';
 			if(document.getElementById('opac_default').checked) opac_default=1;
 			post_data+='&opac_default=' + opac_default;
+			post_data+='&opac_view_num=' + document.getElementById('opac_view_num').value;
 			http.request(url,true,post_data);
 			return http.get_text();
 
@@ -648,12 +684,12 @@ $cms_build_version_form_ajax_tpl = "
 			<div class='row'>
 				<label class='etiquette' for='opac_default'>".$msg['cms_build_cms_opac_default']."</label>
 				<input type='checkbox' id='opac_default' !!opac_default_checked!! value='1' name='opac_default'>
+				!!opac_view!!
 			</div>
 			<div class='row'>
 				<label class='etiquette' for='version_tag'>".$msg['cms_version_form_version_tag']."</label>
 			</div>
 			<div class='row'>
-
 				<h3>".$msg["cms_build_versions"]."</h3>
 				<table class='cms_build_versions_list'>
 					<tr>
@@ -747,15 +783,23 @@ $cms_build_block_tpl="
 		dojo.forEach(dijit.findWidgets(dojo.byId('cms_cadre_list_not_in_page')), function(w) {
 			w.destroyRecursive();
 		});
+
+		dojo.forEach(dijit.findWidgets(dojo.byId('cms_cadre_list_not_in_cms')), function(w) {
+			w.destroyRecursive();
+		});
+
 		var list=cms_build_load_cadres_in_page_list();
 		dojo.html.set('cms_cadre_list_in_page', list, { parseContent:true });
 
         var list=cms_build_load_cadres_not_in_page_list();
 		dojo.html.set('cms_cadre_list_not_in_page', list, { parseContent:true });
+
+        var list=cms_build_load_cadres_not_in_cms_list();
+		dojo.html.set('cms_cadre_list_not_in_cms', list, { parseContent:true });
 	}
 
 
-	function cms_reload_opac(){
+	function cms_reload_opac(version){
 		if(document.getElementById('cms_drag_activate_button').getAttribute('active') ){
 			cms_drag_activate(0,0,0);
 			document.getElementById('cms_drag_activate_button').style.backgroundColor ='';
@@ -764,7 +808,8 @@ $cms_build_block_tpl="
 		}
 
 		var url = parent.frames['opac_frame'].location.href;
-		url=url.replace('&cms_build_activate=1&build_id_version=!!id_version!!','')
+		url=url.replace('&cms_build_activate=1&build_id_version=!!id_version!!','');
+		if(version) url=url + '&build_id_version=' + version;;
 		parent.frames['opac_frame'].location=url;
 
 	}
@@ -786,9 +831,30 @@ $cms_build_block_tpl="
 		var url = '".$build_url."ajax.php?module=cms&categ=build&action=set_version&value='+version;
 		http.request(url);
 		if(confirm('".$msg["cms_memoriser_drag_drop_ok"]."')){
-			cms_reload_opac();
+			cms_reload_opac(version);
 		}else{
 		}
+	}
+
+	function view_not_in_page(view){
+		var opac=parent.frames['opac_frame'];
+		var elts=opac.document.getElementsByClassName('cms_module_hidden');
+
+		for(var i=0; i<elts.length; i++){
+			if(view){
+				elts[i].style.display='block';
+				elts[i].style.border='3px dashed red';
+			}else{
+				elts[i].style.display='none';
+				elts[i].style.border='';
+			}
+		}
+	}
+	function go_opac_url(){
+		var url=document.getElementById('navbar_opac').value;
+		if(!url)return;
+
+		parent.frames['opac_frame'].location=url;
 	}
 </script>
 
@@ -801,11 +867,14 @@ $cms_build_block_tpl="
 			</div>
 	    </div>
 	</div>
+	<input id='navbar_opac' class='saisie-80em' type='text' name='navbar_opac' value=''>
+	<input class='bouton_small' type='button' onclick=\"go_opac_url();\" value='".$msg['cms_build_go_opac_url']."'>
+
 </div>
 <div dojoType='dijit.layout.BorderContainer' design='sidebar' gutters='true' style='width: 100%; height: 800px;'>
 
 	<div dojoType='dijit.layout.ContentPane'  region='center' >
-		<IFRAME name='opac_frame' id='opac_frame' src='!!opac_url!!index.php?database=".LOCATION."&cms_build_activate=1&build_id_version=!!id_version!!' style='background-color:#FFFFFF;width:100%;height:710px;border:0px solid #000'></IFRAME>
+		<IFRAME name='opac_frame' id='opac_frame' src='!!opac_url!!index.php?database=".LOCATION."&cms_build_activate=1&build_id_version=!!id_version!!&opac_view=!!opac_view_id!!' style='background-color:#FFFFFF;width:100%;height:710px;border:0px solid #000'></IFRAME>
 	</div>
 	<div dojoType='dijit.layout.ContentPane' region='left' splitter='true' style='width:300px;' >
 
@@ -823,7 +892,6 @@ $cms_build_block_tpl="
 									<table id='cms_edit_sel_objet_list_table' border='0'  width='100%' cellspacing='0'>
 									</table>
 								</div>
-
 				        		",1)."
 							</div>
 				        	<div class='row'>
@@ -835,8 +903,17 @@ $cms_build_block_tpl="
 							</div>
 				        	<div class='row'>
 				        		". gen_plus_titre("cadre_not_in_page",$msg["cms_build_cadre_not_in_page"],"
+								<input type='checkbox' id='switch_not_in_page' name='switch_not_in_page' class='switch' onclick=\"view_not_in_page(this.checked);\"/>
+								<label for='switch_not_in_page'>".$msg["cms_build_cadre_not_in_page_switch"]."</label>
 								<div class='row' id='cms_cadre_list_not_in_page'>
 									!!cadre_list_not_in_page!!
+								</div>
+				        		",0)."
+							</div>
+							<div class='row'>
+				        		". gen_plus_titre("cadre_not_in_cms",$msg["cms_build_cadre_not_in_cms"],"
+								<div class='row' id='cms_cadre_list_not_in_cms'>
+									!!cadre_list_not_in_cms!!
 								</div>
 				        		",0)."
 							</div>
@@ -870,7 +947,7 @@ $cms_build_block_tpl="
 	</div>
 	<div dojoType='dijit.layout.ContentPane' region='bottom' >
 		<input type='button' class='bouton' value='".$msg["cms_memoriser_drag_drop"]."' onclick=\"cms_save_opac(); return false;\">
-		<input type='button' class='bouton' value='".$msg["cms_build_reload"]."' onclick=\"cms_reload_opac(); return false;\">
+		<input type='button' class='bouton' value='".$msg["cms_build_reload"]."' onclick=\"cms_reload_opac(''); return false;\">
 	</div>
 </div>
 

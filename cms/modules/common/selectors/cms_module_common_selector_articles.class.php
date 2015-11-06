@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_articles.class.php,v 1.2 2012-11-09 14:12:45 arenou Exp $
+// $Id: cms_module_common_selector_articles.class.php,v 1.3 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -40,11 +40,11 @@ class cms_module_common_selector_articles extends cms_module_common_selector{
 		
 		//pour le moment, on ne regarde pas le statut de publication
 		$query= "select id_article, article_title from cms_articles";// where article_publication_state = 1 ";
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$select = "
 					<select name='".$this->get_form_value_name("articles_ids")."[]' multiple='yes'>";
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$select.="
 						<option value='".$row->id_article."' ".(in_array($row->id_article,$this->parameters) ? "selected='selected'" : "").">".$this->format_text($row->article_title)."</option>";
 			}

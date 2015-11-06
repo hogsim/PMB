@@ -2,14 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: config.inc.php,v 1.196.2.53 2015-10-29 12:44:30 touraine37 Exp $
+// $Id: config.inc.php,v 1.208 2015-07-24 13:27:11 touraine37 Exp $
 
 // fichier de configuration générale
 
-$pmb_version = "</b>4.1.9</b>";
-$pmb_version_brut = "4.1.9";
-$pmb_version_database_as_it_should_be = "v5.14";
-$pmb_subversion_database_as_it_shouldbe = "44";
+$pmb_version = "</b>4.2.1</b>";
+$pmb_version_brut = "4.2.1";
+$pmb_version_database_as_it_should_be = "v5.19";
+$pmb_subversion_database_as_it_shouldbe = "0";
 
 $pmb_version_web = "http://www.sigb.net/config.inc.php" ;
 
@@ -88,6 +88,9 @@ define('AUDIT_PUBLISHER',    10);
 define('AUDIT_SERIE'	,    11);
 define('AUDIT_CATEG'	,    12);
 define('AUDIT_TITRE_UNIFORME',13);
+define('AUDIT_DEMANDE'	,    14);
+define('AUDIT_ACTION'	,    15);
+define('AUDIT_NOTE',16);
 
 /* la langue est fixée sur la valeur par défaut pour l'instant */
 $lang= $default_lang;

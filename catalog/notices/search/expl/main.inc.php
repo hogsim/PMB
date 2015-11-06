@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.15.2.1 2014-04-08 10:19:40 dgoron Exp $
+// $Id: main.inc.php,v 1.17 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -85,7 +85,7 @@ function print_results($sc,$table,$url,$url_to_search_form,$hidden_form=true,$se
 		$requete.= "and expl_bulletin=0 ";
 		$requete.= "and expl_notice = res_num ";
 		$requete.= "and usr_prf_num=".$usr_prf." and (((res_rights ^ res_mask) & 4)=0) ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 
 		$requete = "delete from $table using $table, exemplaires, bulletins, acces_res_1 ";
 		$requete.= "where ";
@@ -94,7 +94,7 @@ function print_results($sc,$table,$url,$url_to_search_form,$hidden_form=true,$se
 		$requete.= "and expl_bulletin=bulletin_id ";
 		$requete.= "and bulletin_notice=res_num ";
 		$requete.= "and usr_prf_num=".$usr_prf." and (((res_rights ^ res_mask) & 4)=0) ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		
 	}
 	
@@ -104,15 +104,15 @@ function print_results($sc,$table,$url,$url_to_search_form,$hidden_form=true,$se
 		$requete.= "where ";
 		$requete.= "$table.expl_id=exemplaires.expl_id ";
 		$requete.= "and expl_location in ($explr_invisible)";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 	}
 			
     $start_page=$nb_per_page_search*$page;
     
     $requete="select count(1) from $table"; 
-    $res = 	mysql_query($requete);
+    $res = 	pmb_mysql_query($requete);
     if($res)
-    	$nb_results=mysql_result(mysql_query($requete),0,0);
+    	$nb_results=pmb_mysql_result(pmb_mysql_query($requete),0,0);
     else $nb_results=0;
 
     $requete="select $table.* from ".$table.", exemplaires where exemplaires.expl_id=$table.expl_id";     
@@ -128,7 +128,7 @@ function print_results($sc,$table,$url,$url_to_search_form,$hidden_form=true,$se
     
     if ($hidden_form) print $sc->make_hidden_search_form($url);
 
-    $resultat=mysql_query($requete,$dbh);
+    $resultat=pmb_mysql_query($requete,$dbh);
 
     $human_requete = $sc->make_human_query();
     
@@ -172,10 +172,10 @@ function print_results($sc,$table,$url,$url_to_search_form,$hidden_form=true,$se
 	$nb=0;	
 	
 	if($resultat){			
-	    while ($r=mysql_fetch_object($resultat)) {
+	    while ($r=pmb_mysql_fetch_object($resultat)) {
 	    	$requete2="SELECT expl_bulletin FROM exemplaires WHERE expl_id='".$r->expl_id."'";
-	    	$res=mysql_query($requete2);
-	    	if($res && mysql_num_rows($res) && mysql_result($res,0,0)){
+	    	$res=pmb_mysql_query($requete2);
+	    	if($res && pmb_mysql_num_rows($res) && pmb_mysql_result($res,0,0)){
 	    		$nt = new mono_display_expl('',$r->expl_id, 6, $sc->link_bulletin, $option_show_expl, $sc->link_expl_bull, '', $sc->link_explnum,1, 0, 1, !$option_show_notice_fille, "", 1);
 	    	}else{
 	    		$nt = new mono_display_expl('',$r->expl_id, 6, $sc->link, $option_show_expl, $sc->link_expl, '', $sc->link_explnum,1, 0, 1, !$option_show_notice_fille, "", 1);

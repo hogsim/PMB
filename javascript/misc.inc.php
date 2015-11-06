@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: misc.inc.php,v 1.12 2013-09-06 08:00:05 apetithomme Exp $
+// $Id: misc.inc.php,v 1.13 2015-06-10 07:22:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -20,13 +20,13 @@ function form_focus($form, $element) {
 	return "<script type='text/javascript'>document.forms['$form'].elements['$element'].focus();</script>";
 	}
 
-function confirmation_delete($url) {
+function confirmation_delete($url,$entete_message = "") {
 	
 	global $msg;
 	
 	return "<script type='text/javascript'>
 		function confirmation_delete(param,element) {
-        		result = confirm(\"".$msg['confirm_suppr_de']." '\"+element+\"' ?\");
+        		result = confirm(\"".$entete_message."\\n".$msg['confirm_suppr_de']." '\"+element+\"' ?\");
         		if(result) document.location = \"$url\"+param ;
    			}</script>";
 	}

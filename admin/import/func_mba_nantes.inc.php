@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_mba_nantes.inc.php,v 1.10 2013-04-11 08:02:52 mbertin Exp $
+// $Id: func_mba_nantes.inc.php,v 1.11 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -245,7 +245,7 @@ function import_new_notice_suite() {
 	if(count($info_305)){
 		$n_gen= implode("\n",$info_305);
 		$requete="update notices set n_gen=IF(TRIM(n_gen) != '', CONCAT(n_gen,'\n','".addslashes($n_gen)."'),'".addslashes($n_gen)."') WHERE notice_id='".$notice_id."' ";
-		if(!mysql_query($requete)){
+		if(!pmb_mysql_query($requete)){
 			echo "Requete echoué : ".$requete."<br>";
 		}
 	}
@@ -253,23 +253,23 @@ function import_new_notice_suite() {
 	if($champ_rameau){
 		//echo "valeur : ".$champ_rameau."<br>";
 		$requete="SELECT index_l FROM notices WHERE notice_id='".$notice_id."' ";
-		$res=mysql_query($requete);
-		if(mysql_num_rows($res)){
-			$ind=mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)){
+			$ind=pmb_mysql_result($res,0,0);
 			if($ind){
 				$requete="UPDATE notices SET index_l='".addslashes(trim($ind.$pmb_keyword_sep.$champ_rameau))."' WHERE notice_id='".$notice_id."'";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					echo "Requete echoué : ".$requete."<br>";
 				}
 			}else{
 				$requete="UPDATE notices SET index_l='".addslashes(trim($champ_rameau))."' WHERE notice_id='".$notice_id."'";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					echo "Requete echoué : ".$requete."<br>";
 				}
 			}
 		}else{
 			$requete="UPDATE notices SET index_l='".addslashes(trim($champ_rameau))."' WHERE notice_id='".$notice_id."'";
-			if(!mysql_query($requete)){
+			if(!pmb_mysql_query($requete)){
 				echo "Requete echoué : ".$requete."<br>";
 			}
 		}
@@ -297,22 +297,22 @@ function import_new_notice_suite() {
 				$id_categorie = categories::searchLibelle(addslashes($descripteur),$thesaurus_defaut,'fr_FR',$thes->num_noeud_racine);
 			}
 			$requete = "INSERT INTO notices_categories (notcateg_notice,num_noeud,ordre_categorie) VALUES($notice_id,$id_categorie,$i)"; // Je fait le lien entre ma notice et la catégorie
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}
 	}*/
 	
 	//Champs perso 
 	if(count($editor) > 2){
 		$rqt = "SELECT idchamp FROM notices_custom WHERE name='autre_editeur'";
-		$res = mysql_query($rqt);
-		if (mysql_num_rows($res)>0){
-			$id_champ=mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		if (pmb_mysql_num_rows($res)>0){
+			$id_champ=pmb_mysql_result($res,0);
 			for($i=2;$i<count($editor);$i++){
 				$ed['name']=clean_string($editor[$i]['c']);
 				$ed['ville']=clean_string($editor[$i]['a']);
 				$ed1_id = editeur::import($ed);
 				$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_integer) values('".$id_champ."','".$notice_id."','".$ed1_id."')";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					echo "requete echoué : ".$requete."<br>";
 				} 
 			}
@@ -322,11 +322,11 @@ function import_new_notice_suite() {
 	//Ancien num
 	if($info_001[0]){
 		$rqt = "SELECT idchamp FROM notices_custom WHERE name='ancien_num'";
-		$res = mysql_query($rqt);
-		if (mysql_num_rows($res)>0){
-			$id_champ=mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		if (pmb_mysql_num_rows($res)>0){
+			$id_champ=pmb_mysql_result($res,0);
 			$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes($info_001[0])."')";
-			if(!mysql_query($requete)){
+			if(!pmb_mysql_query($requete)){
 				echo "requete echoué : ".$requete."<br>";
 			} 
 		}
@@ -340,25 +340,25 @@ function import_new_notice_suite() {
 			
 			if($info_503[$i]["a"] && !($tab_non_rep["titre"])){
 				$rqt = "SELECT idchamp FROM notices_custom WHERE name='t_d_f_titre'";
-				$res = mysql_query($rqt);
-				if (mysql_num_rows($res)>0){
-					$id_champ=mysql_result($res,0);
+				$res = pmb_mysql_query($rqt);
+				if (pmb_mysql_num_rows($res)>0){
+					$id_champ=pmb_mysql_result($res,0);
 					$requete="select notices_custom_list_value from notices_custom_lists where notices_custom_list_lib='".addslashes(trim($info_503[$i]["a"]))."' and notices_custom_champ='".$id_champ."'";
-					$resultat=mysql_query($requete);
-					if (mysql_num_rows($resultat)) {
-						$value=mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($resultat)) {
+						$value=pmb_mysql_result($resultat,0,0);
 					} else {
 						$requete="select max(notices_custom_list_value*1) from notices_custom_lists where notices_custom_champ='".$id_champ."'";
-						$resultat=mysql_query($requete);
-						$max=@mysql_result($resultat,0,0);
+						$resultat=pmb_mysql_query($requete);
+						$max=@pmb_mysql_result($resultat,0,0);
 						$n=$max+1;
 						$requete="insert into notices_custom_lists (notices_custom_champ,notices_custom_list_value,notices_custom_list_lib) values('".$id_champ."',$n,'".addslashes(trim($info_503[$i]["a"]))."')";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 						$value=$n;
 					}
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_integer) values('".$id_champ."',$notice_id,$value)";
 					$tab_non_rep["titre"]=1;
-					if(!mysql_query($requete)){
+					if(!pmb_mysql_query($requete)){
 						echo "requete echoué : ".$requete."<br>";
 					} 
 				}
@@ -366,12 +366,12 @@ function import_new_notice_suite() {
 			
 			if($info_503[$i]["e"] && !($tab_non_rep["nom"])){
 				$rqt = "SELECT idchamp FROM notices_custom WHERE name='t_d_f_nom'";
-				$res = mysql_query($rqt);
-				if (mysql_num_rows($res)>0){
-					$id_champ=mysql_result($res,0);
+				$res = pmb_mysql_query($rqt);
+				if (pmb_mysql_num_rows($res)>0){
+					$id_champ=pmb_mysql_result($res,0);
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes(trim($info_503[$i]["e"]))."')";
 					$tab_non_rep["nom"]=1;
-					if(!mysql_query($requete)){
+					if(!pmb_mysql_query($requete)){
 						echo "requete echoué : ".$requete."<br>";
 					} 
 				}
@@ -379,12 +379,12 @@ function import_new_notice_suite() {
 			
 			if($info_503[$i]["f"] && !($tab_non_rep["prenom"])){
 				$rqt = "SELECT idchamp FROM notices_custom WHERE name='t_d_f_prenom'";
-				$res = mysql_query($rqt);
-				if (mysql_num_rows($res)>0){
-					$id_champ=mysql_result($res,0);
+				$res = pmb_mysql_query($rqt);
+				if (pmb_mysql_num_rows($res)>0){
+					$id_champ=pmb_mysql_result($res,0);
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes(trim($info_503[$i]["f"]))."')";
 					$tab_non_rep["prenom"]=1;
-					if(!mysql_query($requete)){
+					if(!pmb_mysql_query($requete)){
 						echo "requete echoué : ".$requete."<br>";
 					} 
 				}
@@ -392,12 +392,12 @@ function import_new_notice_suite() {
 			
 			if($info_503[$i]["h"] && !($tab_non_rep["qual"])){
 				$rqt = "SELECT idchamp FROM notices_custom WHERE name='t_d_f_qualificatif'";
-				$res = mysql_query($rqt);
-				if (mysql_num_rows($res)>0){
-					$id_champ=mysql_result($res,0);
+				$res = pmb_mysql_query($rqt);
+				if (pmb_mysql_num_rows($res)>0){
+					$id_champ=pmb_mysql_result($res,0);
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes(trim($info_503[$i]["h"]))."')";
 					$tab_non_rep["qual"]=1;
-					if(!mysql_query($requete)){
+					if(!pmb_mysql_query($requete)){
 						echo "requete echoué : ".$requete."<br>";
 					} 
 				}
@@ -405,8 +405,8 @@ function import_new_notice_suite() {
 
 			if(count($info_503_j[$i]) && !($tab_non_rep["date"])){
 				$rqt = "SELECT idchamp FROM notices_custom WHERE name='t_d_f_date'";
-				$res = mysql_query($rqt);
-				if (mysql_num_rows($res)>0){
+				$res = pmb_mysql_query($rqt);
+				if (pmb_mysql_num_rows($res)>0){
 					$date="";
 					for($p=0;$p<count($info_503_j[$i]);$p++){
 						if(trim($info_503_j[$i][$p])){
@@ -438,10 +438,10 @@ function import_new_notice_suite() {
 					}
 					
 					if($date){
-						$id_champ=mysql_result($res,0);
+						$id_champ=pmb_mysql_result($res,0);
 						$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes($date)."')";
 						$tab_non_rep["date"]=1;
-						if(!mysql_query($requete)){
+						if(!pmb_mysql_query($requete)){
 							echo "requete echoué : ".$requete."<br>";
 						} 
 					}
@@ -458,11 +458,11 @@ function import_new_notice_suite() {
 			}
 			if($lieu_etabl){
 				$rqt = "SELECT idchamp FROM notices_custom WHERE name='t_d_f_lieu_etabl'";
-				$res = mysql_query($rqt);
-				if (mysql_num_rows($res)>0){
-					$id_champ=mysql_result($res,0);
+				$res = pmb_mysql_query($rqt);
+				if (pmb_mysql_num_rows($res)>0){
+					$id_champ=pmb_mysql_result($res,0);
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes($lieu_etabl)."')";
-					if(!mysql_query($requete)){
+					if(!pmb_mysql_query($requete)){
 						echo "requete echoué : ".$requete."<br>";
 					} 
 				}
@@ -473,12 +473,12 @@ function import_new_notice_suite() {
 	//Autre isbn
 	if(count($info_901)){
 		$rqt = "SELECT idchamp FROM notices_custom WHERE name='autre_isbn'";
-		$res = mysql_query($rqt);
-		if (mysql_num_rows($res)>0){
-			$id_champ=mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		if (pmb_mysql_num_rows($res)>0){
+			$id_champ=pmb_mysql_result($res,0);
 			for($i=0;$i<count($info_901);$i++){
 				$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes($info_901[$i])."')";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					echo "requete echoué : ".$requete."<br>";
 				}
 			} 
@@ -488,11 +488,11 @@ function import_new_notice_suite() {
 	//Anomalie
 	if($info_999[0]){
 		$rqt = "SELECT idchamp FROM notices_custom WHERE name='pb_fiche'";
-		$res = mysql_query($rqt);
-		if (mysql_num_rows($res)>0){
-			$id_champ=mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		if (pmb_mysql_num_rows($res)>0){
+			$id_champ=pmb_mysql_result($res,0);
 			$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes($info_999[0])."')";
-			if(!mysql_query($requete)){
+			if(!pmb_mysql_query($requete)){
 				echo "requete echoué : ".$requete."<br>";
 			} 
 		}
@@ -501,11 +501,11 @@ function import_new_notice_suite() {
 	//Donnée codées monographie
 	if($info_905[0]){
 		$rqt = "SELECT idchamp FROM notices_custom WHERE name='dc_mono'";
-		$res = mysql_query($rqt);
-		if (mysql_num_rows($res)>0){
-			$id_champ=mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		if (pmb_mysql_num_rows($res)>0){
+			$id_champ=pmb_mysql_result($res,0);
 			$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes($info_905[0])."')";
-			if(!mysql_query($requete)){
+			if(!pmb_mysql_query($requete)){
 				echo "requete echoué : ".$requete."<br>";
 			} 
 		}
@@ -514,11 +514,11 @@ function import_new_notice_suite() {
 	//Donnée codées description physique
 	if($info_906[0]){
 		$rqt = "SELECT idchamp FROM notices_custom WHERE name='dc_phys'";
-		$res = mysql_query($rqt);
-		if (mysql_num_rows($res)>0){
-			$id_champ=mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		if (pmb_mysql_num_rows($res)>0){
+			$id_champ=pmb_mysql_result($res,0);
 			$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_small_text) values('".$id_champ."','".$notice_id."','".addslashes($info_906[0])."')";
-			if(!mysql_query($requete)){
+			if(!pmb_mysql_query($requete)){
 				echo "requete echoué : ".$requete."<br>";
 			} 
 		}
@@ -527,11 +527,11 @@ function import_new_notice_suite() {
 	if(count($info_994_x)){
 		$val=implode(" ; ",$info_994_x);
 		$rqt = "SELECT idchamp FROM notices_custom WHERE name='oeuvre_reproduite'";
-		$res = mysql_query($rqt);
-		if (mysql_num_rows($res)>0){
-			$id_champ=mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		if (pmb_mysql_num_rows($res)>0){
+			$id_champ=pmb_mysql_result($res,0);
 			$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_text) values('".$id_champ."','".$notice_id."','".addslashes(trim($val))."')";
-			if(!mysql_query($requete)){
+			if(!pmb_mysql_query($requete)){
 				echo "requete echoué : ".$requete."<br>";
 			} 
 		}
@@ -541,11 +541,11 @@ function import_new_notice_suite() {
 	if(count($info_994_y)){
 		$val=implode(" ; ",$info_994_y);
 		$rqt = "SELECT idchamp FROM notices_custom WHERE name='oeuvre_citee'";
-		$res = mysql_query($rqt);
-		if (mysql_num_rows($res)>0){
-			$id_champ=mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		if (pmb_mysql_num_rows($res)>0){
+			$id_champ=pmb_mysql_result($res,0);
 			$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_text) values('".$id_champ."','".$notice_id."','".addslashes(trim($val))."')";
-			if(!mysql_query($requete)){
+			if(!pmb_mysql_query($requete)){
 				echo "requete echoué : ".$requete."<br>";
 			} 
 		}
@@ -588,9 +588,9 @@ function traite_exemplaires () {
 		$expl['cb']=$cbarre;
 		while ($pb==1) {
 			$q = "SELECT expl_cb FROM exemplaires WHERE expl_cb='".$expl['cb']."' LIMIT 1 ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			//echo "requete : ".$q."<br>";
-			$nb = mysql_num_rows($r);
+			$nb = pmb_mysql_num_rows($r);
 			if ($nb) {
 				$expl['cb'] =$cbarre."-".$num_login ;
 				$num_login++;

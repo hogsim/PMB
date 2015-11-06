@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_associate.tpl.php,v 1.2.2.1 2014-03-25 10:18:54 apetithomme Exp $
+// $Id: explnum_associate.tpl.php,v 1.3 2014-03-25 10:19:21 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

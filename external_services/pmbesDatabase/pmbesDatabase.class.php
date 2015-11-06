@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesDatabase.class.php,v 1.4.2.1 2015-06-19 07:16:58 mbertin Exp $
+// $Id: pmbesDatabase.class.php,v 1.6 2015-06-19 07:31:23 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,10 +30,10 @@ class pmbesDatabase extends external_services_api_class {
 	function get_current_version(){
 		global $dbh;
 		$query ="select valeur_param from parametres where type_param = 'pmb' and sstype_param ='bdd_version'";
-		$result = mysql_query($query,$dbh);
+		$result = pmb_mysql_query($query,$dbh);
 		$pmb_bdd_version = "v1.0";
-		if(mysql_num_rows($result)){
-			$pmb_bdd_version = mysql_result($result,0,0);
+		if(pmb_mysql_num_rows($result)){
+			$pmb_bdd_version = pmb_mysql_result($result,0,0);
 		}
 		return $pmb_bdd_version;
 	}
@@ -41,10 +41,10 @@ class pmbesDatabase extends external_services_api_class {
 	function get_current_subversion(){
 		global $dbh;
 		$query ="select valeur_param from parametres where type_param = 'pmb' and sstype_param ='bdd_subversion'";
-		$result = mysql_query($query,$dbh);
+		$result = pmb_mysql_query($query,$dbh);
 		$pmb_bdd_subversion = "0";
-		if(mysql_num_rows($result)){
-			$pmb_bdd_subversion = mysql_result($result,0,0);
+		if(pmb_mysql_num_rows($result)){
+			$pmb_bdd_subversion = pmb_mysql_result($result,0,0);
 		}
 		return $pmb_bdd_subversion;
 	}

@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: http_request.js,v 1.10.6.1 2014-05-12 15:24:21 dbellamy Exp $
+// $Id: http_request.js,v 1.11 2014-05-12 15:28:40 dbellamy Exp $
 
 //Class javascript permettant d'effectuer les requêtes Http (Ajax) vers le serveur
 function http_request() {

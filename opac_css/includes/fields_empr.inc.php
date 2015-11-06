@@ -2,19 +2,19 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fields_empr.inc.php,v 1.42.2.4 2015-09-11 14:17:06 jpermanne Exp $
+// $Id: fields_empr.inc.php,v 1.51 2015-06-08 08:40:18 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once($class_path."/categories.class.php");
 require_once($class_path."/publisher.class.php");
 
-$aff_list_empr=array("text"=>"aff_text_empr","list"=>"aff_list_empr","query_list"=>"aff_query_list_empr","query_auth"=>"aff_query_auth_empr","date_box"=>"aff_date_box_empr","comment"=>"aff_comment_empr","external"=>"aff_external_empr","url"=>"aff_url_empr","resolve"=>"aff_resolve_empr");
-$aff_list_empr_search=array("text"=>"aff_text_empr_search","list"=>"aff_list_empr_search","query_list"=>"aff_query_list_empr_search","query_auth"=>"aff_query_auth_empr_search","date_box"=>"aff_date_box_empr_search","comment"=>"aff_comment_empr_search","external"=>"aff_external_empr_search","url"=>"aff_url_empr_search","resolve"=>"aff_resolve_empr_search");
-$chk_list_empr=array("text"=>"chk_text_empr","list"=>"chk_list_empr","query_list"=>"chk_query_list_empr","query_auth"=>"chk_query_auth_empr","date_box"=>"chk_date_box_empr","comment"=>"chk_comment_empr","external"=>"chk_external_empr","url"=>"chk_url_empr","resolve"=>"chk_resolve_empr");
-$val_list_empr=array("text"=>"val_text_empr","list"=>"val_list_empr","query_list"=>"val_query_list_empr","query_auth"=>"val_query_auth_empr","date_box"=>"val_date_box_empr","comment"=>"val_comment_empr","external"=>"val_external_empr","url"=>"val_url_empr","resolve"=>"val_resolve_empr");
-$type_list_empr=array("text"=>$msg["parperso_text"],"list"=>$msg["parperso_choice_list"],"query_list"=>$msg["parperso_query_choice_list"],"query_auth"=>$msg["parperso_authorities"],"date_box"=>$msg["parperso_date"],"comment"=>$msg["parperso_comment"],"external"=>$msg["parperso_external"],"url"=>$msg["parperso_url"],"resolve"=>$msg["parperso_resolve"]);
-$options_list_empr=array("text"=>"options_text.php","list"=>"options_list.php","query_list"=>"options_query_list.php","query_auth"=>"options_query_authorities.php","date_box"=>"options_date_box.php","comment"=>"options_comment.php","external"=>"options_external.php","url"=>"options_url.php","resolve"=>"options_resolve.php");
+$aff_list_empr=array("text"=>"aff_text_empr","list"=>"aff_list_empr","query_list"=>"aff_query_list_empr","query_auth"=>"aff_query_auth_empr","date_box"=>"aff_date_box_empr","comment"=>"aff_comment_empr","external"=>"aff_external_empr","url"=>"aff_url_empr","resolve"=>"aff_resolve_empr","marclist"=>"aff_marclist_empr","html"=>"aff_html_empr");
+$aff_list_empr_search=array("text"=>"aff_text_empr_search","list"=>"aff_list_empr_search","query_list"=>"aff_query_list_empr_search","query_auth"=>"aff_query_auth_empr_search","date_box"=>"aff_date_box_empr_search","comment"=>"aff_comment_empr_search","external"=>"aff_external_empr_search","url"=>"aff_url_empr_search","resolve"=>"aff_resolve_empr_search","marclist"=>"aff_marclist_empr_search","html"=>"aff_comment_empr_search");
+$chk_list_empr=array("text"=>"chk_text_empr","list"=>"chk_list_empr","query_list"=>"chk_query_list_empr","query_auth"=>"chk_query_auth_empr","date_box"=>"chk_date_box_empr","comment"=>"chk_comment_empr","external"=>"chk_external_empr","url"=>"chk_url_empr","resolve"=>"chk_resolve_empr","marclist"=>"chk_marclist_empr","html"=>"chk_comment_empr");
+$val_list_empr=array("text"=>"val_text_empr","list"=>"val_list_empr","query_list"=>"val_query_list_empr","query_auth"=>"val_query_auth_empr","date_box"=>"val_date_box_empr","comment"=>"val_comment_empr","external"=>"val_external_empr","url"=>"val_url_empr","resolve"=>"val_resolve_empr","marclist"=>"val_marclist_empr","html"=>"val_html_empr");
+$type_list_empr=array("text"=>$msg["parperso_text"],"list"=>$msg["parperso_choice_list"],"query_list"=>$msg["parperso_query_choice_list"],"query_auth"=>$msg["parperso_authorities"],"date_box"=>$msg["parperso_date"],"comment"=>$msg["parperso_comment"],"external"=>$msg["parperso_external"],"url"=>$msg["parperso_url"],"resolve"=>$msg["parperso_resolve"],"marclist"=>$msg["parperso_marclist"],"html"=>$msg["parperso_html"]);
+$options_list_empr=array("text"=>"options_text.php","list"=>"options_list.php","query_list"=>"options_query_list.php","query_auth"=>"options_query_authorities.php","date_box"=>"options_date_box.php","comment"=>"options_comment.php","external"=>"options_external.php","url"=>"options_url.php","resolve"=>"options_resolve.php","marclist"=>"options_marclist.php","html"=>"options_html.php");
 
 function aff_query_auth_empr($field,&$check_scripts,$script="") {	
 }
@@ -76,7 +76,7 @@ function aff_query_auth_empr_search($field,&$check_scripts,$varname) {
 	$fnamesanslib=$varname."_lib";
 	$fnamelib=$varname."_lib[]";
 	$field_var="fieldvar_".substr($varname, 6);
-
+	
 	$fname_name_aut_id=$field_var."[authority_id][]";
 	$fname_aut_id=$field_var."_authority_id";
 		
@@ -92,16 +92,16 @@ function aff_query_auth_empr_search($field,&$check_scripts,$varname) {
 	return $ret;
 }
 
-function val_query_auth_empr($field,$val) {
+function val_query_auth_empr($field) {
 	global $lang,$pmb_perso_sep,$charset;
 
 	$name=$field[NAME];
 	$options=$field[OPTIONS][0];
 	$isbd_s=array();
 	$isbd_without=array();
-	if(!$val)return "";
+	if(!$field[VALUES])return "";
 
-	foreach($val as $id){
+	foreach($field[VALUES] as $id){
 		switch($field["OPTIONS"][0]["DATA_TYPE"]["0"]["value"]) {
 			case 1:// auteur
 				$aut = new auteur($id);
@@ -326,15 +326,25 @@ function chk_comment_empr($field,&$check_message) {
 }
 
 function val_comment_empr($field,$value) {
-	global $charset;
+	global $charset,$pmb_perso_sep;
 
 	$value=format_output($field,$value);
+	if (!$value) $value=array();
 	
 	if($field["OPTIONS"][0]["ISHTML"][0]["value"]){
-		return array("ishtml" => true, "value"=>$value[0], "withoutHTML" =>$value[0]);
+		return array("ishtml" => true, "value"=>implode($pmb_perso_sep,$value), "withoutHTML" =>implode($pmb_perso_sep,$value));
 	}else{
-		return $value[0];
+		return implode($pmb_perso_sep,$value);
 	}
+}
+
+function val_html_empr($field,$value) {
+	global $charset,$pmb_perso_sep;
+
+	$value=format_output($field,$value);
+	if (!$value) $value=array();
+
+	return array("ishtml" => true, "value"=>implode($pmb_perso_sep,$value), "withoutHTML" =>implode($pmb_perso_sep,$value));
 }
 
 function aff_list_empr($field,&$check_scripts,$script="") {
@@ -355,10 +365,10 @@ function aff_list_empr($field,&$check_scripts,$script="") {
 				$ret.=" value='".$options[UNSELECT_ITEM][0][VALUE]."' /><span id='lib_".$field[NAME]."_".$options[UNSELECT_ITEM][0][VALUE]."'>&nbsp;".$options[UNSELECT_ITEM][0][value]."</span>";
 			}
 			$requete="select ".$_custom_prefixe_."_custom_list_value, ".$_custom_prefixe_."_custom_list_lib from ".$_custom_prefixe_."_custom_lists where ".$_custom_prefixe_."_custom_champ=".$field[ID]." order by ordre";
-			$resultat=mysql_query($requete);	
+			$resultat=pmb_mysql_query($requete);	
 			if ($resultat) {
 				$i=0;
-				while ($r=mysql_fetch_array($resultat)) {
+				while ($r=pmb_mysql_fetch_array($resultat)) {
 					$ret.= "<input id='".$field[NAME]."_".$r[$_custom_prefixe_."_custom_list_value"]."' type='$type' name='".$field[NAME]."[]'";
 					if (count($values)) {
 						$as=in_array($r[$_custom_prefixe_."_custom_list_value"],$values);
@@ -386,10 +396,10 @@ function aff_list_empr($field,&$check_scripts,$script="") {
 				$ret.="<option value=\"".htmlentities($options[UNSELECT_ITEM][0][VALUE],ENT_QUOTES,$charset)."\">".htmlentities($options[UNSELECT_ITEM][0][value],ENT_QUOTES,$charset)."</option>\n";
 			}
 			$requete="select ".$_custom_prefixe_."_custom_list_value, ".$_custom_prefixe_."_custom_list_lib from ".$_custom_prefixe_."_custom_lists where ".$_custom_prefixe_."_custom_champ=".$field[ID]." order by ordre";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			if ($resultat) {
 				$i=0;
-				while ($r=mysql_fetch_array($resultat)) {
+				while ($r=pmb_mysql_fetch_array($resultat)) {
 					$options[ITEMS][0][ITEM][$i][VALUE]=$r[$_custom_prefixe_."_custom_list_value"];
 					$options[ITEMS][0][ITEM][$i][value]=$r[$_custom_prefixe_."_custom_list_lib"];
 					$i++;
@@ -429,9 +439,9 @@ function aff_list_empr($field,&$check_scripts,$script="") {
 			$values=array();
 			$libelles=array();
 			$requete="select ".$_custom_prefixe_."_custom_list_value, ".$_custom_prefixe_."_custom_list_lib from ".$_custom_prefixe_."_custom_lists where ".$_custom_prefixe_."_custom_champ=".$field[ID]." order by ordre";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			$i=0;
-			while ($r=mysql_fetch_array($resultat)) {
+			while ($r=pmb_mysql_fetch_array($resultat)) {
 				$as=array_search($r[$_custom_prefixe_."_custom_list_value"],$values_received);
 				if (($as!==null)&&($as!==false)) {
 					$values[$i]=$r[$_custom_prefixe_."_custom_list_value"];
@@ -549,10 +559,10 @@ function aff_list_empr_search($field,&$check_scripts,$varname) {
 		$ret.="<option value=\"".htmlentities($options[UNSELECT_ITEM][0][VALUE],ENT_QUOTES,$charset)."\">".htmlentities($options[UNSELECT_ITEM][0][value],ENT_QUOTES,$charset)."</option>\n";
 	}
 	$requete="select ".$_custom_prefixe_."_custom_list_value, ".$_custom_prefixe_."_custom_list_lib from ".$_custom_prefixe_."_custom_lists where ".$_custom_prefixe_."_custom_champ=".$field[ID]." order by ordre";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	if ($resultat) {
 		$i=0;
-		while ($r=mysql_fetch_array($resultat)) {
+		while ($r=pmb_mysql_fetch_array($resultat)) {
 			$options[ITEMS][0][ITEM][$i][VALUE]=$r[$_custom_prefixe_."_custom_list_value"];
 			$options[ITEMS][0][ITEM][$i][value]=$r[$_custom_prefixe_."_custom_list_lib"];
 			$i++;
@@ -603,18 +613,22 @@ function val_list_empr($field,$val) {
 
 	if (!$options_[$_custom_prefixe_][$field[ID]]) {
 		$requete="select ".$_custom_prefixe_."_custom_list_value, ".$_custom_prefixe_."_custom_list_lib from ".$_custom_prefixe_."_custom_lists where ".$_custom_prefixe_."_custom_champ=".$field[ID]." order by ordre";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		if ($resultat) {
-			while ($r=mysql_fetch_array($resultat)) {
+			while ($r=pmb_mysql_fetch_array($resultat)) {
 				$options_[$_custom_prefixe_][$field[ID]][$r[$_custom_prefixe_."_custom_list_value"]]=$r[$_custom_prefixe_."_custom_list_lib"];
 			}
 		}
 	}
 	if (!is_array($options_[$_custom_prefixe_][$field[ID]])) return ""; 
-	$val_r=array_flip($val);
-	$val_c=array_intersect_key($options_[$_custom_prefixe_][$field[ID]],$val_r);
-	if ($val_c=="") $val_c=array();
-	$val_=implode($pmb_perso_sep,$val_c);
+	if($val[0] != null){
+		$val_r=array_flip($val);
+		$val_c=array_intersect_key($options_[$_custom_prefixe_][$field[ID]],$val_r);
+		if ($val_c=="") $val_c=array();
+		$val_=implode($pmb_perso_sep,$val_c);
+	}else{
+		$val_ = array();
+	}
 	return $val_;
 }
 
@@ -630,13 +644,13 @@ function aff_query_list_empr($field,&$check_scripts,$script="") {
 		if ($options["CHECKBOX"][0]["value"]=="yes"){
 			if ($options[MULTIPLE][0][value]=="yes") $type = "checkbox";
 			else $type = "radio";
-			$resultat=mysql_query($options[QUERY][0][value]);
+			$resultat=pmb_mysql_query($options[QUERY][0][value]);
 			if ($resultat) {
 				$i=0;
 				$ret="<table><tr>";
 				$limit = $options[CHECKBOX_NB_ON_LINE][0][value];
 				if($limit==0) $limit = 4;
-				while ($r=mysql_fetch_array($resultat)) {
+				while ($r=pmb_mysql_fetch_array($resultat)) {
 					if ($i>0 && $i%$limit == 0)$ret.="</tr><tr>";
 					$ret.= "<td><input id='".$field[NAME]."_$i' type='$type' name='".$field[NAME]."[]' ".(in_array($r[0],$values) ? "checked=checked" : "")." value='".$r[0]."'/><span id='lib_".$field[NAME]."_$i'>&nbsp;".$r[1]."</span></td>";
 					$i++;
@@ -654,8 +668,8 @@ function aff_query_list_empr($field,&$check_scripts,$script="") {
 			if (($options[UNSELECT_ITEM][0][VALUE]!="")||($options[UNSELECT_ITEM][0][value]!="")) {
 				$ret.="<option value=\"".htmlentities($options[UNSELECT_ITEM][0][VALUE],ENT_QUOTES,$charset)."\">".htmlentities($options[UNSELECT_ITEM][0][value],ENT_QUOTES,$charset)."</option>\n";
 			}
-			$resultat=mysql_query($options[QUERY][0][value]);
-			while ($r=mysql_fetch_row($resultat)) {
+			$resultat=pmb_mysql_query($options[QUERY][0][value]);
+			while ($r=pmb_mysql_fetch_row($resultat)) {
 				$ret.="<option value=\"".htmlentities($r[0],ENT_QUOTES,$charset)."\"";
 				$as=array_search($r[0],$values);
 				if (($as!==FALSE)&&($as!==NULL)) $ret.=" selected"; 
@@ -684,9 +698,9 @@ function aff_query_list_empr($field,&$check_scripts,$script="") {
 			$values_received_bis=$values;
 			$values=array();
 			$libelles=array();
-			$resultat=mysql_query($options[QUERY][0][value]);
+			$resultat=pmb_mysql_query($options[QUERY][0][value]);
 			$i=0;
-			while ($r=mysql_fetch_row($resultat)) {
+			while ($r=pmb_mysql_fetch_row($resultat)) {
 				$as=array_search($r[0],$values_received);
 				if (($as!==null)&&($as!==false)) {
 					$values[$i]=$r[0];
@@ -815,8 +829,8 @@ function aff_query_list_empr_search($field,&$check_scripts,$varname) {
 	if (($options[UNSELECT_ITEM][0][VALUE]!="")||($options[UNSELECT_ITEM][0][value]!="")) {
 		$ret.="<option value=\"".htmlentities($options[UNSELECT_ITEM][0][VALUE],ENT_QUOTES,$charset)."\">".htmlentities($options[UNSELECT_ITEM][0][value],ENT_QUOTES,$charset)."</option>\n";
 	}
-	$resultat=mysql_query($options[QUERY][0][value]);
-	while ($r=mysql_fetch_row($resultat)) {
+	$resultat=pmb_mysql_query($options[QUERY][0][value]);
+	while ($r=pmb_mysql_fetch_row($resultat)) {
 		$ret.="<option value=\"".htmlentities($r[0],ENT_QUOTES,$charset)."\"";
 		$as=array_search($r[0],$values);
 		if (($as!==FALSE)&&($as!==NULL)) $ret.=" selected"; 
@@ -859,16 +873,16 @@ function val_query_list_empr($field,$val) {
 	if (($field["OPTIONS"][0]["FIELD0"][0]["value"])&&($field["OPTIONS"][0]["FIELD1"][0]["value"])&&($field["OPTIONS"][0]["OPTIMIZE_QUERY"][0]["value"]=="yes")) {
 		$val_ads=array_map("addslashes",$val);
 		$requete="select * from (".$field[OPTIONS][0][QUERY][0][value].") as sub1 where ".$field["OPTIONS"][0]["FIELD0"][0]["value"]." in (BINARY '".implode("',BINARY '",$val_ads)."')";
-		$resultat=mysql_query($requete);
-		if ($resultat && mysql_num_rows($resultat)) {
-			while ($r=mysql_fetch_row($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		if ($resultat && pmb_mysql_num_rows($resultat)) {
+			while ($r=pmb_mysql_fetch_row($resultat)) {
 				$val_c[]=$r[1];
 			}
 		}
 	} else {
-		$resultat=mysql_query($field[OPTIONS][0][QUERY][0][value]);
-		if($resultat && mysql_num_rows($resultat)){
-			while ($r=mysql_fetch_row($resultat)) {
+		$resultat=pmb_mysql_query($field[OPTIONS][0][QUERY][0][value]);
+		if($resultat && pmb_mysql_num_rows($resultat)){
+			while ($r=pmb_mysql_fetch_row($resultat)) {
 				$options_[$r[0]]=$r[1];
 			}
 		}
@@ -892,9 +906,9 @@ function aff_external_empr($field,&$check_scripts) {
 	//Recherche du libellé
 	$vallib=$values[0];
 	if ($options["QUERY"][0]["value"]) {
-		$rvalues=mysql_query(str_replace("!!id!!",$values[0],$options["QUERY"][0]["value"]));
+		$rvalues=pmb_mysql_query(str_replace("!!id!!",$values[0],$options["QUERY"][0]["value"]));
 		if ($rvalues) {
-			$vallib=@mysql_result($rvalues,0,0);
+			$vallib=@pmb_mysql_result($rvalues,0,0);
 		}
 	}
 	$ret="<input id=\"".$field["NAME"]."\" type=\"hidden\" name=\"".$field["NAME"]."[]\" value=\"".htmlentities($values[0],ENT_QUOTES,$charset)."\">";
@@ -916,9 +930,9 @@ function aff_external_empr_search($field,&$check_scripts,$varname) {
 	//Recherche du libellé
 	$vallib=$values[0];
 	if ($options["QUERY"][0]["value"]) {
-		$rvalues=mysql_query(str_replace("!!id!!",$values[0],$options["QUERY"][0]["value"]));
+		$rvalues=pmb_mysql_query(str_replace("!!id!!",$values[0],$options["QUERY"][0]["value"]));
 		if ($rvalues) {
-			$vallib=@mysql_result($rvalues,0,0);
+			$vallib=@pmb_mysql_result($rvalues,0,0);
 		}
 	}
 	$ret="<input id=\"".$varname."\" type=\"hidden\" name=\"".$varname."[]\" value=\"".htmlentities($values[0],ENT_QUOTES,$charset)."\">";
@@ -949,9 +963,9 @@ function val_external_empr($field,$value) {
 	$value=format_output($field,$value);
 	//Calcul du libelle
 	if ($options["QUERY"][0]["value"]) {
-		$rvalues=mysql_query(str_replace("!!id!!",$value[0],$options["QUERY"][0]["value"]));
+		$rvalues=pmb_mysql_query(str_replace("!!id!!",$value[0],$options["QUERY"][0]["value"]));
 		if ($rvalues) {
-			return @mysql_result($rvalues,0,0);
+			return @pmb_mysql_result($rvalues,0,0);
 		}
 	}
 	return $value[0];
@@ -1238,4 +1252,239 @@ function aff_html_empr($field,&$check_scripts) {
 	return $ret;
 }
 
+function aff_marclist_empr($field,&$check_scripts,$script="") {
+	global $charset;
+	$_custom_prefixe_=$field["PREFIX"];
 
+	$options=$field[OPTIONS][0];
+	$values=$field[VALUES];
+	if ($values=="") $values=array();
+	$ret = "";
+
+	$marclist_type = new marc_list($options['DATA_TYPE'][0]['value']);
+
+	if ($options["AUTORITE"][0]["value"]!="yes") {
+		$ret="<select id=\"".$field[NAME]."\" name=\"".$field[NAME];
+		$ret.="[]";
+		$ret.="\" ";
+		if ($script) $ret.=$script." ";
+		if ($options[MULTIPLE][0][value]=="yes") $ret.="multiple";
+		$ret.=">\n";
+		if (($options[UNSELECT_ITEM][0][VALUE]!="")||($options[UNSELECT_ITEM][0][value]!="")) {
+			$ret.="<option value=\"".htmlentities($options[UNSELECT_ITEM][0][VALUE],ENT_QUOTES,$charset)."\">".htmlentities($options[UNSELECT_ITEM][0][value],ENT_QUOTES,$charset)."</option>\n";
+		}
+		if (($options[METHOD_SORT_VALUE][0][value]=="2") && ($options[METHOD_SORT_ASC][0][value]=="1")) {
+			asort($marclist_type->table);
+		} elseif (($options[METHOD_SORT_VALUE][0][value]=="1") && ($options[METHOD_SORT_ASC][0][value]=="1")) {
+			ksort($marclist_type->table);
+		} elseif (($options[METHOD_SORT_VALUE][0][value]=="2") && ($options[METHOD_SORT_ASC][0][value]=="2")) {
+			arsort($marclist_type->table);
+		} elseif (($options[METHOD_SORT_VALUE][0][value]=="2") && ($options[METHOD_SORT_ASC][0][value]=="2")) {
+			krsort($marclist_type->table);
+		}
+		reset($marclist_type->table);
+		if (count($marclist_type->table)) {
+			foreach ($marclist_type->table as $code=>$label) {
+				$ret .= "<option value=\"".$code."\"";
+				if (count($values)) {
+					$as=array_search($code,$values);
+					if (($as!==FALSE)&&($as!==NULL)) $ret.=" selected";
+				}
+				$ret .= ">".$label."</option>";
+			}
+		}
+		$ret.= "</select>\n";
+	} else {
+		if (count($values)) {
+			$values_received=$values;
+			$values=array();
+			$libelles=array();
+			$i=0;
+			foreach ($values_received as $id=>$value) {
+				$as=array_key_exists($value,$marclist_type->table);
+				if (($as!==null)&&($as!==false)) {
+					$values[$i]=$value;
+					$libelles[$i]=$marclist_type->table[$value];
+					$i++;
+				}
+			}
+		}
+		$readonly='';
+		$n=count($values);
+		if(($options[MULTIPLE][0][value]=="yes") )	$val_dyn=1;
+		else $val_dyn=0;
+		if (($n==0)||($options[MULTIPLE][0][value]!="yes")) $n=1;
+		if ($options[MULTIPLE][0][value]=="yes") {
+			$readonly='';
+			$ret.="<script>
+			function fonction_raz_".$field["NAME"]."() {
+				name=this.getAttribute('id').substring(4);
+				document.getElementById(name).value=0;
+				document.getElementById('f_'+name).value='';
+			}
+			function add_".$field["NAME"]."() {
+				template = document.getElementById('div_".$field["NAME"]."');
+				perso=document.createElement('div');
+				perso.className='row';
+
+				suffixe = document.getElementById('n_".$field["NAME"]."').value;
+				nom_id = '".$field["NAME"]."_'+suffixe
+				f_perso = document.createElement('input');
+				f_perso.setAttribute('name','f_'+nom_id);
+				f_perso.setAttribute('id','f_'+nom_id);
+				f_perso.setAttribute('completion','perso_".$_custom_prefixe_."');
+				f_perso.setAttribute('persofield','".$field["NAME"]."');
+				f_perso.setAttribute('autfield',nom_id);
+				f_perso.setAttribute('type','text');
+				f_perso.className='saisie-50emr';
+				$readonly
+				f_perso.setAttribute('value','');
+
+				del_f_perso = document.createElement('input');
+				del_f_perso.setAttribute('id','del_".$field["NAME"]."_'+suffixe);
+				del_f_perso.onclick=fonction_raz_".$field["NAME"].";
+				del_f_perso.setAttribute('type','button');
+				del_f_perso.className='bouton';
+				del_f_perso.setAttribute('readonly','');
+				del_f_perso.setAttribute('value','X');
+
+				f_perso_id = document.createElement('input');
+				f_perso_id.name=nom_id;
+				f_perso_id.setAttribute('type','hidden');
+				f_perso_id.setAttribute('id',nom_id);
+				f_perso_id.setAttribute('value','');
+
+				perso.appendChild(f_perso);
+				space=document.createTextNode(' ');
+				perso.appendChild(space);
+				space=document.createTextNode(' ');
+				perso.appendChild(space);
+				perso.appendChild(del_f_perso);
+				perso.appendChild(f_perso_id);
+
+				template.appendChild(perso);
+
+				document.getElementById('n_".$field["NAME"]."').value=suffixe*1+1*1 ;
+				ajax_pack_element(document.getElementById('f_'+nom_id));
+			}
+			</script>
+			";
+		}
+		$ret.="<input type='hidden' value='$n' name='n_".$field["NAME"]."'/>\n<div id='div_".$field["NAME"]."'>";
+		$readonly='';
+		for ($i=0; $i<$n; $i++) {
+			$ret.="<input type='text' class='saisie-50emr' id='f_".$field["NAME"]."_$i' completion='perso_".$_custom_prefixe_."' persofield='".$field["NAME"]."' autfield='".$field["NAME"]."_$i' name='f_".$field["NAME"]."_$i' $readonly value=\"".htmlentities($libelles[$i],ENT_QUOTES,$charset)."\" />\n";
+			$ret.="<input type='hidden' id='".$field["NAME"]."_$i' name='".$field["NAME"]."_$i' value=\"".htmlentities($values[$i],ENT_QUOTES,$charset)."\">";
+
+			$ret.="
+			<input type='button' class='bouton' value='X' onclick=\"this.form.f_".$field["NAME"]."_$i.value=''; this.form.".$field["NAME"]."_$i.value=''; \" />\n";
+			if (($i==0)&&($options[MULTIPLE][0][value]=="yes")) {
+				$ret.=" <input type='button' class='bouton' value='+' onClick=\"add_".$field["NAME"]."();\"/>";
+			}
+			$ret.="<br />";
+		}
+		$ret.="</div>";
+	}
+
+	return $ret;
+}
+
+function chk_marclist_empr($field,&$check_message) {
+	global $charset;
+	global $msg;
+
+	$name=$field[NAME];
+	$options=$field[OPTIONS][0];
+
+	global $$name;
+	if ($options["AUTORITE"][0]["value"]!="yes") {
+		$val=$$name;
+	} else {
+		$val=array();
+		$nn="n_".$name;
+		global $$nn;
+		$n=$$nn;
+		for ($i=0; $i<$n; $i++) {
+			$v=$field["NAME"]."_".$i;
+			global $$v;
+			if ($$v!="") {
+				$val[]=$$v;
+			}
+		}
+		if (count($val)==0) unset($val);
+	}
+	if ($field[MANDATORY]==1) {
+		if ((!isset($val))||((count($val)==1)&&($val[0]==""))) {
+			$check_message=sprintf($msg["parperso_field_is_needed"],$field[ALIAS]);
+			return 0;
+		}
+	}
+
+	$check_datatype_message="";
+	$val_1=chk_datatype($field,$val,$check_datatype_message);
+	if ($check_datatype_message) {
+		$check_message=$check_datatype_message;
+		return 0;
+	}
+	$$name=$val_1;
+
+	return 1;
+}
+
+function val_marclist_empr($field,$value) {
+	global $charset,$pmb_perso_sep;
+
+	$options=$field[OPTIONS][0];
+	$values=format_output($field,$value);
+	$ret = "";
+	if (count($values)) {
+		$marclist_type = new marc_list($options['DATA_TYPE'][0]['value']);
+		if($ret)$ret.=$pmb_perso_sep;
+		foreach($values as $id=>$value) {
+			if($ret)$ret.=$pmb_perso_sep;
+			$ret.= $marclist_type->table[$value];
+		}
+	}
+	return $ret;
+}
+
+function aff_marclist_empr_search($field,&$check_scripts,$varname){
+	global $charset;
+	$_custom_prefixe_=$field["PREFIX"];
+
+	$options=$field[OPTIONS][0];
+	$values=$field[VALUES];
+	if ($values=="") $values=array();
+
+	$marclist_type = new marc_list($options['DATA_TYPE'][0]['value']);
+
+	$ret="<select id=\"".$varname."\" name=\"".$varname;
+	$ret.="[]";
+	$ret.="\" ";
+	if ($script) $ret.=$script." ";
+	$ret.="multiple";
+	$ret.=">\n";
+
+	if (($options[METHOD_SORT_VALUE][0][value]=="2") && ($options[METHOD_SORT_ASC][0][value]=="1")) {
+		asort($marclist_type->table);
+	} elseif (($options[METHOD_SORT_VALUE][0][value]=="1") && ($options[METHOD_SORT_ASC][0][value]=="1")) {
+		ksort($marclist_type->table);
+	} elseif (($options[METHOD_SORT_VALUE][0][value]=="2") && ($options[METHOD_SORT_ASC][0][value]=="2")) {
+		arsort($marclist_type->table);
+	} elseif (($options[METHOD_SORT_VALUE][0][value]=="2") && ($options[METHOD_SORT_ASC][0][value]=="2")) {
+		krsort($marclist_type->table);
+	}
+
+	reset($marclist_type->table);
+	if (count($marclist_type->table)) {
+		foreach ($marclist_type->table as $code=>$label) {
+			$ret .= "<option value=\"".$code."\"";
+			$as=array_search($code,$values);
+			if (($as!==FALSE)&&($as!==NULL)) $ret.=" selected";
+			$ret .= ">".$label."</option>";
+		}
+	}
+	$ret.= "</select>\n";
+
+	return $ret;
+}

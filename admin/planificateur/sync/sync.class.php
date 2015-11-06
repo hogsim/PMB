@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sync.class.php,v 1.3 2012-08-16 15:21:08 arenou Exp $
+// $Id: sync.class.php,v 1.4 2015-04-03 11:16:27 jpermanne Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -154,9 +154,9 @@ class sync extends tache {
 			$this->id_source = $source_entrepot;
 			if ($this->id_source) {
 				$rqt = "select id_connector, name from connectors_sources where source_id=".$this->id_source;
-				$res = mysql_query($rqt);
-				$path = mysql_result($res,0,"id_connector");
-				$name = mysql_result($res,0,"name");
+				$res = pmb_mysql_query($rqt);
+				$path = pmb_mysql_result($res,0,"id_connector");
+				$name = pmb_mysql_result($res,0,"name");
 				for ($i=0; $i<count($param["ITEM"]); $i++) {
 					$item=$param["ITEM"][$i];
 					if ($item["PATH"] == $path) {
@@ -210,14 +210,14 @@ class sync extends tache {
 				break;
 			case ABORT:
 				$requete="delete from source_sync where source_id=".$this->id_source;
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$this->report[] = "<tr class='odd'><td>".$this->msg["planificateur_abort_sync"]."</td></tr>";				
 				$this->finalize($this->id_tache);
 				die();
 				break;
 			case FAIL :
 				$requete="delete from source_sync where source_id=".$this->id_source;
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$this->report[] = "<tr class='odd'><td>".$msg["planificateur_timeout_overtake"]."</td></tr>";				
 				$this->finalize($this->id_tache);
 				die();
@@ -271,7 +271,7 @@ class sync extends tache {
 //				$conn->del_notices($source_id);
 //			}
 //			$sql = "UPDATE connectors_sources SET last_sync_date = '0000-00-00 00:00:00' WHERE source_id = $source_id ";
-//			mysql_query($sql); 
+//			pmb_mysql_query($sql); 
 //		}
     }
 }

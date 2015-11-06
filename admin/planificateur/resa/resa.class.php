@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: resa.class.php,v 1.2 2012-07-31 10:12:16 dgoron Exp $
+// $Id: resa.class.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -72,7 +72,7 @@ class resa extends tache {
 				left join taches t on t.num_planificateur = p.id_planificateur
 				left join tache_docnum tdn on tdn.tache_docnum_repertoire=p.rep_upload
 				where t.id_tache=".$this->id_tache;
-			$res_query = mysql_query($rqt, $dbh);
+			$res_query = pmb_mysql_query($rqt, $dbh);
 			
 			$parameters = $this->unserialize_task_params();
 	
@@ -81,9 +81,9 @@ class resa extends tache {
 			$empr_location_id = ($parameters["empr_location_id"] ? $parameters["empr_location_id"] : "0");
 			if ($empr_location_id != "0") {
 				$query = "select name from docs_location where idlocation=".$empr_location_id;
-				$res = mysql_query($query, $dbh);
+				$res = pmb_mysql_query($query, $dbh);
 				if ($res) {
-					$location_name = mysql_result($res,0,"name");
+					$location_name = pmb_mysql_result($res,0,"name");
 				}
 			}
 			$count = count($parameters["chk_resa"]);
@@ -122,9 +122,9 @@ class resa extends tache {
 						$requete = "select distinct(resa_idempr) from resa ";
 						$requete .="where resa_confirmee=0 and resa_cb != ''";
 						$requete .= $cl_where;
-						$res = mysql_query($requete);
+						$res = pmb_mysql_query($requete);
 						$result = array();
-						while ($row = mysql_fetch_object($res)) {
+						while ($row = pmb_mysql_fetch_object($res)) {
 							if ($row->resa_idempr)
 								$result[] = $this->proxy->pmbesResas_get_empr_information_and_resas($row->resa_idempr);
 						}
@@ -155,13 +155,13 @@ class resa extends tache {
 																//erreur de création du pdf
 																$rqt_maj = "update resa set resa_confirmee=0 where id_resa in (".$list_letter_resa.") AND resa_cb is not null and resa_cb!=''" ;
 																if ($id_empr_concerne) $rqt_maj .= " and resa_idempr=$id_empr_concerne ";
-																mysql_query($rqt_maj, $dbh);
+																pmb_mysql_query($rqt_maj, $dbh);
 															}
 														} else {
 															//erreur de création du pdf
 															$rqt_maj = "update resa set resa_confirmee=0 where id_resa in (".$list_letter_resa.") AND resa_cb is not null and resa_cb!=''" ;
 															if ($id_empr_concerne) $rqt_maj .= " and resa_idempr=$id_empr_concerne ";
-															mysql_query($rqt_maj, $dbh);
+															pmb_mysql_query($rqt_maj, $dbh);
 														}
 													}
 												} else {

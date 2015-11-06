@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: epires.inc.php,v 1.6.6.1 2014-11-06 13:45:21 mbertin Exp $
+// $Id: epires.inc.php,v 1.7 2014-11-06 13:46:58 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

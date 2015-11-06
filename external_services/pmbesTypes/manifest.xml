@@ -3,7 +3,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.21 2014-03-11 09:59:06 mbertin Exp $ -->
+$Id: manifest.xml,v 1.22 2015-01-07 11:01:22 pmbs Exp $ -->
 <manifest>
 	<name>pmbesTypes</name>
 	<description>msg:pmbesTypes_description</description>
@@ -426,5 +426,11 @@ $Id: manifest.xml,v 1.21 2014-03-11 09:59:06 mbertin Exp $ -->
 			<part name="support" type="scalar" dataType="string" description="msg:item_support"/>
 			<part name="situation" type="scalar" dataType="string" description="msg:item_situation"/>
 		</type>
+		<type name="cms_article" description="msg:cms_article_description">
+			<part name="id_article" type="scalar" dataType="integer" description="msg:cms_id_article"/>
+			<part name="article_title" type="scalar" dataType="string" description="msg:cms_article_title"/>
+			<part name="article_resume" type="scalar" dataType="string" description="msg:cms_article_resume"/>
+			<part name="article_contenu" type="scalar" dataType="string" description="msg:cms_article_contenu"/>
+		</type>		
 	</types>
 </manifest>

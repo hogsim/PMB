@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_main.inc.php,v 1.12 2013-07-04 12:55:50 arenou Exp $
+// $Id: ajax_main.inc.php,v 1.17 2015-03-30 07:14:52 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -44,6 +44,21 @@ switch($categ):
 		break;
 	case 'storage' :
 		include('./ajax/misc/storage.inc.php');
+		break;
+	case 'map' :
+		include('./ajax/misc/map.inc.php');
+		break;
+	case 'notice' :
+		include('./ajax/misc/notice.inc.php');
+		break;
+	case 'nomenclature' :
+		include('./ajax/misc/nomenclature.inc.php');
+		break;
+	case 'messages':
+		include('./ajax/misc/messages.inc.php');
+		break;
+	case 'classementGen':
+		include('./ajax/misc/classementGen.inc.php');
 		break;
 	default:
 		break;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: audit.class.php,v 1.15.6.2 2014-09-12 14:12:18 ngantier Exp $
+// $Id: audit.class.php,v 1.20 2015-05-20 14:49:27 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -31,6 +31,9 @@ class audit {
 						// define('AUDIT_BULLETIN'	,    3);
 						// define('AUDIT_ACQUIS'	,    4);
 						// define('AUDIT_PRET'		,    5);
+						// define('AUDIT_DEMANDE'	,    14);
+						// define('AUDIT_ACTION'	,    15);
+						// define('AUDIT_NOTE'		,    16);
 	var $object_id;		// id de l'objet audité
 	var $user_id;		// id de l'utilisateur lors de l'insertion dans la table
 	var $user_name;		// login de l'utilisateur lors de l'insertion dans la table, permet de conserver un truc même après suppression de l'utilisateur
@@ -89,9 +92,9 @@ class audit {
 		$query .= "type_obj='$this->type_obj' AND ";
 		$query .= "object_id='$this->object_id' ";
 		$query .= "order by quand ";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		if(!$result) die("can't select from table audit left join users :<br /><b>$query</b> ");
-		while ($audit=mysql_fetch_object($result)) {
+		while ($audit=pmb_mysql_fetch_object($result)) {
 			$this->all_audit[] = $audit ; 
 		}
 	}
@@ -128,7 +131,7 @@ class audit {
 		$query .= "user_name='$PMBusername', ";
 		$query .= "type_modif=1, ";
 		$query .= "info='".addslashes($info)."' ";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		if(!$result) die("can't INSERT into table audit :<br /><b>$query</b> ");
 		return 1;
 	}
@@ -145,7 +148,7 @@ class audit {
 			$query .= "type_obj='$type' AND ";
 			$query .= "object_id='$obj' AND ";
 			$query .= "type_modif=2 ";
-			$result = @mysql_query($query, $dbh);
+			$result = @pmb_mysql_query($query, $dbh);
 			if(!$result) die("can't DELETE FROM table audit :<br /><b>$query</b> ");
 		}
 		$query = "INSERT INTO audit SET ";
@@ -155,20 +158,20 @@ class audit {
 		$query .= "user_name='$PMBusername', ";
 		$query .= "type_modif=2, ";
 		$query .= "info='".addslashes($info)."' ";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		return 1;
 	}
 		
 	// ---------------------------------------------------------------
 	//		delete_audit ($type=0, $obj=0) : 
 	// ---------------------------------------------------------------
-	function delete_audit ($type=0, $obj=0) {
+	static function delete_audit ($type=0, $obj=0) {
 		global $dbh ;
 		
 		$query = "DELETE FROM audit WHERE ";
 		$query .= "type_obj='$type' AND ";
 		$query .= "object_id in ($obj) ";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		return 1;
 	}
 	
@@ -183,8 +186,8 @@ class audit {
 		foreach($this->info['fields'] as $field =>$value){
 			$this->info['fields'][$field]['old']="";
 		}
-		$res = mysql_query($requete, $dbh);
-		if (($line = mysql_fetch_array($res))) {
+		$res = pmb_mysql_query($requete, $dbh);
+		if (($line = pmb_mysql_fetch_array($res))) {
 			$old_data=$line;
 		}
 		foreach($old_data as $field =>$value){
@@ -204,8 +207,8 @@ class audit {
 		foreach($this->info['fields'] as $field =>$value){
 			$this->info['fields'][$field]['new']="";
 		}
-		$res = mysql_query($requete, $dbh);
-		if (($line = mysql_fetch_array($res))) {
+		$res = pmb_mysql_query($requete, $dbh);
+		if (($line = pmb_mysql_fetch_array($res))) {
 			$old_data=$line;
 		}
 		$i=0;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: list_groups.inc.php,v 1.16.4.2 2015-06-27 08:23:47 jpermanne Exp $
+// $Id: list_groups.inc.php,v 1.19 2015-06-27 08:26:47 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -41,8 +41,8 @@ $filter_list = "<form class='form-$current_module' id='form-$current_module-list
 // on récupére le nombre de lignes 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM groupe $clause ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 }
 
 
@@ -54,11 +54,11 @@ if($nbr_lignes) {
 	
 	$requete = "SELECT id_groupe, libelle_groupe, resp_groupe, concat(IFNULL(empr_prenom,'') ,' ',IFNULL(empr_nom,'')) as resp_name, count( empr_id ) as nb_empr FROM groupe LEFT  JOIN empr_groupe ON groupe_id = id_groupe left join empr on resp_groupe = id_empr
 	$clause group by id_groupe, libelle_groupe, resp_groupe, resp_name ORDER BY libelle_groupe LIMIT $debut,$nb_per_page ";
-	$res = mysql_query($requete, $dbh);
-	if ((mysql_num_rows($res) > 1)||($page>1)) {
+	$res = pmb_mysql_query($requete, $dbh);
+	if ((pmb_mysql_num_rows($res) > 1)||($page>1)) {
 		$parity=1;
 		$group_list .= "<tr><th>".$msg[904]."</th><th>".$msg[913]."</th><th>".$msg['circ_group_emprunteur']."</th><th>".$msg['349']."</th><th>".$msg['reserv_en_cours']."</th>";
-		while($rgroup=mysql_fetch_object($res)) {
+		while($rgroup=pmb_mysql_fetch_object($res)) {
 			if ($parity % 2) {
 				$pair_impair = "even";
 			} else {
@@ -67,16 +67,16 @@ if($nbr_lignes) {
 			$parity += 1;
 			$nb_pret=0;
 			$requete = "SELECT count( pret_idempr ) as nb_pret FROM empr_groupe,pret where groupe_id=$rgroup->id_groupe and empr_id = pret_idempr";
-			$res_pret = mysql_query($requete, $dbh);
-			if (mysql_num_rows($res_pret)) {
-				$rpret=mysql_fetch_object($res_pret);
+			$res_pret = pmb_mysql_query($requete, $dbh);
+			if (pmb_mysql_num_rows($res_pret)) {
+				$rpret=pmb_mysql_fetch_object($res_pret);
 				$nb_pret=$rpret->nb_pret;	
 			}
 			$nb_resa=0;
 			$requete = "SELECT count( resa_idempr ) as nb_resa FROM empr_groupe,resa where groupe_id=$rgroup->id_groupe and empr_id = resa_idempr";
-			$res_resa = mysql_query($requete, $dbh);
-			if (mysql_num_rows($res_resa)) {
-				$rresa=mysql_fetch_object($res_resa);
+			$res_resa = pmb_mysql_query($requete, $dbh);
+			if (pmb_mysql_num_rows($res_resa)) {
+				$rresa=pmb_mysql_fetch_object($res_resa);
 				$nb_resa=$rresa->nb_resa;	
 			}
 			$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./circ.php?categ=groups&action=showgroup&groupID=$rgroup->id_groupe';\" ";
@@ -88,13 +88,13 @@ if($nbr_lignes) {
 					<td>$nb_resa</td>
 					</tr>";
     	}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		$nav_bar = aff_pagination ("$PHP_SELF?categ=groups&action=listgroups", $nbr_lignes, $nb_per_page, $page, 10, false, true) ;
 		// affichage du résultat
 		list_group($group_query, $filter_list, $group_list, $nav_bar, $nbr_lignes);
 	} else {
-		$rgroup = $rgroup=mysql_fetch_object($res);
+		$rgroup = $rgroup=pmb_mysql_fetch_object($res);
 		$groupID = $rgroup->id_groupe;
 		include('./circ/groups/show_group.inc.php');
 	}

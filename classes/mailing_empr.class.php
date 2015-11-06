@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mailing_empr.class.php,v 1.4.2.2 2015-01-30 14:32:36 jpermanne Exp $
+// $Id: mailing_empr.class.php,v 1.9 2015-06-11 14:17:59 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,26 +33,26 @@ class mailing_empr {
 
 			if (!$this->total) {
 				$sql = "select 1 from empr_caddie_content where (flag='' or flag is null or flag=2) and empr_caddie_id=".$this->id_caddie_empr;
-				$sql_result = mysql_query($sql) or die ("Couldn't select count(*) mailing table $sql");
-				$this->total=mysql_num_rows($sql_result);
+				$sql_result = pmb_mysql_query($sql) or die ("Couldn't select count(*) mailing table $sql");
+				$this->total=pmb_mysql_num_rows($sql_result);
 			}
 			$sql = "select *, date_format(empr_date_adhesion, '".$msg["format_date"]."') as aff_empr_date_adhesion, date_format(empr_date_expiration, '".$msg["format_date"]."') as aff_empr_date_expiration from empr, empr_caddie_content where (flag='' or flag is null) and empr_caddie_id=".$this->id_caddie_empr." and object_id=id_empr ";
 			if ($paquet_envoi) $sql .= " limit 0,$paquet_envoi ";
-			$sql_result = mysql_query($sql) or die ("Couldn't select empr table !");
-			$n_envoi=mysql_num_rows($sql_result);
+			$sql_result = pmb_mysql_query($sql) or die ("Couldn't select empr table !");
+			$n_envoi=pmb_mysql_num_rows($sql_result);
 			$ienvoi=0;
 			$this->envoi_KO=0;
 			
 			//On n'envoie en BCC que pour le premier email
 			$envoiBcc=false;
-			$resBcc=mysql_query("SELECT * FROM empr_caddie_content WHERE flag='1' AND empr_caddie_id=".$this->id_caddie_empr);
-			if($resBcc && mysql_num_rows($resBcc)){
+			$resBcc=pmb_mysql_query("SELECT * FROM empr_caddie_content WHERE flag='1' AND empr_caddie_id=".$this->id_caddie_empr);
+			if($resBcc && pmb_mysql_num_rows($resBcc)){
 				//On a déjà fait une passe précédemment, on ne renvoie pas en BCC
 				$envoiBcc=true;
 			}
 			
 			while ($ienvoi<$n_envoi) {
-				$destinataire=mysql_fetch_object($sql_result);
+				$destinataire=pmb_mysql_fetch_object($sql_result);
 				$iddest=$destinataire->id_empr;
 				$emaildest=$destinataire->empr_mail;
 				$nomdest=$destinataire->empr_nom;
@@ -60,9 +60,20 @@ class mailing_empr {
 				$message_to_send = $message;
 				$message_to_send=str_replace("!!empr_name!!", $destinataire->empr_nom,$message_to_send); 
 				$message_to_send=str_replace("!!empr_first_name!!", $destinataire->empr_prenom,$message_to_send);
+				switch ($destinataire->empr_sexe) {
+					case "2":
+						$empr_civilite = $msg["civilite_madame"];
+						break;
+					case "1":
+						$empr_civilite = $msg["civilite_monsieur"];
+						break;
+					default:
+						$empr_civilite = $msg["civilite_unknown"];
+						break;
+				}
+				$message_to_send=str_replace('!!empr_sexe!!',$empr_civilite,$message_to_send);
 				$message_to_send=str_replace("!!empr_cb!!", $destinataire->empr_cb,$message_to_send);
 				$message_to_send=str_replace("!!empr_login!!", $destinataire->empr_login,$message_to_send); 
-				$message_to_send=str_replace("!!empr_password!!", $destinataire->empr_password,$message_to_send);
 				$message_to_send=str_replace("!!empr_mail!!", $destinataire->empr_mail,$message_to_send);
 				if (strpos($message_to_send,"!!empr_loans!!")) $message_to_send=str_replace("!!empr_loans!!", m_liste_prets($destinataire),$message_to_send);
 				if (strpos($message_to_send,"!!empr_resas!!")) $message_to_send=str_replace("!!empr_resas!!", m_liste_resas($destinataire),$message_to_send);
@@ -98,9 +109,9 @@ class mailing_empr {
 				if ($pmb_mail_delay*1) sleep((int)$pmb_mail_delay*1/1000);
 				if ($envoi_OK) {
 					$envoiBcc=true;
-					mysql_query("update empr_caddie_content set flag='1' where object_id='".$iddest."' and empr_caddie_id=".$this->id_caddie_empr) or die ("Couldn't update empr_caddie_content !");
+					pmb_mysql_query("update empr_caddie_content set flag='1' where object_id='".$iddest."' and empr_caddie_id=".$this->id_caddie_empr) or die ("Couldn't update empr_caddie_content !");
 				} else {
-					mysql_query("update empr_caddie_content set flag='2' where object_id='".$iddest."' and empr_caddie_id=".$this->id_caddie_empr) or die ("Couldn't update empr_caddie_content !");
+					pmb_mysql_query("update empr_caddie_content set flag='2' where object_id='".$iddest."' and empr_caddie_id=".$this->id_caddie_empr) or die ("Couldn't update empr_caddie_content !");
 					$this->envoi_KO++;
 				}
 				$ienvoi++;

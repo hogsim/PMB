@@ -3,4 +3,5 @@
 <!ATTLIST entry 
 	code NMTOKEN #REQUIRED
  	order NMTOKEN #IMPLIED
+ 	js NMTOKEN #IMPLIED
 >

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_includes.inc.php,v 1.77.2.7 2015-08-28 08:57:28 jpermanne Exp $
+// $Id: empr_includes.inc.php,v 1.95 2015-07-16 09:04:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -162,13 +162,15 @@ if($opac_parse_html || $cms_active){
 	ob_start();
 }
 
-print $std_header;
-
-require_once ($base_path.'/includes/navigator.inc.php');
-
-require_once($class_path."/serialcirc_empr.class.php");
-
-if ($opac_empr_code_info && $log_ok) print $opac_empr_code_info;
+if (!$dest) {
+	print $std_header;
+	
+	require_once ($base_path.'/includes/navigator.inc.php');
+	
+	require_once($class_path."/serialcirc_empr.class.php");
+	
+	if ($opac_empr_code_info) print $opac_empr_code_info;
+}
 
 if (!$tab) {
 	switch($lvl) {
@@ -179,12 +181,10 @@ if (!$tab) {
 			break;
 		case 'all':
 		case 'old':
-		case 'late':
 		case 'pret':
 		case 'retour':
 			$tab='loan';
 			break;
-		case 'resa':
 		case 'resa_planning':
 			$tab='reza';
 			break;
@@ -220,163 +220,169 @@ if (!$tab) {
 
 if ($log_ok) {
 	require_once($base_path."/empr/empr.inc.php");
-	/* Affichage du bandeau action en bas de la page. A externaliser dans le template */
-	$empr_onglet_menu = "
-	 <div id='empr_onglet'>
-		<ul class='empr_tabs'>
-			<li ".(($tab=="account" || !$tab) ? "id=\"current\"" : "" )."><a href='./empr.php?tab=account'>".htmlentities($msg['empr_menu_account'],ENT_QUOTES,$charset)."</a></li>";
-	if ($allow_loan) 
-		$empr_onglet_menu .= "<li ".(($tab=="loan") ? "id=\"current\"" : "" )."><a href='./empr.php?tab=loan&lvl=late'>".htmlentities($msg['empr_menu_loan'],ENT_QUOTES,$charset)."</a></li>";
-	else if ($allow_loan_hist)
-		$empr_onglet_menu .= "<li ".(($tab=="loan") ? "id=\"current\"" : "" )."><a href='./empr.php?tab=loan&lvl=old'>".htmlentities($msg['empr_menu_loan'],ENT_QUOTES,$charset)."</a></li>";
-	if ($allow_book && $opac_resa) 	
-		$empr_onglet_menu .= "<li ".(($tab=="reza") ? "id=\"current\"" : "" )."><a href='./empr.php?tab=reza&lvl=resa'>".htmlentities($msg['empr_menu_resa'],ENT_QUOTES,$charset)."</a></li>";
-	if (($opac_dsi_active) && ($allow_dsi || $allow_dsi_priv)) 	
-		$empr_onglet_menu .= "<li ".(($tab=="dsi") ? "id=\"current\"" : "" )."><a href='./empr.php?tab=dsi&lvl=bannette'>".htmlentities($msg['empr_menu_dsi'],ENT_QUOTES,$charset)."</a></li>";
-	if ($opac_show_suggest && $allow_sugg) 	
-		$empr_onglet_menu .= "<li ".(($tab=="sugg") ? "id=\"current\"" : "" )."><a href='./empr.php?tab=sugg&lvl=view_sugg'>".htmlentities($msg['empr_menu_sugg'],ENT_QUOTES,$charset)."</a></li>";
-	if ($opac_shared_lists && $allow_liste_lecture) 	
-		$empr_onglet_menu .= "<li ".(($tab=="lecture") ? "id=\"current\"" : "" )."><a href='./empr.php?tab=lecture&lvl=private_list'>".htmlentities($msg['empr_menu_lecture'],ENT_QUOTES,$charset)."</a></li>";
-	if ($opac_demandes_active && $allow_dema) 	
-		$empr_onglet_menu .= "<li ".(($tab=="request") ? "id=\"current\"" : "" )."><a href='./empr.php?tab=request&lvl=do_dmde'>".htmlentities($msg['empr_menu_dmde'],ENT_QUOTES,$charset)."</a></li>";		
-	if ($opac_serialcirc_active && $allow_serialcirc){
-		$empr_onglet_menu .= "<li ".(($tab=="serialcirc") ? "id=\"current\"" : "" )."><a href='./empr.php?tab=serialcirc&lvl=list_abo'>".htmlentities($msg['empr_menu_serialcirc'],ENT_QUOTES,$charset)."</a></li>";
-	}
-	if (function_exists('empr_extended_bandeau')){
-		empr_extended_bandeau($tab);
-	}
-	$empr_onglet_menu .= "</ul>";
-	
-	print $empr_onglet_menu;
-	$subitems = "
-		<div class='row'>
-			!!subonglet!!
+	if (!$dest) {
+		/* Affichage du bandeau action en bas de la page. A externaliser dans le template */
+		$empr_onglet_menu = "
+		 <div id='empr_onglet'>
+			<ul class='empr_tabs'>
+				<li ".(($tab=="account" || !$tab) ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=account'>".htmlentities($msg['empr_menu_account'],ENT_QUOTES,$charset)."</a></li>";
+		if ($allow_loan || $allow_loan_hist || ($allow_book && $opac_resa)) {
+			$onglet_lib = array();
+			if ($allow_loan || $allow_loan_hist) {
+				$onglet_lib[] = $msg['empr_menu_loan'];
+			}
+			if ($allow_book && $opac_resa) {
+				$onglet_lib[] = $msg['empr_menu_resa'];
+			}
+			$empr_onglet_menu .= "<li ".(($tab=="loan_reza") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=loan_reza&lvl=all'>";
+			$empr_onglet_menu .= htmlentities(implode(" / ", $onglet_lib), ENT_QUOTES, $charset);
+			$empr_onglet_menu .= "</a></li>";
+		}
+		if (($opac_dsi_active) && ($allow_dsi || $allow_dsi_priv)) 	
+			$empr_onglet_menu .= "<li ".(($tab=="dsi") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=dsi&lvl=bannette'>".htmlentities($msg['empr_menu_dsi'],ENT_QUOTES,$charset)."</a></li>";
+		if ($opac_show_suggest && $allow_sugg) 	
+			$empr_onglet_menu .= "<li ".(($tab=="sugg") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=sugg&lvl=view_sugg'>".htmlentities($msg['empr_menu_sugg'],ENT_QUOTES,$charset)."</a></li>";
+		if ($opac_shared_lists && $allow_liste_lecture) 	
+			$empr_onglet_menu .= "<li ".(($tab=="lecture") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=lecture&lvl=private_list'>".htmlentities($msg['empr_menu_lecture'],ENT_QUOTES,$charset)."</a></li>";
+		if ($opac_demandes_active && $allow_dema){ 	
+			$empr_onglet_menu .= "<li ".(($tab=="request") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=request&lvl=list_dmde'>".htmlentities($msg['empr_menu_dmde'],ENT_QUOTES,$charset)."</a></li>";		
+		}
+		if ($opac_serialcirc_active && $allow_serialcirc){
+			$empr_onglet_menu .= "<li ".(($tab=="serialcirc") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=serialcirc&lvl=list_abo'>".htmlentities($msg['empr_menu_serialcirc'],ENT_QUOTES,$charset)."</a></li>";
+		}
+		if (function_exists('empr_extended_bandeau')){
+			empr_extended_bandeau($tab);
+		}
+		$empr_onglet_menu .= "</ul>";
+		
+		print $empr_onglet_menu;
+		$subitems = "
+			<div class='row'>
+				!!subonglet!!
+			</div>
 		</div>
-	</div>
-	";
-	
-	switch($tab){
-		case 'loan':
-			//Mes prêts
-			$loan_item="<ul class='empr_subtabs'>";
-			if ($allow_loan){
-				$loan_item .= "
-					<li><a href='./empr.php?tab=loan&lvl=late'>".htmlentities($msg[empr_bt_show_late],ENT_QUOTES,$charset)."</a></li>
-					<li><a href='./empr.php?tab=loan&lvl=all'>".htmlentities($msg[empr_bt_show_all],ENT_QUOTES,$charset)."</a></li>
-				";
-			}
-			if ($allow_loan_hist){
-				$loan_item .= "
-					<li><a href='./empr.php?tab=loan&lvl=old'>".htmlentities($msg[empr_bt_show_old],ENT_QUOTES,$charset)."</a></li>
-				";
-			}			
-			if($opac_allow_self_checkout){
-				if(($opac_allow_self_checkout==1 || $opac_allow_self_checkout==3) && ($allow_self_checkout)) {
-					$loan_item .= "<li><a href='./empr.php?tab=loan&lvl=pret'>".htmlentities($msg["empr_bt_checkout"],ENT_QUOTES,$charset)."</a></li>";
+		";
+		
+		switch($tab){
+			case 'loan':
+			case 'reza':
+			case 'loan_reza':
+				//Prêts - Réservations
+				$loan_reza_item="<ul class='empr_subtabs'>";
+				if ($allow_loan){
+					$loan_reza_item .= "
+						<li ".(($lvl=="all") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=loan_reza&lvl=all#empr-loan'>".htmlentities($msg[empr_bt_show_all],ENT_QUOTES,$charset)."</a></li>
+					";
 				}
-				if(($opac_allow_self_checkout==2 || $opac_allow_self_checkout==3) && ($allow_self_checkout)){
-					$loan_item .= "<li><a href='./empr.php?tab=loan&lvl=retour'>".htmlentities($msg["empr_bt_checkin"],ENT_QUOTES,$charset)."</a></li>";
-				}				
-			}
-			
-			$loan_item."</ul>";	
-			$subitems = str_replace("!!subonglet!!",$loan_item,$subitems);
-			break;
-		case 'reza':
-			//Mes resa
-			if ($opac_resa_planning && $allow_book) {
-				$resa_item="<ul class='empr_subtabs'>";
-				$resa_item .= "<li><a href='./empr.php?tab=reza&lvl=resa'>".htmlentities($msg[empr_bt_show_resa],ENT_QUOTES,$charset)."</a></li>";
-				$resa_item .= "<li><a href='./empr.php?tab=reza&lvl=resa_planning'>".htmlentities($msg[empr_bt_show_resa_planning],ENT_QUOTES,$charset)."</a></li>";
-				$resa_item."</ul>";
-			} else {
-				$resa_item = "";
-			}
-			$subitems = str_replace("!!subonglet!!",$resa_item,$subitems);
-			break;
-		case 'dsi':
-			//Mes abonnements
-			$abo_item ="<ul class='empr_subtabs'>";
-			if (($opac_dsi_active) && ($allow_dsi || $allow_dsi_priv)){
-				$abo_item .="<li><a href='./empr.php?tab=dsi&lvl=bannette'>".htmlentities($msg[dsi_bannette_acceder],ENT_QUOTES,$charset)."</a></li>"; 
-			}
-			if ((($opac_show_categ_bannette && $opac_allow_resiliation) || $opac_allow_bannette_priv) && ($allow_dsi || $allow_dsi_priv)){
-				$abo_item .="<li><a href='./empr.php?tab=dsi&lvl=bannette_gerer'>".htmlentities($msg[dsi_bannette_gerer],ENT_QUOTES,$charset)."</a></li>"; 
-			}
-			if ($opac_allow_bannette_priv && $allow_dsi_priv){
-				$abo_item .="<li><a href='./index.php?tab=dsi&bt_cree_bannette_priv=1&search_type_asked=extended_search'>".htmlentities($msg[dsi_bt_bannette_priv],ENT_QUOTES,$charset)."</a></li>"; 
-			}
-			$abo_item.="</ul>";
-			$subitems = str_replace("!!subonglet!!",$abo_item,$subitems);
-			break;
-		case 'sugg':
-			//Mes suggestions
-			if ($opac_show_suggest && $allow_sugg) {
-				$sugg_onglet="
-						<ul class='empr_subtabs'>";
-				if ($allow_sugg) {
-					$sugg_onglet .= "<li><a href='./empr.php?tab=sugg&lvl=make_sugg'>".htmlentities($msg[empr_bt_make_sugg],ENT_QUOTES,$charset)."</a></li>";
-					if($opac_allow_multiple_sugg) $sugg_onglet .= "<li><a href='./empr.php?tab=sugg&lvl=make_multi_sugg'>".htmlentities($msg[empr_bt_make_mul_sugg],ENT_QUOTES,$charset)."</a></li>";
+				if ($allow_loan_hist){
+					$loan_reza_item .= "
+						<li ".(($lvl=="old") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=loan&lvl=old'>".htmlentities($msg[empr_bt_show_old],ENT_QUOTES,$charset)."</a></li>
+					";
 				}
-				$sugg_onglet .= "<li><a href='./empr.php?tab=sugg&lvl=view_sugg'>".htmlentities($msg[empr_bt_view_sugg],ENT_QUOTES,$charset)."</a></li>";
-				$sugg_onglet .="</ul>";
-			}
-			$subitems = str_replace("!!subonglet!!",$sugg_onglet,$subitems);
-			break;
-		case 'lecture':
-			//Mes listes de lecture
-			if($opac_shared_lists && $allow_liste_lecture){		
-				$liste_onglet = "		
-					<ul class='empr_subtabs'>		
-						<li><a href='./empr.php?tab=lecture&lvl=private_list'>".htmlentities($msg['list_lecture_show_my_list'],ENT_QUOTES,$charset)."</a></li>
-						<li><a href='./empr.php?tab=lecture&lvl=public_list'>".htmlentities($msg['list_lecture_show_public_list'],ENT_QUOTES,$charset)."</a></li>
-						<li><a href='./empr.php?tab=lecture&lvl=demande_list'>".htmlentities($msg['list_lecture_show_my_requests'],ENT_QUOTES,$charset)."</a></li>
-					</ul>
-				";
-			}
-			$subitems = str_replace("!!subonglet!!",$liste_onglet,$subitems);
-			break;
-		case 'request':
-			//Mes demandes de recherche
-			if($demandes_active && $opac_demandes_active && $allow_dema){
-				$demandes_onglet ="	
-					<ul class='empr_subtabs'>		
-						<li><a href='./empr.php?tab=request&lvl=do_dmde'>".htmlentities($msg['demandes_do_search'],ENT_QUOTES,$charset)."</a></li>
-						<li><a href='./empr.php?tab=request&lvl=list_dmde'>".htmlentities($msg['demandes_list'],ENT_QUOTES,$charset)."</a></li>
-					</ul>
-				";
-			}
-			$subitems = str_replace("!!subonglet!!",$demandes_onglet,$subitems);
-			break;
-		case "serialcirc" :
-			if($opac_serialcirc_active){
-				$nb_virtual = count(serialcirc_empr::get_virtual_abo());
-				$serialcirc_submenu = "
-						<ul class='empr_subtabs'>		
-							<li id='empr_menu_serialcirc_list_abo'><a href='./empr.php?tab=serialcirc&lvl=list_abo'>".htmlentities($msg['serialcirc_list_abo'],ENT_QUOTES,$charset)."</a></li>
-							<li id='empr_menu_serialcirc_list_asked_abo'><a href='./empr.php?tab=serialcirc&lvl=list_virtual_abo'>".htmlentities($msg['serialcirc_list_asked_abo']."(".$nb_virtual.")",ENT_QUOTES,$charset)."</a></li>
-							<li id='empr_menu_serialcirc_pointer'><a href='./empr.php?tab=serialcirc&lvl=point'>".htmlentities($msg['serialcirc_pointer'],ENT_QUOTES,$charset)."</a></li>
-							<li id='empr_menu_serialcirc_add_resa'><a href='./empr.php?tab=serialcirc&lvl=add_resa'>".htmlentities($msg['serialcirc_add_resa'],ENT_QUOTES,$charset)."</a></li>
-							<li id='empr_menu_serialcirc_ask_copy'><a href='./empr.php?tab=serialcirc&lvl=copy'>".htmlentities($msg['serialcirc_ask_copy'],ENT_QUOTES,$charset)."</a></li>
-							<li id='empr_menu_serialcirc_ask_menu'><a href='./empr.php?tab=serialcirc&lvl=ask'>".htmlentities($msg['serialcirc_ask_menu'],ENT_QUOTES,$charset)."</a></li>
-						</ul>";
-				$subitems = str_replace("!!subonglet!!",$serialcirc_submenu,$subitems);
+				if ($allow_book) {
+					if ($opac_resa) {
+						$loan_reza_item .= "<li ".(($lvl=="all") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=loan_reza&lvl=all#empr-resa'>".htmlentities($msg[empr_bt_show_resa],ENT_QUOTES,$charset)."</a></li>";
+					}
+					if ($opac_resa_planning) {
+						$loan_reza_item .= "<li ".(($lvl=="resa_planning") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=reza&lvl=resa_planning'>".htmlentities($msg[empr_bt_show_resa_planning],ENT_QUOTES,$charset)."</a></li>";
+					}
+				}
+				if($opac_allow_self_checkout){
+					if(($opac_allow_self_checkout==1 || $opac_allow_self_checkout==3) && ($allow_self_checkout)) {
+						$loan_reza_item .= "<li ".(($lvl=="pret") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=loan&lvl=pret'>".htmlentities($msg["empr_bt_checkout"],ENT_QUOTES,$charset)."</a></li>";
+					}
+					if(($opac_allow_self_checkout==2 || $opac_allow_self_checkout==3) && ($allow_self_checkout)){
+						$loan_reza_item .= "<li ".(($lvl=="retour") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=loan&lvl=retour'>".htmlentities($msg["empr_bt_checkin"],ENT_QUOTES,$charset)."</a></li>";
+					}
+				}
+					
+				$loan_reza_item."</ul>";
+				$subitems = str_replace("!!subonglet!!",$loan_reza_item,$subitems);
 				break;
-			}
-		default:			
-			if (function_exists('empr_extended_tab_default')){
-				if(empr_extended_tab_default($tab))break;
-			}			
-			//Mon Compte
-			$my_account_item = "<ul class='empr_subtabs'>";
-			if (!$empr_ldap && $allow_pwd){
-				$my_account_item .= "<li><a id='change_password' href='./empr.php?lvl=change_password'>".htmlentities($msg['empr_modify_password'],ENT_QUOTES,$charset)."</a></li>";
-			}
-			$my_account_item.="</ul>";
-			$subitems = str_replace("!!subonglet!!",$my_account_item,$subitems);
-			break;
+			case 'dsi':
+				//Mes abonnements
+				$abo_item ="<ul class='empr_subtabs'>";
+				if (($opac_dsi_active) && ($allow_dsi || $allow_dsi_priv)){
+					$abo_item .="<li ".(($lvl=="bannette") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=dsi&lvl=bannette'>".htmlentities($msg[dsi_bannette_acceder],ENT_QUOTES,$charset)."</a></li>"; 
+				}
+				if ((($opac_show_categ_bannette && $opac_allow_resiliation) || $opac_allow_bannette_priv) && ($allow_dsi || $allow_dsi_priv)){
+					$abo_item .="<li ".(($lvl=="bannette_gerer") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=dsi&lvl=bannette_gerer'>".htmlentities($msg[dsi_bannette_gerer],ENT_QUOTES,$charset)."</a></li>"; 
+				}
+				if ($opac_allow_bannette_priv && $allow_dsi_priv){
+					$abo_item .="<li ".(($bt_cree_bannette_priv=="1") ? "class=\"subTabCurrent\"" : "" )."><a href='./index.php?tab=dsi&bt_cree_bannette_priv=1&search_type_asked=extended_search'>".htmlentities($msg[dsi_bt_bannette_priv],ENT_QUOTES,$charset)."</a></li>"; 
+				}
+				$abo_item.="</ul>";
+				$subitems = str_replace("!!subonglet!!",$abo_item,$subitems);
+				break;
+			case 'sugg':
+				//Mes suggestions
+				if ($opac_show_suggest && $allow_sugg) {
+					$sugg_onglet="
+							<ul class='empr_subtabs'>";
+					if ($allow_sugg) {
+						$sugg_onglet .= "<li ".(($lvl=="make_sugg") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=sugg&lvl=make_sugg' title='".$msg["empr_bt_make_sugg"]."'>".htmlentities($msg[empr_bt_make_sugg],ENT_QUOTES,$charset)."</a></li>";
+						if($opac_allow_multiple_sugg) $sugg_onglet .= "<li ".(($lvl=="make_multi_sugg") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=sugg&lvl=make_multi_sugg'>".htmlentities($msg[empr_bt_make_mul_sugg],ENT_QUOTES,$charset)."</a></li>";
+					}
+					$sugg_onglet .= "<li ".(($lvl=="view_sugg") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=sugg&lvl=view_sugg'>".htmlentities($msg[empr_bt_view_sugg],ENT_QUOTES,$charset)."</a></li>";
+					$sugg_onglet .="</ul>";
+				}
+				$subitems = str_replace("!!subonglet!!",$sugg_onglet,$subitems);
+				break;
+			case 'lecture':
+				//Mes listes de lecture
+				if($opac_shared_lists && $allow_liste_lecture){		
+					$liste_onglet = "		
+						<ul class='empr_subtabs'>		
+							<li ".(($lvl=="private_list") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=lecture&lvl=private_list'>".htmlentities($msg['list_lecture_show_my_list'],ENT_QUOTES,$charset)."</a></li>
+							<li ".(($lvl=="public_list") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=lecture&lvl=public_list'>".htmlentities($msg['list_lecture_show_public_list'],ENT_QUOTES,$charset)."</a></li>
+							<li ".(($lvl=="demande_list") ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=lecture&lvl=demande_list'>".htmlentities($msg['list_lecture_show_my_requests'],ENT_QUOTES,$charset)."</a></li>
+						</ul>
+					";
+				}
+				$subitems = str_replace("!!subonglet!!",$liste_onglet,$subitems);
+				break;
+			case 'request':
+				//Mes demandes de recherche
+				if($demandes_active && $opac_demandes_active && $allow_dema){
+					$demandes_onglet =htmlentities($msg['demandes_open_type'],ENT_QUOTES,$charset)."
+						<ul class='empr_subtabs'>";		
+					$demandes_onglet .="<li ".(($lvl=="list_dmde" && isset($sub)) ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=request&lvl=list_dmde&sub=add_demande'>".htmlentities($msg['demandes_add'],ENT_QUOTES,$charset)."</a></li>";
+					$demandes_onglet .="<li ".(($lvl=="list_dmde" && !isset($sub)) ? "class=\"subTabCurrent\"" : "" )."><a href='./empr.php?tab=request&lvl=list_dmde&view=all'>".htmlentities($msg['demandes_list'],ENT_QUOTES,$charset)."</a></li>
+						</ul>
+					";
+				}
+				$subitems = str_replace("!!subonglet!!",$demandes_onglet,$subitems);
+				break;
+			case "serialcirc" :
+				if($opac_serialcirc_active){
+					$nb_virtual = count(serialcirc_empr::get_virtual_abo());
+					$serialcirc_submenu = "
+							<ul class='empr_subtabs'>		
+								<li id='empr_menu_serialcirc_list_abo' ".(($lvl=="list_abo" && !isset($sub)) ? "class='subTabCurrent'" : "" )."><a href='./empr.php?tab=serialcirc&lvl=list_abo'>".htmlentities($msg['serialcirc_list_abo'],ENT_QUOTES,$charset)."</a></li>
+								<li id='empr_menu_serialcirc_list_asked_abo' ".(($lvl=="list_virtual_abo" && !isset($sub)) ? "class='subTabCurrent'" : "" )."><a href='./empr.php?tab=serialcirc&lvl=list_virtual_abo'>".htmlentities($msg['serialcirc_list_asked_abo']."(".$nb_virtual.")",ENT_QUOTES,$charset)."</a></li>
+								<li id='empr_menu_serialcirc_pointer' ".(($lvl=="point" && !isset($sub)) ? "class='subTabCurrent'" : "" )."><a href='./empr.php?tab=serialcirc&lvl=point'>".htmlentities($msg['serialcirc_pointer'],ENT_QUOTES,$charset)."</a></li>
+								<li id='empr_menu_serialcirc_add_resa' ".(($lvl=="add_resa" && !isset($sub)) ? "class='subTabCurrent'" : "" )."><a href='./empr.php?tab=serialcirc&lvl=add_resa'>".htmlentities($msg['serialcirc_add_resa'],ENT_QUOTES,$charset)."</a></li>
+								<li id='empr_menu_serialcirc_ask_copy' ".(($lvl=="copy" && !isset($sub)) ? "class='subTabCurrent'" : "" )."><a href='./empr.php?tab=serialcirc&lvl=copy'>".htmlentities($msg['serialcirc_ask_copy'],ENT_QUOTES,$charset)."</a></li>
+								<li id='empr_menu_serialcirc_ask_menu' ".(($lvl=="ask" && !isset($sub)) ? "class='subTabCurrent'" : "" )."><a href='./empr.php?tab=serialcirc&lvl=ask'>".htmlentities($msg['serialcirc_ask_menu'],ENT_QUOTES,$charset)."</a></li>
+							</ul>";
+					$subitems = str_replace("!!subonglet!!",$serialcirc_submenu,$subitems);
+					break;
+				}
+			default:			
+				if (function_exists('empr_extended_tab_default')){
+					if(empr_extended_tab_default($tab))break;
+				}			
+				//Mon Compte
+				$my_account_item = "<ul class='empr_subtabs'>";
+				if (!$empr_ldap && $allow_pwd){
+					$my_account_item .= "<li ".(($lvl=="change_password") ? "class=\"subTabCurrent\"" : "" )."><a id='change_password' href='./empr.php?lvl=change_password'>".htmlentities($msg['empr_modify_password'],ENT_QUOTES,$charset)."</a></li>";
+				}
+				$my_account_item.="</ul>";
+				$subitems = str_replace("!!subonglet!!",$my_account_item,$subitems);
+				break;
+		}
+		print $subitems;
 	}
-	print $subitems;
 	switch($lvl) {
 		case 'change_password':
 				$change_password_checked =" checked";
@@ -392,10 +398,19 @@ if ($log_ok) {
 				break;
 		case 'all':
 				$all_checked =" checked";
-				print "<div id='empr-all'>\n";
-				print "<h3><span>$msg[empr_loans]</span></h3>";
-				$critere_requete=" AND empr.empr_login='$login' order by pret_retour ";
+				if (!$dest) {
+					print "<div id='empr-all'>\n";
+					print "<h3><span>$msg[empr_loans]</span></h3>";
+				}
+				$critere_requete=" AND empr.empr_login='$login' order by location_libelle, pret_retour ";
 				require_once($base_path.'/empr/all.inc.php');
+				print "</div>";
+				print "<div id='empr-resa'>\n";
+				if ($allow_book) {
+					include($base_path.'/includes/resa.inc.php');
+				} else {
+					print $msg[empr_no_allow_book];
+				}
 				print "</div>";
 				break;
 		case 'old':
@@ -404,14 +419,16 @@ if ($log_ok) {
 				require_once($base_path.'/empr/old.inc.php');
 				print "</div>\n";
 				break;
-		case 'resa':
-				print "<div id='empr-resa'>\n";
-				if ($allow_book) include($base_path.'/includes/resa.inc.php');
-				else print $msg[empr_no_allow_book];
-				print "</div>";
-				break;
+// 		case 'resa':
+// 				print "<div id='empr-resa'>\n";
+// 				if ($allow_book) include($base_path.'/includes/resa.inc.php');
+// 				else print $msg[empr_no_allow_book];
+// 				print "</div>";
+// 				break;
 		case 'resa_planning':
+				print "<div id='empr-resa'>\n";
 				include($base_path.'/includes/resa_planning.inc.php');
+				print "</div>";
 				break;
 		case 'bannette':
 				print "<div id='empr-dsi'>\n";
@@ -484,24 +501,18 @@ if ($log_ok) {
 			require_once($base_path.'/empr/liste_lecture.inc.php');
 			print "</div>";
 			break;		
-		case 'do_dmde':
-			print "<div id='empr-dema'>\n";
-			if ($allow_dema) require_once($base_path.'/empr/make_demande.inc.php');
-			else print $msg[empr_no_allow_dema];
-			print "</div>";
-			break;
 		case 'list_dmde':
 			print "<div id='empr-dema'>\n";
-			if ($allow_dema) require_once($base_path.'/empr/liste_demande.inc.php');
+			if ($allow_dema) {
+				require_once($class_path."/demandes.class.php");
+				$tmp = demandes::get_first_tab();
+				if($tmp && !$sub){
+					$sub = $tmp;
+				}
+				require_once($base_path.'/empr/liste_demande.inc.php');
+			}
 			else print $msg[empr_no_allow_dema];
 			print "</div>";
-			break;
-		case 'late':
-			print "<div id='empr-late'>\n";			
-			print "<h3><span>$msg[empr_late]</span></h3>";
-			$critere_requete=" AND pret_retour < '".date('Y-m-d')."' AND empr.empr_login='$login' order by pret_retour ";
-			require_once($base_path.'/empr/all.inc.php');
-			print "</div>\n";
 			break;		
 		case 'pret':
 			print "<div id='empr-sugg'>\n";	
@@ -590,11 +601,23 @@ if ($opac_show_bandeaugauche==0) {
 		$loginform__ = genere_form_connexion_empr();
 	} else {
 		$loginform__.="<b>".$empr_prenom." ".$empr_nom."</b><br />\n";
-		$loginform__.="<a href=\"empr.php\" id=\"empr_my_account\">".$msg["empr_my_account"]."</a><br />
-				<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
+		$loginform__.="<select name='empr_quick_access' onchange='if (this.value) window.location.href=this.value'>
+				<option value=''>".$msg["empr_quick_access"]."</option>
+				<option value='empr.php'>".$msg["empr_my_account"]."</option>";
+		if ($allow_loan || $allow_loan_hist) {
+			$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-loan'>".$msg["empr_my_loans"]."</option>";
+		}
+		if ($allow_book && $opac_resa) {
+			$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-resa'>".$msg["empr_my_resas"]."</option>";
+		}
+		if ($opac_demandes_active && $allow_dema) {
+			$loginform__.="<option value='empr.php?tab=request&lvl=list_dmde'>".$msg["empr_my_dmde"]."</option>";
+		}
+		$loginform__.="</select><br />";
+		$loginform__.="<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
 	}
 	$loginform = str_replace("!!login_form!!",$loginform__,$loginform);
-	$footer= str_replace("!!contenu_bandeau!!",$home_on_left.$loginform.$meteo.$adresse,$footer);
+	$footer= str_replace("!!contenu_bandeau!!",($opac_accessibility ? $accessibility : "").$home_on_left.$loginform.$meteo.$adresse,$footer);
 	$footer= str_replace("!!contenu_bandeau_2!!",$opac_facette_in_bandeau_2?$lvl1.$facette:"",$footer);
 }
 
@@ -651,9 +674,9 @@ if($pmb_logs_activate){
 			left join pret on e.id_empr=pret_idempr
 			where e.empr_login='".addslashes($login)."'
 			group by resa_idempr, pret_idempr";
-	$res=mysql_query($rqt);
+	$res=pmb_mysql_query($rqt);
 	if($res){
-		$empr_carac = mysql_fetch_array($res);
+		$empr_carac = pmb_mysql_fetch_array($res);
 		$log->add_log('empr',$empr_carac);
 	}
 	$log->add_log('num_session',session_id());
@@ -683,8 +706,47 @@ if($opac_parse_html || $cms_active){
 		$cms=new cms_build();
 		$htmltoparse = $cms->transform_html($htmltoparse);
 	}
+	
+ 	//Compression CSS
+	if($opac_compress_css == 1 && !$cms_active){
+		$compressed_file_exist = file_exists("./temp/full.css");
+		require_once($class_path."/curl.class.php");
+		$dom = new DOMDocument();
+		$dom->encoding = $charset;
+		$dom->loadHTML($htmltoparse);
+		$css_buffer = "";
+		$links = $dom->getElementsByTagName("link");
+		$dom_css = array();
+		for($i=0 ; $i<$links->length ; $i++){
+			$dom_css[] = $links->item($i);
+			if(!$compressed_file_exist && $links->item($i)->hasAttribute("type") && $links->item($i)->getAttribute("type") == "text/css"){
+				$css_buffer.= loadandcompresscss(html_entity_decode($links->item($i)->getAttribute("href")));
+			}
+		}
+		$styles = $dom->getElementsByTagName("style");
+		for($i=0 ; $i<$styles->length ; $i++){
+			$dom_css[] = $styles->item($i);
+			if(!$compressed_file_exist){
+				$css_buffer.= compresscss($styles->item($i)->nodeValue,"");
+			}
+		}
+		foreach($dom_css as $link){
+			$link->parentNode->removeChild($link);
+		}
+		if(!$compressed_file_exist){
+			file_put_contents("./temp/full.css",$css_buffer);
+		}
+		$link = $dom->createElement("link");
+		$link->setAttribute("href", "./temp/full.css");
+		$link->setAttribute("rel", "stylesheet");
+		$link->setAttribute("type", "text/css");
+		$dom->getElementsByTagName("head")->item(0)->appendChild($link);
+		$htmltoparse = $dom->saveHTML();
+	}else if (file_exists("./temp/full.css") && !$cms_active){
+		unlink("./temp/full.css");
+	}
 	print $htmltoparse;
 }
 /* Fermeture de la connexion */
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 ?>

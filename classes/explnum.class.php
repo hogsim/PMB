@@ -2,12 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum.class.php,v 1.59.2.1 2015-03-30 11:51:45 jpermanne Exp $
+// $Id: explnum.class.php,v 1.64 2015-04-03 11:16:20 jpermanne Exp $
 
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
-
+if ($gestion_acces_active==1) {
+	require_once("$class_path/acces.class.php");
+}
 require_once($class_path."/zip.class.php");
 require_once($class_path."/upload_folder.class.php");
 require_once($class_path."/docs_location.class.php");
@@ -15,6 +17,7 @@ require_once($include_path."/explnum.inc.php");
 require_once($class_path."/indexation_docnum.class.php");
 require_once($class_path."/diarization_docnum.class.php");
 require_once($class_path."/notice.class.php");
+require_once($class_path."/index_concept.class.php");
 // classe de gestion des exemplaires numériques
 
 if ( ! defined( 'EXPLNUM_CLASS' ) ) {
@@ -44,20 +47,21 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 		var $infos_docnum = array();
 		var $params = array();
 		var $unzipped_files = array();
+		var $explnum_docnum_statut = '1';
 		
 		// constructeur
 		function explnum($id=0, $id_notice=0, $id_bulletin=0) {
-			global $dbh, $pmb_indexation_docnum_default;
+			global $dbh, $pmb_indexation_docnum_default, $deflt_explnum_statut;
 			$this->unzipped_files = array();
 			if ($id) {
 		
 				$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_extfichier, explnum_url, explnum_data, explnum_vignette, 
-				explnum_statut, explnum_index_sew, explnum_index_wew, explnum_repertoire, explnum_nomfichier, explnum_path, repertoire_nom, repertoire_path, group_concat(num_location SEPARATOR ',') as loc
+				explnum_statut, explnum_index_sew, explnum_index_wew, explnum_repertoire, explnum_nomfichier, explnum_path, repertoire_nom, repertoire_path, group_concat(num_location SEPARATOR ',') as loc, explnum_docnum_statut
 				 FROM explnum left join upload_repertoire on explnum_repertoire=repertoire_id left join explnum_location on num_explnum=explnum_id where explnum_id='$id' group by explnum_id";
-				$result = mysql_query($requete, $dbh);
+				$result = pmb_mysql_query($requete, $dbh);
 				
-				if(mysql_num_rows($result)) {
-					$item = mysql_fetch_object($result);
+				if(pmb_mysql_num_rows($result)) {
+					$item = pmb_mysql_fetch_object($result);
 					$this->explnum_id        = $item->explnum_id       ;
 					$this->explnum_notice    = $item->explnum_notice   ;
 					$this->explnum_bulletin  = $item->explnum_bulletin ;
@@ -77,11 +81,12 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					$this->explnum_nomfichier = $item->explnum_nomfichier;
 					$this->explnum_ext = $item->explnum_extfichier;
 					$this->explnum_location = $item->loc ? explode(",",$item->loc) : '';
+					$this->explnum_docnum_statut = $item->explnum_docnum_statut;
 				} else { // rien trouvé en base, on va faire comme pour une création
 						$req = "select repertoire_nom, repertoire_path from  upload_repertoire, users where repertoire_id=deflt_upload_repertoire and username='".SESSlogin."'";
-						$res = mysql_query($req,$dbh);
-						if(mysql_num_rows($res)){
-							$item = mysql_fetch_object($res);
+						$res = pmb_mysql_query($req,$dbh);
+						if(pmb_mysql_num_rows($res)){
+							$item = pmb_mysql_fetch_object($res);
 							$this->explnum_rep_nom = $item->repertoire_nom;
 							$this->explnum_rep_path = $item->repertoire_path;
 						} else {
@@ -103,13 +108,14 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 						$this->explnum_nomfichier = '';
 						$this->explnum_ext = '';
 						$this->explnum_location= '';
+						$this->explnum_docnum_statut= ($deflt_explnum_statut ? $deflt_explnum_statut : '1');
 				}
 				
 			} else { // rien de fourni apparemment : création
 				$req = "select repertoire_id, repertoire_nom, repertoire_path from  upload_repertoire, users where repertoire_id=deflt_upload_repertoire and username='".SESSlogin."'";
-				$res = mysql_query($req,$dbh);
-				if(mysql_num_rows($res)){
-					$item = mysql_fetch_object($res);
+				$res = pmb_mysql_query($req,$dbh);
+				if(pmb_mysql_num_rows($res)){
+					$item = pmb_mysql_fetch_object($res);
 					$this->explnum_rep_nom = $item->repertoire_nom;
 					$this->explnum_rep_path = $item->repertoire_path;
 					$this->explnum_repertoire = $item->repertoire_id;
@@ -132,6 +138,7 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 				$this->explnum_nomfichier='';
 				$this->explnum_ext = '';
 				$this->explnum_location = '';
+				$this->explnum_docnum_statut= ($deflt_explnum_statut ? $deflt_explnum_statut : '1');
 			}
 		}	
 		
@@ -148,6 +155,7 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			global $explnum_id;
 			global $pmb_diarization_docnum;
 			global $base_path;
+			global $thesaurus_concepts_active;
 			
 			$form = str_replace('!!action!!', $action, $form);
 			$form = str_replace('!!explnum_id!!', $this->explnum_id, $form);
@@ -222,9 +230,9 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			if ($this->explnum_id) {
 				$nb = 0;
 				$query = "select count(*) as nb from explnum_segments where explnum_segment_explnum_num = ".$this->explnum_id;
-				$result = mysql_query($query);
-				if ($result && mysql_num_rows($result)) {
-					$nb = mysql_fetch_object($result)->nb;
+				$result = pmb_mysql_query($query);
+				if ($result && pmb_mysql_num_rows($result)) {
+					$nb = pmb_mysql_fetch_object($result)->nb;
 				}
 				if ($nb > 0) {
 					$associer = "<input type='button' class='bouton' value=\"".$msg['associate_speakers']."\" name='associate_speakers' id='associate_speakers' onClick=\"document.location = '".$base_path."/catalog.php?categ=explnum_associate&explnum_id=".$this->explnum_id."';\" />";
@@ -248,6 +256,8 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			}
 			$form = str_replace("!!associate_speakers!!", $associer, $form);
 			$form = str_replace("!!fct_conf_diarize_again!!", $fct, $form);
+			
+			$form = str_replace("!!rights_form!!",$this->get_rights_form(),$form);
 			
 			// Ajout du bouton supprimer si modification
 			if ($this->explnum_id && $suppr)
@@ -328,9 +338,9 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			if ($explnum_id) {
 				if (!$this->explnum_location) {
 					$requete = "select idlocation from docs_location";
-					$res = mysql_query($requete);
+					$res = pmb_mysql_query($requete);
 					$i=0;
-					while ($row = mysql_fetch_array($res)) {
+					while ($row = pmb_mysql_fetch_array($res)) {
 						$liste_id[$i] = $row["idlocation"];
 						$i++;
 					}
@@ -346,6 +356,18 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			$selector_location = $docloc->gen_multiple_combo($liste_id);
 			
 			$form = str_replace('!!location_explnum!!',"<div class='row'><label class='etiquette'>".htmlentities($msg['empr_location'],ENT_QUOTES,$charset)."</label></div>".$selector_location,$form);
+		
+			// statut
+			$select_statut = gen_liste_multiple ("select id_explnum_statut, gestion_libelle from explnum_statut order by 2", "id_explnum_statut", "gestion_libelle", "id_explnum_statut", "f_explnum_statut", "", $this->explnum_docnum_statut, "", "","","",0) ;
+			$form = str_replace('!!statut_list!!', $select_statut, $form);
+			
+			// Indexation concept
+			if($thesaurus_concepts_active == 1){
+				$index_concept = new index_concept($this->explnum_id, TYPE_EXPLNUM);
+				$form = str_replace('!!index_concept_form!!', $index_concept->get_form('explnum'), $form);
+			}else{
+				$form = str_replace('!!index_concept_form!!',	"",	$form);
+			}
 		}
 		
 		/*
@@ -372,10 +394,10 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 		/*
 		 * Mise à jour des documents numériques
 		 */
-		function mise_a_jour($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk){
+		function mise_a_jour($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk, $f_explnum_statut){
 			global $multi_ck, $base_path;
 			
-			$this->recuperer_explnum($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk);
+			$this->recuperer_explnum($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk, $f_explnum_statut);
 			if($multi_ck){
 				//Gestion multifichier
 									
@@ -402,12 +424,12 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			}elseif($f_bulletin){
 				// Mise a jour de la table notices_mots_global_index pour toutes les notices en relation avec l'exemplaire
 				$req_maj="SELECT bulletin_notice,num_notice FROM bulletins WHERE bulletin_id='".$f_bulletin."'";
-				$res_maj=mysql_query($req_maj);
-				if($res_maj && mysql_num_rows($res_maj)){
-					if($tmp=mysql_result($res_maj,0,0)){//Périodique
+				$res_maj=pmb_mysql_query($req_maj);
+				if($res_maj && pmb_mysql_num_rows($res_maj)){
+					if($tmp=pmb_mysql_result($res_maj,0,0)){//Périodique
 						notice::majNoticesMotsGlobalIndex($tmp,"explnum");
 					}
-					if($tmp=mysql_result($res_maj,0,1)){//Notice de bulletin
+					if($tmp=pmb_mysql_result($res_maj,0,1)){//Notice de bulletin
 						notice::majNoticesMotsGlobalIndex($tmp,"explnum");
 					}
 				}
@@ -429,17 +451,21 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					unlink($chemin);				
 			}
 			$requete = "DELETE FROM explnum WHERE explnum_id=".$this->explnum_id;
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 			//on oublie pas la localisation associé
 			$requete = "delete from explnum_location where num_explnum = ".$this->explnum_id;
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 			
 			// Suppression des segments et locuteurs
 			$requete = "delete from explnum_speakers where explnum_speaker_explnum_num = ".$this->explnum_id;
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 			
 			$requete = "delete from explnum_segments where explnum_segment_explnum_num = ".$this->explnum_id;
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
+			
+			// Nettoyage indexation concepts
+			$index_concept = new index_concept($this->explnum_id, TYPE_EXPLNUM);
+			$index_concept->delete();
 			
 			//On recalcule l'index global pour la notice
 			if($this->explnum_notice){
@@ -448,12 +474,12 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			}elseif($this->explnum_bulletin){
 				// Mise a jour de la table notices_mots_global_index pour toutes les notices en relation avec l'exemplaire
 				$req_maj="SELECT bulletin_notice,num_notice FROM bulletins WHERE bulletin_id='".$this->explnum_bulletin."'";
-				$res_maj=mysql_query($req_maj);
-				if($res_maj && mysql_num_rows($res_maj)){
-					if($tmp=mysql_result($res_maj,0,0)){//Périodique
+				$res_maj=pmb_mysql_query($req_maj);
+				if($res_maj && pmb_mysql_num_rows($res_maj)){
+					if($tmp=pmb_mysql_result($res_maj,0,0)){//Périodique
 						notice::majNoticesMotsGlobalIndex($tmp,"explnum");
 					}
-					if($tmp=mysql_result($res_maj,0,1)){//Notice de bulletin
+					if($tmp=pmb_mysql_result($res_maj,0,1)){//Notice de bulletin
 						notice::majNoticesMotsGlobalIndex($tmp,"explnum");
 					}
 				}
@@ -468,6 +494,9 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			global $current_module, $pmb_explnum_statut;
 			global $id_rep, $up_place;
 			global $mime_vign;
+			global $gestion_acces_active,$gestion_acces_empr_docnum;
+			global $res_prf, $chk_rights, $prf_rad, $r_rad;
+			global $thesaurus_concepts_active;
 
 			$update = false;
 			if ($this->explnum_id) {
@@ -502,13 +531,25 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 				}	
 				$requete.= ", explnum_repertoire='".(($up_place)?$id_rep:0)."'";
 				$requete.= ", explnum_path='".$this->infos_docnum["path"]."'";
-				
+				$requete.= ", explnum_docnum_statut='".$this->params["explnum_statut"]."'";
 				$requete .= $limiter;
 				
-				mysql_query($requete, $dbh) ;
+				pmb_mysql_query($requete, $dbh) ;
 				
 				if(!$update)
-					$this->explnum_id = mysql_insert_id();
+					$this->explnum_id = pmb_mysql_insert_id();
+				
+
+				//traitement des droits acces user_docnum
+				if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+					$ac = new acces();
+					$dom_3 = $ac->setDomain(3);
+					if ($update) {
+						$dom_3->storeUserRights(1, $this->explnum_id, $res_prf, $chk_rights, $prf_rad, $r_rad);
+					} else {
+						$dom_3->storeUserRights(0, $this->explnum_id, $res_prf, $chk_rights, $prf_rad, $r_rad);
+					}
+				}
 				
 				//Indexation du document
 				global $pmb_indexation_docnum;							   			
@@ -517,12 +558,12 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					if(!$mime_vign && !$this->params["conservervignette"] && !$this->infos_docnum["vignette_name"]){
 						if($vign_index){
 							$req_mime = "update explnum set explnum_vignette='".addslashes($vign_index)."' where explnum_id='".$this->explnum_id."'";
-							mysql_query($req_mime,$dbh);
+							pmb_mysql_query($req_mime,$dbh);
 						}else{
 							$contenu_vignette = construire_vignette("", "",$this->infos_docnum["url"]);
 							if($contenu_vignette){
 								$req_mime = "update explnum set explnum_vignette='".addslashes($contenu_vignette)."' where explnum_id='".$this->explnum_id."'";
-								mysql_query($req_mime,$dbh);
+								pmb_mysql_query($req_mime,$dbh);
 							}
 						}
 					}
@@ -530,7 +571,7 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					$contenu_vignette = construire_vignette("", "",$this->infos_docnum["url"]);
 					if($contenu_vignette){
 						$req_mime = "update explnum set explnum_vignette='".addslashes($contenu_vignette)."' where explnum_id='".$this->explnum_id."'";
-						mysql_query($req_mime,$dbh);
+						pmb_mysql_query($req_mime,$dbh);
 					}
 				}
 				
@@ -540,24 +581,30 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					$this->diarization_docnum();
 				}
 
+				// Indexation concepts
+				if($thesaurus_concepts_active == 1){
+					$index_concept = new index_concept($this->explnum_id, TYPE_EXPLNUM);
+					$index_concept->save();
+				}
+				
 				//On enregistre la ou les localisations
 				global $loc_selector;
 				if($update){
 					$req = "delete from explnum_location where num_explnum='".$this->explnum_id."'";
-					mysql_query($req,$dbh);
+					pmb_mysql_query($req,$dbh);
 				}
 				if((count($loc_selector) == 1) && ($loc_selector[0] == -1)){
 					//Ne rien faire
 					//$req = "select idlocation from docs_location";
-					//$res = mysql_query($req,$dbh);
-					//while($loc=mysql_fetch_object($res)){
+					//$res = pmb_mysql_query($req,$dbh);
+					//while($loc=pmb_mysql_fetch_object($res)){
 					//	$req = "replace into explnum_location set num_explnum='".$this->explnum_id."', num_location='".$loc->idlocation."'";
-					//	mysql_query($req,$dbh); 
+					//	pmb_mysql_query($req,$dbh); 
 					//}
 				} else {
 					for($i=0;$i<count($loc_selector);$i++){
 						$req = "replace into explnum_location set num_explnum='".$this->explnum_id."', num_location='".$loc_selector[$i]."'";
-						mysql_query($req,$dbh); 
+						pmb_mysql_query($req,$dbh); 
 					}
 				}
 				
@@ -566,9 +613,9 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					print "<div class='row'><div class='msg-perio'>".$msg['maj_encours']."</div></div>";
 				}
 				$id_form = md5(microtime());
-				if (mysql_error()) {
+				if (pmb_mysql_error()) {
 					if($with_print){
-						echo "MySQL error : ".mysql_error() ;
+						echo "MySQL error : ".pmb_mysql_error() ;
 						print "
 							<form class='form-$current_module' name=\"dummy\" method=\"post\" action=\"".$this->params["retour"]."\" >
 								<input type='submit' class='bouton' name=\"id_form\" value=\"Ok\">
@@ -662,8 +709,8 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					$compte=1;
 					do{
 						$query = "select explnum_notice,explnum_id,explnum_bulletin from explnum where explnum_nomfichier = '".addslashes($nom_tmp)."' AND explnum_repertoire='".$id_rep."' AND explnum_path='".addslashes($chemin)."'";
-						$result = mysql_query($query);
-						if(mysql_num_rows($result) && ((mysql_result($result,0,0) != $this->infos_docnum["notice"]) || (mysql_result($result,0,2) != $this->infos_docnum["bull"]))){//Si j'ai déjà un document numérique avec ce fichier pour une autre notice je dois le renommer pour ne pas perdre l'ancien
+						$result = pmb_mysql_query($query);
+						if(pmb_mysql_num_rows($result) && ((pmb_mysql_result($result,0,0) != $this->infos_docnum["notice"]) || (pmb_mysql_result($result,0,2) != $this->infos_docnum["bull"]))){//Si j'ai déjà un document numérique avec ce fichier pour une autre notice je dois le renommer pour ne pas perdre l'ancien
 							if(preg_match("/^(.+)(\..+)$/i",$this->infos_docnum["userfile_name"],$matches)){
 								$nom_tmp=$matches[1]."_".$compte.$matches[2];
 							}else{
@@ -671,11 +718,11 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 							}
 							$compte++;
 						}else{
-							if(mysql_num_rows($result) && (!$this->explnum_id || ($this->explnum_id != mysql_result($result,0,1)))){//J'ai déjà ce fichier pour cette notice et je ne suis pas en modification
+							if(pmb_mysql_num_rows($result) && (!$this->explnum_id || ($this->explnum_id != pmb_mysql_result($result,0,1)))){//J'ai déjà ce fichier pour cette notice et je ne suis pas en modification
 								//Je dois enlever l'ancien document numérique pour ne pas l'avoir en double
-								$old_docnum= new explnum(mysql_result($result,0,1));
+								$old_docnum= new explnum(pmb_mysql_result($result,0,1));
 								$old_docnum->delete();
-							}elseif(mysql_num_rows($result)){
+							}elseif(pmb_mysql_num_rows($result)){
 							}
 							$continue=false;
 						}
@@ -749,7 +796,7 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 		/*
 		 * Récupère les informations de l'exemplaire à ajouter à la la notice
 		 */
-		function recuperer_explnum($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette=0, $f_statut_chk=0){
+		function recuperer_explnum($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette=0, $f_statut_chk=0, $f_explnum_statut=1){
 			
 			global $scanned_image,$scanned_image_ext,$base_path ;
 			global $f_new_name, $mime_vign;
@@ -909,7 +956,8 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 			$this->params["maj_vignette"] = $maj_vignette;	
 			$this->params["retour"] = $retour;
 			$this->params["conservervignette"] = $conservervignette;
-			$this->params["statut"] = $f_statut_chk;					
+			$this->params["statut"] = $f_statut_chk;
+			$this->params["explnum_statut"] = $f_explnum_statut;
 			
 		}
 		
@@ -1273,8 +1321,8 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					$compte=1;
 					do{
 						$query = "select explnum_notice,explnum_id from explnum where explnum_nomfichier = '".addslashes($nom_tmp)."' AND explnum_repertoire='".$id_rep."' AND explnum_path='".addslashes($this->infos_docnum["path"])."'";
-						$result = mysql_query($query);
-						if(mysql_num_rows($result) && (mysql_result($result,0,0) != $this->infos_docnum["notice"])){//Si j'ai déjà un document numérique avec ce fichier pour une autre notice je dois le renommer pour ne pas perdre l'ancien
+						$result = pmb_mysql_query($query);
+						if(pmb_mysql_num_rows($result) && (pmb_mysql_result($result,0,0) != $this->infos_docnum["notice"])){//Si j'ai déjà un document numérique avec ce fichier pour une autre notice je dois le renommer pour ne pas perdre l'ancien
 							if(preg_match("/^(.+)(\..+)$/i",$this->infos_docnum["userfile_name"],$matches)){
 								$nom_tmp=$matches[1]."_".$compte.$matches[2];
 							}else{
@@ -1282,9 +1330,9 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 							}
 							$compte++;
 						}else{
-							if(mysql_num_rows($result)){//J'ai déjà ce fichier pour cette notice
+							if(pmb_mysql_num_rows($result)){//J'ai déjà ce fichier pour cette notice
 								//Je dois enlever l'ancien document numérique pour ne pas l'avoir en double
-								$old_docnum= new explnum(mysql_result($result,0,1));
+								$old_docnum= new explnum(pmb_mysql_result($result,0,1));
 								$old_docnum->delete();
 							}else{
 								
@@ -1318,12 +1366,12 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 		}
 		
 	function get_file_content(){
-		$resultat = mysql_query("SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_data, length(explnum_data) as taille,explnum_path, concat(repertoire_path,explnum_path,explnum_nomfichier) as path, repertoire_id FROM explnum left join upload_repertoire on repertoire_id=explnum_repertoire WHERE explnum_id = '".$this->explnum_id."' ");
-		$nb_res = mysql_num_rows($resultat) ;
+		$resultat = pmb_mysql_query("SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_data, length(explnum_data) as taille,explnum_path, concat(repertoire_path,explnum_path,explnum_nomfichier) as path, repertoire_id FROM explnum left join upload_repertoire on repertoire_id=explnum_repertoire WHERE explnum_id = '".$this->explnum_id."' ");
+		$nb_res = pmb_mysql_num_rows($resultat) ;
 		if (!$nb_res) {
 			exit ;
 			} 
-		$ligne = mysql_fetch_object($resultat);
+		$ligne = pmb_mysql_fetch_object($resultat);
 		if (($ligne->explnum_data)||($ligne->explnum_path)) {
 			if ($ligne->explnum_path) {
 				$up = new upload_folder($ligne->repertoire_id);
@@ -1342,7 +1390,127 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 		}
 		return $data;
 	}	
+
+	function get_rights_form(){
+		global $dbh,$msg,$charset;
+		global $gestion_acces_active, $gestion_acces_empr_docnum;
+		global $gestion_acces_empr_docnum_def;
 		
+		if ($gestion_acces_active!=1) return '';
+		$ac = new acces();
+		
+		$form = '';
+		$c_form = "<div class='row'>&nbsp;</div><div class='row'><label class='etiquette'><!-- domain_name --></label></div>
+					<div class='row'>
+			    	<div class='colonne3'>".htmlentities($msg['dom_cur_prf'],ENT_QUOTES,$charset)."</div>
+			    	<div class='colonne_suite'><!-- prf_rad --></div>
+			    	</div>
+			    	<div class='row'>
+			    	<div class='colonne3'>".htmlentities($msg['dom_cur_rights'],ENT_QUOTES,$charset)."</div>
+				    <div class='colonne_suite'><!-- r_rad --></div>
+				    <div class='row'><!-- rights_tab --></div>
+				    </div>";
+
+		if($gestion_acces_empr_docnum==1) {
+			
+			$r_form=$c_form;
+			$dom_3 = $ac->setDomain(3);	
+			$r_form = str_replace('<!-- domain_name -->', htmlentities($dom_3->getComment('long_name'), ENT_QUOTES, $charset) ,$r_form);
+			if($this->explnum_id) {
+				
+				//profil ressource
+				$def_prf=$dom_3->getComment('res_prf_def_lib');
+				$res_prf=$dom_3->getResourceProfile($this->explnum_id);
+				$q=$dom_3->loadUsedResourceProfiles();
+				
+				//Recuperation droits generiques utilisateur
+				$user_rights = $dom_3->getDomainRights(0,$res_prf);
+				
+				if($user_rights & 2) {
+					$p_sel = gen_liste($q,'prf_id','prf_name', 'res_prf[3]', '', $res_prf, '0', $def_prf , '0', $def_prf);
+					$p_rad = "<input type='radio' name='prf_rad[3]' value='R' ";
+					if ($gestion_acces_empr_docnum_def!='1') $p_rad.= "checked='checked' ";
+					$p_rad.= ">".htmlentities($msg['dom_rad_calc'],ENT_QUOTES,$charset)."</input><input type='radio' name='prf_rad[3]' value='C' ";
+					if ($gestion_acces_empr_docnum_def=='1') $p_rad.= "checked='checked' ";
+					$p_rad.= ">".htmlentities($msg['dom_rad_def'],ENT_QUOTES,$charset)." $p_sel</input>";
+					$r_form = str_replace('<!-- prf_rad -->', $p_rad, $r_form);
+				} else {
+					$r_form = str_replace('<!-- prf_rad -->', htmlentities($dom_3->getResourceProfileName($res_prf), ENT_QUOTES, $charset), $r_form);
+				}
+									
+				//droits/profils utilisateurs
+				if($user_rights & 1) {
+					$r_rad = "<input type='radio' name='r_rad[3]' value='R' ";
+					if ($gestion_acces_empr_docnum_def!='1') $r_rad.= "checked='checked' ";
+					$r_rad.= ">".htmlentities($msg['dom_rad_calc'],ENT_QUOTES,$charset)."</input><input type='radio' name='r_rad[3]' value='C' ";
+					if ($gestion_acces_empr_docnum_def=='1') $r_rad.= "checked='checked' ";
+					$r_rad.= ">".htmlentities($msg['dom_rad_def'],ENT_QUOTES,$charset)."</input>";
+					$r_form = str_replace('<!-- r_rad -->', $r_rad, $r_form);
+				}
+						
+				//recuperation profils utilisateurs
+				$t_u=array();
+				$t_u[0]= $dom_3->getComment('user_prf_def_lib');	//niveau par defaut
+				$qu=$dom_3->loadUsedUserProfiles();
+				$ru=pmb_mysql_query($qu, $dbh);
+				if (pmb_mysql_num_rows($ru)) {
+					while(($row=pmb_mysql_fetch_object($ru))) {
+				        $t_u[$row->prf_id]= $row->prf_name;
+					}
+				}
+			
+				//recuperation des controles dependants de l'utilisateur
+				$t_ctl=$dom_3->getControls(0);
+	
+				//recuperation des droits 
+				$t_rights = $dom_3->getResourceRights($this->explnum_id);
+								
+				if (count($t_u)) {
+	
+					$h_tab = "<div class='dom_div'><table class='dom_tab'><tr>";
+					foreach($t_u as $k=>$v) {
+						$h_tab.= "<th class='dom_col'>".htmlentities($v, ENT_QUOTES, $charset)."</th>";			
+					}
+					$h_tab.="</tr><!-- rights_tab --></table></div>";
+					
+					$c_tab = '<tr>';
+					foreach($t_u as $k=>$v) {
+							
+						$c_tab.= "<td><table style='border:1px solid;'><!-- rows --></table></td>";
+						$t_rows = "";
+								
+						foreach($t_ctl as $k2=>$v2) {
+														
+							$t_rows.="
+								<tr>
+									<td style='width:25px;' ><input type='checkbox' name='chk_rights[3][".$k."][".$k2."]' value='1' ";
+							if ($t_rights[$k][$res_prf] & (pow(2,$k2-1))) {
+								$t_rows.= "checked='checked' ";
+							}
+							if(($user_rights & 1)==0) $t_rows.="disabled='disabled' "; 
+							$t_rows.="/></td>
+									<td>".htmlentities($v2, ENT_QUOTES, $charset)."</td>
+								</tr>";
+						}						
+						$c_tab = str_replace('<!-- rows -->', $t_rows, $c_tab);
+					}
+					$c_tab.= "</tr>";
+					
+				}
+				$h_tab = str_replace('<!-- rights_tab -->', $c_tab, $h_tab);;
+				$r_form=str_replace('<!-- rights_tab -->', $h_tab, $r_form);
+				
+			} else {
+				$r_form = str_replace('<!-- prf_rad -->', htmlentities($msg['dom_prf_unknown'], ENT_QUOTES, $charset), $r_form);
+				$r_form = str_replace('<!-- r_rad -->', htmlentities($msg['dom_rights_unknown'], ENT_QUOTES, $charset), $r_form);
+			}
+			$form.= $r_form;
+			
+		}
+		return $form;
+	}
+	
+	
 	} # fin de la classe explnum
 
 		                                                  

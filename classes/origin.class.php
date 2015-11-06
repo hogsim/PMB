@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: origin.class.php,v 1.1 2011-12-20 13:12:44 arenou Exp $
+// $Id: origin.class.php,v 1.2 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -31,9 +31,9 @@ class origin {
 	
 	private function _fetch_data(){
 		$query = "select * from origin_".$this->type." where id_origin_".$this->type." = ".$this->id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_assoc($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_assoc($result);
 			$this->name = $row['origin_'.$this->type."_name"];
 			$this->country = $row['origin_'.$this->type."_country"];
 			$this->diffusible = ($row['origin_'.$this->type."_diffusible"]==1 ? true : false);
@@ -56,7 +56,7 @@ class origin {
 			$query .= "origin_".$this->type."_name = '".addslashes($this->name)."',";
 			$query .= "origin_".$this->type."_country = '".addslashes($this->country)."',";
 			$query .= "origin_".$this->type."_diffusible = '".($this->is_diffusible() ? 1:0)."' ";
-			$result = mysql_query($query.$where);
+			$result = pmb_mysql_query($query.$where);
 			if($result) return true;
 			else return false;
 		}
@@ -71,7 +71,7 @@ class origin {
 			//TODO check utilisation
 			$query = "delete from origin_".$this->type." where id_origin_".$this->type." = ".$this->id;
 			print $query;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query);
 			if($result) return true;
 		}
 		return false;
@@ -105,9 +105,9 @@ class origin {
 	public static function get_list($type="authorities"){
 		$list = array();
 		$query = "select id_origin_".$type." from origin_".$type;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_assoc($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_assoc($result)){
 				$list[]=$row['id_origin_'.$type];
 			}
 		}
@@ -118,11 +118,11 @@ class origin {
 		global $msg,$charset;
 		
 		$query = "select id_origin_".$type.",origin_".$type."_name from origin_".$type;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
 			$selector = "
 			<select name='".$name."'>";	
-			while ($row = mysql_fetch_assoc($result)){
+			while ($row = pmb_mysql_fetch_assoc($result)){
 				$selector.= " 
 				<option value='".$row['id_origin_'.$type]."'>".htmlentities($row['origin_'.$type.'_name'],ENT_QUOTES,$charset)."</option>";
 			}
@@ -135,15 +135,15 @@ class origin {
 	public static function import($type="authorities",$origin){
 		if($origin!=""){
 			$query = "select id_origin_".$type." from origin_".$type." where  origin_".$type."_name = '".$origin['origin']."'";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				return mysql_result($result,0,0);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				return pmb_mysql_result($result,0,0);
 			}else{
 				$query = "insert into origin_".$type." set 
 					origin_".$type."_name = '".$origin['origin']."',
 					origin_".$type."_country = '".$origin['country']."'";
-				$result = mysql_query($query);
-				if($result) return mysql_insert_id();
+				$result = pmb_mysql_query($query);
+				if($result) return pmb_mysql_insert_id();
 			}
 		}
 		return false;

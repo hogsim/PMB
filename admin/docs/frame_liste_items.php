@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: frame_liste_items.php,v 1.1 2013-11-29 13:55:10 dgoron Exp $
+// $Id: frame_liste_items.php,v 1.2 2015-04-03 11:16:22 jpermanne Exp $
 
 $base_path="./../..";
 $base_auth = "ADMINISTRATION_AUTH";
@@ -77,9 +77,9 @@ $debut =($page-1)*$nb_per_page;
 
 $rqt.=" limit $debut,$nb_per_page";
 
-$res = mysql_query($rqt,$dbh);
+$res = pmb_mysql_query($rqt,$dbh);
 $st = "odd";
-while (($data = mysql_fetch_array($res))) {
+while (($data = pmb_mysql_fetch_array($res))) {
 	if ($st=="odd")
 		$st = "even";
 	else
@@ -112,6 +112,6 @@ print "</div>";
 
 print "</body></html>";
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 ?>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: storage.class.php,v 1.2 2013-07-04 14:46:17 arenou Exp $
+// $Id: storage.class.php,v 1.3 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -31,9 +31,9 @@ class storage {
 	
 	protected function fetch_datas(){
 		$query = "select * from storages where id_storage = ".$this->id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			$this->name = $row->storage_name;
 			$this->class_name = $row->storage_class;
 			$this->parameters = unserialize($row->storage_params);

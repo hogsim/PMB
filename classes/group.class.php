@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: group.class.php,v 1.13 2013-10-24 08:24:12 dgoron Exp $
+// $Id: group.class.php,v 1.14 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -38,9 +38,9 @@ class group {
 		global $dbh;
 		$requete = "SELECT * FROM groupe";
 		$requete .= " WHERE id_groupe='".$this->id."' ";
-		$res = mysql_query($requete, $dbh);
-		if(mysql_num_rows($res)) {
-			$row = mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($res)) {
+			$row = pmb_mysql_fetch_object($res);
 			$this->libelle = $row->libelle_groupe;
 			$this->lettre_rappel=$row->lettre_rappel;
 			$this->mail_rappel=$row->mail_rappel;
@@ -50,9 +50,9 @@ class group {
 			  	$this->id_resp = $row->resp_groupe;
 			  	$requete = "SELECT empr_nom, empr_prenom, empr_cb, empr_mail FROM empr";
 			  	$requete .= " WHERE id_empr=".$this->id_resp." LIMIT 1";
-			  	$res = mysql_query($requete, $dbh);
-			  	if(mysql_num_rows($res)) {
-			  		$row = mysql_fetch_object($res);
+			  	$res = pmb_mysql_query($requete, $dbh);
+			  	if(pmb_mysql_num_rows($res)) {
+			  		$row = pmb_mysql_fetch_object($res);
 			  		$this->libelle_resp = $row->empr_nom;
 			  		if($row->empr_prenom) $this->libelle_resp .= ', '.$row->empr_prenom;
 			  		$this->libelle_resp .= ' ('.$row->empr_cb.')';
@@ -115,10 +115,10 @@ class group {
 		$requete .= " WHERE MEMBERS.empr_id=EMPR.id_empr";
 		$requete .= " AND MEMBERS.groupe_id=".$this->id;
 		$requete .= " ORDER BY EMPR.empr_nom, EMPR.empr_prenom";
-		$result = mysql_query($requete, $dbh);
-		$this->nb_members = mysql_num_rows($result);
+		$result = pmb_mysql_query($requete, $dbh);
+		$this->nb_members = pmb_mysql_num_rows($result);
 		if($this->nb_members) {
-		 	while($mb = mysql_fetch_object($result)) {
+		 	while($mb = pmb_mysql_fetch_object($result)) {
 		 		$this->members[] = array( 'nom' => $mb->nom,
 							'prenom' => $mb->prenom,
 							'cb' => $mb->cb,
@@ -139,13 +139,13 @@ class group {
 		// checke si ce membre n'est pas déjà dans le groupe
 		$requete = "SELECT count(1) FROM empr_groupe";
 		$requete .= " WHERE empr_id=$member AND groupe_id=".$this->id;
-		$res = mysql_query($requete, $dbh);
-		if(mysql_result($res, 0, 0)) return $member;
+		$res = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_result($res, 0, 0)) return $member;
 		
 		// OK. insertion 'pour de vrai'
 		$requete = "INSERT INTO empr_groupe";
 		$requete .= " SET empr_id='$member', groupe_id='".$this->id."'";
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		if($res) return $member;
 			else return 0;
 	}
@@ -154,10 +154,10 @@ class group {
 	function delete() {
 		global $dbh;
 		$requete = "DELETE FROM groupe WHERE id_groupe=".$this->id;
-		$res = mysql_query($requete, $dbh);
-		$nb = mysql_affected_rows($dbh);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nb = pmb_mysql_affected_rows($dbh);
 		$requete = "DELETE FROM empr_groupe WHERE groupe_id=".$this->id;
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		return $nb;
 	}
 
@@ -167,7 +167,7 @@ class group {
 		if(!$member) return 0;
 		$requete = "DELETE FROM empr_groupe";
 		$requete .= " WHERE empr_id=$member AND groupe_id=".$this->id;
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		return $res;
 	}
 
@@ -185,7 +185,7 @@ class group {
 			$requete .= ", mail_rappel='".$this->mail_rappel."'";
 			$requete .= ", lettre_rappel_show_nomgroup='".$this->lettre_rappel_show_nomgroup."'";
 			$requete .= " WHERE id_groupe=".$this->id." LIMIT 1";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 		} else {
 			// on voit si ça n'existe pas
 			if($this->exists($this->libelle)) return $this->id;
@@ -197,8 +197,8 @@ class group {
 			$requete .= ", lettre_rappel='".$this->lettre_rappel."'";
 			$requete .= ", mail_rappel='".$this->mail_rappel."'";
 			$requete .= ", lettre_rappel_show_nomgroup='".$this->lettre_rappel_show_nomgroup."'";
-			$result = mysql_query($requete, $dbh);
-			$this->id = mysql_insert_id();
+			$result = pmb_mysql_query($requete, $dbh);
+			$this->id = pmb_mysql_insert_id();
 		}
 		return $this->id;
 	}
@@ -208,8 +208,8 @@ class group {
 		if(!$name) return;
 		$requete = "SELECT count(1) FROM groupe";
 		$requete .= " WHERE libelle_groupe='$name'";
-		$result = mysql_query($requete, $dbh);
-		return mysql_result($result, 0, 0);
+		$result = pmb_mysql_query($requete, $dbh);
+		return pmb_mysql_result($result, 0, 0);
 	}
 	
 	// prolongation d'adhésion des membres en fin d'abonnement ou en abonnement dépassé
@@ -225,15 +225,15 @@ class group {
 					if ($$date_prolong != "") {
 						//Ne pas débiter l'abonnement deux fois..
 						$requete = "SELECT empr_date_expiration FROM empr WHERE id_empr=".$membre['id'];
-						$resultat = mysql_query($requete,$dbh);
+						$resultat = pmb_mysql_query($requete,$dbh);
 						if ($resultat) {
-							if (str_replace("-","",mysql_result($resultat,0,0)) != str_replace("-","",$$date_prolong)) {
+							if (str_replace("-","",pmb_mysql_result($resultat,0,0)) != str_replace("-","",$$date_prolong)) {
 								// mise à jour
 								$requete = "UPDATE empr";
 								$requete .= " SET empr_date_expiration='".$$date_prolong."'";
 								$requete .= " WHERE id_empr=".$membre['id']." LIMIT 1";
-								@mysql_query($requete, $dbh);
-								if(!mysql_errno($dbh)) {
+								@pmb_mysql_query($requete, $dbh);
+								if(!pmb_mysql_errno($dbh)) {
 									global $debit;
 									if ($debit) {
 										if ($debit==2) $rec_caution=true; else $rec_caution=false;

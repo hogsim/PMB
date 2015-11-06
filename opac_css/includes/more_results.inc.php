@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: more_results.inc.php,v 1.68.2.5 2015-08-04 15:55:07 mbertin Exp $
+// $Id: more_results.inc.php,v 1.58 2011-10-26 09:31:34 fgautier Exp 
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -36,7 +36,8 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 	require_once($include_path.'/surlignage.inc.php');
 	
 	require_once($class_path."/searcher.class.php");
-	
+
+	require_once($class_path."/skos/skos_concept.class.php");
 	//Affectation du numéro de page avant l'enregistrement en session, ca évite certains problèmes...
 	if(!$page){
 		$page=1;
@@ -67,6 +68,98 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 	if ($get_last_query) {
 		get_last_history();
 	} else {
+		if($tab!="affiliate"){
+			//hack un peu tordu pour un clic sur une facette depuis une page autorité...
+			if($mode == "extended" && strpos($_SERVER['HTTP_REFERER'],$_SESSION['last_module_search']['search_mod']) !== false ){
+				if(strpos($_SERVER['HTTP_REFERER'],$_SESSION['last_module_search']['search_mod']) !== false ){
+					if($_SESSION['last_module_search']['need_new_search']){
+						//ajout de la recherche dans l'historique 
+						$_SESSION["nb_queries"]=$_SESSION["nb_queries"]+1;
+						$n=$_SESSION["nb_queries"];
+						$_SESSION["notice_view".$n]=$_SESSION["last_module_search"];
+						switch ($_SESSION["last_module_search"]["search_mod"]) {
+							case 'etagere_see':
+								//appel de la fonction tableau_etagere du fichier etagere_func.inc.php
+								$r1 = $msg["etagere_query"];
+								$t=array();
+								$t=tableau_etagere($_SESSION["last_module_search"]["search_id"]);
+								$r=$r1." '".$t[0]["nometagere"]."'";
+							break;
+							case 'categ_see':
+								// instanciation de la categorie
+								$ourCateg = new categorie($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $msg["category"];
+								$r=$r1." '".$ourCateg->libelle."'";
+							break;
+							case 'indexint_see':
+								// instanciation de la classe indexation
+								$r1= $msg["indexint_search"];
+								$ourIndexint = new indexint($_SESSION["last_module_search"]["search_id"]);
+								$r=$r1." '".$ourIndexint->name." ".$ourIndexint->comment."'";
+								
+							break;
+							case 'section_see':
+								$resultat=pmb_mysql_query("select location_libelle from docs_location where idlocation='".addslashes($_SESSION["last_module_search"]["search_location"])."'");
+								$j=pmb_mysql_fetch_array($resultat);
+								$localisation_=$j["location_libelle"];
+								mysql_free_result($resultat);
+								$resultat=pmb_mysql_query("select section_libelle from docs_section where idsection='".addslashes($_SESSION["last_module_search"]["search_id"])."'");
+								$j=pmb_mysql_fetch_array($resultat);
+								$section_=$j["section_libelle"];
+								mysql_free_result($resultat);
+								$r1 = $localisation_." => ".$msg["section"];
+								$r=$r1." '".$section_."'";
+							break;
+							case "author_see" :
+								$ourAuthor = new auteur($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $msg['author'];
+								$r = $r1." '".$ourAuthor->isbd_entry."'";
+								break;
+							case "coll_see" :
+								$ourColl = new collection($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $msg['coll_search'];
+								$r = $r1." '".$ourColl->isbd_entry."'";
+								break;
+							case "subcoll_see" :
+								$ourSubcoll = new subcollection($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $msg['subcoll_search'];
+								$r = $r1." '".$ourSubcoll->isbd_entry."'";
+								break;
+							case "titre_uniforme_see" :
+								$ourTu = new titre_uniforme($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $msg['titre_uniforme_search'];
+								$ourTu->do_isbd();
+								$r = $r1." '".$ourTu->tu_isbd."'";
+								break;
+							case "publisher_see" :
+								$ourPub = new publisher($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $msg['publisher_search'];
+								$r = $r1." '".$ourPub->isbd_entry."'";
+								break;
+							case "serie_see" :
+								$ourSerie = new serie($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $msg['serie_query'];
+								$r = $r1." '".$ourSerie->name."'";
+								break;
+							case "concept_see" :
+								$ourConcept = new skos_concept($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $msg['skos_concept'];
+								$r = $r1." '".$ourConcept->get_display_label()."'";
+								break;
+							case "authperso_see" :
+								$ourAuth = new authperso_authority($_SESSION["last_module_search"]["search_id"]);
+								$r1 = $ourAuth->info['authperso']['name'];
+								$r = $r1." '".$ourAuth->info['isbd']."'";
+								break;
+							}
+						$_SESSION["human_query".$n]=$r;
+						$_SESSION["search_type".$n]="module";
+					}
+					$_SESSION["new_last_query"] = $_SESSION["nb_queries"];
+				}
+			}
+		}
+		
 		if ($_SESSION["new_last_query"]) {
 			$_SESSION["last_query"]=$_SESSION["new_last_query"];
 			$_SESSION["new_last_query"]="";
@@ -113,7 +206,7 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 	$debut =($page-1)*$opac_search_results_per_page;
 	$limiter = "LIMIT $debut,$opac_search_results_per_page";
 	
-	if ((($opac_cart_allow)&&(!$opac_cart_only_for_subscriber))||(($opac_cart_allow)&&($_SESSION["user_code"]))) $add_cart_link="<span class=\"addCart\"><a href='javascript:document.cart_values.submit()'>".$msg["cart_add_result_in"]."</a></span>";
+	if ((($opac_cart_allow)&&(!$opac_cart_only_for_subscriber))||(($opac_cart_allow)&&($_SESSION["user_code"]))) $add_cart_link="<span class=\"addCart\"><a href='javascript:document.cart_values.submit()' title='".$msg["cart_add_result_in"]."'>".$msg["cart_add_result_in"]."</a></span>";
 	
 	// constitution des liens
 	$nbepages = ceil($count/$opac_search_results_per_page);
@@ -183,8 +276,14 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 		case 'docnum':
 			require_once($base_path.'/search/level2/docnum.inc.php');
 			break;
+		case 'concept':
+			require_once($base_path.'/search/level2/concept.inc.php');
+			break;
 		default:
-			print $msg[no_document_found];
+			if(substr($mode, 0,10) == "authperso_"){				
+				require_once($base_path.'/search/level2/authperso.inc.php');
+			}else
+			print $msg['no_document_found'];
 			break;
 	}
 	//gestion des facette si active
@@ -200,6 +299,9 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 			$str .= facettes::make_facette($tab_result);
 		}else{
 			$_SESSION['tab_result']=$tab_result;
+			if($opac_map_activate){
+				$searcher->check_emprises();
+			}
 			$str .=facettes::get_facette_wrapper();
 			$str .="<div id='facette_wrapper'><img src='./images/patience.gif'/></div>";
 			
@@ -219,32 +321,38 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 		$str .= facettes::make_facette_suggest($user_query);
 	}
 	
-	
+$form = "";
 switch ($search_type) {
 	case 'simple_search':
+		// Gestion des alertes à partir de la recherche simple
+ 		include_once($include_path."/alert_see.inc.php");
+ 		$form .= $alert_see_mc_values;
 	case 'tags_search':
 		// constitution du form pour la suite
-		$form .= "<input type=\"hidden\" name=\"user_query\" value=\"".htmlentities(stripslashes($user_query),ENT_QUOTES,$charset)."\">\n";
-		$form .= "<input type=\"hidden\" name=\"mode\" value=\"$mode\">\n";
-		$form .= "<input type=\"hidden\" name=\"count\" value=\"$count\">\n";
-		$form .= "<input type=\"hidden\" name=\"typdoc\" value=\"".$typdoc."\">";
+		$f_values = "<input type=\"hidden\" name=\"user_query\" value=\"".htmlentities(stripslashes($user_query),ENT_QUOTES,$charset)."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"mode\" value=\"$mode\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"count\" value=\"$count\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"typdoc\" value=\"".$typdoc."\">";
 	 	if (function_exists("search_other_function_post_values")){
-			$form .=search_other_function_post_values(); 
+			$f_values .=search_other_function_post_values(); 
 		}
-		$form .= "<input type=\"hidden\" name=\"clause\" value=\"".htmlentities($clause,ENT_QUOTES,$charset)."\">\n";
-		$form .= "<input type=\"hidden\" name=\"clause_bull\" value=\"".htmlentities($clause_bull,ENT_QUOTES,$charset)."\">\n";
-		$form .= "<input type=\"hidden\" name=\"clause_bull_num_notice\" value=\"".htmlentities($clause_bull_num_notice,ENT_QUOTES,$charset)."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"clause\" value=\"".htmlentities($clause,ENT_QUOTES,$charset)."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"clause_bull\" value=\"".htmlentities($clause_bull,ENT_QUOTES,$charset)."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"clause_bull_num_notice\" value=\"".htmlentities($clause_bull_num_notice,ENT_QUOTES,$charset)."\">\n";
 		if($opac_indexation_docnum_allfields) 
-			$form .= "<input type=\"hidden\" name=\"join\" value=\"".htmlentities($join,ENT_QUOTES,$charset)."\">\n";
-		$form .= "<input type=\"hidden\" name=\"tri\" value=\"".htmlentities($tri,ENT_QUOTES,$charset)."\">\n";
-		$form .= "<input type=\"hidden\" name=\"pert\" value=\"".htmlentities($pert,ENT_QUOTES,$charset)."\">\n";
-		$form .= "<input type=\"hidden\" name=\"l_typdoc\" value=\"".htmlentities($l_typdoc,ENT_QUOTES,$charset)."\">\n";
-		$form .= "<input type=\"hidden\" id=author_type name=\"author_type\" value=\"$author_type\">\n";		
-		$form .= "<input type=\"hidden\" id=\"id_thes\" name=\"id_thes\" value=\"".$id_thes."\">\n";
-		$form .= "<input type=\"hidden\" name=\"surligne\" value=\"".$surligne."\">\n";
-		$form .= "<input type=\"hidden\" name=\"tags\" value=\"".$tags."\">\n";
-		$f_values=$form;
-		$form = "<form name=\"form_values\" action=\"./index.php?lvl=more_results\" method=\"post\">\n";
+			$f_values .= "<input type=\"hidden\" name=\"join\" value=\"".htmlentities($join,ENT_QUOTES,$charset)."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"tri\" value=\"".htmlentities($tri,ENT_QUOTES,$charset)."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"pert\" value=\"".htmlentities($pert,ENT_QUOTES,$charset)."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"l_typdoc\" value=\"".htmlentities($l_typdoc,ENT_QUOTES,$charset)."\">\n";
+		$f_values .= "<input type=\"hidden\" id=author_type name=\"author_type\" value=\"$author_type\">\n";		
+		$f_values .= "<input type=\"hidden\" id=\"id_thes\" name=\"id_thes\" value=\"".$id_thes."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"surligne\" value=\"".$surligne."\">\n";
+		$f_values .= "<input type=\"hidden\" name=\"tags\" value=\"".$tags."\">\n";
+		
+		$form .= "<form name=\"form_values\" action=\"./index.php?lvl=more_results\" method=\"post\">\n";
+		
+		$form.=facette_search_compare::form_write_facette_compare();
+		
 		$form .= $f_values;
 		$form .= "<input type=\"hidden\" name=\"page\" value=\"$page\">\n";
 		if($opac_allow_affiliate_search){
@@ -261,6 +369,9 @@ switch ($search_type) {
 		break;
 	case 'extended_search':
 		$form=$es->make_hidden_search_form("./index.php?lvl=more_results&mode=extended","form_values","",false);
+		
+		$form.=facette_search_compare::form_write_facette_compare();
+		
 		if($opac_allow_affiliate_search){
 			$form .= "<input type=\"hidden\" name=\"catalog_page\" value=\"$catalog_page\">\n";
 			$form .= "<input type=\"hidden\" name=\"affiliate_page\" value=\"$affiliate_page\">\n";
@@ -278,6 +389,9 @@ switch ($search_type) {
 		break;
 	case 'external_search':
 		$form=$es->make_hidden_search_form("./index.php?lvl=more_results&mode=external","form_values","",false);
+		
+		$form.=facette_search_compare::form_write_facette_compare();
+		
 		$form .= "<input type=\"hidden\" name=\"count\" value=\"$count\">\n";
 		if ($_SESSION["ext_type"]!="multi") {
 			$form.="<input type='hidden' name='external_env' value='".htmlentities(stripslashes($external_env),ENT_QUOTES,$charset)."'/>";

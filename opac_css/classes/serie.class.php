@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serie.class.php,v 1.8.10.1 2014-04-01 12:16:32 mbertin Exp $
+// $Id: serie.class.php,v 1.10 2015-04-03 11:16:18 jpermanne Exp $
 
 // définition de la classe de gestion des 'titres de séries'
 
@@ -45,10 +45,10 @@ class serie {
 	function get_primaldata() {
 		global $dbh;
 		$requete = "SELECT * FROM series WHERE serie_id='".addslashes($this->id)."' ";
-		$result = @mysql_query($requete, $dbh);
-		if(mysql_num_rows($result)) {
-			$obj = mysql_fetch_object($result);
-			mysql_free_result($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($result)) {
+			$obj = pmb_mysql_fetch_object($result);
+			pmb_mysql_free_result($result);
 			$this->get_primaldatafrom($obj);
 		} else {
 			// pas de collection avec cette clé

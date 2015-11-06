@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_breadcrumb.class.php,v 1.2 2012-11-15 09:47:39 arenou Exp $
+// $Id: cms_module_common_view_breadcrumb.class.php,v 1.3 2014-11-17 17:00:52 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -85,6 +85,7 @@ class cms_module_common_view_breadcrumb extends cms_module_common_view_django{
 			'desc'=> $this->msg['cms_module_common_view_section_link_desc']
 		);
 		$format[]=$sections;
+		$format = array_merge($format,parent::get_format_data_structure());
 		return $format;
 	}
 }

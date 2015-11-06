@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: stat_opac.tpl.php,v 1.6.6.1 2015-01-30 14:25:50 jpermanne Exp $
+// $Id: stat_opac.tpl.php,v 1.7 2015-01-30 14:28:12 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

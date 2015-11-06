@@ -4,10 +4,11 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.2.6.1 2015-03-16 16:39:31 dbellamy Exp $ -->
+$Id: manifest.xml,v 1.4 2015-06-16 15:23:53 pmbs Exp $ -->
 
 <manifest>
-	<name>Code html</name>
+	<name lang="fr_FR">Code html</name>
+	<name lang="en_UK">HTML code</name>
 	<author>
 		<name>Nicolas Gantier</name>
 		<organisation>PMB Services</organisation>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.inc.php,v 1.12 2012-06-14 08:46:48 arenou Exp $
+// $Id: search.inc.php,v 1.13 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,9 +29,9 @@ else
 
 $select_bib="";
 $requete_bib = "SELECT bib_id, bib_nom, base FROM z_bib where search_type='CATALOG' ORDER BY bib_nom, base ";
-$res_bib = mysql_query($requete_bib, $dbh);
+$res_bib = pmb_mysql_query($requete_bib, $dbh);
 
-while(($liste_bib=mysql_fetch_object($res_bib))) {
+while(($liste_bib=pmb_mysql_fetch_object($res_bib))) {
 	
 	$pos = array_search($liste_bib->bib_id, $bibli_selectionees);
 

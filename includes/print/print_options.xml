@@ -11,4 +11,7 @@
 	<entry code="outp">1</entry>
 	<entry code="outt">0</entry>
 	<entry code="oute">0</entry>	
+	<entry code="exnum">0</entry>
+	<entry code="output_docnum_singly">0</entry>
+	<entry code="output_docnum_zip">1</entry>	
 </XMLlist>

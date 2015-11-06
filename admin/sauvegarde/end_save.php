@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: end_save.php,v 1.10 2009-05-16 11:11:53 dbellamy Exp $
+// $Id: end_save.php,v 1.11 2015-04-03 11:16:20 jpermanne Exp $
 
 //Création du fichier final et transfert vers les lieux puis passage au jeu suivant
 $base_path="../..";
@@ -64,7 +64,7 @@ write_log("Backup complete",$logid);
 
 //Succeed
 $requete="update sauv_log set sauv_log_succeed=1 where sauv_log_id=".$logid;
-@mysql_query($requete);
+@pmb_mysql_query($requete);
 
 //Paramètres
 echo "<input type=\"hidden\" name=\"logid\" value=\"".$logid."\">\n";
@@ -73,8 +73,8 @@ echo "<input type=\"hidden\" name=\"filename\" value=\"$filename\">";
 
 //Récupération des lieux
 $requete="select sauv_sauvegarde_lieux from sauv_sauvegardes where sauv_sauvegarde_id=".$currentSauv;
-$resultat=@mysql_query($requete);
-$lieux=mysql_result($resultat,0,0);
+$resultat=@pmb_mysql_query($requete);
+$lieux=pmb_mysql_result($resultat,0,0);
 
 $tLieux=explode(",",$lieux);
 echo "<script>";

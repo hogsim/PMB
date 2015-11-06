@@ -4,7 +4,7 @@
 // | creator : Eric ROBERT                                                    |
 // | modified : ...                                                           |
 // +-------------------------------------------------+
-// $Id: func_livrjeun.inc.php,v 1.4 2009-09-29 12:34:50 ngantier Exp $
+// $Id: func_livrjeun.inc.php,v 1.5 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,7 +19,7 @@ function traite_categories_enreg($notice_retour,$categories,$thesaurus_traite=0)
 	//  les indexations de la notice sans distinction de thesaurus
 	if (!$thesaurus_traite) $rqt_del = "delete from notices_categories where notcateg_notice='$notice_retour' ";
 	else $rqt_del = "delete from notices_categories where notcateg_notice='$notice_retour' and num_noeud in (select id_noeud from noeuds where num_thesaurus='$thesaurus_traite' and id_noeud=notices_categories.num_noeud) ";
-	$res_del = @mysql_query($rqt_del, $dbh);
+	$res_del = @pmb_mysql_query($rqt_del, $dbh);
 		
 	$rqt_ins = "insert into notices_categories (notcateg_notice, num_noeud, ordre_categorie) VALUES ";
 	
@@ -27,12 +27,12 @@ function traite_categories_enreg($notice_retour,$categories,$thesaurus_traite=0)
 		$id_categ=$categories[$i]['categ_id'];
 		if ($id_categ) {
 			$rqt = $rqt_ins . " ('$notice_retour','$id_categ', $i) " ; 
-			$res_ins = @mysql_query($rqt, $dbh);
+			$res_ins = @pmb_mysql_query($rqt, $dbh);
 		}
 	}
 	// on ignore ce qui suit pour l'import livrjeun
 	$rqt_maj = "update notices set lien='', eformat='', indexint=0 where notice_id='$notice_retour' " ;
-	mysql_query($rqt_maj, $dbh);
+	pmb_mysql_query($rqt_maj, $dbh);
 }
 
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titre_uniforme_browser.php,v 1.2 2009-05-16 11:12:03 dbellamy Exp $
+// $Id: titre_uniforme_browser.php,v 1.4 2015-04-23 13:00:54 mhoestlandt Exp $
 
 // page d'affichage du browser de collections
 
@@ -52,15 +52,19 @@ print "<a href='$browser_url?limite_affichage=ALL'>$msg[tout_afficher]</a><br />
 // affichage de la liste
 $requete = "SELECT * FROM titres_uniformes ORDER BY tu_name $restriction ";
 
-$result = mysql_query($requete, $dbh);
+$result = pmb_mysql_query($requete, $dbh);
 
-while(($tu=mysql_fetch_object($result))) {
-	if($tu->tu_id)
-		print "<a name='a".$tu->tu_id."'  href='#' onClick=\"".select('titre_uniforme', $tu->tu_id)."\">$tu->tu_name</a><br />\n";
+while(($tu=pmb_mysql_fetch_object($result))) {
+	if($tu->tu_id){		
+		$tu = new titre_uniforme($tu->tu_id);
+		$titre_uniforme_entry = $tu->display;
+		print "<a name='a".$tu->tu_id."'  href='#' onClick=\"".select('titre_uniforme', $tu->tu_id)."\">$titre_uniforme_entry</a><br />\n";
+	}
+		
 }
 if($ancre)
 	print $j_offset;
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 // affichage du footer
 print "</div></body></html>";

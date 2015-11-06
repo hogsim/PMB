@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: epub.class.php,v 1.2 2013-07-24 13:09:22 arenou Exp $
+// $Id: epub.class.php,v 1.3 2015-04-03 10:20:10 arenou Exp $
 
 require_once($visionneuse_path."/classes/mimetypes/affichage.class.php");
 require_once($visionneuse_path."/../classes/epubData.class.php");
@@ -255,6 +255,8 @@ class epub extends affichage{
     	$ebook = new epubData($this->driver->get_cached_filename($this->doc->id));
 		if (substr($this->driver->getParam("page"),-3)=="css"){
     		header("Content-Type: text/css");
+    	}else{
+    		header("Content-Type: text/html;charset='".$ebook->charset."'");
     	}
     	print $ebook->getPageContent($this->driver->getParam("page"));
     }

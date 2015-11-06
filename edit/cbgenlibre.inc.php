@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cbgenlibre.inc.php,v 1.18 2013-04-11 08:15:30 mbertin Exp $
+// $Id: cbgenlibre.inc.php,v 1.19 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -17,7 +17,7 @@ if($action =="delete" && $sel_type!="default" && $sel_type!="new" && $mep_etiq_c
 	// update param dans pmb_param_etiq_codes_barres
 	$pmb_param_etiq_codes_barres=	serialize($mep_etiq_cb);
 	$req="UPDATE parametres set valeur_param='".addslashes($pmb_param_etiq_codes_barres)."' where type_param='pmb' and sstype_param='param_etiq_codes_barres' limit 1";
-	mysql_query($req);	
+	pmb_mysql_query($req);	
 	$sel_type="default";
 }
 
@@ -49,7 +49,7 @@ if($action =="memo") {
 	$pmb_param_etiq_codes_barres=	serialize($mep_etiq_cb);
 	$req="UPDATE parametres set valeur_param='".addslashes($pmb_param_etiq_codes_barres)."' where type_param='pmb' and sstype_param='param_etiq_codes_barres' limit 1";
 	//print $req;
-	mysql_query($req);
+	pmb_mysql_query($req);
 }
 
 if(!$sel_type)$sel_type="default";
@@ -78,7 +78,7 @@ if(!is_array($mep_etiq_cb['default']) || $sel_type=="new") {
 		$pmb_param_etiq_codes_barres=	serialize($mep_etiq_cb);
 		$req="UPDATE parametres set valeur_param='".addslashes($pmb_param_etiq_codes_barres)."' where type_param='pmb' and sstype_param='param_etiq_codes_barres' limit 1";
 		//print $req;
-		mysql_query($req);	
+		pmb_mysql_query($req);	
 	}	
 }
 if ($mep_etiq_cb[$sel_type][ORIENTATION]=='P') $selected_mep_orientation_P="selected";

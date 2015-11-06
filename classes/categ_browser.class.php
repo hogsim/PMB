@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categ_browser.class.php,v 1.22 2014-03-12 15:42:18 dgoron Exp $
+// $Id: categ_browser.class.php,v 1.23 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -146,8 +146,8 @@ class categ_browser {
 					// on regarde si la catégorie cible a des enfants
 					$see_requete = "SELECT count(1) FROM noeuds WHERE num_parent=${valeur['id']} LIMIT 1";
 
-					$count_result = mysql_query($see_requete, $dbh);
-					if(@mysql_result($count_result, 0, 0)) {
+					$count_result = pmb_mysql_query($see_requete, $dbh);
+					if(@pmb_mysql_result($count_result, 0, 0)) {
 						// la catégorie cible à des enfants -> tous les liens pointent vers l'affichage catégorie
 						$link = str_replace('!!id!!', $valeur['id'], $this->folder_link);
 						$doc_l = $link;
@@ -206,16 +206,16 @@ class categ_browser {
 			$requete.= "where catdef.num_noeud = '".$temp."' ";	
 			$requete.= "limit 1 ";
 
-			$result = mysql_query($requete, $dbh);
+			$result = pmb_mysql_query($requete, $dbh);
 
-			$upper = mysql_fetch_object($result);
+			$upper = pmb_mysql_fetch_object($result);
 
 			// getting number of associated records
 			$requete = "select count(1) from notices_categories where num_noeud ='".$upper->categ_id."' ";
 
-			$count_result = mysql_query($requete, $dbh);
+			$count_result = pmb_mysql_query($requete, $dbh);
 
-			$has_records = mysql_result($count_result, 0, 0);
+			$has_records = pmb_mysql_result($count_result, 0, 0);
 			$this->parents_tab[] = array(	id => $upper->categ_id,
 							name => $upper->categ_libelle,
 							has_records => $has_records);
@@ -243,24 +243,24 @@ class categ_browser {
 		$requete.= "left join categories as catlg on catdef.num_noeud = catlg.num_noeud and catlg.langue = '".$lang."' ";
 		$requete.= "where noeuds.num_parent = '".$this->parent."' ";	
 		$requete.= "order by categ_libelle limit 200 ";
-		$result = mysql_query($requete, $dbh);
+		$result = pmb_mysql_query($requete, $dbh);
 
 
-		while($current=mysql_fetch_object($result)) {
+		while($current=pmb_mysql_fetch_object($result)) {
 			$count_child = "select count(1) from noeuds where num_parent = '".$current->categ_id."' limit 1";
-			$count_result = mysql_query($count_child, $dbh);
+			$count_result = pmb_mysql_query($count_child, $dbh);
 
 
 			// getting number of associated records
 			$query = "select count(1) from notices_categories where num_noeud = '".$current->categ_id."' ";
-			$count_records = mysql_query($query, $dbh);
+			$count_records = pmb_mysql_query($query, $dbh);
 
-			if (((mysql_result($count_records, 0, 0)||$thesaurus_categories_show_empty_categ)||(mysql_result($count_result, 0, 0)))&&($current->categ_libelle[0]!="~")) {
+			if (((pmb_mysql_result($count_records, 0, 0)||$thesaurus_categories_show_empty_categ)||(pmb_mysql_result($count_result, 0, 0)))&&($current->categ_libelle[0]!="~")) {
 				$this->children_tab[] = array(	id => $current->categ_id,
 								name => $current->categ_libelle,
 								see => $current->categ_see,
-								has_children => mysql_num_rows($count_result),
-								has_records => mysql_num_rows($count_records));
+								has_children => pmb_mysql_num_rows($count_result),
+								has_records => pmb_mysql_num_rows($count_records));
 			}
 		}
 	}

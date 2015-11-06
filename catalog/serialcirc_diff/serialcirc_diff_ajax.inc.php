@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff_ajax.inc.php,v 1.3 2012-03-12 10:26:49 ngantier Exp $
+// $Id: serialcirc_diff_ajax.inc.php,v 1.4 2014-10-14 08:23:05 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,6 +37,10 @@ switch($sub){
 	case 'get_caddie':	
 		ajax_http_send_response(serialcirc_diff::get_caddie($id_caddie));	
 	break;		
+	case 'duplicate':
+		$serialcirc_diff=new serialcirc_diff($id_serialcirc,$abt_from);
+		ajax_http_send_response($serialcirc_diff->duplicate($abt_to) ); 
+	break;
 }
 
 

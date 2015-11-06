@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categ_form.inc.php,v 1.32.2.1 2014-03-31 12:11:48 dgoron Exp $
+// $Id: categ_form.inc.php,v 1.39 2015-06-08 14:25:09 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,6 +15,9 @@ require_once("$class_path/categories.class.php");
 require_once("$class_path/XMLlist.class.php");
 require_once("$class_path/aut_pperso.class.php");
 require_once("$class_path/audit.class.php");
+require_once($class_path."/index_concept.class.php");
+require_once("$class_path/map/map_objects_controler.class.php");
+require_once("$class_path/map/map_edition_controler.class.php");
 
 if (noeuds::isRacine($id)) {
 	error_form_message($msg['categ_forb']);
@@ -309,7 +312,7 @@ if ($aff_node_info) {
 	        	</div>
 	        	<div class='row'>
 	        		<table>";
-			while ($row = mysql_fetch_object($res)) {
+			while ($row = pmb_mysql_fetch_object($res)) {
 				$tcateg =  new category($row->id_noeud);
 				if ($odd_even==0) {
 					$categ_child_content .= "	<tr class='odd'>";
@@ -360,7 +363,7 @@ if ($aff_node_info) {
 	        	</div>
 	        	<div class='row'>
 	        		<table>";
-			while ($row = mysql_fetch_object($res)) {
+			while ($row = pmb_mysql_fetch_object($res)) {
 				$tcateg =  new category($row->id_noeud);
 				$categ_renvoivoir_content .= "	<tr class='even'>";
 				if ($odd_even==0) {
@@ -404,8 +407,8 @@ if ($aff_node_info) {
 	$categ_renvoivoiraussi_content="";
 	//Voir aussi
 	$requete="SELECT distinct num_noeud_orig AS id_noeud FROM voir_aussi WHERE num_noeud_dest='".$id."'";
-	$res=mysql_query($requete);
-	if (mysql_num_rows($res)) {
+	$res=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($res)) {
 		$has_link = true;
 		$odd_even=1;
 		$categ_renvoivoiraussi_content .= "
@@ -414,7 +417,7 @@ if ($aff_node_info) {
         	</div>
         	<div class='row'>
         		<table>";
-		while ($row = mysql_fetch_object($res)) {
+		while ($row = pmb_mysql_fetch_object($res)) {
 			$tcateg =  new category($row->id_noeud);
 			$categ_renvoivoiraussi_content .= "	<tr class='even'>";
 			if ($odd_even==0) {
@@ -468,6 +471,16 @@ if ($aff_node_info) {
 	$form_num_aut=str_replace("!!num_aut!!",$num_aut,$form_num_aut);
 	$category_form=str_replace("<!-- numero_autorite -->",$form_num_aut,$category_form);
 	
+	// Indexation concepts
+	if ($id) $id_categ = $id;
+	else $id_categ = 0;
+	
+	if($thesaurus_concepts_active == 1 ){
+		$index_concept = new index_concept($id, TYPE_CATEGORY);
+		$category_form = str_replace('!!concept_form!!', $index_concept->get_form('categ_form'), $category_form);
+	}else{
+		$category_form = str_replace('!!concept_form!!', "", $category_form);
+	}
 	if ($id) {
 		// Impression de la branche du thésaurus
 		$lien_impression_thesaurus="<a href='#' onClick=\"openPopUp('./print_thesaurus.php?current_print=2&action=print_prepare&aff_num_thesaurus=".$id_thes."&id_noeud_origine=$id','print', 500, 600, -2, -2, 'scrollbars=yes,menubar=0,resizable=yes'); return false;\">".$msg[print_branche]."</a>";
@@ -484,6 +497,7 @@ if ($aff_node_info) {
 	
 } else {
 	$category_form=str_replace("<!-- numero_autorite -->",$num_aut,$category_form);
+	$category_form = str_replace('!!concept_form!!', "", $category_form);
 }
 if($import_denied == 1){
 	$import_denied_checked = "checked='checked'";
@@ -495,6 +509,13 @@ $category_form = str_replace('!!authority_import_denied!!',$import_denied_checke
 require_once("$class_path/aut_link.class.php");
 $aut_link= new aut_link(AUT_TABLE_CATEG,$id);
 $category_form = str_replace('<!-- aut_link -->', $aut_link->get_form('categ_form') , $category_form);
+
+global $pmb_map_activate;
+if($pmb_map_activate){
+	$map_edition=new map_edition_controler(AUT_TABLE_CATEG,$id);
+	$map_form=$map_edition->get_form();
+	$category_form = str_replace('<!-- map -->', $map_form , $category_form);
+}
 
 $aut_pperso= new aut_pperso("categ",$id);
 $category_form = str_replace('!!aut_pperso!!', $aut_pperso->get_form(), $category_form);

@@ -2,11 +2,11 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: input_epires.inc.php,v 1.6.14.1 2015-09-22 13:22:27 mbertin Exp $
+// $Id: input_epires.inc.php,v 1.7 2015-04-03 11:16:27 jpermanne Exp $
 
 function _get_n_notices_($fi,$file_in,$input_params,$origine) {
-	global $base_path,$charset;
-	//mysql_query("delete from import_marc");
+	global $base_path;
+	//pmb_mysql_query("delete from import_marc");
 	
 	$first=true;
 	$stop=false;
@@ -19,15 +19,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 		//Recherche de +++
 		$pos_deb=strpos($content,"+++");
 		while (($pos_deb===false)&&(!feof($fi))) {
-			$tmp_content=fread($fi,4096);
-			if($_SESSION["encodage_fic_source"]){//On a forcé l'encodage
-				if(($charset == "utf-8") && ($_SESSION["encodage_fic_source"] == "iso8859")){
-					$tmp_content=utf8_encode($tmp_content);
-				}elseif(($charset == "iso-8859-1" && ($_SESSION["encodage_fic_source"] == "utf8"))){
-					$tmp_content=utf8_decode($tmp_content);
-				}
-			}
-			$content.=$tmp_content;
+			$content.=fread($fi,4096);
 			$content=str_replace("!\r\n ","",$content);
 			$content=str_replace("!\r ","",$content);
 			$content=str_replace("!\n ","",$content);
@@ -64,7 +56,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 		} 
 		if ($notice) {
 			$requete="INSERT INTO import_marc (no_notice, notice, origine) VALUES ($n,'".addslashes($notice)."','$origine')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$n++;
 			$t=array();
 			$t["POS"]=$n;

@@ -2,12 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: input_xml.inc.php,v 1.10 2010-11-26 10:20:12 arenou Exp $
+// $Id: input_xml.inc.php,v 1.11 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 function _get_n_notices_($fi,$file_in,$input_params,$origine) {
-	//mysql_query("delete from import_marc");
+	//pmb_mysql_query("delete from import_marc");
 	$index=array();
 	$i=false;
 	$encoding="";
@@ -35,7 +35,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 			if ($i1!==false) {
 				$notice=substr($fcontents,$i,$i1+strlen("</".$input_params['NOTICEELEMENT'].">")-$i);
 				$requete="insert into import_marc (no_notice, notice, origine, encoding) values($n,'".addslashes($notice)."','$origine','$encoding')";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$n++;
 				$index[]=$n;
 				$fcontents=substr($fcontents,$i1+strlen("</".$input_params['NOTICEELEMENT'].">"));

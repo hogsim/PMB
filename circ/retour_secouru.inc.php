@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: retour_secouru.inc.php,v 1.26 2010-07-06 10:07:39 ngantier Exp $
+// $Id: retour_secouru.inc.php,v 1.28 2015-06-26 13:15:12 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -10,6 +10,8 @@ require_once("$class_path/emprunteur.class.php");
 require_once("$class_path/serial_display.class.php");
 require_once("$include_path/resa.inc.php");
 require_once("$class_path/expl_to_do.class.php");
+require_once("$class_path/pret_parametres_perso.class.php");
+
 // define pour différent flags de situation document
 define ('EX_OK', 1);
 define ('EX_INCONNU', 2);
@@ -45,16 +47,16 @@ function read_line($fp) {
 
 function is_reader($cb) {
 	$requete="select id_empr from empr where empr_cb='".addslashes($cb)."'";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	
-	if (mysql_num_rows($resultat)) return true; else return false;
+	if (pmb_mysql_num_rows($resultat)) return true; else return false;
 }
 
 function is_cb_ex($cb) {
 	$requete="select expl_id from exemplaires where expl_cb='".addslashes($cb)."'";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	
-	if (mysql_num_rows($resultat)) return true; else return false;
+	if (pmb_mysql_num_rows($resultat)) return true; else return false;
 }
 
 if (!$do) {
@@ -231,8 +233,8 @@ function check_empr_secouru($id) {
 	if (!$id)
 		return FALSE;
 	$query = "select count(1) as qte from empr where id_empr='$id' ";
-	$result = mysql_query($query, $dbh);
-	return mysql_result($result, 0, 0);
+	$result = pmb_mysql_query($query, $dbh);
+	return pmb_mysql_result($result, 0, 0);
 
 }
 
@@ -260,23 +262,23 @@ function check_document($id_expl, $id_empr) {
 	$query.= " where e.expl_id=$id_expl";
 	$query.= " and s.idstatut=e.expl_statut";
 	$query.= " limit 1";
-	$result = mysql_query($query, $dbh);
+	$result = pmb_mysql_query($query, $dbh);
 
 	// exemplaire inconnu
-	if (!mysql_num_rows($result)) {
+	if (!pmb_mysql_num_rows($result)) {
 		$retour -> flag = EX_INCONNU;
 		return $retour;
 	}
-	$expl = mysql_fetch_object($result);
+	$expl = pmb_mysql_fetch_object($result);
 
 	$retour -> expl_cb = $expl -> cb;
 
 	// une autre query pour savoir si l'exemplaire est en prêt...
 	$query = "select pret_idempr from pret where pret_idexpl=$id_expl limit 1";
-	$result = mysql_query($query, $dbh);
-	if (@ mysql_num_rows($result)) {
+	$result = pmb_mysql_query($query, $dbh);
+	if (@ pmb_mysql_num_rows($result)) {
 		// l'exemplaire est déjà en prêt
-		$empr = mysql_result($result, '0', 'pret_idempr');
+		$empr = pmb_mysql_result($result, '0', 'pret_idempr');
 		// l'emprunteur est l'emprunteur actuel
 		if ($empr == $id_empr) $retour -> flag += ALREADY_LOANED;
 			else $retour -> flag += ALREADY_BORROWED;
@@ -298,11 +300,11 @@ function check_document($id_expl, $id_empr) {
 	// cas des réservations
 	// on checke si l'exemplaire a une réservation
 	$query = "select resa_idempr as empr, id_resa, resa_cb from resa where resa_idnotice='$expl->notice' and resa_idbulletin='$expl->bulletin' order by resa_date limit 1";
-	$result = mysql_query($query, $dbh);
-	if (mysql_num_rows($result)) {
-		$reservataire = mysql_result($result, 0, 'empr');
-		$id_resa = mysql_result($result, 0, 'id_resa');
-		$resa_cb = mysql_result($result, 0, 'resa_cb');
+	$result = pmb_mysql_query($query, $dbh);
+	if (pmb_mysql_num_rows($result)) {
+		$reservataire = pmb_mysql_result($result, 0, 'empr');
+		$id_resa = pmb_mysql_result($result, 0, 'id_resa');
+		$resa_cb = pmb_mysql_result($result, 0, 'resa_cb');
 		
 		$retour -> idnotice = $expl -> notice;
 		$retour -> idbulletin = $expl -> bulletin;
@@ -343,8 +345,8 @@ function add_pret($id_empr, $id_expl, $cb_doc) {
 		$query.= " WHERE expl_id='".$id_expl;
 		$query.= "' and idtyp_doc=expl_typdoc LIMIT 1";
 
-		$result = @ mysql_query($query, $dbh) or die("can't SELECT exemplaires ".$query);
-		$expl_properties = mysql_fetch_object($result);
+		$result = @ pmb_mysql_query($query, $dbh) or die("can't SELECT exemplaires ".$query);
+		$expl_properties = pmb_mysql_fetch_object($result);
 		$duree_pret = $expl_properties -> duree_pret;
 	} 	
 	// calculer la date de retour prévue 
@@ -357,7 +359,7 @@ function add_pret($id_empr, $id_expl, $cb_doc) {
 	$query.= "pret_date   = sysdate(), ";
 	$query.= "pret_retour = '".date("Y-m-d", $pret_retour)."', ";
 	$query.= "retour_initial = '".date("Y-m-d", $pret_retour)."' ";
-	$result = @ mysql_query($query, $dbh) or die(mysql_error()."<br />can't INSERT into pret".$query);
+	$result = @ pmb_mysql_query($query, $dbh) or die(pmb_mysql_error()."<br />can't INSERT into pret".$query);
 	
 	// insérer la trace en stat, récupérer l'id et le mettre dans la table des prêts pour la maj ultérieure
 	$stat_avant_pret = pret_construit_infos_stat ($id_expl) ;
@@ -365,18 +367,22 @@ function add_pret($id_empr, $id_expl, $cb_doc) {
 	$query = "update pret SET pret_arc_id='$stat_id' where ";
 	$query.= "pret_idempr = '".$id_empr."' and ";
 	$query.= "pret_idexpl = '".$id_expl."' ";
-	$result = @ mysql_query($query, $dbh) or die("can't update pret for stats ".$query);
+	$result = @ pmb_mysql_query($query, $dbh) or die("can't update pret for stats ".$query);
 	audit::insert_creation (AUDIT_PRET, $stat_id) ;
+	
+	//enregistrer les champs perso pret
+	$p_perso=new pret_parametres_perso("pret");
+	$p_perso->rec_fields_perso($stat_id);
 	
 	$query = "update exemplaires SET ";
 	$query.= "last_loan_date = sysdate() ";
 	$query.= "where expl_id= '".$id_expl."' ";
-	$result = @ mysql_query($query, $dbh) or die("can't update last_loan_date in exemplaires : ".$query);
+	$result = @ pmb_mysql_query($query, $dbh) or die("can't update last_loan_date in exemplaires : ".$query);
 
 	$query = "update empr SET ";
 	$query.= "last_loan_date = sysdate() ";
 	$query.= "where id_empr= '".$id_empr."' ";
-	$result = @ mysql_query($query, $dbh) or die("can't update last_loan_date in empr : ".$query);
+	$result = @ pmb_mysql_query($query, $dbh) or die("can't update last_loan_date in empr : ".$query);
 
 }
 
@@ -393,18 +399,18 @@ function del_resa($id_empr, $id_notice, $id_bulletin, $cb_encours_de_pret) {
 	if (!$id_bulletin)
 		$id_bulletin = 0;
 	$rqt = "select resa_cb, id_resa from resa where resa_idnotice='".$id_notice."' and resa_idbulletin='".$id_bulletin."'  and resa_idempr='".$id_empr."' ";
-	$res = mysql_query($rqt, $dbh);
-	$obj = mysql_fetch_object($res);
+	$res = pmb_mysql_query($rqt, $dbh);
+	$obj = pmb_mysql_fetch_object($res);
 	$cb_recup = $obj->resa_cb;
 	$id_resa = $obj->id_resa;
 	
 	// suppression
 	$rqt = "delete from resa where id_resa='".$id_resa."' ";
-	$res = mysql_query($rqt, $dbh);
+	$res = pmb_mysql_query($rqt, $dbh);
 	
 	// si on delete une resa à partir d'un prêt, on invalide la résa qui était validée avec le cb, mais on ne change pas les dates, ça sera fait par affect_cb
 	$rqt_invalide_resa = "update resa set resa_cb='' where resa_cb='".$cb_encours_de_pret."' " ;  
-	$res = mysql_query ($rqt_invalide_resa, $dbh) ;
+	$res = pmb_mysql_query($rqt_invalide_resa, $dbh) ;
 												
 	// réaffectation du doc éventuellement
 	if ($cb_recup != $cb_encours_de_pret) {
@@ -416,13 +422,13 @@ function del_resa($id_empr, $id_notice, $id_bulletin, $cb_encours_de_pret) {
 			if (!$res_affectation && $cb_recup) {
 				// cb non réaffecté, il faut transférer les infos de la résa dans la table des docs à ranger
 				$rqt = "insert into resa_ranger (resa_cb) values ('".$cb_recup."') ";
-				$res = mysql_query($rqt, $dbh);
+				$res = pmb_mysql_query($rqt, $dbh);
 				}
 			}
 		}
 	// Au cas où il reste des résa invalidées par resa_cb, on leur colle les dates comme il faut...
 	$rqt_invalide_resa = "update resa set resa_date_debut='0000-00-00', resa_date_fin='0000-00-00' where resa_cb='' " ;  
-	$res = mysql_query ($rqt_invalide_resa, $dbh) ;
+	$res = pmb_mysql_query($rqt_invalide_resa, $dbh) ;
 	return TRUE;
 }
 
@@ -430,14 +436,14 @@ function rec_pret($reader,$line) {
 	global $msg,$dbh;
 	//Recherche du lecteur
 	$requete="select id_empr from empr where empr_cb='".addslashes($reader)."'";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-		$id_empr=mysql_result($resultat,0,0);
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+		$id_empr=pmb_mysql_result($resultat,0,0);
 		//Recherche du lecteur
 		$requete="select expl_id from exemplaires where expl_cb='".addslashes($line)."'";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$expl_id=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$expl_id=pmb_mysql_result($resultat,0,0);
 			print pmb_bidi("<div class='erreur'>Prêt <a href='./circ.php?categ=visu_ex&form_cb_expl=".rawurlencode($line)."'>".$line."</a> pour <a href='./circ.php?categ=pret&form_cb=".rawurlencode($reader)."'>".$reader."</a></div>");	
 			if (check_empr_secouru($id_empr)) {
 				$empr_temp = new emprunteur($id_empr, '', FALSE, 1);
@@ -457,7 +463,7 @@ function rec_pret($reader,$line) {
 					if ($statut -> flag && ($statut -> flag & HAS_RESA_GOOD)) {
 						// archivage resa
 						$rqt_arch = "UPDATE resa_archive, resa SET resarc_pretee = 1 WHERE id_resa = '".$statut->id_resa."' AND resa_arc = resarc_id ";	
-						mysql_query($rqt_arch, $dbh);
+						pmb_mysql_query($rqt_arch, $dbh);
 						
 						// suppression de la resa pour ce lecteur
 						del_resa($id_empr, $statut -> idnotice, $statut -> idbulletin, $statut -> expl_cb);
@@ -528,8 +534,8 @@ function do_retour_secouru($stuff) {
 	$query .= " and s.idsection=".$stuff->expl_section;
 	$query .= " limit 1";
 
-	$result = mysql_query($query, $dbh);
-	$info_doc = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query, $dbh);
+	$info_doc = pmb_mysql_fetch_object($result);
 	print pmb_bidi('<br />'.$info_doc->type_doc);
 	print pmb_bidi('.&nbsp;'.$info_doc->location);
 	print pmb_bidi('.&nbsp;'.$info_doc->section);
@@ -553,8 +559,8 @@ function do_retour_secouru($stuff) {
 			
 		// calcul du retard éventuel
 		$rqt_date = "select ((TO_DAYS(CURDATE()) - TO_DAYS('$stuff->pret_retour'))) as retard ";
-		$resultatdate=mysql_query($rqt_date);
-		$resdate=mysql_fetch_object($resultatdate);
+		$resultatdate=pmb_mysql_query($rqt_date);
+		$resdate=pmb_mysql_fetch_object($resultatdate);
 		$retard = $resdate->retard;
 		
 		if($retard > 0)

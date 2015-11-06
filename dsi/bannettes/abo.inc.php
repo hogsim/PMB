@@ -2,13 +2,13 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abo.inc.php,v 1.24.2.1 2015-09-09 08:16:47 jpermanne Exp $
+// $Id: abo.inc.php,v 1.25 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 if ($id_empr) {
-	$result_empr = mysql_query("select concat(ifnull(concat(empr_nom,' '),''),empr_prenom) as nom_prenom from empr where id_empr=$id_empr") ;
-	$nom_prenom_abo = @ mysql_result($result_empr, '0', 'nom_prenom');
+	$result_empr = pmb_mysql_query("select concat(ifnull(concat(empr_nom,' '),''),empr_prenom) as nom_prenom from empr where id_empr=$id_empr") ;
+	$nom_prenom_abo = @ pmb_mysql_result($result_empr, '0', 'nom_prenom');
 }
 
 if ($nom_prenom_abo) print "<h1>".$msg[dsi_ban_abo]." : $nom_prenom_abo</h1>" ;
@@ -20,8 +20,8 @@ switch($suite) {
         break;
     case 'search':
 		$query = "select id_empr from empr join bannette_abon on id_empr=num_empr where empr_cb='$form_cb' limit 1";
-		$result = mysql_query($query, $dbh);
-		$id_empr = @ mysql_result($result, '0', 'id_empr');
+		$result = pmb_mysql_query($query, $dbh);
+		$id_empr = @ pmb_mysql_result($result, '0', 'id_empr');
 		if (($id_empr) && ($form_cb)) {
 			print dsi_list_bannettes_abo($id_empr) ;
 		} else {
@@ -40,7 +40,7 @@ switch($suite) {
     	$temp->id_equation=         $id_equation;		
 		$temp->num_classement=      0;	
 		$temp->nom_equation=        $equ_human;	
-		$temp->comment_equation=	addslashes($equation->comment_equation);
+		$temp->comment_equation=	$equation->comment_equation ;
 		$temp->requete=				$requete;	
 		$temp->proprio_equation=	$equation->proprio_equation;	
 		$temp->update_type=			"C";

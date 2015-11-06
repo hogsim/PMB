@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: simple_search.inc.php,v 1.110.2.4 2015-05-15 12:57:00 jpermanne Exp $
+// $Id: simple_search.inc.php,v 1.120 2015-05-15 12:55:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,6 +15,8 @@ require_once($class_path."/thesaurus.class.php");
 require_once($class_path."/search_persopac.class.php");
 require_once($base_path."/classes/perio_a2z.class.php");
 require($include_path."/templates/search.tpl.php");//Car si l'on a des vues activées les variables globales de ce fichier ne sont pas celles de la vue lors du premier chargement mais les valeurs par défaut. il faut donc forcer son rechargement
+require_once($base_path."/classes/authperso.class.php");
+require_once($class_path."/skos/skos_concept.class.php");
 
 function simple_search_content($value='',$css) {
 	global $dbh;
@@ -47,6 +49,9 @@ function simple_search_content($value='',$css) {
 	global $get_query;
 	global $opac_show_onglet_perio_a2z,$opac_autolevel2;
 	global $opac_simple_search_suggestions;
+	global $opac_show_onglet_map, $opac_map_activate;
+	global $opac_map_base_layer_params,$opac_map_size_search_edition,$opac_map_base_layer_type;
+	global $map_emprises_query;
 	
 	include($include_path."/templates/simple_search.tpl.php");
 	if ($opac_search_other_function) require_once($include_path."/".$opac_search_other_function);
@@ -80,14 +85,14 @@ function simple_search_content($value='',$css) {
 			// les typ_doc
 			if ($opac_search_show_typdoc) {
 				$query = "SELECT typdoc FROM notices where typdoc!='' GROUP BY typdoc";
-				$result2 = mysql_query($query, $dbh);
+				$result2 = pmb_mysql_query($query, $dbh);
 				$toprint_typdocfield = " <select name='typdoc'>";
 				$toprint_typdocfield .= "  <option ";
 				$toprint_typdocfield .=" value=''";
 				if ($typdoc=='') $toprint_typdocfield .=" selected";
 				$toprint_typdocfield .=">".$msg["simple_search_all_doc_type"]."</option>\n";
 				$doctype = new marc_list('doctype');
-				while (($rt = mysql_fetch_row($result2))) {
+				while (($rt = pmb_mysql_fetch_row($result2))) {
 					$obj[$rt[0]]=1;
 				}	
 				foreach ($doctype->table as $key=>$libelle){
@@ -128,7 +133,32 @@ function simple_search_content($value='',$css) {
 				$ou_chercher="\n".do_ou_chercher_hidden()."\n" ;
 			
 			$result = str_replace("<!--!!ou_chercher!!-->", $ou_chercher, $result);
-
+			// map
+			if($opac_map_activate){
+				$layer_params = json_decode($opac_map_base_layer_params,true);
+				$baselayer =  "baseLayerType: dojox.geo.openlayers.BaseLayerType.".$opac_map_base_layer_type;
+				if(count($layer_params)){
+					if($layer_params['name']) $baselayer.=",baseLayerName:\"".$layer_params['name']."\"";
+					if($layer_params['url']) $baselayer.=",baseLayerUrl:\"".$layer_params['url']."\"";
+					if($layer_params['options']) $baselayer.=",baseLayerOptions:".json_encode($layer_params['options']);
+				}				
+				$size=explode("*",$opac_map_size_search_edition);
+				if(count($size)!=2)$map_size="width:800px; height:480px;";
+				$map_size= "width:".$size[0]."px; height:".$size[1]."px;";
+				
+				if(!$map_emprises_query)$map_emprises_query = array();
+				$map_holds=array();
+				foreach($map_emprises_query as $map_hold){
+					$map_holds[] = array(
+							"wkt" => $map_hold,
+							"type"=> "search",
+							"color"=> null,
+							"objects"=> array()
+					);
+				}
+				$r="<div id='map_search' data-dojo-type='apps/map/map_controler' style='$map_size' data-dojo-props='".$baselayer.",mode:\"search_criteria\",hiddenField:\"map_emprises_query\",searchHolds:".json_encode($map_holds,true)."'></div>";				
+				$result = str_replace("!!map!!", $r,  $result);
+			}	
 			// on se place dans le bon champ
 			// $result .= form_focus("search_input", "query");
 			$others="";
@@ -142,7 +172,8 @@ function simple_search_content($value='',$css) {
 				if (!$_SESSION["user_code"]) $others.="<li><a href=\"./index.php?search_type_asked=connect_empr\">".$msg["onglet_empr_connect"]."</a></li>";
 					else $others.="<li><a href=\"$empr_link_onglet\">".$msg["onglet_empr_compte"]."</a></li>";
 				}
-			if ($opac_allow_external_search) $others.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";
+			if ($opac_allow_external_search) $others.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";			
+			if ($opac_show_onglet_map && $opac_map_activate) $others.="<li><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
 			$result=str_replace("!!others!!",$others,$result);
 			$result.=$onglets_search_perso_form;
 			break;
@@ -178,17 +209,58 @@ function simple_search_content($value='',$css) {
 							
 						break;
 						case 'section_see':
-							$resultat=mysql_query("select location_libelle from docs_location where idlocation='".addslashes($_SESSION["last_module_search"]["search_location"])."'");
-							$j=mysql_fetch_array($resultat);
+							$resultat=pmb_mysql_query("select location_libelle from docs_location where idlocation='".addslashes($_SESSION["last_module_search"]["search_location"])."'");
+							$j=pmb_mysql_fetch_array($resultat);
 							$localisation_=$j["location_libelle"];
-							mysql_free_result($resultat);
-							$resultat=mysql_query("select section_libelle from docs_section where idsection='".addslashes($_SESSION["last_module_search"]["search_id"])."'");
-							$j=mysql_fetch_array($resultat);
+							pmb_mysql_free_result($resultat);
+							$resultat=pmb_mysql_query("select section_libelle from docs_section where idsection='".addslashes($_SESSION["last_module_search"]["search_id"])."'");
+							$j=pmb_mysql_fetch_array($resultat);
 							$section_=$j["section_libelle"];
-							mysql_free_result($resultat);
+							pmb_mysql_free_result($resultat);
 							$r1 = $localisation_." => ".$msg["section"];
 							$r=$r1." '".$section_."'";
 						break;
+						case "author_see" :
+							$ourAuthor = new auteur($_SESSION["last_module_search"]["search_id"]);
+							$r1 = $msg['author'];
+							$r = $r1." '".$ourAuthor->isbd_entry."'";
+							break;
+						case "coll_see" :
+							$ourColl = new collection($_SESSION["last_module_search"]["search_id"]);
+							$r1 = $msg['coll_search'];
+							$r = $r1." '".$ourColl->isbd_entry."'";
+							break;
+						case "subcoll_see" :
+							$ourSubcoll = new subcollection($_SESSION["last_module_search"]["search_id"]);
+							$r1 = $msg['subcoll_search'];
+							$r = $r1." '".$ourSubcoll->isbd_entry."'";
+							break;
+						case "titre_uniforme_see" :
+							$ourTu = new titre_uniforme($_SESSION["last_module_search"]["search_id"]);
+							$r1 = $msg['titre_uniforme_search'];
+							$ourTu->do_isbd();
+							$r = $r1." '".$ourTu->tu_isbd."'";
+							break;
+						case "publisher_see" :
+							$ourPub = new publisher($_SESSION["last_module_search"]["search_id"]);
+							$r1 = $msg['publisher_search'];
+							$r = $r1." '".$ourPub->isbd_entry."'";
+							break;
+						case "serie_see" :
+							$ourSerie = new serie($_SESSION["last_module_search"]["search_id"]);
+							$r1 = $msg['serie_query'];
+							$r = $r1." '".$ourSerie->name."'";
+							break;
+						case "concept_see" :
+							$ourConcept = new skos_concept($_SESSION["last_module_search"]["search_id"]);
+							$r1 = $msg['skos_concept'];
+							$r = $r1." '".$ourConcept->get_display_label()."'";
+							break;
+						case "authperso_see" :
+							$ourAuth = new authperso_authority($_SESSION["last_module_search"]["search_id"]);
+							$r1 = $ourAuth->info['authperso']['name'];
+							$r = $r1." '".$ourAuth->info['isbd']."'";
+							break;
 					}
 					$_SESSION["human_query".$n]=$r;
 					$_SESSION["search_type".$n]="module";
@@ -295,6 +367,7 @@ function simple_search_content($value='',$css) {
 				else $others2.="<li><a href=\"$empr_link_onglet\">".$msg["onglet_empr_compte"]."</a></li>";
 			}
 			if ($opac_allow_external_search) $others2.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";
+			if ($opac_show_onglet_map && $opac_map_activate) $others.="<li><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
 			$result=str_replace("!!others!!",$others,$result);
 			$result=str_replace("!!others2!!",$others2,$result);
 			$result="<div id='search'>".$result."</div>";
@@ -335,14 +408,14 @@ function simple_search_content($value='',$css) {
 							
 						break;
 						case 'section_see':
-							$resultat=mysql_query("select location_libelle from docs_location where idlocation='".addslashes($_SESSION["last_module_search"]["search_location"])."'");
-							$j=mysql_fetch_array($resultat);
+							$resultat=pmb_mysql_query("select location_libelle from docs_location where idlocation='".addslashes($_SESSION["last_module_search"]["search_location"])."'");
+							$j=pmb_mysql_fetch_array($resultat);
 							$localisation_=$j["location_libelle"];
-							mysql_free_result($resultat);
-							$resultat=mysql_query("select section_libelle from docs_section where idsection='".addslashes($_SESSION["last_module_search"]["search_id"])."'");
-							$j=mysql_fetch_array($resultat);
+							pmb_mysql_free_result($resultat);
+							$resultat=pmb_mysql_query("select section_libelle from docs_section where idsection='".addslashes($_SESSION["last_module_search"]["search_id"])."'");
+							$j=pmb_mysql_fetch_array($resultat);
 							$section_=$j["section_libelle"];
-							mysql_free_result($resultat);
+							pmb_mysql_free_result($resultat);
 							$r1 = $localisation_." => ".$msg["section"];
 							$r=$r1." '".$section_."'";
 						break;
@@ -448,6 +521,7 @@ function simple_search_content($value='',$css) {
 			if ($opac_allow_term_search) $others.="<li><a href=\"./index.php?search_type_asked=term_search\">".$msg["term_search"]."</a></li>\n";
 			if ($opac_allow_tags_search) $others.="<li><a href=\"./index.php?search_type_asked=tags_search\">".$msg["tags_search"]."</a></li>";
 			if ($opac_show_onglet_perio_a2z) $others.="<li><a href=\"./index.php?search_type_asked=perio_a2z\">".$msg["a2z_onglet"]."</a></li>";
+			if ($opac_show_onglet_map && $opac_map_activate) $others.="<li><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
 			if (($opac_show_onglet_empr==1)||(($opac_show_onglet_empr==2)&&($_SESSION["user_code"]))) {
 				if (!$_SESSION["user_code"]) $others.="<li><a href=\"./index.php?search_type_asked=connect_empr\">".$msg["onglet_empr_connect"]."</a></li>";
 				else $others.="<li><a href=\"$empr_link_onglet\">".$msg["onglet_empr_compte"]."</a></li>";
@@ -536,6 +610,7 @@ function simple_search_content($value='',$css) {
 			}
 			if ($opac_allow_external_search) $others.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";
 			$result=str_replace("!!others!!",$others,$result);
+			if ($opac_show_onglet_map && $opac_map_activate) $others.="<li><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
 			$result.="
 			<a name='search_frame'/>
 			<iframe style='border: solid 1px black;' name='term_search' class='frame_term_search' src='".$base_path."/term_browse.php?search_term=".rawurlencode(stripslashes($search_term))."&term_click=".rawurlencode(stripslashes($term_click))."&page_search=$page_search&id_thes=$id_thes' width='100%' height='".$height."'></iframe>
@@ -575,6 +650,7 @@ function simple_search_content($value='',$css) {
 			}
 			if ($opac_allow_external_search) $others.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";
 			$result=str_replace("!!others!!",$others,$result);
+			if ($opac_show_onglet_map && $opac_map_activate) $others.="<li><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
 			// Ajout de la liste des tags
 			if($user_query=="") {
 				$result.= "<h3><span>$msg[search_result_for]<b>".htmlentities(stripslashes($user_query),ENT_QUOTES,$charset)."</b></span></h3>";
@@ -602,6 +678,7 @@ function simple_search_content($value='',$css) {
 				else $others.="<li id='current'>".$msg["onglet_empr_compte"]."</li>";
 			}
 			if ($opac_allow_external_search) $others.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";
+			if ($opac_show_onglet_map && $opac_map_activate) $others.="<li><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
 			$result=str_replace("!!account_or_form_empr_connect!!",affichage_onglet_compte_empr(),$result);
 			$result=str_replace("!!others!!",$others,$result);
 			$result.=$onglets_search_perso_form;
@@ -622,6 +699,7 @@ function simple_search_content($value='',$css) {
 				else $others.="<li><a href=\"$empr_link_onglet\">".$msg["onglet_empr_compte"]."</a></li>";
 			}			
 			if ($opac_allow_external_search) $others.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";
+			if ($opac_show_onglet_map && $opac_map_activate) $others.="<li><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
 			
 			$search_p= new search_persopac();
 			$result=str_replace("!!contenu!!",$search_p->do_list(),$result);
@@ -644,6 +722,7 @@ function simple_search_content($value='',$css) {
 				else $others.="<li><a href=\"$empr_link_onglet\">".$msg["onglet_empr_compte"]."</a></li>";
 			}
 			if ($opac_allow_external_search) $others.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";
+			if ($opac_show_onglet_map && $opac_map_activate) $others.="<li><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
 			$result=str_replace("!!others!!",$others,$result);
 			
 			// affichage des _perio_a2z		
@@ -652,8 +731,146 @@ function simple_search_content($value='',$css) {
 			$a2z_form.=$onglets_search_perso_form;	
 			$result=str_replace("!!contenu!!",$a2z_form,$result);
 			break;
-		
 			
+			case "map":
+				$result = $search_input;
+				$others.="<li><a href=\"./index.php?search_type_asked=simple_search\">".$msg["simple_search"]."</a></li>\n";
+				if ($opac_allow_personal_search) $others.="<li><a href=\"./index.php?search_type_asked=search_perso\">".$msg["search_perso_menu"]."</a></li>";
+				$others.=$onglets_search_perso;
+				if ($opac_allow_extended_search) $others.="<li><a href=\"./index.php?search_type_asked=extended_search\">".$msg["extended_search"]."</a></li>";
+				if ($opac_allow_term_search) $others.="<li><a href=\"./index.php?search_type_asked=term_search\">".$msg["term_search"]."</a></li>";
+				if ($opac_allow_tags_search) $others.="<li><a href=\"./index.php?search_type_asked=tags_search\">".$msg["tags_search"]."</a></li>";
+				if ($opac_show_onglet_perio_a2z) $others.="<li>".$msg["a2z_onglet"]."</li>";
+				if (($opac_show_onglet_empr==1)||(($opac_show_onglet_empr==2)&&($_SESSION["user_code"]))) {
+					if (!$_SESSION["user_code"]) $others.="<li><a href=\"./index.php?search_type_asked=connect_empr\">".$msg["onglet_empr_connect"]."</a></li>";
+					else $others.="<li><a href=\"$empr_link_onglet\">".$msg["onglet_empr_compte"]."</a></li>";
+				}
+				if ($opac_allow_external_search) $others.="<li><a href=\"./index.php?search_type_asked=external_search&external_type=simple\">".$msg["connecteurs_external_search"]."</a></li>";
+				if ($opac_show_onglet_map && $opac_map_activate) $others.="<li id='current'><a href=\"./index.php?search_type_asked=map\">".$msg["search_by_map"]."</a></li>";
+				$result=str_replace("!!others!!",$others,$result);
+					
+				// affichage page géolocalisation
+				global $msg;
+				global $dbh;
+				global $charset,$lang;
+				global $all_query,$typdoc_query, $statut_query, $docnum_query, $pmb_indexation_docnum_allfields, $pmb_indexation_docnum;
+				global $categ_query,$thesaurus_auto_postage_search,$auto_postage_query;
+				global $thesaurus_concepts_active,$concept_query;
+				global $map_echelle_query,$map_projection_query,$map_ref_query,$map_equinoxe_query;
+				global $opac_map_size_search_edition;
+				global $opac_map_base_layer_type;
+				global $opac_map_base_layer_params;
+				global $map_emprises_query;
+				
+				// on commence par créer le champ de sélection de document
+				// récupération des types de documents utilisés.
+				
+				$query = "SELECT count(typdoc), typdoc ";
+				$query .= "FROM notices where typdoc!='' GROUP BY typdoc";
+				$res = @pmb_mysql_query($query, $dbh);
+				$toprint_typdocfield .= "  <option value=''>$msg[tous_types_docs]</option>\n";
+				$doctype = new marc_list('doctype');
+				while (($rt = pmb_mysql_fetch_row($res))) {
+					$obj[$rt[1]]=1;
+					$qte[$rt[1]]=$rt[0];
+				}
+				foreach ($doctype->table as $key=>$libelle){
+					if ($obj[$key]==1){
+						$toprint_typdocfield .= "  <option ";
+						$toprint_typdocfield .= " value='$key'";
+						if ($typdoc == $key) $toprint_typdocfield .=" selected='selected' ";
+						$toprint_typdocfield .= ">".htmlentities($libelle." (".$qte[$key].")",ENT_QUOTES, $charset)."</option>\n";
+					}
+				}
+				
+				// récupération des statuts de documents utilisés.
+				$query = "SELECT count(statut), id_notice_statut, gestion_libelle ";
+				$query .= "FROM notices, notice_statut where id_notice_statut=statut GROUP BY id_notice_statut order by gestion_libelle";
+				$res = pmb_mysql_query($query, $dbh);
+				$toprint_statutfield .= "  <option value=''>$msg[tous_statuts_notice]</option>\n";
+				while ($obj = @pmb_mysql_fetch_row($res)) {
+					$toprint_statutfield .= "  <option value='$obj[1]'";
+					if ($statut_query==$obj[1]) $toprint_statutfield.=" selected";
+					$toprint_statutfield .=">".htmlentities($obj[2]."  (".$obj[0].")",ENT_QUOTES, $charset)."</OPTION>\n";
+				}
+				
+				$search_form_map = str_replace("!!typdocfield!!", $toprint_typdocfield, $search_form_map);
+				$search_form_map = str_replace("!!statutfield!!", $toprint_statutfield, $search_form_map);
+				$search_form_map = str_replace("!!all_query!!", htmlentities(stripslashes($all_query),ENT_QUOTES, $charset),  $search_form_map);
+				$search_form_map = str_replace("!!categ_query!!", htmlentities(stripslashes($categ_query),ENT_QUOTES, $charset),  $search_form_map);
+				
+				if($thesaurus_concepts_active){
+					$search_form_map = str_replace("!!concept_query!!", htmlentities(stripslashes($concept_query),ENT_QUOTES, $charset),  $search_form_map);
+				}
+				// map
+				$layer_params = json_decode($opac_map_base_layer_params,true);
+				$baselayer =  "baseLayerType: dojox.geo.openlayers.BaseLayerType.".$opac_map_base_layer_type;
+				if(count($layer_params)){
+					if($layer_params['name']) $baselayer.=",baseLayerName:\"".$layer_params['name']."\"";
+					if($layer_params['url']) $baselayer.=",baseLayerUrl:\"".$layer_params['url']."\"";
+					if($layer_params['options']) $baselayer.=",baseLayerOptions:".json_encode($layer_params['options']);
+				}
+				
+				$size=explode("*",$opac_map_size_search_edition);
+				if(count($size)!=2)$map_size="width:800px; height:480px;";
+				$map_size= "width:".$size[0]."px; height:".$size[1]."px;";
+				
+				if(!$map_emprises_query)$map_emprises_query = array();
+				$map_holds=array();
+				foreach($map_emprises_query as $map_hold){
+					$map_holds[] = array(
+							"wkt" => $map_hold,
+							"type"=> "search",
+							"color"=> null,
+							"objects"=> array()
+					);
+				}
+				$r="<div id='map_search' data-dojo-type='apps/map/map_controler' style='$map_size' data-dojo-props='".$baselayer.",mode:\"search_criteria\",hiddenField:\"map_emprises_query\",searchHolds:".json_encode($map_holds,true)."'></div>";
+				
+				$search_form_map = str_replace("!!map!!", $r,  $search_form_map);
+				
+				//champs maps
+				$requete = "SELECT map_echelle_id, map_echelle_name FROM map_echelles ORDER BY map_echelle_name ";
+				$projections=gen_liste($requete,"map_echelle_id","map_echelle_name","map_echelle_query","",$map_echelle_query,0,"",0,$msg['map_echelle_vide']);
+				$search_form_map=str_replace("!!map_echelle_list!!",$projections,$search_form_map);
+				
+				$requete = "SELECT map_projection_id, map_projection_name FROM map_projections ORDER BY map_projection_name ";
+				$projections=gen_liste($requete,"map_projection_id","map_projection_name","map_projection_query","",$map_projection_query,0,"",0,$msg['map_projection_vide']);
+				$search_form_map=str_replace("!!map_projection_list!!",$projections,$search_form_map);
+				
+				$requete = "SELECT map_ref_id, map_ref_name FROM map_refs ORDER BY map_ref_name ";
+				$refs=gen_liste($requete,"map_ref_id","map_ref_name","map_ref_query","",$map_ref_query,0,"",0,$msg['map_ref_vide']);
+				$search_form_map=str_replace("!!map_ref_list!!",$refs,$search_form_map);
+				
+				$search_form_map=str_replace("!!map_equinoxe_value!!",$map_equinoxe_query,$search_form_map);
+				
+				$checkbox="";
+				if($thesaurus_auto_postage_search){
+					$checkbox = "
+					<div class='colonne'>
+					<div class='row'>
+					<input type='checkbox' !!auto_postage_checked!! id='auto_postage_query' name='auto_postage_query'/><label for='auto_postage_query'>".$msg["search_autopostage_check"]."</label>
+					</div>
+					</div>";
+					$checkbox = str_replace("!!auto_postage_checked!!",   (($auto_postage_query) ? 'checked' : ''),  $checkbox);
+				}
+				$search_form_map = str_replace("!!auto_postage!!",   $checkbox,  $search_form_map);
+				
+				if($pmb_indexation_docnum){
+					$checkbox = "<div class='colonne'>
+					<div class='row'>
+					<input type='checkbox' !!docnum_query_checked!! id='docnum_query' name='docnum_query'/><label for='docnum_query'>$msg[docnum_indexation]</label>
+					</div>
+					</div>";
+					$checkbox = str_replace("!!docnum_query_checked!!",   (($pmb_indexation_docnum_allfields || $docnum_query) ? 'checked' : ''),  $checkbox);
+					$search_form_map = str_replace("!!docnum_query!!",   $checkbox,  $search_form_map);
+				} else $search_form_map = str_replace("!!docnum_query!!", '' ,  $search_form_map);
+			//	$search_form_map = str_replace("!!base_url!!",     $this->base_url,$search_form_map);
+
+				
+				$result=str_replace("!!contenu!!",$search_form_map,$result);
+				break;
+						
 	}
 	return $result;
 }
@@ -671,7 +888,8 @@ function do_ou_chercher () {
 	       $look_ABSTRACT,
 	       $look_ALL,
 	       $look_DOCNUM,
-	       $look_CONTENT;
+	       $look_CONTENT,
+		   $look_CONCEPT;
 
 	global $look_FIRSTACCESS ; // si 0 alors premier Acces : la rech par defaut est cochee
 	
@@ -705,6 +923,7 @@ function do_ou_chercher () {
 		$opac_modules_search_all,
 		$opac_modules_search_docnum,
 		$pmb_indexation_docnum,
+		$opac_modules_search_concept,
 		$opac_allow_tags_search;
 		// $opac_modules_search_content; inutilise pour l'instant, le search_abstract cherche aussi dans les notes de contenu
 	
@@ -724,6 +943,7 @@ function do_ou_chercher () {
 		if ($opac_modules_search_abstract==2) $look_ABSTRACT = 1 ;
 		if ($opac_modules_search_all==2) $look_ALL = 1 ;
 		if ($opac_modules_search_docnum==2) $look_DOCNUM = 1;
+		if ($opac_modules_search_concept==2) $look_CONCEPT = 1;
 	}
 	if ($look_TITLE) 		$checked_TITLE = "checked" ;        
 	if ($look_AUTHOR)		$checked_AUTHOR = "checked" ;              
@@ -735,10 +955,14 @@ function do_ou_chercher () {
 	if ($look_INDEXINT)		$checked_INDEXINT = "checked" ;            
 	if ($look_KEYWORDS)		$checked_KEYWORDS = "checked" ;            
 	if ($look_ABSTRACT)		$checked_ABSTRACT = "checked" ;    
-	if ($look_ALL)		$checked_ALL = "checked" ; 
-	if ($look_DOCNUM) $checked_DOCNUM = "checked";         
+	if ($look_ALL)		$checked_ALL = "checked" ;
+	if ($look_DOCNUM) $checked_DOCNUM = "checked";
+	if ($look_CONCEPT) $checked_CONCEPT = "checked";
 
-	if (!($look_TITLE || $look_AUTHOR || $look_PUBLISHER || $look_TITRE_UNIFORME || $look_COLLECTION || $look_SUBCOLLECTION || $look_CATEGORY || $look_INDEXINT || $look_KEYWORDS || $look_ABSTRACT || $look_ALL || $look_DOCNUM)) {
+	$authpersos=new authpersos();
+	$ou_chercher_authperso_tab=$authpersos->get_simple_seach_list_tpl();
+	
+	if (!($look_TITLE || $look_AUTHOR || $look_PUBLISHER || $look_TITRE_UNIFORME || $look_COLLECTION || $look_SUBCOLLECTION || $look_CATEGORY || $look_INDEXINT || $look_KEYWORDS || $look_ABSTRACT || $look_ALL || $look_DOCNUM || $look_CONCEPT || $authpersos->simple_seach_list_checked)) {
 		$checked_TITLE = "checked" ;
 		$look_TITLE = "1" ;
 		$checked_AUTHOR = "checked" ;
@@ -764,7 +988,10 @@ function do_ou_chercher () {
 	if ($opac_modules_search_abstract>0) $ou_chercher_tab[] = "\n<span style='width: 30%; float: left;'><input type='checkbox' name='look_ABSTRACT' id='look_ABSTRACT' value='1' $checked_ABSTRACT /><label for='look_ABSTRACT'> $msg[abstract] </label></span>";
 	if ($opac_modules_search_all>0) $ou_chercher_tab[] = "\n<span style='width: 30%; float: left;'><input type='checkbox' name='look_ALL' id='look_ALL' value='1' $checked_ALL /><label for='look_ALL'> ".$msg['tous']." </label></span>";
 	if (($pmb_indexation_docnum && $opac_modules_search_docnum)>0) $ou_chercher_tab[] = "\n<span style='width: 30%; float: left;'><input type='checkbox' name='look_DOCNUM' id='look_DOCNUM' value='1' $checked_DOCNUM /><label for='look_DOCNUM'> ".$msg['docnum']." </label></span>";
-
+	if ($opac_modules_search_concept>0) $ou_chercher_tab[] = "\n<span style='width: 30%; float: left;'><input type='checkbox' name='look_CONCEPT' id='look_CONCEPT' value='1' $checked_CONCEPT /><label for='look_CONCEPT'> ".$msg['skos_view_concepts_concepts']." </label></span>";
+	
+	$ou_chercher_tab=array_merge($ou_chercher_tab,$ou_chercher_authperso_tab);
+	
 	$ou_chercher = "<div class='row'>" ;
 	for ($nbopac_smodules=0;$nbopac_smodules<count($ou_chercher_tab);$nbopac_smodules++) {
 		if ((($nbopac_smodules+1)/3)==(($nbopac_smodules+1) % 3)) $ou_chercher .= "</div><div class='row'>" ;
@@ -790,7 +1017,8 @@ function do_ou_chercher_hidden () {
 		$opac_modules_search_keywords,
 		$opac_modules_search_abstract,
 		$opac_modules_search_docnum,
-		$opac_modules_search_all ;
+		$opac_modules_search_all,
+		$opac_modules_search_concept;
 	
 	$ou_chercher_hidden = '' ;
 	if ($opac_modules_search_title>1) $ou_chercher_hidden .= "<input type='hidden' name='look_TITLE' id='look_TITLE' value='1' />";
@@ -805,7 +1033,10 @@ function do_ou_chercher_hidden () {
 	if ($opac_modules_search_abstract>1) $ou_chercher_hidden .= "<input type='hidden' name='look_ABSTRACT' id='look_ABSTRACT' value='1' />";
 	if ($opac_modules_search_all>1) $ou_chercher_hidden .= "<input type='hidden' name='look_ALL' id='look_ALL' value='1' />";
 	if ($opac_modules_search_docnum>1) $ou_chercher_hidden .= "<input type='hidden' name='look_DOCNUM' id='look_DOCNUM' value='1' />";
+	if ($opac_modules_search_concept>1) $ou_chercher_hidden .= "<input type='hidden' name='look_CONCEPT' id='look_CONCEPT' value='1' />";
 	
+	$authpersos=new authpersos();
+	$ou_chercher_hidden.=$authpersos->get_simple_seach_list_tpl_hiden();
 	return $ou_chercher_hidden;
 }
 
@@ -832,9 +1063,9 @@ function get_field_text($n) {
 			//Recherche de l'auteur
 			$author_id=$_SESSION["notice_view".$n]["search_id"];
 			$requete="select concat(author_name,', ',author_rejete) from authors where author_id='".addslashes($author_id)."'";
-			$r_author=mysql_query($requete);
-			if (@mysql_num_rows($r_author)) {
-				$valeur_champ=mysql_result($r_author,0,0);
+			$r_author=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($r_author)) {
+				$valeur_champ=pmb_mysql_result($r_author,0,0);
 			}
 			$typ_search="look_AUTHOR";
 		break;
@@ -842,9 +1073,9 @@ function get_field_text($n) {
 			//Recherche de la categorie
 			$categ_id=$_SESSION["notice_view".$n]["search_id"];
 			$requete="select libelle_categorie from categories where num_noeud='".addslashes($categ_id)."'";
-			$r_cat=mysql_query($requete);
-			if (@mysql_num_rows($r_cat)) {
-				$valeur_champ=mysql_result($r_cat,0,0);
+			$r_cat=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($r_cat)) {
+				$valeur_champ=pmb_mysql_result($r_cat,0,0);
 			}
 			$typ_search="look_CATEGORY";
 		break;		
@@ -852,9 +1083,9 @@ function get_field_text($n) {
 			//Recherche de l'indexation
 			$indexint_id=$_SESSION["notice_view".$n]["search_id"];
 			$requete="select indexint_name from indexint where indexint_id='".addslashes($indexint_id)."'";
-			$r_indexint=mysql_query($requete);
-			if (@mysql_num_rows($r_indexint)) {
-				$valeur_champ=mysql_result($r_indexint,0,0);
+			$r_indexint=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($r_indexint)) {
+				$valeur_champ=pmb_mysql_result($r_indexint,0,0);
 			}
 			$typ_search="look_INDEXINT";
 		break;		
@@ -862,9 +1093,9 @@ function get_field_text($n) {
 			//Recherche de l'indexation
 			$coll_id=$_SESSION["notice_view".$n]["search_id"];
 			$requete="select collection_name from collections where collection_id='".addslashes($coll_id)."'";
-			$r_coll=mysql_query($requete);
-			if (@mysql_num_rows($r_coll)) {
-				$valeur_champ=mysql_result($r_coll,0,0);
+			$r_coll=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($r_coll)) {
+				$valeur_champ=pmb_mysql_result($r_coll,0,0);
 			}
 			$typ_search="look_COLLECTION";
 		break;		
@@ -872,9 +1103,9 @@ function get_field_text($n) {
 			//Recherche de l'editeur
 			$publisher_id=$_SESSION["notice_view".$n]["search_id"];
 			$requete="select ed_name from publishers where ed_id='".addslashes($publisher_id)."'";
-			$r_pub=mysql_query($requete);
-			if (@mysql_num_rows($r_pub)) {
-				$valeur_champ=mysql_result($r_pub,0,0);
+			$r_pub=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($r_pub)) {
+				$valeur_champ=pmb_mysql_result($r_pub,0,0);
 			}
 			$typ_search="look_PUBLISHER";
 		break;		
@@ -882,9 +1113,9 @@ function get_field_text($n) {
 			//Recherche de titre uniforme
 			$tu_id=$_SESSION["notice_view".$n]["search_id"];
 			$requete="select tu_name from titres_uniformes where ed_id='".addslashes($tu_id)."'";
-			$r_tu=mysql_query($requete);
-			if (@mysql_num_rows($r_tu)) {
-				$valeur_champ=mysql_result($r_tu,0,0);
+			$r_tu=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($r_tu)) {
+				$valeur_champ=pmb_mysql_result($r_tu,0,0);
 			}
 			$typ_search="look_TITRE_UNIFORME";
 		break;				
@@ -892,12 +1123,24 @@ function get_field_text($n) {
 			//Recherche de l'editeur
 			$subcoll_id=$_SESSION["notice_view".$n]["search_id"];
 			$requete="select sub_coll_name from sub_collections where sub_coll_id='".addslashes($subcoll_id)."'";
-			$r_subcoll=mysql_query($requete);
-			if (@mysql_num_rows($r_subcoll)) {
-				$valeur_champ=mysql_result($r_subcoll,0,0);
+			$r_subcoll=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($r_subcoll)) {
+				$valeur_champ=pmb_mysql_result($r_subcoll,0,0);
 			}
 			$typ_search="look_SUBCOLLECTION";
 		break;
+		case 'authperso_see':
+			$authpersos=new authpersos();
+			$info=$authpersos->get_field_text($_SESSION["notice_view".$n]["search_id"]);
+			$valeur_champ=$info['valeur_champ'];
+			$typ_search=$info['typ_search'];
+		break;
+		case 'concept_see':
+			$concept=new skos_concept($_SESSION["notice_view".$n]["search_id"]);
+			$valeur_champ=$concept->get_display_label();
+			$typ_search="look_CONCEPT";
+		break;
+			
 	}
 	return array($valeur_champ,$typ_search);
 }
@@ -908,7 +1151,7 @@ function do_sources() {
 	if (!$source) $source=array();
 	//Recherche des sources
     $requete="SELECT connectors_categ_sources.num_categ, connectors_sources.source_id, connectors_categ.connectors_categ_name as categ_name, connectors_categ.opac_expanded, connectors_sources.name, connectors_sources.comment, connectors_sources.repository, connectors_sources.opac_allowed,connectors_sources.opac_selected, source_sync.cancel FROM connectors_sources LEFT JOIN connectors_categ_sources ON (connectors_categ_sources.num_source = connectors_sources.source_id) LEFT JOIN connectors_categ ON (connectors_categ.connectors_categ_id = connectors_categ_sources.num_categ) LEFT JOIN source_sync ON (connectors_sources.source_id = source_sync.source_id AND connectors_sources.repository=2) WHERE connectors_sources.opac_allowed=1 ORDER BY connectors_categ_sources.num_categ DESC, connectors_sources.name";
-    $resultat=mysql_query($requete, $dbh);
+    $resultat=pmb_mysql_query($requete, $dbh);
     if ($source) $_SESSION["checked_sources"]=$source;
     if ($_SESSION["checked_sources"]&&(!$source)) $source=$_SESSION["checked_sources"];
     //gen_plus_form("zsources",$msg["connecteurs_source_label"],"<!--!!sources!!-->",true)
@@ -916,7 +1159,7 @@ function do_sources() {
     $count = 0;
     $paquets_de_sources = array();
     $paquets_de_source = array();
-    while (($srce=mysql_fetch_object($resultat))) {
+    while (($srce=pmb_mysql_fetch_object($resultat))) {
     	if ($old_categ !== $srce->num_categ) {
     		//$msg["connecteurs_source_label"]
     		if ($paquets_de_source) $paquets_de_sources[] = $paquets_de_source; 

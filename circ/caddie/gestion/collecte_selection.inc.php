@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collecte_selection.inc.php,v 1.5 2009-05-16 11:12:02 dbellamy Exp $
+// $Id: collecte_selection.inc.php,v 1.6 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,15 +32,15 @@ if($idemprcaddie) {
 								exit();
 							}
 							
-						$result_selection = mysql_query($valeur, $dbh);
+						$result_selection = pmb_mysql_query($valeur, $dbh);
 						if (!$result_selection) {
-							error_message_history($msg['caddie_action_invalid_query'],$msg['requete_echouee'].mysql_error(),1);
+							error_message_history($msg['caddie_action_invalid_query'],$msg['requete_echouee'].pmb_mysql_error(),1);
 							exit();
 							}
 						if (pmb_strtolower(pmb_substr($valeur,0,6))=="select") {
-							$nb_element_a_ajouter += mysql_num_rows($result_selection);
-							if(mysql_num_rows($result_selection)) {
-								while ($obj_selection = mysql_fetch_object($result_selection)) 
+							$nb_element_a_ajouter += pmb_mysql_num_rows($result_selection);
+							if(pmb_mysql_num_rows($result_selection)) {
+								while ($obj_selection = pmb_mysql_fetch_object($result_selection)) 
 									$myCart->add_item($obj_selection->object_id);
 								} // fin if mysql_num_rows
 								$myCart->compte_items();
@@ -71,13 +71,13 @@ function show_empr_procs($idemprcaddie) {
 	// affichage du tableau des procédures
 	if ($PMBuserid!=1) $where=" and (autorisations='$PMBuserid' or autorisations like '$PMBuserid %' or autorisations like '% $PMBuserid %' or autorisations like '% $PMBuserid') ";
 	$requete = "SELECT idproc, type, name, requete, comment, autorisations, parameters FROM empr_caddie_procs WHERE type='SELECT' $where ORDER BY name ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		$rqt_autorisation=explode(" ",$row[5]);
 		if (array_search ($PMBuserid, $rqt_autorisation)!==FALSE || $PMBuserid == 1) {
 			if ($parity % 2) {

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: emplacement.inc.php,v 1.1 2009-03-10 08:29:07 ngantier Exp $
+// $Id: emplacement.inc.php,v 1.2 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,13 +32,13 @@ function show_emplacement($dbh) {
 	// affichage du tableau des emplacements
 
 	$requete = "SELECT * FROM arch_emplacement ORDER BY archempla_libelle ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 		} else {
@@ -77,18 +77,18 @@ switch($action) {
 	case 'update':
 		// vérification validité des données fournies.
 		$requete = " SELECT count(1) FROM arch_emplacement WHERE (archempla_libelle='$form_libelle' AND archempla_id!='$id' )  LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 			error_form_message($form_libelle.$msg["emplacement_label_already_used"]);
 		} else {
 			// O.K.,  now if item already exists UPDATE else INSERT
 			if($id != 0) {
 				$requete = "UPDATE arch_emplacement SET archempla_libelle='$form_libelle' WHERE archempla_id=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				$requete = "INSERT INTO arch_emplacement (archempla_id,archempla_libelle) VALUES (0, '$form_libelle') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}
 		}
 		show_emplacement($dbh);
@@ -103,9 +103,9 @@ switch($action) {
 	case 'modif':
 		if($id!=""){
 			$requete = "SELECT archempla_libelle FROM arch_emplacement WHERE archempla_id=$id ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				emplacement_form($row->archempla_libelle, $id);
 			} else {
 					show_emplacement($dbh);
@@ -117,10 +117,10 @@ switch($action) {
 	case 'del':
 		if($id!="") {
 			$total = 0;
-			$total = mysql_num_rows (mysql_query("select 1 from collections_state where collstate_emplacement='".$id."' limit 0,1", $dbh));
+			$total = pmb_mysql_num_rows(pmb_mysql_query("select 1 from collections_state where collstate_emplacement='".$id."' limit 0,1", $dbh));
 			if ($total==0) {
 				$requete = "DELETE FROM arch_emplacement WHERE archempla_id=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_emplacement($dbh);
 			} else {
 				error_message(	$msg[294], $msg["collstate_emplacement_used"], 1, 'admin.php?categ=collstate&sub=emplacement&action=');

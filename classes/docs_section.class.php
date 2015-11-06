@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: docs_section.class.php,v 1.7 2013-04-11 08:08:11 mbertin Exp $
+// $Id: docs_section.class.php,v 1.8 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -46,10 +46,10 @@ function getData() {
 	/* récupération des informations de la catégorie */
 
 	$requete = "SELECT * FROM docs_section WHERE idsection='".$this->id."' ";
-	$result = @mysql_query($requete, $dbh);
-	if(!mysql_num_rows($result)) return;
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(!pmb_mysql_num_rows($result)) return;
 		
-	$data = mysql_fetch_object($result);
+	$data = pmb_mysql_fetch_object($result);
 	$this->id = $data->idsection;		
 	$this->libelle = $data->section_libelle;
 	$this->sdoc_codage_import = $data->sdoc_codage_import;
@@ -75,9 +75,9 @@ function import($data) {
 		return 0;
 		}
 	// check sur les éléments du tableau
-	$long_maxi = mysql_field_len(mysql_query("SELECT section_libelle FROM docs_section limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT section_libelle FROM docs_section limit 1"),0);
 	$data['section_libelle'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['section_libelle']))),0,$long_maxi));
-	$long_maxi = mysql_field_len(mysql_query("SELECT sdoc_codage_import FROM docs_section limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT sdoc_codage_import FROM docs_section limit 1"),0);
 	$data['sdoc_codage_import'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['sdoc_codage_import']))),0,$long_maxi));
 
 	if($data['sdoc_owner']=="") $data['sdoc_owner'] = 0;
@@ -92,9 +92,9 @@ function import($data) {
 	
 	/* vérification que la section existe */
 	$query = "SELECT idsection FROM docs_section WHERE sdoc_codage_import='${key1}' and sdoc_owner = '${key2}' LIMIT 1 ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't SELECT docs_section ".$query);
-	$docs_section  = mysql_fetch_object($result);
+	$docs_section  = pmb_mysql_fetch_object($result);
 
 	/* le type de doc existe, on retourne l'ID */
 	if($docs_section->idsection) return $docs_section->idsection;
@@ -104,11 +104,11 @@ function import($data) {
 	$query .= "section_libelle='".$key0."', ";
 	$query .= "sdoc_codage_import='".$key1."', ";
 	$query .= "sdoc_owner='".$key2."' ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't INSERT into docs_section ".$query);
-	$id_section_cree = mysql_insert_id($dbh);
+	$id_section_cree = pmb_mysql_insert_id($dbh);
 	$query = "insert into docsloc_section (SELECT $id_section_cree, idlocation FROM docs_location) ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 
 	return $id_section_cree ;
 
@@ -130,9 +130,9 @@ static function gen_combo_box ( $selected ) {
 	$option_premier_code="";
 	$option_premier_info="";
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete);
+	$resultat_liste=pmb_mysql_query($requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\">\n" ;
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 		} else {
@@ -143,11 +143,11 @@ static function gen_combo_box ( $selected ) {
 				}
 			$i=0;
 			while ($i<$nb_liste) {
-				$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-				if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+				$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+				if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 					$gen_liste_str.="selected" ;
 					}
-				$gen_liste_str.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
+				$gen_liste_str.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
 				$i++;
 				}
 			}

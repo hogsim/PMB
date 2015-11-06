@@ -98,7 +98,7 @@ class ARC2_RemoteStore extends ARC2_Class {
       return $this->$mthd($q, $infos);
     }
     /* http verb */
-    $mthd = in_array($qt, array('load', 'insert', 'delete')) ? 'POST' : 'GET';
+    $mthd = in_array($qt, array('load', 'insert', 'delete')) ? 'POST' : 'POST';
     /* reader */
     ARC2::inc('Reader');
     $reader = new ARC2_Reader($this->a, $this);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: end_import.php,v 1.13 2013-12-02 09:07:25 dbellamy Exp $
+// $Id: end_import.php,v 1.14 2015-04-03 11:16:22 jpermanne Exp $
 
 //Fin de la conversion
 $base_path = "../..";
@@ -29,8 +29,8 @@ print "<center>".$n_current." ".$msg["admin_conversion_end3"];
 if ($n_errors!=0) {
     print ", ".$n_errors." ".$msg["admin_conversion_end4"];
     $requete="select error_text from error_log where error_origin='convert.log ".$origine."'";
-    $resultat=mysql_query($requete);
-     while (list($err_)=mysql_fetch_row($resultat)) {
+    $resultat=pmb_mysql_query($requete);
+     while (list($err_)=pmb_mysql_fetch_row($resultat)) {
         $errors_msg.=$err_;
     }
 }

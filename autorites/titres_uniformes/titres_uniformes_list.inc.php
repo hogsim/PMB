@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titres_uniformes_list.inc.php,v 1.7.2.1 2014-04-23 14:47:50 gueluneau Exp $
+// $Id: titres_uniformes_list.inc.php,v 1.10 2015-04-23 13:00:54 mhoestlandt Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -50,8 +50,8 @@ if(!$nbr_lignes) {
 		}
 		$requete=$aq->get_query_count("titres_uniformes","tu_name","index_tu","tu_id");
 	}
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 	 
 } else $aq=new analyse_query(stripslashes($user_input),0,0,1,1);
 
@@ -70,8 +70,8 @@ if($nbr_lignes) {
 	
 	$num_auth_present=false;
 	$req="SELECT id_authority_source FROM authorities_sources WHERE authority_type='uniform_title' AND TRIM(authority_number) !='' LIMIT 1";
-	$res_aut=mysql_query($req,$dbh);
-	if($res_aut && mysql_num_rows($res_aut)){
+	$res_aut=pmb_mysql_query($req,$dbh);
+	if($res_aut && pmb_mysql_num_rows($res_aut)){
 		$titre_uniforme_list=str_replace("<!--!!col_num_autorite!!-->","<th>".$msg["authorities_number"]."</th>",$titre_uniforme_list);
 		$num_auth_present=true;
 	}
@@ -86,10 +86,11 @@ if($nbr_lignes) {
 		$requete = "select *, ".$members["select"]." as pert from titres_uniformes where ".$members["where"]." group by tu_id order by pert desc, index_tu limit $debut,$nb_per_page";
 	}
 
-	$res = @mysql_query($requete, $dbh);
+	$res = @pmb_mysql_query($requete, $dbh);
 	$parity=1;
-	while(($titre_uniforme=mysql_fetch_object($res))) {
-		$tire_uniforme_entry = $titre_uniforme->tu_name;		
+	while(($titre_uniforme=pmb_mysql_fetch_object($res))) {
+		$tu = new titre_uniforme($titre_uniforme->tu_id);				
+		$titre_uniforme_entry = $tu->display;
 		$link_titre_uniforme = "./autorites.php?categ=titres_uniformes&sub=titre_uniforme_form&id=$titre_uniforme->tu_id&user_input=".rawurlencode(stripslashes($user_input))."&nbr_lignes=$nbr_lignes&page=$page";
 		if ($parity % 2) {
 			$pair_impair = "even";
@@ -99,23 +100,23 @@ if($nbr_lignes) {
 		$parity += 1;
 		
 		$notice_count_sql = "SELECT count(*) FROM notices_titres_uniformes WHERE ntu_num_tu = ".$titre_uniforme->tu_id;
-		$notice_count = mysql_result(mysql_query($notice_count_sql), 0, 0);
+		$notice_count = pmb_mysql_result(pmb_mysql_query($notice_count_sql), 0, 0);
 		
 	    $tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\"  ";
         $titre_uniforme_list .= "
         <tr class='$pair_impair' $tr_javascript style='cursor: pointer'>
          	<td valign='top' onmousedown=\"document.location='$link_titre_uniforme';\">
-				$tire_uniforme_entry
+				$titre_uniforme_entry
 			</td>";
 		
 		//Numéros d'autorite
 		if($num_auth_present){
 			$requete="SELECT authority_number,origin_authorities_name, origin_authorities_country FROM authorities_sources JOIN origin_authorities ON num_origin_authority=id_origin_authorities WHERE authority_type='uniform_title' AND num_authority='".$titre_uniforme->tu_id."' AND TRIM(authority_number) !='' GROUP BY authority_number,origin_authorities_name,origin_authorities_country ORDER BY authority_favorite DESC, origin_authorities_name";
-			$res_aut=mysql_query($requete,$dbh);
-			if($res_aut && mysql_num_rows($res_aut)){
+			$res_aut=pmb_mysql_query($requete,$dbh);
+			if($res_aut && pmb_mysql_num_rows($res_aut)){
 				$titre_uniforme_list .= "<td>";
 				$first=true;
-				while ($aut = mysql_fetch_object($res_aut)) {
+				while ($aut = pmb_mysql_fetch_object($res_aut)) {
 					if(!$first)$titre_uniforme_list .=", ";
 					$titre_uniforme_list .=htmlentities($aut->authority_number,ENT_QUOTES,$charset);
 					if($tmp=trim($aut->origin_authorities_name)){
@@ -136,7 +137,7 @@ if($nbr_lignes) {
 			
 	} // fin while
 
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 
 	if (!$last_param) $nav_bar = aff_pagination ($url_base, $nbr_lignes, $nb_per_page, $page, 10, false, true) ;
         else $nav_bar = "";

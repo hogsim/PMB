@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: make_object.inc.php,v 1.10 2009-05-16 11:12:04 dbellamy Exp $
+// $Id: make_object.inc.php,v 1.11 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -199,8 +199,8 @@ function test_other_query($n_res=0, $n_gen=0, $n_tit=0, $n_mat=0, $query, $opera
 	
 	// récupération du nombre de lignes
 	$rws = "SELECT count(1) FROM notices WHERE ${query_result['restr']}";
-	$result = @mysql_query($rws, $dbh);
-	$query_result['nbr_rows'] = mysql_result($result, 0, 0);
+	$result = @pmb_mysql_query($rws, $dbh);
+	$query_result['nbr_rows'] = pmb_mysql_result($result, 0, 0);
 	
 	return $query_result;
 	

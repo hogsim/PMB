@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: help.php,v 1.11.2.1 2015-06-18 12:48:05 jpermanne Exp $
+// $Id: help.php,v 1.12 2015-06-18 12:47:09 jpermanne Exp $
 
 $base_path="./";
 require_once($base_path."/includes/init.inc.php");

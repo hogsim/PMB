@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: start.inc.php,v 1.11 2011-11-14 16:32:17 dbellamy Exp $
+// $Id: start.inc.php,v 1.12 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -16,8 +16,8 @@ if(preg_match('/start\.inc\.php/', $REQUEST_URI)) {
 
 /* param par défaut */	
 $requete_param = "SELECT type_param, sstype_param, valeur_param FROM parametres ";
-$res_param = mysql_query($requete_param, $dbh);
-while ($field_values = mysql_fetch_row ( $res_param )) {
+$res_param = pmb_mysql_query($requete_param, $dbh);
+while ($field_values = pmb_mysql_fetch_row( $res_param )) {
 	$field = $field_values[0]."_".$field_values[1] ;
 	global $$field;
 	$$field = $field_values[2];
@@ -27,8 +27,8 @@ while ($field_values = mysql_fetch_row ( $res_param )) {
 if (!$pmb_indexation_lang) {
 	$requete_param = "SELECT valeur_param FROM parametres ";
 	$requete_param .="WHERE type_param='pmb' and sstype_param='indexation_lang'";
-	$res_param = mysql_query($requete_param, $dbh);
-	if ($field_values = mysql_fetch_row ( $res_param )) {
+	$res_param = pmb_mysql_query($requete_param, $dbh);
+	if ($field_values = pmb_mysql_fetch_row( $res_param )) {
 		if ($field_values[0] != '')	$pmb_indexation_lang = $field_values[0];
 	}
 }

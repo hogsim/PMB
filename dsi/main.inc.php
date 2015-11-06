@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.14 2008-11-22 06:50:03 touraine37 Exp $
+// $Id: main.inc.php,v 1.16 2015-02-16 15:59:21 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -36,6 +36,9 @@ switch($categ) {
 		break;
 	case 'fluxrss':
 		include('./dsi/rss/main.inc.php');
+		break;
+	case 'docwatch' :
+		include_once("./dsi/docwatch/main.inc.php");
 		break;
 	default:
         include("$include_path/messages/help/$lang/dsi.txt");

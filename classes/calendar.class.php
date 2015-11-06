@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: calendar.class.php,v 1.14 2013-04-26 12:37:31 mbertin Exp $
+// $Id: calendar.class.php,v 1.15 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -22,15 +22,15 @@ class calendar {
 	   		} else {
 	   			$requete="select count(date_ouverture) from ouvertures where ouvert=1 and num_location=$deflt2docs_location and date_ouverture>'".$yd."-".$md."-".$dd."' and date_ouverture<='".$yf."-".$mf."-".$df."'";
 	   		}
-	   		$resultat=mysql_query($requete);	   		
-	   		if (mysql_result($resultat,0,0)) {
-	   			$ndays=mysql_result($resultat,0,0);
+	   		$resultat=pmb_mysql_query($requete);	   		
+	   		if (pmb_mysql_result($resultat,0,0)) {
+	   			$ndays=pmb_mysql_result($resultat,0,0);
 	   		} else {
 	   			//on regarde si un jour d'ouverture arrive prochainement..
 	   			//si oui cela signifie que l'emprunteur n'est pas en retard et attend la prochaine ouverture
 	   			$requete="select count(date_ouverture) from ouvertures where ouvert=1 and num_location=$deflt2docs_location and date_ouverture >'".$yf."-".$mf."-".$df."' limit 0,1";
-	   			$result=mysql_query($requete);
-	   			if (mysql_result($result,0,0)) {
+	   			$result=pmb_mysql_query($requete);
+	   			if (pmb_mysql_result($result,0,0)) {
 	   				$ndays = 0;
 	   			} else {
 	   				if ($pmb_pret_calcul_retard_date_debut_incluse)
@@ -55,19 +55,19 @@ class calendar {
     	
     	if ($pmb_utiliser_calendrier) {    	
  		   	$requete="select min(date_ouverture) from ouvertures where ouvert=1 and num_location=$deflt2docs_location and date_ouverture>=adddate('".$yd."-".$md."-".$dd."', interval $days day)";
-   		 	$resultat=mysql_query($requete) or die ($requete." ".mysql_error());;
-   		 	if (!@mysql_num_rows($resultat)) {
+   		 	$resultat=pmb_mysql_query($requete) or die ($requete." ".pmb_mysql_error());;
+   		 	if (!@pmb_mysql_num_rows($resultat)) {
    		 		$requete="select adddate('".$yd."-".$md."-".$dd."', interval $days day)";
-    			$resultat=mysql_query($requete) or die ($requete." ".mysql_error());;
+    			$resultat=pmb_mysql_query($requete) or die ($requete." ".pmb_mysql_error());;
    		 	}
-   		 	if($date=mysql_result($resultat,0,0)){
+   		 	if($date=pmb_mysql_result($resultat,0,0)){
    		 		return $date;
 	    	} 
     	}
     	$requete="select adddate('".$yd."-".$md."-".$dd."', interval $days day)";
-    	$resultat=mysql_query($requete) or die ($requete." ".mysql_error());
+    	$resultat=pmb_mysql_query($requete) or die ($requete." ".pmb_mysql_error());
 
-    	$date=mysql_result($resultat,0,0);
+    	$date=pmb_mysql_result($resultat,0,0);
     	return $date;	
     }
  

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: filter_list.class.php,v 1.33 2013-04-17 08:37:34 mbertin Exp $
+// $Id: filter_list.class.php,v 1.35 2015-06-26 13:15:14 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -80,19 +80,19 @@ class filter_list {
     	if (($this->original_query)&&(!$this->error)) {
     		//création d'une table temporaire
     		$creer_table_tempo="CREATE TEMPORARY TABLE table_filter_tempo ENGINE=MyISAM (".$this->original_query.")";
-    		@mysql_query ($creer_table_tempo);
+    		@pmb_mysql_query($creer_table_tempo);
     		$modif_primaire="ALTER TABLE table_filter_tempo add PRIMARY KEY (".$this->params["REFERENCEKEY"][0][value].")";
-    		@mysql_query ($modif_primaire);  
+    		@pmb_mysql_query($modif_primaire);  
     		$requete.=" and ".$this->params["REFERENCE"][0][value].".".$this->params["REFERENCEKEY"][0][value]."=table_filter_tempo.".$this->params["REFERENCEKEY"][0][value];
     		$requete.=" group by ".$this->params["REFERENCE"][0][value].".".$this->params["REFERENCEKEY"][0][value];
     	}
     	$requete.=$this->sort_query();
     	if (!$this->no_filter) {
-    		$this->t_query=mysql_query($requete);
+    		$this->t_query=pmb_mysql_query($requete);
     	}
     	$requete.=$this->pager_query();
     	$this->query=$requete;
-    	if (mysql_error()) $erreur=mysql_error();
+    	if (pmb_mysql_error()) $erreur=pmb_mysql_error();
     	if ($erreur) {
     		$this->error=true;
     		$this->error_message=$erreur;
@@ -100,8 +100,7 @@ class filter_list {
     }
     
     //fonction de traduction des filtres en langage naturel
-    function make_human_filters()
-    {
+    function make_human_filters() {
     	global $class_path;
     	global $msg;
     	global $charset;
@@ -112,12 +111,14 @@ class filter_list {
     	$s=explode(",",$this->filtercolumns);	
     	//parcours des champs 
     	for ($i=0;$i<count($s);$i++) {
-    		if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    		if(substr($s[$i],0,2) == "#p") $cp_ref = 1;
+    		else $cp_ref = 0;
+    		if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     			//champs personnalisés
     			require_once($class_path."/parametres_perso.class.php");
-    			$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    			$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     			if (!$cp->no_special_fields) {
-    				$id=substr($s[$i],1);
+    				$id=substr($s[$i],2);
     				$valeurs_post="f".$cp->t_fields[$id]["NAME"];
     				global $$valeurs_post;
     				$v=array();
@@ -132,7 +133,7 @@ class filter_list {
 						$field[DATATYPE]=$cp->t_fields[$id][DATATYPE];
 						$field[OPTIONS][0]=_parser_text_no_function_("<?xml version='1.0' encoding='".$charset."'?>\n".$cp->t_fields[$id][OPTIONS], "OPTIONS");
 						$field[VALUES]=$v;
-						$field[PREFIX]=$this->params["REFERENCE"][0]["PREFIXNAME"];
+						$field[PREFIX]=$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"];
 						if (($cp->t_fields[$id][TYPE]!="list")&&($cp->t_fields[$id][TYPE]!="query_list")) {
 							$field[OPTIONS][0][UNSELECT_ITEM][0][VALUE]="-1";
 							$field[OPTIONS][0][UNSELECT_ITEM][0][value]=$msg["empr_perso_all_values"];
@@ -172,8 +173,8 @@ class filter_list {
     	 							$requete="select ".$this->fixedfields[$s[$i]]["TABLEFIELD"][0][value]." from ";
     	 							$requete.=$this->fixedfields[$s[$i]]["TABLE"][0][value];
     	 							$requete.=" where ".$this->fixedfields[$s[$i]]["TABLEKEY"][0][value]."='".$dummykey."'";
-    	 							$execute_query=mysql_query($requete);
-    	 							$resultat_query=mysql_fetch_row($execute_query);
+    	 							$execute_query=pmb_mysql_query($requete);
+    	 							$resultat_query=pmb_mysql_fetch_row($execute_query);
     	 							$temp[]=$resultat_query[0];	
     	 						}
     	 						$human_filters.=implode(",",$temp);
@@ -219,13 +220,15 @@ class filter_list {
     		if (!$$sort_list) $$sort_list=$s[$j];
     		if ($$sort_list!="-1") {
     			for ($i=0;$i<count($s);$i++) {
+    				if(substr($s[$i],0,2) == "#p") $cp_ref = 1;
+    				else $cp_ref = 0;
     				if ($$sort_list==$s[$i]) {
-    					if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    					if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     						//champs personnalisés
     						require_once($class_path."/parametres_perso.class.php");
-    						$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    						$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     						if (!$cp->no_special_fields) {
-    							$id=substr($s[$i],1,strlen($s[$i])-1);
+    							$id=substr($s[$i],2,strlen($s[$i])-1);
     							$human_sort.=strtolower($cp->t_fields[$id]["TITRE"])." ".htmlentities($msg["filters_sort_next"],ENT_QUOTES,$charset)." ";
     						}
     					} elseif (array_key_exists($s[$i],$this->fixedfields)) {
@@ -261,6 +264,7 @@ class filter_list {
     	$ret="";
     	$select=$this->params["REFERENCE"][0][value].".".$this->params["REFERENCEKEY"][0][value].",";
     	$bool_perso_exist=false;
+    	$bool_perso_loan_exist=false;
     	$bool_ref_exist=false;
 
     	$affiche=explode(",",$this->displaycolumns);
@@ -268,19 +272,25 @@ class filter_list {
     	$sort=explode(",",$this->sortablecolumns);
     	$tmp=array_merge($affiche,array_diff($filter,$affiche));
     	$total=array_merge($tmp,array_diff($sort,$tmp));
-    	
     	for ($i=0;$i<count($total);$i++) {
-    		if ((substr($total[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    		if(substr($total[$i],0,2) == "#p") $cp_ref = 1;
+    		else $cp_ref = 0;
+    		if ((substr($total[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     			//champs personnalisés
     			require_once($class_path."/parametres_perso.class.php");
-    			$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    			$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     			if (!$cp->no_special_fields) {
-    				$id=substr($total[$i],1,strlen($total[$i])-1);
-    				$afrom = " left join ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values".$id." on (".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values".$id."".".".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_origine"." = ".$this->params["REFERENCE"][0][value].".".$this->params["REFERENCEKEY"][0][value]." AND ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_champ = ".$id.")";
+    				$id=substr($total[$i],2,strlen($total[$i])-1);
+    				if(($cp_ref > 0) && !$bool_perso_loan_exist) {
+    					$afrom = " left join ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]." on (".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."".".".$this->params["REFERENCE"][$cp_ref]["TABLEKEY"]." = ".$this->params["REFERENCE"][0][value].".".$this->params["REFERENCEKEY"][0][value].")";
+    					$dependant_left_joins[] = $afrom;
+    					$bool_perso_loan_exist = true;
+    				}
+    				$afrom = " left join ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values".$id." on (".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values".$id."".".".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_origine"." = ".$this->params["REFERENCE"][$cp_ref][value].".".$this->params["REFERENCEKEY"][$cp_ref][value]." AND ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_champ = ".$id.")";
     				$dependant_left_joins[] = $afrom;
-    				$select.=$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_".$cp->t_fields[$id][DATATYPE]." AS ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_".$cp->t_fields[$id][DATATYPE].$id.",";
+    				$select.=$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_".$cp->t_fields[$id]["DATATYPE"]." AS ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_".$cp->t_fields[$id]["DATATYPE"].$id.",";
     				if ($cp->t_fields[$id][TYPE]=="list") {
-    					$dependant_left_joins[] ="left join ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_lists ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_lists".$id." on (".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_".$cp->t_fields[$id]["DATATYPE"]."=".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_lists".$id.".".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_list_value)";
+    					$dependant_left_joins[] ="left join ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_lists ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_lists".$id." on (".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_".$cp->t_fields[$id]["DATATYPE"]."=".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_lists".$id.".".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_list_value)";
     				}
     				$bool_perso_exist=true;
     			}
@@ -332,16 +342,15 @@ class filter_list {
     	 		}		 
     	 	}   					
     	}
-    	if ($bool_ref_exist==false) {
-    	 	$froms[]=$this->params["REFERENCE"][0][value];
-    	 	$bool_ref_exist=true;
+     	if ($bool_ref_exist==false) {
+     	 	$froms[]=$this->params["REFERENCE"][0][value];
+     	 	$bool_ref_exist=true;
    		}
-    	
     	if ($this->select_original) $select.=$this->select_original.",";
     	if ($this->from_original) $from.=$this->from_original.",";
     	$select=substr($select,0,strlen($select)-1);
 		$from = implode(",",$froms);
-		$from.= " ".implode(" ", $dependant_left_joins);
+ 		$from.= " ".implode(" ", $dependant_left_joins);
     	$ret="select ".$select." from ".$from;
     	return $ret; 	
     }
@@ -363,16 +372,18 @@ class filter_list {
     		if ($$sort_list!="-1") {
     			for ($i=0;$i<count($s);$i++) {
     				if ($$sort_list==$s[$i]) {
-    					if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    					if(substr($s[$i],0,2) == "#p") $cp_ref = 1;
+    					else $cp_ref = 0;
+    					if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     						//champs personnalisés
     						require_once($class_path."/parametres_perso.class.php");
-    						$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    						$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     						if (!$cp->no_special_fields) {
-    							$id=substr($s[$i],1,strlen($s[$i])-1);
+    							$id=substr($s[$i],2,strlen($s[$i])-1);
     							if ($cp->t_fields[$id][TYPE]=="list") {
-    								$orderby.=$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_lists".$id.".".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_list_lib,";
+    								$orderby.=$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_lists".$id.".".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_list_lib,";
     							} else {
-    								$orderby.=$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_".$cp->t_fields[$id][DATATYPE].",";
+    								$orderby.=$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_".$cp->t_fields[$id][DATATYPE].",";
     							}
     						}
     	 				} elseif (array_key_exists($s[$i],$this->fixedfields)) {
@@ -410,11 +421,11 @@ class filter_list {
 							$v=array();
 							$t=array();	
 							$param=$this->specialfields[$s[$i]]["PARAM"][0][value];
-							$execute_query=mysql_query("select ".$this->params["REFERENCEKEY"][0][value]." from ".$this->params["REFERENCE"][0][value]);
-							while ($row=mysql_fetch_array($execute_query)) {
+							$execute_query=pmb_mysql_query("select ".$this->params["REFERENCEKEY"][0][value]." from ".$this->params["REFERENCE"][0][value]);
+							while ($row=pmb_mysql_fetch_array($execute_query)) {
 								$t[]=$row[$this->params["REFERENCEKEY"][0][value]];
 							}
-							mysql_free_result($execute_query);
+							pmb_mysql_free_result($execute_query);
 							$bool=true;
 							eval("\$r=".$name_function."(\$t,\$param,\$v,\$bool);");
     	 				}    					
@@ -447,12 +458,14 @@ class filter_list {
     	$total=array_merge($tmp,array_diff($sort,$tmp));
     	
     	for ($i=0;$i<count($total);$i++) {
-    		if ((substr($total[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    		if(substr($total[$i],0,2) == "#p") $cp_ref = 1;
+    		else $cp_ref = 0;
+    		if ((substr($total[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     			//champs personnalisés
     			require_once($class_path."/parametres_perso.class.php");
-    			$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    			$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     			if (!$cp->no_special_fields) {
-    				$id=substr($total[$i],1,strlen($total[$i])-1);
+    				$id=substr($total[$i],2,strlen($total[$i])-1);
     				$valeurs_post="f".$cp->t_fields[$id]["NAME"];
     				$v=array();
     				global $$valeurs_post;
@@ -466,7 +479,7 @@ class filter_list {
 					$field[DATATYPE]=$cp->t_fields[$id][DATATYPE];
 					$field[OPTIONS][0]=_parser_text_no_function_("<?xml version='1.0' encoding='".$charset."'?>\n".$cp->t_fields[$id][OPTIONS], "OPTIONS");
 					$field[VALUES]=$v;
-					$field[PREFIX]=$this->params["REFERENCE"][0]["PREFIXNAME"];
+					$field[PREFIX]=$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"];
 					if (($cp->t_fields[$id][TYPE]!="list")&&($cp->t_fields[$id][TYPE]!="query_list")) {
 						$field[OPTIONS][0][UNSELECT_ITEM][0][VALUE]="-1";
 						$field[OPTIONS][0][UNSELECT_ITEM][0][value]=$msg["empr_perso_all_values"];
@@ -476,7 +489,7 @@ class filter_list {
 					$t[0]=$field[OPTIONS][0][UNSELECT_ITEM][0][VALUE];
     				$w=array_diff($v,$t);
     				if (count($w)) {
-    					$where.=$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_".$field[DATATYPE]." in ('".implode("','",$v)."') and ";
+    					$where.=$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values".$id.".".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_".$field[DATATYPE]." in ('".implode("','",$v)."') and ";
 					}
 				}
     		} elseif (array_key_exists($total[$i],$this->fixedfields)) {
@@ -533,8 +546,8 @@ class filter_list {
     	$ret="";
     	//On calcul les page en fonction du résultat de la requte total et pas de la recherche de départ
     	$requete=preg_replace("/limit [0-9]*,[0-9]*/i","",$this->query);
-    	$res=mysql_query($requete);
-    	$nb_lignes=mysql_num_rows($res);
+    	$res=pmb_mysql_query($requete);
+    	$nb_lignes=pmb_mysql_num_rows($res);
     	if ($nb_lignes!=0) {
     		$ret = "<div align='center'>";
     		$nbepages = ceil($nb_lignes/$this->nb_per_page);
@@ -572,13 +585,13 @@ class filter_list {
     function nb_lines_query() {
     	if (!$this->no_filter) {
     		if ($this->t_query) {
-    			$compt=mysql_num_rows($this->t_query);
+    			$compt=pmb_mysql_num_rows($this->t_query);
     			return $compt;	
     		}
     	} else {
     		if ($this->original_query) {
-    			$resultat=mysql_query($this->original_query);
-    			$compt=mysql_num_rows($resultat);
+    			$resultat=pmb_mysql_query($this->original_query);
+    			$compt=pmb_mysql_num_rows($resultat);
     			return $compt;	
     		}
     	}
@@ -589,7 +602,7 @@ class filter_list {
     	if (!$this->no_filter) {
     		if ($this->t_query) {
     			$i=1;
-    			while ($row=mysql_fetch_object($this->t_query)) {
+    			while ($row=pmb_mysql_fetch_object($this->t_query)) {
     				if ($i==$n_line) {
     					return $row;
     					exit();	
@@ -600,8 +613,8 @@ class filter_list {
     	} else {
     		if ($this->original_query) {
     			$i=1;
-    			$resultat=mysql_query($this->original_query);
-    			while ($row=mysql_fetch_object($resultat)) {
+    			$resultat=pmb_mysql_query($this->original_query);
+    			while ($row=pmb_mysql_fetch_object($resultat)) {
     				if ($i==$n_line) {
     					return $row;
     					exit();	
@@ -622,13 +635,15 @@ class filter_list {
     	$s=explode(",",$this->displaycolumns);
     	//parcours des champs 
     	for ($i=0;$i<count($s);$i++) {
+    		if(substr($s[$i],0,2) == "#p") $cp_ref = 1;
+    		else $cp_ref = 0;
     		//détermination d'un champ personnalisé
-    		if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    		if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     			//champs personnalisés
     			require_once($class_path."/parametres_perso.class.php");
-    			$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    			$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     			if (!$cp->no_special_fields) {
-    				$id=substr($s[$i],1);
+    				$id=substr($s[$i],2);
     				$aff.="<th>".htmlentities($cp->t_fields[$id][TITRE],ENT_QUOTES,$charset)."</th>";
     			}
     		} elseif (array_key_exists($s[$i],$this->fixedfields)) {
@@ -656,18 +671,20 @@ class filter_list {
     	global $class_path, $charset, $msg;
     	$aff="";
     	if ($this->query) {
-    		$execute_query=mysql_query($this->query);
+    		$execute_query=pmb_mysql_query($this->query);
     		$aff.="<table class='".$this->css["table"]["class"]."' style='".$this->css["table"]["style"]."'>";
     		$parity = 0;
 			$header ="";
 			$s=explode(",",$this->displaycolumns);
 			for($n=0; $n < count($s); $n++) {
-				if ((substr($s[$n],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    			if(substr($s[$n],0,2) == "#p") $cp_ref = 1;
+    			else $cp_ref = 0;
+				if ((substr($s[$n],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     				//champs perso
     				require_once($class_path."/parametres_perso.class.php");
-    				$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    				$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     				if (!$cp->no_special_fields) {
-    					$id=substr($s[$n],1);
+    					$id=substr($s[$n],2);
     					$header.="<th>".htmlentities($cp->t_fields[$id][TITRE],ENT_QUOTES,$charset)."</th>";
     				}
 				} elseif (array_key_exists($s[$n],$this->fixedfields)) {
@@ -681,7 +698,7 @@ class filter_list {
 				}
 			}
 			$aff .= $header;
-    		while (($result=mysql_fetch_array($execute_query))) {
+    		while (($result=pmb_mysql_fetch_array($execute_query))) {
     			$onmouseout=$this->scripts["row"]["onmouseout"];
     			$onmouseover=$this->scripts["row"]["onmouseover"];
     			$onmousedown=$this->scripts["row"]["onmousedown"];
@@ -703,15 +720,17 @@ class filter_list {
     			$s=explode(",",$this->displaycolumns);
     	    	//parcours des champs 
     			for ($i=0;$i<count($s);$i++) {
+    				if(substr($s[$i],0,2) == "#p") $cp_ref = 1;
+    				else $cp_ref = 0;
     				//détermination de la valeur
-    				if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    				if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     					//champs perso
     					require_once($class_path."/parametres_perso.class.php");
-    					$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
-   						$id=substr($s[$i],1);
-    					$cp->get_values($result[$this->params["REFERENCEKEY"][0]["value"]]);
+    					$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
+   						$id=substr($s[$i],2);
+    					$cp->get_values($result[$this->params["REFERENCEKEY"][$cp_ref]["value"]]);
     					if (!$cp->no_special_fields) {
-//    						$temp=$result[$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_".$cp->t_fields[$id]["DATATYPE"].$id];
+//    						$temp=$result[$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_".$cp->t_fields[$id]["DATATYPE"].$id];
     						$onmouseout=str_replace("!!".$s[$i]."!!",rawurlencode($temp),$onmouseout);
     						$onmouseover=str_replace("!!".$s[$i]."!!",rawurlencode($temp),$onmouseover);
     						$onmousedown=str_replace("!!".$s[$i]."!!",rawurlencode($temp),$onmousedown);
@@ -797,13 +816,15 @@ class filter_list {
     		
     	//parcours des champs 
     	for ($i=0;$i<count($s);$i++) {
+    		if(substr($s[$i],0,2) == "#p") $cp_ref = 1;
+    		else $cp_ref = 0;
     		//détermination d'un champ personnalisé
-    		if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    		if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     			//champs personnalisés
     			require_once($class_path."/parametres_perso.class.php");
-    			$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    			$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     			if (!$cp->no_special_fields) {
-    				$id=substr($s[$i],1,strlen($s[$i])-1);
+    				$id=substr($s[$i],2,strlen($s[$i])-1);
     				$valeurs_post="f".$cp->t_fields[$id]["NAME"];
     				$v=array();
     				global $$valeurs_post;
@@ -820,13 +841,13 @@ class filter_list {
 					if (($cp->t_fields[$id][TYPE]!="list")&&($cp->t_fields[$id][TYPE]!="query_list")) {
 						$field[OPTIONS][0][UNSELECT_ITEM][0][VALUE]="-1";
 						$field[OPTIONS][0][UNSELECT_ITEM][0][value]=$msg["empr_perso_all_values"];
-						$field[OPTIONS][0][QUERY][0][value]="select ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_".$cp->t_fields[$id][DATATYPE]." from ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_values where ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_champ=".$id." group by ".$this->params["REFERENCE"][0]["PREFIXNAME"]."_custom_".$cp->t_fields[$id][DATATYPE];
+						$field[OPTIONS][0][QUERY][0][value]="select ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_".$cp->t_fields[$id][DATATYPE]." from ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_values where ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_champ=".$id." group by ".$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]."_custom_".$cp->t_fields[$id][DATATYPE];
 						if ((!$v)||($v[0]=="")||($v[0]=="-1")) {
 							$field[OPTIONS][0][DEFAULT_VALUE][0][value]="-1";
 						}
 					} 
 					$field[VALUES]=$v;
-					$field[PREFIX]=$this->params["REFERENCE"][0]["PREFIXNAME"];
+					$field[PREFIX]=$this->params["REFERENCE"][$cp_ref]["PREFIXNAME"];
 					$name="f".$cp->t_fields[$id][NAME];
 					$multiple=$this->multiple;
 					$r="";
@@ -871,7 +892,7 @@ class filter_list {
     				}		
     				$requete.=$this->fixedfields[$s[$i]]["TABLEFIELD"][0][value].$alias;
     				$requete.=" from ".$from."".$where." order by ".$order;
-    				$execute_query=mysql_query($requete);
+    				$execute_query=pmb_mysql_query($requete);
     				if ($execute_query) {
     					$valeurs_post="f".$this->fixedfields[$s[$i]]["ID"];
     					global $$valeurs_post;
@@ -889,7 +910,7 @@ class filter_list {
     						else $nom=$this->fixedfields[$s[$i]]["DEFAULTVALUE"];
     					$aff.=">".htmlentities($nom,ENT_QUOTES,$charset)."</option>\n"; 	
     					
-    					while($resultat=mysql_fetch_array($execute_query)) {
+    					while($resultat=pmb_mysql_fetch_array($execute_query)) {
     						if ($this->fixedfields[$s[$i]]["TABLE"][0][value]) {
     							$valeur_temp=$resultat[$this->fixedfields[$s[$i]]["TABLEKEY"][0][value]];
     						} else {
@@ -947,11 +968,11 @@ class filter_list {
 					else $nom=$this->specialfields[$s[$i]]["DEFAULTVALUE"];
     			$aff.=">".htmlentities($nom,ENT_QUOTES,$charset)."</option>\n"; 	
 				$param=$this->specialfields[$s[$i]]["PARAM"][0][value];
-				$execute_query=mysql_query("select ".$this->params["REFERENCEKEY"][0][value]." from ".$this->params["REFERENCE"][0][value]);
-				while ($row=mysql_fetch_array($execute_query)) {
+				$execute_query=pmb_mysql_query("select ".$this->params["REFERENCEKEY"][0][value]." from ".$this->params["REFERENCE"][0][value]);
+				while ($row=pmb_mysql_fetch_array($execute_query)) {
 					$t[]=$row[$this->params["REFERENCEKEY"][0][value]];
 				}
-				mysql_free_result($execute_query);
+				pmb_mysql_free_result($execute_query);
 				eval("\$r=".$name_function."(\$t,\$param,\$v);");
 				$aff.=$r;
 				$aff.="</select></div>\n";
@@ -977,13 +998,15 @@ class filter_list {
     		if ($$sort_list==-1) $liste.=" selected";
     		$liste.=">".$msg["tri_inactif"]."</option>";
     		for ($i=0;$i<count($s);$i++) {
+    			if(substr($s[$i],0,2) == "#p") $cp_ref = 1;
+    			else $cp_ref = 0;
     			//détermination d'un champ personnalisé
-    			if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    			if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     				//champs personnalisés
     				require_once($class_path."/parametres_perso.class.php");
-    				$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    				$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     				if (!$cp->no_special_fields) {
-    					$id=substr($s[$i],1,strlen($s[$i])-1);
+    					$id=substr($s[$i],2,strlen($s[$i])-1);
     					$liste.="<option value='".$s[$i]."'";
 						if ($$sort_list) {
 							if ($$sort_list==$s[$i]) $liste.=" selected";	
@@ -1028,13 +1051,15 @@ class filter_list {
     	if ($$sort_list==-1) $liste.=" selected";
     	$liste.=">".$msg["tri_inactif"]."</option>";
     	for ($i=0;$i<=count($s)-1;$i++) {
+    		if(substr($s[$i],0,2) == "#p") $cp_ref = 1;
+    		else $cp_ref = 0;
     		//détermination d'un champ personnalisé
-    		if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][0]["DYNAMICFIELDS"]=="yes")) {
+    		if ((substr($s[$i],0,1)=="#")&&($this->params["REFERENCE"][$cp_ref]["DYNAMICFIELDS"]=="yes")) {
     			//champs personnalisés
     			require_once($class_path."/parametres_perso.class.php");
-    			$cp=new parametres_perso($this->params["REFERENCE"][0]["PREFIXNAME"]);
+    			$cp=new parametres_perso($this->params["REFERENCE"][$cp_ref]["PREFIXNAME"]);
     			if (!$cp->no_special_fields) {
-    				$id=substr($s[$i],1,strlen($s[$i])-1);
+    				$id=substr($s[$i],2,strlen($s[$i])-1);
     				$liste.="<option value='".$s[$i]."'";
 					if ($$sort_list) {
 						if ($$sort_list==$s[$i]) $liste.=" selected";	
@@ -1076,19 +1101,19 @@ class filter_list {
     //Si ça devait être le cas voir la gestion de l'encodage
     function gen_xml($requete,$champ_pivot) {
     	global $msg;
-    	$execute_query=mysql_query($requete);
+    	$execute_query=pmb_mysql_query($requete);
     	
     	$ret="<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>";
     	$ret.="<fields>";
     	
-    	$table = mysql_field_table($execute_query, $champ_pivot);
+    	$table = pmb_mysql_field_table($execute_query, $champ_pivot);
     	
     	$header="<reference dynamicfields=\"\" prefixname=\"\">".$table."</reference>";
     	$header.="<referencekey>".$champ_pivot."</referencekey>";
     	
     	$i=0;
-    	while ($i < mysql_num_fields($execute_query)) {
-    		$meta = mysql_fetch_field($execute_query);
+    	while ($i < pmb_mysql_num_fields($execute_query)) {
+    		$meta = pmb_mysql_fetch_field($execute_query);
     		if ($meta) {
     			$fields.="<field name=\"".$meta->name."\" type=\"".$meta->type."\" value=\"\" id=\"".$i."\" filterable=\"yes\" sortable=\"yes\" displayable=\"yes\" defaultvalue=\"\">";	
     			$fields.="<tablefield>".$meta->name."</tablefield>";

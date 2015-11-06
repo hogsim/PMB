@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: param_func.inc.php,v 1.19 2011-10-11 09:42:43 arenou Exp $
+// $Id: param_func.inc.php,v 1.20 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -53,9 +53,9 @@ function show_param($dbh) {
 	print $begin_result_liste ;
 	
 	$requete = "select * from parametres where gestion=0 order by type_param, section_param, sstype_param ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	$i=0;
-	while($param=mysql_fetch_object($res)) {
+	while($param=pmb_mysql_fetch_object($res)) {
 		if (!$type_param) {
 			$type_param=$param->type_param;
 			$creer = 1;

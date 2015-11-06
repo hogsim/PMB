@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: expl.inc.php,v 1.29.6.1 2015-06-11 07:32:34 jpermanne Exp $
+// $Id: expl.inc.php,v 1.32 2015-06-11 07:29:47 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -66,7 +66,7 @@ if(!$nb_results) {
 		$requete.= $acces_j;
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= "WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR exemplaires.expl_cb='$ex_query' OR notices.code in ('$code','$EAN'".($code10?",'$code10'":"").")) ";
-		$myQuery = mysql_query($requete, $dbh);
+		$myQuery = pmb_mysql_query($requete, $dbh);
 		
 	} elseif ($isbn) {
 		
@@ -75,8 +75,8 @@ if(!$nb_results) {
 		$requete.= $acces_j;
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= " WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR exemplaires.expl_cb='$ex_query' OR notices.code in ('$code'".($code10?",'$code10'":"").")) ";
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)==0) {
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)==0) {
 			// rien trouvé en monographie
 			// cas où un exemplaire de bulletin correspond à un ISBN
 			$requete = "SELECT distinct notices.*, bulletin_id FROM notices ";
@@ -97,8 +97,8 @@ if(!$nb_results) {
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= "WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR notices.code like '$code' OR exemplaires.expl_cb like '$ex_query_original' OR notices.code like '$ex_query_original') $where_typedoc ";
 				
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)==0) {
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)==0) {
 			// rien trouvé en monographie
 			$requete = "SELECT distinct notices.*, bulletin_id FROM notices ";
 			$requete.= $acces_j;
@@ -110,12 +110,12 @@ if(!$nb_results) {
 		
 	} else {
 		
-		error_message($msg[235], $msg[307]." $ex_query".($pmb_allow_external_search?"<br /><a href='./catalog.php?categ=search&mode=7&external_type=simple&from_mode=0&code=".rawurlencode($ex_query)."'>".$msg["connecteurs_external_search_sources"]."</a>":""), 1, "./catalog.php?categ=search&mode=0");
+		error_message($msg[235], $msg[307]." $ex_query".($pmb_allow_external_search?"<br /><a href='./catalog.php?categ=search&mode=7&external_type=simple&from_mode=0&code=".rawurlencode($ex_query)."' title='".$msg["connecteurs_external_search_sources"]."'>".$msg["connecteurs_external_search_sources"]."</a>":""), 1, "./catalog.php?categ=search&mode=0");
 		die();
 		
 	}
 	
-	$nb_results= mysql_num_rows($myQuery);
+	$nb_results= pmb_mysql_num_rows($myQuery);
 	$limit_page= " limit $nb_per_page_search "; 
 	$page=0;
 
@@ -132,7 +132,7 @@ if(!$nb_results) {
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= "WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR exemplaires.expl_cb='$ex_query' OR notices.code in ('$code','$EAN'".($code10?",'$code10'":"").")) ";
 		$requete.= $limit_page;
-		$myQuery = mysql_query($requete, $dbh);
+		$myQuery = pmb_mysql_query($requete, $dbh);
 		
 	} elseif ($isbn) {
 		// recherche d'un isbn
@@ -141,8 +141,8 @@ if(!$nb_results) {
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= "WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR exemplaires.expl_cb='$ex_query' OR notices.code in ('$code'".($code10?",'$code10'":"").")) ";
 		$requete.= $limit_page;
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)==0) {
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)==0) {
 			// rien trouvé en monographie
 			// cas où un exemplaire de bulletin correspond à un ISBN
 			$requete = "SELECT distinct notices.*, bulletin_id FROM notices ";
@@ -162,8 +162,8 @@ if(!$nb_results) {
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= "WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR notices.code like '$code') $where_typedoc ";
 		$requete.= $limit_page;
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)==0) {
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)==0) {
 			// rien trouvé en monographie
 			$requete = "SELECT distinct notices.*, bulletin_id FROM notices ";
 			$requete.= $acces_j;
@@ -173,14 +173,14 @@ if(!$nb_results) {
 			$rqt_bulletin=1;
 		}
 	} else {
-		error_message($msg[235], $msg[307]." $ex_query".($pmb_allow_external_search?"<br /><a href='./catalog.php?categ=search&mode=7&external_type=simple&from_mode=0&code=".rawurlencode($ex_query)."'>".$msg["connecteurs_external_search_sources"]."</a>":""), 1, "./catalog.php?categ=search&mode=0");
+		error_message($msg[235], $msg[307]." $ex_query".($pmb_allow_external_search?"<br /><a href='./catalog.php?categ=search&mode=7&external_type=simple&from_mode=0&code=".rawurlencode($ex_query)."' title='".$msg["connecteurs_external_search_sources"]."'>".$msg["connecteurs_external_search_sources"]."</a>":""), 1, "./catalog.php?categ=search&mode=0");
 		die();
 	}
 }
 
 if ($rqt_bulletin!=1) {
-	if(mysql_num_rows($myQuery)) {
-		if(mysql_num_rows($myQuery) > 1  || $page) {
+	if(pmb_mysql_num_rows($myQuery)) {
+		if(pmb_mysql_num_rows($myQuery) > 1  || $page) {
 			// la recherche fournit plusieurs résultats !!!
 			// boucle de parcours des notices trouvées
 			// inclusion du javascript de gestion des listes dépliables
@@ -188,7 +188,7 @@ if ($rqt_bulletin!=1) {
 			print sprintf("<div class='othersearchinfo'><b>".$msg[940]."</b>&nbsp;$ex_query =&gt; ".$msg["searcher_results"]."</div>",$nb_results);			
 			print $begin_result_liste;
 			$nb=0;
-			while($notice = mysql_fetch_object($myQuery)) {
+			while($notice = pmb_mysql_fetch_object($myQuery)) {
 				if($notice->niveau_biblio != 's' && $notice->niveau_biblio != 'a') {
 					// notice de monographie (les autres n'ont pas de code ni d'exemplaire !!! ;-)
 					$link = './catalog.php?categ=isbd&id=!!id!!';
@@ -201,7 +201,7 @@ if ($rqt_bulletin!=1) {
 			}
 			print $end_result_liste;
 		} else {
-			$notice = mysql_fetch_object($myQuery);
+			$notice = pmb_mysql_fetch_object($myQuery);
 			print "<div class=\"row\"><div class=\"msg-perio\">".$msg[recherche_encours]."</div></div>";
 			// un seul résultat : je balance le user direct sur la notice concernée
 			print "<script type=\"text/javascript\">";
@@ -209,14 +209,14 @@ if ($rqt_bulletin!=1) {
 			print "</script>";
 		}
 	} else {
-		error_message($msg[235], $msg[307]." $ex_query".($pmb_allow_external_search?"<br /><a href='./catalog.php?categ=search&mode=7&external_type=simple&from_mode=0&code=".rawurlencode($ex_query)."'>".$msg["connecteurs_external_search_sources"]."</a>":""),1, "./catalog.php?categ=search&mode=0");
+		error_message($msg[235], $msg[307]." $ex_query".($pmb_allow_external_search?"<br /><a href='./catalog.php?categ=search&mode=7&external_type=simple&from_mode=0&code=".rawurlencode($ex_query)."' title='".$msg["connecteurs_external_search_sources"]."'>".$msg["connecteurs_external_search_sources"]."</a>":""),1, "./catalog.php?categ=search&mode=0");
 	}
 } else {
 	// C'est un pério !
-	$res = @mysql_query($requete, $dbh);
-	if (mysql_num_rows($res)) {
+	$res = @pmb_mysql_query($requete, $dbh);
+	if (pmb_mysql_num_rows($res)) {
 		print $begin_result_liste;
-		while(($n=mysql_fetch_object($res))) {
+		while(($n=pmb_mysql_fetch_object($res))) {
 			$link_serial = "./catalog.php?categ=serials&sub=view&serial_id=!!id!!";
 			$link_analysis = "";
 			$link_bulletin = "";
@@ -227,7 +227,7 @@ if ($rqt_bulletin!=1) {
 		}	
 		print $end_result_liste;
 	} else {
-		error_message($msg[235], $msg[307]." $ex_query".($pmb_allow_external_search?"<br /><a href='./catalog.php?categ=search&mode=7&external_type=simple&from_mode=0&code=".rawurlencode($ex_query)."'>".$msg["connecteurs_external_search_sources"]."</a>":""), 1, "./catalog.php?categ=search&mode=0");   
+		error_message($msg[235], $msg[307]." $ex_query".($pmb_allow_external_search?"<br /><a href='./catalog.php?categ=search&mode=7&external_type=simple&from_mode=0&code=".rawurlencode($ex_query)."' title='".$msg["connecteurs_external_search_sources"]."'>".$msg["connecteurs_external_search_sources"]."</a>":""), 1, "./catalog.php?categ=search&mode=0");   
 	}
 }
 

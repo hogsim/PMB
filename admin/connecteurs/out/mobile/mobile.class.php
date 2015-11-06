@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mobile.class.php,v 1.5 2013-03-15 10:33:52 mbertin Exp $
+// $Id: mobile.class.php,v 1.6 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -182,11 +182,11 @@ class mobile_source extends connecteur_out_source {
 		<div class='row'>
 			<label class='etiquette' for='firstInfoPage'>".$this->msg['mobile_admin_firstInfoPage']."</label><br />";
 		$requete = "select id_infopage as id, title_infopage as title from infopages where valid_infopage = 1 order by title DESC";
-		$res = mysql_query($requete);
-		if(mysql_num_rows($res)){
+		$res = pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)){
 			$form_infoPage.= "
 			<select id ='firstInfoPage' name='firstInfoPage'>";
-			while ($infopage = mysql_fetch_object($res)){
+			while ($infopage = pmb_mysql_fetch_object($res)){
 				$form_infoPage.="
 				<option value='".$infopage->id."'".($this->config["firstInfoPage"]== $infopage->id ? " selected":"").">".$infopage->title."</option>";
 			}

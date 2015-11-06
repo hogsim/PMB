@@ -2,13 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: install_rep.php,v 1.35.2.2 2015-01-21 09:27:44 mbertin Exp $
+// $Id: install_rep.php,v 1.40 2015-04-08 14:46:38 jpermanne Exp $
 
 // prevents direct script access
 if(preg_match('/noinstall_rep\.php/', $_SERVER['REQUEST_URI'])) {
 	include('../includes/forbidden.inc.php'); forbidden();
 	}
 include('../includes/config.inc.php');
+include('../includes/mysql_functions.inc.php');
 
 @set_time_limit(1200);
 
@@ -41,7 +42,7 @@ function restore($src) {
 			// open source file
 			$SQL = preg_split('/;\s*\n|;\n/m', $buffer_sql);
 			for($i=0; $i < sizeof($SQL); $i++) {
-				if($SQL[$i]) $result = mysql_query($SQL[$i], $link);
+				if($SQL[$i]) $result = pmb_mysql_query($SQL[$i], $link);
 			}
 		} else {
 			die("can't open file $src to restore");
@@ -250,28 +251,28 @@ if (($Submit == "OK") && (($dbname!="") || ($dbnamedbhost!=""))) {
 	include("./$lang/install_rep_inc.php");
 
 	if ($dbnamedbhost) {
-		@$link=mysql_connect($dbhost,$usermysql,$passwordmysql) or die("Impossible de se connecter au serveur MySql en tant qu'admin $usermysql "); // Le @ ordonne a php de ne pas afficher de message d'erreur
-		@mysql_select_db($dbnamedbhost) or die("Impossible de se connecter à la base de données $dbnamedbhost");
+		@$link=pmb_mysql_connect($dbhost,$usermysql,$passwordmysql) or die("Impossible de se connecter au serveur MySql en tant qu'admin $usermysql "); // Le @ ordonne a php de ne pas afficher de message d'erreur
+		@pmb_mysql_select_db($dbnamedbhost) or die("Impossible de se connecter à la base de données $dbnamedbhost");
 		echo "<br />$msg_okconnect_usermysql";
 		create_db_param ($dbhost,$usermysql,$passwordmysql,$dbnamedbhost,$charset);
 	} else {
-		@$link=mysql_connect($dbhost,$usermysql,$passwordmysql) or die("Impossible de se connecter au serveur MySql en tant qu'admin $usermysql "); // Le @ ordonne a php de ne pas afficher de message d'erreur
+		@$link=pmb_mysql_connect($dbhost,$usermysql,$passwordmysql) or die("Impossible de se connecter au serveur MySql en tant qu'admin $usermysql "); // Le @ ordonne a php de ne pas afficher de message d'erreur
 		$ligne = "DROP DATABASE $dbname";
-		@mysql_query($ligne,$link);
+		@pmb_mysql_query($ligne,$link);
 		$ligne = "CREATE DATABASE $dbname ";
 		$ligne.= "character set utf8 COLLATE utf8_unicode_ci";
-		if (!mysql_query($ligne,$link)) {
+		if (!pmb_mysql_query($ligne,$link)) {
 			echo $msg_nodb;
 			exit(0);
 		}		
 		echo $msg_okdb;
 		$sql_userbibli="GRANT SELECT ,INSERT ,UPDATE ,DELETE ,CREATE ,DROP ,INDEX ,ALTER ,CREATE TEMPORARY TABLES ,LOCK TABLES ON ".$dbname.".* to $user@localhost identified by '$password' ";
-		mysql_query($sql_userbibli,$link);
-		mysql_query("flush privileges ",$link);
-		mysql_close($link); // fermeture de la connexion en tant que root
-		@$link=mysql_connect($dbhost,$user,$password) or die("Impossible de se connecter au serveur MySql en tant que $user "); // Le @ ordonne a php de ne pas afficher de message d'erreur
-		@mysql_select_db($dbname) or die("Impossible de se connecter à la base de données $dbname");
-		mysql_query("set names utf8 ", $link);
+		pmb_mysql_query($sql_userbibli,$link);
+		pmb_mysql_query("flush privileges ",$link);
+		pmb_mysql_close($link); // fermeture de la connexion en tant que root
+		@$link=pmb_mysql_connect($dbhost,$user,$password) or die("Impossible de se connecter au serveur MySql en tant que $user "); // Le @ ordonne a php de ne pas afficher de message d'erreur
+		@pmb_mysql_select_db($dbname) or die("Impossible de se connecter à la base de données $dbname");
+		pmb_mysql_query("set names utf8 ", $link);
 		echo $msg_okconnect_user;
 		create_db_param ($dbhost,$user,$password,$dbname,$charset);
 	}
@@ -336,11 +337,11 @@ if (($Submit == "OK") && (($dbname!="") || ($dbnamedbhost!=""))) {
 				if (restore("$lang/indexint_100.sql")) print $msg_crea_27;
 				else $msg_crea_28;
 				$rqt = "update parametres set valeur_param='0' where type_param='opac' and sstype_param='show_100cases_browser' " ;
-				$result = mysql_query($rqt, $link);
+				$result = pmb_mysql_query($rqt, $link);
 				$rqt = "update parametres set valeur_param='1' where type_param='opac' and sstype_param='show_marguerite_browser' " ;
-				$result = mysql_query($rqt, $link);
+				$result = pmb_mysql_query($rqt, $link);
 				$rqt = "update parametres set valeur_param='0' where type_param='opac' and sstype_param='show_categ_browser' " ;
-				$result = mysql_query($rqt, $link);
+				$result = pmb_mysql_query($rqt, $link);
 				break;
 			case 'aucun' :
 				print $msg_crea_29;
@@ -349,22 +350,22 @@ if (($Submit == "OK") && (($dbname!="") || ($dbnamedbhost!=""))) {
 				
 	}			
 	//Mise à jour du mot de passe admin
-	@mysql_query("UPDATE users SET pwd=PASSWORD('admin'), user_digest = '".md5("admin".":".md5("http://SERVER/DIRECTORY/").":"."admin")."' WHERE username='admin'",$link);
+	@pmb_mysql_query("UPDATE users SET pwd=PASSWORD('admin'), user_digest = '".md5("admin".":".md5("http://SERVER/DIRECTORY/").":"."admin")."' WHERE username='admin'",$link);
 	
 	@rename ("./install.php","./noinstall.php");
 	@rename ("./install_rep.php","./noinstall_rep.php");
 	echo $msg_crea_30;
 	echo $msg_crea_31;
 	$query = "select valeur_param from parametres where type_param='pmb' and sstype_param='bdd_version' ";
-	$req = mysql_query($query, $link);
-	$data = mysql_fetch_array($req) ;
+	$req = pmb_mysql_query($query, $link);
+	$data = pmb_mysql_fetch_array($req) ;
 	$version_pmb_bdd = $data['valeur_param'];
 	
 	if ($version_pmb_bdd!=$pmb_version_database_as_it_should_be) {
 		echo str_replace("!!pmb_version!!",$version_pmb_bdd,$msg_crea_control_version) ;
 	}
 	
-	mysql_close($link);
+	pmb_mysql_close($link);
 } else {
 	print $msg_crea_32;
 }

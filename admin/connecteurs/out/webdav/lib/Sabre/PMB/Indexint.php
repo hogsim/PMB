@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: Indexint.php,v 1.6 2013-04-25 16:02:17 mbertin Exp $
+// $Id: Indexint.php,v 1.7 2015-04-03 11:16:24 jpermanne Exp $
 namespace Sabre\PMB;
 
 class Indexint extends Collection {
@@ -23,9 +23,9 @@ class Indexint extends Collection {
 		$current_children=array();
 		$children = parent::getChildren();
 		$query = "select indexint_id from indexint where num_pclass = ".$this->indexint->id_pclass." and indexint_name like '".addslashes(trim($this->indexint->name,0))."%' and indexint_id != ".$this->indexint->indexint_id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$current_children[] = $this->getChild("(I".$row->indexint_id.")",$this->config);
 			}			
 		}
@@ -63,7 +63,7 @@ class Indexint extends Collection {
 	function update_notice_infos($notice_id){
 		if($notice_id*1 >0){
 			$query = "update notices set indexint = ".$this->indexint->indexint_id." where notice_id = ".$notice_id;
-			mysql_query($query);
+			pmb_mysql_query($query);
 		}
 	}
 }

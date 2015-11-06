@@ -8,7 +8,7 @@ var httpcom = function(url) {
 	//Envoi d'une trame
 	this.send=function(frame,callback,timeout) {
 		this.callback=callback;
-		if(netscape.security.PrivilegeManager)netscape.security.PrivilegeManager.enablePrivilege('UniversalBrowserRead');	
+		if(typeof(netscape)!='undefined'){if(netscape.security.PrivilegeManager)netscape.security.PrivilegeManager.enablePrivilege('UniversalBrowserRead')};	
 		var req_rfid = new http_request();
 		var getUrl=url+"?cmd=cmd&frame="+frame;
 		req_rfid.request(getUrl,0,"",1,pmbtk.c(this,"response"),pmbtk.c(this,"error"),0);	

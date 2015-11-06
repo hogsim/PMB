@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: avis_notice.inc.php,v 1.7.2.5 2015-06-23 07:04:27 Alexandre Exp $
+// $Id: avis_notice.inc.php,v 1.13 2015-06-23 07:25:50 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,14 +35,14 @@ function avis_notice($id,$avis_quoifaire,$valid_id_avis){
 					$acces_m=1;
 					if ($acces_jm) {
 						$q = "select count(1) from avis $acces_jm where id_avis=".$valid_id_avis[$i];
-						$r = mysql_query($q, $dbh);
-						if(mysql_result($r,0,0)==0) {
+						$r = pmb_mysql_query($q, $dbh);
+						if(pmb_mysql_result($r,0,0)==0) {
 							$acces_m=0;
 						}
 					}
 					if ($acces_m!=0) {
 						$rqt = "update avis set valide=1 where id_avis='".$valid_id_avis[$i]."' ";
-						mysql_query ($rqt, $dbh) ;
+						pmb_mysql_query($rqt, $dbh) ;
 					}
 				}
 			break;
@@ -51,14 +51,14 @@ function avis_notice($id,$avis_quoifaire,$valid_id_avis){
 					$acces_m=1;
 					if ($acces_jm) {
 						$q = "select count(1) from avis $acces_jm where id_avis=".$valid_id_avis[$i];
-						$r = mysql_query($q, $dbh);
-						if(mysql_result($r,0,0)==0) {
+						$r = pmb_mysql_query($q, $dbh);
+						if(pmb_mysql_result($r,0,0)==0) {
 							$acces_m=0;
 						}
 					}
 					if ($acces_m!=0) {
 						$rqt = "update avis set valide=0 where id_avis='".$valid_id_avis[$i]."' ";
-						mysql_query ($rqt, $dbh) ;
+						pmb_mysql_query($rqt, $dbh) ;
 					}
 				}
 			break;
@@ -67,14 +67,14 @@ function avis_notice($id,$avis_quoifaire,$valid_id_avis){
 					$acces_m=1;
 					if ($acces_jm) {
 						$q = "select count(1) from avis $acces_jm where id_avis=".$valid_id_avis[$i];
-						$r = mysql_query($q, $dbh);
-						if(mysql_result($r,0,0)==0) {
+						$r = pmb_mysql_query($q, $dbh);
+						if(pmb_mysql_result($r,0,0)==0) {
 							$acces_m=0;
 						}
 					}
 					if ($acces_m!=0) {
 						$rqt = "delete from avis where id_avis='".$valid_id_avis[$i]."' ";
-						mysql_query ($rqt, $dbh) ;
+						pmb_mysql_query($rqt, $dbh) ;
 					}
 				}
 			break;
@@ -83,7 +83,7 @@ function avis_notice($id,$avis_quoifaire,$valid_id_avis){
 				if (!$avis_note) $avis_note="NULL";
 				if($charset != "utf-8") $avis_commentaire=cp1252Toiso88591($avis_commentaire);
 				$sql="insert into avis (num_empr,num_notice,note,sujet,commentaire) values ('0','$id','$avis_note','$avis_sujet','".$avis_commentaire."')";
-				mysql_query($sql, $dbh);
+				pmb_mysql_query($sql, $dbh);
 			break;
 			default:
 			break;
@@ -93,9 +93,9 @@ function avis_notice($id,$avis_quoifaire,$valid_id_avis){
 	$req_avis="select id_avis,note,sujet,commentaire,DATE_FORMAT(dateajout,'".$msg['format_date']."') as ladate,empr_login,empr_nom, empr_prenom, valide
 		from avis left join empr on id_empr=num_empr where num_notice='".$id."' order by avis_rank, dateajout desc";
 
-	$r = mysql_query($req_avis, $dbh);
+	$r = pmb_mysql_query($req_avis, $dbh);
 	$nb_avis=0;
-	$nb_avis=mysql_num_rows($r);
+	$nb_avis=pmb_mysql_num_rows($r);
 		$aff= "
 			<script type='text/javascript' src='javascript/tablist.js'></script>
 			<script type=\"text/javascript\" src='./javascript/dyn_form.js'></script>
@@ -124,7 +124,7 @@ function avis_notice($id,$avis_quoifaire,$valid_id_avis){
 			<form class='form-catalog' method='post' id='validation_avis_$id' name='validation_avis_$id' >
 		";
 		$i=0;
-		while ($loc = mysql_fetch_object($r)) {
+		while ($loc = pmb_mysql_fetch_object($r)) {
 			if($pmb_javascript_office_editor)	{
 				$office_editor_cmd=" if (typeof(tinyMCE) != 'undefined') tinyMCE.execCommand('mceAddControl', true, 'avis_desc_".$loc->id_avis."');	 ";
 			}

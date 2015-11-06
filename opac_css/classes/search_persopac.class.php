@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_persopac.class.php,v 1.12 2013-04-16 13:39:41 mbertin Exp $
+// $Id: search_persopac.class.php,v 1.13 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -27,8 +27,8 @@ function search_persopac($id=0) {
 // récupération des infos en base
 function fetch_data() {
 	global $dbh;	
-	$myQuery = mysql_query("SELECT * FROM search_persopac WHERE search_id='".$this->id."' LIMIT 1", $dbh);
-	$myreq= mysql_fetch_object($myQuery);
+	$myQuery = pmb_mysql_query("SELECT * FROM search_persopac WHERE search_id='".$this->id."' LIMIT 1", $dbh);
+	$myreq= pmb_mysql_fetch_object($myQuery);
 	$this->name=translation::get_text($this->id,"search_persopac","search_name",$myreq->search_name);
 	$this->shortname=translation::get_text($this->id,"search_persopac","search_shortname",$myreq->search_shortname);	
 	$this->query=$myreq->search_query;
@@ -38,9 +38,9 @@ function fetch_data() {
 	$this->empr_categ_restrict = array();
 	
 	$req  = "select id_categ_empr from search_persopac_empr_categ where id_search_persopac = ".$this->id;
-	$res = mysql_query($req);
-	if(mysql_num_rows($res)){
-		while ($obj = mysql_fetch_object($res)){
+	$res = pmb_mysql_query($req);
+	if(pmb_mysql_num_rows($res)){
+		while ($obj = pmb_mysql_fetch_object($res)){
 			$this->empr_categ_restrict[]=$obj->id_categ_empr;
 		}
 	}
@@ -49,22 +49,22 @@ function fetch_data() {
 function get_link() {
 	global $dbh,$onglet_persopac,$launch_search;	
 	global $opac_view_filter_class;
-	//$myQuery = mysql_query("SELECT * FROM search_persopac order by search_name ", $dbh);
-	$myQuery = mysql_query("SELECT search_persopac.*, group_concat(id_categ_empr) as categ_restrict FROM search_persopac left join search_persopac_empr_categ on id_search_persopac = search_id group by search_id order by search_name ", $dbh);
+	//$myQuery = pmb_mysql_query("SELECT * FROM search_persopac order by search_name ", $dbh);
+	$myQuery = pmb_mysql_query("SELECT search_persopac.*, group_concat(id_categ_empr) as categ_restrict FROM search_persopac left join search_persopac_empr_categ on id_search_persopac = search_id group by search_id order by search_name ", $dbh);
 	
 	$this->search_persopac_list=array();
 	$link="";
-	if(mysql_num_rows($myQuery)){
+	if(pmb_mysql_num_rows($myQuery)){
 		$i=0;
 		//on récupère la catégorie du lecteur...
 		if($_SESSION['id_empr_session']){
 			$req = "select empr_categ from empr where id_empr = ".$_SESSION['id_empr_session'];
-			$res =mysql_query($req);
-			if(mysql_num_rows($res)){
-				$empr_categ = mysql_result($res,0,0);
+			$res =pmb_mysql_query($req);
+			if(pmb_mysql_num_rows($res)){
+				$empr_categ = pmb_mysql_result($res,0,0);
 			}else $empr_categ = 0;
 		}else $empr_categ = 0;
-		while(($r=mysql_fetch_object($myQuery))) {	
+		while(($r=pmb_mysql_fetch_object($myQuery))) {	
 			if($opac_view_filter_class){
 				if(!$opac_view_filter_class->is_selected("search_perso", $r->search_id))  continue; 
 			}

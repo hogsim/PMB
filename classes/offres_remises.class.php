@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: offres_remises.class.php,v 1.7 2007-03-10 09:25:48 touraine37 Exp $
+// $Id: offres_remises.class.php,v 1.8 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -34,8 +34,8 @@ class offres_remises{
 		global $dbh;
 		
 		$q = "select * from offres_remises where num_fournisseur = '".$this->num_fournisseur."' and num_produit = '".$this->num_produit."' ";
-		$r = mysql_query($q, $dbh);
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		$obj = pmb_mysql_fetch_object($r);
 		$this->remise = $obj->remise;
 		$this->condition_remise = $obj->condition_remise;
 
@@ -50,18 +50,18 @@ class offres_remises{
 		if(!$this->num_fournisseur || !$this->num_produit) die("Erreur de création offres_remises");
 		
 		$q = "select count(1) from offres_remises where num_fournisseur = '".$this->num_fournisseur."' and num_produit = '".$this->num_produit."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) != 0) {
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) != 0) {
 
 			$q = "update offres_remises set remise = '".$this->remise."', condition_remise ='".$this->condition_remise."' ";
 			$q.= "where num_fournisseur = '".$this->num_fournisseur."' and num_produit = '".$this->num_produit."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
 		} else {
 
 			$q = "insert into offres_remises set num_fournisseur = '".$this->num_fournisseur."', num_produit = '".$this->num_produit."', ";
 			$q.= "remise =  '".$this->remise."', condition_remise = '".$this->condition_remise."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 
 		}
 	}
@@ -73,7 +73,7 @@ class offres_remises{
 		global $dbh;
 
 		$q = "delete from offres_remises where num_fournisseur = '".$num_fournisseur."' and num_produit = '".$num_produit."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -83,7 +83,7 @@ class offres_remises{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE offres_remises', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE offres_remises', $dbh);
 		return $opt;
 				
 	}

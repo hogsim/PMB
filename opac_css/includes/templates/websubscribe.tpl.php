@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: websubscribe.tpl.php,v 1.7.6.2 2015-05-26 10:15:56 jpermanne Exp $
+// $Id: websubscribe.tpl.php,v 1.10 2015-06-02 13:24:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -63,6 +63,6 @@ function test_inscription(form) {
 
 $form_access_compte="<form action='empr.php' method='post' name='myform'>
 				<input type='hidden' name='login' value=\"!!login!!\" />
-				<input type='hidden' name='password' size='8' value='!!password!!' />
+				<input type='hidden' name='encrypted_password' value='!!encrypted_password!!' />
 				<input type='submit' name='ok' value=\"".$msg[subs_bouton_acces_compte]."\" class='bouton'>
 			</form>";

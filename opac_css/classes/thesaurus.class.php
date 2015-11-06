@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: thesaurus.class.php,v 1.13.2.1 2015-06-16 12:12:03 jpermanne Exp $
+// $Id: thesaurus.class.php,v 1.15 2015-06-16 12:13:42 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,8 +33,8 @@ class thesaurus {
 		global $dbh;
 
 		$q = "select * from thesaurus where id_thesaurus = '".$this->id_thesaurus."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->id_thesaurus = $obj->id_thesaurus;
 		$this->libelle_thesaurus = $obj->libelle_thesaurus;
 		$this->active = $obj->active;
@@ -43,12 +43,12 @@ class thesaurus {
 		$this->num_noeud_racine = $obj->num_noeud_racine;
 		
 		$q = "select id_noeud from noeuds where num_thesaurus = '".$this->id_thesaurus."' and autorite = 'ORPHELINS' ";
-		$r = mysql_query($q, $dbh);
-		$this->num_noeud_orphelins = mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		$this->num_noeud_orphelins = pmb_mysql_result($r, 0, 0);
 		 
 		$q = "select id_noeud from noeuds where num_thesaurus = '".$this->id_thesaurus."' and autorite = 'NONCLASSES' ";
-		$r = mysql_query($q, $dbh);
-		$this->num_noeud_nonclasses= mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		$this->num_noeud_nonclasses= pmb_mysql_result($r, 0, 0);
 	}
 		
 	// enregistre le thesaurus en base.
@@ -63,11 +63,11 @@ class thesaurus {
 			$q.= ", opac_active = '".$this->opac_active."' ";
 			$q.= ", langue_defaut = '".$this->langue_defaut."' ";
 			$q.= "where id_thesaurus = '".$this->id_thesaurus."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 		} else {	//création thesaurus
 			$q = "insert into thesaurus set libelle_thesaurus = '".$this->libelle_thesaurus."', active = '1', opac_active = '1', langue_defaut = '".$this->langue_defaut."' ";
-			$r = mysql_query($q, $dbh);
-			$this->id_thesaurus = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_thesaurus = pmb_mysql_insert_id($dbh);
 
 			//creation noeud racine
 			$noeud = new noeuds(); 
@@ -83,7 +83,7 @@ class thesaurus {
 			//rattachement noeud racine au thesaurus
 			$q = "update thesaurus set num_noeud_racine = '".$this->num_noeud_racine."' ";
 			$q.= "where id_thesaurus = '".$this->id_thesaurus."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
 			//creation noeud orphelins
 			$noeud = new noeuds();
@@ -124,15 +124,15 @@ class thesaurus {
 		global $msg;
 		if (!$id_thes) $id_thes = $this->id_thesaurus;	
   		$q = "select id_noeud from noeuds where num_thesaurus = '".$id_thes."' ";
-  		$r = mysql_query($q, $dbh);
-  		while ($row = mysql_fetch_row($r)){
+  		$r = pmb_mysql_query($q, $dbh);
+  		while ($row = pmb_mysql_fetch_row($r)){
   			$q1 = "delete from categories where num_noeud = '".$row[0]."' ";
-  			$r1 = mysql_query($q1, $dbh);
+  			$r1 = pmb_mysql_query($q1, $dbh);
   			$q2 = "delete from noeuds where id_noeud = '".$row[0]."' ";
-  			$r2 = mysql_query($q2, $dbh); 
+  			$r2 = pmb_mysql_query($q2, $dbh); 
   		}
   		$q = "delete from thesaurus where id_thesaurus = '".$id_thes."' ";
-  		$r = mysql_query($q, $dbh);
+  		$r = pmb_mysql_query($q, $dbh);
  
 	}	
 
@@ -140,9 +140,9 @@ class thesaurus {
 	static function getByEltId($id_noeud) {
 		global $dbh;
 		$q = "select num_thesaurus from noeuds where id_noeud = '".$id_noeud."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r) == 0) return NULL;
-		$thes = new thesaurus(mysql_result($r, 0, 0));
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r) == 0) return NULL;
+		$thes = new thesaurus(pmb_mysql_result($r, 0, 0));
 		return $thes; 						
 	}
 
@@ -151,8 +151,8 @@ class thesaurus {
 		global $dbh;
 		if (!$id_thes) $id_thes = $this->id_thesaurus;
 		$q = "select count(1) from noeuds where num_thesaurus = '".$id_thes."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) > 3) return TRUE; 
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) > 3) return TRUE; 
 		else return FALSE;		
 		
 	}
@@ -163,8 +163,8 @@ class thesaurus {
  		if (!$id_thes) $id_thes = $this->id_thesaurus;	
 		$q = "select count(1) from notices_categories, noeuds where noeuds.num_thesaurus = '".$id_thes."' ";
 		$q.= "and noeuds.id_noeud = notices_categories.num_noeud "; 
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) != 0) return TRUE; 
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) != 0) return TRUE; 
 		else return FALSE;		
 		
 	}
@@ -174,8 +174,8 @@ class thesaurus {
 		global $dbh;
 		
 		$q = "select valeur_param from parametres where type_param = 'thesaurus' and sstype_param = 'liste_trad' ";
-		$r = mysql_query($q, $dbh);
-		$a = explode(',',mysql_result($r, 0, 0));
+		$r = pmb_mysql_query($q, $dbh);
+		$a = explode(',',pmb_mysql_result($r, 0, 0));
 		return $a;
 	}
 
@@ -260,8 +260,8 @@ class thesaurus {
 			return $this->libelle_thesaurus;
 		} else {
 			$q = "select libelle_thesaurus from thesaurus where id_thesaurus = '".$id_thes."' limit 1";
-			$r = mysql_query($q, $dbh);
-			return mysql_result($r, 0, 0); 
+			$r = pmb_mysql_query($q, $dbh);
+			return pmb_mysql_result($r, 0, 0); 
 		} 
 	}
 	
@@ -274,8 +274,8 @@ class thesaurus {
 		else 
 			$whereplus = "";
 		$q = "select id_thesaurus, libelle_thesaurus from thesaurus where opac_active=1 $whereplus ORDER BY libelle_thesaurus";
-		$r = mysql_query($q, $dbh);
-		while ($row = @mysql_fetch_object($r)){
+		$r = pmb_mysql_query($q, $dbh);
+		while ($row = @pmb_mysql_fetch_object($r)){
 			$list_thes[$row->id_thesaurus] = $row->libelle_thesaurus;
 		}
 		return $list_thes;

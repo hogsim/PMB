@@ -2,14 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: resa_func.inc.php,v 1.35.2.2 2015-04-17 13:51:19 mbertin Exp $
+// $Id: resa_func.inc.php,v 1.39 2015-04-24 14:20:58 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once("$class_path/quotas.class.php");
 
 function resa_list ($idnotice=0, $idbulletin=0, $idempr=0, $order="", $where = "", $info_gestion=0, $url_gestion="") {
-	
+
 global $dbh ;
 global $msg;
 global $montrerquoi ;
@@ -33,7 +33,7 @@ if ($where) $sql.=" AND ".$where ;
 $sql.=" group by resa_idnotice, resa_idbulletin, resa_idempr ";
 $sql.=" order by ".$order ;
 
-$req = mysql_query($sql) or die("Erreur SQL !<br />".$sql."<br />".mysql_error()); 
+$req = pmb_mysql_query($sql) or die("Erreur SQL !<br />".$sql."<br />".pmb_mysql_error());
 
 if ($info_gestion) {
 	$aff_final .= "<br /><form class='form-$current_module' name='check_resa' action='$url_gestion' method='post'>" ;
@@ -47,11 +47,11 @@ if ($info_gestion) {
 	jscript_checkbox() ;
 	}
 
-if (!mysql_num_rows($req)) {
+if (!pmb_mysql_num_rows($req)) {
 	if ($info_gestion) $aff_final .= "</form>" ;
 	return $aff_final ;
 	}
-	
+
 $aff_final .= "<table width='100%'>";
 $aff_final .= "<tr>" ;
 if (!$idnotice && !$idbulletin) $aff_final .= "<th>$msg[233]</th>" ;
@@ -67,7 +67,7 @@ $odd_even=0;
 $precedenteresa_idnotice = 0 ;
 $precedenteresa_idbulletin = 0 ;
 $rank = 0 ;
-while ($data = mysql_fetch_array($req)) {
+while ($data = pmb_mysql_fetch_array($req)) {
 	$resa_idnotice = $data['resa_idnotice'];
 	$resa_idbulletin = $data['resa_idbulletin'];
 	$resa_idempr = $data['resa_idempr'] ;
@@ -75,25 +75,25 @@ while ($data = mysql_fetch_array($req)) {
 		$rank=1;
 		$precedenteresa_idnotice=$resa_idnotice;
 		$precedenteresa_idbulletin=$resa_idbulletin;
-		
+
 		// détermination de la date à afficher dans la case retour pour le rang 1
 		// disponible, réservé ou date de retour du premier exemplaire
-		
+
 		// on compte le nombre total d'exemplaires réservables et visibles pour la notice
 		$query = "select count(1) from exemplaires, docs_statut";
 		if ($resa_idnotice)  $query .= " where expl_notice=".$resa_idnotice;
 			elseif ($resa_idbulletin) $query .= " where expl_bulletin=".$resa_idbulletin;
 		$query .= " and expl_statut=idstatut and statut_allow_resa=1 and statut_visible_opac=1";
-		$tresult = @mysql_query($query, $dbh);
-		$total_ex = mysql_result($tresult, 0, 0);
+		$tresult = @pmb_mysql_query($query, $dbh);
+		$total_ex = pmb_mysql_result($tresult, 0, 0);
 
 		// on compte le nombre d'exemplaires sortis
 		$query = "select count(1) as qte from exemplaires e, pret p";
 		if ($resa_idnotice) $query .= " where e.expl_notice=".$resa_idnotice;
 			elseif ($resa_idbulletin) $query .= " where e.expl_bulletin=".$resa_idbulletin;
 		$query .= " and p.pret_idexpl=e.expl_id";
-		$tresult = @mysql_query($query, $dbh);
-		$total_sortis = mysql_result($tresult, 0, 0);
+		$tresult = @pmb_mysql_query($query, $dbh);
+		$total_sortis = pmb_mysql_result($tresult, 0, 0);
 
 		// on en déduit le nombre d'exemplaires disponibles
 		$total_dispo = $total_ex - $total_sortis;
@@ -112,8 +112,8 @@ while ($data = mysql_fetch_array($req)) {
 							elseif ($resa_idbulletin) $query .= " where e.expl_bulletin=".$resa_idbulletin;
 						$query .= " and e.expl_id=p.pret_idexpl";
 						$query .= " order by p.pret_retour limit 1";
-						$tresult = mysql_query($query, $dbh);
-						if (mysql_num_rows($tresult)) $situation = mysql_result($tresult, 0, 0);
+						$tresult = pmb_mysql_query($query, $dbh);
+						if (pmb_mysql_num_rows($tresult)) $situation = pmb_mysql_result($tresult, 0, 0);
 							else $situation = $msg['resa_no_expl'];
 						}
 				}
@@ -121,10 +121,10 @@ while ($data = mysql_fetch_array($req)) {
 			$rank++;
 			$situation='';
 			}
-	
+
 	if ( ($montrerquoi=='validees' && $data['resa_cb']) || ($montrerquoi=='invalidees' && !$data['resa_cb']) || ($montrerquoi=='all') ) {
 		$rank = recupere_rang($resa_idempr, $resa_idnotice, $resa_idbulletin) ;
-		// on affiche les résultats 
+		// on affiche les résultats
 		if ($odd_even==0) {
 			$aff_final .= "\n<tr class='odd'>";
 			$odd_even=1;
@@ -136,15 +136,15 @@ while ($data = mysql_fetch_array($req)) {
 			if ($resa_idnotice) $link = "<a href='./catalog.php?categ=isbd&id=".$resa_idnotice."'>".$data['tit']."</a>";
 				elseif ($resa_idbulletin) $link = "<a href='./catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".$resa_idbulletin."'>".$data['tit']."</a>";
 			} else $link = $data['tit'];
-		if (!$idnotice && !$idbulletin) $aff_final .= "<td><b>$link</b></td>";    
+		if (!$idnotice && !$idbulletin) $aff_final .= "<td><b>$link</b></td>";
 		if (!$idempr) {
-			if (SESSrights & CIRCULATION_AUTH) $aff_final .= "<td><a href=\"./circ.php?categ=pret&form_cb=".rawurlencode($data['empr_cb'])."\">".$data['empr_nom'].", ".$data['empr_prenom']."</a></td>"; 
-				else $aff_final .= "<td>".$data['empr_nom'].", ".$data['empr_prenom']."</td>"; 
+			if (SESSrights & CIRCULATION_AUTH) $aff_final .= "<td><a href=\"./circ.php?categ=pret&form_cb=".rawurlencode($data['empr_cb'])."\">".$data['empr_nom'].", ".$data['empr_prenom']."</a></td>";
+				else $aff_final .= "<td>".$data['empr_nom'].", ".$data['empr_prenom']."</td>";
 			}
-		$aff_final .= "<td>".$rank."</td>"; 
-		$aff_final .= "<td>".$data['aff_resa_date']."</td>"; 
-		$aff_final .= "<td>".$situation."</td>"; 
-		$aff_final .= "<td>".$data['aff_resa_date_fin']."</td>"; 
+		$aff_final .= "<td>".$rank."</td>";
+		$aff_final .= "<td>".$data['aff_resa_date']."</td>";
+		$aff_final .= "<td>".$situation."</td>";
+		$aff_final .= "<td>".$data['aff_resa_date_fin']."</td>";
 		// gestion du formulaire de validation/suppression
 		if ($info_gestion) {
 			$aff_final .= "\n<td style='text-align:center;'>";
@@ -153,7 +153,7 @@ while ($data = mysql_fetch_array($req)) {
 			}
 		$aff_final .= "</tr>\n";
 		}
-	} 
+	}
 
 $aff_final .= "</table>";
 
@@ -165,14 +165,14 @@ if ($info_gestion) {
 	$aff_final .= "</td></tr></table></form>" ;
 	}
 
-mysql_free_result ($req); 
+pmb_mysql_free_result($req);
 
 return $aff_final ;
 }
 
 // cette fonction va retourner un tableau des résa pas traitées
 function resa_list_resa_a_traiter () {
-	
+
 /* Traitement :
 	chercher toutes les réservations non traitées (resa_cb ="")
 	construire le tableau avec le titre de l'ouvrage, le nom du réservataire et son rang
@@ -194,11 +194,11 @@ $sql.=" where resa_idempr=id_empr and (resa_cb='' or resa_cb is null) ";
 $sql.=" group by resa_idnotice, resa_idbulletin, resa_idempr ";
 $sql.=" order by ".$order ;
 
-$req = mysql_query($sql) or die("Erreur SQL !<br />".$sql."<br />".mysql_error()); 
+$req = pmb_mysql_query($sql) or die("Erreur SQL !<br />".$sql."<br />".pmb_mysql_error());
 
-if (!mysql_num_rows($req)) return $tableau_final;
+if (!pmb_mysql_num_rows($req)) return $tableau_final;
 
-while ($data = mysql_fetch_array($req)) {
+while ($data = pmb_mysql_fetch_array($req)) {
 	$rank = recupere_rang($data['resa_idempr'], $data['resa_idnotice'], $data['resa_idbulletin']) ;
 	$tableau_final[] = array(
 				'resa_tit' => $data['tit'],
@@ -209,22 +209,22 @@ while ($data = mysql_fetch_array($req)) {
 				'rank' => $rank ) ;
 	} // fin while
 
-mysql_free_result ($req); 
+pmb_mysql_free_result($req);
 
 return $tableau_final ;
 }
 
 
 function resa_ranger_list () {
-	
+
 global $dbh ;
 global $msg;
 global $begin_result_liste;
 global $end_result_liste;
 
 $sql="SELECT resa_cb, expl_id from resa_ranger left join exemplaires on resa_cb=expl_cb ";
-$res = mysql_query($sql, $dbh) ;
-while ($ranger = mysql_fetch_object($res)) {
+$res = pmb_mysql_query($sql, $dbh) ;
+while ($ranger = pmb_mysql_fetch_object($res)) {
 	if ($ranger->expl_id) {
 		if($stuff = get_expl_info($ranger->expl_id)) {
 			$stuff = check_pret($stuff);
@@ -242,40 +242,40 @@ if ($aff_final) return $begin_result_liste.$aff_final.$end_result_liste;
 function verif_cb_utilise ($cb) {
 	global $dbh ;
 	$rqt = "select id_resa from resa where resa_cb='".$cb."' ";
-	$res = mysql_query ($rqt, $dbh) ;
-	$nb=mysql_num_rows($res) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
+	$nb=pmb_mysql_num_rows($res) ;
 	if (!$nb) return 0 ;
-	$obj=mysql_fetch_object($res) ;
+	$obj=pmb_mysql_fetch_object($res) ;
 	return $obj->id_resa ;
 	}
-	
+
 function affecte_cb ($cb) {
 	global $dbh ;
-	
+
 	// chercher s'il s'agit d'une notice ou d'un bulletin
 	$rqt = "select expl_notice, expl_bulletin from exemplaires where expl_cb='".$cb."' ";
-	$res = mysql_query ($rqt, $dbh) ;
-	$nb=mysql_num_rows($res) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
+	$nb=pmb_mysql_num_rows($res) ;
 	if (!$nb) return 0 ;
-	
-	$obj=mysql_fetch_object($res) ;
-	
+
+	$obj=pmb_mysql_fetch_object($res) ;
+
 	// chercher le premier (par ordre de rang, donc de date de début de résa, non validé
 	$rqt = "select id_resa, resa_idempr from resa where resa_idnotice='".$obj->expl_notice."' and resa_idbulletin='".$obj->expl_bulletin."' and resa_cb='' and resa_date_fin='0000-00-00' order by resa_date ";
-	$res = mysql_query ($rqt, $dbh) ;
-	
-	if (!mysql_num_rows($res)) return 0 ;
-	
-	$obj_resa=mysql_fetch_object($res) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
+
+	if (!pmb_mysql_num_rows($res)) return 0 ;
+
+	$obj_resa=pmb_mysql_fetch_object($res) ;
 	//MB 17/04/2015: Je ne peux pas valider une réservation à l'Opac car il n'y pas de mail envoyé au lecteur et les transferts ne sont pas gérés 
 	/*$nb_days = get_time($obj_resa->resa_idempr,$obj->expl_notice,$obj->expl_bulletin) ;
-	
+
 	// mettre resa_cb à jour pour cette resa
 	$rqt = "update resa set resa_cb='".$cb."' " ;
 	$rqt .= ", resa_date_debut=sysdate() " ;
 	$rqt .= ", resa_date_fin=date_add(sysdate(), interval $nb_days DAY) " ;
 	$rqt .= " where id_resa='".$obj_resa->id_resa."' ";
-	$res = mysql_query ($rqt, $dbh);*/
+	$res = pmb_mysql_query($rqt, $dbh);*/
 	return $obj_resa->id_resa ;
 	}
 
@@ -283,17 +283,17 @@ function affecte_cb ($cb) {
 function desaffecte_cb ($cb) {
 	global $dbh ;
 	$rqt = "update resa set resa_cb='', resa_date_debut='0000-00-00', resa_date_fin='0000-00-00' where resa_cb='".$cb."' ";
-	$res = mysql_query ($rqt, $dbh) ;
-	return mysql_affected_rows($dbh) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
+	return pmb_mysql_affected_rows($dbh) ;
 	}
 
 function recupere_cb ($id) {
 	global $dbh ;
 	$rqt = "select resa_cb from resa where id_resa='".$id."' ";
-	$res = mysql_query ($rqt, $dbh) ;
-	$nb=mysql_num_rows($res) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
+	$nb=pmb_mysql_num_rows($res) ;
 	if (!$nb) return "" ;
-	$obj=mysql_fetch_object($res) ;
+	$obj=pmb_mysql_fetch_object($res) ;
 	return $obj->resa_cb ;
 	}
 
@@ -304,8 +304,8 @@ function recupere_rang($id_empr, $id_notice, $id_bulletin) {
 	if (!$id_notice) $id_notice=0;
 	if (!$id_bulletin) $id_bulletin=0 ;
 	$query = "select resa_idempr from resa where resa_idnotice='".$id_notice."' and resa_idbulletin='".$id_bulletin."' order by resa_date";
-	$result = mysql_query($query, $dbh);
-	while($resa=mysql_fetch_object($result)) {
+	$result = pmb_mysql_query($query, $dbh);
+	while($resa=pmb_mysql_fetch_object($result)) {
 		if($resa->resa_idempr == $id_empr) break;
 		$rank++;
 		}
@@ -315,7 +315,7 @@ function recupere_rang($id_empr, $id_notice, $id_bulletin) {
 //Récupération de la durée de réservation pour une notice ou un bulletin et un emprunteur
 function get_time($id_empr,$id_notice,$id_bulletin) {
 	global $pmb_quotas_avances;
-	
+
 	//Si les quotas avancés sont actifs
 	if ($pmb_quotas_avances) {
 		$struct=array();
@@ -336,8 +336,8 @@ function get_time($id_empr,$id_notice,$id_bulletin) {
 			$requete="select min(duree_resa) from docs_type, exemplaires where expl_notice='$id_notice' and expl_typdoc=idtyp_doc";
 		else
 			$requete="select min(duree_resa) from docs_type, exemplaires where expl_bulletin='$id_bulletin' and expl_typdoc=idtyp_doc";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) $t=mysql_result($resultat,0,0); else $t=0;
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) $t=pmb_mysql_result($resultat,0,0); else $t=0;
 	}
 	return $t;
 }
@@ -348,11 +348,11 @@ function check_quota_resa($id_empr,$id_notice,$id_bulletin) {
 	global $pmb_quotas_avances;
 	global $_quotas_elements_;
 	global $pmb_resa_quota_pret_depasse;
-	
+
 	//Initialisation résultat
 	$error=array();
 	$error["ERROR"]=false;
-	
+
 	//Si les quotas avancés sont autorisés
 	if ($pmb_quotas_avances) {
 		$struct=array();
@@ -369,7 +369,7 @@ function check_quota_resa($id_empr,$id_notice,$id_bulletin) {
 		//Initialisation du quota
 		$qt=new quota($quota_type);
 		$struct["READER"]=$id_empr;
-		
+
 		//Si résa bloquée en cas de dépassement de quota de prêt
 		if (!$pmb_resa_quota_pret_depasse) {
 			//Le quota de prêt est-il atteint pour cette notice ou bulletin
@@ -379,12 +379,12 @@ function check_quota_resa($id_empr,$id_notice,$id_bulletin) {
 			$object_id=$qt->get_object_for_indirect_element($_quotas_elements_[$elt],$struct);
 			//Initialisation du quota de prêt
 			$qt_pret=new quota("LEND_NMBR_QUOTA");
-		
+
 			$struct_pret["READER"]=$id_empr;
 			$struct_pret["EXPL"]=$object_id;
 			$r=$qt_pret->check_quota($struct_pret);
 		} else $r=false;
-		
+
 		//Si quota de prêt non violé alors on regarde les quotas de réservation
 		if (!$r) {
 			//Vérification
@@ -422,14 +422,14 @@ function expl_dispo ($no_notice=0, $no_bulletin=0) {
 	$requete .= " AND exemplaires.expl_section=docs_section.idsection ";
 	$requete .= " AND exemplaires.expl_statut=docs_statut.idstatut ";
 	$requete .= " order by location_libelle, section_libelle, expl_cote ";
-	$result = mysql_query($requete, $dbh);	
-	while($expl = mysql_fetch_object($result)) {
-		if(!$expl->pret_retour && !verif_cb_utilise($expl->expl_cb))  
+	$result = pmb_mysql_query($requete, $dbh);
+	while($expl = pmb_mysql_fetch_object($result)) {
+		if(!$expl->pret_retour && !verif_cb_utilise($expl->expl_cb))
 			$tableau[] = array (
 				'expl_id' => $expl->expl_id,
 				'expl_cb' => $expl->expl_cb,
-				'expl_notice' => $expl->expl_notice,					
-				'expl_bulletin' => $expl->expl_bulletin,					
+				'expl_notice' => $expl->expl_notice,
+				'expl_bulletin' => $expl->expl_bulletin,
 				'expl_cote' => $expl->expl_cote,
 				'location' => $expl->location_libelle,
 				'section' => $expl->section_libelle,
@@ -440,7 +440,8 @@ function expl_dispo ($no_notice=0, $no_bulletin=0) {
 
 function check_statut($id_notice=0, $id_bulletin=0) {
 	global $dbh;
-	global $opac_resa_dispo; // les résa de disponibles sont-elles autorisées ?
+	global $opac_resa_dispo; 	// les résa de disponibles sont-elles autorisées ?
+	global $opac_resa_planning;
 	global $msg;
 	global $message_resa,$empr_location,$pmb_location_reservation;
 
@@ -461,42 +462,47 @@ function check_statut($id_notice=0, $id_bulletin=0) {
 		$message_resa.= "<strong>".$msg["resa_no_expl"]."</strong>";
 		return 0;
 	}
-	if($pmb_location_reservation) {			
-		$query.=" and e.expl_location in (select resa_loc from resa_loc where resa_emprloc=$empr_location) "; 	
+	if($pmb_location_reservation && !$empr_location) {
+		$message_resa.= "<strong>".$msg["resa_no_expl"]."</strong>";
+		return 0;
 	}
-	$result = mysql_query($query, $dbh);
-	if(!@mysql_num_rows($result)) {
+	if($pmb_location_reservation) {
+		$query.=" and e.expl_location in (select resa_loc from resa_loc where resa_emprloc=$empr_location) ";
+	}
+	$result = pmb_mysql_query($query, $dbh);
+
+	if(!pmb_mysql_num_rows($result)) {
 		// aucun exemplaire n'est disponible pour le prêt
 		$message_resa.= "<strong>".$msg["resa_no_expl"]."</strong>";
 		return 0;
 	}
-	
+
 	// on regarde si les résa de disponibles sont autorisées
-	if ($opac_resa_dispo=="1") return 1;
-	
+	if ($opac_resa_dispo=='1' || $opac_resa_planning=='1') return 1;
+
 	// on checke si un exemplaire est disponible
 	// aka. si un des exemplaires en circulation n'est pas mentionné dans la table des prêts,
 	// c'est qu'il est disponible à la bibliothèque
 	$list_dispo = '';
 
-	while($reservable = mysql_fetch_object($result)) {
+	while($reservable = pmb_mysql_fetch_object($result)) {
 		$req2 = "select count(1) from pret where pret_idexpl=".$reservable->expl_id;
-		$req2_result = mysql_query($req2, $dbh);
-		if(!mysql_result($req2_result, 0, 0)) {			
+		$req2_result = pmb_mysql_query($req2, $dbh);
+		if(!pmb_mysql_result($req2_result, 0, 0)) {
 			// l'exemplaire ne figure pas dans la table pret -> dispo
 			// on récupère les données exemplaires pour constituer le message
 			$req3 = "select p.expl_cb, p.expl_cote, s.section_libelle, l.location_libelle ";
 			$req3 .= " from exemplaires p, docs_section s, docs_location l";
 			$req3 .= " where p.expl_id=".$reservable->expl_id;
 			$req3 .= " and s.idsection=p.expl_section";
-			$req3 .= " and l.idlocation=p.expl_location limit 1";		
-			$req3_result = mysql_query($req3, $dbh);
-			$req3_obj = mysql_fetch_object($req3_result);
-			if($req3_obj->expl_cb) {				
+			$req3 .= " and l.idlocation=p.expl_location limit 1";
+			$req3_result = pmb_mysql_query($req3, $dbh);
+			$req3_obj = pmb_mysql_fetch_object($req3_result);
+			if($req3_obj->expl_cb) {
 				// Si résa validé il n'est pas disponible en prêt
 				$req4 = "select count(1) from resa where resa_cb='".$reservable->expl_cb."' and resa_confirmee='1'";
-				$req4_result = mysql_query($req4, $dbh);
-				if(!mysql_result($req4_result, 0, 0)) {
+				$req4_result = pmb_mysql_query($req4, $dbh);
+				if(!pmb_mysql_result($req4_result, 0, 0)) {
 					$list_dispo .= '<br />'.$req3_obj->location_libelle.'.';
 					$list_dispo .= $req3_obj->section_libelle.' cote&nbsp;: '.$req3_obj->expl_cote;
 				}
@@ -521,10 +527,10 @@ function allready_loaned($id_notice=0, $id_bulletin=0, $id_empr) {
 	global $dbh;
 	global $msg;
 	$query = "select count(1) from pret p, exemplaires e";
-	$query .= " where p.pret_idempr='$id_empr' and e.expl_notice='$id_notice' and e.expl_bulletin='$id_bulletin' "; 
+	$query .= " where p.pret_idempr='$id_empr' and e.expl_notice='$id_notice' and e.expl_bulletin='$id_bulletin' ";
 	$query .= " and p.pret_idexpl=e.expl_id";
-	$result = @mysql_query($query, $dbh);
-	if (@mysql_result($result, 0, 0)) {
+	$result = @pmb_mysql_query($query, $dbh);
+	if (@pmb_mysql_result($result, 0, 0)) {
 		return $msg[resa_deja_doc] ;
 	}
 	return "";
@@ -536,21 +542,21 @@ function alert_mail_users_pmb($id_notice=0, $id_bulletin=0, $id_empr, $annul=0) 
 	global $msg, $charset;
 	global $opac_biblio_name, $opac_biblio_email ;
 	global $opac_url_base ;
-	
+
 	// paramétrage OPAC: choix du nom de la bibliothèque comme expéditeur
 	$requete = "select location_libelle, email from empr, docs_location where empr_location=idlocation and id_empr='$id_empr' ";
-	$res = mysql_query($requete, $dbh);
-	$loc=mysql_fetch_object($res) ;
+	$res = pmb_mysql_query($requete, $dbh);
+	$loc=pmb_mysql_fetch_object($res) ;
 	$PMBusernom = $loc->location_libelle ;
 	$PMBuserprenom = '' ;
 	$PMBuseremail = $loc->email ;
 	if ($PMBuseremail) {
 		$query = "select distinct empr_prenom, empr_nom, empr_cb, empr_mail, empr_tel1, empr_tel2, empr_ville, location_libelle, nom, prenom, user_email, date_format(sysdate(), '".$msg["format_date_heure"]."') as aff_quand from empr, docs_location, users where id_empr='$id_empr' and empr_location=idlocation and user_email like('%@%') and user_alert_resamail=1";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		$headers  = "MIME-Version: 1.0\n";
 		$headers .= "Content-type: text/html; charset=".$charset."\n";
 		$output_final='';
-		while ($empr=@mysql_fetch_object($result)) {
+		while ($empr=@pmb_mysql_fetch_object($result)) {
 			if (!$output_final) {
 				$output_final = "<html><body>" ;
 				if ($annul==1) {
@@ -564,7 +570,7 @@ function alert_mail_users_pmb($id_notice=0, $id_bulletin=0, $id_empr, $annul=0) 
 					$sujet = $msg["mail_obj_resa_added"] ;
 				}
 				$output_final .= "</strong></font></a> ".$empr->aff_quand."
-									<br /><strong>".$empr->empr_prenom." ".$empr->empr_nom."</strong>							
+									<br /><strong>".$empr->empr_prenom." ".$empr->empr_nom."</strong>
 									<br /><i>".$empr->empr_mail." / ".$empr->empr_tel1." / ".$empr->empr_tel2."</i>";
 				if ($empr->empr_cp || $empr->empr_ville) $output_final .= "<br /><u>".$empr->empr_cp." ".$empr->empr_ville."</u>";
 				$output_final .= "<hr />".$msg[situation].": ".$empr->location_libelle."<hr />";

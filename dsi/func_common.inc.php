@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_common.inc.php,v 1.5 2007-03-10 09:25:49 touraine37 Exp $
+// $Id: func_common.inc.php,v 1.6 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -12,8 +12,8 @@ function show_classement_utilise ($type='BAN', $classement_objet=1, $utilise=1) 
 	global $msg, $charset ;
 	
 	$query = "SELECT nom_classement FROM classements where id_classement=1 ";
-	$result = mysql_query($query, $dbh);
-	$temp = mysql_fetch_object($result) ;
+	$result = pmb_mysql_query($query, $dbh);
+	$temp = pmb_mysql_fetch_object($result) ;
 	$classements = "<select id='num_classement' name='num_classement'>";
 
 	$classements .= "<option value='1'";
@@ -42,8 +42,8 @@ function show_classement_utilise ($type='BAN', $classement_objet=1, $utilise=1) 
 
 
 	$query = "SELECT count($compte) as util, id_classement, nom_classement from $from $clause group by id_classement, nom_classement order by nom_classement, id_classement ";
-	$result = mysql_query($query, $dbh);
-	while ($temp = @mysql_fetch_object($result)) {
+	$result = pmb_mysql_query($query, $dbh);
+	while ($temp = @pmb_mysql_fetch_object($result)) {
 		$classements .= "<option value='$temp->id_classement'";
 		if ($classement_objet==$temp->id_classement) $classements .= " selected ";
 		$classements .=">".htmlentities($temp->nom_classement,ENT_QUOTES, $charset);

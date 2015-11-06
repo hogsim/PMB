@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sel_display.class.php,v 1.7.2.4 2015-10-28 15:21:10 jpermanne Exp $
+// $Id: sel_display.class.php,v 1.11 2015-06-29 08:54:04 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -76,13 +76,13 @@ class sel_mono_display {
 		global $dbh;
 		
 		$q = "SELECT * FROM notices WHERE notice_id='".$this->notice_id."' ";
-		$r = mysql_query($q, $dbh);
-		if(mysql_num_rows($r)) {
-			$this->notice = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if(pmb_mysql_num_rows($r)) {
+			$this->notice = pmb_mysql_fetch_object($r);
 		}
 		$q = "select count(*) from exemplaires where expl_notice='".$this->notice_id."' ";
-		$r = mysql_query($q, $dbh);
-		$this->nb_expl = mysql_result($r,0,0);
+		$r = pmb_mysql_query($q, $dbh);
+		$this->nb_expl = pmb_mysql_result($r,0,0);
 	}
 	
 
@@ -95,9 +95,9 @@ class sel_mono_display {
 		//gen. statut
 		if ($this->notice->statut) {
 			$rqt_st = "SELECT class_html , gestion_libelle FROM notice_statut WHERE id_notice_statut='".$this->notice->statut."' ";
-			$res_st = mysql_query($rqt_st, $dbh) or die ($rqt_st. " ".mysql_error()) ;
-			$class_html = " class='".mysql_result($res_st, 0, 0)."' ";
-			if ($this->notice->statut>1) $txt = mysql_result($res_st, 0, 1) ;
+			$res_st = pmb_mysql_query($rqt_st, $dbh) or die ($rqt_st. " ".pmb_mysql_error()) ;
+			$class_html = " class='".pmb_mysql_result($res_st, 0, 0)."' ";
+			if ($this->notice->statut>1) $txt = pmb_mysql_result($res_st, 0, 1) ;
 			else $txt = "" ;
 		} else {
 			$class_html = " class='statutnot1' " ;
@@ -208,7 +208,6 @@ class sel_mono_display {
 	function doContent() {
 		global $tdoc;
 		global $fonction_auteur;
-		global $msg;
 	
 		//mention titre
 		$this->isbd = $this->titre;
@@ -338,13 +337,6 @@ class sel_mono_display {
 		if($zoneNote) {
 			$this->isbd .= "<br /><br />$zoneNote.";
 		}
-		
-		//Indexation décimale
-		if($this->notice->indexint) {
-			$indexint = new indexint($this->notice->indexint);
-			$indexint_isbd=$indexint->display;
-			$this->isbd .= "<br /><b>${msg['indexint_catal_title']}</b>&nbsp;: ".$indexint_isbd;
-		}
 	}	
 
 	
@@ -444,9 +436,9 @@ class sel_serial_display {
 		global $dbh;
 		
 		$q = "SELECT * FROM notices WHERE notice_id=".$this->notice_id;
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			$this->notice = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$this->notice = pmb_mysql_fetch_object($r);
 		}
 	}
 	
@@ -458,10 +450,10 @@ class sel_serial_display {
 		
 		if ($this->notice->statut) {
 			$rqt_st = "SELECT class_html , gestion_libelle FROM notice_statut WHERE id_notice_statut='".$this->notice->statut."' ";
-			$res_st = mysql_query($rqt_st, $dbh);
-			$class_html = " class='".mysql_result($res_st, 0, 0)."' ";
+			$res_st = pmb_mysql_query($rqt_st, $dbh);
+			$class_html = " class='".pmb_mysql_result($res_st, 0, 0)."' ";
 			if ($this->notice->statut>1) {
-				$txt = mysql_result($res_st, 0, 1);
+				$txt = pmb_mysql_result($res_st, 0, 1);
 			} else {
 				$txt = '';
 			}
@@ -629,32 +621,26 @@ class sel_serial_display {
 
 		//code (ISSN,...)
 		if ($this->notice->code) $this->isbd .="<br /><b>${msg[165]}</b>&nbsp;: ".$this->notice->code;
-
-		//Indexation décimale
-		if($this->notice->indexint) {
-			$indexint = new indexint($this->notice->indexint);
-			$indexint_isbd=$indexint->display;
-			$this->isbd .= "<br /><b>${msg['indexint_catal_title']}</b>&nbsp;: ".$indexint_isbd;
-		}
+			
 					
 		// Si notice-mère alors on compte le nombre de numéros (bulletins)
 		if($this->notice->niveau_biblio=="s") {
 			$requete = "SELECT * FROM bulletins WHERE bulletin_notice=".$this->notice_id;
-			$Query = mysql_query($requete, $dbh);
-			$this->nb_bull=mysql_num_rows($Query);
-			while (($row = mysql_fetch_array($Query))) {
+			$Query = pmb_mysql_query($requete, $dbh);
+			$this->nb_bull=pmb_mysql_num_rows($Query);
+			while (($row = pmb_mysql_fetch_array($Query))) {
 				$requete2 = "SELECT count( * )  AS nb_art FROM  analysis WHERE analysis_bulletin =".$row['bulletin_id'];
-				$Query2 = mysql_query($requete2, $dbh);
-				$analysis_array=mysql_fetch_array($Query2);
+				$Query2 = pmb_mysql_query($requete2, $dbh);
+				$analysis_array=pmb_mysql_fetch_array($Query2);
 				$this->nb_art+=$analysis_array['nb_art'];
 				$requete3 = "SELECT count( expL_id ) AS nb_expl FROM  exemplaires WHERE expl_bulletin =".$row['bulletin_id'];
-				$Query3 = mysql_query($requete3, $dbh);
-				$expl_array=mysql_fetch_array($Query3);
+				$Query3 = pmb_mysql_query($requete3, $dbh);
+				$expl_array=pmb_mysql_fetch_array($Query3);
 				$this->nb_expl+=$expl_array['nb_expl'];			
 			}
 				
 			// Cas général : au moins un bulletin
-			if (mysql_num_rows($Query)>0)
+			if (pmb_mysql_num_rows($Query)>0)
 				{$this->isbd .="<br /><br />\n
 				<b>".$msg["serial_bulletinage_etat"]."</b>
 				<table border='0' class='expl-list'>
@@ -684,12 +670,12 @@ class sel_serial_display {
 				$restrict_location=" group by id_serial";
 			}
 			$rqt="select state_collections$select_location from collections_state$table_location where id_serial=".$this->notice_id.$restrict_location;
-			$execute_query=mysql_query($rqt);
+			$execute_query=pmb_mysql_query($rqt);
 			if ($execute_query) {
-				if (mysql_num_rows($execute_query)) {
+				if (pmb_mysql_num_rows($execute_query)) {
 					$bool=false;
 					$affichage="<br /><strong>".$msg["4001"]."</strong><br />";
-					while (($r=mysql_fetch_object($execute_query))) {
+					while (($r=pmb_mysql_fetch_object($execute_query))) {
 						if ($r->state_collections) {
 							if ($r->location_libelle) $affichage .= "<strong>".$r->location_libelle."</strong> : ";
 							$affichage .= $r->state_collections."<br />\n";
@@ -808,14 +794,14 @@ class sel_bulletin_display {
 		global $dbh, $msg;
 		
 		$q = "SELECT notices.tit1, notices.ed1_id, notices.code, bulletins.*, date_format(bulletins.date_date, '".$msg['format_date']."') as aff_date_date FROM bulletins join notices on bulletin_notice=notice_id WHERE bulletin_id='".$this->bulletin_id."' ";
-		$r = mysql_query($q, $dbh);
-		if(mysql_num_rows($r)) {
-			$this->bulletin = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if(pmb_mysql_num_rows($r)) {
+			$this->bulletin = pmb_mysql_fetch_object($r);
 		}
 	
 		$q = "select count(*) from exemplaires where expl_bulletin='".$this->bulletin_id."' ";
-		$r = mysql_query($q, $dbh);
-		$this->nb_expl = mysql_result($r,0,0);
+		$r = pmb_mysql_query($q, $dbh);
+		$this->nb_expl = pmb_mysql_result($r,0,0);
 
 	}
 }
@@ -889,8 +875,8 @@ class sel_abt_display {
 		$q.= "join notices on abts_abts.num_notice=notices.notice_id ";
 		$q.= "join docs_location on abts_abts.location_id=docs_location.idlocation ";
 		$q.= "where abts_abts.abt_id='".$this->abt_id."' ";
-		$r = mysql_query($q, $dbh); 
-		$this->abt = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh); 
+		$this->abt = pmb_mysql_fetch_object($r);
 	}
 	
 	
@@ -949,8 +935,8 @@ class sel_abt_display {
 		//renv. date debut abt
 		$q = "select date_add('".$this->abt->date_fin."', interval 1 day) as date_debut, ";
 		$q.= " date_add('".$this->abt->date_fin."', interval ".$this->duree." month) as date_fin ";
-		$r = mysql_query($q, $dbh);
-		$obj = mysql_fetch_object($r); 
+		$r = pmb_mysql_query($q, $dbh);
+		$obj = pmb_mysql_fetch_object($r); 
 		$this->aff_date_debut = format_date($obj->date_debut);
 		
 //TODO A revoir, car le prix n'est pas accessible sur les notices de perio
@@ -1194,9 +1180,9 @@ class sel_article_display {
 		global $dbh,$msg;
 		
 		$q = "SELECT * FROM notices WHERE notice_id='".$this->notice_id."' ";
-		$r = mysql_query($q, $dbh);
-		if(mysql_num_rows($r)) {
-			$this->notice = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if(pmb_mysql_num_rows($r)) {
+			$this->notice = pmb_mysql_fetch_object($r);
 		}
 		// récupération des données du bulletin et de la notice apparentée
 		$requete = "SELECT b.tit1,c.*,date_format(date_date, '".$msg["format_date"]."') as aff_date_date "; 
@@ -1205,9 +1191,9 @@ class sel_article_display {
 		$requete.= "AND c.bulletin_id=a.analysis_bulletin ";
 		$requete .= "AND c.bulletin_notice=b.notice_id ";
 		$requete.= "LIMIT 1";
-		$myQuery = mysql_query($requete, $dbh);
-		if (mysql_num_rows($myQuery)) {
-			$parent = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($myQuery)) {
+			$parent = pmb_mysql_fetch_object($myQuery);
 			$this->parent_title = $parent->tit1;
 			$this->parent_numero = $parent->bulletin_numero;
 			$this->parent_date = $parent->mention_date;
@@ -1225,9 +1211,9 @@ class sel_article_display {
 		//gen. statut
 		if ($this->notice->statut) {
 			$rqt_st = "SELECT class_html , gestion_libelle FROM notice_statut WHERE id_notice_statut='".$this->notice->statut."' ";
-			$res_st = mysql_query($rqt_st, $dbh) or die ($rqt_st. " ".mysql_error()) ;
-			$class_html = " class='".mysql_result($res_st, 0, 0)."' ";
-			if ($this->notice->statut>1) $txt = mysql_result($res_st, 0, 1) ;
+			$res_st = pmb_mysql_query($rqt_st, $dbh) or die ($rqt_st. " ".pmb_mysql_error()) ;
+			$class_html = " class='".pmb_mysql_result($res_st, 0, 0)."' ";
+			if ($this->notice->statut>1) $txt = pmb_mysql_result($res_st, 0, 1) ;
 			else $txt = "" ;
 		} else {
 			$class_html = " class='statutnot1' " ;

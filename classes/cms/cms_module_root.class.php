@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_root.class.php,v 1.32 2014-03-11 10:24:02 arenou Exp $
+// $Id: cms_module_root.class.php,v 1.39 2015-06-15 15:52:15 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -74,51 +74,53 @@ class cms_module_root {
 	}
 	
 	protected function load_msg(){
-		global $lang;
-		global $base_path;
-
-		//on regarde si on doit intégrer des fichiers de messages de parents
-		$parents = $this->get_parent_classes();
-		for($i=count($parents)-1 ; $i>=0 ; $i--){
-			if($parents[$i] != "cms_module_root"){
-				$parent = str_replace("cms_module_","",$parents[$i]);
-				if(strpos($parent,"_") !== false){	
-					$module_rep = substr($parent,0,strpos($parent,"_"));
-				}else{
-					$module_rep = $parent;
-				}
-				//on regarde la langue par défaut du module
-				$default_language = $this->get_default_language($module_rep);
-				//si elle est différente de celle de l'interface, on l'intègre
-				// la langue par défaut donne l'assurance d'avoir tous les messages...
-				if($default_language != $lang){
-					$file = $base_path."/cms/modules/".$module_rep."/messages/".$default_language."/".$parents[$i].".xml";
+		if (!count($this->msg)) {
+			global $lang;
+			global $base_path;
+	
+			//on regarde si on doit intégrer des fichiers de messages de parents
+			$parents = $this->get_parent_classes();
+			for($i=count($parents)-1 ; $i>=0 ; $i--){
+				if($parents[$i] != "cms_module_root"){
+					$parent = str_replace("cms_module_","",$parents[$i]);
+					if(strpos($parent,"_") !== false){	
+						$module_rep = substr($parent,0,strpos($parent,"_"));
+					}else{
+						$module_rep = $parent;
+					}
+					//on regarde la langue par défaut du module
+					$default_language = $this->get_default_language($module_rep);
+					//si elle est différente de celle de l'interface, on l'intègre
+					// la langue par défaut donne l'assurance d'avoir tous les messages...
+					if($default_language != $lang){
+						$file = $base_path."/cms/modules/".$module_rep."/messages/".$default_language."/".$parents[$i].".xml";
+						$this->load_msg_file($file);
+					}				
+					//on commence par charger les messages de la langue par défaut du module...
+					$file = $base_path."/cms/modules/".$module_rep."/messages/".$lang."/".$parents[$i].".xml";
 					$this->load_msg_file($file);
-				}				
-				//on commence par charger les messages de la langue par défaut du module...
-				$file = $base_path."/cms/modules/".$module_rep."/messages/".$lang."/".$parents[$i].".xml";
-				$this->load_msg_file($file);
+				}else{
+					$file = $base_path."/cms/modules/common/messages/".$lang."/cms_module_root.xml";
+					$this->load_msg_file($file);
+				}
+			}
+			$var = str_replace("cms_module_","",$this->class_name);
+			if(strpos($var,"_") !== false){	
+				$module_rep = substr($var,0,strpos($var,"_"));
 			}else{
-				$file = $base_path."/cms/modules/common/messages/".$lang."/cms_module_root.xml";
+				$module_rep = $var;
+			}
+			//on regarde la langue par défaut du module
+			$default_language = $this->get_default_language($module_rep);
+			//si elle est différente de celle de l'interface, on l'intègre
+			// la langue par défaut donne l'assurance d'avoir tous les messages...
+			if($default_language != $lang){
+				$file = $base_path."/cms/modules/".$module_rep."/messages/".$default_language."/".$this->class_name.".xml";
 				$this->load_msg_file($file);
 			}
-		}
-		$var = str_replace("cms_module_","",$this->class_name);
-		if(strpos($var,"_") !== false){	
-			$module_rep = substr($var,0,strpos($var,"_"));
-		}else{
-			$module_rep = $var;
-		}
-		//on regarde la langue par défaut du module
-		$default_language = $this->get_default_language($module_rep);
-		//si elle est différente de celle de l'interface, on l'intègre
-		// la langue par défaut donne l'assurance d'avoir tous les messages...
-		if($default_language != $lang){
-			$file = $base_path."/cms/modules/".$module_rep."/messages/".$default_language."/".$this->class_name.".xml";
+			$file = $base_path."/cms/modules/".$module_rep."/messages/".$lang."/".$this->class_name.".xml";
 			$this->load_msg_file($file);
 		}
-		$file = $base_path."/cms/modules/".$module_rep."/messages/".$lang."/".$this->class_name.".xml";
-		$this->load_msg_file($file);
 	}
 	
 	protected function get_parent_classes(){
@@ -152,24 +154,10 @@ class cms_module_root {
 		if($cache_msg_file[$file]){
 			$this->msg=$cache_msg_file[$file];
 		}elseif(file_exists($file)){
-			@ini_set("zend.ze1_compatibility_mode", "0");
-			$dom = new domDocument();
-			$dom->load($file);
-			$entries = $dom->getElementsByTagName('entry');
-			for($i=0 ; $i<$entries->length ; $i++){
-				if($entries->item($i)->hasAttributes()){
-					$attributes = $entries->item($i)->attributes;
-					for($j=0 ; $j<$attributes->length ; $j++){
-						if($attributes->item($j)->nodeName == "code"){
-							//dom retourne de l'utf-8 à tous les coups...
-							$this->msg[$attributes->item($j)->nodeValue] = $this->charset_normalize($entries->item($i)->nodeValue,"utf-8");
-							break;
-						}
-					}
-				}
-			}
+			$messages = new XMLlist($file);
+			$messages->analyser();
+			$this->msg = array_merge($this->msg, $messages->table);
 			$cache_msg_file[$file]=$this->msg;
-			@ini_set("zend.ze1_compatibility_mode", "1");
 			return true;
 		}else{
 			return false;
@@ -182,27 +170,30 @@ class cms_module_root {
 	}
 	
 	public function get_hash(){
+		global $dbh;
 		if(!$this->hash){
 			$this->hash = $this->generate_hash($this->class_name);
+			$query = "insert into cms_hash set hash = '".$this->hash."'";
+			pmb_mysql_query($query,$dbh);
 		}
-		$query = "insert into cms_hash set hash = '".$this->hash."'";
-		mysql_query($query);
 		return $this->hash;
 	}
 	
 	public function delete_hash(){
+		global $dbh;
 		$query = "delete from cms_hash where hash = '".$this->hash."'";
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query,$dbh);
 		if($result){
 			$this->hash = "";
 		}
 	}
 
 	protected function generate_hash($phrase=""){
+		global $dbh;
 		$hash = md5($phrase.time());
 		$query = "select hash from cms_hash where hash = '".$hash."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
 			$hash = $this->generate_hash($hash);
 		}
 		return $hash;		
@@ -351,14 +342,14 @@ class cms_module_root {
 	}
 	
 	public function execute_ajax(){
-		global $do;
+		global $dbh,$do;
 		switch($do){
 			case "get_infopages" :
 				$query = "select id_infopage,title_infopage from infopages where valid_infopage = 1 order by title_infopage";
-				$result = mysql_query($query);
+				$result = pmb_mysql_query($query,$dbh);
 				$infopages = array();
-				if(mysql_num_rows($result)){
-					while($row = mysql_fetch_object($result)){
+				if(pmb_mysql_num_rows($result)){
+					while($row = pmb_mysql_fetch_object($result)){
 						$infopages[$row->id_infopage]=$row->title_infopage;
 					}
 				}
@@ -367,11 +358,11 @@ class cms_module_root {
 				break;
 			case "get_pages" :
 				$query = "select id_page,page_name from cms_pages order by page_name asc";
-				$result = mysql_query($query);
+				$result = pmb_mysql_query($query,$dbh);
 				$pages = array();
 				$pages[0] = $this->msg["cms_module_menu_menu_entry_page_choice"];
-				if(mysql_num_rows($result)){
-					while($row = mysql_fetch_object($result)){
+				if(pmb_mysql_num_rows($result)){
+					while($row = pmb_mysql_fetch_object($result)){
 						$pages[$row->id_page]=$row->page_name;
 					}			
 				}
@@ -382,10 +373,10 @@ class cms_module_root {
 				global $page;
 				$page+=0;
 				$query = "select var_name,var_comment from cms_vars where var_num_page = ".$page;
-				$result = mysql_query($query);
+				$result = pmb_mysql_query($query,$dbh);
 				$vars = array();
-				if(mysql_num_rows($result)){
-					while($row = mysql_fetch_object($result)){
+				if(pmb_mysql_num_rows($result)){
+					while($row = pmb_mysql_fetch_object($result)){
 						$vars[] = array(
 							'name' => $row->var_name,
 							'comment' => $row->var_comment
@@ -407,37 +398,39 @@ class cms_module_root {
 	}
 	
 	public function get_module_dom_id(){
+		global $dbh;
 		if(method_exists($this,"get_dom_id")){
 			return $this->get_dom_id();
 		}else{
 			$query = "select cadre_object from cms_cadres where id_cadre = ".$this->cadre_parent;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$obj = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$obj = pmb_mysql_result($result,0,0);
 				return $obj."_".$this->cadre_parent;
 			}
 		}
 	}
 	
 	protected function fetch_managed_datas($type){
+		global $dbh;
 		switch($type){
 			case "conditions" :
 			case "datasources" :
 			case "views" :
 				if($this->module_class_name){
 					$query = "select managed_module_box from cms_managed_modules where managed_module_name = '".$this->module_class_name."'";
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						$datas = unserialize(mysql_result($result,0,0));
+					$result = pmb_mysql_query($query,$dbh);
+					if(pmb_mysql_num_rows($result)){
+						$datas = unserialize(pmb_mysql_result($result,0,0));
 						$this->managed_datas = $datas[$type][$this->class_name];
 					}
 				}
 				break;
 			default : 
 				$query = "select managed_module_box from cms_managed_modules where managed_module_name = '".$this->class_name."'";
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					$this->managed_datas = unserialize(mysql_result($result,0,0));
+				$result = pmb_mysql_query($query,$dbh);
+				if(pmb_mysql_num_rows($result)){
+					$this->managed_datas = unserialize(pmb_mysql_result($result,0,0));
 				}
 				break;
 		}
@@ -521,8 +514,8 @@ class cms_module_root {
 				$elem[$key] = cms_module_root::utf8_encode($value);
 			}
 		}else if(is_object($elem)){
-			$elem = $this->obj2array($elem);
-			$elem = $this->utf8_encode($elem);
+			$elem = cms_module_root::obj2array($elem);
+			$elem = cms_module_root::utf8_encode($elem);
 		}else{
 			$elem = utf8_encode($elem);
 		}
@@ -541,6 +534,7 @@ class cms_module_root {
 	//offrons un peu de bonheur...
 	//quelques méthodes génériques pour construire du lien...
 	public function get_constructor_link_form($type,$name=""){
+		global $dbh;
 		if(!$name) $name = $this->class_name."_link_".$type;
 		
 		$form = "
@@ -548,10 +542,10 @@ class cms_module_root {
 					<option value='0'>".$this->format_text($this->msg['cms_module_common_link_constructor_page'])."</option>";
 		
 		$query = "select id_page,page_name from cms_pages order by 2";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
 			
-			while( $row = mysql_fetch_object($result)){
+			while( $row = pmb_mysql_fetch_object($result)){
 				$form.= "
 					<option value='".$row->id_page."' ".($row->id_page == $this->parameters['links'][$type]['page'] ? "selected='selected'" : "").">".$this->format_text($row->page_name)."</option>";
 			}
@@ -620,6 +614,13 @@ class cms_module_root {
 					}
 				}
 				break;
+			case "shelve":
+				if ($this->parameters['links'][$type]['page']) {
+					$link = "./index.php?lvl=cmspage&pageid=".$this->parameters['links'][$type]['page']."&".$this->parameters['links'][$type]['var']."=".$value;
+				} else {
+					$link = "./index.php?lvl=etagere_see&id=".$value;
+				}
+				break;
 			case "article":
 			case "section" :
 			default :
@@ -672,21 +673,22 @@ class cms_module_root {
 	}
 	
 	protected function clean_hash_table(){
+		global $dbh;
 		//on commence par créer une table tempo de tous les hash utilisés ! 
 		$query = "create temporary table used_hash (hash varchar(255))";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 		//on ajoute les hash des pages...
 		$query = "insert into used_hash select page_hash as hash from cms_pages";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 		//on ajoute les hash des modules...
 		$query = "insert into used_hash select cadre_hash as hash from cms_cadres";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 		//on ajoute les hash des éléments des modules...
 		$query = "insert into used_hash select cadre_content_hash as hash from cms_cadre_content";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 		//on nettoie !
 		$query = "delete from cms_hash left join used_hash on cms_hash.hash = used_hash.hash where used_hash is null";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 	}
 	
 	protected function prefix_var_tree($tree,$prefix){

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions_import.inc.php,v 1.4 2009-11-04 14:37:54 kantin Exp $
+// $Id: suggestions_import.inc.php,v 1.5 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,8 +29,8 @@ switch($act){
 			}
 		} elseif($explnum_id) {
 			$req = "select explnum_doc_data as data from explnum_doc where id_explnum_doc='".$explnum_id."'";
-			$res = mysql_query($req,$dbh);
-			$expl = mysql_fetch_object($res);			
+			$res = pmb_mysql_query($req,$dbh);
+			$expl = pmb_mysql_fetch_object($res);			
 			$file_name=SESSid."_".str_replace(" ","",microtime());
 			$file_name=str_replace(".","",$file_name);
 			$fp=fopen("temp/".$file_name,"w+");

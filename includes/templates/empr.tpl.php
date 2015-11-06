@@ -1,8 +1,8 @@
 <?php
 // +-------------------------------------------------+
-// ? 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
+// © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr.tpl.php,v 1.155.2.1 2014-05-12 15:24:21 dbellamy Exp $
+// $Id: empr.tpl.php,v 1.159 2015-06-30 13:27:42 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -211,8 +211,8 @@ function test_form(form) {
 		<label class='etiquette' for='form_password'>".$msg['empr_password']."</label>
 		</div>
 	<div class='row'>
-		<input class='saisie-20em' id='form_password' type='password' name='form_password' value='' title=\"".$msg['empr_password']."\" />
-		</div>
+				<input class='saisie-20em' id='form_password' type='password' name='form_password' value='' title=\"".$msg['empr_password']."\" />
+</div>
 	</div>
 <div class='row'>&nbsp;</div>
 </div>
@@ -306,7 +306,8 @@ if ($pmb_rfid_activate==1 ) {
 	$empr_pret_allowed="
 	<div id='loan_zone' >
 		<div class='left'>
-			<input type='text' class='saisie-15em' id='cb_doc' name='cb_doc' value='' /><input type='submit' name='ajouter' class='bouton' value='$msg[925]' />
+			<!-- custom_fields -->
+			<input type='text' class='saisie-15em' id='cb_doc' name='cb_doc' value='' /><input type='submit' name='ajouter' class='bouton' value='$msg[925]' onClick=\"if (check_form(this.form)) {unload_off();this.form.submit();} else return false;\" />
 			".(($pmb_short_loan_management==1)?"<br /><span id='short_loan_msg' class='short_loan_msg'>".((($short_loan==1) || (!$short_loan && $deflt_short_loan_activate))?$msg['short_loan_enabled']:$msg['short_loan_disabled']).'</span>':'')."
 		</div>
 		<div class='right'>
@@ -408,7 +409,7 @@ if($pmb_printer_name) {
 	$printer_ticket_link="<a href='#' onclick=\"printer_jzebra_print_ticket('./ajax.php?module=circ&categ=zebra_print_pret&sub=all&id_empr=!!id!!'); return false;\"><img src='./images/print.gif' alt='".htmlentities($msg['print_print'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['print_print'],ENT_QUOTES,$charset)."' align='middle' border='0'></a>";
 
 }else if($pmb_printer_ticket_url) {
-	$printer_ticket_script = "		
+	$printer_ticket_script="		
 	<script type='text/javascript'>
 	function send_print_ticket(cmd) {
 		// Construction de la requete 
@@ -686,8 +687,12 @@ if ($pmb_rfid_activate==1) {
 	";
 }
 $th_sur_location="";
+$th_sur_location0="";
+$th_colspan_shorloan=9;
 if($pmb_sur_location_activate){
 	$th_sur_location="<th>".$msg['sur_location_expl']."</th>";
+	$th_sur_location0="<th></th>";
+	$th_colspan_shorloan=10;
 }
 $empr_tmpl .= "
 <!--
@@ -736,14 +741,14 @@ if (document.forms['pret_doc'].elements['cb_doc']!=undefined){
 		</th>
 		<th>".$msg['pret_bloc_prolong']."</th>
 		<th class='date_retour'>!!prol_date!!</th>
-		<th></th>
+		<th></th>$th_sur_location0
 	</form>
 	</tr>
 	<tr>
 	<form class='form-$current_module' name='sel_bloc'>
 		<th>$msg[293]</th>
 		<th size='50%'>$msg[652]</th>
-		<th><center>$msg[294]</center></th>$th_sur_location
+		<th><center>$msg[294]<br />$msg[296]</center></th>$th_sur_location
 		<th><center>$msg[298]<br />$msg[295]</center></th>
 		<th><center>$msg[653]</center></th>
 		<th><center>".$msg['pret_date_retour_initial']."</center></th>
@@ -768,11 +773,11 @@ $empr_tmpl.="
 <table class='sortable'>
 	<thead>
 	<tr>
-	<tr ><th colspan='9'>".$msg['short_loans']."</th></tr>
+	<tr ><th colspan='$th_colspan_shorloan'>".$msg['short_loans']."</th></tr>
 	<form class='form-$current_module' name='sel_bloc'>
 		<th>$msg[293]</th>
 		<th size='50%'>$msg[652]</th>
-		<th><center>$msg[294]</center></th>$th_sur_location
+		<th><center>$msg[294]<br />$msg[296]</center></th>$th_sur_location
 		<th><center>$msg[298]<br />$msg[295]</center></th>
 		<th><center>$msg[653]</center></th>
 		<th><center>".$msg['pret_date_retour_initial']."</center></th>
@@ -816,6 +821,7 @@ $empr_tmpl.="
 </div>	
 ";
 		
+//*************************************************************************************************************************
 $empr_tmpl_consultation = "
 <div id=\"el!!id!!Parent\" class=\"notice-parent\">
 	<div class='left'>

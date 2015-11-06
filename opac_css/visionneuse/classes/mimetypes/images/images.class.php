@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: images.class.php,v 1.10 2013-07-24 13:09:22 arenou Exp $
+// $Id: images.class.php,v 1.11 2015-05-28 12:09:01 apetithomme Exp $
 
 require_once($visionneuse_path."/classes/mimetypes/affichage.class.php");
 
@@ -141,8 +141,8 @@ class images extends affichage{
      
     function getTabParam(){
 		$this->tabParam = array(
-			"size_x"=>array("type"=>"text","name"=>"size_x","value"=>$this->parameters['size_x'],"desc"=>"Largeur de l'image"),
-			"size_y"=>array("type"=>"text","name"=>"size_y","value"=>$this->parameters['size_y'],"desc"=>"Hauteur de l'image"),
+			"size_x"=>array("type"=>"text","name"=>"size_x","value"=>$this->parameters['size_x'],"desc"=>"Largeur maximale de l'image"),
+			"size_y"=>array("type"=>"text","name"=>"size_y","value"=>$this->parameters['size_y'],"desc"=>"Hauteur maximale de l'image"),
 			"watermark"=>array("type"=>"text","name"=>"watermark","value"=>$this->parameters['watermark'],"desc"=>"Watermark &agrave; ajouter sur les photos, si vide, pas de watermark"),
 			"transparence"=>array("type"=>"text","name"=>"transparence","value"=>$this->parameters['transparence'],"desc"=>"Transparence du watermark de 0 &agrave; 100 en %"),
 		);

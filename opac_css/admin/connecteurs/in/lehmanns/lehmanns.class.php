@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lehmanns.class.php,v 1.2 2009-11-17 16:10:05 gueluneau Exp $
+// $Id: lehmanns.class.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -662,13 +662,13 @@ class lehmanns extends connector {
 				//Si conservation des anciennes notices, on regarde si elle existe
 				if (!$this->del_old) {
 					$requete="select count(*) from entrepot_source_".$source_id." where ref='".addslashes($ref)."' and search_id='".addslashes($search_id)."'";
-					$rref=mysql_query($requete);
-					if ($rref) $ref_exists=mysql_result($rref,0,0);
+					$rref=pmb_mysql_query($requete);
+					if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 				}
 				//Si pas de conservation des anciennes notices, on supprime
 				if ($this->del_old) {
 					$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."' and search_id='".addslashes($search_id)."'";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				//Si pas de conservation ou reférence inexistante
 				if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {
@@ -682,8 +682,8 @@ class lehmanns extends connector {
 					
 					//Récupération d'un ID
 					$requete="insert into external_count (recid,source_id) values('".addslashes($this->get_id()." ".$source_id." ".$ref)."',".$source_id.")";
-					$rid=mysql_query($requete);
-					if ($rid) $recid=mysql_insert_id();
+					$rid=pmb_mysql_query($requete);
+					if ($rid) $recid=pmb_mysql_insert_id();
 					
 					$rqt_parallel="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid,search_id) values";
 					$first=false;
@@ -691,7 +691,7 @@ class lehmanns extends connector {
 						/*$requete="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid,search_id) values(
 						'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 						'".$hc."','',-1,0,'".addslashes($code)."','',$recid,'".addslashes($search_id)."')";
-						mysql_query($requete);*/
+						pmb_mysql_query($requete);*/
 						$rqt_parallel.=($first?",":"")."(
 						'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 						'".$hc."','',-1,0,'".addslashes($code)."','',$recid,'".addslashes($search_id)."')";
@@ -711,7 +711,7 @@ class lehmanns extends connector {
 								'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 								'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 								' ".addslashes(strip_empty_words($value))." ',$recid,'".addslashes($search_id)."')";
-								mysql_query($requete);*/
+								pmb_mysql_query($requete);*/
 								$rqt_parallel.=",(
 								'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 								'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
@@ -723,14 +723,14 @@ class lehmanns extends connector {
 							'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 							'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 							' ".addslashes(strip_empty_words($value))." ',$recid,'".addslashes($search_id)."')";
-							mysql_query($requete);*/
+							pmb_mysql_query($requete);*/
 							$rqt_parallel.=",(
 							'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 							'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 							' ".addslashes(strip_empty_words($value))." ',$recid,'".addslashes($search_id)."')";
 						}
 					}
-					mysql_query($rqt_parallel);
+					pmb_mysql_query($rqt_parallel);
 					//print $rqt_parallel."\n";
 				}
 			}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: nasa_ads.class.php,v 1.2 2011-03-28 09:13:45 ngantier Exp $
+// $Id: nasa_ads.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -348,13 +348,13 @@ class nasa_ads extends connector {
 			//Si conservation des anciennes notices, on regarde si elle existe
 			if (!$this->del_old) {
 				$requete="select count(*) from entrepot_source_".$source_id." where ref='".addslashes($ref)."' and search_id='".addslashes($search_id)."'";
-				$rref=mysql_query($requete);
-				if ($rref) $ref_exists=mysql_result($rref,0,0);
+				$rref=pmb_mysql_query($requete);
+				if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 			}
 			//Si pas de conservation des anciennes notices, on supprime
 			if ($this->del_old) {
 				$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."' and search_id='".addslashes($search_id)."'";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 			}
 			//Si pas de conservation ou reférence inexistante
 			if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {
@@ -370,14 +370,14 @@ class nasa_ads extends connector {
 				$n_header["001"]=$record["001"][0];
 				//Récupération d'un ID
 				$requete="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$source_id." ".$ref)."', ".$source_id.")";
-				$rid=mysql_query($requete);
-				if ($rid) $recid=mysql_insert_id();
+				$rid=pmb_mysql_query($requete);
+				if ($rid) $recid=pmb_mysql_insert_id();
 				
 				foreach($n_header as $hc=>$code) {
 					$requete="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid,search_id) values(
 					'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 					'".$hc."','',-1,0,'".addslashes($code)."','',$recid,'".addslashes($search_id)."')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				$field_order=0;
 				foreach ($record as $field=>$val) {
@@ -390,7 +390,7 @@ class nasa_ads extends connector {
 									'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 									'".addslashes($field)."','".addslashes($sfield)."',".$field_order.",".$j.",'".addslashes($vals[$j])."',
 									' ".addslashes(strip_empty_words($vals[$j]))." ',$recid,'".addslashes($search_id)."')";
-									mysql_query($requete);
+									pmb_mysql_query($requete);
 								}
 							}
 						} else {
@@ -399,7 +399,7 @@ class nasa_ads extends connector {
 							'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 							'".addslashes($field)."','',".$field_order.",0,'".addslashes($val[$i])."',
 							' ".addslashes(strip_empty_words($val[$i]))." ',$recid,'".addslashes($search_id)."')";
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 						}
 						$field_order++;
 					}

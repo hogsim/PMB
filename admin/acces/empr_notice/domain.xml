@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: domain.xml,v 1.5 2013-05-07 08:58:20 dbellamy Exp $ -->
+$Id: domain.xml,v 1.6 2015-06-26 13:03:18 dbellamy Exp $ -->
 
 <domain>
 
@@ -16,6 +16,9 @@ $Id: domain.xml,v 1.5 2013-05-07 08:58:20 dbellamy Exp $ -->
 		</property_link>
 		<property_link with="4">
 			<r_query type="field" value="empr_location" />				<!--  champ emprunteur localisation  -->
+		</property_link>
+		<property_link with="5">
+			<r_query type="session" value="opac_view" />				<!--  variable session vue OPAC  -->
 		</property_link>
 	</user>
 
@@ -44,6 +47,9 @@ $Id: domain.xml,v 1.5 2013-05-07 08:58:20 dbellamy Exp $ -->
 		</property>
 		<property id="4" lib="msg:21">
 			<ref type="table" name="docs_location" key="idlocation" value="location_libelle" />
+		</property>
+		<property id="5" lib="msg:opac_view">
+			<ref type="table" name="opac_views" key="opac_view_id" value="opac_view_name" />
 		</property>
 	</properties>
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: aut_link.class.php,v 1.1.10.1 2014-09-05 10:37:22 ngantier Exp $
+// $Id: aut_link.class.php,v 1.5 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 // gestion des liens entre autorités
@@ -16,6 +16,9 @@ require_once("$class_path/indexint.class.php");
 require_once("$class_path/serie.class.php");
 require_once("$class_path/category.class.php");
 require_once("$class_path/titre_uniforme.class.php");
+require_once("$class_path/authperso.class.php");
+//require_once("$class_path/concept.class.php");
+
 
 //require_once($include_path."/templates/aut_link.tpl.php");
 
@@ -27,6 +30,8 @@ define('AUT_TABLE_SUB_COLLECTIONS',5);
 define('AUT_TABLE_SERIES',6);
 define('AUT_TABLE_TITRES_UNIFORMES',7);
 define('AUT_TABLE_INDEXINT',8);
+define('AUT_TABLE_AUTHPERSO',9);
+define('AUT_TABLE_CONCEPT',10);
 
 $aut_table_name_list=array(
 	AUT_TABLE_AUTHORS => 'authors',
@@ -36,7 +41,8 @@ $aut_table_name_list=array(
 	AUT_TABLE_SUB_COLLECTIONS => 'sub_collections',
 	AUT_TABLE_SERIES => 'series',
 	AUT_TABLE_TITRES_UNIFORMES => 'titres_uniformes',
-	AUT_TABLE_INDEXINT => 'indexint'
+	AUT_TABLE_INDEXINT => 'indexint',
+	AUT_TABLE_CONCEPT => 'concept'
 ); 
 
 // définition de la classe de gestion des liens entre autorités
@@ -54,25 +60,26 @@ class aut_link {
 		$this->aut_table_name = $aut_table_name_list[$this->aut_table];
 		$this->aut_list=array();		
 			
-		$rqt="select * from aut_link where (aut_link_from='".$this->aut_table."' and aut_link_from_num='".$this->id."') or ( aut_link_to='".$this->aut_table."' and aut_link_to_num='".$this->id."' and aut_link_reciproc=1)
+		$rqt="select * from aut_link where (aut_link_from='".$this->aut_table."'	and aut_link_from_num='".$this->id."' )
+		or ( aut_link_to='".$this->aut_table."' and aut_link_to_num='".$this->id."' and aut_link_reciproc=1 )
 		order by aut_link_type ";
-		$aut_res=mysql_query($rqt, $dbh);
+		$aut_res=pmb_mysql_query($rqt, $dbh);
 		$i=0;
-		while($row = mysql_fetch_object($aut_res)){
+		while($row = pmb_mysql_fetch_object($aut_res)){
 			$i++;
-			if($row->aut_link_to==$this->aut_table && $row->aut_link_to_num==$this->id  ) {
+			$this->aut_list[$i]["to"]=$row->aut_link_to;
+			$this->aut_list[$i]["to_num"]=$row->aut_link_to_num;				
+			$this->aut_list[$i]["type"]=$row->aut_link_type;						
+			$this->aut_list[$i]["reciproc"]=$row->aut_link_reciproc;					
+			$this->aut_list[$i]["comment"]=$row->aut_link_comment;	
+						
+			if(($this->aut_table==$row->aut_link_to ) and ($this->id == $row->aut_link_to_num)) {
+				$this->aut_list[$i]["flag_reciproc"]=1;							
 				$this->aut_list[$i]["to"]=$row->aut_link_from;
-				$this->aut_list[$i]["to_num"]=$row->aut_link_from_num;		
-				$this->aut_list[$i]["reciproc"]=1;
-			} else{
-				$this->aut_list[$i]["to"]=$row->aut_link_to;
-				$this->aut_list[$i]["to_num"]=$row->aut_link_to_num;		
-				$this->aut_list[$i]["reciproc"]=0;
+				$this->aut_list[$i]["to_num"]=$row->aut_link_from_num;				
 			}	
-				$this->aut_list[$i]["type"]=$row->aut_link_type;					
-				//$this->aut_list[$i]["reciproc"]=$row->aut_link_reciproc;						
-				$this->aut_list[$i]["comment"]=$row->aut_link_comment;
-				
+			else $this->aut_list[$i]["flag_reciproc"]=0;
+			
 			switch($this->aut_list[$i]["to"]){
 				case AUT_TABLE_AUTHORS :
 					$auteur = new auteur($this->aut_list[$i]["to_num"]);
@@ -101,7 +108,7 @@ class aut_link {
 				break;
 				case AUT_TABLE_SERIES :
 					$serie = new serie($this->aut_list[$i]["to_num"]);
-					$this->aut_list[$i]["name"]=$serie->name;
+					$this->aut_list[$i]["isbd_entry"]=$serie->name;
 					$this->aut_list[$i]["libelle"]="[".$msg["serie_query"]."] ".$serie->name;
 				break;
 				case AUT_TABLE_TITRES_UNIFORMES :
@@ -113,11 +120,36 @@ class aut_link {
 					$indexint = new indexint($this->aut_list[$i]["to_num"]);
 					$this->aut_list[$i]["isbd_entry"]=$indexint->display;
 					$this->aut_list[$i]["libelle"]="[".$msg["indexint_search"]."] ".$indexint->display;				
+				break;/*
+				case AUT_TABLE_CONCEPT :	
+					$concept= new concept($this->aut_list[$i]["to_num"]);
+					$this->aut_list[$i]["isbd_entry"]=$concept->get_display_label();
+					$this->aut_list[$i]["libelle"]="[".$msg["concept_menu"]."] ".$concept->get_display_label();	
+				break;*/
+				default:
+					if($this->aut_list[$i]["to"]>1000){
+						// authperso
+						$authperso = new authperso($this->aut_list[$i]["to"]-1000);
+						$isbd=$authperso->get_isbd($this->aut_list[$i]["to_num"]);
+						$this->aut_list[$i]["isbd_entry"]=$isbd;
+						$this->aut_list[$i]["libelle"]="[".$authperso->info['name']."] ".$isbd;
+						$this->aut_list[$i]["url_to_opac"]=$pmb_opac_url."index.php?lvl=authperso_see&id=".$this->aut_list[$i]["to_num"];
+					}				
 				break;
 			}
-		}		
+			if($this->aut_list[$i]["flag_reciproc"]){
+				$type_relation=new marc_select("relationtype_autup","f_aut_link_type$i", $this->aut_list[$i]["type"]);
+			}else {
+				$type_relation=new marc_select("relationtype_aut","f_aut_link_type$i", $this->aut_list[$i]["type"]);
+			}
+			$this->aut_list[$i]["relation_libelle"]=$type_relation->libelle;
+		}
 	}
-
+	
+	function get_data() {
+		return $this->aut_list;
+	}
+	
 	function get_display($caller="categ_form") {
 		global $msg;
 		
@@ -138,7 +170,7 @@ class aut_link {
 		$liste_type_relationup = $marc_tableup->table;
 		
 		$aff="<ul>";
-		foreach ($this->aut_list as $aut) {
+		foreach ($this->aut_list as $aut) {	
 			$aff.="<li>";
 			if($aut["reciproc"])	$aff.=$liste_type_relationup[$aut["type"]]." : ";
 			else	$aff.=$liste_type_relation[$aut["type"]]." : ";
@@ -146,10 +178,10 @@ class aut_link {
 			$aff.=" <a href=".$link.">".$aut["libelle"]."</a>";
 			if($aut["comment"]) {
 				$aff.=" (".$aut["comment"].")";
-			}
-			$aff.="</li>";
-		}
-		$aff.="</ul>";
+			}	
+			$aff.="</li>";	
+		}	
+		$aff.="</ul>";				
 		return $aff;
 	}
 	

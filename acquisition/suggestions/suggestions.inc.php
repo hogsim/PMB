@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions.inc.php,v 1.35 2013-10-15 07:49:33 dgoron Exp $
+// $Id: suggestions.inc.php,v 1.36 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -101,7 +101,7 @@ switch($action) {
 		 $explnum_doc = new explnum_doc($id_pj);
 		 $explnum_doc->delete();
 		 $req="delete from explnum_doc_sugg where num_explnum_doc='".$id_pj."'";
-		 mysql_query($req,$dbh);		 
+		 pmb_mysql_query($req,$dbh);		 
 		 $del_url = "./acquisition.php?categ=sug&action=update&id_bibli=".$id_bibli."&id_sug=".$id_sug;
 		 show_form_sug($del_url);
 	 break;

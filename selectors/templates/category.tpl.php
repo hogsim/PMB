@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.tpl.php,v 1.26 2013-10-31 15:22:21 ngantier Exp $
+// $Id: category.tpl.php,v 1.28 2015-03-09 15:52:12 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -84,7 +84,21 @@ function test_form(form)
 //	$jscript : script de m.a.j. du parent
 //-------------------------------------------
 // permet de passer dans l'url de selection des noms de champs autres
-
+if ($dyn==4) {
+/* $dyn = 4 pour les vedettes composées
+ */
+	$jscript_ ="
+<script type='text/javascript'>
+	function set_parent_w(f_caller, id_value, libelle_value,w,callback,id_thesaurus){
+		w.opener.document.forms[f_caller].elements['$p1'].value=id_value;
+		w.opener.document.forms[f_caller].elements['$p2'].value=reverse_html_entities(libelle_value);
+		
+		if(callback)
+			w.opener[callback]('$infield');
+		w.close();
+	}
+</script>";
+} else if ($dyn==3) {
 /* pour $dyn=3, renseigner les champs suivants: (passé dans l'url)
  *
 * $max_field : nombre de champs existant
@@ -93,7 +107,6 @@ function test_form(form)
 * $add_field : nom de la fonction permettant de rajouter un champ
 *
 */
-if ($dyn==3) {
 	$jscript_ ="
 <script type='text/javascript'>
 	function set_parent_w(f_caller, id_value, libelle_value,w,callback,id_thesaurus){
@@ -181,6 +194,8 @@ function set_parent_w(f_caller, id_value, libelle_value,w,callback,id_thesaurus)
 			w.opener.document.getElementById('f_categ_id'+i).value = id_value;
 			w.opener.document.getElementById('f_categ'+i).value = reverse_html_entities(libelle_value);
 		}
+		if(callback)
+			w.opener[callback]('$infield');
 	} else {
 		w.opener.document.forms[f_caller].elements['$p1'].value=id_value;
 		w.opener.document.forms[f_caller].elements['$p2'].value=reverse_html_entities(libelle_value);

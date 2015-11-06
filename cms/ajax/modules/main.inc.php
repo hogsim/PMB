@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.20 2012-11-15 09:19:03 ngantier Exp $
+// $Id: main.inc.php,v 1.21 2014-12-19 14:43:51 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,6 +32,10 @@ switch($action){
 	case "cadres_list_not_in_page" :
 		$cms= new cms_build();
 		$response=$cms->build_cadres_list_not_in_page($in_page);		
+		break;
+	case "cadres_list_not_in_cms" :
+		$cms= new cms_build();
+		$response=$cms->build_cadres_list_not_in_cms($in_page);		
 		break;
 	case "cadre_save_classement" :
 		$cms= new cms_build();

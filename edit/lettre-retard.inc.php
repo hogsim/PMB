@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lettre-retard.inc.php,v 1.39 2013-01-03 16:03:21 dgoron Exp $
+// $Id: lettre-retard.inc.php,v 1.40 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once($include_path."/sms.inc.php");
@@ -197,8 +197,8 @@ switch($pdfdoc) {
 				while ($coch_groupe[$j]) {
 					$id_groupe=$coch_groupe[$j];
 					$rqt = "select distinct groupe_id from pret, empr_groupe where pret_retour < curdate() and empr_id=pret_idempr and groupe_id=$id_groupe" ;
-					$req = mysql_query($rqt, $dbh) or die ($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 
-					while ($data = mysql_fetch_object($req)) {
+					$req = pmb_mysql_query($rqt, $dbh) or die ($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 
+					while ($data = pmb_mysql_fetch_object($req)) {
 						lettre_retard_par_groupe($data->groupe_id) ;
 					}
 					$j++;
@@ -225,15 +225,15 @@ switch($pdfdoc) {
 			else $order_by= "";
 
 			$rqt="select id_empr, concat(empr_nom,' ',empr_prenom) as  empr_name, empr_cb, empr_mail, empr_tel1, empr_sms, count(pret_idexpl) as empr_nb, $pdflettreretard_impression_tri from empr, pret, exemplaires where $restrict_localisation pret_retour<curdate() and pret_idempr=id_empr  and pret_idexpl=expl_id group by id_empr $order_by";							
-			$req=mysql_query($rqt) or die('Erreur SQL !<br />'.$rqt.'<br />'.mysql_error());
-			while ($r = mysql_fetch_object($req)) {
+			$req=pmb_mysql_query($rqt) or die('Erreur SQL !<br />'.$rqt.'<br />'.pmb_mysql_error());
+			while ($r = pmb_mysql_fetch_object($req)) {
 				if (($pmb_gestion_financiere)&&($pmb_gestion_amende)) {
 					$amende=new amende($r->id_empr);
 					$level=$amende->get_max_level();
 					$niveau_min=$level["level_min"];
 					$printed=$level["printed"];
 					if (($printed==2) || (($mailretard_priorite_email==2) && ($niveau_min<3))) $printed=0;
-					mysql_query("update pret set printed=1 where printed=2 and pret_idempr=".$r->id_empr);
+					pmb_mysql_query("update pret set printed=1 where printed=2 and pret_idempr=".$r->id_empr);
 					if (($print_all || !$printed)&&($niveau_min)) {
 						$niveau=$niveau_min;
 						get_texts($niveau);
@@ -257,8 +257,8 @@ switch($pdfdoc) {
 			$ourPDF->SetMargins($marge_page_gauche,$marge_page_gauche);
 			if($empr_sms_msg_retard) {
 				$rqt="select concat(empr_nom,' ',empr_prenom) as  empr_name, empr_mail, empr_tel1, empr_sms from empr where id_empr='".$id_empr."' and empr_tel1!='' and empr_sms=1";							
-				$req=mysql_query($rqt) or die('Erreur SQL !<br />'.$rqt.'<br />'.mysql_error()); ;
-				if ($r = mysql_fetch_object($req)) {
+				$req=pmb_mysql_query($rqt) or die('Erreur SQL !<br />'.$rqt.'<br />'.pmb_mysql_error()); ;
+				if ($r = pmb_mysql_fetch_object($req)) {
 					if ($r->empr_tel1 && $r->empr_sms) {
 						$res_envoi_sms=send_sms(0, $niveau, $r->empr_tel1, $empr_sms_msg_retard);
 					}

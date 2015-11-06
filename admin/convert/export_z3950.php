@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export_z3950.php,v 1.10 2007-08-29 04:42:48 touraine37 Exp $
+// $Id: export_z3950.php,v 1.11 2015-04-03 11:16:22 jpermanne Exp $
 
 $base_path="../..";
 
@@ -21,8 +21,8 @@ function make_error($nerr,$err_message) {
 	exit();
 }
 
-if (!@mysql_connect(SQL_SERVER,USER_NAME,USER_PASS)) make_error(1,"Could'nt connect to database server");
-if (!@mysql_select_db(DATA_BASE)) make_error(2,"Database unknown");
+if (!@pmb_mysql_connect(SQL_SERVER,USER_NAME,USER_PASS)) make_error(1,"Could'nt connect to database server");
+if (!@pmb_mysql_select_db(DATA_BASE)) make_error(2,"Database unknown");
 
 //Commande envoyée
 $command=$_GET["command"];
@@ -57,12 +57,12 @@ function construct_query($query,$not,$level,$argn="") {
 		$requete="create temporary table r$level ENGINE=MyISAM ";
 		if ($ope=="and") {
 			$requete.="select distinct $return1.notice_id from $return1, $return2 where $return1.notice_id=$return2.notice_id";
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 		} else {
 			$requete.="select distinct notice_id from $return1";
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 			$requete="insert into r$level select distinct notice_id from $return2 ";
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 		}
 		$return="r$level";
 	} else {
@@ -92,7 +92,7 @@ function construct_query($query,$not,$level,$argn="") {
 			case 1003:
 				if ($not) {
 				    	$requete="create temporary table aut ENGINE=MyISAM select distinct responsability.responsability_notice as notice_id, index_author as auth from authors, responsability where responsability_author = author_id ";
-				    	@mysql_query($requete);
+				    	@pmb_mysql_query($requete);
 				    	$requete="select distinct notice_id from aut where auth not like '%".$use[1]."%'";
 				}
 				else 
@@ -103,7 +103,7 @@ function construct_query($query,$not,$level,$argn="") {
 				break;
 		}
 		$requete="create temporary table r".$level."_".$argn." ENGINE=MyISAM ".$requete;
-		@mysql_query($requete);
+		@pmb_mysql_query($requete);
 		$return="r".$level."_".$argn;
 	}
 	return $return;
@@ -114,10 +114,10 @@ switch ($command) {
 		$sup_tables="";
 		$sql_query=construct_query($query,0,0);
 		$sql_query="select notice_id from $sql_query limit 100";
-		$resultat=@mysql_query($sql_query);
+		$resultat=@pmb_mysql_query($sql_query);
 		echo "0@No errors@";
-		echo @mysql_num_rows($resultat);
-		while (list($id)=@mysql_fetch_row($resultat)) {
+		echo @pmb_mysql_num_rows($resultat);
+		while (list($id)=@pmb_mysql_fetch_row($resultat)) {
 			echo "@$id";
 		}
 		break;

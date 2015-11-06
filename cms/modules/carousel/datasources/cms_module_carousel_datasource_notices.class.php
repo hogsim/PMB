@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_carousel_datasource_notices.class.php,v 1.5 2012-11-15 09:47:40 arenou Exp $
+// $Id: cms_module_carousel_datasource_notices.class.php,v 1.6 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,10 +23,10 @@ class cms_module_carousel_datasource_notices extends cms_module_common_datasourc
 		$datas = parent::get_datas();
 		$notices = $datas['records'];
 		$query = "select notice_id,tit1,thumbnail_url,code from notices where notice_id in(".implode(",",$notices).")";
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$notices = array();
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				if ($opac_show_book_pics=='1' && ($opac_book_pics_url || $row->thumbnail_url)) {
 					$code_chiffre = pmb_preg_replace('/-|\.| /', '', $row->code);
 					$url_image = $opac_book_pics_url ;

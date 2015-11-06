@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export.php,v 1.20 2014-02-11 13:02:57 dbellamy Exp $
+// $Id: export.php,v 1.21 2015-04-03 11:16:25 jpermanne Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -116,12 +116,12 @@ if (($opac_export_allow=='1') || (($opac_export_allow=='2') && ($_SESSION["user_
 				$id_externe = substr($cart_[$z],2);
 				$is_externe = true;
 				$requete = "SELECT source_id FROM external_count WHERE rid=".$id_externe;
-				$myQuery = mysql_query($requete, $dbh);
-				$source_id = mysql_result($myQuery, 0, 0);				
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				$source_id = pmb_mysql_result($myQuery, 0, 0);				
 				$sql="select 1 from entrepot_source_$source_id where recid='".$id_externe."' group by ufield,usubfield,field_order,subfield_order,value";
 			}		
-			$res=mysql_query($sql,$dbh);
-			if ($ligne=mysql_fetch_array($res)) {
+			$res=pmb_mysql_query($sql,$dbh);
+			if ($ligne=pmb_mysql_fetch_array($res)) {
 				$nb_fiche++;
 				$export= new start_export(($id_externe ? $id_externe : $cart_[$z]),$typeexport,$is_externe) ;
 				$exportation.=$export->output_notice;			
@@ -150,9 +150,9 @@ if (($opac_export_allow=='1') || (($opac_export_allow=='2') && ($_SESSION["user_
 						left join pret on e.id_empr=pret_idempr
 						where e.empr_login='".addslashes($login)."'
 						group by resa_idempr, pret_idempr";
-				$res=mysql_query($rqt);
+				$res=pmb_mysql_query($rqt);
 				if($res){
-					$empr_carac = mysql_fetch_array($res);
+					$empr_carac = pmb_mysql_fetch_array($res);
 					$log->add_log('empr',$empr_carac);
 				}
 				$log->add_log('num_session',session_id());

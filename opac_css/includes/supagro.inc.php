@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: supagro.inc.php,v 1.7 2012-09-18 15:13:10 mbertin Exp $
+// $Id: supagro.inc.php,v 1.8 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,9 +14,9 @@ function search_other_function_filters() {
 	$r="&nbsp;<select name='supagro_loc_sel'>";
 	$r.="<option value=''>tous les sites</option>";
 	$requete="select location_libelle,idlocation from docs_location where location_visible_opac=1";
-	$result = mysql_query($requete, $dbh);
-	if (mysql_numrows($result)){
-		while (($loc = mysql_fetch_object($result))) {
+	$result = pmb_mysql_query($requete, $dbh);
+	if (pmb_mysql_num_rows($result)){
+		while (($loc = pmb_mysql_fetch_object($result))) {
 			$selected="";
 			if ($supagro_loc_sel==$loc->idlocation) {$selected="selected=\"selected\"";}
 			$r.= "<option value='$loc->idlocation' $selected>$loc->location_libelle</option>";
@@ -105,8 +105,8 @@ function search_other_function_human_query($n) {
 	if ($supagro_loc_sel) {
 		$r="bibliotheque : ";
 		$requete="select location_libelle from docs_location where idlocation='".$supagro_loc_sel."' limit 1";
-		$res=mysql_query($requete,$dbh);
-		$r.=@mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete,$dbh);
+		$r.=@pmb_mysql_result($res,0,0);
 		$r.=" ";
 	}
 	if ($supagro_rev_res) {

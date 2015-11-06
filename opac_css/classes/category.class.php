@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.class.php,v 1.22 2013-04-12 09:59:41 mbertin Exp $
+// $Id: category.class.php,v 1.23 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -67,10 +67,10 @@ function getData() {
 		AND noeuds.id_noeud = categories.num_noeud 
 		order by p desc limit 1";
 
-	$result = @mysql_query($requete, $dbh);
-	if(!mysql_num_rows($result)) return;
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(!pmb_mysql_num_rows($result)) return;
 	
-	$data = mysql_fetch_object($result);
+	$data = pmb_mysql_fetch_object($result);
 	$this->id = $data->categ_id;		
 	$this->libelle = $data->categ_libelle;
 	if(preg_match("#^~#",$this->libelle)){
@@ -85,8 +85,8 @@ function getData() {
 	if($this->parent_id ) $this->has_parent = TRUE;
 
 	$requete = "SELECT id_noeud as categ_id FROM noeuds WHERE num_parent='".$this->id."' ";
-	$result = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) $this->has_child = TRUE;
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) $this->has_child = TRUE;
 
 	// constitution du chemin
 	$anti_recurse[$this->id]=1;
@@ -98,9 +98,9 @@ function getData() {
 			FROM noeuds, categories where id_noeud ='".$id_parent."' 
 			AND noeuds.id_noeud = categories.num_noeud 
 			order by p desc limit 1";
-			$result=@mysql_query($requete);
-			if (mysql_num_rows($result)) {
-				$parent = mysql_fetch_object($result);
+			$result=@pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($result)) {
+				$parent = pmb_mysql_fetch_object($result);
 				if(preg_match("#^~#",$parent->categ_libelle)){
 					$this->is_under_tilde=1;
 				}
@@ -127,9 +127,9 @@ function getData() {
 			AND noeuds.id_noeud = categories.num_noeud 
 			order by p desc limit 1";
 		
-		$result_temp=@mysql_query($requete);
-		if (mysql_num_rows($result_temp)) {
-			$parent = mysql_fetch_object($result_temp);
+		$result_temp=@pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($result_temp)) {
+			$parent = pmb_mysql_fetch_object($result_temp);
 			$this->parent_libelle = $parent->categ_libelle ;
 		} else $this->parent_libelle ; 
 
@@ -158,8 +158,8 @@ function getData() {
 		AND voir_aussi.num_noeud_orig=id_noeud
 		order by p desc limit 1";	
 
-	$result=@mysql_query($requete,$dbh);
-	while ($ta=mysql_fetch_object($result)) {
+	$result=@pmb_mysql_query($requete,$dbh);
+	while ($ta=pmb_mysql_fetch_object($result)) {
 		print $requete;
 		$this->associated_terms[] = array(
 						'id' => $ta->categ_assoc_categassoc,
@@ -193,8 +193,8 @@ function has_notices($id=0) {
 	
 	$query = "select count(1) from notices_categories,notices $acces_j $statut_j ";
 	$query.= "where (notices_categories.num_noeud='".$id."' and notices_categories.notcateg_notice=notice_id) $statut_r ";
-	$result = mysql_query($query, $dbh);
-	return (mysql_result($result, 0, 0));
+	$result = pmb_mysql_query($query, $dbh);
+	return (pmb_mysql_result($result, 0, 0));
 
 }
 

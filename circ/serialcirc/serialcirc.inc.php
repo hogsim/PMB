@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc.inc.php,v 1.2 2011-12-05 15:17:34 ngantier Exp $
+// $Id: serialcirc.inc.php,v 1.3 2014-10-20 13:23:52 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -31,6 +31,14 @@ switch($sub){
 	
 	default :
 		print $serialcirc->gen_circ_form(); 
+		if($cb){
+			print "
+			<script type='text/javascript'>
+				serialcirc_circ_get_info_cb('".$cb."','serialcirc_pointage_zone');
+				document.forms['saisie_cb_ex'].elements['form_cb_expl'].value='';
+				document.forms['saisie_cb_ex'].elements['form_cb_expl'].focus(); 
+			</script>";
+		}
 	break;		
 	
 }

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ontology.class.php,v 1.4 2013-12-02 09:07:25 dbellamy Exp $
+// $Id: ontology.class.php,v 1.5 2015-04-03 11:16:27 jpermanne Exp $
 
 
 if (stristr ($_SERVER['REQUEST_URI'], ".class.php"))
@@ -1270,9 +1270,9 @@ class ontology_handler {
 			$restrict_f="(".implode(" OR ",$restrict).")";
 		}
 		$requete="select *,".$members["select"]." as pert from rdfstore_index where ".$members["where"].($restrict_f ?" AND ".$restrict_f:"")." ".$members["post"];
-		$res=mysql_query($requete);
-		if($res && mysql_num_rows($res)){
-			while ($ligne = mysql_fetch_object($res)) {
+		$res=pmb_mysql_query($requete);
+		if($res && pmb_mysql_num_rows($res)){
+			while ($ligne = pmb_mysql_fetch_object($res)) {
 				$result[]=array("subject_uri"=>$ligne->subject_uri,"subject_type"=>$this->op->to_ns($ligne->subject_type));
 			}
 		}else{

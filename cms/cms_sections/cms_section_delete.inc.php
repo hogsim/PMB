@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_section_delete.inc.php,v 1.1.2.2 2015-03-10 17:17:15 arenou Exp $
+// $Id: cms_section_delete.inc.php,v 1.1 2015-03-10 17:12:25 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

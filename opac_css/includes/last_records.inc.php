@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: last_records.inc.php,v 1.22 2014-02-11 13:02:57 dbellamy Exp $
+// $Id: last_records.inc.php,v 1.23 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,13 +35,13 @@ if($opac_view_restrict)  $statut_r.=" and ".$opac_view_restrict;
 		
 $requete = "select notice_id from notices $acces_j $statut_j $statut_r ";
 $requete.= "order by create_date desc, notice_id desc limit $last_records";
-$result = mysql_query($requete, $dbh);
+$result = pmb_mysql_query($requete, $dbh);
 
-if(mysql_num_rows($result)) {
+if(pmb_mysql_num_rows($result)) {
 	print $last_records_header;
 //	print "<blockquote>\n";
 	if ($opac_notices_depliable) print $begin_result_liste;
-	while($notice = mysql_fetch_object($result)) {
+	while($notice = pmb_mysql_fetch_object($result)) {
     	print pmb_bidi(aff_notice($notice->notice_id));
 	}
 //	print "</blockquote>\n";

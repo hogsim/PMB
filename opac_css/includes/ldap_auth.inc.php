@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ldap_auth.inc.php,v 1.10.12.1 2015-04-01 12:14:21 mbertin Exp $
+// $Id: ldap_auth.inc.php,v 1.11 2015-04-01 12:22:01 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

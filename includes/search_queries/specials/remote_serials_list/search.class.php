@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.3.6.1 2014-12-04 08:06:05 mbertin Exp $
+// $Id: search.class.php,v 1.6 2015-04-03 13:57:45 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -220,7 +220,7 @@ class remote_serials_list{
 							break;
 						}
 					}
-					$connector_name = $contrs->get_class_name($source_id);
+					$connector_name = connecteurs::get_class_name($source_id);
 					$conn=false;
 					if ($connector_name=='pmb') {
 						require_once($base_path."/admin/connecteurs/in/".$contrs->catalog[$connector_id]["PATH"]."/".$contrs->catalog[$connector_id]["NAME"].".class.php");
@@ -249,7 +249,7 @@ class remote_serials_list{
 						}
 					}
 		    		foreach($selected_sources as $source_id){
-						$connector_name = $contrs->get_class_name($source_id);
+						$connector_name = connecteurs::get_class_name($source_id);
 						$conn=false;
 						if ($connector_name=='pmb') {
 							require_once($base_path."/admin/connecteurs/in/".$contrs->catalog[$connector_id]["PATH"]."/".$contrs->catalog[$connector_id]["NAME"].".class.php");
@@ -310,7 +310,7 @@ class remote_serials_list{
 					break;
 				}
 			}
-			$connector_name = $contrs->get_class_name($source_id);
+			$connector_name = connecteurs::get_class_name($source_id);
 			$conn=false;
 			if ($connector_name=='pmb') {
 				require_once($base_path."/admin/connecteurs/in/".$contrs->catalog[$connector_id]["PATH"]."/".$contrs->catalog[$connector_id]["NAME"].".class.php");
@@ -335,13 +335,13 @@ class remote_serials_list{
 				$queries[]=$query;
 				$t_table= "table_".$this->n_ligne."_s_".$this->id;
 				$query = "create temporary table ".$t_table." select * from(".implode(" union ",$queries).") as uni";
-				mysql_query($query);
+				pmb_mysql_query($query);
 				return $t_table;
 			}else{
 				//Aucun article
 				$t_table= "table_".$this->n_ligne."_s_".$this->id;
 				$query = "create temporary table ".$t_table." (notice_id integer unsigned not null)";
-				mysql_query($query);
+				pmb_mysql_query($query);
 				return $t_table;
 			}
     	}
@@ -383,7 +383,7 @@ class remote_serials_list{
 					break;
 				}
 			}
-			$connector_name = $contrs->get_class_name($source_id);
+			$connector_name = connecteurs::get_class_name($source_id);
 			$conn=false;
 			if ($connector_name=='pmb') {
 				require_once($base_path."/admin/connecteurs/in/".$contrs->catalog[$connector_id]["PATH"]."/".$contrs->catalog[$connector_id]["NAME"].".class.php");

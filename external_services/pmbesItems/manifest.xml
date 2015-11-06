@@ -2,7 +2,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.4 2010-07-29 12:50:54 erwanmartin Exp $ -->
+$Id: manifest.xml,v 1.7 2015-06-08 08:14:31 ngantier Exp $ -->
 <manifest>
 	<name>pmbesItems</name>
 	<description>msg:pmbesItems_description</description>
@@ -82,7 +82,22 @@ $Id: manifest.xml,v 1.4 2010-07-29 12:50:54 erwanmartin Exp $ -->
 				<description>msg:fetch_item_input_description</description>
 				<param name="item_cb" type="scalar" dataType="string" description="msg:fetch_item_item_cb"/>
 				<param name="item_id" type="scalar" dataType="integer" description="msg:fetch_item_item_id"/>
-				<param name="OPACUserId" type="scalar" dataType="integer" description="msg:fetch_item_OPACUserId"/>
+				<param name="OPACUserId" type="scalar" dataType="integer" description="msg:fetch_notice_items_OPACUserId"/>
+			</inputs>
+			<outputs>
+				<description>msg:fetch_item_output_description</description>
+				<result name="item" type="scalar" dataType="item" description="msg:fetch_item_item"/>
+			</outputs>
+		</method>
+		<method name="fetch_item_info" rights="" version="1.0" language_independant="false" comment="msg:fetch_item_description">
+			<pmb_requirements>
+				<pmb_requirement start_path="class" file="expl.class.php"/>
+			</pmb_requirements>
+			<inputs>
+				<description>msg:fetch_item_input_description</description>
+				<param name="item_cb" type="scalar" dataType="string" description="msg:fetch_item_item_cb"/>
+				<param name="item_id" type="scalar" dataType="integer" description="msg:fetch_item_item_id"/>
+				<param name="OPACUserId" type="scalar" dataType="integer" description="msg:fetch_notice_items_OPACUserId"/>
 			</inputs>
 			<outputs>
 				<description>msg:fetch_item_output_description</description>

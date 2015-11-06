@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.10.6.2 2014-12-02 09:24:07 arenou Exp $ -->
+$Id: manifest.xml,v 1.15 2015-04-16 12:14:57 dgoron Exp $ -->
 
 <manifest>
 	<name>Liste de notices</name>
@@ -23,12 +23,19 @@ $Id: manifest.xml,v 1.10.6.2 2014-12-02 09:24:07 arenou Exp $ -->
 			<datasource>cms_module_common_datasource_records_section_categories</datasource>
 			<datasource>cms_module_common_datasource_records</datasource>
 			<datasource>cms_module_common_datasource_records_author</datasource>
+			<datasource>cms_module_recordslist_datasource_records_publisher</datasource>
+			<datasource>cms_module_recordslist_datasource_records_collection</datasource>
+			<datasource>cms_module_recordslist_datasource_records_serie</datasource>
+			<datasource>cms_module_recordslist_datasource_records_indexint</datasource>
+			<datasource>cms_module_recordslist_datasource_records_categories</datasource>
 			<datasource>cms_module_common_datasource_records_similar_cote</datasource>
 			<datasource>cms_module_common_datasource_records_by_cp_val</datasource>
 			<datasource>cms_module_common_datasource_records_bannette</datasource>
+			<datasource>cms_module_recordslist_datasource_records_last_read</datasource>
 		</datasources>
 		<views>
 			<view>cms_module_common_view_recordslist</view>
+			<view>cms_module_recordslist_view_carousel_responsive</view>
 			<view>cms_module_recordslist_view_carousel</view>
 		</views>
 		<conditions>

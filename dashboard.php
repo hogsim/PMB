@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dashboard.php,v 1.2 2014-01-13 08:07:15 arenou Exp $
+// $Id: dashboard.php,v 1.3 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -28,4 +28,4 @@ $dashboard = new dashboard();
 print $dashboard->render();
 print $dashboard_layout_end;
 print $footer;
-mysql_close($dbh);
+pmb_mysql_close($dbh);

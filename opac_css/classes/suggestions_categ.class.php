@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions_categ.class.php,v 1.2 2013-04-16 08:16:41 mbertin Exp $
+// $Id: suggestions_categ.class.php,v 1.3 2015-04-03 11:16:18 jpermanne Exp $
 
 
 class suggestions_categ{
@@ -31,8 +31,8 @@ class suggestions_categ{
 		global $dbh;
 		
 		$q = "select * from suggestions_categ where id_categ = '".$this->id_categ."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->libelle_categ = $obj->libelle_categ;
 
 	}
@@ -49,13 +49,13 @@ class suggestions_categ{
 			
 			$q = "update suggestions_categ set libelle_categ = '".addslashes($this->libelle_categ)."' ";
 			$q.= "where id_categ = '".$this->id_categ."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
 		} else {
 			
 			$q = "insert into suggestions_categ set libelle_categ = '".addslashes($this->libelle_categ)."' ";
-			$r = mysql_query($q, $dbh);
-			$this->id_categ = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_categ = pmb_mysql_insert_id($dbh);
 		
 		}
 	}
@@ -68,8 +68,8 @@ class suggestions_categ{
 		$list_categ = array();
 
 		$q = "select * from suggestions_categ order by libelle_categ ";
-		$r = mysql_query($q, $dbh);
-		while ($row = mysql_fetch_object($r)){
+		$r = pmb_mysql_query($q, $dbh);
+		while ($row = pmb_mysql_fetch_object($r)){
 			$list_categ[$row->id_categ] = $row->libelle_categ;
 		}
 		return $list_categ;
@@ -82,8 +82,8 @@ class suggestions_categ{
 		
 		global $dbh;
 		$q = "select count(1) from suggestions_categ where id_categ = '".$id_categ."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 	
@@ -95,8 +95,8 @@ class suggestions_categ{
 		
 		$q = "select count(1) from suggestions_categ where libelle_categ = '".$libelle."' ";
 		if($id_categ) $q.= "and id_categ != '".$id_categ."' ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 
 	}
 
@@ -109,7 +109,7 @@ class suggestions_categ{
 		if(!$id_categ) $id_categ = $this->id_categ; 	
 
 		$q = "delete from suggestions_categ where id_categ = '".$id_categ."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -120,8 +120,8 @@ class suggestions_categ{
 		global $dbh;
 		if (!$id_categ) $id_categ = $this->id_categ;
 		$q = "select count(1) from suggestions where num_categ = '".$id_categ."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -131,7 +131,7 @@ class suggestions_categ{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE suggestions_categ', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE suggestions_categ', $dbh);
 		return $opt;
 				
 	}

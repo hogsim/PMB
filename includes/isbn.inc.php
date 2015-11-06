@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: isbn.inc.php,v 1.16.14.5 2015-06-18 13:58:17 jpermanne Exp $
+// $Id: isbn.inc.php,v 1.21 2015-06-18 13:55:50 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

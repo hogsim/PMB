@@ -2,7 +2,7 @@
 // +--------------------------------------------------------------------------+
 // | PMB est sous licence GPL, la réutilisation du code est cadrée            |
 // +--------------------------------------------------------------------------+
-// $Id: print_doc_dsi.php,v 1.4.6.1 2014-06-02 13:22:35 dgoron Exp $
+// $Id: print_doc_dsi.php,v 1.5 2014-06-02 13:21:26 dgoron Exp $
 
 //Impression DSI
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bulletin.inc.php,v 1.6.6.1 2015-07-01 10:51:09 jpermanne Exp $
+// $Id: bulletin.inc.php,v 1.8 2015-07-01 10:48:31 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -36,8 +36,8 @@ function show_results ($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 	
 	if(!$idperio){
 		$requete = "SELECT bulletin_notice FROM bulletins where bulletin_id=".$no_display." ";
-		$res = @mysql_query($requete, $dbh);
-		if(!($bull=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		if(!($bull=pmb_mysql_fetch_object($res))) {
 			error_message($msg["searcher_syntax_error"],sprintf($msg["searcher_syntax_error_desc"],$aq->current_car,$aq->input_html,$aq->error_message));
 			exit;
 		}	
@@ -53,9 +53,8 @@ function show_results ($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 	}  else {
 		$requete = "SELECT COUNT(1) FROM bulletins where bulletin_numero like '%".str_replace("*","%",$user_input)."%' and bulletin_id!='".$no_display."' and bulletin_notice =$bulletin_notice ";		
 	}	
-	
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 
 	if(!$page) $page=1;
 	$debut =($page-1)*$nb_per_page;
@@ -65,9 +64,9 @@ function show_results ($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 		if($user_input=="") $requete = "SELECT bulletin_numero,mention_date, date_date,bulletin_titre,bulletin_id FROM bulletins where bulletin_id!=".$no_display." and bulletin_notice =$bulletin_notice ORDER BY date_date LIMIT $debut,$nb_per_page ";
 		else $requete = "SELECT bulletin_numero,mention_date,bulletin_titre,bulletin_id FROM bulletins where bulletin_numero like '%".str_replace("*","%",$user_input)."%' and bulletin_id!=".$no_display." and bulletin_notice =$bulletin_notice ORDER BY date_date LIMIT $debut,$nb_per_page ";
 		
-		$res = @mysql_query($requete, $dbh);
+		$res = @pmb_mysql_query($requete, $dbh);
 		print "<table><tr>";
-		while(($bull=mysql_fetch_object($res))) {
+		while(($bull=pmb_mysql_fetch_object($res))) {
 			$notice_entry = $bull->bulletin_titre."&nbsp;".$bull->mention_date;
 			print "
 				<tr>

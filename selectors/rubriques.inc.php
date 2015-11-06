@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rubriques.inc.php,v 1.14.2.1 2015-01-23 09:39:56 jpermanne Exp $
+// $Id: rubriques.inc.php,v 1.16 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -57,7 +57,7 @@ function show_results($dbh, $nbr_lignes=0, $page=0) {
 
 		print "<div class=\"row\"><table><tr><th>".htmlentities($msg['acquisition_rub'], ENT_QUOTES, $charset)."</th><th>".htmlentities($msg['acquisition_rub_sol'], ENT_QUOTES, $charset)."</th></tr>";
 		
-		while($row = mysql_fetch_object($res)) {
+		while($row = pmb_mysql_fetch_object($res)) {
 							
 			$new_id_bud = $row->num_budget;
 			if ($new_id_bud != $id_bud) {
@@ -103,7 +103,7 @@ function show_results($dbh, $nbr_lignes=0, $page=0) {
 		}
 		
 		print "</table>";
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// affichage pagination
 		print "<hr /><div align='center'>";

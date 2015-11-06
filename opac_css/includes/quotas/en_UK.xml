@@ -160,14 +160,14 @@
 			</quotas>
 		</type>
 		
-		<type name="SHORT_LOAN_NMBR_QUOTA" id="512" max="yes" min="no" forcelend="yes" commentForcelend="du prêt court" comment="Quotas de nombre de prêts courts" short_comment="nombre de documents en emprunt court">
+		<type name="SHORT_LOAN_NMBR_QUOTA" id="512" max="yes" min="no" forcelend="yes" commentForcelend="of the short loan" comment="Quotas of number of short loans" short_comment="number of documents in short loan">
 			<entity name="READER_CATEG" maxquota="yes">
 				<counttable>pret</counttable>
 				<countfield>pret_idempr</countfield>
 				<countfilter>short_loan_flag=1</countfilter>
-				<max_error_message>Le nombre total de prêts courts %s est atteint (%s)</max_error_message>
-				<partial_error_message>Le nombre de prêts courts par %s est atteint (%s)</partial_error_message>
-				<default_error_message>Le nombre de prêts courts par défaut est atteint (%s)</default_error_message>
+				<max_error_message>The total number of short loans %s has been reached (%s)</max_error_message>
+				<partial_error_message>The number of short loans %s has been reached (%s)</partial_error_message>
+				<default_error_message>The default number of short loans has been reached (%s)</default_error_message>
 			</entity>
 			<quotas>
 				<on countfields="pret_idempr">READER_CATEG</on>
@@ -178,7 +178,7 @@
 			</quotas>
 		</type>
 
-		<type name="SHORT_LOAN_TIME_QUOTA" id="256" max="no" min="no" forcelend="no" comment="Quotas de durée de prêt court" short_comment="durée d'emprunt court">
+		<type name="SHORT_LOAN_TIME_QUOTA" id="256" max="no" min="no" forcelend="no" comment="Quotas of duration of the short loan" short_comment="Short loan duration">
 			<quotas>
 				<on>READER_CATEG</on>
 				<on>DOCTYPE</on>

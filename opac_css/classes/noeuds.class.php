@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: noeuds.class.php,v 1.9.6.1 2014-04-11 14:41:21 mbertin Exp $
+// $Id: noeuds.class.php,v 1.12 2015-06-05 13:07:32 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,8 +37,8 @@ class noeuds{
 		global $dbh;
 		
 		$q = "select * from noeuds where id_noeud = '".$this->id_noeud."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->id_noeud = $obj->id_noeud;
 		$this->autorite = $obj->autorite;
 		$this->num_parent = $obj->num_parent;
@@ -63,15 +63,15 @@ class noeuds{
 			$q.= 'num_parent = \''.$this->num_parent.'\', num_renvoi_voir = \''.$this->num_renvoi_voir.'\', ';
 			$q.= 'visible = \''.$this->visible.'\', num_thesaurus = \''.$this->num_thesaurus.'\' ';
 			$q.= 'where id_noeud = \''.$this->id_noeud.'\' ';
-			mysql_query($q, $dbh);
+			pmb_mysql_query($q, $dbh);
 
 		} else {
 			
 			$q = 'insert into noeuds set autorite = \''.addslashes($this->autorite).'\', ';
 			$q.= 'num_parent = \''.$this->num_parent.'\', num_renvoi_voir = \''.$this->num_renvoi_voir.'\', ';
 			$q.= 'visible = \''.$this->visible.'\', num_thesaurus = \''.$this->num_thesaurus.'\' ';
-			mysql_query($q, $dbh);
-			$this->id_noeud = mysql_insert_id($dbh);
+			pmb_mysql_query($q, $dbh);
+			$this->id_noeud = pmb_mysql_insert_id($dbh);
 		}
 
 		// Mis à jour du path de lui-meme, et de tous les fils
@@ -82,17 +82,17 @@ class noeuds{
 		$id_tmp=$this->id_noeud;
 		while (true) {
 			$q = "select num_parent from noeuds where id_noeud = '".$id_tmp."' limit 1";
-			$r = mysql_query($q, $dbh);
-			$id_tmp= $id_cur = mysql_result($r, 0, 0);
+			$r = pmb_mysql_query($q, $dbh);
+			$id_tmp= $id_cur = pmb_mysql_result($r, 0, 0);
 			print $id_tmp." ";
 			if (!$id_cur || $id_cur == $id_top) break;
 			if($path) $path='/'.$path;
 			$path=$id_tmp.$path;			
 		}
-		$this->process_categ_path($this->id_noeud,$path);
+		noeuds::process_categ_path($this->id_noeud,$path);
 	}
 	
-	function process_categ_path($id_noeud=0, $path='') {
+	static function process_categ_path($id_noeud=0, $path='') {
 		global $dbh;
 
 		if(!$id_noeud && (is_object($this))) $id_noeud = $this->id_noeud; 	
@@ -101,12 +101,12 @@ class noeuds{
 		$path.=$id_noeud;
 		
 		$res = noeuds::listChilds($id_noeud, 0);
-		while (($row = mysql_fetch_object ($res))) {
+		while (($row = pmb_mysql_fetch_object($res))) {
 			// la categorie a des filles qu'on va traiter
-			$this->process_categ_path ($row->id_noeud,$path);
+			noeuds::process_categ_path ($row->id_noeud,$path);
 		}		
 		$req="update noeuds set path='$path' where id_noeud='$id_noeud' ";
-		mysql_query($req,$dbh);		
+		pmb_mysql_query($req,$dbh);		
 	}
 		
 
@@ -121,23 +121,23 @@ class noeuds{
 
 		// Supprime les categories.
 		$q = "delete from categories where num_noeud = '".$id_noeud."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 		// Supprime les renvois voir_aussi vers ce noeud. 
 		$q= "delete from voir_aussi where num_noeud_dest = '".$id_noeud."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 		// Supprime les renvois voir_aussi depuis ce noeud. 
 		$q= "delete from voir_aussi where num_noeud_orig = '".$id_noeud."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 		// Supprime les associations avec des notices. 
 		$q= "delete from notices_categories where num_noeud = '".$id_noeud."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 
 		// Supprime le noeud.
 		$q = "delete from noeuds where id_noeud = '".$id_noeud."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -150,22 +150,22 @@ class noeuds{
 		
 		$q = "select id_noeud from noeuds where num_thesaurus = '".$num_thesaurus."' ";
 		$q.= "and autorite = '".addslashes($autorite)."' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r) == 0) return FALSE;
-		$noeud = new noeuds(mysql_result($r, 0, 0));
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r) == 0) return FALSE;
+		$noeud = new noeuds(pmb_mysql_result($r, 0, 0));
 		return $noeud;
 	}
 	
 	
 	//recherche si un noeud a des fils
-	function hasChild($id_noeud=0) {
+	static function hasChild($id_noeud=0) {
 	
 		global $dbh;
 
-		if(!$id_noeud && (is_object($this))) $id_noeud = $this->id_noeud; 	
+		if(!$id_noeud) return 0; 	
 		$q = "select count(1) from noeuds where num_parent = '".$id_noeud."' ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 	}	
 
 		
@@ -174,10 +174,10 @@ class noeuds{
 		
 		global $dbh;
 		
-		if(!$id_noeud && (is_object($this))) $id_noeud = $this->id_noeud; 
+		if(!$id_noeud) return 0; 
 		$q = "select count(1) from noeuds where num_renvoi_voir = '".$id_noeud."' ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 	}		
 
 
@@ -188,15 +188,15 @@ class noeuds{
 		
 		if(!$id_noeud && (is_object($this))) $id_noeud = $this->id_noeud; 
 		$q = "select autorite from noeuds where id_noeud = '".$id_noeud."' ";
-		$r = mysql_query($q, $dbh);
-		$a = mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		$a = pmb_mysql_result($r, 0, 0);
 		if( $a == 'ORPHELINS' || $a == 'NONCLASSES') return TRUE;
 		else return FALSE;
 	}		
 
 
 	//Liste les ancetres d'un noeud et les retourne sous forme d'un tableau 
-	function listAncestors($id_noeud=0) {
+	static function listAncestors($id_noeud=0) {
 		
 		global $dbh;
 		if(!$id_noeud && (is_object($this))) {
@@ -204,9 +204,9 @@ class noeuds{
 			$path= $this->path;
 		} else {
 			$q = "select path from noeuds where id_noeud = '".$id_noeud."' ";
-			$r = mysql_query($q, $dbh);
-			if($r && mysql_num_rows($r)){
-				$path=mysql_result($r, 0, 0);
+			$r = pmb_mysql_query($q, $dbh);
+			if($r && pmb_mysql_num_rows($r)){
+				$path=pmb_mysql_result($r, 0, 0);
 			}
 		}
 		if ($path){ 
@@ -224,9 +224,9 @@ class noeuds{
 		$id_list[$i] = $id_noeud;
 		while (($id_list[$i] != $id_top)&&($id_list[$i]!=0)) {
 			$q = "select num_parent from noeuds where id_noeud = '".$id_list[$i]."' limit 1";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			$i++;
-			$id_list[$i] = mysql_result($r, 0, 0);
+			$id_list[$i] = pmb_mysql_result($r, 0, 0);
 		}
 		return $id_list;		
 	}

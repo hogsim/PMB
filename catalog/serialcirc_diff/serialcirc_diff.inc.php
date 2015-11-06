@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff.inc.php,v 1.6 2013-09-24 13:31:10 ngantier Exp $
+// $Id: serialcirc_diff.inc.php,v 1.9 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -41,13 +41,17 @@ switch($sub){
 		} elseif($action=='del_field'){			
 			$serialcirc_diff->ficheformat_del_field($data); 
 			print $serialcirc_diff->show_form(5);
+		} elseif($action=='change_fields'){
+			$serialcirc_diff->ficheformat_change_fields($data); 
+			print $serialcirc_diff->show_form(5);
 		}
 	break;	
 	case 'empr_form':
 		if($action=='save'){
 			$data['duration']=$duration;
 			$data['id_empr']=$id_empr;
-			$serialcirc_diff->empr_save($id_diff,$data); 
+			$serialcirc_diff->empr_save($id_diff,$data);
+			$serialcirc_diff->sort_diff(); 
 			print $serialcirc_diff->show_form();
 		}
 	break;	
@@ -68,7 +72,8 @@ switch($sub){
 				}	
 			}			
 			$data['empr_resp']=$empr_resp;
-			$serialcirc_diff->group_save($id_diff,$data); 
+			$serialcirc_diff->group_save($id_diff,$data);
+			$serialcirc_diff->sort_diff();
 			print $serialcirc_diff->show_form();
 		}		
 	break;	
@@ -89,13 +94,17 @@ switch($sub){
 			print $serialcirc_diff->show_form();
 		}else {			
 			$query="select num_notice from abts_abts where abt_id=$num_abt";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$r = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$r = pmb_mysql_fetch_object($result);
 				print "<script type=\"text/javascript\">document.location='catalog.php?categ=serials&sub=view&view=abon&serial_id=".$r->num_notice."';</script>";				
 			}	
 		}
-	break;	
+	break;
+	case 'sort_diff':
+		$serialcirc_diff->sort_diff();
+		print $serialcirc_diff->show_form();
+		break;
 	default :	
 		if($empr_id){	
 			print $serialcirc_diff->show_form(4,$empr_id);

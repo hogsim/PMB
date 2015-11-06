@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: authority_import.class.php,v 1.5 2013-11-28 09:30:09 mbertin Exp $
+// $Id: authority_import.class.php,v 1.6 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -90,13 +90,13 @@ class authority_import {
 					num_authority = ".$this->authority_id.",
 					authority_number = '".$this->notice->common_data['authority_number']."',
 					authority_type = '".$this->notice->type."'";
-				mysql_query($query);
+				pmb_mysql_query($query);
 				
 				//on regarde si elle n'as pas déjà été cités en lien...
 				$query = "select * from authorities_import_links where authority_type = '".$this->notice->type."' and authority_number = '".$this->notice->common_data['authority_number']."'";
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					while($row = mysql_fetch_object($result)){
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					while($row = pmb_mysql_fetch_object($result)){
 						$data = array(
 							'type_authority' => $row->authority_type_from,
 							'link_code' => $row->link_type
@@ -109,8 +109,8 @@ class authority_import {
 						if($from_code!= 0 && $to_code!= 0){
 							//on regarde si un lien existe pas déjà entre les 2...
 							$query = "select * from aut_link where aut_link_from = ".$from_code." and aut_link_from_num = ".$row->num_authority_from." and aut_link_to = ".$to_code." and aut_link_to_num = ".$this->authority_id." and aut_link_type= '".$link_code."'";
-							$result = mysql_query($query);
-							if(mysql_num_rows($result) == 0){
+							$result = pmb_mysql_query($query);
+							if(pmb_mysql_num_rows($result) == 0){
 								$query = "insert into aut_link set 
 								aut_link_from = ".$from_code.",
 								aut_link_from_num = ".$row->num_authority_from.",
@@ -118,12 +118,12 @@ class authority_import {
 								aut_link_to_num = ".$this->authority_id.",
 								aut_link_type= '1',
 								aut_link_comment='".$row->comment."'";
-								mysql_query($query);
+								pmb_mysql_query($query);
 							}
 						}
 						//on a crée les liens associés à cette notice, on supprime la référence...
 						$query = "delete from authorities_import_links where authority_type = '".$this->notice->type."' and authority_number = '".$this->notice->common_data['authority_number']."'";
-						mysql_query($query);
+						pmb_mysql_query($query);
 					}
 				}
 				
@@ -145,7 +145,7 @@ class authority_import {
 								authority_type = '".$this->notice->rejected_forms[$i]['type_authority']."',
 								num_origin_authority = ".$this->num_origin.",
 								import_date = now()";
-							$result = mysql_query($query);
+							$result = pmb_mysql_query($query);
 						}
 					}
 				}
@@ -157,10 +157,10 @@ class authority_import {
 					if($this->notice->associated_forms[$i]['authority_number']){
 						//on commence par regarder si on l'a déjà croisé dans le fichier...
 						$query ="select num_authority from authorities_import where authority_number = '".$this->format_authority_number($this->notice->associated_forms[$i]['authority_number'])."' and authority_type = '".$this->notice->associated_forms[$i]['type_authority']."'";
-						$result = mysql_query($query);
-						if(mysql_num_rows($result)){
+						$result = pmb_mysql_query($query);
+						if(pmb_mysql_num_rows($result)){
 							// on l'a croisé, on fait le lien....
-							$row = mysql_fetch_object($result);
+							$row = pmb_mysql_fetch_object($result);
 							if($row->num_authority!=0){
 								$this->update_associated_form($row->num_authority,$this->notice->associated_forms[$i]);	
 							}
@@ -173,7 +173,7 @@ class authority_import {
 								num_authority_from  = ".$this->authority_id. ",
 								authority_type_from = '".$this->notice->type."',
 								comment = '".$this->notice->associated_forms[$i]['comment']."'";
-							mysql_query($query);
+							pmb_mysql_query($query);
 						}
 					}	
 				}
@@ -198,7 +198,7 @@ class authority_import {
 								authority_type = '".$this->notice->rejected_forms[$i]['type_authority']."',
 								num_origin_authority = ".$this->num_origin.",
 								import_date = now()";
-							$result = mysql_query($query);
+							$result = pmb_mysql_query($query);
 						}
 					}
 				}
@@ -207,9 +207,9 @@ class authority_import {
 					if($this->notice->associated_forms[$i]['authority_number'] != ""){
 						//on regarde si on l'as pas déjà croisé...
 						$query = "select num_authority from authorities_sources where authority_number = '".$this->notice->associated_forms[$i]['authority_number']."' and authority_type = '".$this->notice->associated_forms[$i]['type_authority']."' and num_origin_authority = ".$this->num_origin;
-						$result = mysql_query($query);
-						if(mysql_num_rows($result)){
-							$link_id = mysql_result($result,0,0);
+						$result = pmb_mysql_query($query);
+						if(pmb_mysql_num_rows($result)){
+							$link_id = pmb_mysql_result($result,0,0);
 						}else{
 							$link_id = $this->save_alternative_form($this->notice->associated_forms[$i]);
 							if($link_id!=0){
@@ -219,7 +219,7 @@ class authority_import {
 									authority_type = '".$this->notice->associated_forms[$i]['type_authority']."',
 									num_origin_authority = ".$this->num_origin.",
 									import_date = now()";
-								$result = mysql_query($query);
+								$result = pmb_mysql_query($query);
 							}
 						}
 					}
@@ -246,9 +246,9 @@ class authority_import {
 		}
 		if($id!=0){
 			$query = "select * from authorities_sources where num_authority = ".$id." and authority_type = '".$this->notice->type."' and num_origin_authority != ".$this->num_origin;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					if($row->authority_favorite == 1){
 						$force_creation = true;
 						$this->authority_id = 0;
@@ -279,7 +279,7 @@ class authority_import {
 									num_origin_authority = ".$this->num_origin.",
 									authority_favorite = 0,
 									import_date = now()";
-								mysql_query($query);
+								pmb_mysql_query($query);
 							}
 						}
 					}
@@ -295,7 +295,7 @@ class authority_import {
 							num_origin_authority = ".$this->num_origin.",
 							authority_favorite = 0,
 							import_date = now()";
-						mysql_query($query);
+						pmb_mysql_query($query);
 					}
 					break;
 				case "category" :
@@ -314,7 +314,7 @@ class authority_import {
 					authority_favorite = 1,
 					import_date = now(),
 					update_date = now()";
-				mysql_query($query);
+				pmb_mysql_query($query);
 			}
 		}else{
 			$data = addslashes_array($this->notice->specifics_data);
@@ -361,10 +361,10 @@ class authority_import {
 							import_date = now(),
 							update_date = now()";
 					}
-					mysql_query($query);
+					pmb_mysql_query($query);
 				}
 			}else{
-				$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_authorities_".addslashes(SESSid).".inc', '".$this->notice->common_data['authority_number']." || ".$this->notice->common_data['source']['origin']." || ".$msg['import_authorities_log_authority_locked']."') ") ;
+				$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_authorities_".addslashes(SESSid).".inc', '".$this->notice->common_data['authority_number']." || ".$this->notice->common_data['source']['origin']." || ".$msg['import_authorities_log_authority_locked']."') ") ;
 				return false;
 			}
 		}		
@@ -391,9 +391,9 @@ class authority_import {
 				case "category" :
 					$num_parent = 0;
 					$query = "select id_noeud from noeuds where autorite = 'ORPHELINS' and num_thesaurus = ".$this->id_thesaurus;
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						$num_parent = mysql_result($result,0,0);
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						$num_parent = pmb_mysql_result($result,0,0);
 					}
 					$authority = new category($id);
 					break;
@@ -430,9 +430,9 @@ class authority_import {
 					$num_parent = 0;
 					if($rejected){
 						$query = "select id_noeud from noeuds where autorite = 'ORPHELINS' and num_thesaurus = ".$this->id_thesaurus;
-						$result = mysql_query($query);
-						if(mysql_num_rows($result)){
-							$num_parent = mysql_result($result,0,0);
+						$result = pmb_mysql_query($query);
+						if(pmb_mysql_num_rows($result)){
+							$num_parent = pmb_mysql_result($result,0,0);
 						}
 					}else{
 						$num_parent = $this->get_parent_category();
@@ -453,7 +453,7 @@ class authority_import {
 				// Forme associée - Nom de Personne
 				case "author" :
 					$query = "update authors set author_see = ".$this->authority_id." where author_id = ".$rejected_id;
-					$result = mysql_query($query);
+					$result = pmb_mysql_query($query);
 					if(!$result) return false;
 					break;
 				// Forme associée - Titre Uniforme
@@ -465,8 +465,8 @@ class authority_import {
 					if($from_code!= 0 && $to_code!= 0){
 						//on regarde si un lien existe pas déjà entre les 2...
 						$query = "select * from aut_link where aut_link_from = ".$from_code." and aut_link_from_num = ".$rejected_id." and aut_link_to = ".$to_code." and aut_link_to_num = ".$this->authority_id." and aut_link_type= '1'";
-						$result = mysql_query($query);
-						if(mysql_num_rows($result) == 0){
+						$result = pmb_mysql_query($query);
+						if(pmb_mysql_num_rows($result) == 0){
 							$query = "insert into aut_link set 
 								aut_link_from = ".$from_code.",
 								aut_link_from_num = ".$rejected_id.",
@@ -474,13 +474,13 @@ class authority_import {
 								aut_link_to_num = ".$this->authority_id.",
 								aut_link_type= '1',
 								aut_link_comment = '".$data['comment']."'";	
-							return mysql_query($query);
+							return pmb_mysql_query($query);
 						}
 					}
 					break;
 				case "category" :
 					$query = "update noeuds set num_renvoi_voir = ".$this->authority_id." where id_noeud = ".$rejected_id;
-					$result = mysql_query($query);
+					$result = pmb_mysql_query($query);
 					if(!$result) return false;
 					break;
 			}
@@ -503,17 +503,17 @@ class authority_import {
 				if($data['type_authority'] == "category" && $this->notice->type == "category" && $link_code == "z"){
 					//on regarde si le lien existe pas déjà entre les 2...
 					$query = "select num_noeud_orig from voir_aussi where num_noeud_orig = ".$this->authority_id." and num_noeud_dest = ".$associated_id;
-					$result = mysql_query($query);
-					if(!mysql_num_rows($result)){
+					$result = pmb_mysql_query($query);
+					if(!pmb_mysql_num_rows($result)){
 						$query = "insert into voir_aussi set num_noeud_orig = ".$this->authority_id.", num_noeud_dest = ".$associated_id.", langue = '".$lang."', comment_voir_aussi = '".addslashes($data['comment'])."'";
-						return mysql_query($query);
+						return pmb_mysql_query($query);
 					}
 				}else{ 
 					//lien entre autorité classique
 					//on regarde si un lien existe pas déjà entre les 2...
 					$query = "select * from aut_link where aut_link_from = ".$from_code." and aut_link_from_num = ".$this->authority_id." and aut_link_to = ".$to_code." and aut_link_to_num = ".$associated_id." and aut_link_type= '".$link_code."'";
-					$result = mysql_query($query);
-					if(mysql_num_rows($result) == 0){
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result) == 0){
 						$query = "insert into aut_link set 
 							aut_link_from = ".$from_code.",
 							aut_link_from_num = ".$this->authority_id.",
@@ -521,7 +521,7 @@ class authority_import {
 							aut_link_to_num = ".$associated_id.",
 							aut_link_type= '".$link_code."',
 							aut_link_comment = '".$data['comment']."'";
-						return mysql_query($query);
+						return pmb_mysql_query($query);
 					}
 				}
 			}
@@ -560,10 +560,10 @@ class authority_import {
 		//on commence par regarder si le numéro d'autorité est présent dans la table authorities_sources...
 		if($this->notice->common_data['authority_number']){
 			$query = "select num_authority from authorities_sources where authority_number = '".$this->notice->common_data['authority_number']."' and authority_type = '".$this->notice->type."' and num_origin_authority = ".$this->num_origin;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
 				//existe dans la table authority_source
-				$row = mysql_fetch_object($result);
+				$row = pmb_mysql_fetch_object($result);
 				$id_authority = $row->num_authority;
 			}
 			if($id_authority == 0){
@@ -574,8 +574,8 @@ class authority_import {
 		if($id_authority != 0){
 			//on regarde si l'autorité PMB est déjà importée dans un autre source authorities_sources
 			$query = "select * from authorities_sources where num_authority = ".$id_authority." and authority_type= '".$this->notice->type."' and authority_favorite = 1 and num_origin_authority != ".$this->num_origin;
-			$result =  mysql_query($query);
-			if(mysql_num_rows($result)){
+			$result =  pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
 				//déjà importée avec une autre source, on la sépare
 				$this->split_authority($id_authority);
 			}else{
@@ -613,7 +613,7 @@ class authority_import {
 									num_origin_authority = ".$this->num_origin.",
 									authority_favorite = 0,
 									import_date = now()";
-								mysql_query($query);
+								pmb_mysql_query($query);
 							}
 						}
 					}
@@ -629,7 +629,7 @@ class authority_import {
 							num_origin_authority = ".$this->num_origin.",
 							authority_favorite = 0,
 							import_date = now()";
-						mysql_query($query);
+						pmb_mysql_query($query);
 					}
 					break;
 				case "category" :
@@ -648,7 +648,7 @@ class authority_import {
 				authority_favorite = 1,
 				import_date = now(),
 				update_date = now()";
-			mysql_query($query);
+			pmb_mysql_query($query);
 		}else{
 			return false;
 		}
@@ -656,9 +656,9 @@ class authority_import {
 	
 	public function update_authority($id_authority){
 		$query = "select * from authorities_sources where num_authority = ".$id_authority." and authority_type= '".$this->notice->type."' and num_origin_authority = ".$this->num_origin;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$infos = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$infos = pmb_mysql_fetch_object($result);
 		}else{
 			$need_update = false;
 		}
@@ -666,9 +666,9 @@ class authority_import {
 			//on regarde la date de la notice dans le notice en cours d'import...
 			if(strlen($this->notice->common_data['source']['date']) == 8){
 				$query = "select datediff('".substr($this->notice->common_data['source']['date'],0,4)."-".substr($this->notice->common_data['source']['date'],4,2)."-".substr($this->notice->common_data['source']['date'],6,2)."','".$infos->update_date."')";
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					if(mysql_result($result,0,0)>0){
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					if(pmb_mysql_result($result,0,0)>0){
 						$need_update = true;
 					}
 				}
@@ -724,7 +724,7 @@ class authority_import {
 							import_date = now(),
 							update_date = now()";
 					}
-					return mysql_query($query);
+					return pmb_mysql_query($query);
 				}
 			}	
 		}	
@@ -733,9 +733,9 @@ class authority_import {
 	
 	public function split_authority($id_authority){
 		$query = "select * from authorities_sources where num_authority = ".$id_authority." and authority_type= '".$this->notice->type."' and num_origin_authority = ".$this->num_origin;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$infos = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$infos = pmb_mysql_fetch_object($result);
 		}
 			
 		$data = addslashes_array($this->notice->specifics_data);
@@ -755,9 +755,9 @@ class authority_import {
 			case "category" :
 				//si on split une catégorie, on le fait dans la même branche...
 				$query = "select num_parent from noeuds where id_noeud = ".$id_authority;
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					$num_parent = mysql_result($result,0,0);
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					$num_parent = pmb_mysql_result($result,0,0);
 				}else{
 					$num_parent = $this->get_parent_category();
 				}
@@ -782,12 +782,12 @@ class authority_import {
 						authority_favorite = 1,
 						update_date = now() 
 					where id_authority_source = ".$infos->id_authority_source;
-					mysql_query($query);
+					pmb_mysql_query($query);
 					//on doit aussi gérer la séparation dans les notices
 					$query = "select * from notices_authorities_sources where num_authority_source = ".$infos->id_authority_source;
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						while($row = mysql_fetch_object($result)){
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							switch($this->notice->type){
 								case "author" :
 									$query = "update responsability set responsability_author = ".$this->authority_id." where responsability_author = ".$info->num_authority." and responsability_notice = ".$row->num_notice;
@@ -808,7 +808,7 @@ class authority_import {
 									$query = "";
 							}
 							if($query!=""){
-								mysql_query($query);
+								pmb_mysql_query($query);
 							}
 						}
 						return true;
@@ -822,7 +822,7 @@ class authority_import {
 						authority_favorite = 1,
 						import_date = now(),
 						update_date = now()";
-					return mysql_query($query);
+					return pmb_mysql_query($query);
 				}
 			}
 		}

@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: champs_base.xml,v 1.14.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
+$Id: champs_base.xml,v 1.24 2015-05-27 14:14:30 jpermanne Exp $ -->
 
 <indexation>
 
@@ -117,6 +117,12 @@ $Id: champs_base.xml,v 1.14.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 	<field name="admin_opac_facette_annee_calculee" id="040" pond="0">
 		<table>
 			<tablefield>YEAR(date_parution)</tablefield>
+		</table>		
+	</field>
+	
+	<field name="notice_is_new_search" id="042" datatype="new" pond="0">
+		<table>
+			<tablefield>if(notice_is_new=0,"msg:notice_is_not_new_search","msg:notice_is_new_search")</tablefield>
 		</table>		
 	</field>
 	
@@ -684,9 +690,98 @@ $Id: champs_base.xml,v 1.14.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 			</link> ->
 		</table>-->
 	</field>	
+				
+	<!-- Infos d'exemplaires numérique-->
+	<field name="search_expl_num" external="yes" id="095" datatype="explnum">
+		<table name="explnum">
+			<tablefield name="extexplnum_mimetype" id="01" pond="0">explnum_mimetype</tablefield>
+			<filter>(notices.niveau_biblio='a' and notices.niveau_hierar=2)</filter>
+			<tablekey>explnum_id</tablekey>
+			<link type="n1">
+					<table>analysis</table>
+					<tablekey>analysis_notice</tablekey>
+					<externaltable>notices</externaltable>
+					<externalfield>notice_id</externalfield>
+				</link>
+			<link type="n1">
+					<table>bulletins</table>
+					<tablekey>bulletin_id</tablekey>
+					<externaltable>analysis</externaltable>
+					<externalfield>analysis_bulletin</externalfield>
+			</link>
+			<link type="n1">
+					<table>explnum</table>
+					<tablekey>expl_bulletin</tablekey>
+					<externaltable>bulletins</externaltable>
+					<externalfield>bulletin_id</externalfield>
+					<linkrestrict>AND explnum.explnum_notice=0</linkrestrict>
+			</link>	
+			<link type="n1">
+				<table>explnum_statut</table>
+				<tablekey>id_explnum_statut</tablekey>
+				<externalfield>explnum_id</externalfield>
+			</link>	  		    
+		</table>	 
+		<!--  Indexation de la notice de bulletin avec les explnum du bulletin auquel elle est reliée  -->
+		<table name="explnum">
+			<filter>(notices.niveau_biblio='b' and notices.niveau_hierar=2)</filter>  
+			<tablefield name="extexplnum_mimetype" id="01" pond="0">explnum_mimetype</tablefield>
+			<tablekey>explnum_id</tablekey>
+			<link type="nn">
+				<table>bulletins</table>
+				<referencefield>num_notice</referencefield>
+				<tablekey>bulletin_id</tablekey>
+				<externalfield>explnum_bulletin</externalfield>
+				<linkrestrict>AND explnum.explnum_notice=0</linkrestrict>
+			</link> 	
+			<link type="n1">
+				<table>explnum_statut</table>
+				<tablekey>id_explnum_statut</tablekey>
+				<externalfield>explnum_id</externalfield>
+			</link>	     
+		</table>			
+		<!-- Indexation d'une notice de monographie avec ses explnum -->
+		<table name="explnum">
+			<filter>(notices.niveau_biblio='m' and notices.niveau_hierar=0)</filter>
+			<tablefield name="extexplnum_mimetype" id="01" pond="0">explnum_mimetype</tablefield>
+			<tablekey>explnum_id</tablekey>
+			<link type="n1">
+				<externalfield>explnum_notice</externalfield>
+				<linkrestrict>AND explnum.explnum_bulletin=0</linkrestrict>
+			</link>
+			<link type="n1">
+				<table>explnum_statut</table>
+				<tablekey>id_explnum_statut</tablekey>
+				<externalfield>explnum_id</externalfield>
+			</link>	     
+		</table>			
+	</field>
+				
+	<!-- Concepts -->	
+	<field name="index_concept_label" external="yes" id="036" datatype="concept">
+		<table name="skos_fields_global_index">
+			<tablefield id="01" name="lib_categ" pond="110">value</tablefield>
+			<tablekey>id_item</tablekey>
+			<idkey>id_item</idkey>
+			<filter>type_object = 1</filter>
+			<link type="nn">
+				<table>index_concept</table>
+				<referencefield>num_object</referencefield>
+				<externalfield>num_concept</externalfield>
+				<linkrestrict>and code_champ = 1</linkrestrict>
+			</link>
+		</table>
+	</field>	
+		
 	<!-- les CPs -->
 	<!-- de notices -->
 	<field name="notice_champs_perso" external="yes" id="100" datatype="custom_field" >
+		<table>notices</table>
+	</field>
+			
+	<!-- les Autorités personnalisées -->
+	<!-- de notices -->
+	<field name="notice_authperso" external="yes" id="1000" datatype="authperso" >
 		<table>notices</table>
 	</field>
 	
@@ -699,10 +794,16 @@ $Id: champs_base.xml,v 1.14.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 			<tablefield name="extexplnum_minetype" id="02" pond="100">explnum_mimetype</tablefield>
 			<tablefield name="extexplnum_url" id="03" pond="100">explnum_url</tablefield>
 			<tablefield name="extexplnum_extfichier" id="04" pond="100">explnum_extfichier</tablefield>
+			<tablefield name="empr_statut_menu" id="05" pond="0">gestion_libelle</tablefield>
 			<tablekey>explnum_id</tablekey>
 			<link type="n1">
 				<externalfield>explnum_notice</externalfield>
 				<linkrestrict>AND explnum.explnum_bulletin=0</linkrestrict>
+			</link>
+			<link type="n1">
+				<table>explnum_statut</table>
+				<tablekey>id_explnum_statut</tablekey>
+				<externalfield>explnum_docnum_statut</externalfield>
 			</link>
 		</table>
 		<!-- Exemplaires numériques reliés au bulletin de la notice de bulletin -->
@@ -712,12 +813,18 @@ $Id: champs_base.xml,v 1.14.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 			<tablefield name="extexplnum_minetype" id="02" pond="100">explnum_mimetype</tablefield>
 			<tablefield name="extexplnum_url" id="03" pond="100">explnum_url</tablefield>
 			<tablefield name="extexplnum_extfichier" id="04" pond="100">explnum_extfichier</tablefield>
+			<tablefield name="empr_statut_menu" id="05" pond="0">gestion_libelle</tablefield>
 			<link type="nn">
 				<table>bulletins</table>
 				<referencefield>num_notice</referencefield>
 				<tablekey>bulletin_id</tablekey>
 				<externalfield>explnum_bulletin</externalfield>
 				<linkrestrict>AND explnum.explnum_notice=0</linkrestrict>
+			</link>
+			<link type="n1">
+				<table>explnum_statut</table>
+				<tablekey>id_explnum_statut</tablekey>
+				<externalfield>explnum_docnum_statut</externalfield>
 			</link>
 		</table>
 		<!-- A activer dans le fichier subst si l'on veut indexer la notice de périodiques avec tous les documents numériques de tous ces bulletins -->

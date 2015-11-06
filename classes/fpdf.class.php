@@ -8,7 +8,7 @@
 *                                                                              *
 * Vous pouvez utiliser et modifier ce logiciel comme vous le souhaitez.        *
 *******************************************************************************/
-// $Id: fpdf.class.php,v 1.14.6.1 2014-12-10 10:55:06 jpermanne Exp $
+// $Id: fpdf.class.php,v 1.15 2014-12-10 10:56:41 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // Â© 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: refuse.inc.php,v 1.6.4.1 2014-06-05 07:16:04 ngantier Exp $
+// $Id: refuse.inc.php,v 1.8 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -90,9 +90,9 @@ switch ($action) {
 					"AND expl_bulletin=".$idBulletin." ".
 				"ORDER BY ".
 					"transfert_ordre";
-		$res = mysql_query($rqt);
+		$res = pmb_mysql_query($rqt);
 		$tmpOpt = "";
-		while ($value = mysql_fetch_array($res)) {
+		while ($value = pmb_mysql_fetch_array($res)) {
 			$tmpOpt .= "<option value='" . $value[0] . "'>" . $value[1] . "</option>";
 		}
 		*/
@@ -119,29 +119,29 @@ switch ($action) {
 				"ORDER BY transfert_ordre";
 		
 		//echo $rqt;
-		$res = mysql_query($rqt);
+		$res = pmb_mysql_query($rqt);
 		$st = "odd";
-		while (($data = mysql_fetch_array($res))) {
+		while (($data = pmb_mysql_fetch_array($res))) {
 			$id_expl=$data[3];
 			$sel_expl=1;
 			$statut="";
 			$req_res = "select count(1) from resa where resa_cb='".addslashes($data[1])."' and resa_confirmee='1'";
-			$req_res_result = mysql_query($req_res, $dbh);
-			if(mysql_result($req_res_result, 0, 0)) {
+			$req_res_result = pmb_mysql_query($req_res, $dbh);
+			if(pmb_mysql_result($req_res_result, 0, 0)) {
 				$statut=$msg["transferts_circ_resa_expl_reserve"];
 				$sel_expl=0;
 			}
 			$req_pret = "select date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour  from pret where pret_idexpl='".$data[3]."' ";
-			$req_pret_result = mysql_query($req_pret, $dbh);
-			if(mysql_num_rows($req_pret_result)) {
+			$req_pret_result = pmb_mysql_query($req_pret, $dbh);
+			if(pmb_mysql_num_rows($req_pret_result)) {
 				//$statut=$msg["transferts_circ_resa_expl_en_pret"]."()";
-				$statut=$msg[358]." ".mysql_result($req_pret_result, 0,0);
+				$statut=$msg[358]." ".pmb_mysql_result($req_pret_result, 0,0);
 				$sel_expl=0;
 			}
 			// transfert demandé
 			$req="select count(1)  from transferts_demande, transferts where etat_demande ='0' and num_expl='".$data[3]."' and etat_transfert=0 and id_transfert=num_transfert ";
-			$r = mysql_query($req, $dbh);
-			if(mysql_result($r, 0, 0)) {
+			$r = pmb_mysql_query($req, $dbh);
+			if(pmb_mysql_result($r, 0, 0)) {
 				if($statut)$statut.=". ";
 				$statut.=$msg["transfert_demande_in_progress"];
 				$sel_expl=0;
@@ -223,9 +223,9 @@ switch ($action) {
 if ($action == "") {
 	
 	$rqt="select id_transfert, num_expl from transferts,transferts_demande, pret where  pret_idexpl=num_expl and id_transfert=num_transfert and etat_transfert=0 AND etat_demande=4";
-	$res = mysql_query($rqt);
-	if (mysql_num_rows($res)) {
-		while($r=mysql_fetch_object($res)){
+	$res = pmb_mysql_query($rqt);
+	if (pmb_mysql_num_rows($res)) {
+		while($r=pmb_mysql_fetch_object($res)){
 			$liste_transfert[]= $r->id_transfert;
 		}		
 		$obj_transfert->cloture_transferts(implode($liste_transfert,','));

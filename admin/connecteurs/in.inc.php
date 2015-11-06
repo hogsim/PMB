@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: in.inc.php,v 1.24 2013-11-21 10:50:25 ngantier Exp $
+// $Id: in.inc.php,v 1.25 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -60,8 +60,8 @@ function show_connectors() {
 			print "<tr class='$pair_impair' style='display:none' id='".$prop["NAME"]."'><td>&nbsp;</td><td colspan='3'><table style='border:1px solid'>";
 			$parity_source=$parity;
 /*			$requete = "SELECT count( * ) AS count, source_id FROM `external_count` WHERE 1 GROUP BY source_id;";
-			$resultat=mysql_query($requete);
-			while ($count=mysql_fetch_row($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			while ($count=pmb_mysql_fetch_row($resultat)) {
 				$counts[$count["1"]] = $count["0"];
 			}*/
 
@@ -79,8 +79,8 @@ function show_connectors() {
 					<td>";
 				if (($s["REPOSITORY"]==1)||($s["REPOSITORY"]==2)) {
 					$requete="select count(distinct recid) from entrepot_source_".$source_id." where 1";
-					$rnn=mysql_query($requete);
-					$scount = mysql_result($rnn,0,0); //$counts[$source_id]; //)
+					$rnn=pmb_mysql_query($requete);
+					$scount = pmb_mysql_result($rnn,0,0); //$counts[$source_id]; //)
 					if (!$scount) $scount = 0;
 					print "<td>".sprintf($msg["connecteurs_count_notices"],$scount)."</td>";
 				}	
@@ -139,12 +139,12 @@ switch ($act)  {
 		break;
 	case "cancel_sync":
 		$sql = "DELETE FROM source_sync WHERE source_id = $source_id AND cancel > 0";
-		mysql_query($sql);
+		pmb_mysql_query($sql);
 		show_connectors();		
 		break;
 	case "abort_sync":
 		$sql = "DELETE FROM source_sync WHERE source_id = $source_id ";
-		mysql_query($sql);
+		pmb_mysql_query($sql);
 		show_connectors();
 		break;
 	case "add_source":
@@ -175,8 +175,8 @@ switch ($act)  {
 				$conn->sources[$source_id]["ICO_NOTICE"]=stripslashes($ico_notice);
 				//Vérification du nom
 				$requete="select count(*) from connectors_sources where name='".$name."' and source_id!=$source_id and id_connector='".addslashes($contrs->catalog[$id]["NAME"])."'";
-				$resultat=mysql_query($requete);
-				if (mysql_result($resultat,0,0)==0) {
+				$resultat=pmb_mysql_query($requete);
+				if (pmb_mysql_result($resultat,0,0)==0) {
 					$conn->source_save_property_form($source_id);
 					show_connectors();
 				} else {
@@ -236,7 +236,7 @@ switch ($act)  {
 				$conn->del_notices($source_id);
 			}
 			$sql = "UPDATE connectors_sources SET last_sync_date = '0000-00-00 00:00:00' WHERE source_id = $source_id ";
-			mysql_query($sql); 
+			pmb_mysql_query($sql); 
 		} else show_connectors();
 	default:
 		show_connectors();

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: start_export_caddie.php,v 1.21 2013-01-23 15:24:17 dgoron Exp $
+// $Id: start_export_caddie.php,v 1.22 2015-04-03 11:16:22 jpermanne Exp $
 
 //Exécution de l'export
 $base_path = "../..";
@@ -55,7 +55,7 @@ else
 	$fic_catal = "imports/catalog.xml";
 
 if ($first != 1) {
-	//mysql_query("delete from import_marc");
+	//pmb_mysql_query("delete from import_marc");
 
 	$origine=str_replace(" ","",microtime());
 	$origine=str_replace("0.","",$origine);
@@ -143,23 +143,23 @@ switch ($myCart->type) {
 			$liste[]=$liste_no_flag[$i];
 		}
 		$requete="create temporary table expl_cart_id (id integer) ENGINE=MyISAM ";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		for ($i=0; $i<count($liste); $i++) {
 			$requete="insert into expl_cart_id (id) values($liste[$i])";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}
 		//Récupération des id notices
 		$requete="select expl_notice from exemplaires, expl_cart_id where expl_notice!=0 and expl_id=id group by expl_notice";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		$liste=array();
-		while (list($id)=mysql_fetch_row($resultat)) {
+		while (list($id)=pmb_mysql_fetch_row($resultat)) {
 			$liste[]=$id;
 		}
 		if($keep_expl && $_SESSION["param_export"]["genere_lien"] ){
 			//Récupération des id de bulletin si on exporte les exemplaires
 			$requete="select expl_bulletin from exemplaires, expl_cart_id where expl_bulletin!=0 and expl_id=id group by expl_bulletin";
-			$resultat=mysql_query($requete);
-			while (list($id)=mysql_fetch_row($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			while (list($id)=pmb_mysql_fetch_row($resultat)) {
 				$bulletin_a_exporter[]=$id;
 			}
 			if(!count($liste)){
@@ -183,16 +183,16 @@ switch ($myCart->type) {
 			$liste[]=$liste_no_flag[$i];
 		}
 		$requete="create temporary table bull_cart_id (id integer) ENGINE=MyISAM ";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		for ($i=0; $i<count($liste); $i++) {
 			$requete="insert into bull_cart_id (id) values($liste[$i])";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}
 		//Récupération des id notices
 		$requete="select analysis_notice from analysis, bull_cart_id  where analysis_bulletin=id group by analysis_notice";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		$liste=array();
-		while (list($id)=mysql_fetch_row($resultat)) {
+		while (list($id)=pmb_mysql_fetch_row($resultat)) {
 			$liste[]=$id;
 		}
 		break;
@@ -206,7 +206,7 @@ if ($first!=1) {
 	export_param::init_session();
 	
 	if ($output_params["SPECIALDOCTYPE"] == "yes") {
-		if ($liste[0]) $output_params["DOCTYPE"] = mysql_result(mysql_query("select typdoc from notices where notice_id='".$liste[0]."'"),0,0);
+		if ($liste[0]) $output_params["DOCTYPE"] = pmb_mysql_result(pmb_mysql_query("select typdoc from notices where notice_id='".$liste[0]."'"),0,0);
 	}
 	$fo = fopen("$base_path/temp/".$file_out, "w+");
 	//Entête
@@ -230,8 +230,8 @@ echo "<center>".sprintf($msg["export_progress"],$n_current,$n_notices,($n_notice
 //Début d'export du lot
 //Recherche du no_notice le plus grand
 $requete="select max(no_notice) from import_marc where origine='$origine'";
-$resultat=mysql_query($requete);
-$no_notice=mysql_result($resultat,0,0)*1+1;
+$resultat=pmb_mysql_query($requete);
+$no_notice=pmb_mysql_result($resultat,0,0)*1+1;
 
 $z = 0;
 if($_SESSION["param_export"]["notice_exporte"]) $notice_exporte = $_SESSION["param_export"]["notice_exporte"]; 
@@ -271,13 +271,13 @@ while (($z<200)&&(($n_current+$z)<count($liste))) {
 	}
 	if (!is_array($e_notice)) {
 		$requete = "insert into import_marc (no_notice, notice, origine) values($no_notice,'".addslashes($e_notice)."', '$origine')";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		$no_notice++;
 		$z ++;
 	} else {
 		for($i=0; $i<sizeof($e_notice);$i++) {
 			$requete = "insert into import_marc (no_notice, notice, origine) values($no_notice,'".addslashes($e_notice[$i])."', '$origine')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$no_notice++;
 		}
 		$z ++;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: do_resa.php,v 1.51.2.3 2015-04-23 14:17:11 dbellamy Exp $
+// $Id: do_resa.php,v 1.58 2015-06-24 15:36:20 dbellamy Exp $
 
 $base_path=".";
 
@@ -86,7 +86,7 @@ if ( ($lvl=='make_sugg' || $lvl=='valid_sugg') && $opac_show_suggest == 2) {
 if($opac_parse_html || $cms_active){
 	ob_start();
 }
-
+	
 if ($opac_resa_popup) {
 	print $popup_header;
 } else {
@@ -102,41 +102,57 @@ if ($opac_resa_popup) {
 $popup_resa = 1 ;
 
 if ($log_ok) {
-
+	
 	switch($lvl) {
 		case 'make_sugg' :
-			if ($allow_sugg || $opac_show_suggest==2) include($base_path.'/includes/make_sugg.inc.php');
-				else print $msg[empr_no_allow_sugg];
+				if ($allow_sugg || $opac_show_suggest==2) {
+				include($base_path.'/includes/make_sugg.inc.php');
+			} else {
+				print $msg['empr_no_allow_sugg'];
+			}
 			break;
 		case 'valid_sugg' :
-			if ($allow_sugg || $opac_show_suggest==2) include($base_path.'/includes/valid_sugg.inc.php');
-				else print $msg[empr_no_allow_sugg];
+				if ($allow_sugg || $opac_show_suggest==2) {
+				include($base_path.'/includes/valid_sugg.inc.php');
+			} else {
+				print $msg['empr_no_allow_sugg'];
+			}
 			break;
-		case 'resa_planning' :
-			if ($allow_book && $opac_resa) include($base_path.'/includes/resa_planning.inc.php');
-				else print $msg[empr_no_allow_book];
+		case 'resa_planning' : 
+				if ($allow_book && $opac_resa) {
+				include($base_path.'/includes/resa_planning.inc.php');
+			} else {
+				print $msg['empr_no_allow_book'];
+			}
 			break;
 		case 'resa_cart':
-			if($pmb_logs_activate) recup_notice_infos($id_notice);
+				if($pmb_logs_activate) {
+				recup_notice_infos($id_notice);
+			}
 			if ($allow_book && $opac_resa){
 				include($base_path.'/includes/resa_cart.inc.php');
-
+				
 				//on récupère le tableau des résa de resa_cart.inc.php
 				global $resa_cart_display;
 				if($resa_cart_display && $opac_resa_popup){
 					//on imprime le tableau d'affichage sur la page du panier
 					print($resa_cart_display);
 				}
-
+				
 			}else{
-				print $msg[empr_no_allow_book];
+				print $msg['empr_no_allow_book'];
 			}
 			break;
 		default:
 		case 'resa':
-			if($pmb_logs_activate) recup_notice_infos($id_notice);
-			if ($allow_book && $opac_resa) include($base_path.'/includes/resa.inc.php');
-			else print $msg[empr_no_allow_book];
+				if($pmb_logs_activate) {
+				recup_notice_infos($id_notice);
+			}
+			if ($allow_book && $opac_resa) {
+				include($base_path.'/includes/resa.inc.php');
+			} else {
+				print $msg['empr_no_allow_book'];
+			}
 			break;
 	}
 
@@ -144,27 +160,31 @@ if ($log_ok) {
 
 	if (!$time_expired) {
 		$erreur_session = "" ;
-		if ($login) print "<br />".$msg["empr_bad_login"]."<br /><br /><br />";
-		else {
+		if ($login) {
+			print "<br />".$msg["empr_bad_login"]."<br /><br /><br />";
+		} else {
 			print do_formulaire_connexion() ;
 		}
 	} else {
 		print "<br />".sprintf($msg["session_expired"],round($opac_duration_session_auth/60))."<br /><br /><br />";
 		print do_formulaire_connexion() ;
 	}
-
+	
 }
 
-if ($erreur_session) print $erreur_session ;
+if ($erreur_session) {
+	print $erreur_session ;
+}
 
-if ($opac_resa_popup) print $popup_footer;
-else {
+if ($opac_resa_popup) {
+	print $popup_footer;
+} else {
 	//insertions des liens du bas dans le $footer si $opac_show_liensbas
-	if ($opac_show_liensbas==1)
+	if ($opac_show_liensbas==1) {
 		$footer = str_replace("!!div_liens_bas!!",$liens_bas,$footer);
-	else
+	} else {
 		$footer = str_replace("!!div_liens_bas!!","",$footer);
-
+	}
 	if ($opac_show_bandeau_2==0) {
 		$bandeau_2_contains= "";
 	} else {
@@ -189,15 +209,27 @@ else {
 			$loginform__ = genere_form_connexion_empr();
 		} else {
 			$loginform__.="<b>".$empr_prenom." ".$empr_nom."</b><br />\n";
-			$loginform__.="<a href=\"empr.php\" id=\"empr_my_account\">".$msg["empr_my_account"]."</a><br />
-					<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
+			$loginform__.="<select name='empr_quick_access' onchange='if (this.value) window.location.href=this.value'>
+				<option value=''>".$msg["empr_quick_access"]."</option>
+				<option value='empr.php'>".$msg["empr_my_account"]."</option>";
+			if ($allow_loan || $allow_loan_hist) {
+				$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-loan'>".$msg["empr_my_loans"]."</option>";
+			}
+			if ($allow_book && $opac_resa) {
+				$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-resa'>".$msg["empr_my_resas"]."</option>";
+			}
+			if ($opac_demandes_active && $allow_dema) {
+				$loginform__.="<option value='empr.php?tab=request&lvl=list_dmde'>".$msg["empr_my_dmde"]."</option>";
+			}
+			$loginform__.="</select><br />";
+			$loginform__.="<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
 		}
 		$loginform = str_replace("!!login_form!!",$loginform__,$loginform);
-		$footer= str_replace("!!contenu_bandeau!!",$home_on_left.$loginform.$meteo.$adresse,$footer);
+		$footer= str_replace("!!contenu_bandeau!!",($opac_accessibility ? $accessibility : "").$home_on_left.$loginform.$meteo.$adresse,$footer);
 		$footer= str_replace("!!contenu_bandeau_2!!",$opac_facette_in_bandeau_2?$lvl1.$facette:"",$footer);
-
-		$footer=str_replace("!!cms_build_info!!","",$footer);
-
+		
+		$footer=str_replace("!!cms_build_info!!","",$footer);	
+		
 	}
 	print $footer ;
 }
@@ -206,29 +238,29 @@ else {
  * Récupère les infos de la notice
  */
 function recup_notice_infos($id_notice){
-
+	
 	global $infos_notice, $infos_expl;
-
-	$rqt="select notice_id, typdoc, niveau_biblio, index_l, libelle_categorie, name_pclass, indexint_name
-		from notices n
-		left join notices_categories nc on nc.notcateg_notice=n.notice_id
-		left join categories c on nc.num_noeud=c.num_noeud
-		left join indexint i on n.indexint=i.indexint_id
+	
+	$rqt="select notice_id, typdoc, niveau_biblio, index_l, libelle_categorie, name_pclass, indexint_name 
+		from notices n 
+		left join notices_categories nc on nc.notcateg_notice=n.notice_id 
+		left join categories c on nc.num_noeud=c.num_noeud 
+		left join indexint i on n.indexint=i.indexint_id 
 		left join pclassement pc on i.num_pclass=pc.id_pclass
 		where notice_id='".$id_notice."'";
-	$res_noti = mysql_query($rqt);
-	while(($noti=mysql_fetch_array($res_noti))){
+	$res_noti = pmb_mysql_query($rqt);
+	while(($noti=pmb_mysql_fetch_array($res_noti))){		
 		$infos_notice=$noti;
-		$rqt_expl = " select section_libelle, location_libelle, statut_libelle, codestat_libelle, expl_date_depot, expl_date_retour, tdoc_libelle
+		$rqt_expl = " select section_libelle, location_libelle, statut_libelle, codestat_libelle, expl_date_depot, expl_date_retour, tdoc_libelle 
 					from exemplaires e
 					left join docs_codestat co on e.expl_codestat = co.idcode
 					left join docs_location dl on e.expl_location=dl.idlocation
 					left join docs_section ds on ds.idsection=e.expl_section
-					left join docs_statut dst on e.expl_statut=dst.idstatut
+					left join docs_statut dst on e.expl_statut=dst.idstatut 
 					left join docs_type dt on dt.idtyp_doc=e.expl_typdoc
 					where expl_notice='".$id_notice."'";
-		$res_expl=mysql_query($rqt_expl);
-		while(($expl = mysql_fetch_array($res_expl))){
+		$res_expl=pmb_mysql_query($rqt_expl);
+		while(($expl = pmb_mysql_fetch_array($res_expl))){
 			$infos_expl[]=$expl;
 		}
 	}
@@ -238,9 +270,9 @@ function recup_notice_infos($id_notice){
 global $pmb_logs_activate;
 if($pmb_logs_activate){
 	//Enregistrement du log
-	global $log, $infos_expl, $infos_notice;
+	global $log, $infos_expl, $infos_notice;	
 
-	$rqt= " select empr_prof,empr_cp, empr_ville, empr_year, empr_sexe, empr_login, empr_date_adhesion, empr_date_expiration, count(pret_idexpl) as nbprets, count(resa.id_resa) as nbresa, code.libelle as codestat, es.statut_libelle as statut, categ.libelle as categ, gr.libelle_groupe,dl.location_libelle
+	$rqt= " select empr_prof,empr_cp, empr_ville, empr_year, empr_sexe, empr_login, empr_date_adhesion, empr_date_expiration, count(pret_idexpl) as nbprets, count(resa.id_resa) as nbresa, code.libelle as codestat, es.statut_libelle as statut, categ.libelle as categ, gr.libelle_groupe,dl.location_libelle 
 			from empr e
 			left join empr_codestat code on code.idcode=e.empr_codestat
 			left join empr_statut es on e.empr_statut=es.idstatut
@@ -252,10 +284,10 @@ if($pmb_logs_activate){
 			left join pret on e.id_empr=pret_idempr
 			where e.empr_login='".addslashes($_SESSION['user_code'])."'
 			group by resa_idempr, pret_idempr";
-
-	$res=mysql_query($rqt);
+	
+	$res=pmb_mysql_query($rqt);
 	if($res){
-		$empr_carac = mysql_fetch_array($res);
+		$empr_carac = pmb_mysql_fetch_array($res);
 		$log->add_log('empr',$empr_carac);
 	}
 	$log->add_log('num_session',session_id());
@@ -279,4 +311,5 @@ if($opac_parse_html || $cms_active){
 	}
 	print $htmltoparse;
 }
-mysql_close($dbh);
+/* Fermeture de la connexion */
+pmb_mysql_close($dbh);

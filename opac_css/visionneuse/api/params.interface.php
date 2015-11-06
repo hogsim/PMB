@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: params.interface.php,v 1.5 2013-07-24 13:09:23 arenou Exp $
+// $Id: params.interface.php,v 1.6 2014-09-19 14:26:41 arenou Exp $
  
  //on défini les méthodes à implémenter pour une classe de paramétrage...
 
@@ -124,5 +124,9 @@ class base_params implements params {
 		return $docnum_visible;
 	}
     
+	
+	function is_downloadable($doc_id){
+		return true;
+	}
 }
 ?>

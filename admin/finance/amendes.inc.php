@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: amendes.inc.php,v 1.4 2007-03-10 08:32:25 touraine37 Exp $
+// $Id: amendes.inc.php,v 1.5 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -46,22 +46,22 @@ if ($pmb_gestion_amende==1) {
 		case 'update':
 			//Mise à jour !!
 			$requete="update parametres set valeur_param='".$amende_jour."' where type_param='finance' and sstype_param='amende_jour'";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$finance_amende_jour=stripslashes($amende_jour);
 			$requete="update parametres set valeur_param='".$amende_delai."' where type_param='finance' and sstype_param='delai_avant_amende'";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$finance_delai_avant_amende=stripslashes($amende_delai);
 			$requete="update parametres set valeur_param='".$amende_delai_recouvrement."' where type_param='finance' and sstype_param='delai_recouvrement'";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$finance_delai_recouvrement=stripslashes($amende_delai_recouvrement);
 			$requete="update parametres set valeur_param='".$amende_max."' where type_param='finance' and sstype_param='amende_maximum'";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$finance_amende_maximum=stripslashes($amende_max);
 			$requete="update parametres set valeur_param='".$amende_1_2."' where type_param='finance' and sstype_param='delai_1_2'";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$finance_delai_1_2=stripslashes($amende_1_2);
 			$requete="update parametres set valeur_param='".$amende_2_3."' where type_param='finance' and sstype_param='delai_2_3'";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$finance_delai_2_3=stripslashes($amende_2_3);
 			show_amende_parameters();
 			break;

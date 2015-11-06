@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesAuthors.class.php,v 1.6 2013-02-20 16:09:28 mbertin Exp $
+// $Id: pmbesAuthors.class.php,v 1.7 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,13 +37,13 @@ class pmbesAuthors extends external_services_api_class {
 
 		$rqt_auteurs = "select author_id as aut from authors where author_see='$author_id' and author_id!=0 ";
 		$rqt_auteurs .= "union select author_see as aut from authors where author_id='$author_id' and author_see!=0 " ;
-		$res_auteurs = mysql_query($rqt_auteurs, $dbh);
+		$res_auteurs = pmb_mysql_query($rqt_auteurs, $dbh);
 		$clause_auteurs = " in ('$author_id' ";
-		while(($id_aut=mysql_fetch_object($res_auteurs))) {
+		while(($id_aut=pmb_mysql_fetch_object($res_auteurs))) {
 			$clause_auteurs .= ", '".$id_aut->aut."' ";
 			$rqt_auteursuite = "select author_id as aut from authors where author_see='$id_aut->aut' and author_id!=0 ";
-			$res_auteursuite = mysql_query($rqt_auteursuite, $dbh);
-			while(($id_autsuite=mysql_fetch_object($res_auteursuite))) $clause_auteurs .= ", '".$id_autsuite->aut."' "; 
+			$res_auteursuite = pmb_mysql_query($rqt_auteursuite, $dbh);
+			while(($id_autsuite=pmb_mysql_fetch_object($res_auteursuite))) $clause_auteurs .= ", '".$id_autsuite->aut."' "; 
 		} 
 		$clause_auteurs .= " ) " ;
 		
@@ -51,9 +51,9 @@ class pmbesAuthors extends external_services_api_class {
 		$requete.= "where responsability_author $clause_auteurs and notice_id=responsability_notice ";
 		$requete.= "ORDER BY index_serie,tnvol,index_sew";
 		
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		if ($res)
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = $row["notice_id"];
 			}
 	
@@ -73,10 +73,10 @@ class pmbesAuthors extends external_services_api_class {
 			throw new Exception("Missing parameter: author_id");
 			
 		$sql = "SELECT * FROM authors WHERE author_id = ".$author_id;
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		if (!$res)
 			throw new Exception("Not found: author_id = ".$author_id);
-		$row = mysql_fetch_assoc($res);
+		$row = pmb_mysql_fetch_assoc($res);
 		
 		$result = array(
 			"author_id" => $row["author_id"],

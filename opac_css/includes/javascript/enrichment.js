@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: enrichment.js,v 1.13 2012-05-31 10:05:13 dbellamy Exp $
+// $Id: enrichment.js,v 1.15 2015-05-28 09:34:45 apetithomme Exp $
 
 function getEnrichment(notice_id){
 	var ul = findNoticeElement(notice_id);
@@ -15,9 +15,11 @@ function getEnrichment(notice_id){
 function gotTypeOfEnrichment(response){
 	var types = eval('('+response+')');
 	var menu = new Array();
+	var default_display = "";
+	var a = null;
 	var ul = findNoticeElement(types.notice_id);
 	if (ul) {
-		for (key in types.result){
+		for (var key in types.result){
 			for(var i=0 ; i< types.result[key].type.length ; i++){
 				var exist = false;
 				for(var j=0 ; j< menu.length ; j++){
@@ -27,16 +29,24 @@ function gotTypeOfEnrichment(response){
 					}
 				}
 				if(!exist){
-					createMenuItem(types.result[key].type[i],types.notice_id,ul);
+					var item = createMenuItem(types.result[key].type[i],types.notice_id,ul);
 					var div = document.createElement("div");
 					div.setAttribute("id","div_"+types.result[key].type[i].code+types.notice_id);
 					div.setAttribute("style","display:none");
 					ul.parentNode.appendChild(div);
 					menu.push(types.result[key].type[i]);
+					if (types.result[key].type[i].default_display && ((!default_display) || (default_display.order > types.result[key].type[i].order))) {
+						default_display = types.result[key].type[i];
+						a = item;
+					}
 				}
 			}
 		}
+		var clear = document.createElement('div');
+		clear.setAttribute('class', 'clear');
+		ul.appendChild(clear);
 	}
+	if (default_display) display_tab(a, default_display.code, types.notice_id);
 }
 
 function gotEnrichment(response){
@@ -67,44 +77,35 @@ function createMenuItem(item,notice_id,parent){
 	li.setAttribute("id","onglet_"+item.code+notice_id);
 	li.setAttribute("class","isbd_public_inactive");
 	li.setAttribute("name",item.code);
+	li.setAttribute("order",item.order*1);
+	
 	var a = document.createElement("a");
 	a.innerHTML = "<span>"+item.label+"</span>";
 	a.setAttribute("href", "#");
 	a.setAttribute("onclick", "return false;");
 	if(item.infobulle && item.infobulle != "") a.setAttribute("title", item.infobulle);
-	li.appendChild(a),
-	parent.appendChild(li);
+	li.appendChild(a);
+	var put = false;
+	for (var i=0; i < parent.children.length; i++) {
+		if ((parent.children[i].nodeName == 'LI') && parent.children[i].getAttribute('order')*1) {
+			if (item.order*1 < parent.children[i].getAttribute('order')*1) {
+				parent.insertBefore(li, parent.children[i]);
+				put = true;
+				break;
+			}
+		}
+	}
+	if (!put) parent.appendChild(li);
 	if(a.addEventListener){
 		a.addEventListener("click",function(){
-			show_what(item.code,notice_id);
-			if(!a.hasAttribute('enrichment')){
-				a.setAttribute('enrichment','done');
-				var patience= document.createElement("img");
-				patience.setAttribute('src',"images/patience.gif");
-				patience.setAttribute('align','middle');
-				patience.setAttribute('id','patience'+notice_id);
-				a.parentNode.appendChild(patience);
-				var check = new http_request();
-				check.request('./ajax.php?module=ajax&categ=enrichment&action=enrichment&type='+item.code+'&id='+notice_id,false,"",true,gotEnrichment);
-			}
-			return false;	
+			display_tab(a, item.code, notice_id);
 		},false);		
 	} else if (a.attachEvent) {
 		a.attachEvent("onclick",function(){
-			show_what(item.code,notice_id);
-			if(!a.getAttribute('enrichment')){
-				a.setAttribute('enrichment','done');
-				var patience= document.createElement("img");
-				patience.setAttribute('src',"images/patience.gif");
-				patience.setAttribute('align','middle');
-				patience.setAttribute('id','patience'+notice_id);
-				a.parentNode.appendChild(patience);
-				var check = new http_request();
-				check.request('./ajax.php?module=ajax&categ=enrichment&action=enrichment&type='+item.code+'&id='+notice_id,false,"",true,gotEnrichment);
-			}
-			return false;	
+			display_tab(a, item.code, notice_id);
 		});
 	}
+	return a;
 }
 
 function findNoticeElement(id){
@@ -163,4 +164,23 @@ function show_what(quoi, id) {
 			}
 			break;
 	}
+}
+
+function display_tab(a, quoi, notice_id) {
+	//on supprime une éventuelle autre image de chargement
+	var img = document.getElementById('patience'+notice_id);
+	if(img) img.parentNode.removeChild(img);
+	
+	show_what(quoi,notice_id);
+	if((a.addEventListener && !a.hasAttribute('enrichment')) || (a.attachEvent && !a.getAttribute('enrichment'))){
+		a.setAttribute('enrichment','done');
+		var patience= document.createElement("img");
+		patience.setAttribute('src',"images/patience.gif");
+		patience.setAttribute('align','middle');
+		patience.setAttribute('id','patience'+notice_id);
+		a.parentNode.appendChild(patience);
+		var check = new http_request();
+		check.request('./ajax.php?module=ajax&categ=enrichment&action=enrichment&type='+quoi+'&id='+notice_id,false,"",true,gotEnrichment);
+	}
+	return false;	
 }

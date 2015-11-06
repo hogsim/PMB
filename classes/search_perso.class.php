@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_perso.class.php,v 1.3.6.1 2015-05-15 12:35:22 jpermanne Exp $
+// $Id: search_perso.class.php,v 1.5 2015-05-15 12:30:51 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,8 +33,8 @@ function search_perso($id=0) {
 function fetch_data() {
 	global $dbh;
 	
-	$myQuery = mysql_query("SELECT * FROM search_perso WHERE search_id='".$this->id."' LIMIT 1", $dbh);
-	$myreq= mysql_fetch_object($myQuery);
+	$myQuery = pmb_mysql_query("SELECT * FROM search_perso WHERE search_id='".$this->id."' LIMIT 1", $dbh);
+	$myreq= pmb_mysql_fetch_object($myQuery);
 	
 	$this->autorisations=$myreq->autorisations;
 	$this->name=$myreq->search_name;
@@ -50,12 +50,12 @@ function get_link_user() {
 	$requete = "SELECT * FROM search_perso";
 	if ($PMBuserid!=1) $requete.=" WHERE (autorisations='$PMBuserid' or autorisations like '$PMBuserid %' or autorisations like '% $PMBuserid %' or autorisations like '% $PMBuserid') ";
 	$requete .= " order by search_name ";
-	$myQuery = mysql_query($requete, $dbh);
+	$myQuery = pmb_mysql_query($requete, $dbh);
 	$this->search_perso_user=array();
 	$link="";
-	if(mysql_num_rows($myQuery)){
+	if(pmb_mysql_num_rows($myQuery)){
 		$i=0;
-		while(($r=mysql_fetch_object($myQuery))) {
+		while(($r=pmb_mysql_fetch_object($myQuery))) {
 			if($r->search_directlink) {				
 				if($r->search_shortname)$libelle=$r->search_shortname;
 				else $libelle=$r->search_name;
@@ -88,7 +88,7 @@ function update($value) {
 	}		
 	if($this->id) {
 		// modif
-		$no_erreur=mysql_query("UPDATE search_perso SET $fields WHERE search_id=".$this->id, $dbh);	
+		$no_erreur=pmb_mysql_query("UPDATE search_perso SET $fields WHERE search_id=".$this->id, $dbh);	
 		if(!$no_erreur) {
 			error_message($msg["search_perso_form_edit"], $msg["search_perso_form_add_error"],1);	
 			exit;
@@ -96,8 +96,8 @@ function update($value) {
 		
 	} else {
 		// create
-		$no_erreur=mysql_query("INSERT INTO search_perso SET $fields ", $dbh);
-		$this->id = mysql_insert_id($dbh);
+		$no_erreur=pmb_mysql_query("INSERT INTO search_perso SET $fields ", $dbh);
+		$this->id = pmb_mysql_insert_id($dbh);
 		if(!$no_erreur) {
 			error_message($msg["search_perso_form_add"], $msg["search_perso_form_add_error"],1);
 			exit;
@@ -195,9 +195,9 @@ function aff_form_autorisations ($param_autorisations="1", $creation_rech="1") {
 	global $PMBuserid;
 
 	$requete_users = "SELECT userid, username FROM users order by username ";
-	$res_users = mysql_query($requete_users, $dbh);
+	$res_users = pmb_mysql_query($requete_users, $dbh);
 	$all_users=array();
-	while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+	while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 		$all_users[]=array($all_userid,$all_username);
 	}
 	if ($creation_rech) $param_autorisations.=" ".$PMBuserid ;
@@ -268,7 +268,7 @@ function delete() {
 	global $dbh,$search_perso_user;
 	
 	if($this->id) {
-		mysql_query("DELETE from search_perso WHERE search_id='".$this->id."' ", $dbh);
+		pmb_mysql_query("DELETE from search_perso WHERE search_id='".$this->id."' ", $dbh);
 	}
 	$search_perso_user=$this->get_link_user();	
 }

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +----------------------------------------------------------------------------------------+
-// $Id: category.inc.php,v 1.36.6.1 2015-03-02 16:16:45 jpermanne Exp $
+// $Id: category.inc.php,v 1.39 2015-04-16 16:09:56 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -63,7 +63,7 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 	}
 	
 	$q = "drop table if exists catjoin ";
-	$r = mysql_query($q, $dbh);
+	$r = pmb_mysql_query($q, $dbh);
 	
 	$q = "create temporary table catjoin ENGINE=MyISAM as select ";
 	foreach ($list_thes as $id_thesaurus=>$libelle_thesaurus) {
@@ -100,13 +100,13 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 			$q.= "and ".$first_clause." ";
 			$q.= "and ( if (catlg.num_noeud is null, ".$members_catdef['where'].", ".$members_catlg['where'].") ) ";
 		}
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$q = "INSERT INTO catjoin SELECT ";
 	}
 	
 	$q = 'select distinct catjoin.num_noeud, catjoin.* from catjoin '.$clause.' ORDER BY pert desc, catjoin.index_categorie '.$limiter;
-	$found = mysql_query($q, $dbh);
-	while($mesCategories_trouvees = mysql_fetch_object($found)) {
+	$found = pmb_mysql_query($q, $dbh);
+	while($mesCategories_trouvees = pmb_mysql_fetch_object($found)) {
 		print "<li class='categ_colonne'>";
 		if ($mesCategories_trouvees->num_renvoi_voir) {// Affichage des renvois_voir
 			
@@ -116,9 +116,9 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 				$lg = $thes->langue_defaut;
 			}
 			$q =  "select * from noeuds, categories where num_noeud='".$mesCategories_trouvees->num_renvoi_voir."' and langue = '".$lg."' and noeuds.id_noeud = categories.num_noeud limit 1";
-			$found_see = mysql_query ($q, $dbh);
+			$found_see = pmb_mysql_query($q, $dbh);
 			
-			$mesCategories = @mysql_fetch_object($found_see) ;
+			$mesCategories = @pmb_mysql_fetch_object($found_see) ;
 			print pmb_bidi("<b>".$mesCategories_trouvees->libelle_categorie."</b> ".$msg['term_show_see']." ") ;
 		} else $mesCategories = $mesCategories_trouvees ;
 		
@@ -142,7 +142,7 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 		else		
 			print "<img src='./images/folder.gif' border='0' align='middle'>";
 	
-		print pmb_bidi("</a><a href=./index.php?lvl=categ_see&id=".$mesCategories->num_noeud.$result_com['java_com']. ">".$mesCategories->libelle_categorie.'</a>'.$result_com['zoom']);
+		print pmb_bidi("</a><a href=./index.php?lvl=categ_see&id=".$mesCategories->num_noeud.$result_com['java_com']. "&from=search>".$mesCategories->libelle_categorie.'</a>'.$result_com['zoom']);
 	
 			print "</li>";
 		}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ? 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_func.inc.php,v 1.73.2.2 2014-07-04 14:25:34 mbertin Exp $
+// $Id: empr_func.inc.php,v 1.76 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -139,9 +139,9 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 		} else 	$script_rfid_encode='';
 		$empr_form = str_replace("!!questionrfid!!",   $script_rfid_encode, $empr_form);
 		$requete = "SELECT * FROM empr WHERE id_empr='$id' ";
-		$res = mysql_query($requete, $link);
+		$res = pmb_mysql_query($requete, $link);
 		if($res) {
-			$empr = mysql_fetch_object($res);
+			$empr = pmb_mysql_fetch_object($res);
 		} else {
 			error_message( $msg[53], $msg[54], 0);
 		}
@@ -189,8 +189,8 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 				else $mess_relance = $msg[empr_date_renouv_proche];
 
 			$rqt="select duree_adhesion from empr_categ where id_categ_empr='$empr_temp->categ'";
-			$res_dur_adhesion = mysql_query($rqt, $dbh);
-			$row = mysql_fetch_row($res_dur_adhesion);
+			$res_dur_adhesion = pmb_mysql_query($rqt, $dbh);
+			$row = pmb_mysql_fetch_row($res_dur_adhesion);
 			$nb_jour_adhesion_categ = $row[0];
 			
 			if ($empr_prolong_calc_date_adhes_depassee && $empr_temp->adhesion_depassee()) {
@@ -200,8 +200,8 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 				$rqt_date = "select date_add('$empr_temp->date_expiration',INTERVAL 1 DAY) as nouv_date_debut,
 						date_add('$empr_temp->date_expiration',INTERVAL $nb_jour_adhesion_categ DAY) as nouv_date_fin ";
 			}
-			$resultatdate=mysql_query($rqt_date) or die ("<br /> $rqt_date ".mysql_error());
-			$resdate=mysql_fetch_object($resultatdate);
+			$resultatdate=pmb_mysql_query($rqt_date) or die ("<br /> $rqt_date ".pmb_mysql_error());
+			$resdate=pmb_mysql_fetch_object($resultatdate);
 
 			$nouv_date_debut = $resdate->nouv_date_debut ;
 			$nouv_date_fin = $resdate->nouv_date_fin ;
@@ -241,11 +241,11 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 		$list_type_abt="";
 		if (($pmb_gestion_abonnement==2)&&($pmb_gestion_financiere)) {
 			$requete="select * from type_abts order by type_abt_libelle ";
-			$resultat_abt=mysql_query($requete);
+			$resultat_abt=pmb_mysql_query($requete);
 			
 			$user_loc=$deflt2docs_location;
 			$t_type_abt=array();
-			while ($res_abt=mysql_fetch_object($resultat_abt)) {
+			while ($res_abt=pmb_mysql_fetch_object($resultat_abt)) {
 				$locs=explode(",",$res_abt->localisations);
 				$as=array_search($user_loc,$locs);
 				if ((($as!==false)&&($as!==null))||(!$res_abt->localisations)) {
@@ -278,11 +278,11 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 		$list_type_abt="";
 		if (($pmb_gestion_abonnement==2)&&($pmb_gestion_financiere)) {
 			$requete="select * from type_abts";
-			$resultat_abt=mysql_query($requete);
+			$resultat_abt=pmb_mysql_query($requete);
 			
 			$user_loc=$deflt2docs_location;
 			$t_type_abt=array();
-			while ($res_abt=mysql_fetch_object($resultat_abt)) {
+			while ($res_abt=pmb_mysql_fetch_object($resultat_abt)) {
 				$locs=explode(",",$res_abt->localisations);
 				$as=array_search($user_loc,$locs);
 				if ((($as!==false)&&($as!==null))||(!$res_abt->localisations)) {
@@ -327,12 +327,12 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 	}
 	// on récupère le select catégorie
 	$requete = "SELECT id_categ_empr, libelle, duree_adhesion FROM empr_categ ORDER BY libelle ";
-	$res = mysql_query($requete, $link);
-	$nbr_lignes = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $link);
+	$nbr_lignes = pmb_mysql_num_rows($res);
 	$categ_content='';
 	$empr_grille_categ="<select id='empr_grille_categ' style='display:none;'><option value='0' selected='selected' >".$msg['all_categories_empr']."</value>";
 	for($i=0; $i < $nbr_lignes; $i++) {
-		$row = mysql_fetch_row($res);
+		$row = pmb_mysql_fetch_row($res);
 		$categ_content.= "<option value='$row[0]'";
 		if($row[0] == $empr->empr_categ) $categ_content .= " selected='selected'";
 		$categ_content .= ">$row[1]</option>";
@@ -351,10 +351,10 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 	$empr_form = str_replace("<!-- empr_grille_location -->", $empr_grille_location, $empr_form);
 	
 	$requete = "SELECT id_categ_empr, libelle, duree_adhesion FROM empr_categ ORDER BY libelle ";
-	$res = mysql_query($requete, $link);
+	$res = pmb_mysql_query($requete, $link);
 	$grille_categ="<option value='0' selected='selected'>".$msg['all_categories_empr']."</value>";
 	for($i=0; $i < $nbr_lignes; $i++) {
-		$row = mysql_fetch_row($res);
+		$row = pmb_mysql_fetch_row($res);
 		$categ_content.= "<option value='$row[0]'";
 		if($row[0] == $empr->empr_categ) $categ_content .= " selected='selected'";
 		$categ_content .= ">$row[1]</option>";
@@ -371,10 +371,10 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 		$empr->empr_statut=$deflt_empr_statut;
 	}
 	
-	$res = mysql_query($requete, $link);
-	$nbr_lignes = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $link);
+	$nbr_lignes = pmb_mysql_num_rows($res);
 	for($i=0; $i < $nbr_lignes; $i++) {
-		$row = mysql_fetch_row($res);
+		$row = pmb_mysql_fetch_row($res);
 		$statut_content .= "<option value='$row[0]'";
 		if($row[0] == $empr->empr_statut) $statut_content .= " selected='selected'";
 		$statut_content .= ">$row[1]</option>";
@@ -384,11 +384,11 @@ function show_empr_form($form_action, $form_cancel, $link, $id, $cb,$duplicate_e
 	// et le select code stat
 	// on récupère le select cod stat
 	$requete = "SELECT idcode, libelle FROM empr_codestat ORDER BY libelle ";
-	$res = mysql_query($requete, $link);
-	$nbr_lignes = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $link);
+	$nbr_lignes = pmb_mysql_num_rows($res);
 
 	for($i=0; $i < $nbr_lignes; $i++) {
-		$row = mysql_fetch_row($res);
+		$row = pmb_mysql_fetch_row($res);
 		$cstat_content .= "<option value='$row[0]'";
 		if($row[0] == $empr->empr_codestat) $cstat_content .= " selected='selected'";
 		$cstat_content .= ">$row[1]</option>";
@@ -515,9 +515,9 @@ function get_rights_form($empr_id=0) {
 		$t_r=array();
 		$t_r[0]= $dom_2->getComment('res_prf_def_lib');	//profile ressource par defaut
 		$q_r=$dom_2->loadUsedResourceProfiles();
-		$r_r=mysql_query($q_r, $dbh);
-		if (mysql_num_rows($r_r)) {
-			while(($row=mysql_fetch_object($r_r))) {
+		$r_r=pmb_mysql_query($q_r, $dbh);
+		if (pmb_mysql_num_rows($r_r)) {
+			while(($row=pmb_mysql_fetch_object($r_r))) {
 				$t_r[$row->prf_id]= $row->prf_name;
 			}
 		}

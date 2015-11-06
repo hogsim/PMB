@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lettre_commande.class.php,v 1.4 2013-04-16 08:16:41 mbertin Exp $
+// $Id: lettre_commande.class.php,v 1.6 2015-07-16 12:16:51 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -307,7 +307,7 @@ class lettreCommande_PDF {
 		
 		$fou = new entites($cde->num_fournisseur);
 		$coord_fou = entites::get_coordonnees($cde->num_fournisseur, '1');
-		$coord_fou = mysql_fetch_object($coord_fou);
+		$coord_fou = pmb_mysql_fetch_object($coord_fou);
 		
 		$this->PDF->AddPage();
 		$this->PDF->npage = 1;
@@ -327,7 +327,11 @@ class lettreCommande_PDF {
 		$ville_end=stripos($coord_fac->ville,"cedex");	
 		if($ville_end!==false) $ville=trim(substr($coord_fac->ville,0,$ville_end));
 		else $ville=$coord_fac->ville;
-		$date = $ville.$this->sep_ville_date.format_date($cde->date_acte);
+		if ($cde->date_valid != '0000-00-00') {
+			$date = $ville.$this->sep_ville_date.format_date($cde->date_valid);
+		} else {
+			$date = $ville.$this->sep_ville_date.format_date($cde->date_acte);
+		}
 		$this->PDF->setFontSize($this->fs_date);
 		$this->PDF->SetXY($this->x_date, $this->y_date);
 		$this->PDF->Cell($this->l_date, $this->h_date, $date, 0, 0, 'L', 0);
@@ -434,7 +438,7 @@ class lettreCommande_PDF {
 		
 		$tab_mnt=array();
 		$i=0;
-		while (($row = mysql_fetch_object($lignes))) {
+		while (($row = pmb_mysql_fetch_object($lignes))) {
 			
 			$typ = new types_produits($row->num_type);
 			$col1 = $typ->libelle;

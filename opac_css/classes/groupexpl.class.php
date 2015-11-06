@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: groupexpl.class.php,v 1.1.6.1 2015-03-19 16:37:09 dgoron Exp $
+// $Id: groupexpl.class.php,v 1.4 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -31,9 +31,9 @@ class groupexpl {
 		$this->info['expl']=array();
 		if(!$this->id) return;
 		$req="select * from groupexpl where id_groupexpl=". $this->id;		
-		$resultat=mysql_query($req,$dbh);	
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);		
+		$resultat=pmb_mysql_query($req,$dbh);	
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);		
 			$this->info['id']= $r->id_groupexpl;	
 			$this->info['name']= $r->groupexpl_name;
 			$this->info['resp_expl_num']= $r->groupexpl_resp_expl_num;
@@ -44,11 +44,11 @@ class groupexpl {
 		}					 				
 		
 		$req="select * from groupexpl_expl, exemplaires where expl_id=groupexpl_expl_num and groupexpl_num=". $this->id;		
-		$resultat=mysql_query($req,$dbh);	
+		$resultat=pmb_mysql_query($req,$dbh);	
 		$i=0;
 		$this->info['checked']=0;
-		if (mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){	
+		if (pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){	
 				$this->info['expl'][$i]['id']= $r->groupexpl_expl_num;	
 				$this->info['expl'][$i]['checked']= $r->groupexpl_checked;
 				if(!$r->groupexpl_checked){
@@ -60,9 +60,9 @@ class groupexpl {
 				// est-il en prêt
 				$this->info['expl'][$i]['pret']=array();
 				$req_pret="select * from pret, empr where id_empr=pret_idempr and pret_idexpl=". $r->groupexpl_expl_num;
-				$res_pret=mysql_query($req_pret,$dbh);
-				if (mysql_num_rows($res_pret)) {
-					$r_pret=mysql_fetch_object($res_pret);	
+				$res_pret=pmb_mysql_query($req_pret,$dbh);
+				if (pmb_mysql_num_rows($res_pret)) {
+					$r_pret=pmb_mysql_fetch_object($res_pret);	
 					
 					$this->info['expl'][$i]['pret']['date']=$r_pret->pret_date;
 					$this->info['expl'][$i]['pret']['retour']=$r_pret->pret_retour;					
@@ -105,11 +105,11 @@ class groupexpl {
 	function get_expl_id($cb) {
 		global $dbh;	
 		$req="select expl_id from exemplaires where expl_cb='$cb' ";		
-		$resultat=mysql_query($req,$dbh);	
-		if (!mysql_num_rows($resultat)) {			
+		$resultat=pmb_mysql_query($req,$dbh);	
+		if (!pmb_mysql_num_rows($resultat)) {			
 			return 0;
 		}	
-		$r=mysql_fetch_object($resultat);
+		$r=pmb_mysql_fetch_object($resultat);
 		return $r->expl_id;
 	}
 	
@@ -118,10 +118,10 @@ class groupexpl {
 		if($cb)	{
 			if(!($expl_id=$this->get_expl_id($cb))) return 0;
 			$req="update groupexpl_expl SET groupexpl_checked=0 where groupexpl_expl_num=".$expl_id;			
-			mysql_query($req, $dbh);		
+			pmb_mysql_query($req, $dbh);		
 		}else{
 			$req="update groupexpl_expl SET groupexpl_checked=0 where groupexpl_num=".$this->id;			
-			mysql_query($req, $dbh);					
+			pmb_mysql_query($req, $dbh);					
 		}	
 				
 		$this->fetch_data();	
@@ -133,10 +133,10 @@ class groupexpl {
 		if($cb)	{
 			if(!($expl_id=$this->get_expl_id($cb))) return 0;
 			$req="update groupexpl_expl SET groupexpl_checked=1 where groupexpl_expl_num=".$expl_id;			
-			mysql_query($req, $dbh);		
+			pmb_mysql_query($req, $dbh);		
 		}else{
 			$req="update groupexpl_expl SET groupexpl_checked=1 where groupexpl_num=".$this->id;			
-			mysql_query($req, $dbh);					
+			pmb_mysql_query($req, $dbh);					
 		}					
 		$this->fetch_data();			
 	}	
@@ -144,18 +144,18 @@ class groupexpl {
 	function get_name_group_from_id($id) {
 		global $dbh;
 		$req="select groupexpl_name from groupexpl where id_groupexpl='$id' ";
-		$resultat=mysql_query($req,$dbh);
-		if (!mysql_num_rows($resultat)) return 0;
-		$r=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($req,$dbh);
+		if (!pmb_mysql_num_rows($resultat)) return 0;
+		$r=pmb_mysql_fetch_object($resultat);
 		return $r->groupexpl_name;
 	}
 	
 	function get_id_group_from_cb($cb) {
 		global $dbh;
 		$req="select id_groupexpl from groupexpl, groupexpl_expl, exemplaires where expl_id=groupexpl_expl_num and groupexpl_num=id_groupexpl and expl_cb='$cb' ";		
-		$resultat=mysql_query($req,$dbh);	
-		if (!mysql_num_rows($resultat)) return 0;
-		$r=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($req,$dbh);	
+		if (!pmb_mysql_num_rows($resultat)) return 0;
+		$r=pmb_mysql_fetch_object($resultat);
 		return $r->id_groupexpl;
 	}	
 	
@@ -181,10 +181,10 @@ class groupexpl {
 			return 0;
 		}		
 		$req="INSERT INTO groupexpl_expl SET groupexpl_num=".$this->id.", groupexpl_expl_num=".$expl_id;		
-		mysql_query($req, $dbh);
+		pmb_mysql_query($req, $dbh);
 
 		$req="update exemplaires set expl_statut=".$this->info['statut_others']." where expl_id=".$expl_id;				
-		mysql_query($req, $dbh);		
+		pmb_mysql_query($req, $dbh);		
 		
 		$this->fetch_data();
 		$this->info_message=$msg['groupexpl_form_info_insert'];
@@ -197,7 +197,7 @@ class groupexpl {
 		$this->error_message="";		
 		if(!($expl_id=$this->get_expl_id($cb))) return 0;
 		$req="DELETE from groupexpl_expl WHERE groupexpl_expl_num=".$expl_id;			
-		mysql_query($req, $dbh);		
+		pmb_mysql_query($req, $dbh);		
 		$this->fetch_data();
 		return 1;    	
     } 
@@ -246,9 +246,9 @@ class groupexpl {
 			</div>
 			<div class='row'>	
 				<select name='f_loc' >";
-			$res = mysql_query("SELECT idlocation, location_libelle FROM docs_location order by location_libelle",$dbh);
+			$res = pmb_mysql_query("SELECT idlocation, location_libelle FROM docs_location order by location_libelle",$dbh);
 			$loc_select .= "<option value='0'>".$msg["all_location"]."</option>";
-			while ($value = mysql_fetch_array($res)) {
+			while ($value = pmb_mysql_fetch_array($res)) {
 				$loc_select .= "<option value='".$value[0]."'";
 				if ($value[0]==$f_loc)	$loc_select .= " selected ";		
 				$loc_select .= ">".htmlentities($value[1],ENT_QUOTES,$charset)."</option>";
@@ -300,15 +300,15 @@ class groupexpl {
 		";		
 		if(!$this->id){ // Ajout
 			$req="INSERT INTO groupexpl SET $fields ";	
-			mysql_query($req, $dbh);
-			$this->id = mysql_insert_id($dbh);
+			pmb_mysql_query($req, $dbh);
+			$this->id = pmb_mysql_insert_id($dbh);
 		} else {
 			$req="UPDATE groupexpl SET $fields where id_groupexpl=".$this->id;	
-			mysql_query($req, $dbh);				
+			pmb_mysql_query($req, $dbh);				
 		}		
 		
 		$req="update exemplaires set expl_statut=".$this->info['statut_principal']." where expl_id=".$data['resp_expl_num'];				
-		mysql_query($req, $dbh);	
+		pmb_mysql_query($req, $dbh);	
 		$this->fetch_data();
 	}	
 	
@@ -316,9 +316,9 @@ class groupexpl {
 		global $dbh;
 		
 		$req="DELETE from groupexpl WHERE id_groupexpl=".$this->id;
-		mysql_query($req, $dbh);		
+		pmb_mysql_query($req, $dbh);		
 		$req_pret="delete from groupexpl_expl where groupexpl_num=".$this->id;
-		mysql_query($req, $dbh);
+		pmb_mysql_query($req, $dbh);
 					
 		$this->fetch_data();	
 	}	
@@ -330,8 +330,8 @@ class groupexpl {
 		
 		$tpl=$groupexpl_see_form_tpl;				
 		if($pmb_lecteurs_localises){			
-			$res = mysql_query("SELECT location_libelle FROM docs_location where idlocation=".$this->info['location'],$dbh);			
-			if ($r = mysql_fetch_object($res)) {
+			$res = pmb_mysql_query("SELECT location_libelle FROM docs_location where idlocation=".$this->info['location'],$dbh);			
+			if ($r = pmb_mysql_fetch_object($res)) {
 				$location_libelle="<label class='etiquette'>".$msg["groupexpl_see_form_location"]."</label>".$r->location_libelle;
 			}
 		}		
@@ -370,8 +370,8 @@ class groupexpl {
 		$tpl=$groupexpl_confirm_form_tpl;
 		if(!$is_doc_header)	$message="<span class='erreur'>".$msg["groupexpl_see_form_warrning"]."</span><br >";
 		if($pmb_lecteurs_localises){			
-			$res = mysql_query("SELECT location_libelle FROM docs_location where idlocation=".$this->info['location'],$dbh);			
-			if ($r = mysql_fetch_object($res)) {
+			$res = pmb_mysql_query("SELECT location_libelle FROM docs_location where idlocation=".$this->info['location'],$dbh);			
+			if ($r = pmb_mysql_fetch_object($res)) {
 				$location_libelle="<label class='etiquette'>".$msg["groupexpl_see_form_location"]."</label>".$r->location_libelle;
 			}
 		}		
@@ -430,9 +430,9 @@ class groupexpls {
 			$req.=" where groupexpl_location =$f_loc ";			
 		}		
 		$i=0;		
-		$resultat=mysql_query($req,$dbh);	
-		if (mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){	
+		$resultat=pmb_mysql_query($req,$dbh);	
+		if (pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){	
 				$groupexpl= new groupexpl($r->id_groupexpl);
 				if($montrerquoi=="pret" && !$groupexpl->group_is_check_out()) continue;
 				if($montrerquoi=="error" && !$groupexpl->group_have_error()) continue;
@@ -455,9 +455,9 @@ class groupexpls {
 		if($pmb_lecteurs_localises){
 			$loc_select .= "<br />".$msg["groupexpl_location"];
 			$loc_select .= "<select name='f_loc' onchange='document.check_resa.submit();'>";
-			$res = mysql_query("SELECT idlocation, location_libelle FROM docs_location order by location_libelle",$dbh);
+			$res = pmb_mysql_query("SELECT idlocation, location_libelle FROM docs_location order by location_libelle",$dbh);
 			$loc_select .= "<option value='0'>".$msg["all_location"]."</option>";
-			while ($value = mysql_fetch_array($res)) {
+			while ($value = pmb_mysql_fetch_array($res)) {
 				$loc_select .= "<option value='".$value[0]."'";
 				if ($value[0]==$f_loc)	$loc_select .= " selected ";		
 				$loc_select .= ">".htmlentities($value[1],ENT_QUOTES,$charset)."</option>";
@@ -507,14 +507,14 @@ class groupexpls {
 		return $tpl;
 	}	
 	
-	function get_group_expl($cb){
+	static function get_group_expl($cb){
 		global $dbh;		
 		$req="select id_groupexpl from groupexpl, groupexpl_expl, exemplaires where expl_id=groupexpl_expl_num and groupexpl_num=id_groupexpl and expl_cb='$cb' ";		
-		$resultat=mysql_query($req,$dbh);	
-		if (!mysql_num_rows($resultat)){
+		$resultat=pmb_mysql_query($req,$dbh);	
+		if (!pmb_mysql_num_rows($resultat)){
 			return 0;
 		} 
-		$r=mysql_fetch_object($resultat);
+		$r=pmb_mysql_fetch_object($resultat);
 		return $r->id_groupexpl;	
 	}
 		

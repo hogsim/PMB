@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: authors_list.inc.php,v 1.37.2.1 2014-04-23 14:47:50 gueluneau Exp $
+// $Id: authors_list.inc.php,v 1.39 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -82,8 +82,8 @@ if(!$nbr_lignes) {
 		$requete=$aq->get_query_count("authors","concat(author_name,', ',author_rejete)","index_author","author_id");
 		$requete.= $val_type;
 	}
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 } else $aq=new analyse_query(stripslashes($user_input),0,0,1,1);
 
 if(!$page) $page=1;
@@ -101,8 +101,8 @@ if($nbr_lignes) {
 	
 	$num_auth_present=false;
 	$req="SELECT id_authority_source FROM authorities_sources WHERE authority_type='author' AND TRIM(authority_number) !='' LIMIT 1";
-	$res_aut=mysql_query($req,$dbh);
-	if($res_aut && mysql_num_rows($res_aut)){
+	$res_aut=pmb_mysql_query($req,$dbh);
+	if($res_aut && pmb_mysql_num_rows($res_aut)){
 		$author_list=str_replace("<!--!!col_num_autorite!!-->","<th>".$msg["authorities_number"]."</th>",$author_list);
 		$num_auth_present=true;
 	}
@@ -116,9 +116,9 @@ if($nbr_lignes) {
 		$members=$aq->get_query_members("authors","concat(author_name,', ',author_rejete)","index_author","author_id");
 		$requete = "select *, ".$members["select"]." as pert from authors where ".$members["where"]." ".$val_type." group by author_id order by pert desc, index_author limit $debut,$nb_per_page";
 	}
-	$res = @mysql_query($requete, $dbh);
+	$res = @pmb_mysql_query($requete, $dbh);
 	$parity=1;
-	while(($author=mysql_fetch_object($res))) {
+	while(($author=pmb_mysql_fetch_object($res))) {
 		$aut = new auteur($author->author_id,1);
 		$author_entry=$aut->isbd_entry;
 		$link_auteur = "./autorites.php?categ=auteurs&sub=author_form&id=$author->author_id&user_input=".rawurlencode(stripslashes($user_input))."&nbr_lignes=$nbr_lignes&page=$page";
@@ -128,8 +128,8 @@ if($nbr_lignes) {
 			$see = new auteur($author->author_see,1);
 			$author_voir=$see->isbd_entry;
 			/*$temp_requete = "SELECT * FROM authors WHERE author_id=$author->author_see LIMIT 1 ";
-			$temp_res = mysql_query($temp_requete, $dbh);
-			$see = mysql_fetch_object($temp_res);
+			$temp_res = pmb_mysql_query($temp_requete, $dbh);
+			$see = pmb_mysql_fetch_object($temp_res);
 	
 			if($see->author_rejete) $author_voir = $see->author_name.',&nbsp;'.$see->author_rejete;
 				else $author_voir = $see->author_name;
@@ -142,7 +142,7 @@ if($nbr_lignes) {
 		}
 		
 		$notice_count_sql = "SELECT count(distinct responsability_notice) FROM responsability WHERE responsability_author = ".$author->author_id;
-		$notice_count = mysql_result(mysql_query($notice_count_sql), 0, 0);
+		$notice_count = pmb_mysql_result(pmb_mysql_query($notice_count_sql), 0, 0);
 			
 		if ($parity % 2) {
 			$pair_impair = "even";
@@ -159,11 +159,11 @@ if($nbr_lignes) {
 		//Numéros d'autorite
 		if($num_auth_present){
 			$requete="SELECT authority_number,origin_authorities_name, origin_authorities_country FROM authorities_sources JOIN origin_authorities ON num_origin_authority=id_origin_authorities WHERE authority_type='author' AND num_authority='".$author->author_id."' AND TRIM(authority_number) !='' GROUP BY authority_number,origin_authorities_name,origin_authorities_country ORDER BY authority_favorite DESC, origin_authorities_name";
-			$res_aut=mysql_query($requete,$dbh);
-			if($res_aut && mysql_num_rows($res_aut)){
+			$res_aut=pmb_mysql_query($requete,$dbh);
+			if($res_aut && pmb_mysql_num_rows($res_aut)){
 				$author_list .= "<td>";
 				$first=true;
-				while ($aut = mysql_fetch_object($res_aut)) {
+				while ($aut = pmb_mysql_fetch_object($res_aut)) {
 					if(!$first)$author_list .=", ";
 					$author_list .=htmlentities($aut->authority_number,ENT_QUOTES,$charset);
 					if($tmp=trim($aut->origin_authorities_name)){
@@ -184,7 +184,7 @@ if($nbr_lignes) {
 			
 	} // fin while
 
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 
 	$url_base = $url_base."&type_autorite=".$type_autorite;
 	if (!$last_param) $nav_bar = aff_pagination ($url_base, $nbr_lignes, $nb_per_page, $page, 10, false, true) ;

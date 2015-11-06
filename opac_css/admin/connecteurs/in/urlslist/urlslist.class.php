@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: urlslist.class.php,v 1.2.6.1 2015-02-25 16:27:19 dbellamy Exp $
+// $Id: urlslist.class.php,v 1.4 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -91,9 +91,9 @@ class urlslist extends connector {
 				<div class='colonne-suite'>
 					<select name='cp_field'>";
     	$query = "select idchamp, titre from notices_custom where type='url'";
-    	$result = mysql_query($query,$dbh);
-    	if(mysql_num_rows($result)){
-    		while($row = mysql_fetch_object($result)){
+    	$result = pmb_mysql_query($query,$dbh);
+    	if(pmb_mysql_num_rows($result)){
+    		while($row = pmb_mysql_fetch_object($result)){
     			$form.="
     					<option value='".$row->idchamp."' ".($row->idchamp == $cp_field ? "selected='selected'" : "").">".htmlentities($row->titre,ENT_QUOTES,$charset)."</option>";
     		}
@@ -189,8 +189,8 @@ class urlslist extends connector {
 			}	
 		}
 		$query = "select 1 from notices_custom_values where notices_custom_champ = ".$cp_field." and notices_custom_origine = ".$notice_id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
 			$type['type'] = array(
 				array(
 					'code' => str_replace(array(" ","%","-","?","!",";",",",":"),"",strip_empty_chars(strtolower($libelle))),
@@ -239,15 +239,15 @@ class urlslist extends connector {
 		}
 		if($cp_field){
 			$query = "select datatype from notices_custom where idchamp = ".$cp_field;
-			$datatype = mysql_result(mysql_query($query),0,0);
+			$datatype = pmb_mysql_result(pmb_mysql_query($query),0,0);
 			$query = "select notices_custom_".$datatype." from notices_custom_values where notices_custom_champ = ".$cp_field." and notices_custom_origine= ".$notice_id;
 			//return $query;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
 				$html_to_return = "
 				<table id='enrichment_urlslist_".$source_id."' class='enrichment_urlslist'>";
 				$i=0;
-				while($row = mysql_fetch_row($result)){
+				while($row = pmb_mysql_fetch_row($result)){
 					$tab = explode("|",$row[0]);
 						$html_to_return.= "
 					<tr style='margin:2px;'>

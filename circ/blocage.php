@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: blocage.php,v 1.6 2012-08-31 15:08:31 ngantier Exp $
+// $Id: blocage.php,v 1.7 2015-04-03 11:16:23 jpermanne Exp $
 
 $base_path="..";
 $base_auth = "CIRCULATION_AUTH";
@@ -11,19 +11,19 @@ $base_nodojo = 1;
 require_once($base_path."/includes/init.inc.php");
 
 $requete="select * from empr where id_empr=".$id_empr;
-$resultat=mysql_query($requete);
-$empr=mysql_fetch_object($resultat);
+$resultat=pmb_mysql_query($requete);
+$empr=pmb_mysql_fetch_object($resultat);
 
 switch($act) {
 	case 'prolong':
 		if ($date_prolong) {
 			$requete="update empr set date_fin_blocage='".$date_prolong."' where id_empr=".$id_empr;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}
 		break;
 	case 'annul':
 		$requete="update empr set date_fin_blocage='0000-00-00' where id_empr=".$id_empr;
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		break;
 }
 

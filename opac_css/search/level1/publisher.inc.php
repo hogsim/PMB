@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: publisher.inc.php,v 1.33 2013-10-30 15:00:54 dgoron Exp $
+// $Id: publisher.inc.php,v 1.34 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -27,8 +27,8 @@ if ($add_notice) $clause.= ' and notice_id in ('.$add_notice.')';
 $tri = 'order by pert desc, index_publisher';
 $pert=$members["select"]." as pert";
 
-$editeurs = mysql_query("SELECT COUNT(distinct ed_id) FROM publishers $clause", $dbh);
-$nb_result_editeurs = mysql_result($editeurs, 0 , 0); 
+$editeurs = pmb_mysql_query("SELECT COUNT(distinct ed_id) FROM publishers $clause", $dbh);
+$nb_result_editeurs = pmb_mysql_result($editeurs, 0 , 0); 
 
 //Enregistrement des stats
 if($pmb_logs_activate){
@@ -65,10 +65,10 @@ if($opac_allow_affiliate_search){
 	if ($nb_result_editeurs ) {
 		// tout bon, y'a du résultat, on lance le pataquès d'affichage
 		$requete = "select ed_id,ed_name from publishers $clause $tri LIMIT $opac_search_results_first_level";
-		// ??? ER : $found = mysql_query($requete, $dbh);
+		// ??? ER : $found = pmb_mysql_query($requete, $dbh);
 		print "<div style=search_result id=\"publisher\" name=\"publisher\">";
 		print "<strong>$msg[publishers]</strong> ".$nb_result_editeurs." $msg[results] ";
-		/* while($mesEditeurs = mysql_fetch_object($found)) {
+		/* while($mesEditeurs = pmb_mysql_fetch_object($found)) {
 			print "<li><a href='./index.php?lvl=publisher_see&id=".$mesEditeurs->ed_id."'>".$mesEditeurs->ed_name."</a></li>\n";
 			} */
 		

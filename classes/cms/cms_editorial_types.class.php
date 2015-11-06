@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial_types.class.php,v 1.6.2.1 2014-11-21 16:13:51 dgoron Exp $
+// $Id: cms_editorial_types.class.php,v 1.9 2015-04-03 14:32:26 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -19,9 +19,9 @@ class cms_editorial_types {
 	protected function fetch_data(){
 		global $msg;
 		$rqt = "select * from cms_editorial_types where editorial_type_element = '".$this->element."_generic'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$row = mysql_fetch_object($res);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$row = pmb_mysql_fetch_object($res);
 			$type = array(
 				'id' => $row->id_editorial_type,
 				'element' => $row->editorial_type_element,
@@ -33,9 +33,9 @@ class cms_editorial_types {
 			$this->types[] = $type;
 		}
 		$rqt = "select * from cms_editorial_types where editorial_type_element = '".$this->element."' order by editorial_type_label";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){
 				$type = array(
 					'id' => $row->id_editorial_type,
 					'element' => $row->editorial_type_element,
@@ -56,12 +56,12 @@ class cms_editorial_types {
 		return $this->types;
 	}
 	
-	public function get_type($id){
+	public static function get_type($id){
 		$rqt = "select * from cms_editorial_types where id_editorial_type = ".$id;
-		$res = mysql_query($rqt);
+		$res = pmb_mysql_query($rqt);
 		$type = array();
-		if($id && mysql_num_rows($res)){
-			$row = mysql_fetch_object($res);
+		if($id && pmb_mysql_num_rows($res)){
+			$row = pmb_mysql_fetch_object($res);
 			$type = array(
 				'id' => $row->id_editorial_type,
 				'element' => $row->editorial_type_element,
@@ -184,7 +184,7 @@ class cms_editorial_types {
 			editorial_type_label = '".$cms_editorial_type_label."',
 			editorial_type_comment = '".$cms_editorial_type_comment."'";
 		$query.= " ".$clause;
-		mysql_query($query);
+		pmb_mysql_query($query);
 	}
 	
 	public function delete($id){
@@ -193,8 +193,8 @@ class cms_editorial_types {
 		if($id){
 			//on regarde si le type est utilisé
 			$query = "select id_".$this->element." from cms_".$this->element."s where ".$this->element."_num_type = ".$id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
 				$error = $msg['type_used'];
 			}
 		}
@@ -207,7 +207,7 @@ class cms_editorial_types {
 			$fields = new cms_editorial_parametres_perso($id);
 			$fields->delete_all();
 			$query = "delete from cms_editorial_types where id_editorial_type = ".$id;
-			mysql_query($query);
+			pmb_mysql_query($query);
 		}
 	}
 	

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: view_sugg.inc.php,v 1.11 2010-02-23 16:27:22 kantin Exp $
+// $Id: view_sugg.inc.php,v 1.12 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,12 +37,12 @@ $sug_form .= "<th>".htmlentities($msg['empr_sugg_piece_jointe'], ENT_QUOTES, $ch
 $sug_form.= "<th>&nbsp;</th></tr>";
 	
 $q = suggestions::listSuggestionsByOrigine($id_empr, '1');
-$res = mysql_query($q, $dbh);
-$nbr = mysql_num_rows($res); 
+$res = pmb_mysql_query($q, $dbh);
+$nbr = pmb_mysql_num_rows($res); 
 
 if($nbr){
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 			
 		$lib_statut = $sug_map->getHtmlComment($row->statut);
 		if ($parity++ % 2) $pair_impair = "even"; else $pair_impair = "odd";

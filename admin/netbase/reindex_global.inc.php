@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reindex_global.inc.php,v 1.11 2013-11-15 13:37:06 ngantier Exp $
+// $Id: reindex_global.inc.php,v 1.12 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -20,29 +20,29 @@ $jauge_size .= "px";
 if (!isset($start)) {
 	$start=0;
 	//remise a zero de la table au début
-	mysql_query("TRUNCATE notices_global_index",$dbh);
-	mysql_query("ALTER TABLE notices_global_index DISABLE KEYS",$dbh);
+	pmb_mysql_query("TRUNCATE notices_global_index",$dbh);
+	pmb_mysql_query("ALTER TABLE notices_global_index DISABLE KEYS",$dbh);
 	
-	mysql_query("TRUNCATE notices_mots_global_index",$dbh);
-	mysql_query("ALTER TABLE notices_mots_global_index DISABLE KEYS",$dbh);
+	pmb_mysql_query("TRUNCATE notices_mots_global_index",$dbh);
+	pmb_mysql_query("ALTER TABLE notices_mots_global_index DISABLE KEYS",$dbh);
 	
-	mysql_query("TRUNCATE notices_fields_global_index",$dbh);
-	mysql_query("ALTER TABLE notices_fields_global_index DISABLE KEYS",$dbh);
+	pmb_mysql_query("TRUNCATE notices_fields_global_index",$dbh);
+	pmb_mysql_query("ALTER TABLE notices_fields_global_index DISABLE KEYS",$dbh);
 }
 
 $v_state=urldecode($v_state);
 
 if (!$count) {
-	$notices = mysql_query("SELECT count(1) FROM notices", $dbh);
-	$count = mysql_result($notices, 0, 0);
+	$notices = pmb_mysql_query("SELECT count(1) FROM notices", $dbh);
+	$count = pmb_mysql_result($notices, 0, 0);
 }
 	
 print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_global"], ENT_QUOTES, $charset)."</h2>";
 
 $NoIndex = 1;
 
-$query = mysql_query("select notice_id from notices order by notice_id LIMIT $start, $lot");
-if(mysql_num_rows($query)) {
+$query = pmb_mysql_query("select notice_id from notices order by notice_id LIMIT $start, $lot");
+if(pmb_mysql_num_rows($query)) {
 		
 	// définition de l'état de la jauge
 	$state = floor($start / ($count / $jauge_size));
@@ -56,7 +56,7 @@ if(mysql_num_rows($query)) {
 	
 	// affichage du % d'avancement et de l'état
 	print "<div align='center'>$percent%</div>";
-	while($mesNotices = mysql_fetch_assoc($query)) {		
+	while($mesNotices = pmb_mysql_fetch_assoc($query)) {		
 		// permet de charger la bonne langue, mot vide...
 		$info=notice::indexation_prepare($mesNotices['notice_id']);
 		// Mise à jour de la table "notices_global_index"
@@ -66,7 +66,7 @@ if(mysql_num_rows($query)) {
 		// restaure l'environnement de langue
 		notice::indexation_restaure($info);    		   	
 		}
-mysql_free_result($query);
+pmb_mysql_free_result($query);
 
 $next = $start + $lot;
 print "
@@ -82,8 +82,8 @@ print "
 	</script>";
 } else {
 	$spec = $spec - INDEX_GLOBAL;
-	$not = mysql_query("SELECT count(1) FROM notices_global_index", $dbh);
-	$compte = mysql_result($not, 0, 0);
+	$not = pmb_mysql_query("SELECT count(1) FROM notices_global_index", $dbh);
+	$compte = pmb_mysql_result($not, 0, 0);
 	$v_state .= "<br /><img src=../../images/d.gif hspace=3>".htmlentities($msg["nettoyage_reindex_global"], ENT_QUOTES, $charset)." :";
 	$v_state .= $compte." ".htmlentities($msg["nettoyage_res_reindex_global"], ENT_QUOTES, $charset);
 	print "
@@ -95,7 +95,7 @@ print "
 			document.forms['process_state'].submit();
 			-->
 		</script>";
-	mysql_query("ALTER TABLE notices_global_index ENABLE KEYS",$dbh);
-	mysql_query("ALTER TABLE notices_mots_global_index ENABLE KEYS",$dbh);
-	mysql_query("ALTER TABLE notices_fields_global_index ENABLE KEYS",$dbh);
+	pmb_mysql_query("ALTER TABLE notices_global_index ENABLE KEYS",$dbh);
+	pmb_mysql_query("ALTER TABLE notices_mots_global_index ENABLE KEYS",$dbh);
+	pmb_mysql_query("ALTER TABLE notices_fields_global_index ENABLE KEYS",$dbh);
 }

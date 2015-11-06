@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette_func.inc.php,v 1.35.2.1 2014-05-19 13:16:25 arenou Exp $
+// $Id: bannette_func.inc.php,v 1.37 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,9 +35,9 @@ function notices_bannette($id_bannette, &$notices,$date_diff='') {
 	if(!$date_diff){
 		// on constitue un tableau avec les notices de la bannette
 		$query_notice = "select distinct notice_id, niveau_biblio from bannette_contenu, notices $acces_j where num_bannette='".$id_bannette."' and num_notice=notice_id order by $opac_bannette_notices_order ";
-		$result_notice = mysql_query($query_notice, $dbh);
-		if (mysql_num_rows($result_notice)) {
-			while (($notice=mysql_fetch_object($result_notice))) {
+		$result_notice = pmb_mysql_query($query_notice, $dbh);
+		if (pmb_mysql_num_rows($result_notice)) {
+			while (($notice=pmb_mysql_fetch_object($result_notice))) {
 				$notices[$notice->notice_id]= $notice->niveau_biblio ; 
 			}
 		}
@@ -47,9 +47,9 @@ function notices_bannette($id_bannette, &$notices,$date_diff='') {
 		$query_notice = "select distinct num_notice_arc as notice_id, niveau_biblio from dsi_archive, notices $acces_j where num_banette_arc='".$id_bannette."' and num_notice_arc=notice_id
 		 and date_diff_arc = '$date_diff' order by $opac_bannette_notices_order ";
 		
-		$result_notice = mysql_query($query_notice, $dbh);
-		if (mysql_num_rows($result_notice)) {
-			while (($notice=mysql_fetch_object($result_notice))) {
+		$result_notice = pmb_mysql_query($query_notice, $dbh);
+		if (pmb_mysql_num_rows($result_notice)) {
+			while (($notice=pmb_mysql_fetch_object($result_notice))) {
 				$notices[$notice->notice_id]= $notice->niveau_biblio ; 
 			}
 		}		
@@ -124,9 +124,9 @@ function affiche_bannette($bannettes="", $aff_notices_nb=0, $mode_aff_notice=AFF
 				<input type='hidden' name='lvl' value='bannette_gerer'/>
 				<input type='hidden' name='bannette_abon[".$id_bannette."]' value='1' />";
 			$query = "select num_bannette from bannette_abon where num_empr = ".$id_empr;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$aff_banette.="
 				<input type='hidden' name='bannette_abon[".$row->num_bannette."]' value='1' />";
 				}
@@ -196,10 +196,10 @@ function affiche_bannette($bannettes="", $aff_notices_nb=0, $mode_aff_notice=AFF
 		if ($limite_notices) $aff_banette.= "</div>";
 
 		$req="select distinct date_diff_arc from dsi_archive where num_banette_arc='".$id_bannette."' order by date_diff_arc desc";
-		$res_arc=mysql_query($req, $dbh);
+		$res_arc=pmb_mysql_query($req, $dbh);
 		$first=0;
 		$diff_list="";
-		while (($r = mysql_fetch_object($res_arc))){
+		while (($r = pmb_mysql_fetch_object($res_arc))){
 			if(!$first)$libelle=$msg["dsi_archive_last"];
 			else $libelle=sprintf($msg["dsi_archive_other"], formatdate($r->date_diff_arc));
 			
@@ -231,11 +231,11 @@ function tableau_bannette($id_bannette) {
 	if ($id_bannette) $clause = " and num_bannette in ('$id_bannette') ";
 	//Récupération des infos des bannettes
 	$requete="select distinct id_bannette,comment_public, date_format(date_last_envoi, '".$msg["format_date"]."') as aff_date_last_envoi from bannettes join bannette_abon on num_bannette=id_bannette where num_empr='$id_empr' $clause order by date_last_envoi DESC ";
-	$resultat=mysql_query($requete);
-	while ($r=mysql_fetch_object($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	while ($r=pmb_mysql_fetch_object($resultat)) {
 		$requete="select count(1) as compte from bannette_contenu where num_bannette='$r->id_bannette'";
-		$resnb=mysql_query($requete);
-		$nb=mysql_fetch_object($resnb) ;
+		$resnb=pmb_mysql_query($requete);
+		$nb=pmb_mysql_fetch_object($resnb) ;
 		if ($nb->compte)
 			$tableau_bannette[] = array (
 				'id_bannette' => $r->id_bannette,
@@ -255,11 +255,11 @@ function tableau_gerer_bannette($priv_pub="PUB") {
 	//Récupération des infos des bannettes
 	if ($priv_pub=="PUB") {
 		$rqt = "select groupe_id from empr_groupe where empr_id=".$id_empr;
-		$res = mysql_query($rqt,$dbh);
+		$res = pmb_mysql_query($rqt,$dbh);
 		$restrict = "categorie_lecteurs ='$empr_categ'";
 		if ($res) {
 			$groups = array();
-			while ($r=mysql_fetch_object($res)) {
+			while ($r=pmb_mysql_fetch_object($res)) {
 				$groups[] = $r->groupe_id;
 			}
 			if (count($groups)) {
@@ -275,19 +275,19 @@ function tableau_gerer_bannette($priv_pub="PUB") {
 		$requete .=" order by comment_public ";
 	}
 
-	$resultat=mysql_query($requete,$dbh);
-	while ($r=mysql_fetch_object($resultat)) {
+	$resultat=pmb_mysql_query($requete,$dbh);
+	while ($r=pmb_mysql_fetch_object($resultat)) {
 		if ($priv_pub=="PUB") { 
 			$requete_abonn="select CASE WHEN (count(*))>0 THEN 'checked' ELSE '' END as abonn from bannette_abon where num_bannette='$r->id_bannette' and num_empr='$id_empr' ";
-			$res_abonn=mysql_query($requete_abonn,$dbh);
-			$abonn=mysql_fetch_object($res_abonn) ;
+			$res_abonn=pmb_mysql_query($requete_abonn,$dbh);
+			$abonn=pmb_mysql_fetch_object($res_abonn) ;
 		} else {
 			$abonn = new stdClass();
 			$abonn->abonn = "" ;
 		}
 		$requete="select count(1) as compte from bannette_contenu where num_bannette='$r->id_bannette'";
-		$resnb=mysql_query($requete,$dbh);
-		$nb=mysql_fetch_object($resnb) ; 
+		$resnb=pmb_mysql_query($requete,$dbh);
+		$nb=pmb_mysql_fetch_object($resnb) ; 
 		$tableau_bannette[] = array (
 				'id_bannette' => $r->id_bannette,
 				'comment_public' => $r->comment_public,
@@ -352,8 +352,8 @@ function gerer_abon_bannette( $priv_pub="PUB", $link_to_bannette="", $htmldiv_id
 		if ($link_to_bannette) {
 			// Construction de l'affichage de l'info bulle de la requette			
 			$requete="select * from bannette_equation, equations where num_equation=id_equation and num_bannette=$id_bannette";	
-			$resultat=mysql_query($requete);
-			if (($r=mysql_fetch_object($resultat))) {				 
+			$resultat=pmb_mysql_query($requete);
+			if (($r=pmb_mysql_fetch_object($resultat))) {				 
 				$recherche =  $r->requete;		
 				$equ = new equation ($r->num_equation);
 				if(!is_object($search)) $search = new search();
@@ -402,20 +402,20 @@ function tableau_bannette_accueil($id_bannette) {
 	//Récupération des infos des bannettes
 	$requete="select distinct id_bannette,comment_public, date_format(date_last_envoi, '".$msg["format_date"]."') as aff_date_last_envoi from bannettes where bannette_opac_accueil=1 $clause order by date_last_envoi DESC ";
 
-	$resultat=mysql_query($requete);
-	while ($r=mysql_fetch_object($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	while ($r=pmb_mysql_fetch_object($resultat)) {
 		$abon = 0;
 		if($id_empr && $opac_show_subscribed_bannettes){
 			$query = "select count(1) from bannette_abon where num_bannette=".$r->id_bannette." and num_empr=".$id_empr;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$abon = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$abon = pmb_mysql_result($result,0,0);
 			}
 		}
 		if(!$abon){	
 			$requete="select count(1) as compte from bannette_contenu where num_bannette='$r->id_bannette'";
-			$resnb=mysql_query($requete);
-			$nb=mysql_fetch_object($resnb) ;
+			$resnb=pmb_mysql_query($requete);
+			$nb=pmb_mysql_fetch_object($resnb) ;
 			if ($nb->compte){
 				$tableau_bannette[] = array (
 					'id_bannette' => $r->id_bannette,
@@ -442,12 +442,12 @@ function affiche_public_bannette($bannettes="", $aff_notices_nb=0, $mode_aff_not
 	if ($bannettes) $clause = " and id_bannette in ($bannettes) ";
 	//Récupération des infos des bannettes
 	$requete="select distinct id_bannette,comment_public, date_format(date_last_envoi, '".$msg["format_date"]."') as aff_date_last_envoi from bannettes where proprio_bannette = 0 $clause order by date_last_envoi DESC ";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	$tableau_bannettes = array();
-	while ($r=mysql_fetch_object($resultat)) {
+	while ($r=pmb_mysql_fetch_object($resultat)) {
 		$requete="select count(1) as compte from bannette_contenu where num_bannette='$r->id_bannette'";
-		$resnb=mysql_query($requete);
-		$nb=mysql_fetch_object($resnb) ;
+		$resnb=pmb_mysql_query($requete);
+		$nb=pmb_mysql_fetch_object($resnb) ;
 		if ($nb->compte)
 			$tableau_bannettes[] = array (
 				'id_bannette' => $r->id_bannette,
@@ -487,9 +487,9 @@ function affiche_public_bannette($bannettes="", $aff_notices_nb=0, $mode_aff_not
 				<input type='hidden' name='lvl' value='bannette_gerer'/>
 				<input type='hidden' name='bannette_abon[".$id_bannette."]' value='1' />";
 			$query = "select num_bannette from bannette_abon where num_empr = ".$id_empr;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$aff_banette.="
 				<input type='hidden' name='bannette_abon[".$row->num_bannette."]' value='1' />";
 				}
@@ -559,10 +559,10 @@ function affiche_public_bannette($bannettes="", $aff_notices_nb=0, $mode_aff_not
 		if ($limite_notices) $aff_banette.= "</div>";
 
 		$req="select distinct date_diff_arc from dsi_archive where num_banette_arc='".$id_bannette."' order by date_diff_arc desc";
-		$res_arc=mysql_query($req, $dbh);
+		$res_arc=pmb_mysql_query($req, $dbh);
 		$first=0;
 		$diff_list="";
-		while (($r = mysql_fetch_object($res_arc))){
+		while (($r = pmb_mysql_fetch_object($res_arc))){
 			if(!$first)$libelle=$msg["dsi_archive_last"];
 			else $libelle=sprintf($msg["dsi_archive_other"], formatdate($r->date_diff_arc));
 				

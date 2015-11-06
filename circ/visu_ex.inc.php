@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: visu_ex.inc.php,v 1.27 2010-07-06 10:07:40 ngantier Exp $
+// $Id: visu_ex.inc.php,v 1.28 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -11,13 +11,13 @@ if (!$back_to_visu){
 	get_cb_expl($msg[375], $msg[661], $msg[circ_tit_form_cb_expl], './circ.php?categ=visu_ex', 1);
 	if($form_cb_expl){
 		$query = "select expl_id, expl_notice, pret_flag, pret_idempr from docs_statut, exemplaires left join pret on pret_idexpl=expl_id where expl_cb='$form_cb_expl' and expl_statut=idstatut ";
-		$result = mysql_query($query, $dbh);
-		if(!mysql_num_rows($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if(!pmb_mysql_num_rows($result)) {
 			// exemplaire inconnu
 			$alert_sound_list[]="critique";
 			print "<strong>$form_cb_expl&nbsp;: ${msg[367]}</strong>";
 		} else {
-			$expl_lu = mysql_fetch_object($result) ;
+			$expl_lu = pmb_mysql_fetch_object($result) ;
 			if ($stuff = get_expl_info($expl_lu->expl_id, 1)) {
 				$stuff = check_pret($stuff);
 				// print $begin_result_liste;
@@ -108,7 +108,7 @@ if (!$back_to_visu){
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= "WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR exemplaires.expl_cb='$ex_query' OR notices.code in ('$code','$EAN'".($code10?",'$code10'":"").")) ";
 		$requete.= $limit_page;
-		$myQuery = mysql_query($requete, $dbh);
+		$myQuery = pmb_mysql_query($requete, $dbh);
 		
 	} elseif ($isbn) {
 		
@@ -118,7 +118,7 @@ if (!$back_to_visu){
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= " WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR exemplaires.expl_cb='$ex_query' OR notices.code in ('$code'".($code10?",'$code10'":"").")) ";
 		$requete.= $limit_page;
-		$myQuery = mysql_query($requete, $dbh);
+		$myQuery = pmb_mysql_query($requete, $dbh);
 		
 	} elseif ($code) {
 		
@@ -131,8 +131,8 @@ if (!$back_to_visu){
 		$requete.= "left join exemplaires on notices.notice_id=exemplaires.expl_notice ";
 		$requete.= "WHERE niveau_biblio='m' AND (exemplaires.expl_cb like '$code' OR notices.code like '$code') $where_typedoc ";
 		$requete.= $limit_page;		
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)==0) {
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)==0) {
 			// rien trouvé en monographie
 			$requete = "SELECT distinct notices.*, bulletin_id FROM notices ";
 			$requete.= $acces_j;
@@ -140,7 +140,7 @@ if (!$back_to_visu){
 			$requete.= "WHERE niveau_biblio='s' AND (exemplaires.expl_cb like '$code' OR bulletin_numero like '$code' OR bulletin_cb like '$code' OR notices.code like '$code')  $where_typedoc ";
 			$requete.= "GROUP BY bulletin_id ";
 			$requete.= $limit_page;
-			$myQuery = mysql_query($requete, $dbh);
+			$myQuery = pmb_mysql_query($requete, $dbh);
 			$rqt_bulletin=1;
 		}
 		
@@ -151,11 +151,11 @@ if (!$back_to_visu){
 	}
 	
 	if(!$nb_results){
-		$nb_results= mysql_num_rows($myQuery);
+		$nb_results= pmb_mysql_num_rows($myQuery);
 	}
 					
 	if ($rqt_bulletin!=1) {
-		if(mysql_num_rows($myQuery)) {
+		if(pmb_mysql_num_rows($myQuery)) {
 			// la recherche fournit plusieurs résultats !!!
 			// boucle de parcours des notices trouvées
 			// inclusion du javascript de gestion des listes dépliables
@@ -164,7 +164,7 @@ if (!$back_to_visu){
 			print $begin_result_liste;
 			$nb=0;
 			$recherche_ajax_mode=0;
-			while($notice = mysql_fetch_object($myQuery)) {
+			while($notice = pmb_mysql_fetch_object($myQuery)) {
 				if($notice->niveau_biblio != 's' && $notice->niveau_biblio != 'a') {
 					// notice de monographie (les autres n'ont pas de code ni d'exemplaire !!! ;-)
 					//Access au cataloguage
@@ -186,11 +186,11 @@ if (!$back_to_visu){
 			die();
 		}
 	} else {
-		if (mysql_num_rows($myQuery)) {
+		if (pmb_mysql_num_rows($myQuery)) {
 			print sprintf("<div class='othersearchinfo'><b>".$msg[940]."</b>&nbsp;$ex_query =&gt; ".$msg["searcher_results"]."</div>",$nb_results);
 			print $begin_result_liste;
 			$nb=0;
-			while(($n=mysql_fetch_object($myQuery))) {
+			while(($n=pmb_mysql_fetch_object($myQuery))) {
 
 				//Access au cataloguage
 				$cart_link_non = false;

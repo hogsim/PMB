@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts.inc.php,v 1.7 2009-12-21 10:02:55 mbertin Exp $
+// $Id: abts.inc.php,v 1.8 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -39,13 +39,13 @@ function show_abts($dbh) {
 	// affichage du tableau des utilisateurs
 
 	$requete = "SELECT id_type_abt, type_abt_libelle, prepay, prepay_deflt_mnt,tarif,caution FROM type_abts ORDER BY type_abt_libelle,id_type_abt";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		if ($row[2]) $prepay="x";
 		
 		if ($parity % 2) {
@@ -87,11 +87,11 @@ function abts_form($libelle="", $id=0, $prepay=0, $prepay_mnt_deflt=0, $tarif=0,
 	$loc_checkbox="";
 	$loc=explode(",",$localisations);
 	$requete="select idlocation, location_libelle from docs_location";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	$n=0;
 	$c=0;
 	if ($resultat) {
-		while ($l=mysql_fetch_object($resultat)) {
+		while ($l=pmb_mysql_fetch_object($resultat)) {
 			if ($c==0) $loc_checkbox.="<div class='row'>";
 			$loc_checkbox.="<div class='colonne3'>";
 			$loc_checkbox.="<input type='checkbox' name='localisation[]' id='l_$n' value='".$l->idlocation."' ";
@@ -125,13 +125,13 @@ switch($action) {
 					$localisations=implode(",",$localisation);
 				else $localisations="";
 				$requete = "UPDATE type_abts SET type_abt_libelle='".$typ_abt_libelle."', prepay='$prepay', prepay_deflt_mnt='$prepay_deflt_mnt', tarif='$tarif', commentaire='$commentaire', caution='$caution', localisations='".$localisations."' WHERE id_type_abt=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				if (count($localisation))
 					$localisations=implode(",",$localisation);
 				else $localisations="";
 				$requete = "INSERT INTO type_abts (id_type_abt,type_abt_libelle, prepay, prepay_deflt_mnt, tarif, commentaire, caution, localisations) VALUES ('', '$typ_abt_libelle','$prepay', '$prepay_deflt_mnt', '$tarif', '$commentaire', '$caution','$localisations') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}
 		}
 		show_abts($dbh);
@@ -142,9 +142,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT id_type_abt, type_abt_libelle, prepay, prepay_deflt_mnt,tarif,commentaire, caution, localisations FROM type_abts WHERE id_type_abt=$id LIMIT 1";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_row($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_row($res);
 				abts_form($row[1], $id,$row[2],$row[3],$row[4],$row[5],$row[6],$row[7]);
 			} else {
 				show_abts($dbh);
@@ -156,12 +156,12 @@ switch($action) {
 	case 'del':
 		if($id) {
 			$total = 0;
-			$total = mysql_result(mysql_query("select count(1) from empr where type_abt ='".$id."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from empr where type_abt ='".$id."' ", $dbh), 0, 0);
 			if ($total==0) {
 				$requete = "DELETE FROM type_abts WHERE id_type_abt=$id ;";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete = "OPTIMIZE TABLE type_abts ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_abts($dbh);
 				} else {
 					error_message(	$msg["type_abts_type"], $msg["type_abts_del_error"], 1, 'admin.php?categ=finance&sub=abts&action=');

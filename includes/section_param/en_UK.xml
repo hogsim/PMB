@@ -23,7 +23,10 @@
 	<section name="thesaurus">Options for thesauri</section>	
 	<section name="classement">Options for classification systems</section>	
 	<section name="transferts">General options for Interlibrary Loans</section>
-	<section name="pdfrel">Options de mise en page des relances</section>	
+	<section name="pdfrel">Options for the layout of the reminders</section>	
+	<section name="search">Search options</section>	
+	<section name="concepts">Concepts options</section>	
+	<section name="map">Georeferencing options</section>	
 </pmbsections>
 
 	

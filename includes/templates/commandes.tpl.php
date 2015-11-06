@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: commandes.tpl.php,v 1.55.6.4 2015-02-17 10:07:43 jpermanne Exp $
+// $Id: commandes.tpl.php,v 1.62 2015-07-16 12:16:52 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -136,11 +136,48 @@ $cdelist_script = "
 </script>
 ";
 
+$cde_help_jscript = "
+	<script type='text/javascript' src='./javascript/ajax.js'></script>
+	<script type='text/javascript'>
+		function showHelp(obj) {
+
+
+			kill_frame_help();
+
+			var pos=findPos(obj);
+			var whatis = 	obj.getAttribute('whatis');
+			var helpdir = 	obj.getAttribute('helpdir');
+
+			var url='./acquisition/achats/commandes/frame_help.php?whatis='+whatis+'&helpdir='+helpdir;
+			var help_view=document.createElement('iframe');
+			help_view.setAttribute('id','frame_help');
+			help_view.setAttribute('name','help');
+			help_view.src=url;
+
+			var att=document.getElementById('att');
+			help_view.style.visibility='hidden';
+			help_view.style.display='block';
+			help_view=att.appendChild(help_view);
+
+			help_view.style.left=(pos[0])+'px';
+			help_view.style.top=(pos[1])+'px';
+
+			help_view.style.visibility='visible';
+		}
+
+		function kill_frame_help() {
+			var help_view=document.getElementById('frame_help');
+			if (help_view)
+				help_view.parentNode.removeChild(help_view);
+		}
+	</script>
+";
 
 //	------------------------------------------------------------------------------
 //	$modif_cde_form : template de création/modification pour les commandes modifiables (non validées)
 //	------------------------------------------------------------------------------
-$modif_cde_form = "
+$modif_cde_form = $cde_help_jscript;
+$modif_cde_form .= "
 <form class='form-".$current_module."' id='act_modif' name='act_modif' method='post' action=\"\">
 	<h3>!!form_title!!</h3>
 	<div class='row'></div>
@@ -337,7 +374,10 @@ $modif_cde_form = "
 					<tr>
 						<th width='0px' ></th>
 						<th width='10%'>".htmlentities($msg['acquisition_act_tab_code'], ENT_QUOTES, $charset)."</th>
-						<th width='30%'>".htmlentities($msg['acquisition_act_tab_lib'], ENT_QUOTES, $charset)."</th>
+						<th width='30%'>
+								".htmlentities($msg['acquisition_act_tab_lib'], ENT_QUOTES, $charset)."
+								<img src='./images/aide.gif' onclick=\"showHelp(this);return(false);\" whatis='cde_saisie' helpdir='".$lang."' style='cursor: pointer' />
+						</th>
 						<th width='4%'>".htmlentities($msg['acquisition_act_tab_qte'], ENT_QUOTES, $charset)."</th>";				
 switch ($acquisition_gestion_tva) {
 	case '1' :
@@ -635,8 +675,16 @@ $valid_cde_form = "
 
 		<div class='row'>
 			<div class='colonne60'>
-				<label class='etiquette'>".htmlentities($msg['acquisition_cde_nom'], ENT_QUOTES, $charset)."</label>
-				&nbsp;!!nom_acte!!
+		    	<div class='colonne3'>
+					<label class='etiquette'>".htmlentities($msg['acquisition_cde_nom'], ENT_QUOTES, $charset)."</label>
+					&nbsp;
+					!!nom_acte!!
+				</div>
+				<div class='colonne3'>
+					<label class='etiquette'>!!date_valid_label!!</label>
+					&nbsp;
+					!!date_valid!!	
+				</div>
 			</div>
 			<div class='colonne40'>
 				<img id='adr_fou_Img' name='adr_fou_Img' src='./images/plus.gif' class='img_plus'  onclick=\"javascript:expandBase('adr_fou_', true);\"/>

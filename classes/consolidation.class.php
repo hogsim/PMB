@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: consolidation.class.php,v 1.7.6.3 2015-04-16 11:18:17 jpermanne Exp $
+// $Id: consolidation.class.php,v 1.11 2015-04-16 11:16:38 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -41,15 +41,15 @@ class consolidation {
 		//Gestion du timeout au niveau de mysql pour ne pas perdre la connection
 		//Ne peut pas être fait dans consolider car les fonctions de calcul peuvent aussi prendre du temps
 		if($pmb_set_time_limit){
-			$res=mysql_query("SHOW SESSION VARIABLES like 'wait_timeout'");
+			$res=pmb_mysql_query("SHOW SESSION VARIABLES like 'wait_timeout'");
 			$timeout_default=0;
-			if($res && mysql_num_rows($res)){
-				$timeout_default=mysql_result($res,0,1);
+			if($res && pmb_mysql_num_rows($res)){
+				$timeout_default=pmb_mysql_result($res,0,1);
 			}
-			mysql_query("SET SESSION wait_timeout=".($timeout_default+(($pmb_set_time_limit)*1)));
+			pmb_mysql_query("SET SESSION wait_timeout=".($timeout_default+(($pmb_set_time_limit)*1)));
 		}else{
 			//Si pmb_set_time_limit vaut 0 alors c'est illimité -> Dans ce cas je prends 12h
-			mysql_query("SET SESSION wait_timeout=43200");
+			pmb_mysql_query("SET SESSION wait_timeout=43200");
 		}
 	}
 
@@ -60,9 +60,9 @@ class consolidation {
 		
 		foreach($this->list_idview as $id_vue){
 			
-			$req_vue=mysql_query('select * from statopac_vues where id_vue='.$id_vue.' ',$dbh);
-			if (mysql_num_rows($req_vue)) {
-				$row = mysql_fetch_object($req_vue);
+			$req_vue=pmb_mysql_query('select * from statopac_vues where id_vue='.$id_vue.' ',$dbh);
+			if (pmb_mysql_num_rows($req_vue)) {
+				$row = pmb_mysql_fetch_object($req_vue);
 				$this->nom_vue = $row->nom_vue;
 				$this->date_debut_log = $row->date_debut_log;
 				$this->date_fin_log = $row->date_fin_log;
@@ -104,7 +104,7 @@ class consolidation {
 		global $dbh;		
 		
 		$req = "create temporary table logs_filtre_$id_vue select * from statopac where date_log between '".addslashes($date_deb)."' and '".addslashes($date_fin)."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		if ($this->flag || $this->remove_data) {
 			$this->set_dates_log($id_vue);
 		} else {
@@ -120,11 +120,11 @@ class consolidation {
 		global $dbh;
 		if ($this->flag || $this->remove_data || $this->date_fin_log=='0000-00-00 00:00:00') {
 			$req = "create temporary table logs_filtre_$id_vue select * from statopac where date_log <='".addslashes($echeance)."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 			$this->set_dates_log($id_vue);
 		} else {
 			$req = "create temporary table logs_filtre_$id_vue select * from statopac where date_log > '".$this->date_fin_log."' and  date_log <= '".addslashes($echeance)."' ";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 			$this->set_dates_log($id_vue,true);
 		}
 	}
@@ -137,15 +137,15 @@ class consolidation {
 		global $dbh;
 
 		//$req_vue = "select date_consolidation from statopac_vues where id_vue='".addslashes($id_vue)."'";
-		//$res_vue = mysql_query($req_vue,$dbh);
+		//$res_vue = pmb_mysql_query($req_vue,$dbh);
 		if ($this->flag || $this->remove_data || $this->date_fin_log=='0000-00-00 00:00:00') {
 			$req = "create temporary table logs_filtre_$id_vue select * from statopac where date_log <= now()";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 			$this->set_dates_log($id_vue);
 		} else {
 			$req = "create temporary table logs_filtre_$id_vue select * from statopac where date_log > '".$this->date_fin_log."' ";
 			//Si on prend date_consolidation on risque de perdre des informations
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 			$this->set_dates_log($id_vue,true);
 		}
 	}
@@ -158,16 +158,16 @@ class consolidation {
 		global $dbh;
 		if (!$id_vue) return;
 		$q = 'select min(date_log) as min_date, max(date_log) as max_date from logs_filtre_'.$id_vue;
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			$row = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$row = pmb_mysql_fetch_object($r);
 			if(!$this->date_debut_log || $this->date_debut_log === "0000-00-00 00:00:00"){
 				$this->date_debut_log = $row->min_date;
 			}else{
 				//On regarde quel date on doit garder
-				$res=mysql_query("SELECT DATEDIFF('".$this->date_debut_log."','".$row->min_date."')");
-				if(mysql_num_rows($res)){
-					if((mysql_result($res,0,0))*1 > 1){
+				$res=pmb_mysql_query("SELECT DATEDIFF('".$this->date_debut_log."','".$row->min_date."')");
+				if(pmb_mysql_num_rows($res)){
+					if((pmb_mysql_result($res,0,0))*1 > 1){
 						$this->date_debut_log=$row->min_date;
 					}else{
 						//La date de début est déjà entérieur aux logs que l'on va ajouter
@@ -178,9 +178,9 @@ class consolidation {
 				$this->date_fin_log = $row->max_date;
 			}else{
 				//On regarde quel date on doit garder
-				$res=mysql_query("SELECT DATEDIFF('".$this->date_fin_log."','".$row->max_date."')");
-				if(mysql_num_rows($res)){
-					if((mysql_result($res,0,0))*1 > 1){
+				$res=pmb_mysql_query("SELECT DATEDIFF('".$this->date_fin_log."','".$row->max_date."')");
+				if(pmb_mysql_num_rows($res)){
+					if((pmb_mysql_result($res,0,0))*1 > 1){
 						//La date de fin est déjà suppérieur aux logs que l'on va ajouter
 					}else{
 						$this->date_fin_log=$row->max_date;
@@ -201,35 +201,35 @@ class consolidation {
 		
 		//Test pour savoir si la structure des colonnes a été modifiée
 		$rqt_sum="select sum(maj_flag) from statopac_vues_col where num_vue=$id_vue";
-		$res_sum=mysql_query($rqt_sum);
-		$this->flag = mysql_result($res_sum,0,0);
+		$res_sum=pmb_mysql_query($rqt_sum);
+		$this->flag = pmb_mysql_result($res_sum,0,0);
 		
 		//On supprime la table dynamique si la structure a été modifiée
 		if($this->flag) {
 			$rqt_trunc = "DROP TABLE statopac_vue_".addslashes($id_vue);
-			@mysql_query($rqt_trunc, $dbh);
+			@pmb_mysql_query($rqt_trunc, $dbh);
 		}
 		$rqt_create = "CREATE TABLE IF NOT EXISTS statopac_vue_".addslashes($id_vue)." (id_ligne INT( 8 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY)";
-		mysql_query($rqt_create, $dbh);	
+		pmb_mysql_query($rqt_create, $dbh);	
 		
 		//On supprime les données si demandé
 		if($this->remove_data) {
 			$rqt_trunc = "TRUNCATE TABLE  statopac_vue_".addslashes($id_vue);
-			@mysql_query($rqt_trunc, $dbh);
+			@pmb_mysql_query($rqt_trunc, $dbh);
 		}
 		
 		// création des colonnes de la table de la vue
 		$rqt_col = "select id_col, nom_col, expression, filtre, datatype from statopac_vues_col where num_vue='".addslashes($id_vue)."'";
-		$res_col=mysql_query($rqt_col, $dbh);
+		$res_col=pmb_mysql_query($rqt_col, $dbh);
 		$this->cols_vue=array();
-		while(($col=mysql_fetch_object($res_col))){			
+		while(($col=pmb_mysql_fetch_object($res_col))){			
 			//On ajoute les champs (indicateurs)
 			$this->cols_vue[]=$col;
 			if($col->datatype == 'small_text')
 				$type_col = 'varchar(255)';
 			else $type_col = $col->datatype; 
 			$rqt_addfield = "ALTER TABLE statopac_vue_".addslashes($id_vue)." ADD ".addslashes(trim($col->nom_col))." ".addslashes($type_col)." NOT NULL";
-			mysql_query($rqt_addfield);
+			pmb_mysql_query($rqt_addfield);
 		}
 	}
 	
@@ -245,14 +245,14 @@ class consolidation {
 		$champ='';
 
 		$rqt_tempo="SELECT * from logs_filtre_$id_vue";
-		$res_tempo=mysql_query($rqt_tempo, $dbh);
-		$n_total=mysql_num_rows($res_tempo);
+		$res_tempo=pmb_mysql_query($rqt_tempo, $dbh);
+		$n_total=pmb_mysql_num_rows($res_tempo);
 				
 		$tab_val =array();
 		$liste_tabfiltre = array();
 		$n=0;
 		
-		$s_ins=mysql_num_rows($res_tempo);
+		$s_ins=pmb_mysql_num_rows($res_tempo);
 		if ($s_ins) {
 
 			$this->show_progress_bar();
@@ -262,7 +262,7 @@ class consolidation {
 			$print_format=new parse_format('consolidation.inc.php');
 			$percent_conserve='0';
 			
-			while( ($ligne=mysql_fetch_array($res_tempo))){
+			while( ($ligne=pmb_mysql_fetch_array($res_tempo))){
 				$n++;
 				$percent=round(($n/$n_total)*100);
 				if ($percent_conserve!=$percent) { // $percent%5==0 && 
@@ -292,7 +292,7 @@ class consolidation {
 							 `gen_stat` blob NOT NULL ,
 							PRIMARY KEY ( `id_log` )
 						)";
-						mysql_query($rqt_create, $dbh);
+						pmb_mysql_query($rqt_create, $dbh);
 						$parser->cmd = $col->filtre ;
 						$parser->environnement['tempo']="logs_filtre_$id_vue";
 						$parser->environnement['num_ligne']=$ligne[0];
@@ -315,25 +315,25 @@ class consolidation {
 					$values .= ($values ? ',\''.addslashes($valeur).'\'' : '\''.addslashes($valeur).'\'');
 				}
 				if (strlen($q_ins)>=1000000) {
-					mysql_query($q_ins, $dbh);	
+					pmb_mysql_query($q_ins, $dbh);	
 					unset($q_ins);$q_ins='';
 				}
 				$q_ins.= ($q_ins)?',('.$values.')' : 'insert into  statopac_vue_'.addslashes($id_vue).' ('.$champ.') values ('.$values.')';
 	
 			}
 			
-			mysql_query($q_ins, $dbh);	
+			pmb_mysql_query($q_ins, $dbh);	
 			unset($q_ins);
 			//On supprime les tables de filtres
 			foreach ($liste_tabfiltre as $key=>$val){
-				mysql_query("DROP TABLE ".$val,$dbh);
+				pmb_mysql_query("DROP TABLE ".$val,$dbh);
 			}
-			mysql_query("drop table logs_filtre_$id_vue",$dbh);
+			pmb_mysql_query("drop table logs_filtre_$id_vue",$dbh);
 			
 			//mise à jour des dates
 			$q = "UPDATE statopac_vues SET date_consolidation=now(), date_debut_log='".$this->date_debut_log."', date_fin_log='".$this->date_fin_log."' WHERE id_vue='".addslashes($id_vue)."'";
-			mysql_query($q,$dbh);
-			if($this->flag) mysql_query("UPDATE statopac_vues_col SET maj_flag=0 WHERE num_vue='".addslashes($id_vue)."'");
+			pmb_mysql_query($q,$dbh);
+			if($this->flag) pmb_mysql_query("UPDATE statopac_vues_col SET maj_flag=0 WHERE num_vue='".addslashes($id_vue)."'");
 		}
 	}
 
@@ -349,10 +349,10 @@ class consolidation {
 			if($filtre == $val['filtre']){ 
 				if($valeur_filtre == $val['valeur_filtre']){
 					$table_filtre = $val['table_filtre'];
-					 mysql_query("DROP TABLE ".$table);
+					 pmb_mysql_query("DROP TABLE ".$table);
 					break;
 				} else {
-					mysql_query("DROP TABLE ".$val['table_filtre']);
+					pmb_mysql_query("DROP TABLE ".$val['table_filtre']);
 					$ind=array_search($val['table_filtre'],$liste_tabfiltre) ;
 					if($ind != false)
 						unset($liste_tabfiltre[$ind]);	
@@ -363,9 +363,9 @@ class consolidation {
 		if(!$table_filtre){
 			$liste_tabfiltre[] = $table;
 			$rqt="SELECT * from logs_filtre_$id_vue";
-			$res=mysql_query($rqt, $dbh);
+			$res=pmb_mysql_query($rqt, $dbh);
 		
-			while($ligne_log=mysql_fetch_object($res)) {
+			while($ligne_log=pmb_mysql_fetch_object($res)) {
 			
 				$format=new parse_format('consolidation.inc.php');	
 				$format->environnement['tempo']="logs_filtre_$id_vue";
@@ -374,7 +374,7 @@ class consolidation {
 				$val_filtre_courant = $format->exec_cmd_conso();
 				if($val_filtre_courant == $valeur_filtre){				
 					$rqt="insert ignore into ".$table."  select * from logs_filtre_$id_vue where id_log='".addslashes($ligne_log->id_log)."'";
-					mysql_query($rqt,$dbh);				
+					pmb_mysql_query($rqt,$dbh);				
 				}
 			}				
 		}

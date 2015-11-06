@@ -11,13 +11,13 @@
  * @package UFPDF
  * @see fpdf.php
  * @see reportpdf.php
- * @version $Id: ufpdf.class.php,v 1.11.2.1 2014-12-10 10:55:06 jpermanne Exp $
+ * @version $Id: ufpdf.class.php,v 1.12 2014-12-10 10:56:41 jpermanne Exp $
  */
 
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ufpdf.class.php,v 1.11.2.1 2014-12-10 10:55:06 jpermanne Exp $
+// $Id: ufpdf.class.php,v 1.12 2014-12-10 10:56:41 jpermanne Exp $
 
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");

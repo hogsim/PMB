@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: marguerite_browser.inc.php,v 1.11 2009-05-16 10:52:52 dbellamy Exp $
+// $Id: marguerite_browser.inc.php,v 1.12 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -130,8 +130,8 @@ if (js > 1.0) {
 <img NAME=\"boxImage\" src=\"images/marg.gif\" width=\"348\" height=\"341\" border=\"0\" USEMAP=\"#image-map\">";
 
 $rqt = " select indexint_id, indexint_comment, indexint_name from indexint where indexint_name in ('000','100','200','300','400','500','600','700','800','900') ";
-$res = mysql_query($rqt, $dbh);
-while($indexint=mysql_fetch_object($res)) {
+$res = pmb_mysql_query($rqt, $dbh);
+while($indexint=pmb_mysql_fetch_object($res)) {
 	$indexint->indexint_comment = pmb_preg_replace('/\r/', ' ', $indexint->indexint_comment);
 	$indexint->indexint_comment = pmb_preg_replace('/\n/', ' ', $indexint->indexint_comment);
 	$marguerite_img = pmb_preg_replace("/!!".$indexint->indexint_name."!!/m", htmlentities($indexint->indexint_comment,ENT_QUOTES,$charset), $marguerite_img);

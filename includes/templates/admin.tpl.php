@@ -1,8 +1,8 @@
 <?php
 // +-------------------------------------------------+
-// ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
+// © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: admin.tpl.php,v 1.190.2.4 2015-05-15 12:06:57 jpermanne Exp $
+// $Id: admin.tpl.php,v 1.210 2015-06-26 13:15:14 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -22,6 +22,7 @@ $admin_menu_new = "
 	<li><a href='./admin.php?categ=empr'>$msg[22]</a></li>
 	<li><a href='./admin.php?categ=users'>$msg[25]</a></li>
 	<li><a href='./admin.php?categ=cms_editorial'>".$msg['editorial_content']."</a></li>
+	<li><a href='./admin.php?categ=loans'>".$msg['admin_menu_loans']."</a></li>
 </ul>
 <h3 onclick='menuHide(this,event)'>$msg[opac_admin_menu]</h3>
 <ul>
@@ -38,6 +39,18 @@ $admin_menu_new = "
 	<li><a href='./admin.php?categ=proc&sub=proc&action='>".$msg['admin_menu_act_perso']."</a></li>
 	<li><a href='./admin.php?categ=proc&sub=clas&action='>".$msg['admin_menu_act_perso_clas']."</a></li>
 </ul>
+";
+
+if($pmb_nomenclature_activate)
+	$admin_menu_new.="
+	<h3 onclick='menuHide(this,event)'>$msg[admin_menu_nomenclature]</h3>
+	<ul>
+		<li><a href='./admin.php?categ=family&sub=family&action='>".$msg['admin_menu_nomenclature_tutti']."</a></li>
+		<li><a href='./admin.php?categ=formation&sub=formation&action='>".$msg['admin_menu_nomenclature_formations']."</a></li>
+		<li><a href='./admin.php?categ=voice&sub=voice&action='>".$msg['admin_menu_nomenclature_voice']."</a></li>
+		<li><a href='./admin.php?categ=instrument&sub=instrument&action='>".$msg['admin_menu_nomenclature_instruments']."</a></li>
+	</ul>";
+$admin_menu_new.="
 <h3 onclick='menuHide(this,event)'>$msg[admin_menu_modules]</h3>
 <ul>
 ";
@@ -81,6 +94,8 @@ if ($gestion_acces_active==1) {
 if ($pmb_javascript_office_editor) $admin_menu_new.="\n<ul><li><a href='./admin.php?categ=html_editor'>".$msg["admin_html_editor"]."</a></li></ul>";
 
 if($demandes_active) $admin_menu_new.="\n<ul><li><a href='./admin.php?categ=demandes'>".$msg["admin_demandes"]."</a></li></ul>";
+
+if($faq_active) $admin_menu_new.="\n<ul><li><a href='./admin.php?categ=faq'>".$msg["admin_faq"]."</a></li></ul>";
 
 $admin_menu_new.="
 	<ul>
@@ -145,6 +160,23 @@ $admin_menu_docs = "
 ";
 
 // $admin_menu_notices : menu Notices
+if($pmb_map_activate)$admin_menu_noti_onglet="
+	<span".ongletSelect("categ=notices&sub=map_echelle").">
+		<a title='$msg[admin_menu_noti_statut]' href='./admin.php?categ=notices&sub=map_echelle&action='>
+			$msg[admin_menu_noti_map_echelle]
+		</a>
+	</span>
+	<span".ongletSelect("categ=notices&sub=map_projection").">
+		<a title='$msg[admin_menu_noti_statut]' href='./admin.php?categ=notices&sub=map_projection&action='>
+			$msg[admin_menu_noti_map_projection]
+		</a>
+	</span>
+	<span".ongletSelect("categ=notices&sub=map_ref").">
+		<a title='$msg[admin_menu_noti_statut]' href='./admin.php?categ=notices&sub=map_ref&action='>
+			$msg[admin_menu_noti_map_ref]
+		</a>
+	</span>
+";
 $admin_menu_notices = "
 <h1>$msg[admin_menu_notices] <span>> !!menu_sous_rub!!</span></h1>
 <div class='hmenu'>
@@ -158,9 +190,15 @@ $admin_menu_notices = "
 			$msg[admin_menu_noti_statut]
 		</a>
 	</span>
+	$admin_menu_noti_onglet
 	<span".ongletSelect("categ=notices&sub=perso").">
 		<a title='$msg[admin_menu_noti_perso]' href='./admin.php?categ=notices&sub=perso&action='>
 			$msg[admin_menu_noti_perso]
+		</a>
+	</span>
+	<span".ongletSelect("categ=notices&sub=onglet").">
+		<a title='$msg[admin_menu_noti_onglet_title]' href='./admin.php?categ=notices&sub=onglet&action='>
+			$msg[admin_menu_noti_onglet]
 		</a>
 	</span>
 </div>
@@ -759,6 +797,11 @@ $admin_menu_upload_docnum ="
 			".$msg["storage_menu"]."
 		</a>
 	</span>
+	<span".ongletSelect("categ=docnum&sub=statut").">
+		<a title='".htmlentities($msg["admin_menu_docnum_statut"],ENT_QUOTES,$charset)."' href='./admin.php?categ=docnum&sub=statut'>
+			".$msg["admin_menu_docnum_statut"]."
+		</a>
+	</span>
 </div>";
 
 //$admin_menu_demandes = demandes de recherche
@@ -777,7 +820,65 @@ $admin_menu_demandes ="
 	</span>
 </div>";
 
+//$admin_menu_faq = FAQ
+$admin_menu_faq ="
+<h1>".$msg["admin_faq"]." <span>> !!menu_sous_rub!!</span></h1>
+<div class=\"hmenu\">
+	<span".ongletSelect("categ=faq&sub=theme").">
+		<a title='".htmlentities($msg["faq_theme"],ENT_QUOTES,$charset)."' href='./admin.php?categ=faq&sub=theme'>
+			".$msg["faq_theme"]."
+		</a>
+	</span>
+	<span".ongletSelect("categ=faq&sub=type").">
+		<a title='".htmlentities($msg["faq_type"],ENT_QUOTES,$charset)."' href='./admin.php?categ=faq&sub=type'>
+			".$msg["faq_type"]."
+		</a>
+	</span>
+</div>";
 
+//$admin_menu_nomenclature = nomenclature
+$admin_menu_nomenclature ="
+<h1>".$msg["admin_nomenclature"]." <span>> !!menu_sous_rub!!</span></h1>
+<div class=\"hmenu\">
+	<span".ongletSelect("categ=family&sub=family").">
+		<a title='".htmlentities($msg["admin_nomenclature_family"],ENT_QUOTES,$charset)."' href='./admin.php?categ=family&sub=family'>
+			".$msg["admin_nomenclature_family"]."
+		</a>
+	</span>
+</div>";
+
+//$admin_menu_formation = formation
+$admin_menu_formation ="
+<h1>".$msg["admin_nomenclature"]." <span>> !!menu_sous_rub!!</span></h1>
+<div class=\"hmenu\">
+	<span".ongletSelect("categ=formation&sub=formation").">
+		<a title='".htmlentities($msg["admin_nomenclature_formation"],ENT_QUOTES,$charset)."' href='./admin.php?categ=formation&sub=formation'>
+			".$msg["admin_nomenclature_formation"]."
+		</a>
+	</span>
+</div>";
+
+//$admin_menu_voice = voice
+$admin_menu_voice ="
+<h1>".$msg["admin_nomenclature"]." <span>> !!menu_sous_rub!!</span></h1>
+<div class=\"hmenu\">
+	<span".ongletSelect("categ=voice&sub=voice").">
+		<a title='".htmlentities($msg["admin_nomenclature_voice"],ENT_QUOTES,$charset)."' href='./admin.php?categ=voice&sub=voice'>
+			".$msg["admin_nomenclature_voice"]."
+		</a>
+	</span>
+</div>";
+
+//$admin_menu_$admin_menu_instrument = instrument
+$admin_menu_instrument ="
+<h1>".$msg["admin_nomenclature"]." <span>> !!menu_sous_rub!!</span></h1>
+<div class=\"hmenu\">
+	<span".ongletSelect("categ=instrument&sub=instrument").">
+		<a title='".htmlentities($msg["admin_nomenclature_instrument"],ENT_QUOTES,$charset)."' href='./admin.php?categ=instrument&sub=instrument'>
+			".$msg["admin_nomenclature_instrument"]."
+		</a>
+	</span>
+</div>";
 //    ----------------------------------
 // $admin_layout : layout page administration
 $admin_layout = "
@@ -1571,6 +1672,116 @@ $admin_orinot_form = "
 <div class='row'></div>
 </form>
 <script type='text/javascript'>document.forms['orinotform'].elements['form_nom'].focus();</script>
+";
+
+// $admin_onglet_form : Onglet personalisé de la notice
+$admin_onglet_form = "
+<form class='form-$current_module' name=ongletform method=post action=\"./admin.php?categ=notices&sub=onglet&action=update&id=!!id!!\">
+<h3><span onclick='menuHide(this,event)'>!!form_title!!</span></h3>
+<!--    Contenu du form    -->
+<div class='form-contenu'>
+	<div class='row'>
+		<label class='etiquette' >$msg[admin_noti_onglet_name]</label>
+	</div>
+	<div class='row'>
+		<input type=text name='form_nom' value='!!nom!!' class='saisie-50em' />
+	</div>
+</div>
+<!-- Boutons -->
+<div class='row'>
+	<div class='left'>
+		<input class='bouton' type='button' value=' $msg[76] ' onClick=\"document.location='./admin.php?categ=notices&sub=onglet'\">&nbsp;
+		<input class='bouton' type='submit' value=' $msg[77] ' onClick=\"return test_form(this.form)\">
+		</div>
+	<div class='right'>
+		<input class='bouton' type='button' value=' $msg[supprimer] ' onClick=\"javascript:confirmation_delete(!!id!!,'!!nom_suppr!!')\" />
+		</div>
+	</div>
+<div class='row'></div>
+</form>
+<script type='text/javascript'>document.forms['ongletform'].elements['form_nom'].focus();</script>
+";
+
+
+$admin_map_echelle_form = "
+<form class='form-$current_module' name=map_echelleform method=post action=\"./admin.php?categ=notices&sub=map_echelle&action=update&id=!!id!!\">
+<h3><span onclick='menuHide(this,event)'>!!form_title!!</span></h3>
+<!--    Contenu du form    -->
+<div class='form-contenu'>
+	<div class='row'>
+		<label class='etiquette' >$msg[admin_noti_map_echelle_name]</label>
+	</div>
+	<div class='row'>
+		<input type=text name='form_nom' value='!!nom!!' class='saisie-50em' />
+	</div>
+</div>
+<!-- Boutons -->
+<div class='row'>
+	<div class='left'>
+		<input class='bouton' type='button' value=' $msg[76] ' onClick=\"document.location='./admin.php?categ=notices&sub=map_echelle'\">&nbsp;
+		<input class='bouton' type='submit' value=' $msg[77] ' onClick=\"return test_form(this.form)\">
+		</div>
+	<div class='right'>
+		<input class='bouton' type='button' value=' $msg[supprimer] ' onClick=\"javascript:confirmation_delete(!!id!!,'!!nom_suppr!!')\" />
+		</div>
+	</div>
+<div class='row'></div>
+</form>
+<script type='text/javascript'>document.forms['map_map_echelleform'].elements['form_nom'].focus();</script>
+";
+
+$admin_map_projection_form = "
+<form class='form-$current_module' name=map_projectionform method=post action=\"./admin.php?categ=notices&sub=map_projection&action=update&id=!!id!!\">
+<h3><span onclick='menuHide(this,event)'>!!form_title!!</span></h3>
+<!--    Contenu du form    -->
+<div class='form-contenu'>
+	<div class='row'>
+		<label class='etiquette' >$msg[admin_noti_map_projection_name]</label>
+	</div>
+	<div class='row'>
+		<input type=text name='form_nom' value='!!nom!!' class='saisie-50em' />
+	</div>
+</div>
+<!-- Boutons -->
+<div class='row'>
+	<div class='left'>
+		<input class='bouton' type='button' value=' $msg[76] ' onClick=\"document.location='./admin.php?categ=notices&sub=map_projection'\">&nbsp;
+		<input class='bouton' type='submit' value=' $msg[77] ' onClick=\"return test_form(this.form)\">
+		</div>
+	<div class='right'>
+		<input class='bouton' type='button' value=' $msg[supprimer] ' onClick=\"javascript:confirmation_delete(!!id!!,'!!nom_suppr!!')\" />
+		</div>
+	</div>
+<div class='row'></div>
+</form>
+<script type='text/javascript'>document.forms['map_map_projectionform'].elements['form_nom'].focus();</script>
+";
+
+$admin_map_ref_form = "
+<form class='form-$current_module' name=map_refform method=post action=\"./admin.php?categ=notices&sub=map_ref&action=update&id=!!id!!\">
+<h3><span onclick='menuHide(this,event)'>!!form_title!!</span></h3>
+<!--    Contenu du form    -->
+<div class='form-contenu'>
+	<div class='row'>
+		<label class='etiquette' >$msg[admin_noti_map_ref_name]</label>
+	</div>
+	<div class='row'>
+		<input type=text name='form_nom' value='!!nom!!' class='saisie-50em' />
+	</div>
+</div>
+<!-- Boutons -->
+<div class='row'>
+	<div class='left'>
+		<input class='bouton' type='button' value=' $msg[76] ' onClick=\"document.location='./admin.php?categ=notices&sub=map_ref'\">&nbsp;
+		<input class='bouton' type='submit' value=' $msg[77] ' onClick=\"return test_form(this.form)\">
+		</div>
+	<div class='right'>
+		<input class='bouton' type='button' value=' $msg[supprimer] ' onClick=\"javascript:confirmation_delete(!!id!!,'!!nom_suppr!!')\" />
+		</div>
+	</div>
+<div class='row'></div>
+</form>
+<script type='text/javascript'>document.forms['map_map_refform'].elements['form_nom'].focus();</script>
 ";
 
 // $admin_typdoc_form : template form types doc
@@ -2617,6 +2828,14 @@ $admin_infopages_form = "
 		</div>
 
 	</div>
+	<div class='row'>
+		<label class='etiquette' for='form_content_infopage'>".$msg['infopages_classement_list']."</label>
+	</div>
+	<div class='row'>
+		<select data-dojo-type='dijit/form/ComboBox' id='classementGen_!!object_type!!' name='classementGen_!!object_type!!'>
+			!!classements_liste!!
+		</select>
+	</div>
 <!-- Boutons -->
 <div class='row'>
 	<div class='left'>
@@ -2682,52 +2901,61 @@ $admin_menu_planificateur = "
 $admin_menu_authorities = "
 <h1>$msg[admin_menu_authorities] <span>> !!menu_sous_rub!!</span></h1>
 <div class='hmenu'>
-	<span".ongletSelect("categ=notices&sub=orinot").">
+	<span".ongletSelect("categ=authorities&sub=origins").">
 		<a title='".$msg['origins']."' href='./admin.php?categ=authorities&sub=origins&action='>
 			".$msg['origins']."
 		</a>
 	</span>
-	<span".ongletSelect("categ=notices&sub=perso").">
+	<span".ongletSelect("categ=authorities&sub=perso&type_field=author").">
 		<a title='$msg[admin_menu_docs_perso_author]' href='./admin.php?categ=authorities&sub=perso&type_field=author&action='>
 			$msg[admin_menu_docs_perso_author]
 		</a>
 	</span>
-	<span".ongletSelect("categ=notices&sub=perso").">
+	<span".ongletSelect("categ=authorities&sub=perso&type_field=categ").">
 		<a title='$msg[admin_menu_docs_perso_categ]' href='./admin.php?categ=authorities&sub=perso&type_field=categ&action='>
 			$msg[admin_menu_docs_perso_categ]
 		</a>
 	</span>
-	<span".ongletSelect("categ=notices&sub=perso").">
+	<span".ongletSelect("categ=authorities&sub=perso&type_field=publisher").">
 		<a title='$msg[admin_menu_docs_perso_publisher]' href='./admin.php?categ=authorities&sub=perso&type_field=publisher&action='>
 			$msg[admin_menu_docs_perso_publisher]
 		</a>
 	</span>
-	<span".ongletSelect("categ=notices&sub=perso").">
+	<span".ongletSelect("categ=authorities&sub=perso&type_field=collection").">
 		<a title='$msg[admin_menu_docs_perso_collection]' href='./admin.php?categ=authorities&sub=perso&type_field=collection&action='>
 			$msg[admin_menu_docs_perso_collection]
 		</a>
 	</span>
-	<span".ongletSelect("categ=notices&sub=perso").">
+	<span".ongletSelect("categ=authorities&sub=perso&type_field=subcollection").">
 		<a title='$msg[admin_menu_docs_perso_subcollection]' href='./admin.php?categ=authorities&sub=perso&type_field=subcollection&action='>
 			$msg[admin_menu_docs_perso_subcollection]
 		</a>
 	</span>
-	<span".ongletSelect("categ=notices&sub=perso").">
+	<span".ongletSelect("categ=authorities&sub=perso&type_field=serie").">
 		<a title='$msg[admin_menu_docs_perso_serie]' href='./admin.php?categ=authorities&sub=perso&type_field=serie&action='>
 			$msg[admin_menu_docs_perso_serie]
 		</a>
 	</span>
-	<span".ongletSelect("categ=notices&sub=perso").">
+	<span".ongletSelect("categ=authorities&sub=perso&type_field=tu").">
 		<a title='$msg[admin_menu_docs_perso_tu]' href='./admin.php?categ=authorities&sub=perso&type_field=tu&action='>
 			$msg[admin_menu_docs_perso_tu]
 		</a>
 	</span>
-	<span".ongletSelect("categ=notices&sub=perso").">
+	<span".ongletSelect("categ=authorities&sub=perso&type_field=indexint").">
 		<a title='$msg[admin_menu_docs_perso_indexint]' href='./admin.php?categ=authorities&sub=perso&type_field=indexint&action='>
 			$msg[admin_menu_docs_perso_indexint]
 		</a>
 	</span>
-
+	<span".ongletSelect("categ=authorities&sub=authperso").">
+		<a title='$msg[admin_menu_authperso]' href='./admin.php?categ=authorities&sub=authperso'>
+			$msg[admin_menu_authperso]
+		</a>
+	</span>
+	<span".ongletSelect("categ=authorities&sub=templates").">
+		<a title='$msg[admin_menu_authperso]' href='./admin.php?categ=authorities&sub=templates'>
+			$msg[admin_menu_authperso_template]
+		</a>
+	</span>
 </div>
 ";
 /* en cours...
@@ -2759,6 +2987,21 @@ if($pmb_opac_view_activate == 2){
 	</span>";
 }
 $admin_menu_opac_views.= "
+</div>
+";
+
+$admin_menu_facettes="
+<div class='hmenu'>
+	<span".ongletSelect("categ=opac&sub=facette_search_opac&section=facette").">
+		<a title='$msg[facettes_admin_menu_facettes]' href='./admin.php?categ=opac&sub=facette_search_opac&section=facette'>
+			$msg[facettes_admin_menu_facettes]
+		</a>
+	</span>
+	<span".ongletSelect("categ=opac&sub=facette_search_opac&section=comparateur").">
+		<a title='$msg[facettes_admin_menu_compare]' href='./admin.php?categ=opac&sub=facette_search_opac&section=comparateur'>
+			$msg[facettes_admin_menu_compare]
+		</a>
+	</span>
 </div>
 ";
 
@@ -2819,5 +3062,101 @@ $admin_liste_jscript = "
 				list_view.parentNode.removeChild(list_view);
 		}
 		</script>
+";
+
+// $admin_docnum_statut_form : template form statuts des documents numériques
+$admin_docnum_statut_form = "
+<form class='form-$current_module' name=typdocform method=post action=\"./admin.php?categ=docnum&sub=statut&action=update&id=!!id!!\">
+<h3><span onclick='menuHide(this,event)'>!!form_title!!</span></h3>
+<!--    Contenu du form    -->
+<div class='form-contenu'>
+	<div class='row'>
+		<label class='etiquette' ><strong>".$msg["docnum_statut_gestion"]."</strong></label>
+	</div>
+	<div class='row'>
+		<label class='etiquette' for='form_libelle'>".$msg["docnum_statut_libelle"]."</label>
+	</div>
+	<div class='row'>
+		<input type=text name='form_gestion_libelle' value='!!gestion_libelle!!' class='saisie-50em' />
+	</div>
+	<div class='row'>&nbsp;</div>
+	<div class='row'>
+		<div class='colonne5'>
+			<label class='etiquette' for='form_class_html'>".$msg["docnum_statut_class_html"]."</label>
+		</div>
+		<div class='colonne_suite'>
+			!!class_html!!
+		</div>
+	</div>
+	<div class='row'>&nbsp;</div>
+	<div class='row'>
+		<label class='etiquette' ><strong>".$msg["docnum_statut_opac"]."</strong></label>
+	</div>
+	<div class='row'>
+		<label class='etiquette' for='form_libelle'>".$msg["docnum_statut_libelle"]."</label>
+	</div>
+	<div class='row'>
+		<input type=text name='form_opac_libelle' value='!!opac_libelle!!' class='saisie-50em' />
+	</div>
+	<div class='row'>&nbsp;</div>
+	<div class='colonne2'>
+		<label class='etiquette'>".$msg["docnum_statut_visibilite_generale"]."</label>
+	</div>
+	<div class='colonne_suite'>
+		<label class='etiquette'>".$msg["docnum_statut_visibilite_restrict"]."</label>
+	</div>
+	<div class='colonne2'>
+		<label class='etiquette' for='form_visible_opac'>".$msg["docnum_statut_visu_opac_form"]."</label>
+		<input type=checkbox name=form_visible_opac value='1' !!checkbox_visible_opac!! class='checkbox' />
+	</div>
+	<div class='colonne_suite'>
+		<label class='etiquette' for='form_visible_opac_abon'>".$msg["docnum_statut_visu_opac_abon"]."</label>
+		<input type=checkbox name=form_visible_opac_abon value='1' !!checkbox_visible_opac_abon!! class='checkbox' />
+	</div>
+	<div class='row'>&nbsp;</div>
+	<div class='colonne2'>
+		<label class='etiquette' for='form_consult_opac'>".$msg["docnum_statut_cons_opac_form"]."</label>
+		<input type=checkbox name=form_consult_opac value='1' !!checkbox_consult_opac!! class='checkbox' />
+	</div>
+	<div class='colonne_suite'>
+		<label class='etiquette' for='form_consult_opac_abon'>".$msg["docnum_statut_cons_opac_abon"]."</label>
+		<input type=checkbox name=form_consult_opac_abon value='1' !!checkbox_consult_opac_abon!! class='checkbox' />
+	</div>
+	<div class='row'>&nbsp;</div>
+	<div class='colonne2'>
+		<label class='etiquette' for='form_visible_opac'>".$msg["docnum_statut_down_opac_form"]."</label>
+		<input type=checkbox name=form_download_opac value='1' !!checkbox_download_opac!! class='checkbox' />
+	</div>
+	<div class='colonne_suite'>
+		<label class='etiquette' for='form_download_opac_abon'>".$msg["docnum_statut_down_opac_abon"]."</label>
+		<input type=checkbox name=form_download_opac_abon value='1' !!checkbox_download_opac_abon!! class='checkbox' />
+	</div>
+	<div class='row'>&nbsp;</div>
+	<div class='row'></div>
+</div>
+<!-- Boutons -->
+<div class='row'>
+	<div class='left'>
+		<input class='bouton' type='button' value=' $msg[76] ' onClick=\"document.location='./admin.php?categ=docnum&sub=statut'\">&nbsp;
+		<input class='bouton' type='submit' value=' $msg[77] ' onClick=\"return test_form(this.form)\">
+	</div>
+	<div class='right'>
+		!!bouton_supprimer!!
+	</div>
+</div>
+<div class='row'></div>
+</form>
+<script type='text/javascript'>document.forms['typdocform'].elements['form_gestion_libelle'].focus();</script>
+";
+
+$admin_menu_loans = "
+<h1>".$msg["admin_menu_loans"]." <span>> !!menu_sous_rub!!</span></h1>
+<div class='hmenu'>
+	<span".ongletSelect("categ=loans&sub=perso").">
+		<a title='".$msg["admin_menu_loans_perso"]."' href='./admin.php?categ=loans&sub=perso&action='>
+			".$msg["admin_menu_loans_perso"]."
+		</a>
+	</span>
+</div>
 ";
 ?>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: budgets.inc.php,v 1.39 2014-03-18 13:09:32 dgoron Exp $
+// $Id: budgets.inc.php,v 1.40 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -21,16 +21,16 @@ function show_list_biblio() {
 
 	//Récupération de l'utilisateur
  	$requete_user = "SELECT userid FROM users where username='".SESSlogin."' limit 1 ";
-	$res_user = mysql_query($requete_user, $dbh);
-	$row_user=mysql_fetch_row($res_user);
+	$res_user = pmb_mysql_query($requete_user, $dbh);
+	$row_user=pmb_mysql_fetch_row($res_user);
 	$user_userid=$row_user[0];
 
 
 	//Affichage de la liste des etablissements auxquelles a acces l'utilisateur
 	$aff = "<table>";
 	$q = entites::list_biblio($user_userid);
-	$res = mysql_query($q, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($q, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	if(!$nbr) {
 		//Pas d'etablissements définis pour l'utilisateur
@@ -44,13 +44,13 @@ function show_list_biblio() {
 	}
 	if ($nbr == '1') {
 		
-		$row = mysql_fetch_object($res);
+		$row = pmb_mysql_fetch_object($res);
 		show_list_budg($row->id_entite);		
 	
 	} else {
 	
 		$parity=1;
-		while($row=mysql_fetch_object($res)){
+		while($row=pmb_mysql_fetch_object($res)){
 			if ($parity % 2) {
 				$pair_impair = "even";
 			} else {
@@ -85,10 +85,10 @@ function show_list_budg($id_bibli) {
 
 	//Affichage de la liste des budgets
 	$q = budgets::listByEntite($id_bibli);
-	$res = mysql_query($q, $dbh);
+	$res = pmb_mysql_query($q, $dbh);
 
 	$parity=1;
-	while($row=mysql_fetch_object($res)){
+	while($row=pmb_mysql_fetch_object($res)){
 			if ($parity % 2) {
 				$pair_impair = "even";
 			} else {
@@ -131,13 +131,13 @@ function show_budg_form($id_bibli, $id_bud=0) {
 
 	//Affichage exercices actifs
 	$q = exercices::listByEntite($id_bibli, STA_EXE_ACT, 'statut desc, date_debut desc');
-	$res = mysql_query($q, $dbh);
+	$res = pmb_mysql_query($q, $dbh);
 
 	
 	if (!$id_bud) {	//Nouveau budget ->choix exercice possible & choix type possible (affectation globale ou par lignes)
 		
 		$form_exer = "<select id='exer' name ='exer' >";
-		while ($row=mysql_fetch_object($res)) {
+		while ($row=pmb_mysql_fetch_object($res)) {
 			$form_exer.="<option value='".$row->id_exercice."' >".$row->libelle."</option>";
 		}
 		$form_exer.= "</select>";		
@@ -152,7 +152,7 @@ function show_budg_form($id_bibli, $id_bud=0) {
 		if (($bud->statut == STA_BUD_PRE) || ($bud->statut == STA_BUD_VAL && (!budgets::hasLignes($id_bud)) ) ) {		//Exercice modifiable si budget non activé ou pas de lignes d'actes affectées
 			
 			$form_exer = "<select id='exer' name ='exer' >";
-			while ($row=mysql_fetch_object($res)) {
+			while ($row=pmb_mysql_fetch_object($res)) {
 				$form_exer.="<option value='".$row->id_exercice."' ";
 				if($bud->num_exercice == $row->id_exercice) $form_exer.= "selected='selected' ";
 				$form_exer.=">".$row->libelle."</option>";
@@ -254,8 +254,8 @@ function show_budg_form($id_bibli, $id_bud=0) {
 
 		
 		$q = budgets::listRubriques($id_bud);		
-		$list_n1 = mysql_query($q, $dbh);
-		while($row=mysql_fetch_object($list_n1)){
+		$list_n1 = pmb_mysql_query($q, $dbh);
+		while($row=pmb_mysql_fetch_object($list_n1)){
 			
 			$budg_form = str_replace('<!-- rubriques -->', $lig_rub[0].'<!-- rubriques -->', $budg_form);
 			$budg_form = str_replace('<!-- marge -->', '', $budg_form);
@@ -461,9 +461,9 @@ function show_rub_form($id_bud, $id_rub=0, $id_parent=0) {
 		
 		//Affichage rubriques budgetaires
 		$q = budgets::listRubriques($id_bud, $id_rub);	
-		$list_n1 = mysql_query($q, $dbh); 
+		$list_n1 = pmb_mysql_query($q, $dbh); 
 
-		while($row=mysql_fetch_object($list_n1)){
+		while($row=pmb_mysql_fetch_object($list_n1)){
 				
 			$rub_form = str_replace('<!-- rubriques -->', $lig_rub[0].'<!-- rubriques -->', $rub_form);
 			$rub_form = str_replace('<!-- marge -->', '', $rub_form);
@@ -510,9 +510,9 @@ function afficheSousRubriques($id_bud, $id_rub, &$form, $indent=0) {
 
 	$bud = new budgets($id_bud);
 	$q = budgets::listRubriques($id_bud, $id_rub);
-	$list_n = mysql_query($q, $dbh); 
+	$list_n = pmb_mysql_query($q, $dbh); 
 	
-	while($row=mysql_fetch_object($list_n)){
+	while($row=pmb_mysql_fetch_object($list_n)){
 			
 		$form = str_replace('<!-- sous_rub'.$id_rub.' -->', $lig_rub[0].'<!-- sous_rub'.$id_rub.' -->', $form);
 		$marge = '';
@@ -587,10 +587,10 @@ function autorisations($id_rub=0, $id_parent=0, $id_bud=0) {
 
 	//récupération liste des noms d'utilisateurs pmb
 	$q = "SELECT userid, username FROM users order by username ";
-	$r = mysql_query($q, $dbh);
+	$r = pmb_mysql_query($q, $dbh);
 
 	$id_check_list = '';
-	while($row = mysql_fetch_object($r)){
+	while($row = pmb_mysql_fetch_object($r)){
 
 		if(in_array($row->userid, $aut_entite)) {			
 			
@@ -622,9 +622,9 @@ function verif_exercice($id_bibli) {
 	global $dbh;
 	
 	$q = entites::getCurrentExercices($id_bibli);
-	$r = mysql_query($q, $dbh);
+	$r = pmb_mysql_query($q, $dbh);
 	
-	if (mysql_num_rows($r)) return; 
+	if (pmb_mysql_num_rows($r)) return; 
 
 	//Pas d'exercice actif pour la bibliothèque
 	$error_msg.= htmlentities($msg["acquisition_err_exer"],ENT_QUOTES, $charset)."<div class='row'></div>";	

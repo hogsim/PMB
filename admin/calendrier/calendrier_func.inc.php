@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: calendrier_func.inc.php,v 1.10 2012-02-14 15:02:22 dgoron Exp $
+// $Id: calendrier_func.inc.php,v 1.11 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -94,8 +94,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 		$loc_id=$deflt2docs_location;	
 	}
 	$rqt_date_ouverture = "select date_ouverture, ouvert, commentaire from ouvertures where date_format(date_ouverture, '%Y')='".substr($date,0,4)."' and num_location=$loc_id " ;
-	$resultatdate_ouverture=mysql_query($rqt_date_ouverture);
-	while ($resdate_ouverture=mysql_fetch_object($resultatdate_ouverture)) $ouvert[$resdate_ouverture->date_ouverture] = array ("ouvert" => $resdate_ouverture->ouvert, "commentaire" => $resdate_ouverture->commentaire) ;
+	$resultatdate_ouverture=pmb_mysql_query($rqt_date_ouverture);
+	while ($resdate_ouverture=pmb_mysql_fetch_object($resultatdate_ouverture)) $ouvert[$resdate_ouverture->date_ouverture] = array ("ouvert" => $resdate_ouverture->ouvert, "commentaire" => $resdate_ouverture->commentaire) ;
 
 	// Default Params
 	$param_d['calendar_id']		= 1; // Calendar ID
@@ -140,8 +140,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 			$date_MySQL = "'$year-$month-$day'";
 			}
 	$rqt_date = "select date_format(".$date_MySQL.", '%d') as current_day, date_format(".$date_MySQL.", '%m') as current_month_2, date_format(".$date_MySQL.", '%c') as current_month, date_format(".$date_MySQL.", '%Y') as current_year " ;
-	$resultatdate=mysql_query($rqt_date);
-	$resdate=mysql_fetch_object($resultatdate);
+	$resultatdate=pmb_mysql_query($rqt_date);
+	$resdate=pmb_mysql_fetch_object($resultatdate);
 	
 	$current_day 		= $resdate->current_day;
 	$current_month 		= $resdate->current_month;
@@ -151,8 +151,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 	$date_MySQL_firstday = "'$year-$current_month_2-01'";
 	$rqt_date = "select date_format(".$date_MySQL_firstday.", '%w') as first_day_pos,
 				date_format(DATE_SUB(DATE_ADD(".$date_MySQL_firstday.", INTERVAL 1 MONTH),INTERVAL 1 DAY), '%d') as nb_days_month " ;
-	$resultatdate=mysql_query($rqt_date);
-	$resdate=mysql_fetch_object($resultatdate);
+	$resultatdate=pmb_mysql_query($rqt_date);
+	$resdate=pmb_mysql_fetch_object($resultatdate);
 	$first_day_pos 		= $resdate->first_day_pos;
 	$first_day_pos 		= ($first_day_pos == 0) ? 7 : $first_day_pos;
 
@@ -165,8 +165,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 			appelant avec date au 04/10/2003 >> lien du 04/11/2003 absent */
 	$date_MySQL_caller = "'".substr($date_caller, 0 ,4)."-".substr($date_caller, 4 ,2)."-".substr($date_caller, 6 ,2)."'";
 	$rqt_date = "select date_format(".$date_MySQL_caller.", '%d') as current_day, date_format(".$date_MySQL_caller.", '%c') as current_month, date_format(".$date_MySQL_caller.", '%Y') as current_year ";
-	$resultatdate=mysql_query($rqt_date);
-	$resdate=mysql_fetch_object($resultatdate);
+	$resultatdate=pmb_mysql_query($rqt_date);
+	$resdate=pmb_mysql_fetch_object($resultatdate);
 	
 	$caller_day 		= $resdate->current_day;
 	$caller_month 		= $resdate->current_month;
@@ -254,8 +254,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 				$date_MySQL_loop = "'".$current_year."-".$current_month_2."-".$i_2."'";
 				
 				$rqt_date = "select case when CURDATE() <= ".$date_MySQL_loop." then 1 ELSE 0 END as test_loop ";
-				$resultatdate=mysql_query($rqt_date);
-				$resdate=mysql_fetch_object($resultatdate);
+				$resultatdate=pmb_mysql_query($rqt_date);
+				$resdate=pmb_mysql_fetch_object($resultatdate);
 				$test_loop = $resdate->test_loop;
 				
 				if ($test_loop) {
@@ -298,8 +298,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 				date_format(DATE_ADD(".$date_MySQL.", INTERVAL 1 MONTH),'%Y%m%d') as next_day, 
 				case when CURDATE() < date_format(DATE_ADD(".$date_MySQL.", INTERVAL 1 YEAR),'%Y%m%d') then 1 else 0 END as test_next_year, 
 				case when CURDATE() < date_format(DATE_ADD(".$date_MySQL.", INTERVAL 1 MONTH),'%Y%m%d') then 1 else 0 END as test_next_month ";
-		$resultatdate=mysql_query($rqt_date);
-		$resdate=mysql_fetch_object($resultatdate);
+		$resultatdate=pmb_mysql_query($rqt_date);
+		$resdate=pmb_mysql_fetch_object($resultatdate);
 	
 		$previous_month	= $resdate->previous_month;
 		$next_month    	= $resdate->next_month;

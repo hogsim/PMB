@@ -4,7 +4,7 @@
 // © 2006 mental works / www.mental-works.com contact@mental-works.com
 // 	repris et corrigé par PMB Services 
 // +-------------------------------------------------+
-// $Id: tags.class.php,v 1.5 2012-02-02 13:12:26 dbellamy Exp $
+// $Id: tags.class.php,v 1.6 2015-04-03 11:16:19 jpermanne Exp $
 
 // définition de la classe d'affichage des 'tags'
 
@@ -54,8 +54,8 @@ class tags {
 		$this->search_tag = $mot;
 
 		$requete = "select distinct index_l from notices where index_l is not null and index_l like '".addslashes($mot)."%' or index_l like '%".$pmb_keyword_sep.addslashes($mot)."%' ";
-		$res = mysql_query($requete,$dbh);
-		while(($mot_trouve=mysql_fetch_object($res))){
+		$res = pmb_mysql_query($requete,$dbh);
+		while(($mot_trouve=pmb_mysql_fetch_object($res))){
 			$liste_tmp = explode($pmb_keyword_sep,$mot_trouve->index_l);
 			foreach($liste_tmp as $v) {
 				if (strip_empty_chars(substr($v,0,strlen($mot))) == strip_empty_chars($mot)) $liste_res[]=$v;

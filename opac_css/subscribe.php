@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: subscribe.php,v 1.23 2014-02-17 14:23:01 abacarisse Exp $
+// $Id: subscribe.php,v 1.27 2015-06-10 08:13:01 dgoron Exp $
 
 $base_path=".";
 $is_opac_included = false;
@@ -222,11 +222,23 @@ if ($opac_show_bandeaugauche==0) {
 		$loginform__ = genere_form_connexion_empr();
 	} else {
 		$loginform__.="<b>".$empr_prenom." ".$empr_nom."</b><br />\n";
-		$loginform__.="<a href=\"empr.php\" id=\"empr_my_account\">".$msg["empr_my_account"]."</a><br />
-			<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
+		$loginform__.="<select name='empr_quick_access' onchange='if (this.value) window.location.href=this.value'>
+				<option value=''>".$msg["empr_quick_access"]."</option>
+				<option value='empr.php'>".$msg["empr_my_account"]."</option>";
+		if ($allow_loan || $allow_loan_hist) {
+			$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-loan'>".$msg["empr_my_loans"]."</option>";
+		}
+		if ($allow_book && $opac_resa) {
+			$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-resa'>".$msg["empr_my_resas"]."</option>";
+		}
+		if ($opac_demandes_active && $allow_dema) {
+			$loginform__.="<option value='empr.php?tab=request&lvl=list_dmde'>".$msg["empr_my_dmde"]."</option>";
+		}
+		$loginform__.="</select><br />";
+		$loginform__.="<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
 	}
 	$loginform = str_replace("!!login_form!!",$loginform__,$loginform);
-	$footer= str_replace("!!contenu_bandeau!!",$home_on_left.$loginform.$meteo.$adresse,$footer);	
+	$footer= str_replace("!!contenu_bandeau!!",($opac_accessibility ? $accessibility : "").$home_on_left.$loginform.$meteo.$adresse,$footer);	
 	$footer= str_replace("!!contenu_bandeau_2!!",$opac_facette_in_bandeau_2?$lvl1.$facette:"",$footer);
 } 
 
@@ -245,6 +257,44 @@ if($opac_parse_html || $cms_active){
 		$cms=new cms_build();
 		$htmltoparse = $cms->transform_html($htmltoparse);
 	}
+	//Compression CSS
+	if($opac_compress_css == 1 && !$cms_active){
+		$compressed_file_exist = file_exists("./temp/full.css");
+		require_once($class_path."/curl.class.php");
+		$dom = new DOMDocument();
+		$dom->encoding = $charset;
+		$dom->loadHTML($htmltoparse);
+		$css_buffer = "";
+		$links = $dom->getElementsByTagName("link");
+		$dom_css = array();
+		for($i=0 ; $i<$links->length ; $i++){
+			$dom_css[] = $links->item($i);
+			if(!$compressed_file_exist && $links->item($i)->hasAttribute("type") && $links->item($i)->getAttribute("type") == "text/css"){
+				$css_buffer.= loadandcompresscss(html_entity_decode($links->item($i)->getAttribute("href")));
+			}
+		}
+		$styles = $dom->getElementsByTagName("style");
+		for($i=0 ; $i<$styles->length ; $i++){
+			$dom_css[] = $styles->item($i);
+			if(!$compressed_file_exist){
+				$css_buffer.= compresscss($styles->item($i)->nodeValue,"");
+			}
+		}
+		foreach($dom_css as $link){
+			$link->parentNode->removeChild($link);
+		}
+		if(!$compressed_file_exist){
+			file_put_contents("./temp/full.css",$css_buffer);
+		}
+		$link = $dom->createElement("link");
+		$link->setAttribute("href", "./temp/full.css");
+		$link->setAttribute("rel", "stylesheet");
+		$link->setAttribute("type", "text/css");
+		$dom->getElementsByTagName("head")->item(0)->appendChild($link);
+		$htmltoparse = $dom->saveHTML();
+	}else if (file_exists("./temp/full.css") && !$cms_active){
+		unlink("./temp/full.css");
+	}
 	print $htmltoparse;
 }
-mysql_close($dbh);
+pmb_mysql_close($dbh);

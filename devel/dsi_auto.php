@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dsi_auto.php,v 1.3 2013-04-08 14:56:08 mbertin Exp $
+// $Id: dsi_auto.php,v 1.4 2015-04-03 11:16:28 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -24,8 +24,8 @@ require_once("$include_path/mysql_connect.inc.php");
 $dbh = connection_mysql();
 // on checke si l'utilisateur existe et si le mot de passe est OK
 $query = "SELECT count(1) FROM users WHERE username='$user' AND pwd=password('$password') ";
-$result = mysql_query($query, $dbh);
-$valid_user = mysql_result($result, 0, 0);
+$result = pmb_mysql_query($query, $dbh);
+$valid_user = pmb_mysql_result($result, 0, 0);
 if (!$valid_user) die("Interdit : utilisateur invalide ");
 
 if (!$dsi_auto) die("DSI Auto pas activée sur base $database (user=$user) Version noyau: $pmb_bdd_version ");
@@ -33,12 +33,12 @@ if (!$dsi_auto) die("DSI Auto pas activée sur base $database (user=$user) Versio
 
 	/* param par défaut */	
 	$requete_param = "SELECT * FROM users WHERE username='$user' LIMIT 1 ";
-	$res_param = mysql_query($requete_param, $dbh);
-	$field_values = mysql_fetch_row ( $res_param );
-	$array_values = mysql_fetch_array ( $res_param );
+	$res_param = pmb_mysql_query($requete_param, $dbh);
+	$field_values = pmb_mysql_fetch_row( $res_param );
+	$array_values = pmb_mysql_fetch_array( $res_param );
 	$i = 0;
-	while ($i < mysql_num_fields($res_param)) {
-		$field = mysql_field_name($res_param, $i) ;
+	while ($i < pmb_mysql_num_fields($res_param)) {
+		$field = pmb_mysql_field_name($res_param, $i) ;
 		$field_deb = substr($field,0,6);
 		switch ($field_deb) {
 			case "deflt_" :
@@ -63,8 +63,8 @@ if (!$dsi_auto) die("DSI Auto pas activée sur base $database (user=$user) Versio
 		$i++;
 		}
 	$requete_nom = "SELECT nom, prenom, user_email, userid, username, user_lang  FROM users WHERE username='$user' ";
-	$res_nom = mysql_query($requete_nom, $dbh);
-	@$param_nom = mysql_fetch_object ( $res_nom );
+	$res_nom = pmb_mysql_query($requete_nom, $dbh);
+	@$param_nom = pmb_mysql_fetch_object( $res_nom );
 	$lang = $param_nom->user_lang ;
 	$PMBusernom=$param_nom->nom ;
 	$PMBuserprenom=$param_nom->prenom ;
@@ -100,12 +100,12 @@ $action_diff_aff = "<h1>".$msg[dsi_dif_auto_titre]."</h1>" ;
 
 $requete = "SELECT id_bannette, proprio_bannette FROM bannettes ";
 $requete .= " WHERE (DATE_ADD(date_last_envoi, INTERVAL periodicite DAY) <= sysdate()) and bannette_auto=1 " ;
-$res = mysql_query($requete, $dbh);
+$res = pmb_mysql_query($requete, $dbh);
 
-while(($bann=mysql_fetch_object($res))) {
+while(($bann=pmb_mysql_fetch_object($res))) {
 	$liste_bannette[]=$bann->id_bannette ;
 	}
-mysql_free_result($res);
+pmb_mysql_free_result($res);
 
 if (!$liste_bannette) $liste_bannette = array() ;
 
@@ -123,4 +123,4 @@ for ($i=0 ; $i < sizeof($liste_bannette) ; $i++) {
 
 print $action_diff_aff ;
 // deconnection MYSql
-mysql_close($dbh);
+pmb_mysql_close($dbh);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.8.6.2 2014-07-02 13:16:23 mbertin Exp $
+// $Id: search.class.php,v 1.12 2015-05-26 08:21:38 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -67,7 +67,7 @@ class facette_search {
 
     	$table_name = "table_facette_temp".$this->n_ligne;
   		$req_table_tempo = "CREATE TEMPORARY TABLE ".$table_name." (notice_id int, index i_notice_id(notice_id))";
-  		$req = mysql_query($req_table_tempo,$dbh) or die ();
+  		$req = pmb_mysql_query($req_table_tempo,$dbh) or die ();
   		
    		foreach ($filter_array as $k=>$v) {
   			$filter_value = $v[1];
@@ -93,7 +93,7 @@ class facette_search {
 		  		}
 	  			$req_table_tempo .= "))";
     		}
-  			$req = mysql_query($req_table_tempo,$dbh) or die ();
+  			$req = pmb_mysql_query($req_table_tempo,$dbh) or die ();
   		}
   		 	
     	return $table_name;
@@ -111,11 +111,11 @@ class facette_search {
     	foreach ($valeur as $k=>$v) {
 	    	$filter_value = $v[1];
 	    	$filter_name = $v[0];
-
-	    	if (count($filter_value)==1) {
-	    		$libValue = $filter_value[0];
-	    	} else {
-	    		$libValue = implode(' '.$msg["search_or"].' ',$filter_value);
+	    	
+	    	$libValue = "";
+	    	foreach ($filter_value as $value) {
+	    		if ($libValue) $libValue .= ' '.$msg["search_or"].' ';
+	    		$libValue .= (substr($value, 0, 4) == "msg:" ? $msg[substr($value, 4)] : $value);
 	    	}
 			$item_literal_words[] = stripslashes($filter_name)." : '".stripslashes($libValue)."'";
     	}

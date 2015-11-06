@@ -1,5 +1,5 @@
 // gestion des listes "collapsibles" en Javascript
-// $Id: tablist.js,v 1.17.6.1 2014-08-13 12:33:27 mbertin Exp $
+// $Id: tablist.js,v 1.21 2015-01-20 15:35:18 vtouchard Exp $
 
 if(!base_path) var base_path = '.';
 var imgOpened = new Image();
@@ -45,6 +45,9 @@ function changeCoverImage(elt) {
 function expandAll_ajax_callback(text,el) {
 	var whichEl = document.getElementById(el + 'Child');
   	whichEl.innerHTML = text ;
+  	if(typeof(dojo) == "object"){
+  		dojo.parser.parse(whichEl);
+  	}
  }
  
 function expandAll_ajax_callback_error(status,text,el) {
@@ -57,7 +60,10 @@ function expandAll_ajax_callback_block(text,el) {
 		var res_notice=res[i].split("|*|");
 		if(res_notice[0] &&  res_notice[1]) {
 			var whichEl = document.getElementById('el' + res_notice[0] + 'Child');
-	  		whichEl.innerHTML = res_notice[1] ;
+	  		whichEl.innerHTML = res_notice[1] ;	
+	  		if(typeof(dojo) == "object"){
+	  	  		dojo.parser.parse(whichEl);
+	  	  	}
   		}
 	}
  }
@@ -81,6 +87,13 @@ function expandAll_ajax(start) {
      			setTimeout('expandAll_ajax('+i+')',0);
      			return;
      		}	
+     		var callback = tempColl[i].getAttribute("callback");
+	 	    if(callback){
+	 	   	  window[callback]();
+	 	    }
+	 	    if(typeof ajax_resize_elements == "function"){
+	 	   	  ajax_resize_elements();
+	 	    }
      	}
 	    changeCoverImage(tempColl[i]);	    
   	} 	
@@ -134,6 +147,13 @@ function expandAll() {
   for (var i = 0; i < tempCollCnt; i++) {
      if ((tempColl[i].className == 'notice-child') || (tempColl[i].className == 'child'))
      tempColl[i].style.display = 'block';
+     var callback = tempColl[i].getAttribute("callback");
+     if(callback){
+   	  window[callback]();
+     }
+     if(typeof ajax_resize_elements == "function"){
+   	  ajax_resize_elements();
+     }
      changeCoverImage(tempColl[i]);
   }
   tempColl    = document.getElementsByTagName('IMG');
@@ -182,9 +202,10 @@ var expand_state=new Array();
 function expandBase_ajax(el, unexpand,	mono_display_cmd) {
   if (!isDOM)
     return;
-
+  
   var whichEl = document.getElementById(el + 'Child');
   var whichIm = document.getElementById(el + 'Img');
+  var callback = whichEl.getAttribute("callback");
   if (whichEl.style.display == 'none' && whichIm) {
    	whichEl.style.display  = 'block';
     whichIm.src            = imgOpened.src;
@@ -209,6 +230,13 @@ function expandBase_ajax(el, unexpand,	mono_display_cmd) {
     whichIm.src            = imgClosed.src;
     
   }
+  if(callback){
+	  window[callback]();
+  }
+  if(typeof ajax_resize_elements == "function"){
+	  ajax_resize_elements();
+  }
+
 } // end of the 'expandBase()' function
 
 function expandBase(el, unexpand) {
@@ -217,6 +245,7 @@ function expandBase(el, unexpand) {
 
   var whichEl = document.getElementById(el + 'Child');
   var whichIm = document.getElementById(el + 'Img');
+  var callback = whichEl.getAttribute("callback");
   if (whichEl.style.display == 'none') {
     whichEl.style.display  = 'block';
     if (whichIm)whichIm.src            = imgOpened.src;
@@ -225,6 +254,12 @@ function expandBase(el, unexpand) {
   else if (unexpand) {
     whichEl.style.display  = 'none';
     if (whichIm)whichIm.src            = imgClosed.src;
+  }
+  if(callback){
+	  window[callback]();
+  }
+  if(typeof ajax_resize_elements == "function"){
+	  ajax_resize_elements();
   }
 } // end of the 'expandBase()' function
 

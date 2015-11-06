@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: edit_expl.inc.php,v 1.36.2.1 2014-03-20 16:59:56 dgoron Exp $
+// $Id: edit_expl.inc.php,v 1.38 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -16,23 +16,23 @@ $nex = new exemplaire($cb, $expl_id,$id);
 
 //on compte de nombre de prets pour cet exemplaire 
 $req = "select count(arc_expl_id) as nb_prets from pret_archive where arc_expl_id = ".$nex->expl_id;
-$res = mysql_query($req);
-if(mysql_num_rows($res)){	
-	$arch_pret = mysql_fetch_object($res);
+$res = pmb_mysql_query($req);
+if(pmb_mysql_num_rows($res)){	
+	$arch_pret = pmb_mysql_fetch_object($res);
 	$nb_prets = $arch_pret->nb_prets ;
 }else $nb_prets = 0;
 if($nb_prets){
 	//dernière date de pret pour cet exemplaire 
 	$req = "select date_format(last_loan_date, '".$msg["format_date"]."') as date_last from exemplaires where expl_id = ".$nex->expl_id;
-	$res = mysql_query($req);
-	if(mysql_num_rows($res)){
-		$expl_pret = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req);
+	if(pmb_mysql_num_rows($res)){
+		$expl_pret = pmb_mysql_fetch_object($res);
 		$date_last = $expl_pret->date_last ;
 		$info_nb_prets=str_replace("!!nb_prets!!",$nb_prets,$msg['expl_nbprets']);
 		$query = "select count(pret_idexpl) ";
 		$query .= "from pret, empr where pret_idexpl='".$nex->expl_id."' and pret_idempr=id_empr ";
-		$result = mysql_query($query, $dbh);
-		if ($result && mysql_result($result,0,0)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if ($result && pmb_mysql_result($result,0,0)) {
 			$info_date_last = str_replace("!!date_last!!",$date_last,$msg['expl_lastpret_encours']);
 		} else {
 			$info_date_last = str_replace("!!date_last!!",$date_last,$msg['expl_lastpret_retour']);
@@ -103,9 +103,9 @@ $query .= " date_format(pret_date, '".$msg["format_date"]."') as aff_pret_date, 
 $query .= " date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour, ";
 $query .= " IF(pret_retour>sysdate(),0,1) as retard " ; 
 $query .= " from pret, empr where pret_idexpl='".$nex->expl_id."' and pret_idempr=id_empr ";
-$result = mysql_query($query, $dbh);
-if(mysql_num_rows($result)) {
-	$pret = mysql_fetch_object($result);
+$result = pmb_mysql_query($query, $dbh);
+if(pmb_mysql_num_rows($result)) {
+	$pret = pmb_mysql_fetch_object($result);
 	print "<hr /><div class='row'><b>$msg[380]</b> ";
 	$link = "<a href='./circ.php?categ=pret&form_cb=".rawurlencode($pret->empr_cb)."'>";
 	print pmb_bidi($link.$pret->empr_prenom.' '.$pret->empr_nom.' ('.$pret->empr_cb.')</a>');

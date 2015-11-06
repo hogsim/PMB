@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesThesauri.class.php,v 1.4 2013-04-11 08:18:55 mbertin Exp $
+// $Id: pmbesThesauri.class.php,v 1.5 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -48,8 +48,8 @@ class pmbesThesauri extends external_services_api_class {
 		
 		global $dbh;
 		$q = "select path from noeuds where id_noeud = '".$node_id."' ";
-		$r = mysql_query($q, $dbh);
-		$path=mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		$path=pmb_mysql_result($r, 0, 0);
 		$nb_pere=substr_count($path,'/');
 
 			
@@ -92,9 +92,9 @@ class pmbesThesauri extends external_services_api_class {
 		}
 
 		$requete = "SELECT distinct notice_id ".str_replace("!!opac_phototeque!!","",$suite_req);
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		$results = array();
-		while($row = mysql_fetch_row($res)) {
+		while($row = pmb_mysql_fetch_row($res)) {
 			$results[] = $row[0];
 		}
 		
@@ -127,9 +127,9 @@ class pmbesThesauri extends external_services_api_class {
 		if ($node->num_renvoi_voir) {
 			$result['node_target_id'] = $node->num_renvoi_voir;
 			$q = "select * from categories where num_noeud = '".$node->num_renvoi_voir."'";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			$result['node_target_categories'] = array();
-			while($obj = mysql_fetch_object($r)) {
+			while($obj = pmb_mysql_fetch_object($r)) {
 				$categ = array();
 				$categ['node_id'] = $node_id;
 				$categ['category_caption'] = utf8_normalize($obj->libelle_categorie);
@@ -139,9 +139,9 @@ class pmbesThesauri extends external_services_api_class {
 		}
 
 		$q = "select * from categories where num_noeud = '".$node_id."'";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$result['node_categories'] = array();
-		while($obj = mysql_fetch_object($r)) {
+		while($obj = pmb_mysql_fetch_object($r)) {
 			$categ = array();
 			$categ['node_id'] = $node_id;
 			$categ['category_caption'] = utf8_normalize($obj->libelle_categorie);
@@ -153,11 +153,11 @@ class pmbesThesauri extends external_services_api_class {
 		$result['node_path'] = array();
 		if ($path_ids) {
 			$q = "select * from categories where num_noeud IN(".implode(',', $path_ids).") order by num_noeud";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			$result['node_path'] = array();
 			$current_node_id = 0;
 			$categs = array();
-			while($obj = mysql_fetch_object($r)) {
+			while($obj = pmb_mysql_fetch_object($r)) {
 				if (!$current_node_id)
 					$current_node_id = $obj->num_noeud;
 				if ($current_node_id != $obj->num_noeud) {
@@ -183,18 +183,18 @@ class pmbesThesauri extends external_services_api_class {
 		
 		$children = array();
 		$children_res = noeuds::listChilds($node_id, 1);
-		while($row=mysql_fetch_assoc($children_res)) {
+		while($row=pmb_mysql_fetch_assoc($children_res)) {
 			$children[] = $row['id_noeud'];
 		}
 		$result['node_children'] = array();
 		if ($children) {
 			$q = "select noeuds.id_noeud, noeuds.num_renvoi_voir, categories.* from categories left join noeuds on (noeuds.id_noeud = categories.num_noeud) where noeuds.id_noeud IN(".implode(',', $children).") order by num_noeud, libelle_categorie";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			$result['node_children'] = array();
 			$current_node_id = 0;
 			$current_islink = false;
 			$categs = array();
-			while($obj = mysql_fetch_object($r)) {
+			while($obj = pmb_mysql_fetch_object($r)) {
 				if (!$current_node_id)
 					$current_node_id = $obj->num_noeud;
 				if ($current_node_id != $obj->num_noeud) {
@@ -223,10 +223,10 @@ class pmbesThesauri extends external_services_api_class {
 		
 		$result['node_seealso'] = array();
 		$q = "select voir_aussi.num_noeud_dest, categories.* from voir_aussi left join categories on (voir_aussi.num_noeud_dest = categories.num_noeud) where num_noeud_orig = ".$node_id." order by voir_aussi.num_noeud_dest";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$current_node_id = 0;
 		$categs = array();
-		while($obj = mysql_fetch_object($r)) {
+		while($obj = pmb_mysql_fetch_object($r)) {
 			if (!$current_node_id)
 				$current_node_id = $obj->num_noeud;
 			if ($current_node_id != $obj->num_noeud) {

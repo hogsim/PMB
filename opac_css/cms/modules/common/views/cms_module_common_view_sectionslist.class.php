@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_sectionslist.class.php,v 1.2.6.2 2015-02-25 16:11:05 mbertin Exp $
+// $Id: cms_module_common_view_sectionslist.class.php,v 1.6 2015-06-08 09:12:09 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -45,6 +45,12 @@ class cms_module_common_view_sectionslist extends cms_module_common_view_django{
 		return $form;
 	}
 	
+	public function save_form(){
+		$this->save_constructor_link_form("section");
+		$this->save_constructor_link_form('article');
+		return parent::save_form();
+	}
+	
 	public function render($datas){	
 		//on rajoute nos éléments...
 		//le titre
@@ -53,7 +59,7 @@ class cms_module_common_view_sectionslist extends cms_module_common_view_django{
 		$render_datas['sections'] = array();
 		if(is_array($datas) && count($datas)){
 			foreach($datas as $section){
-				$cms_section = new cms_section($section);
+				$cms_section = cms_provider::get_instance("section",$section);
 				$infos= $cms_section->format_datas();
 				$infos['link'] = $this->get_constructed_link("section",$section);
 				foreach ($infos['articles'] as $i=>$article) {
@@ -82,6 +88,7 @@ class cms_module_common_view_sectionslist extends cms_module_common_view_django{
 			'desc'=> $this->msg['cms_module_common_view_section_link_desc']
 		);
 		$format[] = $sections;
+		$format = array_merge($format,parent::get_format_data_structure());
 		return $format;
 	}
 }

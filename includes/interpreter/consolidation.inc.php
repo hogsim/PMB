@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: consolidation.inc.php,v 1.14.6.10 2015-04-16 11:18:17 jpermanne Exp $
+// $Id: consolidation.inc.php,v 1.33 2015-04-16 11:16:38 jpermanne Exp $
 
 global $include_path, $class_path, $base_path;
 require_once ($include_path . "/misc.inc.php");
@@ -29,6 +29,9 @@ $func_format['multi_libelle']=aff_libelle_multicritere;
 $func_format['multi_contenu']=aff_contenu_multicritere;
 $func_format['multi_intitule']=aff_intitule_multicritere;
 $func_format['multi_facettes']=aff_facettes_multicritere;
+$func_format['recherche_predefinie']=aff_recherche_predefinie;
+$func_format['vue_num']=aff_vue_num;
+$func_format['vue_libelle']=aff_vue_libelle;
 
 //Fonctions emprunteur
 $func_format['empr_age']=aff_age_user;
@@ -478,6 +481,12 @@ function aff_type_page($param, $parser){
 		$niveau = $get['lvl'];
 	} else $niveau='';
 	
+	if($post['search_type_asked']){
+		$type = $post['search_type_asked'];
+	} elseif ($get['search_type_asked']){
+		$type = $get['search_type_asked'];
+	} else $type='';
+	
 	if($post['mode']){
 		$mode = $post['mode'];
 	} elseif ($get['mode']){
@@ -494,7 +503,14 @@ function aff_type_page($param, $parser){
 				"tag" => 12, "notation" => 13, "sugg" => 14, "rss" => 15, "section" => 16,
 				"sort" => 17, "information" => 18, "doc_command" => 19, "doc_num" => 20,
 				"authperso" => 21, "perio_a2z" => 22, "bannette" => 23, "faq" => 24, "cms" => 25,
-				"extend" => 26, "result_docnum" => 27, "accueil" => 28 );
+				"extend" => 26, "result_docnum" => 27, "accueil" => 28, "ajax" => 29 );
+	
+	//pour le panier
+	if($post['action']){
+		$action = $post['action'];
+	} elseif ($get['action']){
+		$action = $get['action'];
+	} else $action='';
 	
 	//url
 	$url = aff_url_asked($param,$parser);
@@ -508,11 +524,25 @@ function aff_type_page($param, $parser){
 		return $page['tag'];
 	}
 	
+	//tags recherche
+	if($post['tags']){
+		$tags = $post['tags'];
+	} elseif ($get['tags']){
+		$tags = $get['tags'];
+	} else {
+		$tags='';
+	}
+	
 	//Document numérique
 	if(strpos($url,'doc_num.php') || strpos($url,'doc_num_data.php') || strpos($url,'visionneuse.php')){
 		return $page['doc_num'];
 	}
 	
+	//appel AJAX
+	if(strpos($url,'ajax.php')) {
+		return $page['ajax'];
+	}
+			
 	$type_page='';
 	switch($niveau){		
 		case 'author_see':
@@ -523,6 +553,7 @@ function aff_type_page($param, $parser){
 		case 'publisher_see':
 		case 'coll_see':
 		case 'subcoll_see':
+		case 'concept_see' :
 			$type_page=$page['aut'];
 			break;		
 		case 'more_results':
@@ -542,8 +573,14 @@ function aff_type_page($param, $parser){
 					case 'souscollection':
 					case 'categorie':
 					case 'indexint':
-					case 'keyword':
 						$type_page=$page['result_aut'];
+						break;
+					case 'keyword':
+						if($tags){
+							$type_page=$page['result_noti'];
+						}else{
+							$type_page=$page['result_aut'];
+						}
 						break;
 					case 'docnum':
 						$type_page=$page['result_docnum'];
@@ -578,6 +615,8 @@ function aff_type_page($param, $parser){
 		case 'cart':
 		case 'show_cart':
 		case 'resa_cart':
+		case 'transform_to_sugg':
+		case 'show_list':
 			$type_page=$page['caddie'];
 			break;
 		case 'section_see':
@@ -643,7 +682,6 @@ function aff_type_page($param, $parser){
 		case 'bannette_creer':
 		case 'make_multi_sugg':
 		case 'import_sugg':
-		case 'transform_to_sugg':
 		case 'private_list':
 		case 'public_list':
 		case 'demande_list':		
@@ -653,13 +691,17 @@ function aff_type_page($param, $parser){
 			break;	
 		default:
 			//pas de lvl
-			if(strpos($url,'empr.php')){
+			if($type){
+				$type_page=$page['recherche'];
+			}elseif(strpos($url,'empr.php')){
 				$type_page=$page['empr'];
 			}elseif((strpos($url,'index.php')) || (!strpos($url,'.php'))){
 				$type_page=$page['accueil'];
 			}else{
 				$type_page=$page['recherche'];
-			}	
+			}
+			if($action == 'export')
+				$type_page = $page['caddie'];
 			break;
 		
 	}
@@ -744,6 +786,45 @@ function aff_sous_type_page($param,$parser){
 		return '2002';
 	}
 	
+	//facettes
+	if($get['reinit_facette'] || isset($get['param_delete_facette'])) { //param_delete_facette peut être égal à 0
+		return '308';
+	}elseif($get['facette_test']){
+		return '307';
+	}
+	
+	//recherches affiliées
+	if($get['tab']){
+		$tab=$get['tab'];
+	}
+	
+	//tags recherche
+	if($post['tags']){
+		$tags = $post['tags'];
+	} elseif ($get['tags']){
+		$tags = $get['tags'];
+	} else {
+		$tags='';
+	}
+	
+	//appel AJAX - Log expand notice
+	if(strpos($url,'ajax.php') && (strpos($url,'storage') || strpos($url,'expand_notice'))) {
+		switch($biblio){
+			case 's':
+				return '2902';
+				break;
+			case 'b':
+				return '2903';
+				break;
+			case 'a':
+				return '2904';
+				break;
+			default:
+				return '2901';
+				break;
+		}
+	}
+	
 	$search_type='';
 	switch($niveau){		
 		case 'author_see':
@@ -758,7 +839,14 @@ function aff_sous_type_page($param,$parser){
 		case 'coll_see':
 			$search_type = '505'; 
 			break;		
+		case 'concept_see':
+			$search_type = '509'; 
+			break;		
 		case 'more_results':
+			if($tab=='affiliate'){
+				$search_type = '306';
+				break;
+			}
 			switch($mode){
 				case 'titre':
 				case 'title':
@@ -792,7 +880,11 @@ function aff_sous_type_page($param,$parser){
 					$search_type = '407'; 
 					break;
 				case 'keyword':
-					$search_type = '408'; 
+					if($tags){
+						$search_type = '309';
+					}else{
+						$search_type = '408';
+					}
 					break;
 				case 'abstract':
 					$search_type = '409'; 
@@ -804,6 +896,7 @@ function aff_sous_type_page($param,$parser){
 					$search_type = '305';  
 					break;
 				default:
+					$search_type = '302';
 					break;
 			}
 			break;		
@@ -875,7 +968,15 @@ function aff_sous_type_page($param,$parser){
 			$search_type = '1002'; 
 			break;
 		case 'show_cart':
-			$search_type = '801'; 
+			if ($get['raz_cart']) {
+				$search_type = '805';
+			} elseif ($get['action']=='del') {
+				$search_type = '806';
+			} elseif (isset($get['sort'])) { //Peut être égal à 0
+				$search_type = '808';
+			} else {
+				$search_type = '801';
+			}
 			break;
 		case 'resa_cart':
 			$search_type = '804';
@@ -951,6 +1052,9 @@ function aff_sous_type_page($param,$parser){
 					case 'simple_search':
 						$search_type = '101'; 
 						break;
+					case 'perio_a2z':
+						$search_type = '108'; 
+						break;
 					default:
 						$search_type = '107'; 
 						break;
@@ -1015,7 +1119,10 @@ function aff_sous_type_page($param,$parser){
 			$search_type = '722';
 			break;
 		case 'transform_to_sugg':
-			$search_type = '723';
+			$search_type = '809';
+			break;
+		case 'show_list':
+			$search_type = '810';
 			break;
 		case 'private_list':
 			$search_type = '713';
@@ -1033,13 +1140,17 @@ function aff_sous_type_page($param,$parser){
 			$search_type = '718';
 			break;
 		case 'cart':
-			switch($action){	
-				case 'print_cart':
-					$search_type = '802';
-					break;		
-				default:
-					$search_type = '801';
-					break;
+			if (strpos($url,'print.php')) {
+				$search_type = '807';
+			} else {
+				switch($action){	
+					case 'print_cart':
+						$search_type = '802';
+						break;		
+					default:
+						$search_type = '801';
+						break;
+				}
 			}
 			break;
 		case 'list':
@@ -1070,6 +1181,9 @@ function aff_sous_type_page($param,$parser){
 					break;
 				case 'simple_search':
 					$search_type = '101'; 
+					break;
+				case 'perio_a2z':
+					$search_type = '108'; 
 					break;
 				default:
 					//pas de lvl ni de type
@@ -1352,6 +1466,53 @@ function aff_facettes_multicritere($param,$parser){
 	}
 }
 
+/*
+ * Affiche le nom de la recherche prédéfinie
+ */
+function aff_recherche_predefinie($param, $parser){
+	$tab = get_var_get($param,$parser);
+	if (!isset($tab['onglet_persopac'])) {
+		$tab = get_var_post($param,$parser);
+		if (!isset($tab['onglet_persopac'])) {
+			return '';
+		}
+	}
+	
+	$tmp_name = sql_value("SELECT search_shortname FROM search_persopac WHERE search_id=".$tab['onglet_persopac']);
+	if (trim($tmp_name)) {
+		return $tmp_name;
+	} else {
+		return sql_value("SELECT search_name FROM search_persopac WHERE search_id=".$tab['onglet_persopac']);
+	}
+}
+
+/*
+ * Vues
+ */
+function aff_vue_num($param, $parser){
+	$tab = get_info_generique($param,$parser);
+	
+	if (!isset($tab['opac_view'])) {
+		return '';
+	} elseif ($tab['opac_view']=='default_opac') {
+		return '';
+	}
+	
+	return $tab['opac_view']*1;
+}
+
+function aff_vue_libelle($param, $parser){
+	$tab = get_info_generique($param,$parser);
+	
+	if (!isset($tab['opac_view'])) {
+		return '';
+	} elseif ($tab['opac_view']=='default_opac') {
+		return '';
+	}
+
+	return sql_value("SELECT opac_view_name FROM opac_views WHERE opac_view_id=".($tab['opac_view']*1));
+}
+
 /********************************************************************
  * 																	*
  *   FONCTIONS SUR LES VARIABLES GLOBALES ET LES CARACTERISTIQUES	*
@@ -1468,8 +1629,8 @@ function func_test($f_name){
  * Retourne la valeur associée à la requête si elle existe
  */
 function sql_value($rqt) {
-	if($result=mysql_query($rqt)){
-		if($row = mysql_fetch_row($result))	
+	if($result=pmb_mysql_query($rqt)){
+		if($row = pmb_mysql_fetch_row($result))	
 			return $row[0];
 	}
 	return '';

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: modele_parution_edition.php,v 1.6 2009-05-16 11:12:04 dbellamy Exp $
+// $Id: modele_parution_edition.php,v 1.7 2015-04-03 11:16:29 jpermanne Exp $
 
 // définition du minimum nécéssaire
 $base_path="./../../..";
@@ -61,17 +61,17 @@ $form="<form class='form-$current_module' id='form_modele' name='form_modele' me
 switch ($act) {
 	case 'update':				
 		$requete = "delete FROM abts_grille_modele WHERE num_modele='$modele_id' and date_parution ='$date_parution'";
-		mysql_query($requete, $dbh);			
+		pmb_mysql_query($requete, $dbh);			
 		if (isset($doc_type[1])) {
 			$form=str_replace("!!check_periodique!!","checked",$form);
 			$requete = "INSERT INTO abts_grille_modele SET num_modele='$modele_id', date_parution ='$date_parution', type_serie = '1', nombre_recu= '$nombre_recu'";
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 			$type_doc=1;
 		}
 		if (isset($doc_type[2])) {
 			$form=str_replace("!!check_hors_serie!!","checked",$form);
 			$requete = "INSERT INTO abts_grille_modele SET num_modele='$modele_id', date_parution ='$date_parution', type_serie = '2', numero='$numero'";
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 			$type_doc+=2;
 		}	
 		$form="<script type='text/javascript'>Fermer('$date_parution','$type_doc');</script>";
@@ -79,14 +79,14 @@ switch ($act) {
 
 	case 'change':
 		$requete = "select type_serie, numero from abts_grille_modele where num_modele='$modele_id' and date_parution ='$date_parution'";
-		$resultat=mysql_query($requete);
-		if(mysql_num_rows($resultat)) { // Supprimer une réception
-			while($r=mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($resultat)) { // Supprimer une réception
+			while($r=pmb_mysql_fetch_object($resultat)) {
 				$type_serie=$r->type_serie;
 				$numero=$r->numero;
 				if($type_serie==1) {
 					$requete = "delete FROM abts_grille_modele WHERE num_modele='$modele_id' and date_parution ='$date_parution' and type_serie = '1'";
-					mysql_query($requete, $dbh);
+					pmb_mysql_query($requete, $dbh);
 					$supprime=1;
 				}
 				if($type_serie==2)	$type_doc=2;
@@ -95,7 +95,7 @@ switch ($act) {
 		}
 		if($supprime==0) { // Ajout
 			$requete = "INSERT INTO abts_grille_modele SET num_modele='$modele_id', date_parution ='$date_parution', type_serie = '1'";
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 			$type_doc+=1;
 		}		
 		$form="<script type='text/javascript'>Fermer('$date_parution','$type_doc');</script>";		
@@ -106,9 +106,9 @@ switch ($act) {
 		$checked2="";
 		$nombre_recu=1;
 		$requete = "select type_serie, numero, nombre_recu from abts_grille_modele where num_modele='$modele_id' and date_parution ='$date_parution'";
-		$resultat=mysql_query($requete);
-		if(mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){
+		$resultat=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){
 				$type_serie=$r->type_serie;
 				if($type_serie==1) {
 					$checked1="checked";

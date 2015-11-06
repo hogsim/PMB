@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: budgets.tpl.php,v 1.14.2.1 2015-08-13 08:04:28 jpermanne Exp $
+// $Id: budgets.tpl.php,v 1.14 2013-11-28 15:51:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -154,9 +154,6 @@ function collapseAllImb() {
 }
 
 </script>	
-<form name='print_bud' method='post' action='./print_acquisition.php?categ=ach&sub=bud&action=print_budget&id_bibli=!!id_bibli!!&id_bud=!!id_bud!!' target='_blank'>
-	<input type='button' class='bouton' value='".htmlentities($msg['acquisitions_export_excel'],ENT_QUOTES,$charset)."' onClick='this.form.submit();'>
-</form>
 ";
 
 

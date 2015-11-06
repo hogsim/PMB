@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fpdf_etiquette.class.php,v 1.8.18.1 2015-03-19 13:36:30 jpermanne Exp $
+// $Id: fpdf_etiquette.class.php,v 1.9 2015-03-19 13:35:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // � 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: external_common.inc.php,v 1.11.6.1 2015-05-15 12:57:00 jpermanne Exp $
+// $Id: external_common.inc.php,v 1.14 2015-05-15 12:55:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -63,7 +63,7 @@ function do_sources() {
 	//Recherche des sources
     $requete="SELECT connectors_categ_sources.num_categ, connectors_sources.source_id, connectors_categ.connectors_categ_name as categ_name, connectors_sources.name, connectors_sources.comment, connectors_sources.repository, connectors_sources.opac_allowed, source_sync.cancel FROM connectors_sources LEFT JOIN connectors_categ_sources ON (connectors_categ_sources.num_source = connectors_sources.source_id) LEFT JOIN connectors_categ ON (connectors_categ.connectors_categ_id = connectors_categ_sources.num_categ) LEFT JOIN source_sync ON (connectors_sources.source_id = source_sync.source_id AND connectors_sources.repository=2) ORDER BY connectors_categ_sources.num_categ DESC, connectors_sources.name ";
 
-    $resultat=mysql_query($requete);
+    $resultat=pmb_mysql_query($requete);
     if ($source) $_SESSION["checked_sources"]=$source;
     if ($_SESSION["checked_sources"]&&(!$source)) $source=$_SESSION["checked_sources"];
     if (!is_array($source)) $source=array();
@@ -72,7 +72,7 @@ function do_sources() {
     $r .= "<div>";
     $count=0;
     $debloque_form_outputed = array();
-    while ($srce=mysql_fetch_object($resultat)) {
+    while ($srce=pmb_mysql_fetch_object($resultat)) {
     	
     	if ($old_categ !== $srce->num_categ) {
     		$count++;
@@ -131,6 +131,7 @@ function do_sources() {
 //Si c'est une multi
 if ($_SESSION["ext_type"]=="multi") {
 	$sc=new search(false,"search_fields_unimarc");
+	$sc->remove_forbidden_fields();
 } else {
 	$sc=new search(false,"search_simple_fields_unimarc");
 }

@@ -2,13 +2,15 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: author.class.php,v 1.26 2013-04-19 08:20:24 mbertin Exp $
+// $Id: author.class.php,v 1.29 2015-06-10 08:46:55 pmbs Exp $
 
 // définition de la classe de gestion des 'auteurs'
 
 if ( ! defined( 'AUTEUR_CLASS' ) ) {
   define( 'AUTEUR_CLASS', 1 );
 
+require_once($class_path."/rdf/arc2/ARC2.php");
+  
 class auteur {
 
 	// ---------------------------------------------------------------
@@ -27,6 +29,7 @@ class auteur {
 	var $author_web;	// web de l'auteur
 	var $author_comment; //
 	var $author_web_link;	// lien web de l'auteur
+	var $enrichment=null;
 
 
 // ---------------------------------------------------------------
@@ -50,10 +53,10 @@ function auteur($id)
 function get_primaldata() {
 	global $dbh;
 	$requete = "SELECT * FROM authors WHERE author_id='".addslashes($this->id)."' LIMIT 1 ";
-	$result = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) {
-		$obj = mysql_fetch_object($result);
-		mysql_free_result($result);
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		$obj = pmb_mysql_fetch_object($result);
+		pmb_mysql_free_result($result);
 		$this->get_primaldatafrom($obj);
 		} else {
 			// pas d'auteur avec cette clé
@@ -72,7 +75,8 @@ function get_primaldata() {
 			$this->salle = '';
 			$this->ville = '';
 			$this->pays	= '';
-			$this->numero = '';			
+			$this->numero = '';	
+					
 			}
 	}
 
@@ -190,10 +194,10 @@ function get_similar_name($author_type='72',$from=0,$number=30) {
 	global $dbh;
 	if($author_type) $and_author_type = " and author_type='$author_type' ";
 	$requete = "SELECT * FROM authors WHERE author_name='".$this->name."' and author_id != ".$this->id." $and_author_type order by author_date, author_lieu  LIMIT $from, $number";
-	$result = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) {
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
 		$i=0;
-		while(($obj = mysql_fetch_object($result))) {
+		while(($obj = pmb_mysql_fetch_object($result))) {
 			$this->similar_name[$i]->id       = $obj->author_id;
 			$this->similar_name[$i]->type     = $obj->author_type;
 			$this->similar_name[$i]->name     = $obj->author_name;
@@ -209,8 +213,8 @@ function get_similar_name($author_type='72',$from=0,$number=30) {
 			$this->similar_name[$i]->pays	= $obj->author_pays	;
 			$this->similar_name[$i]->numero = $obj->author_numero;
 			$requete = "SELECT count(distinct responsability_notice) FROM responsability WHERE responsability_author=".$this->similar_name[$i]->id;			
-			$res_count = mysql_query($requete);			
-			if ($res_count) $this->similar_name[$i]->nb_notice =  mysql_result($res_count,0,0); 
+			$res_count = pmb_mysql_query($requete);			
+			if ($res_count) $this->similar_name[$i]->nb_notice =  pmb_mysql_result($res_count,0,0); 
 			else $this->similar_name[$i]->nb_notice=0;
 			$i++;		
 		}
@@ -418,7 +422,80 @@ function print_resume($level = 2,$css='') {
 	}
 
 	return $print;
+}
+	
+public function get_enrichment()
+{
+	global $dbh;
+	global $charset;
+	
+	if($this->enrichment===null){
+		$query="SELECT author_enrichment FROM authors WHERE author_id='".addslashes($this->id)."'";
+		$result = pmb_mysql_query($query, $dbh);
+		if (pmb_mysql_num_rows ( $result )) {
+			$this->enrichment = unserialize(pmb_mysql_result ( $result, 0, 0 ));
+		}
+		
+// 		liste  des oeuvres qui ont au moins une notice dans la base
+		if(isset($this->enrichment['biblio'])){
+			$index=0;
+			foreach ($this->enrichment['biblio'] as $work){
+				if($work['tab_isbn']){
+					$tab_isbn = implode(',',$work['tab_isbn']);
+					$sql = "SELECT notice_id FROM notices WHERE code IN($tab_isbn)";
+					$res = pmb_mysql_query($sql, $dbh);
+					if ($res) {
+						while($notice=pmb_mysql_fetch_object($res)){
+							if($notice->notice_id){
+								$this->enrichment['biblio'][$index]['notice_id']=$notice->notice_id;
+								break;
+							}
+						}
+					}
+				}
+				$index++;
+			}
+		}
+		//tri des auteurs liés
+		
+		if (isset($this->enrichment['movement'])){
+			$index=0;
+			foreach ($this->enrichment['movement'] as $mvt){
+				$index_author=0;
+				foreach ($mvt['authors'] as $author){
+					$query = "SELECT num_authority from authorities_sources WHERE authority_number='" . $author['id_bnf'] . " ' ";
+					$result = @pmb_mysql_query ( $query, $dbh );
+					if (pmb_mysql_num_rows ( $result )) {
+						$this->enrichment['movement'][$index]['authors'][$index_author]['pmb_id']=pmb_mysql_result ( $result, 0, 0 );
+					}
+					$index_author++;
+				} 
+			$index++;
+			}
+		}
+		
+		if (isset($this->enrichment['genre'])){
+			$index=0;
+			foreach ($this->enrichment['genre'] as $gen){
+				$index_author=0;
+					foreach ($gen['authors'] as $author){
+					$query = "SELECT num_authority from authorities_sources WHERE authority_number='" . $author['id_bnf'] . " ' ";
+					$result = pmb_mysql_query ( $query, $dbh );
+					if (pmb_mysql_num_rows ( $result )) {
+						$this->enrichment['genre'][$index]['authors'][$index_author]['pmb_id']=pmb_mysql_result ( $result, 0, 0 );
+					}
+					$index_author++;
+				}
+				$index++;
+			}
+		}			
 	}
+	return $this->enrichment;
+}
+
+	
 } # fin de définition de la classe auteur
 
 } # fin de délaration
+
+

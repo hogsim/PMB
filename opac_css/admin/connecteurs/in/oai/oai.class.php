@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: oai.class.php,v 1.9 2012-10-17 07:50:52 dgoron Exp $
+// $Id: oai.class.php,v 1.10 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -266,13 +266,13 @@ class oai extends connector {
 					//Si conservation des anciennes notices, on regarde si elle existe
 					if (!$this->del_old) {
 						$requete="select count(*) from entrepot_source_".$this->source_id." where connector_id='".addslashes($this->get_id())."' and ref='".addslashes($ref)."'";
-						$rref=mysql_query($requete);
-						if ($rref) $ref_exists=mysql_result($rref,0,0);
+						$rref=pmb_mysql_query($requete);
+						if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 					}
 					//Si pas de conservation des anciennes notices, on supprime
 					if ($this->del_old) {
 						$requete="delete from entrepot_source_".$this->source_id." where connector_id='".addslashes($this->get_id())."' and ref='".addslashes($ref)."'";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}
 					//Si pas de conservation ou reférence inexistante
 					if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {
@@ -286,14 +286,14 @@ class oai extends connector {
 						
 						//Récupération d'un ID
 						$requete="insert into external_count (recid) values('".addslashes($this->get_id()." ".$this->source_id." ".$ref)."')";
-						$rid=mysql_query($requete);
-						if ($rid) $recid=mysql_insert_id();
+						$rid=pmb_mysql_query($requete);
+						if ($rid) $recid=pmb_mysql_insert_id();
 						
 						foreach($n_header as $hc=>$code) {
 							$requete="insert into entrepot_source_".$this->source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid) values(
 							'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 							'".$hc."','',-1,0,'".addslashes($code)."','',$recid)";
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 						}
 						
 						for ($i=0; $i<count($fs); $i++) {
@@ -309,7 +309,7 @@ class oai extends connector {
 									'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 									'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 									' ".addslashes(strip_empty_words($value))." ',$recid)";
-									mysql_query($requete);
+									pmb_mysql_query($requete);
 								}
 							} else {
 								$value=$rec_uni_dom->get_datas($fs[$i]);
@@ -317,7 +317,7 @@ class oai extends connector {
 								'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 								'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 								' ".addslashes(strip_empty_words($value))." ',$recid)";
-								mysql_query($requete);
+								pmb_mysql_query($requete);
 							}
 						}
 					}
@@ -356,9 +356,9 @@ class oai extends connector {
 			} else {
 				//Recherche de la dernière date...
 				$requete="select unix_timestamp(max(date_import)) from entrepot_source_".$this->source_id." where connector_id='".addslashes($this->get_id()).";";
-				$resultat=mysql_query($requete);
-				if (mysql_num_rows($resultat)) {
-					$last_date=mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat)) {
+					$last_date=pmb_mysql_result($resultat,0,0);
 					if ($last_date) {
 						//En fonction de la granularité, on ajoute une seconde ou un jour !
 						if ($oai20->granularity=="YYYY-MM-DD") $last_date+=3600*24; else $last_date+=1;
@@ -386,7 +386,7 @@ class oai extends connector {
 			$envt["sets"]=$sets;
 			$envt["date_start"]=$date_start;
 			$requete="update source_sync set env='".addslashes(serialize($envt))."' where source_id=".$source_id;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			
 			//Lancement de la requête
 			$this->current_set=0;

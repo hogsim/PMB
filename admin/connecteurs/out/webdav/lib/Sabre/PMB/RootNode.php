@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: RootNode.php,v 1.4.2.5 2014-12-16 08:45:01 mbertin Exp $
+// $Id: RootNode.php,v 1.10 2015-04-03 11:16:24 jpermanne Exp $
 namespace Sabre\PMB;
 
 class RootNode extends Collection {
@@ -374,11 +374,11 @@ class RootNode extends Collection {
 		
 		//On test si le perio existe
 		$query = 'SELECT notice_id FROM notices WHERE tit1="'.addslashes($entry['periodique']['tit1']).'" AND niveau_biblio="'.addslashes($entry['periodique']['niveau_biblio']).'" AND niveau_hierar="'.addslashes($entry['periodique']['niveau_hierar']).'"';
-		$result= mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+		$result= pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 		
-		if(mysql_num_rows($result)){
+		if(pmb_mysql_num_rows($result)){
 			//si oui on passe l'id dans la zone du pério
-			$entry['periodique']['notice_id']=mysql_result($result, 0,0);
+			$entry['periodique']['notice_id']=pmb_mysql_result($result, 0,0);
 		}else{
 			//sinon on ajoute
 			$first=true;
@@ -393,8 +393,8 @@ class RootNode extends Collection {
 				}
 			}
 		
-			mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
-			$entry['periodique']['notice_id']=mysql_insert_id();
+			pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
+			$entry['periodique']['notice_id']=pmb_mysql_insert_id();
 			\notice::majNoticesTotal($entry['periodique']['notice_id']);
 		}
 	}
@@ -426,9 +426,9 @@ class RootNode extends Collection {
 		AND mention_date="'.addslashes($entry['bulletin']['mention_date']).'"
 		AND date_date="'.addslashes($entry['bulletin']['date_date']).'"
 		AND bulletin_notice="'.addslashes($entry['periodique']['notice_id']).'" ';
-		$result= mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
-		if(mysql_num_rows($result)){
-			$entry['bulletin']['bulletin_id']=mysql_result($result, 0,0);
+		$result= pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
+		if(pmb_mysql_num_rows($result)){
+			$entry['bulletin']['bulletin_id']=pmb_mysql_result($result, 0,0);
 			//si oui on passe l'id dans la zone du bulletin
 		}else{
 			//sinon on ajoute
@@ -436,19 +436,19 @@ class RootNode extends Collection {
 			foreach($entry['bulletin'] as $fieldName=>$value){
 				$query.=','.$fieldName.'="'.addslashes(trim($value)).'"';
 			}
-			mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+			pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 			
-			$entry['bulletin']['bulletin_id']=mysql_insert_id();
+			$entry['bulletin']['bulletin_id']=pmb_mysql_insert_id();
 		}
 		
 		if($entry['niveau_biblio'].$entry['niveau_hierar']=="b2"){
 			//Si la notice récupéré est un bulletin, on fait le lien entre la notice et le périodique
 			$query='REPLACE INTO notices_relations (num_notice,linked_notice,relation_type,rank) VALUES ('.$entry['notice_id'].','.$entry['periodique']['notice_id'].',"b",1)';
-			mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+			pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 			
 			//et on donne le champ num_notice au bulletin en vue de l'ajout qui suis
 			$query='UPDATE bulletins SET num_notice='.$entry['notice_id'].' WHERE bulletin_id='.$entry['bulletin']['bulletin_id'];
-			mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+			pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 			
 		}
 	}
@@ -478,7 +478,7 @@ class RootNode extends Collection {
 		
 		//on ajoute le lien entre le bulletin et la notice d'article
 		$query='INSERT IGNORE INTO analysis (analysis_bulletin, analysis_notice) VALUES ('.$entry['bulletin']['bulletin_id'].','.$entry['notice_id'].')';
-		mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+		pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 	}
 	
 	/**
@@ -511,15 +511,15 @@ class RootNode extends Collection {
 			AND n2.niveau_biblio="'.addslashes($entry['periodique']['niveau_biblio']).'" 
 			AND n2.niveau_hierar="'.addslashes($entry['periodique']['niveau_hierar']).'"
 			';
-			$result= mysql_query($query);
+			$result= pmb_mysql_query($query);
 		}else{
 			$query = 'SELECT * FROM notices WHERE tit1="'.addslashes($entry['tit1']).'" AND niveau_biblio="'.addslashes($entry['niveau_biblio']).'" AND niveau_hierar="'.addslashes($entry['niveau_hierar']).'"';
-			$result= mysql_query($query);
+			$result= pmb_mysql_query($query);
 		}
 		
-		if(mysql_num_rows($result)){
+		if(pmb_mysql_num_rows($result)){
 			// La notice existe
-			$entry=array_merge(mysql_fetch_array($result,MYSQL_ASSOC),$entry);
+			$entry=array_merge(pmb_mysql_fetch_array($result,MYSQL_ASSOC),$entry);
 			//TODO : A vérifier
 			$first=true;
 			$query='UPDATE notices SET ';
@@ -533,7 +533,7 @@ class RootNode extends Collection {
 				}
 			}
 			$query.=' WHERE notice_id="'.addslashes($entry['notice_id']).'"';
-			mysql_query($query) or die('echec de la requete : '.$query.'<br/>'.mysql_error()."\n");
+			pmb_mysql_query($query) or die('echec de la requete : '.$query.'<br/>'.pmb_mysql_error()."\n");
 		}else{
 		
 			//les éditeurs
@@ -566,13 +566,13 @@ class RootNode extends Collection {
 					$first=false;
 				}
 			}
-			mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
-			$entry['notice_id']=mysql_insert_id();
+			pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
+			$entry['notice_id']=pmb_mysql_insert_id();
 			
 			if($pmb_type_audit && ($webdav_current_user_id || $webdav_current_user_name) && $entry['create_date']){
 				//ajout des informations d'audit
 				$query='INSERT INTO audit (type_obj,object_id,user_id,user_name,type_modif,quand) VALUES (1,'.$entry['notice_id'].','.$webdav_current_user_id.',"'.addslashes($webdav_current_user_name).'",1,"'.$entry['create_date'].'")';
-				mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+				pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 			}
 		}
 		
@@ -598,19 +598,19 @@ class RootNode extends Collection {
 						case 'notices_categories':
 							//Import et récupération des identifiants catégories
 							$query='SELECT num_noeud FROM categories WHERE libelle_categorie="'.addslashes(trim($entry['annexes'][$typeAnnexe][$id]['categories']['libelle_categorie'])).'" AND num_thesaurus='.$entry['annexes'][$typeAnnexe][$id]['categories']['num_thesaurus'].' AND langue="'.$entry['annexes'][$typeAnnexe][$id]['categories']['langue'].'"';
-							$result=mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
-							if(mysql_num_rows($result)){
+							$result=pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
+							if(pmb_mysql_num_rows($result)){
 								//le noeud existe déjà
-								$entry['annexes'][$typeAnnexe][$id]['num_noeud']=mysql_result($result, 0,0);
+								$entry['annexes'][$typeAnnexe][$id]['num_noeud']=pmb_mysql_result($result, 0,0);
 							}else{
 								//le noeud n'existe pas, on cherche le parent non classé
 								$query='SELECT id_noeud FROM noeuds WHERE autorite="NONCLASSES" AND num_thesaurus='.$entry['annexes'][$typeAnnexe][$id]['categories']['num_thesaurus'];
-								$result=mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
-								if(mysql_num_rows($result)){
+								$result=pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
+								if(pmb_mysql_num_rows($result)){
 									//on ajoute le noeud
-									$query='INSERT INTO noeuds SET num_parent='.mysql_result($result,0,0).', visible=1, num_thesaurus='.$entry['annexes'][$typeAnnexe][$id]['categories']['num_thesaurus'];
-									mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
-									$entry['annexes']['notices_categories'][$id]['num_noeud']=mysql_insert_id();
+									$query='INSERT INTO noeuds SET num_parent='.pmb_mysql_result($result,0,0).', visible=1, num_thesaurus='.$entry['annexes'][$typeAnnexe][$id]['categories']['num_thesaurus'];
+									pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
+									$entry['annexes']['notices_categories'][$id]['num_noeud']=pmb_mysql_insert_id();
 									//on ajoute la catégorie
 									$categorie=new \categories($entry['annexes'][$typeAnnexe][$id]['num_noeud'],$entry['annexes'][$typeAnnexe][$id]['categories']['langue']);
 									$categorie->libelle_categorie=trim($entry['annexes'][$typeAnnexe][$id]['categories']['libelle_categorie']);
@@ -647,7 +647,7 @@ class RootNode extends Collection {
 						}
 					}
 					
-					mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+					pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 				}
 			}
 		}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_doublon.class.php,v 1.8 2014-03-12 12:46:55 dbellamy Exp $
+// $Id: notice_doublon.class.php,v 1.9 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -86,8 +86,8 @@ class notice_doublon {
 		} else {
 			$rqt=str_replace('!!id!!',$id,$rqt);
 			if($this->external) $rqt=str_replace('!!source_id!!',$this->source_id,$rqt);	
-			$result = mysql_query($rqt, $dbh);			
-			if (($row = mysql_fetch_row($result) ) ) {
+			$result = pmb_mysql_query($rqt, $dbh);			
+			if (($row = pmb_mysql_fetch_row($result) ) ) {
 	        	return $row[0];
 			} else {
 				// rien
@@ -119,8 +119,8 @@ class notice_doublon {
 		// encodage signature par SOUNDEX (option 2) et par md5 (32 caractères)
 		if($metod == 2) {	
 			$rqt = "SELECT SOUNDEX('".addslashes($chaine)."')";
-			$result = mysql_query($rqt, $dbh);				
-			if (($row = mysql_fetch_row($result) ) ) {
+			$result = pmb_mysql_query($rqt, $dbh);				
+			if (($row = pmb_mysql_fetch_row($result) ) ) {
 	        	$chaine = $row[0];
 			}					
 		}		
@@ -132,9 +132,9 @@ class notice_doublon {
 		
 		global $dbh;
 		$q = "select signature, niveau_biblio ,niveau_hierar ,notice_id from notices where signature='".$this->signature."' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			$this->duplicate= mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$this->duplicate= pmb_mysql_fetch_object($r);
 		}		
 		return $this->duplicate;
 	}

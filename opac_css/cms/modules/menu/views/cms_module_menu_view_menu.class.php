@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_menu_view_menu.class.php,v 1.3 2013-01-02 11:33:21 apetithomme Exp $
+// $Id: cms_module_menu_view_menu.class.php,v 1.4 2015-03-12 08:58:39 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -20,7 +20,9 @@ class cms_module_menu_view_menu extends cms_module_common_view{
 	
 	public function render($datas){
 		$html_to_display = "";
-		$html_to_display.= $this->build_items($datas['items']);
+		if(isset($datas['items'])){
+			$html_to_display.= $this->build_items($datas['items']);
+		}
 		return $html_to_display;
 	}
 	

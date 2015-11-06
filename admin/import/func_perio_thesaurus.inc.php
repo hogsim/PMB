@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_perio_thesaurus.inc.php,v 1.3 2012-03-08 16:06:52 dgoron Exp $
+// $Id: func_perio_thesaurus.inc.php,v 1.4 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,21 +35,21 @@ function import_new_notice_suite() {
 	//Cas des périodiques
 	if (is_array($info_464)) {
 		$requete="select * from notices where notice_id=$notice_id";
-		$resultat=mysql_query($requete);
-		$r=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		$r=pmb_mysql_fetch_object($resultat);
 		//Notice chapeau existe-t-elle ?
 			$requete="select notice_id from notices where tit1='".addslashes($info_464[0]['t'])."' and niveau_hierar='1' and niveau_biblio='s'";
-			$resultat=mysql_query($requete);
-			if (@mysql_num_rows($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($resultat)) {
 				//Si oui, récupération id
-				$chapeau_id=mysql_result($resultat,0,0);	
+				$chapeau_id=pmb_mysql_result($resultat,0,0);	
 				//Bulletin existe-t-il ?
 				$requete="select bulletin_id from bulletins where bulletin_numero='".addslashes($info_464[0]['v'])."' and  mention_date='".addslashes($info_464[0]['d'])."' and bulletin_notice=$chapeau_id";
 				//$requete="select bulletin_id from bulletins where bulletin_numero='".addslashes($info_464[0]['v'])."' and bulletin_notice=$chapeau_id";	
-				$resultat=mysql_query($requete);
-				if (@mysql_num_rows($resultat)) {
+				$resultat=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($resultat)) {
 					//Si oui, récupération id bulletin
-					$bulletin_id=mysql_result($resultat,0,0);	
+					$bulletin_id=pmb_mysql_result($resultat,0,0);	
 				} else {
 					//Si non, création bulltin
 					$info=array();
@@ -110,14 +110,14 @@ function import_new_notice_suite() {
 			if ($info_464[0]['z']=='objet') {
 				//Supression de la notice
 				$requete="delete from notices where notice_id=$notice_id";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$bulletin_ex=$bulletin_id;
 			} else {
 				//Passage de la notice en article
 				$requete="update notices set niveau_biblio='a', niveau_hierar='2', year='".addslashes($info_464[0]['d'])."', npages='".addslashes($info_464[0]['p'])."', date_parution='".$info['date_date']."' where notice_id=$notice_id";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$requete="insert into analysis (analysis_bulletin,analysis_notice) values($bulletin_id,$notice_id)";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$bulletin_ex=$bulletin_id;
 			}
 	} else $bulletin_ex=0;
@@ -134,7 +134,7 @@ function import_new_notice_suite() {
 
 			if ($categ_id) {
 				$requete = "insert into notices_categories (notcateg_notice,num_noeud) values($notice_id,$categ_id)";
-				mysql_query($requete);	
+				pmb_mysql_query($requete);	
 			} else {
 				$unknown_desc[]=$descripteur;
 			}
@@ -143,7 +143,7 @@ function import_new_notice_suite() {
 		if ($unknown_desc) {
 			$mots_cles=implode($pmb_keyword_sep,$unknown_desc);
 			$requete="update notices set index_l='".addslashes($mots_cles)."', index_matieres=' ".addslashes(strip_empty_words($mots_cles))." ' where notice_id=$notice_id";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}
 	}
 	

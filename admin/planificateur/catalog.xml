@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: catalog.xml,v 1.3.6.1 2015-03-17 10:35:52 abacarisse Exp $ -->
+$Id: catalog.xml,v 1.4 2015-03-17 10:39:28 abacarisse Exp $ -->
 
 <catalog>
 	<action id="1" name="dsi" path="dsi" comment="msg:planificateur_catalog_dsi" />

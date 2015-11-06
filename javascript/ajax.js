@@ -1,13 +1,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax.js,v 1.25.6.1 2015-01-23 09:39:56 jpermanne Exp $
+// $Id: ajax.js,v 1.33 2015-02-16 13:51:22 jpermanne Exp $
 
 requete=new Array();
 line=new Array();
 not_show=new Array();
 last_word=new Array();
 ids=new Array();
+ajax_listener = new Array();
 
 var position_curseur;
 
@@ -53,7 +54,30 @@ function setCursorPosition(ctrl, pos){
 	}
 }
 
+function ajax_resize_element(input){
+	var id="";
+	n=ids.length;
+	if (input.getAttribute("completion")) {
+		if (((input.getAttribute("type")=="text")||(input.nodeName=="TEXTAREA"))&&(input.getAttribute("id"))) {
+			ids[n]=input.getAttribute("id");		
+			id=ids[n];
+			w=input.clientWidth
+			d1= document.getElementById("d"+id);
+			d1.style.width=w+"px";
+		}
+	}
+}
 
+function ajax_resize_elements(){
+	var inputs=document.getElementsByTagName("input");
+	for (i=0; i<inputs.length; i++) {
+		ajax_resize_element(inputs[i]);
+	}
+	var textareas=document.getElementsByTagName("textarea");
+	for (i=0; i<textareas.length; i++) {
+		ajax_resize_element(textareas[i]);
+	}
+}
 
 function ajax_pack_element(inputs) {
 	var id="";
@@ -122,9 +146,10 @@ function ajax_hide_list(e) {
 	setTimeout("document.getElementById('d"+id+"').style.display='none'; not_show['"+id+"']=true;",500);
 }		
 
-function ajax_set_datas(sp_name,id) {
+function ajax_set_datas(sp_name,id,insert_between_separator) {
 	var sp=document.getElementById(sp_name);
 	var nom_div = sp_name.substr(1,sp_name.length);
+	var position_curseur = document.getElementById(id).selectionStart;
 	if(sp_name.charAt(0) == 'c'){
 		var nom_div = sp_name.substr(1,sp_name.length);
 		nom_div='l'+nom_div;
@@ -134,6 +159,23 @@ function ajax_set_datas(sp_name,id) {
 	}
 	var text=sp.firstChild.nodeValue;
 	var old_text = document.getElementById(id).value;
+	if (insert_between_separator != '') {
+		if ( typeof document.getElementById(id).selectionStart != 'undefined' ) {
+			var sep_end = old_text.length;
+			var tmp_text = old_text;
+			if (old_text.indexOf(insert_between_separator,document.getElementById(id).selectionStart) != '-1') {
+				sep_end = old_text.indexOf(insert_between_separator,document.getElementById(id).selectionStart);
+				tmp_text = old_text.substr(0,sep_end);
+			}
+			var sep_start = 0;
+			if (tmp_text.lastIndexOf(insert_between_separator,document.getElementById(id).selectionStart) != '-1') {
+				sep_start = tmp_text.lastIndexOf(insert_between_separator,document.getElementById(id).selectionStart)+1;
+			}
+			taille_search = position_curseur - sep_start;
+			var taille_txt = sp.firstChild.nodeValue.length;
+			text = old_text.substr(0,sep_start)+text+old_text.substr(sep_end);
+		}
+	}
 	var autfield=document.getElementById(id).getAttribute("autfield");
 	if (autfield && document.getElementById(nom_div)) {
 		var autid=document.getElementById(nom_div).getAttribute("autid");
@@ -150,6 +192,8 @@ function ajax_set_datas(sp_name,id) {
 				}
 			}
 		}
+		var type = document.getElementById(nom_div).getAttribute("typeuri");
+		if (type && (autfield.indexOf('value', 0) != -1)) document.getElementById(autfield.replace('value','type')).value = type;
 	} else if(autfield){
 		document.getElementById(autfield).value=sp.getAttribute("autid");
 		var thesid = sp.getAttribute("thesid");
@@ -164,7 +208,10 @@ function ajax_set_datas(sp_name,id) {
 				}
 			}
 		}
+		var type = sp.getAttribute("typeuri");
+		if (type && (autfield.indexOf('value', 0) != -1)) document.getElementById(autfield.replace('value','type')).value = type;
 	}
+	
 	var callback=document.getElementById(id).getAttribute("callback");
 	document.getElementById(id).value=text;
 	document.getElementById(id).focus();
@@ -206,7 +253,7 @@ function ajax_update_info(e,code,touche) {
 				}
 				e.cancelBubble = true;
 				if (e.stopPropagation) e.stopPropagation();
-			} 			
+			}
 			break;
 		case 38:	//Flèche haut
 			if (document.getElementById("d"+id).style.display=="block") {
@@ -234,7 +281,10 @@ function ajax_update_info(e,code,touche) {
 				var text=sp.firstChild.nodeValue;
 				var autfield=document.getElementById(id).getAttribute("autfield");
 				var callback=document.getElementById(id).getAttribute("callback");
-				var div_cache=document.getElementById("c"+id+"_"+line[id]);				
+				var div_cache=document.getElementById("c"+id+"_"+line[id]);
+				var position_curseur = get_pos_curseur(document.getElementById(id));
+				var insert_between_separator = document.getElementById(id).getAttribute("separator");
+				var old_text = document.getElementById(id).value;
 				if (autfield) {
 					var autid=sp.getAttribute("autid");
 					document.getElementById(autfield).value=autid;
@@ -250,10 +300,29 @@ function ajax_update_info(e,code,touche) {
 							}
 						}
 					}
+					var type = sp.getAttribute("typeuri");
+					if (type && (autfield.indexOf('value', 0) != -1)) document.getElementById(autfield.replace('value','type')).value = type;
 				}
 				
 				if(div_cache){
-					document.getElementById(id).value=div_cache.firstChild.nodeValue;
+					if (insert_between_separator != '') {
+						if ( typeof position_curseur != 'undefined' ) {
+							var sep_end = old_text.length;
+							var tmp_text = old_text;
+							if (old_text.indexOf(insert_between_separator,position_curseur) != '-1') {
+								sep_end = old_text.indexOf(insert_between_separator,position_curseur);
+								tmp_text = old_text.substr(0,sep_end);
+							}
+							var sep_start = 0;
+							if (tmp_text.lastIndexOf(insert_between_separator,position_curseur) != '-1') {
+								sep_start = tmp_text.lastIndexOf(insert_between_separator,position_curseur)+1;
+							}
+							document.getElementById(id).value = old_text.substr(0,sep_start)+div_cache.firstChild.nodeValue+old_text.substr(sep_end);
+							text = document.getElementById(id).value;
+						}
+					} else {
+						document.getElementById(id).value=div_cache.firstChild.nodeValue;
+					}
 					var position = position_curseur+text.length;
 					var taille_search = div_cache.getAttribute('nbcar');
 					setCursorPosition(document.getElementById(id), position-taille_search);
@@ -419,14 +488,14 @@ function ajax_get_info(id) {
 
 function validation(e){
 	if (!e) var e = window.event;
-	if (e.keyCode) key = e.keyCode;
+	if (e.keyCode!=undefined) key = e.keyCode;
 		else if (e.which) key = e.which;
 	
 	if (e.target) 
 			var id=e.target.getAttribute("id"); 
 	else var id=e.srcElement.getAttribute("id");
 	
-	if((key == 13) && (not_show[id] == false)){
+	if(((key == 13) && (not_show[id] == false)) || (key == 40)){
 		//On annule tous les comportements par défaut du navigateur
 		if (e.stopPropagation) {
 			e.preventDefault();
@@ -436,4 +505,9 @@ function validation(e){
 			e.returnValue=false;
 		}
 	}	
+}
+
+
+function ajax_remove_elements(id){
+	
 }

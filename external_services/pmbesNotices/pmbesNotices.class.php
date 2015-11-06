@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesNotices.class.php,v 1.25 2013-04-15 12:28:37 mbertin Exp $
+// $Id: pmbesNotices.class.php,v 1.27 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -90,20 +90,23 @@ class pmbesNotices extends external_services_api_class {
 			return array();
 		}
 
-		$sql = "SELECT explnum_id, explnum_nom, explnum_mimetype, explnum_url, explnum_extfichier, explnum_nomfichier,explnum_repertoire, explnum_path FROM explnum WHERE explnum_notice = ".$noticeId;
-		$res = mysql_query($sql, $dbh);
+		//Je filtre les documents numériques en fonction des droits
+		$restrict_join = $this->filter_tabl_explnum();
+		
+		$sql = "SELECT explnum_id, explnum_nom, explnum_mimetype, explnum_url, explnum_extfichier, explnum_nomfichier,explnum_repertoire, explnum_path FROM explnum $restrict_join WHERE explnum_notice = ".$noticeId;
+		$res = pmb_mysql_query($sql, $dbh);
 
 		$results = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			if($row['explnum_repertoire']){
 				$rqt="select repertoire_path from upload_repertoire where repertoire_id = ".$row['explnum_repertoire'];
-				$r= mysql_query($rqt);
-				$path = mysql_result($r,0,0);
+				$r= pmb_mysql_query($rqt);
+				$path = pmb_mysql_result($r,0,0);
 				$filesize = filesize(str_replace("//","/",$path.$row['explnum_path']."/".$row['explnum_nomfichier']));
 			}else if ($row['explnum_url'] == ""){
 				$rqt = "select bit_length(explnum_data) from explnum where explnum_id = ".$row["explnum_id"];
-				$r= mysql_query($rqt);
-				$filesize = mysql_result($r,0,0);
+				$r= pmb_mysql_query($rqt);
+				$filesize = pmb_mysql_result($r,0,0);
 			}
 			$aresult = array(
 				"id" => $row["explnum_id"],
@@ -138,13 +141,16 @@ class pmbesNotices extends external_services_api_class {
 			return array();
 		}
 
-		$sql = "SELECT explnum_id, explnum_nom, explnum_mimetype, explnum_url, explnum_notice, explnum_extfichier, explnum_nomfichier, explnum_repertoire, explnum_path FROM explnum WHERE explnum_notice IN (".(implode(',', $notice_ids)).") order by explnum_notice";
-		$res = mysql_query($sql, $dbh);
+		//Je filtre les documents numériques en fonction des droits
+		$restrict_join = $this->filter_tabl_explnum();
+		
+		$sql = "SELECT explnum_id, explnum_nom, explnum_mimetype, explnum_url, explnum_notice, explnum_extfichier, explnum_nomfichier, explnum_repertoire, explnum_path FROM explnum $restrict_join WHERE explnum_notice IN (".(implode(',', $notice_ids)).") order by explnum_notice";
+		$res = pmb_mysql_query($sql, $dbh);
 
 		$results = array();
 		$current_noticeid = 0;
 		$current_explnums = array();		
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			if (!$current_noticeid)
 				$current_noticeid = $row['explnum_notice'];
 				
@@ -158,13 +164,13 @@ class pmbesNotices extends external_services_api_class {
 			}
 			if($row['explnum_repertoire']){
 				$rqt="select repertoire_path from upload_repertoire where repertoire_id = ".$row['explnum_repertoire'];
-				$r= mysql_query($rqt, $dbh);
-				$path = mysql_result($r,0,0);
+				$r= pmb_mysql_query($rqt, $dbh);
+				$path = pmb_mysql_result($r,0,0);
 				$filesize = filesize(str_replace("//","/",$path.$row['explnum_path']."/".$row['explnum_nomfichier']));
 			}else if ($row['explnum_url'] == ""){
 				$rqt = "select bit_length(explnum_data) from explnum where explnum_id = ".$row["explnum_id"];
-				$r= mysql_query($rqt, $dbh);
-				$filesize = mysql_result($r,0,0);
+				$r= pmb_mysql_query($rqt, $dbh);
+				$filesize = pmb_mysql_result($r,0,0);
 			}
 			$aresult = array(
 				"id" => $row["explnum_id"],
@@ -201,19 +207,22 @@ class pmbesNotices extends external_services_api_class {
 			return array();
 		}
 		
-		$sql = "SELECT explnum_id, explnum_nom, explnum_mimetype, explnum_url, explnum_extfichier, explnum_nomfichier,explnum_repertoire, explnum_path FROM explnum WHERE explnum_bulletin = ".$bulletinId;
-		$res = mysql_query($sql, $dbh);
+		//Je filtre les documents numériques en fonction des droits
+		$restrict_join = $this->filter_tabl_explnum();
+		
+		$sql = "SELECT explnum_id, explnum_nom, explnum_mimetype, explnum_url, explnum_extfichier, explnum_nomfichier,explnum_repertoire, explnum_path FROM explnum $restrict_join WHERE explnum_bulletin = ".$bulletinId;
+		$res = pmb_mysql_query($sql, $dbh);
 	
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			if($row['explnum_repertoire']){
 				$rqt="select repertoire_path from upload_repertoire where repertoire_id = ".$row['explnum_repertoire'];
-				$r= mysql_query($rqt, $dbh);
-				$path = mysql_result($r,0,0);
+				$r= pmb_mysql_query($rqt, $dbh);
+				$path = pmb_mysql_result($r,0,0);
 				$filesize = filesize(str_replace("//","/",$path.$row['explnum_path']."/".$row['explnum_nomfichier']));
 			}else if ($row['explnum_url'] == ""){
 				$rqt = "select bit_length(explnum_data) from explnum where explnum_id = ".$row["explnum_id"];
-				$r= mysql_query($rqt, $dbh);
-				$filesize = mysql_result($r,0,0);
+				$r= pmb_mysql_query($rqt, $dbh);
+				$filesize = pmb_mysql_result($r,0,0);
 			}
 			$aresult = array(
 				"id" => $row["explnum_id"],
@@ -250,13 +259,16 @@ class pmbesNotices extends external_services_api_class {
 			return array();
 		}
 		
-		$sql = "SELECT explnum_id, explnum_nom, explnum_mimetype, explnum_url, explnum_bulletin, explnum_extfichier, explnum_nomfichier,explnum_repertoire, explnum_path FROM explnum WHERE explnum_bulletin IN (".implode(',', $bulletin_ids).') ORDER BY explnum_bulletin';
-		$res = mysql_query($sql, $dbh);
+		//Je filtre les documents numériques en fonction des droits
+		$restrict_join = $this->filter_tabl_explnum();
+		
+		$sql = "SELECT explnum_id, explnum_nom, explnum_mimetype, explnum_url, explnum_bulletin, explnum_extfichier, explnum_nomfichier,explnum_repertoire, explnum_path FROM explnum $restrict_join WHERE explnum_bulletin IN (".implode(',', $bulletin_ids).') ORDER BY explnum_bulletin';
+		$res = pmb_mysql_query($sql, $dbh);
 
 		$results = array();
 		$current_id = 0;
 		$current_explnums = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			if (!$current_id)
 				$current_id = $row["explnum_bulletin"];
 
@@ -270,13 +282,13 @@ class pmbesNotices extends external_services_api_class {
 			}
 			if($row['explnum_repertoire']){
 				$rqt="select repertoire_path from upload_repertoire where repertoire_id = ".$row['explnum_repertoire'];
-				$r= mysql_query($rqt, $dbh);
-				$path = mysql_result($r,0,0);
+				$r= pmb_mysql_query($rqt, $dbh);
+				$path = pmb_mysql_result($r,0,0);
 				$filesize = filesize(str_replace("//","/",$path.$row['explnum_path']."/".$row['explnum_nomfichier']));
 			}else if ($row['explnum_url'] == ""){
 				$rqt = "select bit_length(explnum_data) from explnum where explnum_id = ".$row["explnum_id"];
-				$r= mysql_query($rqt, $dbh);
-				$filesize = mysql_result($r,0,0);
+				$r= pmb_mysql_query($rqt, $dbh);
+				$filesize = pmb_mysql_result($r,0,0);
 			}			
 			$aresult = array(
 				"id" => $row["explnum_id"],
@@ -303,11 +315,11 @@ class pmbesNotices extends external_services_api_class {
 	function fetchNoticeByExplCb($emprId,$explCb, $recordFormat, $recordCharset, $includeLinks, $includeItems) {
 		global $dbh;
 		$sql = "SELECT expl_notice FROM exemplaires WHERE expl_cb LIKE '$explCb'";
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		$results= array();
 		$noticelist = array();
-		if(mysql_num_rows($res)){
-			$noticelist[0]= mysql_result($res,0,0);
+		if(pmb_mysql_num_rows($res)){
+			$noticelist[0]= pmb_mysql_result($res,0,0);
 		}
 		return $this->proxy_parent->pmbesNotices_fetchNoticeList($noticelist, $recordFormat, $recordCharset, $includeLinks);
 	}
@@ -395,11 +407,11 @@ class pmbesNotices extends external_services_api_class {
 		
 		
 		$sql = "SELECT bulletins.*,notices.tit1 FROM bulletins LEFT JOIN notices ON bulletin_notice = notice_id WHERE bulletin_id IN (".implode(',', $bulletin_ids).") ORDER BY bulletin_notice, date_date DESC";
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		
 		$current_noticeid = 0;
 		$current_bulletins = array();
-		while($row=mysql_fetch_assoc($res)) {
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$abulletin = array(
 				'bulletin_id' => $row['bulletin_id'],
 				'serial_id' => $row['bulletin_notice'],
@@ -460,9 +472,9 @@ class pmbesNotices extends external_services_api_class {
 			}
 			global $dbh;
 			$sql = 'SELECT analysis_notice FROM analysis WHERE analysis_bulletin = '.$bulletin_content['bulletin_id'];
-			$res = mysql_query($sql, $dbh);
+			$res = pmb_mysql_query($sql, $dbh);
 			$aresult['bulletin_analysis_notice_ids'] = array();
-			while($row = mysql_fetch_row($res))
+			while($row = pmb_mysql_fetch_row($res))
 				$aresult['bulletin_analysis_notice_ids'][] = $row[0];
 			$results[] = $aresult;
 		}
@@ -489,11 +501,11 @@ class pmbesNotices extends external_services_api_class {
 		}
 		
 		$sql = "SELECT * FROM bulletins WHERE bulletin_notice IN (".implode(',', $notice_ids).") ORDER BY bulletin_notice, date_date DESC";
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		
 		$current_noticeid = 0;
 		$current_bulletins = array();
-		while($row=mysql_fetch_assoc($res)) {
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			if (!$current_noticeid)
 				$current_noticeid = $row['bulletin_notice'];
 				
@@ -540,8 +552,8 @@ class pmbesNotices extends external_services_api_class {
 		}
 			
 		$sql = 'SELECT bulletin_id FROM bulletins WHERE num_notice = '.$noticeId.' LIMIT 1';
-		$res = mysql_query($sql);
-		if ($row = mysql_fetch_row($res))
+		$res = pmb_mysql_query($sql);
+		if ($row = pmb_mysql_fetch_row($res))
 			return $row[0];
 		return 0;
 	}
@@ -566,12 +578,12 @@ class pmbesNotices extends external_services_api_class {
 		$req="SELECT id_serial, collstate_id FROM arch_statut, collections_state LEFT JOIN docs_location ON location_id=idlocation LEFT JOIN arch_emplacement ON collstate_emplacement=archempla_id WHERE  
 		id_serial IN (".implode(',', $serial_ids).") and archstatut_id=collstate_statut and ((archstatut_visible_opac=1 and archstatut_visible_opac_abon=0)".( $OPACUserId? " or (archstatut_visible_opac_abon=1 and archstatut_visible_opac=1)" : "").")
 		 ORDER BY archempla_libelle, collstate_cote";	
-		$myQuery = mysql_query($req, $dbh);
+		$myQuery = pmb_mysql_query($req, $dbh);
 		
 		$current_noticeid = 0;
 		$current_collstates = array();
-		if((mysql_num_rows($myQuery))) {
-			while(($row = mysql_fetch_object($myQuery))) {
+		if((pmb_mysql_num_rows($myQuery))) {
+			while(($row = pmb_mysql_fetch_object($myQuery))) {
 				if (!$current_noticeid)
 					$current_noticeid = $row->id_serial;
 				
@@ -687,11 +699,11 @@ function fetchNoticeListFullWithBullId($noticelist, $recordFormat, $recordCharse
 		}
 		
 		$sql = "SELECT bulletin_id,bulletin_notice FROM bulletins WHERE bulletin_notice IN (".implode(',', $notice_ids).")  ORDER BY bulletin_notice,date_date DESC";
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		
 		$current_noticeid = 0;
 		$current_bulletinIds = array();
-		while($row=mysql_fetch_assoc($res)) {
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			if (!$current_noticeid)
 				$current_noticeid = $row['bulletin_notice'];
 				
@@ -741,9 +753,9 @@ FROM   notices n1
 WHERE  n1.niveau_biblio = 's'
        AND n1.niveau_hierar = 1
 ORDER  BY tit1  ";
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		$results = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			//Je filtre les notices en fonction des droits
 			$notice_ids=$this->filter_tabl_notices(array($row['notice_id']));
 			if(count($notice_ids)){
@@ -780,9 +792,9 @@ ORDER  BY tit1  ";
 		}
 		
 		$sql = "SELECT notice_id, statut, opac_libelle, commentaire_gestion, thumbnail_url FROM notices JOIN notice_statut ON statut=id_notice_statut WHERE notice_id IN (".implode(',', $notice_ids).")  ";
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		
-		while($row=mysql_fetch_object($res)) {
+		while($row=pmb_mysql_fetch_object($res)) {
 				$result[] = array(
 					'noticeid' => $row->notice_id,
 					'administrative' => array('statut_id' => $row->statut,

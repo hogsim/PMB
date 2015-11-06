@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: chartreuse.inc.php,v 1.4.6.1 2014-09-23 14:47:32 mbertin Exp $
+// $Id: chartreuse.inc.php,v 1.6 2015-04-03 11:16:16 jpermanne Exp $
 
 function search_other_function_filters() {
 	global $chu_dom,$chu_tdp,$charset;
@@ -10,15 +10,15 @@ function search_other_function_filters() {
 	//Domaine
 	//$chu_dom_js="var chu_dom_code= new Array();\n var chu_dom_libelle = new Array();\n";
 	$requete="select notices_custom_list_value,notices_custom_list_lib from notices_custom_lists where notices_custom_champ='11' order by ordre, notices_custom_list_lib";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 
 	$r="<select name='chu_dom'>" ;
 	$r.="<option value='' ";
 	if($chu_dom=="") $r.="selected=\"selected\" ";
 	$r.=">".htmlentities("< Toute rubrique >",ENT_QUOTES,$charset)."</option>";
-	if (mysql_numrows($resultat)) {
+	if (pmb_mysql_num_rows($resultat)) {
 		$incr=0;
-		while (($app = mysql_fetch_object($resultat))) {
+		while (($app = pmb_mysql_fetch_object($resultat))) {
 			$selected="";
 			if ($app->notices_custom_list_value==$chu_dom) {
 				$selected="selected=\"selected\"";
@@ -37,15 +37,15 @@ function search_other_function_filters() {
 	$chu_tdp_js="var chu_tdp_code= new Array();\n var chu_tdp_libelle = new Array();\n";
 	
 	$requete="select notices_custom_list_value,notices_custom_list_lib from notices_custom_lists where notices_custom_champ='12' order by ordre, notices_custom_list_lib";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 
 	$r.="<select name='chu_tdp'>" ;
 	$r.="<option value='' ";
 	if($chu_tdp=="") $r.="selected=\"selected\" ";
 	$r.=">".htmlentities("< Tout type de document >",ENT_QUOTES,$charset)."</option>";
-	if (mysql_numrows($resultat)) {
+	if (pmb_mysql_num_rows($resultat)) {
 		$incr=0;
-		while (($app = mysql_fetch_object($resultat))) {
+		while (($app = pmb_mysql_fetch_object($resultat))) {
 			$selected="";
 			if ($app->notices_custom_list_value==$chu_tdp) {
 				$selected="selected=\"selected\"";
@@ -239,9 +239,9 @@ function search_other_function_human_query($n) {
 	if ($chu_dom) {
 		$app="";
 		$requete="select notices_custom_list_lib from notices_custom_lists where notices_custom_champ='11' and notices_custom_list_value='".$chu_dom."' limit 1 ";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$res=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$res=pmb_mysql_fetch_object($resultat);
 			$app=$res->notices_custom_list_lib;
 		}
 		if ($app) $r1="rubrique: ".$app;
@@ -250,9 +250,9 @@ function search_other_function_human_query($n) {
 	if ($chu_tdp) {
 		$app="";
 		$requete="select notices_custom_list_lib from notices_custom_lists where notices_custom_champ='12' and notices_custom_list_value='".$chu_tdp."' limit 1 ";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$res=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$res=pmb_mysql_fetch_object($resultat);
 			$app=$res->notices_custom_list_lib;
 		}
 		if ($app) $r2="type de document: ".$app;

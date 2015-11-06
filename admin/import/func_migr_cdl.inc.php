@@ -109,7 +109,7 @@ function import_new_notice_suite() {
 		if ($categ_parent != $id_rech_theme) {
 			// insertion dans la table notices_categories
 			$rqt_ajout = "INSERT INTO notices_categories (notcateg_notice,num_noeud,ordre_categorie) VALUES($notice_id,$categ_parent,$a)";
-			$res_ajout = @mysql_query($rqt_ajout, $dbh);
+			$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		}
 		
 		// récup TOUT EN CASCADE
@@ -128,7 +128,7 @@ function import_new_notice_suite() {
 		if ($categ_parent != $id_rech_geo) {
 			// insertion dans la table notices_categories
 			$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$categ_parent."' " ;
-			$res_ajout = @mysql_query($rqt_ajout, $dbh);
+			$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		}
 
 		// récup TOUT EN CASCADE
@@ -147,7 +147,7 @@ function import_new_notice_suite() {
 		if ($categ_parent != $id_rech_chrono) {
 			// insertion dans la table notices_categories
 			$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$categ_parent."' " ;
-			$res_ajout = @mysql_query($rqt_ajout, $dbh);
+			$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		}
 	}
 	
@@ -250,7 +250,7 @@ function traite_exemplaires () {
 		// Numéro du jeu
 		if ($info_995[$nb_expl]['v'] && $expl_id) {
 			$requete="insert into expl_custom_values (expl_custom_champ,expl_custom_origine,expl_custom_small_text) values(1,$expl_id,'".addslashes($info_995[$nb_expl]['v'])."')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			}
 	
 		//debug : affichage zone 995 

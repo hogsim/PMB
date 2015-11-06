@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titre_uniforme.class.php,v 1.10 2014-03-05 10:49:24 mhoestlandt Exp $
+// $Id: titre_uniforme.class.php,v 1.17 2015-06-19 07:31:05 vtouchard Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -19,10 +19,12 @@ class titre_uniforme {
 	var $id;					// MySQL id in table 'titres_uniformes'
 	var $name;					// titre_uniforme name
 	var $tonalite;				// tonalite de l'oeuvre musicale
+	var $tonalite_marclist;		// tonalite de l'oeuvre musicale (valeur issue de la liste music_key.xml)
 	var $comment ;  			// Commentaire, peut contenir du HTML
 	var $import_denied=0;		// booléen pour interdire les modification depuis un import d'autorités
 	var $form;					// catégorie à laquelle appartient l'oeuvre (roman, pièce de théatre, poeme, ...)
-	var $date; 					// date de création originelle de l'oeuvre
+	var $form_marclist;			// catégorie à laquelle appartient l'oeuvre (roman, pièce de théatre, poeme, ...) (valeur issue de la liste music_form.xml)
+	var $date; 					// date de création originelle de l'oeuvre (telle que saisie)
 	var $date_date;				// date formatée yyyy-mm-dd
 	var $characteristic; 		// caractéristique permettant de distinguer une oeuvre d'une autre peuvre portant le même titre
 	var $intended_termination;	// complétude d'une oeuvre est finie ou se poursuit indéfiniment
@@ -36,7 +38,10 @@ class titre_uniforme {
 	var $num_author;			// identifiant de l'auteur principal de l'oeuvre
 	var $display;				// usable form for displaying ( _name_ (_date_) / _author_name_ _author_rejete_ )
 	var $tu_isbd;				// affichage isbd du titre uniforme AFNOR Z 44-061 (1986),
-	
+	var $responsabilites=array();// Auteurs répétables
+	var $enrichment=null;		//Enrichissements
+	static $marc_key;
+	static $marc_form;
 	// ---------------------------------------------------------------
 	//		titre_uniforme($id) : constructeur
 	// ---------------------------------------------------------------
@@ -61,12 +66,14 @@ class titre_uniforme {
 
 		$this->name = '';			
 		$this->tonalite = '';
+		$this->tonalite_marclist = '';
 		$this->comment ='';
 		$this->distrib=array();
 		$this->ref=array();
 		$this->subdiv=array();
 		$this->import_denied=0;
 		$this->form = '';
+		$this->form_marclist = '';
 		$this->date ='';
 		$this->date_date ='';
 		$this->characteristic = '';
@@ -80,17 +87,20 @@ class titre_uniforme {
 		$this->history = '';
 		$this->num_author = '';
 		$this->display = '';
+		$this->responsabilites["responsabilites"]=array();
 		if($this->id) {
 			$requete = "SELECT * FROM titres_uniformes WHERE tu_id='".addslashes($this->id)."' LIMIT 1 ";
-			$result = @mysql_query($requete, $dbh);
-			if(mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);				
+			$result = @pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);				
 				$this->id	= $temp->tu_id;
 				$this->name	= $temp->tu_name;
 				$this->tonalite	= $temp->tu_tonalite;
+				$this->tonalite_marclist = $temp->tu_tonalite_marclist;
 				$this->comment	= $temp->tu_comment	;
 				$this->import_denied = $temp->tu_import_denied;
 				$this->form = $temp->tu_forme;
+				$this->form_marclist = $temp->tu_forme_marclist;
 				$this->date  = $temp->tu_date;
 				$this->date_date  = $temp->tu_date_date;
 				$this->characteristic = $temp->tu_caracteristique;
@@ -105,23 +115,23 @@ class titre_uniforme {
 				$this->num_author = $temp->tu_num_author;				
 				
 				$requete = "SELECT * FROM tu_distrib WHERE distrib_num_tu='$this->id' order by distrib_ordre";
-				$result = mysql_query($requete, $dbh);
-				if(mysql_num_rows($result)) {
-					while(($param=mysql_fetch_object($result))) {
+				$result = pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($result)) {
+					while(($param=pmb_mysql_fetch_object($result))) {
 						$this->distrib[]["label"]=$param->distrib_name;
 					}	
 				}					
 				$requete = "SELECT *  FROM tu_ref WHERE ref_num_tu='$this->id' order by ref_ordre";
-				$result = mysql_query($requete, $dbh);
-				if(mysql_num_rows($result)) {
-					while(($param=mysql_fetch_object($result))) {
+				$result = pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($result)) {
+					while(($param=pmb_mysql_fetch_object($result))) {
 						$this->ref[]["label"]=$param->ref_name;
 					}	
 				}			
 				$requete = "SELECT *  FROM tu_subdiv WHERE subdiv_num_tu='$this->id' order by subdiv_ordre";
-				$result = mysql_query($requete, $dbh);
-				if(mysql_num_rows($result)) {
-					while(($param=mysql_fetch_object($result))) {
+				$result = pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($result)) {
+					while(($param=pmb_mysql_fetch_object($result))) {
 						$this->subdiv[]["label"]=$param->subdiv_name;
 					}	
 				}
@@ -130,13 +140,37 @@ class titre_uniforme {
 				if($this->date){
 					$this->display.=" (".$this->date.")";
 				}
-				if($this->num_author){
-					$tu_auteur = new auteur($this->num_author);
-					$libelle[] = $tu_auteur->display;
-					$this->display.=" / ".$tu_auteur->rejete." ".$tu_auteur->name;
+				
+				// recuperation des responsabilites pour l'affichage
+				$this->responsabilites = $this->get_authors($this->id) ;
+				
+// 				$as = array_keys ($this->responsabilites["responsabilites"], "0" ) ;
+// 				if(count($as))$this->display.= ", ";
+// 				$libelle = array();
+// 				for ($i = 0 ; $i < count($as) ; $i++) {
+// 					$indice = $as[$i] ;
+// 					$auteur_0 = $this->responsabilites["auteurs"][$indice] ;
+// 					$auteur = new auteur($auteur_0["id"]);
+					
+// 					if($i>0)$this->display.= " / ";	// entre auteurs	
+					
+// 					$libelle[] = $auteur->display;
+// 					$this->display.= $auteur->rejete." ".$auteur->name;
+// 				}
+				
+				if(count($this->responsabilites["auteurs"])){
+					$this->display.= ", ";
+					$libelle = array();
+					foreach($this->responsabilites["auteurs"] as $id=>$responsable) {
+						if(is_object($responsable["objet"])){
+							if($id>0)$this->display.= " / ";	// entre auteurs
+							$libelle[] = $auteur->display;
+							$this->display.= $responsable["objet"]->rejete." ".$responsable["objet"]->name;
+						}
+					}
+					
+					$this->libelle=implode("; ",$libelle);
 				}
-								
-								
 			} else {
 				// pas trouvé avec cette clé
 				$this->id = 0;				
@@ -145,13 +179,39 @@ class titre_uniforme {
 		}
 	}
 	
+	function get_authors($id=0) {
+		global $dbh;
+	
+		$responsabilites = array() ;
+		$auteurs = array() ;
+		$res["responsabilites"] = array() ;
+		$res["auteurs"] = array() ;		
+	
+		$rqt = "select author_id, responsability_tu_fonction, responsability_tu_type ";
+		$rqt.= "from responsability_tu, authors where responsability_tu_num='$id' and responsability_tu_author_num=author_id order by responsability_tu_type, responsability_tu_ordre " ;
+	
+		$res_sql = pmb_mysql_query($rqt, $dbh);
+		while ($resp_tu=pmb_mysql_fetch_object($res_sql)) {
+			$responsabilites[] = $resp_tu->responsability_tu_type ;
+			$auteurs[] = array(
+					'id' => $resp_tu->author_id,
+					'fonction' => $resp_tu->responsability_tu_fonction,
+					'responsability' => $resp_tu->responsability_tu_type,
+					'objet' => new auteur($resp_tu->author_id)
+			) ;			
+		}
+		$res["responsabilites"] = $responsabilites ;
+		$res["auteurs"] = $auteurs ;
+	
+		return $res;
+	}
+		
 	// ---------------------------------------------------------------
 	//  print_resume($level) : affichage d'informations sur le titre uniforme
 	// ---------------------------------------------------------------
 
 	function print_resume($level = 2) {
 		global $msg,$charset;
-		
 		if(!$this->id)
 			return;
 
@@ -184,9 +244,20 @@ class titre_uniforme {
 		$print = str_replace("!!id!!", $this->id, $print);
 		$print = str_replace("!!name!!", $this->name, $print);		
 		
-		$tu_auteur = new auteur($this->num_author);
-		$print = str_replace("!!auteur!!", ($this->num_author?"<p>".$msg["aut_oeuvre_form_auteur"]." : <a href='index.php?lvl=author_see&id=".$tu_auteur->id."'>".htmlentities($tu_auteur->display,ENT_QUOTES,$charset)."</a></p>":""), $print);
+		$auteurs="";
+		if(isset($this->responsabilites["auteurs"]) && count($this->responsabilites["auteurs"])){
+			foreach($this->responsabilites["auteurs"] as $id=>$responsable) {
+				if(is_object($responsable["objet"])){
+					
+					if($id>0)$auteurs.= " / ";	// entre auteurs
+					$auteurs.="<a href='index.php?lvl=author_see&id=".$responsable["objet"]->id."'>".htmlentities($responsable["objet"]->display,ENT_QUOTES,$charset)."</a>";
+				}
+			}			
+		}
+
+		$print = str_replace("!!auteur!!", ($auteurs?"<p>".$msg["aut_oeuvre_form_auteur"]." : ".$auteurs."</p>":""), $print);
 		$print = str_replace("!!forme!!", ($this->form?"<p>".$msg["aut_oeuvre_form_forme"]." : ".htmlentities($this->form,ENT_QUOTES,$charset)."</p>":""), $print);
+		$print = str_replace("!!forme_list!!", ($this->get_form_label()?"<p>".$msg["aut_oeuvre_form_forme_list"]." : ".htmlentities($this->get_form_label(),ENT_QUOTES,$charset)."</p>":""), $print);
 		$print = str_replace("!!date!!", ($this->date?"<p>".$msg["aut_oeuvre_form_date"]." : ".htmlentities($this->date,ENT_QUOTES,$charset)."</p>":""), $print);
 		$print = str_replace("!!sujet!!", ($this->subject?"<p>".$msg["aut_oeuvre_form_sujet"]." : ".htmlentities($this->subject,ENT_QUOTES,$charset)."</p>":""), $print);
 		$print = str_replace("!!lieu!!", ($this->place?"<p>".$msg["aut_oeuvre_form_lieu"]." : ".htmlentities($this->place,ENT_QUOTES,$charset)."</p>":""), $print);
@@ -200,11 +271,12 @@ class titre_uniforme {
 		$print = str_replace("!!public!!", ($this->intended_audience?"<p>".$msg["aut_oeuvre_form_public"]." : ".htmlentities($this->intended_audience,ENT_QUOTES,$charset)."</p>":""), $print);
 		$print = str_replace("!!histoire!!", ($this->history?"<p>".$msg["aut_oeuvre_form_histoire"]." : ".htmlentities($this->history,ENT_QUOTES,$charset)."</p>":""), $print);
 		$print = str_replace("!!contexte!!", ($this->context?"<p>".$msg["aut_oeuvre_form_contexte"]." : ".htmlentities($this->context,ENT_QUOTES,$charset)."</p>":""), $print);
-		$print = str_replace("!!distribution!!", ($print_distrib?"<p>Distribution (oeuvre musicale) : ".htmlentities($print_distrib,ENT_QUOTES,$charset)."</p>":""), $print);
-		$print = str_replace("!!reference!!", ($print_ref?"<p>Référence (oeuvre musicale) : ".htmlentities($print_ref,ENT_QUOTES,$charset)."</p>":""), $print);
-		$print = str_replace("!!tonalite!!", ($this->tonalite?"<p>Tonalité (oeuvre musicale) : ".htmlentities($this->tonalite,ENT_QUOTES,$charset)."</p>":""), $print);
-		$print = str_replace("!!subdivision!!", ($print_subdiv?"<p>Subdivision de forme : ".htmlentities($print_subdiv,ENT_QUOTES,$charset)."</p>":""), $print);
-		$print = str_replace("!!coordonnees!!", ($this->coordinates?"<p>".$msg["aut_oeuvre_form_coordonnees"]." : ".htmlentities($this->context,ENT_QUOTES,$charset)."</p>":""), $print);
+		$print = str_replace("!!distribution!!", ($print_distrib?"<p>".$msg["aut_oeuvre_form_distribution"]." : ".htmlentities($print_distrib,ENT_QUOTES,$charset)."</p>":""), $print);
+		$print = str_replace("!!reference!!", ($print_ref?"<p>".$msg["aut_oeuvre_form_reference"]." : ".htmlentities($print_ref,ENT_QUOTES,$charset)."</p>":""), $print);
+		$print = str_replace("!!tonalite!!", ($this->tonalite?"<p>".$msg["aut_oeuvre_form_tonalite"]." : ".htmlentities($this->tonalite,ENT_QUOTES,$charset)."</p>":""), $print);
+		$print = str_replace("!!tonalite_list!!", ($this->get_key_label()?"<p>".$msg["aut_oeuvre_form_tonalite_list"]." : ".htmlentities($this->get_key_label(),ENT_QUOTES,$charset)."</p>":""), $print);
+		$print = str_replace("!!subdivision!!", ($print_subdiv?"<p>".$msg["aut_oeuvre_form_subdivision"]." : ".htmlentities($print_subdiv,ENT_QUOTES,$charset)."</p>":""), $print);
+		$print = str_replace("!!coordonnees!!", ($this->coordinates?"<p>".$msg["aut_oeuvre_form_coordonnees"]." : ".htmlentities($this->coordinates,ENT_QUOTES,$charset)."</p>":""), $print);
 		$print = str_replace("!!equinoxe!!", ($this->equinox?"<p>".$msg["aut_oeuvre_form_equinoxe"]." : ".htmlentities($this->equinox,ENT_QUOTES,$charset)."</p>":""), $print);
 		$print = str_replace("!!caracteristique!!", ($this->characteristic?"<p>".$msg["aut_oeuvre_form_caracteristique"]." : ".htmlentities($this->characteristic,ENT_QUOTES,$charset)."</p>":""), $print);
 		$print = str_replace("!!aut_comment!!", $this->comment, $print);		
@@ -347,10 +419,20 @@ class titre_uniforme {
 		$this->tu_isbd="";
 		if(!$this->id) return;
 		
-		if($this->num_author){
-			$tu_auteur = new auteur ($this->num_author);
-			$this->tu_isbd = $tu_auteur->display.". ";
+		$as = array_keys ($this->responsabilites["responsabilites"], "0" ) ;
+		for ($i = 0 ; $i < count($as) ; $i++) {
+			$indice = $as[$i] ;
+			$auteur_0 = $this->responsabilites["auteurs"][$indice] ;
+			$auteur = new auteur($auteur_0["id"]);
+			if($i>0)$this->tu_isbd.= " / ";
+			$this->tu_isbd.= $auteur->display.". ";
 		}
+		if($i)$this->tu_isbd.= ". ";
+		/*
+		 if($this->num_author){
+		$tu_auteur = new auteur ($this->num_author);
+		$this->tu_isbd. = $tu_auteur->display.". ";
+		}*/
 		if($this->name){
 			$this->tu_isbd.= $this->name;
 		}
@@ -358,7 +440,47 @@ class titre_uniforme {
 		return $this->tu_isbd;		
 	}
 	
+	function get_enrichment() {
+		global $dbh;
+		global $charset;
+		
+		if($this->enrichment===null){
+			$enrichment="";
+			$requete="select tu_enrichment from titres_uniformes where tu_id=".$this->id;
+			$resultat=pmb_mysql_query($requete,$dbh);
+			$enrichment=pmb_mysql_result($resultat,0,0,$dbh);
+			if ($enrichment) {
+				$enrichment=unserialize($enrichment);
+			}
+			$this->enrichment=$enrichment;
+		}
+		return $this->enrichment;
+	}
 	
+	static function get_marc_key(){
+		if(!count(titre_uniforme::$marc_key)){
+			titre_uniforme::$marc_key = new marc_list("music_key");
+		}
+		return titre_uniforme::$marc_key;
+	}
+	static function get_marc_form(){
+		if(!count(titre_uniforme::$marc_form)){
+			titre_uniforme::$marc_form = new marc_list("music_form");
+		}
+		return titre_uniforme::$marc_form;
+	}
+	
+	function get_key_label(){
+		if($this->tonalite_marclist){
+			return titre_uniforme::get_marc_key()->table[$this->tonalite_marclist];
+		}
+	}
+	
+	function get_form_label(){
+		if($this->form_marclist){
+			return titre_uniforme::get_marc_form()->table[$this->form_marclist];
+		}
+	}
 } // class auteur
 
 

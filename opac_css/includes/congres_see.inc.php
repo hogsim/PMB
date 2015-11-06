@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: congres_see.inc.php,v 1.18.2.1 2014-12-16 13:58:15 jpermanne Exp $
+// $Id: congres_see.inc.php,v 1.24 2015-07-09 10:21:31 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,18 +18,18 @@ if($id) {
 	$id+=0;
 	$rqt_auteurs = "select author_id as aut from authors where author_see='$id' and author_id!=0 ";
 	$rqt_auteurs .= "union select author_see as aut from authors where author_id='$id' and author_see!=0 " ;
-	$res_auteurs = mysql_query($rqt_auteurs, $dbh);
+	$res_auteurs = pmb_mysql_query($rqt_auteurs, $dbh);
 	$clause_auteurs = " in ('$id' ";
-	while(($id_aut=mysql_fetch_object($res_auteurs))) {
+	while(($id_aut=pmb_mysql_fetch_object($res_auteurs))) {
 		$clause_auteurs .= ", '".$id_aut->aut."' ";
 		$rqt_auteursuite = "select author_id as aut from authors where author_see='$id_aut->aut' and author_id!=0 ";
-		$res_auteursuite = mysql_query($rqt_auteursuite, $dbh);
-		while(($id_autsuite=mysql_fetch_object($res_auteursuite))) $clause_auteurs .= ", '".$id_autsuite->aut."' "; 
-	} 
+		$res_auteursuite = pmb_mysql_query($rqt_auteursuite, $dbh);
+		while(($id_autsuite=pmb_mysql_fetch_object($res_auteursuite))) $clause_auteurs .= ", '".$id_autsuite->aut."' ";
+	}
 	$clause_auteurs .= " ) " ;
 
 	// affichage des informations sur l'auteur
-	$ourAuteur = new auteur($id);	
+	$ourAuteur = new auteur($id);
 	if($ourAuteur->type == 72) {
 		// Congrès
 		print pmb_bidi("<h3><span>".$msg["congres_see_title"]." $renvoi</span></h3>\n");
@@ -39,21 +39,21 @@ if($id) {
 	} else {
 		print pmb_bidi("<h3><span>".$msg["author_see_title"]." $renvoi</span></h3>\n");
 	}
-	print "<div id='aut_details_container'>\n";	
-	print "	<div id='aut_see'>\n
-			<img src='./images/home.gif' border='0'></a> >\n"; 
-	
-	print pmb_bidi($ourAuteur->print_congres_titre()); 
-	
+	print "<div id='aut_details_container'>\n";
+	print "	<div id='aut_see' class='aut_see'>\n
+			<img src='./images/home.gif' border='0'></a> &gt;\n";
+
+	print pmb_bidi($ourAuteur->print_congres_titre());
+
 	$ourAuteur->get_similar_name($ourAuteur->type);
 	print $ourAuteur->print_similar_name();
-	
+
 	print $ourAuteur->author_comment;
-	
+
 	// récupération des formes rejetées pour affichage
 	$requete = "select distinct author_id as aut from authors where author_id $clause_auteurs and author_id!=$id " ;
-	$res = mysql_query($requete, $dbh);
-	while (($obj=mysql_fetch_object($res))) {
+	$res = pmb_mysql_query($requete, $dbh);
+	while (($obj=pmb_mysql_fetch_object($res))) {
 		$objRenvoi = new auteur($obj->aut);
 		pmb_strlen($renvoi) ? $renvoi .= ', ('.$objRenvoi->isbd_entry.")" : $renvoi = $objRenvoi->isbd_entry;
 	}
@@ -62,7 +62,7 @@ if($id) {
 
 	$aut_link= new aut_link(AUT_TABLE_AUTHORS,$id);
 	print pmb_bidi($aut_link->get_display());
-	
+
 	print "</div><!-- fermeture #aut_see -->\n";
 	// affichage des notices associées
 	print "<div id='aut_details_liste'>\n";
@@ -85,7 +85,7 @@ if($id) {
 		$dom_2= $ac->setDomain(2);
 		$acces_j = $dom_2->getJoin($_SESSION['id_empr_session'],4,'notice_id');
 	}
-		
+
 	if($acces_j) {
 		$statut_j='';
 		$statut_r='';
@@ -97,14 +97,14 @@ if($id) {
 		$opac_view_restrict=" notice_id in (select opac_view_num_notice from  opac_view_notices_".$_SESSION["opac_view"].") ";
 		$statut_r.=" and ".$opac_view_restrict;
 	}
-	
+
 	// comptage des notices associées
 	if(!$nbr_lignes) {
 		$requete = "SELECT count(distinct notices.notice_id) FROM notices $acces_j, responsability $statut_j ";
 		$requete.= "where responsability_author $clause_auteurs and notice_id=responsability_notice $statut_r ";
-		$res = mysql_query($requete, $dbh);
-		if ($res) $nbr_lignes = mysql_result($res,0,0); else $nbr_lignes=0;
-		
+		$res = pmb_mysql_query($requete, $dbh);
+		if ($res) $nbr_lignes = pmb_mysql_result($res,0,0); else $nbr_lignes=0;
+
 		//Recherche des types doc
 		$where = "where responsability_author $clause_auteurs and notice_id=responsability_notice $statut_r  group by notices.typdoc";
 		if ($opac_visionneuse_allow){
@@ -115,12 +115,12 @@ if($id) {
 		}else{
 			$requete = "select distinct notices.typdoc FROM notices $acces_j, responsability $statut_j $where";
 		}
-		
-		$res = mysql_query($requete, $dbh);
+
+		$res = pmb_mysql_query($requete, $dbh);
 		$t_typdoc=array();
 		$nbexplnum_to_photo=0;
 		if ($res) {
-			while ($tpd=mysql_fetch_object($res)) {
+			while ($tpd=pmb_mysql_fetch_object($res)) {
 				$t_typdoc[]=$tpd->typdoc;
 				$nbexplnum_to_photo += $tpd->nbexplnum;
 			}
@@ -132,28 +132,36 @@ if($id) {
 		$requete_bull = "select distinct notices.typdoc, count(explnum_id) as nbexplnum FROM notices left join bulletins on bulletins.num_notice = notice_id and bulletins.num_notice != 0 left join explnum on explnum_mimetype in ($opac_photo_filtre_mimetype) and explnum_bulletin = bulletin_id and explnum_bulletin != 0 $acces_j, responsability $statut_j  ";
 		$where = "where responsability_author $clause_auteurs and notice_id=responsability_notice $statut_r group by notices.typdoc";
 		$requete = "select distinct uni.typdoc, sum(nbexplnum) as nbexplnum from ($requete_noti $where union $requete_bull $where) as uni group by typdoc";
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		$nbexplnum_to_photo=0;
 		if ($res) {
-			while ($tpd=mysql_fetch_object($res)) {
+			while ($tpd=pmb_mysql_fetch_object($res)) {
 				$nbexplnum_to_photo += $tpd->nbexplnum;
 			}
 		}
 	}
 
+	// pour la DSI
+	if ($nbr_lignes && $opac_allow_bannette_priv && $allow_dsi_priv && ($_SESSION['abon_cree_bannette_priv']==1 || $opac_allow_bannette_priv==2)) {
+		print "<input type='button' class='bouton' name='dsi_priv' value=\"$msg[dsi_bt_bannette_priv]\" onClick=\"document.mc_values.action='./empr.php?lvl=bannette_creer'; document.mc_values.submit();\"><span class=\"espaceResultSearch\">&nbsp;</span>";
+	}
+
+	// Ouverture du div resultatrech_liste
+	print "<div id='resultatrech_liste'>";
+
 	if(!$page) $page=1;
 	$debut =($page-1)*$opac_nb_aut_rec_per_page;
-		
+
 	if($nbr_lignes) {
 		if ($opac_notices_depliable) print $begin_result_liste;
-		
+
 		//gestion du tri
-		
+
 		//si on dépasse le nombre de lignes maxi à trier
 		if ($nbr_lignes>$opac_nb_max_tri) {
 			//on annule tri selectionner
 			$_SESSION["last_sortnotices"]="";
-			print "&nbsp;";
+			print "<span class=\"espaceResultSearch\">&nbsp;</span>";
 		} else {
 			$pos=strpos($_SERVER['REQUEST_URI'],"?");
 			$pos1=strpos($_SERVER['REQUEST_URI'],"get");
@@ -166,33 +174,33 @@ if($id) {
 			print $affich_tris_result_liste;
 
 			//on recupere le tri à appliquer
-			if (isset($_GET["sort"])) {	
+			if (isset($_GET["sort"])) {
 				$_SESSION["last_sortnotices"]=$_GET["sort"];
 			}
 
 			if ($_SESSION["last_sortnotices"]!="") {
 				$sort = new sort('notices','session');
-				print "<span class='sort'>".$msg['tri_par']." ".$sort->descriptionTriParId($_SESSION["last_sortnotices"])."&nbsp;</span>"; 
+				print "<span class='sort'>".$msg['tri_par']." ".$sort->descriptionTriParId($_SESSION["last_sortnotices"])."<span class=\"espaceResultSearch\">&nbsp;</span></span>";
 			}
 		}
 		//fin gestion du tri
-		
+
 		print $add_cart_link;
-		
+
 		if($opac_visionneuse_allow && $nbexplnum_to_photo){
-			print "&nbsp;&nbsp;&nbsp;".$link_to_visionneuse;
+			print "<span class=\"espaceResultSearch\">&nbsp;&nbsp;&nbsp;</span>".$link_to_visionneuse;
 			$sendToVisionneuseByGet = str_replace("!!mode!!","congres_see",$sendToVisionneuseByGet);
 			$sendToVisionneuseByGet = str_replace("!!idautorite!!",$id,$sendToVisionneuseByGet);
 			print $sendToVisionneuseByGet;
 		}
-		
+
 		if ($opac_show_suggest) {
-			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
+			$bt_sugg = "<span class=\"espaceResultSearch\">&nbsp;&nbsp;&nbsp;</span><span class=\"search_bt_sugg\"><a href=# ";
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
-				else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg[empr_bt_make_sugg]."</a></span>";
+				else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg[empr_bt_make_sugg]."</a></span>";
 				print $bt_sugg;
-		
+
 		}
 
 		//affinage
@@ -203,11 +211,15 @@ if($id) {
 		$_SESSION["notice_view".$n]["search_id"]=$id;
 		$_SESSION["notice_view".$n]["search_page"]=$page;
 
+		// Gestion des alertes à partir de la recherche simple
+ 		include_once($include_path."/alert_see.inc.php");
+ 		print $alert_see_mc_values;
+
 		//affichage
-		print "&nbsp;&nbsp;<span class=\"affiner_recherche\"><a href='$base_path/index.php?search_type_asked=extended_search&mode_aff=aff_simple_search'>".$msg["affiner_recherche"]."</a></span>";
+		print "<span class=\"espaceResultSearch\">&nbsp;&nbsp;</span><span class=\"affiner_recherche\"><a href='$base_path/index.php?search_type_asked=extended_search&mode_aff=aff_simple_search' title='".$msg["affiner_recherche"]."'>".$msg["affiner_recherche"]."</a></span>";
 		//fin affinage
 		//Etendre
-		if ($opac_allow_external_search) print "&nbsp;&nbsp;<span class=\"search_bt_external\"><a href='$base_path/index.php?search_type_asked=external_search&mode_aff=aff_simple_search&external_type=simple'>".$msg["connecteurs_external_search_sources"]."</a></span>";
+		if ($opac_allow_external_search) print "<span class=\"espaceResultSearch\">&nbsp;&nbsp;</span><span class=\"search_bt_external\"><a href='$base_path/index.php?search_type_asked=external_search&mode_aff=aff_simple_search&external_type=simple' title='".$msg["connecteurs_external_search_sources"]."'>".$msg["connecteurs_external_search_sources"]."</a></span>";
 		//fin etendre
 
 		print "<blockquote>\n";
@@ -215,28 +227,29 @@ if($id) {
 		// on lance la vraie requête
 		$requete = "SELECT distinct notices.notice_id FROM notices $acces_j, responsability $statut_j ";
 		$requete.= "where responsability_author $clause_auteurs and notice_id=responsability_notice $statut_r";
-		
+
 		//gestion du tri
 		if ($_SESSION["last_sortnotices"]!="") {
-			$requete = $sort->appliquer_tri($_SESSION["last_sortnotices"], $requete, "notice_id", $debut, $opac_nb_aut_rec_per_page);		
+			$requete = $sort->appliquer_tri($_SESSION["last_sortnotices"], $requete, "notice_id", $debut, $opac_nb_aut_rec_per_page);
 		} else {
 			$requete.= " ORDER BY index_serie,tnvol,index_sew";
 			$requete .= " LIMIT $debut,$opac_nb_aut_rec_per_page ";
 		}
-		//fin gestion du tri		
-		$res = mysql_query($requete, $dbh);
-		while(($obj=mysql_fetch_object($res))) {
+		//fin gestion du tri
+		$res = pmb_mysql_query($requete, $dbh);
+		while(($obj=pmb_mysql_fetch_object($res))) {
 			global $infos_notice;
 			print pmb_bidi(aff_notice($obj->notice_id));
 			$infos_notice['nb_pages'] = ceil($nbr_lignes/$opac_nb_aut_rec_per_page);
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens pur affichage de la barre de navigation
 		$nbepages = ceil($nbr_lignes/$opac_nb_aut_rec_per_page);
 		print aff_notice(-2);
-		print "	</blockquote>\n
-				</div><!-- fermeture du div aut_details_liste -->\n";
+		print "</blockquote>\n";
+		print "</div>"; // Fermeture du div resultatrech_liste
+		print "</div><!-- fermeture du div aut_details_liste -->\n";
 		print "<div id='navbar'><hr /><center>".printnavbar($page, $nbepages, "./index.php?lvl=author_see&id=$id&page=!!page!!&nbr_lignes=$nbr_lignes&l_typdoc=".rawurlencode($l_typdoc))."</center></div>\n";
 
 	} else {
@@ -245,9 +258,8 @@ if($id) {
 	}
 } else {
 	print pmb_bidi("<h3><span>".$msg["author_see_title"]." $renvoi</span></h3>\n");
-	print "<div id='aut_details_container'>\n"; 
+	print "<div id='aut_details_container'>\n";
 }
 
 print "	</div><!-- fermeture du div aut_details_container -->\n";
 print "	</div><!-- fermeture du div aut_details -->\n";
-	

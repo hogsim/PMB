@@ -2,7 +2,7 @@
  // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: options_comment.php,v 1.12 2013-12-13 10:05:09 dgoron Exp $
+// $Id: options_comment.php,v 1.13 2015-01-13 15:30:12 dgoron Exp $
 
 //Gestion des options de type commentaire
 $base_path = "../..";
@@ -20,6 +20,7 @@ if ($first == 1) {
 	$param[COLS][0][value] = stripslashes($COLS*1);
 	$param[ROWS][0][value] = stripslashes($ROWS*1);
 	$param[MAXSIZE][0][value] = stripslashes($MAXSIZE*1);
+	$param[REPEATABLE][0][value] = $REPEATABLE ? 1 : 0;
 	$param[ISHTML][0][value] = $ISHTML ? 1 : 0;
 
 	$options = array_to_xml($param, "OPTIONS");
@@ -69,13 +70,16 @@ if ($first == 1) {
 		ENT_QUOTES,
 		$charset);
 	?>"></td></tr>
-	<tr><td><?php  echo $msg[procs_options_text_max];
+	<tr><td><?php  echo $msg["procs_options_text_max"];
 	?> </td><td><input type="text" class='saisie-10em' name="MAXSIZE" value="<?php  echo htmlentities(
 		$param[MAXSIZE][0][value],
 		ENT_QUOTES,
 		$charset);
 	?>"></td></tr>
-	<tr><td><?php  echo $msg[persofield_textishtml];
+	<tr><td><?php  echo $msg["persofield_textrepeat"];
+	?> </td><td><input type="checkbox" name="REPEATABLE" <?php  echo $param[REPEATABLE][0][value] ? ' checked ' : "";
+	?>></td></tr>
+	<tr><td><?php  echo $msg["persofield_textishtml"];
 	?> </td><td><input type="checkbox" name="ISHTML" <?php  echo $param[ISHTML][0][value] ? ' checked ' : "";
 	?>></td></tr>
 	</table>

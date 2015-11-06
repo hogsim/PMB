@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: start_export.class.php,v 1.13.12.1 2014-04-03 15:29:21 dgoron Exp $
+// $Id: start_export.class.php,v 1.15 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -304,17 +304,17 @@ class start_export {
 		global $dbh,$base_path;
 		
 		$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($recid).";";
-		$myQuery = mysql_query($requete, $dbh);
-		$source_id = mysql_result($myQuery, 0, 0);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		$source_id = pmb_mysql_result($myQuery, 0, 0);
 		
 		$requete="select * from entrepot_source_$source_id where recid='".addslashes($recid)."' group by ufield,usubfield,field_order,subfield_order,value order by ufield,field_order,usubfield,subfield_order";
-		$resultat = mysql_query($requete, $dbh);
+		$resultat = pmb_mysql_query($requete, $dbh);
 		$entete="";
 		
 		$field_order = "";
 		$champs="";	
 		$entete = "<notice>\n";
-		while ($r=mysql_fetch_object($resultat)) {
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			switch ($r->ufield) {
 				case "rs":
 					$entete .= "<rs>".$r->value."</rs>\n";

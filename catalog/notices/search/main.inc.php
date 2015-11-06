@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.11 2008-12-24 14:27:20 kantin Exp $
+// $Id: main.inc.php,v 1.13 2014-10-30 16:14:59 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -10,6 +10,28 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 // inclusions principales
 require_once("$include_path/templates/notice_search.tpl.php");
+require_once("$class_path/authperso.class.php");
+
+$authpersos= new authpersos();
+$info_authpersos=$authpersos->get_data();
+
+foreach($info_authpersos as $authperso){
+	if($authperso['gestion_search'] != 2) continue; // pas de boutton
+
+	$tpl_elt=$menu_search_tpl;
+	$tpl_elt = str_replace("!!label!!",htmlentities(stripslashes($authperso['name']),ENT_QUOTES, $charset),$tpl_elt);
+	$tpl_elt = str_replace("!!mode!!",$authperso['id']+1000,$tpl_elt);
+	$selected="";
+	if($mode==$authperso['id']+1000)$selected ="class=\"selected\"";
+	$tpl_elt = str_replace("!!selected!!",$selected,$tpl_elt);
+	$tpl_authperso.=$tpl_elt;
+	$authperso_list_name[$authperso['id']+1000]=$authperso['name'];
+}
+
+for($i=0;$i<count($menu_search);$i++) {	
+	$menu_search[$i] = str_replace("<!-- !!authpersos!! -->",$tpl_authperso,$menu_search[$i]);
+}
+
 if($id) {
 	// notice sélectionnée -> création de la page de notice
 	// include du fichier des opérations d'affichage
@@ -65,8 +87,22 @@ if($id) {
 			// recherches titres de série
 			print $menu_search[10];
 			include('./catalog/notices/search/titre_serie/main.inc.php');
-			break;						
+			break;
+		case 11:
+			// recherches cartes
+			print $menu_search[11];
+			include('./catalog/notices/search/map/main.inc.php');
+			break;
 		default :
+			if($mode>1000){				
+				// authperso				
+				if($info_authpersos[$mode-1000]){
+					$menu_search[1000]=str_replace("!!authperso_search_title!!",$authperso_list_name[$mode],$menu_search[1000]);
+					print $menu_search[1000];
+					include('./catalog/notices/search/authperso/main.inc.php');					
+					break;
+				}	
+			}
 			// recherche auteur/titre
 			print $menu_search[0];
 			include('./catalog/notices/search/authors/main.inc.php');

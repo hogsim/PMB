@@ -2,13 +2,13 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: visionneuse.tpl.php,v 1.13 2013-04-18 14:50:32 arenou Exp $
+// $Id: visionneuse.tpl.php,v 1.14 2014-09-19 14:26:41 arenou Exp $
 
 $visionneuse ="
 	<div style='overflow:hidden;position:absolute;top:0%;left:0%;text-align:center;height:100%;width:100%'>
 		<div id='visio_current_object' style='overflow-y:auto;'>
 			<div id='visio_current_titre'><h1>!!titre!!</h1></div>
-			<div id='visio_current_download'><a href='!!expnum_download!!' target='_blank'>!!expnum_download_lib!!</a></div>
+			!!download!!
 			<div id='visio_current_doc'>!!doc!!</div>
 			<div id='visio_current_description'>!!desc!!</div>
 		</div>

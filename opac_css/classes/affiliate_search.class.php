@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: affiliate_search.class.php,v 1.8.6.2 2014-12-16 13:57:13 jpermanne Exp $
+// $Id: affiliate_search.class.php,v 1.14 2015-05-27 09:56:27 apetithomme Exp $
 
 require_once($class_path."/connecteurs.class.php");
 require_once($class_path."/marc_table.class.php");
@@ -29,7 +29,8 @@ class affiliate_search {
 		"keywords" => 12,
 		"abstract" => 13,
 		"titre_uniforme" => 27,
-		"all" => 7
+		"all" => 7,
+		"concept" => 28
 	);
 	var $authorities_extended_array = array(
 		'2'  => "author",
@@ -219,7 +220,7 @@ class affiliate_search {
     	
     	$requete = "select * from ".$this->table_tempo;
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 
     	$this->results ="
 
@@ -235,7 +236,7 @@ class affiliate_search {
 			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg['empr_bt_make_sugg']."</a></span>";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
 			$this->results.= $bt_sugg;
 		}
 		$this->results.="&nbsp;&nbsp;";
@@ -244,8 +245,8 @@ class affiliate_search {
 		
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -254,7 +255,7 @@ class affiliate_search {
 		$this->results.= "	</div>\n
 		<div id=\"resultatrech_liste\">";
 		$this->results.= "<blockquote>";
-    	while ($r=mysql_fetch_object($resultat)) {
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
 			$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
     	}
     	$this->results.= "</blockquote>";   
@@ -356,8 +357,8 @@ class affiliate_search_author extends affiliate_search {
    					$this->fetch_auteurs();
     			}else{
     				$requete="select count(1) from ".$this->table_tempo;
-					$resultat=mysql_query($requete);
-					$this->nb_results = @mysql_result($resultat,0,0); 
+					$resultat=pmb_mysql_query($requete);
+					$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 					if(!$this->nb_results) $this->nb_results = 0;
     			}
     		}else{
@@ -477,8 +478,8 @@ class affiliate_search_author extends affiliate_search {
 			$result = array();
 			$nb_results=0;
 			foreach($joins as $join){
-				$res =mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
-				while($row = mysql_fetch_object($res)){
+				$res =pmb_mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
+				while($row = pmb_mysql_fetch_object($res)){
 					$result[]=$row;
 					$nb_results++;
 				}
@@ -501,9 +502,9 @@ class affiliate_search_author extends affiliate_search {
 
 		//construction des infos de l'autorité...
 		$rqt= "select distinct source_id from ".$this->table_tempo." join  external_count on notice_id = rid";
-		$resultat = mysql_query($rqt);
-		if(mysql_num_rows($resultat)){
-			while($r = mysql_fetch_object($resultat)){
+		$resultat = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($resultat)){
+			while($r = pmb_mysql_fetch_object($resultat)){
 				switch($this->filter){
 					case "70" :
 						$where = " and ufield like '70_' and value like '$ext_value'";
@@ -520,13 +521,13 @@ class affiliate_search_author extends affiliate_search {
 				}	
 				
 				$rqt = "select ufield,field_order,recid from entrepot_source_".$r->source_id." join ".$this->table_tempo." where recid=notice_id $where group by ufield,field_order order by recid,field_order";
-				$result_sql = mysql_query($rqt);
-				if(mysql_num_rows($result_sql)){
-					while($col = mysql_fetch_object($result_sql)){
+				$result_sql = pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($result_sql)){
+					while($col = pmb_mysql_fetch_object($result_sql)){
 						$rqt = "select ufield,field_order,usubfield,value from entrepot_source_".$r->source_id." where recid='".$col->recid."' and ufield = '".$col->ufield."' and field_order = '".$col->field_order."' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-						$plop = mysql_query($rqt);
-						if(mysql_num_rows($plop)){
-							while($elem = mysql_fetch_object($plop)){
+						$plop = pmb_mysql_query($rqt);
+						if(pmb_mysql_num_rows($plop)){
+							while($elem = pmb_mysql_fetch_object($plop)){
 								switch ($elem->usubfield) {
 									case "4":
 										$auteur["fonction"]=$elem->value;
@@ -576,8 +577,8 @@ class affiliate_search_author extends affiliate_search {
 
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -625,17 +626,17 @@ class affiliate_search_author extends affiliate_search {
 				break;
 		}
 
-		$res_sql=mysql_query($rqt) or die (mysql_error());
+		$res_sql=pmb_mysql_query($rqt) or die (pmb_mysql_error());
 		$authors = $collectivities = $congres = array();
-		while($row= mysql_fetch_object($res_sql)){
+		while($row= pmb_mysql_fetch_object($res_sql)){
 			$infos = explode("|",$row->infos);
 			switch($row->type){
 				case "70" :
 					$rqt  = "select * from entrepot_source_".$infos[7]." where recid='".$infos[6]."' and ufield = '".$infos[0]."' and field_order='".$infos[2]."'";
-					$res = mysql_query($rqt);
+					$res = pmb_mysql_query($rqt);
 					$rejete=$entree="";
-					if(mysql_num_rows($res))
-						while($r = mysql_fetch_object($res)){
+					if(pmb_mysql_num_rows($res))
+						while($r = pmb_mysql_fetch_object($res)){
 							switch($r->usubfield){
 								case "a" :
 									$entree = $r->value;
@@ -653,10 +654,10 @@ class affiliate_search_author extends affiliate_search {
 					break;
 				case "71" :
 					$rqt  = "select * from entrepot_source_".$infos[7]." where recid='".$infos[6]."' and ufield = '".$infos[0]."' and field_order='".$infos[2]."'";
-					$res = mysql_query($rqt);
+					$res = pmb_mysql_query($rqt);
 					$rejete=$entree="";
-					if(mysql_num_rows($res))
-						while($r = mysql_fetch_object($res)){
+					if(pmb_mysql_num_rows($res))
+						while($r = pmb_mysql_fetch_object($res)){
 							switch($r->usubfield){
 								case "a" :
 									$entree = $r->value;
@@ -674,10 +675,10 @@ class affiliate_search_author extends affiliate_search {
 					break;
 				case "72" :
 					$rqt  = "select * from entrepot_source_".$infos[7]." where recid='".$infos[6]."' and ufield = '".$infos[0]."' and field_order='".$infos[2]."'";
-					$res = mysql_query($rqt);
+					$res = pmb_mysql_query($rqt);
 					$rejete=$entree="";
-					if(mysql_num_rows($res))
-						while($r = mysql_fetch_object($res)){
+					if(pmb_mysql_num_rows($res))
+						while($r = pmb_mysql_fetch_object($res)){
 							switch($r->usubfield){
 								case "a" :
 									$entree = $r->value;
@@ -743,8 +744,8 @@ class affiliate_search_collection extends affiliate_search {
    					$this->fetch_collections();
     			}else{
     				$requete="select count(1) from ".$this->table_tempo;
-					$resultat=mysql_query($requete);
-					$this->nb_results = @mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					$this->nb_results = @pmb_mysql_result($resultat,0,0);
 					if(!$this->nb_results) $this->nb_results = 0;
     			}
     		}else{
@@ -841,8 +842,8 @@ class affiliate_search_collection extends affiliate_search {
 			$result = array();
 			$nb_results=0;
 			foreach($joins as $join){
-				$res =mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
-				while($row = mysql_fetch_object($res)){
+				$res =pmb_mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
+				while($row = pmb_mysql_fetch_object($res)){
 					$result[]=$row;
 					$nb_results++;
 				}
@@ -854,17 +855,17 @@ class affiliate_search_collection extends affiliate_search {
 
 		//construction des infos de l'autorité...
 		$rqt= "select distinct source_id from ".$this->table_tempo." join  external_count on notice_id = rid";
-		$resultat = mysql_query($rqt);
-		if(mysql_num_rows($resultat)){
-			while($r = mysql_fetch_object($resultat)){
+		$resultat = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($resultat)){
+			while($r = pmb_mysql_fetch_object($resultat)){
 				$rqt = "select ufield,field_order,recid from entrepot_source_".$r->source_id." join ".$this->table_tempo." where recid=notice_id  and ufield like '225' and value like '$ext_value' group by ufield,field_order order by recid,field_order";
-				$result_sql = mysql_query($rqt);
-				if(mysql_num_rows($result_sql)){
-					while($col = mysql_fetch_object($result_sql)){
+				$result_sql = pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($result_sql)){
+					while($col = pmb_mysql_fetch_object($result_sql)){
 						$rqt = "select ufield,field_order,usubfield,value from entrepot_source_".$r->source_id." where recid='".$col->recid."' and ((ufield = '".$col->ufield."' and field_order = '".$col->field_order."') or ufield = '210') group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-						$plop = mysql_query($rqt);
-						if(mysql_num_rows($plop)){
-							while($elem = mysql_fetch_object($plop)){
+						$plop = pmb_mysql_query($rqt);
+						if(pmb_mysql_num_rows($plop)){
+							while($elem = pmb_mysql_fetch_object($plop)){
 								switch($elem->ufield){
 									case "225" :
 										switch($elem->usubfield){
@@ -913,8 +914,8 @@ class affiliate_search_collection extends affiliate_search {
 
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -973,7 +974,7 @@ class affiliate_search_collection extends affiliate_search {
     	
     	$requete = "select * from ".$this->table_tempo;
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 
     	$this->results ="
 
@@ -986,15 +987,15 @@ class affiliate_search_collection extends affiliate_search {
 			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg['empr_bt_make_sugg']."</a></span>";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
 			$this->results.= $bt_sugg;
 		}
 		flush();
 		
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -1005,7 +1006,7 @@ class affiliate_search_collection extends affiliate_search {
 		$this->results.= "	</div>\n
 		<div id=\"resultatrech_liste\">";
 		$this->results.= "<blockquote>";
-    	while ($r=mysql_fetch_object($resultat)) {
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
 			$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
     	}
     	$this->results.= "</blockquote>";   
@@ -1030,9 +1031,9 @@ class affiliate_search_collection extends affiliate_search {
 
 		$rqt = "select * from ".$this->table_tempo." where infos like '225%' or infos like '410%'";
 		
-		$res_sql=mysql_query($rqt);
+		$res_sql=pmb_mysql_query($rqt);
 		$collections=array();
-		while($row= mysql_fetch_object($res_sql)){
+		while($row= pmb_mysql_fetch_object($res_sql)){
 			$infos = explode("|",$row->infos);
 			if(!in_array($infos[5],$collections))
 				$collections[]=$infos[5];
@@ -1066,8 +1067,8 @@ class affiliate_search_abstract extends affiliate_search {
     	if(!$this->nb_results){
     		if($this->table_tempo){
    				$requete="select count(1) from ".$this->table_tempo;
-				$resultat=mysql_query($requete);
-				$this->nb_results = @mysql_result($resultat,0,0); 
+				$resultat=pmb_mysql_query($requete);
+				$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 				if(!$this->nb_results) $this->nb_results = 0;
     		}else{
     			global $search;
@@ -1101,8 +1102,8 @@ class affiliate_search_title extends affiliate_search {
     	if(!$this->nb_results){
     		if($this->table_tempo){
    				$requete="select count(1) from ".$this->table_tempo;
-				$resultat=mysql_query($requete);
-				$this->nb_results = @mysql_result($resultat,0,0); 
+				$resultat=pmb_mysql_query($requete);
+				$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 				if(!$this->nb_results) $this->nb_results = 0;
     		}else{
     			global $search;
@@ -1136,8 +1137,8 @@ class affiliate_search_all extends affiliate_search {
     	if(!$this->nb_results){
     		if($this->table_tempo){
    				$requete="select count(1) from ".$this->table_tempo;
-				$resultat=mysql_query($requete);
-				$this->nb_results = @mysql_result($resultat,0,0); 
+				$resultat=pmb_mysql_query($requete);
+				$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 				if(!$this->nb_results) $this->nb_results = 0;
     		}else{
     			global $search;
@@ -1178,8 +1179,8 @@ class affiliate_search_indexint extends affiliate_search {
    					$this->fetch_indexint();
     			}else{
     				$requete="select count(1) from ".$this->table_tempo;
-					$resultat=mysql_query($requete);
-					$this->nb_results = @mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					$this->nb_results = @pmb_mysql_result($resultat,0,0);
 					if(!$this->nb_results) $this->nb_results = 0;
     			}
     		}else{
@@ -1276,8 +1277,8 @@ class affiliate_search_indexint extends affiliate_search {
 			$result = array();
 			$nb_results=0;
 			foreach($joins as $join){
-				$res =mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
-				while($row = mysql_fetch_object($res)){
+				$res =pmb_mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
+				while($row = pmb_mysql_fetch_object($res)){
 					$result[]=$row;
 					$nb_results++;
 				}
@@ -1289,17 +1290,17 @@ class affiliate_search_indexint extends affiliate_search {
 
 		//construction des infos de l'autorité...
 		$rqt= "select distinct source_id from ".$this->table_tempo." join  external_count on notice_id = rid";
-		$resultat = mysql_query($rqt);
-		if(mysql_num_rows($resultat)){
-			while($r = mysql_fetch_object($resultat)){
+		$resultat = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($resultat)){
+			while($r = pmb_mysql_fetch_object($resultat)){
 				$rqt = "select ufield,field_order,recid from entrepot_source_".$r->source_id." join ".$this->table_tempo." where recid=notice_id  and (ufield like '67%' or ufield like '68%') and value like '$ext_value' group by ufield,field_order order by recid,field_order";
-				$result_sql = mysql_query($rqt);
-				if(mysql_num_rows($result_sql)){
-					while($col = mysql_fetch_object($result_sql)){
+				$result_sql = pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($result_sql)){
+					while($col = pmb_mysql_fetch_object($result_sql)){
 						$rqt = "select ufield,field_order,usubfield,value from entrepot_source_".$r->source_id." where recid='".$col->recid."' and ((ufield = '".$col->ufield."' and field_order = '".$col->field_order."')) group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-						$plop = mysql_query($rqt);
-						if(mysql_num_rows($plop)){
-							while($elem = mysql_fetch_object($plop)){
+						$plop = pmb_mysql_query($rqt);
+						if(pmb_mysql_num_rows($plop)){
+							while($elem = pmb_mysql_fetch_object($plop)){
 								switch($elem->usubfield){
 									case "a" :
 										$indexint_lib = $elem->value;
@@ -1326,8 +1327,8 @@ class affiliate_search_indexint extends affiliate_search {
 
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -1386,7 +1387,7 @@ class affiliate_search_indexint extends affiliate_search {
     	
     	$requete = "select * from ".$this->table_tempo;
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 
     	$this->results ="
 
@@ -1399,15 +1400,15 @@ class affiliate_search_indexint extends affiliate_search {
 			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg['empr_bt_make_sugg']."</a></span>";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
 			$this->results.= $bt_sugg;
 		}
 		flush();
 		
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -1418,7 +1419,7 @@ class affiliate_search_indexint extends affiliate_search {
 		$this->results.= "	</div>\n
 		<div id=\"resultatrech_liste\">";
 		$this->results.= "<blockquote>";
-    	while ($r=mysql_fetch_object($resultat)) {
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
 			$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
     	}
     	$this->results.= "</blockquote>";   
@@ -1442,9 +1443,9 @@ class affiliate_search_indexint extends affiliate_search {
 
 		$rqt = "select * from ".$this->table_tempo." where infos like '67%' or infos like '68%'";
 		
-		$res_sql=mysql_query($rqt);
+		$res_sql=pmb_mysql_query($rqt);
 		$indexint=array();
-		while($row= mysql_fetch_object($res_sql)){
+		while($row= pmb_mysql_fetch_object($res_sql)){
 			$infos = explode("|",$row->infos);
 			if(!in_array($infos[5],$indexint))
 				$indexint[]=$infos[5];
@@ -1484,8 +1485,8 @@ class affiliate_search_publisher extends affiliate_search {
    					$this->fetch_publishers();
     			}else{
     				$requete="select count(1) from ".$this->table_tempo;
-					$resultat=mysql_query($requete);
-					$this->nb_results = @mysql_result($resultat,0,0); 
+					$resultat=pmb_mysql_query($requete);
+					$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 					if(!$this->nb_results) $this->nb_results = 0;
     			}
     		}else{
@@ -1582,8 +1583,8 @@ class affiliate_search_publisher extends affiliate_search {
 			$result = array();
 			$nb_results=0;
 			foreach($joins as $join){
-				$res =mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
-				while($row = mysql_fetch_object($res)){
+				$res =pmb_mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
+				while($row = pmb_mysql_fetch_object($res)){
 					$result[]=$row;
 					$nb_results++;
 				}
@@ -1595,17 +1596,17 @@ class affiliate_search_publisher extends affiliate_search {
 
 		//construction des infos de l'autorité...
 		$rqt= "select distinct source_id from ".$this->table_tempo." join  external_count on notice_id = rid";
-		$resultat = mysql_query($rqt);
-		if(mysql_num_rows($resultat)){
-			while($r = mysql_fetch_object($resultat)){
+		$resultat = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($resultat)){
+			while($r = pmb_mysql_fetch_object($resultat)){
 				$rqt = "select ufield,field_order,recid from entrepot_source_".$r->source_id." join ".$this->table_tempo." where recid=notice_id  and ufield like '210' and value like '$ext_value' group by ufield,field_order order by recid,field_order";
-				$result_sql = mysql_query($rqt);
-				if(mysql_num_rows($result_sql)){
-					while($col = mysql_fetch_object($result_sql)){
+				$result_sql = pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($result_sql)){
+					while($col = pmb_mysql_fetch_object($result_sql)){
 						$rqt = "select ufield,field_order,usubfield,value from entrepot_source_".$r->source_id." where recid='".$col->recid."' and ufield = '210' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-						$plop = mysql_query($rqt);
-						if(mysql_num_rows($plop)){
-							while($elem = mysql_fetch_object($plop)){
+						$plop = pmb_mysql_query($rqt);
+						if(pmb_mysql_num_rows($plop)){
+							while($elem = pmb_mysql_fetch_object($plop)){
 								switch($elem->usubfield){
 									case "c" :
 										$publisher = $elem->value;
@@ -1636,8 +1637,8 @@ class affiliate_search_publisher extends affiliate_search {
 
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -1696,7 +1697,7 @@ class affiliate_search_publisher extends affiliate_search {
     	
     	$requete = "select * from ".$this->table_tempo;
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 
     	$this->results ="
 
@@ -1709,15 +1710,15 @@ class affiliate_search_publisher extends affiliate_search {
 			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg['empr_bt_make_sugg']."</a></span>";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
 			$this->results.= $bt_sugg;
 		}
 		flush();
 		
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -1728,7 +1729,7 @@ class affiliate_search_publisher extends affiliate_search {
 		$this->results.= "	</div>\n
 		<div id=\"resultatrech_liste\">";
 		$this->results.= "<blockquote>";
-    	while ($r=mysql_fetch_object($resultat)) {
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
 			$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
     	}
     	$this->results.= "</blockquote>";   
@@ -1752,9 +1753,9 @@ class affiliate_search_publisher extends affiliate_search {
 
 		$rqt = "select * from ".$this->table_tempo." where infos like '210%'";
 		
-		$res_sql=mysql_query($rqt);
+		$res_sql=pmb_mysql_query($rqt);
 		$publishers=array();
-		while($row= mysql_fetch_object($res_sql)){
+		while($row= pmb_mysql_fetch_object($res_sql)){
 			$infos = explode("|",$row->infos);
 			if(!in_array($infos[5],$publishers))
 				$publishers[]=$infos[5];
@@ -1787,8 +1788,8 @@ class affiliate_search_keywords extends affiliate_search {
     	if(!$this->nb_results){
     		if($this->table_tempo){
    				$requete="select count(1) from ".$this->table_tempo;
-				$resultat=mysql_query($requete);
-				$this->nb_results = @mysql_result($resultat,0,0); 
+				$resultat=pmb_mysql_query($requete);
+				$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 				if(!$this->nb_results) $this->nb_results = 0;
     		}else{
     			global $search;
@@ -1829,8 +1830,8 @@ class affiliate_search_category extends affiliate_search {
    					$this->fetch_categories();
     			}else{
     				$requete="select count(1) from ".$this->table_tempo;
-					$resultat=mysql_query($requete);
-					$this->nb_results = @mysql_result($resultat,0,0); 
+					$resultat=pmb_mysql_query($requete);
+					$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 					if(!$this->nb_results) $this->nb_results = 0;
     			}
     		}else{
@@ -1927,8 +1928,8 @@ class affiliate_search_category extends affiliate_search {
 			$result = array();
 			$nb_results=0;
 			foreach($joins as $join){
-				$res =mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
-				while($row = mysql_fetch_object($res)){
+				$res =pmb_mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
+				while($row = pmb_mysql_fetch_object($res)){
 					$result[]=$row;
 					$nb_results++;
 				}
@@ -1940,17 +1941,17 @@ class affiliate_search_category extends affiliate_search {
 
 		//construction des infos de l'autorité...
 		$rqt= "select distinct source_id from ".$this->table_tempo." join  external_count on notice_id = rid";
-		$resultat = mysql_query($rqt);
-		if(mysql_num_rows($resultat)){
-			while($r = mysql_fetch_object($resultat)){
+		$resultat = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($resultat)){
+			while($r = pmb_mysql_fetch_object($resultat)){
 				$rqt = "select ufield,field_order,recid from entrepot_source_".$r->source_id." join ".$this->table_tempo." where recid=notice_id  and ufield like '606' and value like '$ext_value' group by ufield,field_order order by recid,field_order";
-				$result_sql = mysql_query($rqt);
-				if(mysql_num_rows($result_sql)){
-					while($col = mysql_fetch_object($result_sql)){
+				$result_sql = pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($result_sql)){
+					while($col = pmb_mysql_fetch_object($result_sql)){
 						$rqt = "select ufield,field_order,usubfield,value from entrepot_source_".$r->source_id." where recid='".$col->recid."' and ((ufield = '".$col->ufield."' and field_order = '".$col->field_order."')) group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-						$plop = mysql_query($rqt);
-						if(mysql_num_rows($plop)){
-							while($elem = mysql_fetch_object($plop)){
+						$plop = pmb_mysql_query($rqt);
+						if(pmb_mysql_num_rows($plop)){
+							while($elem = pmb_mysql_fetch_object($plop)){
 								switch($elem->usubfield){
 									case "a" :
 										$categ_lib = $elem->value;
@@ -1978,8 +1979,8 @@ class affiliate_search_category extends affiliate_search {
 
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -2038,7 +2039,7 @@ class affiliate_search_category extends affiliate_search {
     	
     	$requete = "select * from ".$this->table_tempo;
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 
     	$this->results ="
 
@@ -2051,15 +2052,15 @@ class affiliate_search_category extends affiliate_search {
 			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg['empr_bt_make_sugg']."</a></span>";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
 			$this->results.= $bt_sugg;
 		}
 		flush();
 		
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -2070,7 +2071,7 @@ class affiliate_search_category extends affiliate_search {
 		$this->results.= "	</div>\n
 		<div id=\"resultatrech_liste\">";
 		$this->results.= "<blockquote>";
-    	while ($r=mysql_fetch_object($resultat)) {
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
 			$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
     	}
     	$this->results.= "</blockquote>";   
@@ -2094,9 +2095,9 @@ class affiliate_search_category extends affiliate_search {
 
 		$rqt = "select * from ".$this->table_tempo." where infos like '606%'";
 		
-		$res_sql=mysql_query($rqt);
+		$res_sql=pmb_mysql_query($rqt);
 		$categ=array();
-		while($row= mysql_fetch_object($res_sql)){
+		while($row= pmb_mysql_fetch_object($res_sql)){
 			$infos = explode("|",$row->infos);
 			if(!in_array($infos[5],$categ))
 				$categ[]=$infos[5];
@@ -2136,8 +2137,8 @@ class affiliate_search_subcollection extends affiliate_search {
    					$this->fetch_subcollections();
     			}else{
     				$requete="select count(1) from ".$this->table_tempo;
-					$resultat=mysql_query($requete);
-					$this->nb_results = @mysql_result($resultat,0,0); 
+					$resultat=pmb_mysql_query($requete);
+					$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 					if(!$this->nb_results) $this->nb_results = 0;
     			}
     		}else{
@@ -2234,8 +2235,8 @@ class affiliate_search_subcollection extends affiliate_search {
 			$result = array();
 			$nb_results=0;
 			foreach($joins as $join){
-				$res =mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
-				while($row = mysql_fetch_object($res)){
+				$res =pmb_mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
+				while($row = pmb_mysql_fetch_object($res)){
 					$result[]=$row;
 					$nb_results++;
 				}
@@ -2247,17 +2248,17 @@ class affiliate_search_subcollection extends affiliate_search {
 
 		//construction des infos de l'autorité...
 		$rqt= "select distinct source_id from ".$this->table_tempo." join  external_count on notice_id = rid";
-		$resultat = mysql_query($rqt);
-		if(mysql_num_rows($resultat)){
-			while($r = mysql_fetch_object($resultat)){
+		$resultat = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($resultat)){
+			while($r = pmb_mysql_fetch_object($resultat)){
 				$rqt = "select ufield,field_order,recid from entrepot_source_".$r->source_id." join ".$this->table_tempo." where recid=notice_id  and ufield like '225' and value like '$ext_value' group by ufield,field_order order by recid,field_order";
-				$result_sql = mysql_query($rqt);
-				if(mysql_num_rows($result_sql)){
-					while($col = mysql_fetch_object($result_sql)){
+				$result_sql = pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($result_sql)){
+					while($col = pmb_mysql_fetch_object($result_sql)){
 						$rqt = "select ufield,field_order,usubfield,value from entrepot_source_".$r->source_id." where recid='".$col->recid."' and ((ufield = '".$col->ufield."' and field_order = '".$col->field_order."') or ufield = '210' or ufield = '410' or ufield = '411') group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-						$plop = mysql_query($rqt);
-						if(mysql_num_rows($plop)){
-							while($elem = mysql_fetch_object($plop)){
+						$plop = pmb_mysql_query($rqt);
+						if(pmb_mysql_num_rows($plop)){
+							while($elem = pmb_mysql_fetch_object($plop)){
 								switch($elem->ufield){
 									case "410" :
 										$coll_name = $elem->value;
@@ -2313,8 +2314,8 @@ class affiliate_search_subcollection extends affiliate_search {
 
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -2373,7 +2374,7 @@ class affiliate_search_subcollection extends affiliate_search {
     	
     	$requete = "select * from ".$this->table_tempo;
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 
     	$this->results ="
 
@@ -2386,15 +2387,15 @@ class affiliate_search_subcollection extends affiliate_search {
 			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg['empr_bt_make_sugg']."</a></span>";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
 			$this->results.= $bt_sugg;
 		}
 		flush();
 		
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -2405,7 +2406,7 @@ class affiliate_search_subcollection extends affiliate_search {
 		$this->results.= "	</div>\n
 		<div id=\"resultatrech_liste\">";
 		$this->results.= "<blockquote>";
-    	while ($r=mysql_fetch_object($resultat)) {
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
 			$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
     	}
     	$this->results.= "</blockquote>";   
@@ -2427,9 +2428,9 @@ class affiliate_search_subcollection extends affiliate_search {
 		$auteurs = array() ;
 
 		$rqt = "select * from ".$this->table_tempo." where infos like '225|%|%|i%' or infos like '411|%|%|t%'";
-		$res_sql=mysql_query($rqt);
+		$res_sql=pmb_mysql_query($rqt);
 		$subcollections=array();
-		while($row= mysql_fetch_object($res_sql)){
+		while($row= pmb_mysql_fetch_object($res_sql)){
 			$infos = explode("|",$row->infos);
 			if(!in_array($infos[5],$subcollections))
 				$subcollections[]=$infos[5];
@@ -2468,8 +2469,8 @@ class affiliate_search_titre_uniforme extends affiliate_search {
    					$this->fetch_tu();
     			}else{
     				$requete="select count(1) from ".$this->table_tempo;
-					$resultat=mysql_query($requete);
-					$this->nb_results = @mysql_result($resultat,0,0); 
+					$resultat=pmb_mysql_query($requete);
+					$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 					if(!$this->nb_results) $this->nb_results = 0;
     			}
     		}else{
@@ -2566,8 +2567,8 @@ class affiliate_search_titre_uniforme extends affiliate_search {
 			$result = array();
 			$nb_results=0;
 			foreach($joins as $join){
-				$res =mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
-				while($row = mysql_fetch_object($res)){
+				$res =pmb_mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
+				while($row = pmb_mysql_fetch_object($res)){
 					$result[]=$row;
 					$nb_results++;
 				}
@@ -2579,17 +2580,17 @@ class affiliate_search_titre_uniforme extends affiliate_search {
 
 		//construction des infos de l'autorité...
 		$rqt= "select distinct source_id from ".$this->table_tempo." join  external_count on notice_id = rid";
-		$resultat = mysql_query($rqt);
-		if(mysql_num_rows($resultat)){
-			while($r = mysql_fetch_object($resultat)){
+		$resultat = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($resultat)){
+			while($r = pmb_mysql_fetch_object($resultat)){
 				$rqt = "select ufield,field_order,recid from entrepot_source_".$r->source_id." join ".$this->table_tempo." where recid=notice_id  and ufield like '500' and value like '$ext_value' group by ufield,field_order order by recid,field_order";
-				$result_sql = mysql_query($rqt);
-				if(mysql_num_rows($result_sql)){
-					while($col = mysql_fetch_object($result_sql)){
+				$result_sql = pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($result_sql)){
+					while($col = pmb_mysql_fetch_object($result_sql)){
 						$rqt = "select ufield,field_order,usubfield,value from entrepot_source_".$r->source_id." where recid='".$col->recid."' and ufield = '500' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-						$plop = mysql_query($rqt);
-						if(mysql_num_rows($plop)){
-							while($elem = mysql_fetch_object($plop)){
+						$plop = pmb_mysql_query($rqt);
+						if(pmb_mysql_num_rows($plop)){
+							while($elem = pmb_mysql_fetch_object($plop)){
 								switch($elem->usubfield){
 									case "a" :
 										$tu = $elem->value;
@@ -2616,8 +2617,8 @@ class affiliate_search_titre_uniforme extends affiliate_search {
 
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -2676,7 +2677,7 @@ class affiliate_search_titre_uniforme extends affiliate_search {
     	
     	$requete = "select * from ".$this->table_tempo;
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 
     	$this->results ="
 
@@ -2689,15 +2690,15 @@ class affiliate_search_titre_uniforme extends affiliate_search {
 			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg['empr_bt_make_sugg']."</a></span>";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
 			$this->results.= $bt_sugg;
 		}
 		flush();
 		
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}	
 		
@@ -2708,7 +2709,7 @@ class affiliate_search_titre_uniforme extends affiliate_search {
 		$this->results.= "	</div>\n
 		<div id=\"resultatrech_liste\">";
 		$this->results.= "<blockquote>";
-    	while ($r=mysql_fetch_object($resultat)) {
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
 			$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
     	}
     	$this->results.= "</blockquote>";   
@@ -2732,9 +2733,9 @@ class affiliate_search_titre_uniforme extends affiliate_search {
 
 		$rqt = "select * from ".$this->table_tempo." where infos like '500%'";
 		
-		$res_sql=mysql_query($rqt);
+		$res_sql=pmb_mysql_query($rqt);
 		$tu=array();
-		while($row= mysql_fetch_object($res_sql)){
+		while($row= pmb_mysql_fetch_object($res_sql)){
 			$infos = explode("|",$row->infos);
 			if(!in_array($infos[5],$tu))
 				$tu[]=$infos[5];
@@ -2808,7 +2809,7 @@ class affiliate_search_extended extends affiliate_search {
     	
     	$requete = "select * from ".$this->table_tempo;
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 
     	$this->results ="
 
@@ -2824,7 +2825,7 @@ class affiliate_search_extended extends affiliate_search {
 			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
 			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-			$bt_sugg.= " >".$msg['empr_bt_make_sugg']."</a></span>";
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
 			$this->results.= $bt_sugg;
 		}
 		$this->results.="&nbsp;&nbsp;";
@@ -2833,9 +2834,9 @@ class affiliate_search_extended extends affiliate_search {
 		
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		if($res && mysql_num_rows($res)){
-			while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		if($res && pmb_mysql_num_rows($res)){
+			while ($row = pmb_mysql_fetch_array($res)) {
 				$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 			}
 		}	
@@ -2845,8 +2846,8 @@ class affiliate_search_extended extends affiliate_search {
 		$this->results.= "	</div>\n
 		<div id=\"resultatrech_liste\">";
 		$this->results.= "<blockquote>";
-		if($resultat && mysql_num_rows($resultat)){
-			while ($r=mysql_fetch_object($resultat)) {
+		if($resultat && pmb_mysql_num_rows($resultat)){
+			while ($r=pmb_mysql_fetch_object($resultat)) {
 				$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
 			}
 		}
@@ -2865,8 +2866,8 @@ class affiliate_search_extended extends affiliate_search {
     	if(!$this->nb_results){
     		if($this->table_tempo){
    				$requete="select count(1) from ".$this->table_tempo;
-				$resultat=mysql_query($requete);
-				$this->nb_results = @mysql_result($resultat,0,0); 
+				$resultat=pmb_mysql_query($requete);
+				$this->nb_results = @pmb_mysql_result($resultat,0,0); 
 				if(!$this->nb_results) $this->nb_results = 0;
     		}else{
     			global $search;
@@ -2876,5 +2877,310 @@ class affiliate_search_extended extends affiliate_search {
     	}
     	return $this->nb_results;
     } 
+}
+
+class affiliate_search_concept extends affiliate_search {
+	
+	function affiliate_search_concept($user_query="",$search_type="notices"){
+		$this->type= "concept";
+		parent::affiliate_search($user_query,$search_type);
+	} 
+	
+	function generateSearch(){
+		$this->generateGlobals();	
+		$this->addSources();
+    }	
+    
+    function makeSearch(){
+    	global $search;
+    	if($this->search_type == "authorities"){
+   			$search_file="search_simple_fields_authorities";
+    	}else $search_file="search_simple_fields_unimarc";
+
+    	$this->external_search=new search($search_file);
+		$this->table_tempo = $this->external_search->make_search("f_".$this->look_array[$this->type]);
+    }
+
+	function getNbResults(){
+    	if(!$this->nb_results){
+    		if($this->table_tempo){
+    			if($this->search_type == "authorities"){
+   					$this->fetch_concepts();
+    			}else{
+    				$requete="select count(1) from ".$this->table_tempo;
+					$resultat=pmb_mysql_query($requete);
+					$this->nb_results = @pmb_mysql_result($resultat,0,0); 
+					if(!$this->nb_results) $this->nb_results = 0;
+    			}
+    		}else{
+    			global $search;
+    			$this->makeSearch();
+    			$this->getNbResults();
+    		}
+    	}
+    	return $this->nb_results;
+    } 
+    
+   function getAuthoritiesResults(){
+    	global $msg;
+    	global $opac_search_results_per_page;
+    	global $page;
+    	    	
+    	if($this->table_tempo){
+ 			if(!$this->authoritiesResult){
+		    	$this->authoritiesResult ="
+				<div id='resultatrech_container'>
+					<div id='resultatrech_see'>";
+
+
+				$this->authoritiesResult.= pmb_bidi("<h3>".$this->getTotalNbResults()." ".$msg['concepts_found']." ".$this->external_search->make_human_query().activation_surlignage()."</h3>");
+				$this->authoritiesResult.= "
+					</div>
+					<div id='resultatrech_liste'>
+						<ul>";	
+				$concept = $this->fetch_concepts();
+
+				if(!$page) $page = 1; 
+	    		$start_page=$opac_search_results_per_page*($page-1);
+	    		$last_item = ($start_page+$opac_search_results_per_page) <= count($concept) ? ($start_page+$opac_search_results_per_page) : count($concept);
+	    		for($i = $start_page ; $i<$last_item ; $i++){
+	    			$this->authoritiesResult.= "
+					<li class='concept_colonne'><font class='notice_fort'><a href='#'  onclick='document.form_values.action=\"./index.php?lvl=external_authorities&type=".$this->type."&ext_value=".urlencode($concept[$i])."\";document.form_values.submit();return false;'>".$concept[$i]."</a></font></li>";
+	    		}												
+
+		    	$this->authoritiesResult.= "
+						</ul>
+		    		</div>
+				</div>";
+				//gestion de la pagination...
+				$nbepages = ceil($this->getTotalNbResults()/$opac_search_results_per_page);
+				$url_page = "javascript:document.form_values.page.value=!!page!!; document.form_values.action = \"./index.php?lvl=more_results&tab=affiliate\"; document.form_values.affiliate_page.value=document.form_values.page.value; document.form_values.submit()";
+				$action = "javascript:document.form_values.page.value=document.form.page.value; document.form_values.action = \"./index.php?lvl=more_results&tab=affiliate\"; document.form_values.affiliate_page.value=document.form_values.page.value; document.form_values.submit()";
+				$this->authoritiesResult.=  "<div id='navbar'><hr />\n<center>".printnavbar($page, $nbepages, $url_page,$action,"catal_pag")."</center></div>";
+ 			}
+    	}else{
+    		global $search;
+    		$this->makeSearch();
+    		$this->getAuthoritiesResults();
+    	}
+    	return $this->authoritiesResult;
+    }   
+    
+ 	function getNoticesAuthorityResults(){
+		global $dbh;
+    	global $begin_result_liste;
+    	global $opac_notices_depliable;
+    	global $opac_show_suggest;
+    	global $opac_resa_popup;
+    	global $opac_search_results_per_page;
+    	$nb_per_page_search = $opac_search_results_per_page;
+    	global $page;
+    	global $charset;
+    	global $search;
+    	global $msg;
+    	global $fonction_auteur;					
+						
+    	global $affich_tris_result_liste;
+    	global $count;
+    	global $add_cart_link;    	
+    	
+    	global $ext_value;
+    	if(!$page) $page = 1; 
+    	$start_page=$nb_per_page_search*($page-1);
+    	
+    	//Y-a-t-il des champs ?
+    	if (count($search)==0) {
+    		return;
+    	}
+
+    	if(!$this->table_tempo){
+    		global $search;
+    		$this->makeSearch();
+    	}	
+    	
+    	$joins = array();
+		foreach($this->affiliate_source as $aff_source){
+			$joins[] = "join entrepot_source_$aff_source on recid = notice_id and value like '$ext_value'";
+		}		
+		if(count($joins)){
+			$result = array();
+			$nb_results=0;
+			foreach($joins as $join){
+				$res =pmb_mysql_query("select distinct notice_id, pert from ".$this->table_tempo." ".$join);
+				while($row = pmb_mysql_fetch_object($res)){
+					$result[]=$row;
+					$nb_results++;
+				}
+			}
+			//TODO : Classsement du tableau par pert...
+		}
+		
+		$authority_title = $msg['skos_view_concepts_concepts'];
+
+		//construction des infos de l'autorité...
+		$rqt= "select distinct source_id from ".$this->table_tempo." join  external_count on notice_id = rid";
+		$resultat = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($resultat)){
+			while($r = pmb_mysql_fetch_object($resultat)){
+				$rqt = "select ufield,field_order,recid from entrepot_source_".$r->source_id." join ".$this->table_tempo." where recid=notice_id  and ufield like '606' and value like '$ext_value' group by ufield,field_order order by recid,field_order";
+				$result_sql = pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($result_sql)){
+					while($col = pmb_mysql_fetch_object($result_sql)){
+						$rqt = "select ufield,field_order,usubfield,value from entrepot_source_".$r->source_id." where recid='".$col->recid."' and ((ufield = '".$col->ufield."' and field_order = '".$col->field_order."')) group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
+						$plop = pmb_mysql_query($rqt);
+						if(pmb_mysql_num_rows($plop)){
+							while($elem = pmb_mysql_fetch_object($plop)){
+								switch($elem->usubfield){
+									case "a" :
+										$concept_lib = $elem->value;
+										
+										break;
+								}								
+							}
+						}
+					}
+					//si on a trouvé un résultat, on insiste pas...
+					break;
+				}
+			}
+		}
+		$this->results ="
+		<div id='aut_details'>
+			<h3>".htmlentities($authority_title,ENT_QUOTES,$charset)."</h3>
+			<div id='aut_see'>
+				<div class='categorylevel2'>
+					<h3>".$msg['skos_concept']." ".htmlentities($concept_lib,ENT_QUOTES,$charset)."</h3>
+				</div>
+			</div>
+			<div id='aut_details_liste'>
+			<h3>".htmlentities($nb_results,ENT_QUOTES,$charset)." ".$msg['affiliate_search_external_authority_results'].implode($msg['affiliate_search_external_results_and'],$this->affiliate_source_name)."</h3>";
+
+		$entrepots_localisations = array();
+		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
+			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
+		}	
+		
+		if ($opac_notices_depliable) $this->results.= $begin_result_liste;
+		
+		$this->results.= $add_cart_link;
+		
+		$this->results.= "	</div>\n
+		<div id=\"resultatrech_liste\">";
+		$this->results.= "<blockquote>";
+		$last_item = ($start_page+$opac_search_results_per_page) <= count($result) ? ($start_page+$opac_search_results_per_page) : count($result);
+    	for($i=$start_page ; $i<$last_item ; $i++){
+			$this->results.= aff_notice_unimarc($result[$i]->notice_id, 0, $entrepots_localisations);
+    	}
+    	$this->results.= "</blockquote>";   
+    	$this->results.= "</div>
+		</div>";
+		//on a besoin d'un formulaire pour reposter la recherche
+		$this->results.= $this->make_hidden_search_form();
+		//gestion de la pagination...
+		$nbepages = ceil($nb_results/$opac_search_results_per_page);
+		$url_page = "javascript:document.form_values.page.value=!!page!!; document.form_values.action = \"./index.php?lvl=more_results&tab=affiliate\"; document.form_values.affiliate_page.value=document.form_values.page.value; document.form_values.submit()";
+		$action = "javascript:document.form_values.page.value=document.form.page.value; document.form_values.action = \"./index.php?lvl=more_results&tab=affiliate\"; document.form_values.affiliate_page.value=document.form_values.page.value; document.form_values.submit()";
+		$this->results.=  "<div id='navbar'><hr />\n<center>".printnavbar($page, $nbepages, $url_page,$action,"catal_pag")."</center></div>";
+		return $this->results;	
+	}   
+	
+	function getNoticesResults() {
+    	global $dbh;
+    	global $begin_result_liste;
+    	global $opac_notices_depliable;
+    	global $opac_show_suggest;
+    	global $opac_resa_popup;
+    	global $opac_search_results_per_page;
+    	$nb_per_page_search = $opac_search_results_per_page;
+    	global $page;
+    	global $charset;
+    	global $search;
+    	global $msg;						
+						
+    	global $affich_tris_result_liste;
+    	global $count;
+    	global $add_cart_link;    	
+    	if(!$page) $page = 1; 
+    	$start_page=$nb_per_page_search*($page-1);
+    	
+    	//Y-a-t-il des champs ?
+    	if (count($search)==0) {
+    		return;
+    	}
+
+    	if(!$this->table_tempo){
+    		global $search;
+    		$this->makeSearch();
+    	}
+    	
+    	$requete = "select * from ".$this->table_tempo;
+		$requete .= " limit ".$start_page.",".$nb_per_page_search;
+		$resultat=pmb_mysql_query($requete,$dbh);
+
+    	$this->results ="
+
+		<div id=\"resultatrech_container\">
+		<div id=\"resultatrech_see\">
+		";
+
+		$this->results.= pmb_bidi("<h3>".$this->getTotalNbResults()." ".$msg['titles_found']." ".$this->external_search->make_human_query().activation_surlignage()."</h3>");
+		if ($opac_show_suggest) {
+			$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";		
+			if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
+			else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
+			$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg['empr_bt_make_sugg']."</a></span>";
+			$this->results.= $bt_sugg;
+		}
+		flush();
+		
+		$entrepots_localisations = array();
+		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
+			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
+		}	
+		
+		if ($opac_notices_depliable) $this->results.= $begin_result_liste;
+		
+		$this->results.= $add_cart_link;
+		
+		$this->results.= "	</div>\n
+		<div id=\"resultatrech_liste\">";
+		$this->results.= "<blockquote>";
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
+			$this->results.= aff_notice_unimarc($r->notice_id, 0, $entrepots_localisations);
+    	}
+    	$this->results.= "</blockquote>";   
+    	$this->results.= "</div>
+		</div>";
+		//on a besoin d'un formulaire pour reposter la recherche
+		//$this->results.= $this->make_hidden_search_form();
+		//gestion de la pagination...
+		$nbepages = ceil($this->getTotalNbResults()/$opac_search_results_per_page);
+		$url_page = "javascript:document.form_values.page.value=!!page!!; document.form_values.action = \"./index.php?lvl=more_results&tab=affiliate\"; document.form_values.affiliate_page.value=document.form_values.page.value; document.form_values.submit()";
+		$action = "javascript:document.form_values.page.value=document.form.page.value; document.form_values.action = \"./index.php?lvl=more_results&tab=affiliate\"; document.form_values.affiliate_page.value=document.form_values.page.value; document.form_values.submit()";
+		$this->results.=  "<div id='navbar'><hr />\n<center>".printnavbar($page, $nbepages, $url_page,$action,"catal_pag")."</center></div>";
+		return $this->results;
+    }    
+
+	function fetch_concepts() {
+		global $dbh ;
+		global $opac_url_base ;
+	
+		$rqt = "select * from ".$this->table_tempo." where infos like '606%'";
+		
+		$res_sql=pmb_mysql_query($rqt);
+		$concept=array();
+		while($row= pmb_mysql_fetch_object($res_sql)){
+			$infos = explode("|",$row->infos);
+			if(!in_array($infos[5],$concept))
+				$concept[]=$infos[5];
+		}
+				
+		$this->nb_results['total'] = count($concept);
+		return $concept;
+	} // fin fetch_concepts
 }
 ?>

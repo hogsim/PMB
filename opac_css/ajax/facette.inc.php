@@ -2,10 +2,11 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: facette.inc.php,v 1.4.2.1 2014-06-25 07:40:29 mbertin Exp $
+// $Id: facette.inc.php,v 1.6 2014-06-25 07:47:53 mbertin Exp $
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once($class_path.'/facette_search.class.php');
+require_once($class_path.'/facette_search_compare.class.php');
 
 switch($sub){
 	case 'call_facettes':
@@ -24,5 +25,24 @@ switch($sub){
 		$sended_datas=pmb_utf8_array_decode(json_decode(stripslashes($sended_datas),true));
 		ajax_http_send_response($facette->see_more($sended_datas['json_facette_plus']));
 	
-	break;
+		break;
+	case 'compare_see_more':
+		//les parametres nécéssaires
+		global $pmb_compare_notice_template;
+		global $pmb_compare_notice_nb;
+		
+		$sended_datas=utf8_encode($sended_datas);
+		$sended_datas=pmb_utf8_array_decode(json_decode(stripslashes($sended_datas),true));
+		$sended_datas['json_notices_ids']=implode(',',$sended_datas['json_notices_ids']);
+		
+		$tab_return=array();
+		$tab_return['notices']=utf8_encode(facette_search_compare::call_notice_display($sended_datas['json_notices_ids'], $pmb_compare_notice_nb, $pmb_compare_notice_template));
+		
+		if($sended_datas['json_notices_ids']){
+			$tab_return['see_more']=utf8_encode(facette_search_compare::get_compare_see_more($sended_datas['json_notices_ids']));
+		}
+		
+		ajax_http_send_response(json_encode($tab_return));
+	
+		break;	
 }

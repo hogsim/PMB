@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr.inc.php,v 1.15 2012-10-31 14:44:01 mbertin Exp $
+// $Id: empr.inc.php,v 1.16 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -96,7 +96,7 @@ switch ($action) {
 						if (!$filter->error) {	
 							if ($filter->t_query) {
 								$myCart = new empr_caddie($idemprcaddie);
-								while ($r=mysql_fetch_object($filter->t_query)) {
+								while ($r=pmb_mysql_fetch_object($filter->t_query)) {
 									$myCart->add_item($r->id_empr);
 								} // fin while
 								$myCart->compte_items();
@@ -106,14 +106,14 @@ switch ($action) {
 				} // fin if !$filster->error
 			}else{
 				$requete = "SELECT id_empr FROM empr ".stripslashes($clause);
-				$res = mysql_query($requete,$dbh);
+				$res = pmb_mysql_query($requete,$dbh);
 				if ($res) {
-					if (mysql_num_rows($res) > 0) {
+					if (pmb_mysql_num_rows($res) > 0) {
 						if($idemprcaddie)$caddie[0]=$idemprcaddie;
 						if ($caddie) {
 							foreach($caddie  as $idemprcaddie) {
 								$myCart = new empr_caddie($idemprcaddie);
-								while ($r=mysql_fetch_object($res)) {
+								while ($r=pmb_mysql_fetch_object($res)) {
 									$myCart->add_item($r->id_empr);
 								} // fin while
 								$myCart->compte_items();
@@ -144,14 +144,14 @@ switch ($action) {
 			}
 
 			$requete = "SELECT id_empr FROM empr where ((to_days(empr_date_expiration) - to_days(now()) ) <=  $pmb_relance_adhesion ) and empr_date_expiration >= now() $restrict_localisation";
-			$res_rqt=mysql_query($requete);
+			$res_rqt=pmb_mysql_query($requete);
 			foreach ( $caddie as $id_caddie => $coche) {
        			if($coche){
        				$myCart = new empr_caddie($id_caddie);
-					while ($r=mysql_fetch_object($res_rqt)) {
+					while ($r=pmb_mysql_fetch_object($res_rqt)) {
 						$myCart->add_item($r->id_empr);
 					} // fin while
-					mysql_data_seek($res_rqt,0);
+					pmb_mysql_data_seek($res_rqt,0);
        			}
 			}
 			print "<script type='text/javascript'>window.close();</script>"; 
@@ -169,14 +169,14 @@ switch ($action) {
 				else $restrict_localisation = "";
 			}
 			$requete = "SELECT id_empr FROM empr where empr_date_expiration < now() $restrict_localisation";
-			$res_rqt=mysql_query($requete);
+			$res_rqt=pmb_mysql_query($requete);
 			foreach ( $caddie as $id_caddie => $coche) {
        			if($coche){
        				$myCart = new empr_caddie($id_caddie);
-					while ($r=mysql_fetch_object($res_rqt)) {
+					while ($r=pmb_mysql_fetch_object($res_rqt)) {
 						$myCart->add_item($r->id_empr);
 					} // fin while
-					mysql_data_seek($res_rqt,0);
+					pmb_mysql_data_seek($res_rqt,0);
        			}
 			}
 			//$myCart->compte_items();
@@ -196,14 +196,14 @@ switch ($action) {
 			}
 
 			$requete = "SELECT id_empr FROM empr where empr_date_expiration >= now() $restrict_localisation";
-			$res_rqt=mysql_query($requete);
+			$res_rqt=pmb_mysql_query($requete);
 			foreach ( $caddie as $id_caddie => $coche) {
        			if($coche){
        				$myCart = new empr_caddie($id_caddie);
-					while ($r=mysql_fetch_object($res_rqt)) {
+					while ($r=pmb_mysql_fetch_object($res_rqt)) {
 						$myCart->add_item($r->id_empr);
 					} // fin while
-					mysql_data_seek($res_rqt,0);
+					pmb_mysql_data_seek($res_rqt,0);
        			}
 			}
 			print "<script type='text/javascript'>window.close();</script>"; 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rapport_tache.inc.php,v 1.1 2011-07-29 12:32:11 dgoron Exp $
+// $Id: rapport_tache.inc.php,v 1.2 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once './classes/pdf_html.class.php';
@@ -77,12 +77,12 @@ $ourPDF->Open();
 switch($pdfdoc) {
 	case "rapport_tache" :
 	$query_chk = "select id_tache from taches where id_tache=".$task_id;
-	$res_chk = mysql_query($query_chk, $dbh);
+	$res_chk = pmb_mysql_query($query_chk, $dbh);
 	
-	if (mysql_num_rows($res_chk) == '1') {
+	if (pmb_mysql_num_rows($res_chk) == '1') {
 		//date de génération du rapport
-		$rs = mysql_query("select curdate()");
-		$date_MySQL = mysql_result($rs, $row);
+		$rs = pmb_mysql_query("select curdate()");
+		$date_MySQL = pmb_mysql_result($rs, $row);
 				
 		$tasks = new taches();
 		foreach ($tasks->types_taches as $type_tache) {

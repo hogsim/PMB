@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: manu_ajax.inc.php,v 1.1.4.1 2015-05-20 11:46:31 jpermanne Exp $
+// $Id: manu_ajax.inc.php,v 1.2 2015-05-20 11:45:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

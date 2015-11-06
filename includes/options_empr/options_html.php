@@ -2,7 +2,7 @@
  // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: options_html.php,v 1.3 2013-07-12 10:17:44 apetithomme Exp $
+// $Id: options_html.php,v 1.4 2015-01-13 15:31:24 dgoron Exp $
 
 //Gestion des options de type commentaire
 $base_path = "../..";
@@ -20,7 +20,8 @@ if ($first == 1) {
 	$param[HEIGHT][0][value] = stripslashes($HEIGHT*1);
 	$param[WIDTH][0][value] = stripslashes($WIDTH*1);
 	$param[REPEATABLE][0][value] = $REPEATABLE ? 1 : 0;
-
+	$param[HTMLEDITOR][0][value] = $HTMLEDITOR ? 1 : 0;
+	
 	$options = array_to_xml($param, "OPTIONS");
 	?> 
 	<script>
@@ -58,20 +59,23 @@ if ($first == 1) {
 		$charset);
 	?>">
 	<table class='table-no-border' width=100%>
-	<tr><td><?php  echo $msg[persofield_htmlheight];
+	<tr><td><?php  echo $msg["persofield_htmlheight"];
 	?> </td><td><input type="text" class="saisie-10em" name="HEIGHT" value="<?php  echo htmlentities(
 		$param[HEIGHT][0][value],
 		ENT_QUOTES,
 		$charset);
 	?>"></td></tr>
-	<tr><td><?php  echo $msg[persofield_htmlwidth];
+	<tr><td><?php  echo $msg["persofield_htmlwidth"];
 	?> </td><td><input type="text" class="saisie-10em" name="WIDTH" value="<?php  echo htmlentities(
 		$param[WIDTH][0][value],
 		ENT_QUOTES,
 		$charset);
 	?>"></td></tr>
-	<tr><td><?php  echo $msg[persofield_urlrepeat];
+	<tr><td><?php  echo $msg["persofield_textrepeat"];
 	?> </td><td><input type="checkbox" name="REPEATABLE" <?php  echo $param[REPEATABLE][0][value] ? ' checked ' : "";
+	?>></td></tr>
+	<tr><td><?php  echo $msg["persofield_usehtmleditor"];
+	?> </td><td><input type="checkbox" name="HTMLEDITOR" <?php  echo $param[HTMLEDITOR][0][value] ? ' checked ' : "";
 	?>></td></tr>
 	</table>
 	</div>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- $Id: search_fields_unimarc.xml,v 1.20 2014-02-13 14:59:57 mbertin Exp $ -->
+<!-- $Id: search_fields_unimarc.xml,v 1.22 2015-02-27 09:09:09 jpermanne Exp $ -->
 <pmbfields>
 	<!-- Zone fixedFields :
 		Liste des champs de recherche possibles de la base de données
@@ -323,7 +323,7 @@
 				<main><![CDATA[select distinct recid as notice_id, i_value from entrepot_source_!!current_source!! where (value='!!p!!') and ufield='856' and usubfield='q']]></main>
 			</query>
 		</field>
-		<field title="msg:explnum" id="44" unimarcField="FORBIDDEN">
+		<field title="msg:explnum" id="44" unimarcField="FORBIDDEN" visibility="no">
 			<input type="query_list">
 				<query>select distinct if(if(explnum_url,'URL',explnum_mimetype)!='',if(explnum_url,'URL',explnum_mimetype),''),if(if(explnum_url,'URL',explnum_mimetype)!='',if(explnum_url,'URL',explnum_mimetype),'Undefined') from explnum order by 1</query>
 			</input>
@@ -580,7 +580,7 @@
 				<main><![CDATA[select distinct recid as notice_id, value from entrepot_source_!!current_source!! where (value='!!p!!') and (ufield='dt')]]></main>
 			</query>
 		</field>
-		<field title="msg:localisation_sort" id="16" separator="msg:exemplaires_query" unimarcField="FORBIDDEN">
+		<field title="msg:localisation_sort" id="16" separator="msg:exemplaires_query" unimarcField="FORBIDDEN" visibility="no">
 			<var name="opac_show_exemplaires" visibility="yes">
 				<value visibility="no">-1</value>
 			</var>
@@ -592,7 +592,7 @@
 				<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 			</query>
 		</field>
-		<field title="msg:sur_location_sort" id="55" unimarcField="FORBIDDEN">
+		<field title="msg:sur_location_sort" id="55" unimarcField="FORBIDDEN" visibility="no">
 			<input type="query_list">
 				<query>select surloc_id,surloc_libelle from sur_location order by surloc_libelle</query>	
 			</input>
@@ -601,7 +601,7 @@
 				<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 			</query>
 		</field>
-		<field title="msg:section" id="17" unimarcField="FORBIDDEN">
+		<field title="msg:section" id="17" unimarcField="FORBIDDEN" visibility="no">
 			<var name="opac_show_exemplaires" visibility="yes">
 				<value visibility="no">-1</value>
 			</var>
@@ -613,7 +613,7 @@
 				<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 			</query>
 		</field>
-		<field title="msg:proprietary_search" id="18" unimarcField="FORBIDDEN">
+		<field title="msg:proprietary_search" id="18" unimarcField="FORBIDDEN" visibility="no">
 			<var name="opac_show_exemplaires" visibility="yes">
 				<value visibility="no">-1</value>
 			</var>
@@ -625,7 +625,7 @@
 				<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 			</query>
 		</field>
-		<field title="msg:support_search" id="19" unimarcField="FORBIDDEN">
+		<field title="msg:support_search" id="19" unimarcField="FORBIDDEN" visibility="no">
 			<var name="opac_show_exemplaires" visibility="yes">
 				<value visibility="no">-1</value>
 			</var>
@@ -637,7 +637,7 @@
 				<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 			</query>
 		</field>
-		<field title="msg:cote_search" id="24" unimarcField="FORBIDDEN">
+		<field title="msg:cote_search" id="24" unimarcField="FORBIDDEN" visibility="no">
 			<var name="opac_show_exemplaires" visibility="yes">
 				<value visibility="no">-1</value>
 			</var>
@@ -659,7 +659,7 @@
 				<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 			</query>
 		</field>
-		<field title="msg:codestat" id="32" unimarcField="FORBIDDEN">
+		<field title="msg:codestat" id="32" unimarcField="FORBIDDEN" visibility="no">
 			<input type="query_list">
 				<query>select idcode,codestat_libelle from docs_codestat order by codestat_libelle</query>	
 			</input>
@@ -695,16 +695,16 @@
 			<input type="query_list">
 				<query>select notice_id, tit1 from notices where niveau_biblio='s' order by index_sew</query>
 			</input>
-			<query for="EQ">
+			<query for="EQ">				
 				<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
-				<main><![CDATA[select distinct a0.recid as notices_id from entrepot_source_!!current_source!! as a0, entrepot_source_!!current_source!! as a1, notices where notice_id='!!p!!' and a0.ufield='461' and a0.usubfield='t' and a0.value=tit1 and a1.ufield='bl' and a1.value in ('s','a') group by a0.ref]]></main>
+				<main><![CDATA[select distinct a0.recid as notice_id from entrepot_source_!!current_source!! as a0, entrepot_source_!!current_source!! as a1, notices where notice_id='!!p!!' and a0.value=tit1 and ((a0.ufield='461' and a0.usubfield='t' and a1.ufield='bl' and a1.value='a') or (a0.ufield='200' and a0.usubfield='a' and a1.ufield='bl' and a1.value='s'))]]></main>
 			</query>
 		</field>
-		<field title="msg:num_bull_query" id="35" unimarcField="461$v">
+		<field title="msg:num_bull_query" id="35" unimarcField="463$v">
 			<input type="text"/>
 			<query for="CONTAINS">
-				<repeat name="current_source" on="selected_sources" separator="," operator="union" orderTerm="i_value"/>
-				<main><![CDATA[select distinct e1.recid as notice_id, e1.i_value from entrepot_source_!!current_source!! as e1 join entrepot_source_!!current_source!! as e2 on e1.recid=e2.recid where (e1.i_value like ' %!!p!!% ') and (e1.ufield='461' and e1.usubfield in ('v')) and (e2.value='b' and e2.ufield='bl') group by e1.ref]]></main>
+				<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
+				<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!! where (i_value like ' %!!p!!% ') and (ufield='463' and usubfield in ('v')) group by notice_id]]></main>
 			</query>
 		</field>
 		<field title="msg:collection_state_search_loc" id="56">
@@ -757,23 +757,23 @@
 	<dynamicFields>
 		<fieldType type="notices" prefix="d">
 			<field dataType="small_text" id="1">
-				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="STARTWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="STARTWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="ENDWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="ENDWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="EXACT" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="EXACT" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
@@ -791,23 +791,23 @@
 				</query>
 			</field>
 			<field dataType="text" id="2">
-				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="STARTWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="STARTWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="ENDWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="ENDWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="EXACT" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="EXACT" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
@@ -829,19 +829,19 @@
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
@@ -859,19 +859,19 @@
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
@@ -889,19 +889,19 @@
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<repeat name="current_source" on="selected_sources" separator="," operator="union"/>
 					<main><![CDATA[select distinct recid as notice_id from entrepot_source_!!current_source!!]]></main>
 				</query>

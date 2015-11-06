@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serie.class.php,v 1.42 2014-01-23 13:51:54 ngantier Exp $
+// $Id: serie.class.php,v 1.49 2015-06-05 13:04:00 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -14,6 +14,8 @@ require_once($class_path."/notice.class.php");
 require_once("$class_path/aut_link.class.php");
 require_once("$class_path/aut_pperso.class.php");
 require_once("$class_path/audit.class.php");
+require_once($class_path."/index_concept.class.php");
+require_once($class_path."/vedette/vedette_composee.class.php");
 
 class serie {
 
@@ -54,9 +56,9 @@ function getData() {
 		$this->index		=	'';
 		} else {
 			$requete = "SELECT serie_id,serie_name,serie_index FROM series WHERE serie_id='".$this->s_id."' " ;
-			$result = mysql_query($requete, $dbh) or die ($requete."<br />".mysql_error());
-			if(mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);
+			$result = pmb_mysql_query($requete, $dbh) or die ($requete."<br />".pmb_mysql_error());
+			if(pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);
 				$this->s_id		= $temp->serie_id;
 				$this->name		= $temp->serie_name;
 				$this->index	= $temp->serie_index;
@@ -82,6 +84,7 @@ function show_form() {
 	global $charset;
 	global $serie_form;
 	global $pmb_type_audit;
+	global $thesaurus_concepts_active;
 
 	if($this->s_id) {
 		$action = "./autorites.php?categ=series&sub=update&id=$this->s_id";
@@ -120,7 +123,12 @@ function show_form() {
 	$serie_form = str_replace('!!user_input!!',			htmlentities($user_input,ENT_QUOTES, $charset),		$serie_form);
 	$serie_form = str_replace('!!nbr_lignes!!',			$nbr_lignes,										$serie_form);
 	$serie_form = str_replace('!!page!!',				$page,												$serie_form);
-	
+	if($thesaurus_concepts_active == 1){
+		$index_concept = new index_concept($this->s_id, TYPE_SERIE);
+		$serie_form = str_replace('!!concept_form!!',	$index_concept->get_form('saisie_serie'),			$serie_form);
+	}else{
+		$serie_form = str_replace('!!concept_form!!',	"",			$serie_form);
+	}
 	if ($pmb_type_audit && $this->s_id)
 		$bouton_audit= "&nbsp;<input class='bouton' type='button' onClick=\"openPopUp('./audit.php?type_obj=".AUDIT_SERIE."&object_id=".$this->s_id."', 'audit_popup', 700, 500, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\" title=\"".$msg['audit_button']."\" value=\"".$msg['audit_button']."\" />&nbsp;";
 	
@@ -159,22 +167,34 @@ function delete() {
 	if(!$this->s_id)
 		// impossible d'accéder à cette notice de titre de série
 		return $msg[409];
-
+	
 	// récupération du nombre de notices affectées
 	$requete = "SELECT COUNT(1) AS qte FROM notices WHERE tparent_id=".$this->s_id;
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 
 	if(!$nbr_lignes) {
+
+		// On regarde si l'autorité est utilisée dans des vedettes composées
+		$attached_vedettes = vedette_composee::get_vedettes_built_with_element($this->s_id, "serie");
+		if (count($attached_vedettes)) {
+			// Cette autorité est utilisée dans des vedettes composées, impossible de la supprimer
+			return '<strong>'.$this->name."</strong><br />".$msg["vedette_dont_del_autority"];
+		}
+		
 		// titre de série non-utilisé dans des notices : Suppression OK
 		// effacement dans la table des titres de série
 		$requete = "DELETE FROM series WHERE serie_id=".$this->s_id;
-		$result = mysql_query($requete, $dbh);
+		$result = pmb_mysql_query($requete, $dbh);
 		// liens entre autorités
 		$aut_link= new aut_link(AUT_TABLE_SERIES,$this->s_id);
 		$aut_link->delete();		
 		$aut_pperso= new aut_pperso("serie",$this->s_id);
 		$aut_pperso->delete();
+		
+		// nettoyage indexation concepts
+		$index_concept = new index_concept($this->id, TYPE_SERIE);
+		$index_concept->delete();
 		
 		audit::delete_audit(AUDIT_SERIE,$this->s_id);
 		return false;
@@ -212,18 +232,18 @@ function replace($by,$link_save=0) {
 	
 	// a) remplacement dans les notices
 	$requete = "UPDATE notices SET tparent_id=$by WHERE tparent_id=".$this->s_id;
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	
 	$rqt_notice="select notice_id,tit1,tit2,tit3,tit4 from notices where tparent_id=".$by;
-	$r_notice=mysql_query($rqt_notice);
-	while ($r=mysql_fetch_object($r_notice)) {
+	$r_notice=pmb_mysql_query($rqt_notice);
+	while ($r=pmb_mysql_fetch_object($r_notice)) {
 		$rq_serie="update notices, series set notices.index_serie=serie_index, notices.index_wew=concat(serie_name,' ',tit1,' ',tit2,' ',tit3,' ',tit4),notices.index_sew=concat(' ',serie_index,' ','".addslashes(strip_empty_words($r->tit1." ".$r->tit2." ".$r->tit3." ".$r->tit4))."',' ') where notice_id=".$r->notice_id." and serie_id=tparent_id";
-		mysql_query($rq_serie);
+		pmb_mysql_query($rq_serie);
 		}
 	
 	// b) suppression du titre de série à remplacer
 	$requete = "DELETE FROM series WHERE serie_id=".$this->s_id;
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	
 	audit::delete_audit (AUDIT_SERIE, $this->s_id);
 	serie::update_index($by);
@@ -239,6 +259,7 @@ function update($value) {
 	global $dbh;
 	global $msg;
 	global $include_path;
+	global $thesaurus_concepts_active;
 	
 	if(!$value)
 		return false;
@@ -253,12 +274,12 @@ function update($value) {
 		// update
 		$requete = 'UPDATE series '.$requete;
 		$requete .= ' WHERE serie_id='.$this->s_id.' LIMIT 1;';
-		if(mysql_query($requete, $dbh)) {
+		if(pmb_mysql_query($requete, $dbh)) {
 			$rqt_notice="select notice_id,tit1,tit2,tit3,tit4 from notices where tparent_id=".$this->s_id;
-			$r_notice=mysql_query($rqt_notice);
-			while ($r=mysql_fetch_object($r_notice)) {
+			$r_notice=pmb_mysql_query($rqt_notice);
+			while ($r=pmb_mysql_fetch_object($r_notice)) {
 				$rq_serie="update notices, series set notices.index_serie=serie_index, notices.index_wew=concat(serie_name,' ',tit1,' ',tit2,' ',tit3,' ',tit4),notices.index_sew=concat(' ',serie_index,' ','".addslashes(strip_empty_words($r->tit1." ".$r->tit2." ".$r->tit3." ".$r->tit4))."',' ') where notice_id=".$r->notice_id." and serie_id=tparent_id";
-				mysql_query($rq_serie);
+				pmb_mysql_query($rq_serie);
 			}
 			$aut_link= new aut_link(AUT_TABLE_SERIES,$this->s_id);
 			$aut_link->save_form();
@@ -266,7 +287,6 @@ function update($value) {
 			$aut_pperso->save_form();
 			serie::update_index($this->s_id);
 			audit::insert_modif (AUDIT_SERIE, $this->s_id) ;
-			return TRUE;
 		} else {
 			require_once("$include_path/user_error.inc.php");
 			warning($msg[337], $msg[341]);
@@ -275,27 +295,35 @@ function update($value) {
 	} else {
 		// création : s'assurer que le titre n'existe pas déjà
 		$dummy = "SELECT * FROM series WHERE serie_name REGEXP '^$value$' LIMIT 1 ";
-		$check = mysql_query($dummy, $dbh);
-		if(mysql_num_rows($check)) {
+		$check = pmb_mysql_query($dummy, $dbh);
+		if(pmb_mysql_num_rows($check)) {
 			require_once("$include_path/user_error.inc.php");
 			warning($msg[336], $msg[340]);
 			return FALSE;
 		}
 		$requete = 'INSERT INTO series '.$requete.';';
-		if(mysql_query($requete, $dbh)) {
-			$this->s_id=mysql_insert_id();
+		if(pmb_mysql_query($requete, $dbh)) {
+			$this->s_id=pmb_mysql_insert_id();
 			$aut_link= new aut_link(AUT_TABLE_SERIES,$this->s_id);
 			$aut_link->save_form();			
 			$aut_pperso= new aut_pperso("serie",$this->s_id);
 			$aut_pperso->save_form();
 			audit::insert_creation(AUDIT_SERIE, $this->s_id) ;
-			return TRUE;
 		} else {
 			require_once("$include_path/user_error.inc.php");
 			warning($msg[336], $msg[342]);
 			return FALSE;
 		}
 	}
+	// Indexation concepts
+	if($thesaurus_concepts_active == 1){
+		$index_concept = new index_concept($this->s_id, TYPE_SERIE);
+		$index_concept->save();
+	}
+		
+	// Mise à jour des vedettes composées contenant cette autorité
+	vedette_composee::update_vedettes_built_with_element($this->s_id, "serie");
+	return TRUE;
 }
 
 // ---------------------------------------------------------------
@@ -316,12 +344,12 @@ function import($title) {
 	$key = addslashes($title);
 
 	$query = "SELECT serie_id FROM series WHERE serie_name='".rtrim(substr($key,0,255))."' LIMIT 1 ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't SELECT series ".$query);
 	// résultat
 
 	// récupération du résultat de la recherche
-	$tserie  = mysql_fetch_object($result);
+	$tserie  = pmb_mysql_fetch_object($result);
 	// du résultat et récupération éventuelle de l'id
 	if($tserie->serie_id)
 		return $tserie->serie_id;
@@ -331,10 +359,10 @@ function import($title) {
 	
 	$query = "INSERT INTO series SET serie_name='$key', serie_index=' $index '";
 
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't INSERT into series".$query);
 	
-	$id=mysql_insert_id($dbh);
+	$id=pmb_mysql_insert_id($dbh);
 	audit::insert_creation (AUDIT_SERIE, $id) ;
 	return $id;
 }
@@ -361,12 +389,12 @@ static function search_form() {
 //---------------------------------------------------------------
 // update_index($id) : maj des n-uplets la table notice_global_index en rapport avec cet série
 //---------------------------------------------------------------
-function update_index($id) {
+static function update_index($id) {
 	global $dbh;
 	// On cherche tous les n-uplet de la table notice correspondant à cet auteur.
-	$found = mysql_query("select distinct(notice_id) from notices where tparent_id='".$id."'",$dbh);
+	$found = pmb_mysql_query("select distinct(notice_id) from notices where tparent_id='".$id."'",$dbh);
 	// Pour chaque n-uplet trouvés on met a jour la table notice_global_index avec l'auteur modifié :
-	while(($mesNotices = mysql_fetch_object($found))) {
+	while(($mesNotices = pmb_mysql_fetch_object($found))) {
 		$notice_id = $mesNotices->notice_id;
 		notice::majNotices($notice_id);//Le titre de série est indexé dans les index de la notice
 		notice::majNoticesGlobalIndex($notice_id);

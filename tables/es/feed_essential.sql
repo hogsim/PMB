@@ -1,13 +1,13 @@
 -- +-------------------------------------------------+
 -- © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 -- +-------------------------------------------------+
--- $Id: feed_essential.sql,v 1.7 2014-03-17 10:32:27 abacarisse Exp $
+-- $Id: feed_essential.sql,v 1.8 2015-05-18 09:25:37 dgoron Exp $
 
--- MySQL dump 10.14  Distrib 5.5.25-MariaDB, for Linux (x86_64)
+-- MySQL dump 10.14  Distrib 5.5.28-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: pmb410
+-- Host: localhost    Database: pmb420
 -- ------------------------------------------------------
--- Server version	5.5.25-MariaDB
+-- Server version	5.5.28-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -55,14 +55,14 @@ UNLOCK TABLES;
 
 LOCK TABLES `caddie` WRITE;
 /*!40000 ALTER TABLE `caddie` DISABLE KEYS */;
-INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`) VALUES (1,'Registros para exposición','NOTI','Incluir en esta cesta los registros de la exposición virtual','1 2');
-INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`) VALUES (2,'Registros a devolver a BDP','NOTI','Llenar esta cesta como control de los registros que se han de devolver','1 2');
-INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`) VALUES (3,'Ejemplares a devolver a BDP','EXPL','Llenar esta cesta con los ejemplares de los documentos a devolver a la BDP','1 2');
-INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`) VALUES (4,'Registros con el título duplicado','NOTI','Duplicados del primer título','1 2');
-INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`) VALUES (8,'Ejemplo de cesta de ejemplares','EXPL','','1 4 3 2');
-INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`) VALUES (5,'Loire - Registros para el tema del mes','NOTI','','1 4');
-INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`) VALUES (6,'Loire - Números que contienen los artículos para la exposición del mes','BULL','','1 4');
-INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`) VALUES (7,'Cochon - registros para la exposición del mes próximo','NOTI','','1');
+INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`, `caddie_classement`) VALUES (1,'Registros para exposición','NOTI','Incluir en esta cesta los registros de la exposición virtual','1 2','');
+INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`, `caddie_classement`) VALUES (2,'Registros a devolver a BDP','NOTI','Llenar esta cesta como control de los registros que se han de devolver','1 2','');
+INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`, `caddie_classement`) VALUES (3,'Ejemplares a devolver a BDP','EXPL','Llenar esta cesta con los ejemplares de los documentos a devolver a la BDP','1 2','');
+INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`, `caddie_classement`) VALUES (4,'Registros con el título duplicado','NOTI','Duplicados del primer título','1 2','');
+INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`, `caddie_classement`) VALUES (8,'Ejemplo de cesta de ejemplares','EXPL','','1 4 3 2','');
+INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`, `caddie_classement`) VALUES (5,'Loire - Registros para el tema del mes','NOTI','','1 4','');
+INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`, `caddie_classement`) VALUES (6,'Loire - Números que contienen los artículos para la exposición del mes','BULL','','1 4','');
+INSERT INTO `caddie` (`idcaddie`, `name`, `type`, `comment`, `autorisations`, `caddie_classement`) VALUES (7,'Cochon - registros para la exposición del mes próximo','NOTI','','1','');
 /*!40000 ALTER TABLE `caddie` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -230,7 +230,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `empr_caddie` WRITE;
 /*!40000 ALTER TABLE `empr_caddie` DISABLE KEYS */;
-INSERT INTO `empr_caddie` (`idemprcaddie`, `name`, `comment`, `autorisations`) VALUES (1,'Panier de lecteurs','','1');
+INSERT INTO `empr_caddie` (`idemprcaddie`, `name`, `comment`, `autorisations`, `empr_caddie_classement`) VALUES (1,'Panier de lecteurs','','1','');
 /*!40000 ALTER TABLE `empr_caddie` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -297,7 +297,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `etagere` WRITE;
 /*!40000 ALTER TABLE `etagere` DISABLE KEYS */;
-INSERT INTO `etagere` (`idetagere`, `name`, `comment`, `validite`, `validite_date_deb`, `validite_date_fin`, `visible_accueil`, `autorisations`, `id_tri`) VALUES (3,'Loire',0x4578706F736974696F6E207669727475656C6C6520737572206C61204C6F697265,1,'0000-00-00','0000-00-00',1,'1 4 3 2',0);
+INSERT INTO `etagere` (`idetagere`, `name`, `comment`, `validite`, `validite_date_deb`, `validite_date_fin`, `visible_accueil`, `autorisations`, `id_tri`, `thumbnail_url`, `etagere_classement`) VALUES (3,'Loire',0x4578706F736974696F6E207669727475656C6C6520737572206C61204C6F697265,1,'0000-00-00','0000-00-00',1,'1 4 3 2',0,'','');
 /*!40000 ALTER TABLE `etagere` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -341,12 +341,12 @@ UNLOCK TABLES;
 
 LOCK TABLES `facettes` WRITE;
 /*!40000 ALTER TABLE `facettes` DISABLE KEYS */;
-INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`) VALUES (1,'Catégories',25,1,50,1,0,1,1,0);
-INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`) VALUES (2,'Localisation',90,4,0,1,1,0,1,0);
-INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`) VALUES (3,'Mot-clé',17,1,50,1,0,1,1,0);
-INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`) VALUES (4,'Section',90,3,0,1,1,0,1,0);
-INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`) VALUES (5,'Type de document',31,1,0,0,1,0,1,0);
-INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`) VALUES (6,'Type de notice',32,1,0,1,1,0,1,0);
+INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`, `facette_opac_views_num`) VALUES (1,'Catégories',25,1,50,1,0,1,1,0,'');
+INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`, `facette_opac_views_num`) VALUES (2,'Localisation',90,4,0,1,1,0,1,0,'');
+INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`, `facette_opac_views_num`) VALUES (3,'Mot-clé',17,1,50,1,0,1,1,0,'');
+INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`, `facette_opac_views_num`) VALUES (4,'Section',90,3,0,1,1,0,1,0,'');
+INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`, `facette_opac_views_num`) VALUES (5,'Type de document',31,1,0,0,1,0,1,0,'');
+INSERT INTO `facettes` (`id_facette`, `facette_name`, `facette_critere`, `facette_ss_critere`, `facette_nb_result`, `facette_visible`, `facette_type_sort`, `facette_order_sort`, `facette_order`, `facette_limit_plus`, `facette_opac_views_num`) VALUES (6,'Type de notice',32,1,0,1,1,0,1,0,'');
 /*!40000 ALTER TABLE `facettes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -724,4 +724,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-03-14 16:26:15
+-- Dump completed on 2015-05-15 15:45:54

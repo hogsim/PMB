@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category_browse.php,v 1.47.2.1 2014-12-24 09:32:37 dbellamy Exp $
+// $Id: category_browse.php,v 1.49 2015-04-03 11:16:20 jpermanne Exp $
 //
 // Navigation simple dans l'arbre des catégories
 
@@ -182,11 +182,11 @@ if($aj!='add'){
 	$requete.= " num_thesaurus, index_categorie ";
 	$requete.= "LIMIT ".$debut.",".$nb_per_page." ";
 	
-	$result = mysql_query($requete, $dbh);
+	$result = pmb_mysql_query($requete, $dbh);
 	if(!$nbr_lignes){
 		$qry = "SELECT FOUND_ROWS() AS NbRows";
-		if($resnum = mysql_query($qry)){
-			$nbr_lignes=mysql_result($resnum,0,0);
+		if($resnum = pmb_mysql_query($qry)){
+			$nbr_lignes=pmb_mysql_result($resnum,0,0);
 		}
 	}
 	
@@ -194,7 +194,7 @@ if($aj!='add'){
 		$browser_top =	"<a href='".$base_url.$thes->num_noeud_racine.'&id_thes='.$id_thes."'><img src='".$base_path."/images/top.gif' border='0' hspace='3' align='middle'></a>";
 		$premier=true;
 		$browser_content="";
-		while($cat = mysql_fetch_row($result)) {
+		while($cat = pmb_mysql_fetch_row($result)) {
 			$tcateg =  new category($cat[0]);
 			
 			if(!$user_input && $premier){

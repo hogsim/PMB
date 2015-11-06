@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: avis_ajax.inc.php,v 1.6.8.4 2015-06-23 09:47:19 jpermanne Exp $
+// $Id: avis_ajax.inc.php,v 1.11 2015-06-23 09:48:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -23,8 +23,8 @@ function show_form($id){
 	global $dbh, $msg, $charset,$pmb_javascript_office_editor;
 
 	$req = "select sujet, commentaire from avis where id_avis='".$id."'";
-	$res = mysql_query($req,$dbh);
-	while(($avis = mysql_fetch_object($res))){
+	$res = pmb_mysql_query($req,$dbh);
+	while(($avis = pmb_mysql_fetch_object($res))){
 		$sujet = $avis->sujet;
 		$desc = $avis->commentaire;
 		if($charset != "utf-8") $desc=cp1252Toiso88591($desc);
@@ -78,7 +78,7 @@ function update_avis($id){
 	header('Content-Type: text/html;charset='.$charset);
 
 	$req = "update avis set sujet='".$sujet."', commentaire='".$desc."' where id_avis='".$id."'";
-	mysql_query($req,$dbh);
+	pmb_mysql_query($req,$dbh);
 
 	$requete = "select avis.note, avis.sujet, avis.commentaire, avis.id_avis, DATE_FORMAT(avis.dateAjout,'".$msg[format_date]."') as ladate, ";
 	$requete.= "empr_login, empr_nom, empr_prenom, ";
@@ -88,8 +88,8 @@ function update_avis($id){
 	$requete.= "left join notices on notices.notice_id=avis.num_notice ";
 	$requete.= "where id_avis='".$id."'";
 	$requete.= "order by index_serie, tnvol, index_sew ,dateAjout desc ";
-	$res = mysql_query($requete,$dbh);
-	while(($loc = mysql_fetch_object($res))){
+	$res = pmb_mysql_query($requete,$dbh);
+	while(($loc = pmb_mysql_fetch_object($res))){
 		$display = "
 			<div class='left'>
 				<input type='checkbox' name='valid_id_avis[]' id='valid_id_avis[]' value='$loc->id_avis' onClick=\"stop_evenement(event);\" />" ;

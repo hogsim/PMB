@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_condition_lvl.class.php,v 1.6.4.1 2014-11-19 16:03:35 arenou Exp $
+// $Id: cms_module_common_condition_lvl.class.php,v 1.8 2015-01-21 16:36:58 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -44,8 +44,11 @@ class cms_module_common_condition_lvl extends cms_module_common_condition{
 		global $search_type_asked;
 		$selector = $this->get_selected_selector();
 		$values = $selector->get_value();
+		$test = array("empr","askmdp","subscribe");
 		//on regarde si on est sur la bonne page...
-		if($search_type_asked && is_array($values) && in_array($search_type_asked,$values)){
+		if(in_array(basename($_SERVER['SCRIPT_FILENAME'],".php"),$test) && in_array(basename($_SERVER['SCRIPT_FILENAME'],".php"),$values)){
+			return true;
+		}else if($search_type_asked && is_array($values) && in_array($search_type_asked,$values)){
 			return true;
 		}else if(is_array($values) && in_array($lvl,$values)){
 			//sur la page

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_suggestions.inc.php,v 1.21 2013-10-14 15:13:29 dgoron Exp $
+// $Id: func_suggestions.inc.php,v 1.22 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -59,8 +59,8 @@ function update_sug() {
 	$sug->sugg_src = $sug_src; 
 		
 	$q = "select count(1) from docs_location where idlocation = '".$sugg_location_id."' ";
-	$r = mysql_query($q); 
-	if ($sugg_location_id && mysql_result($r, 0, 0)) {
+	$r = pmb_mysql_query($q); 
+	if ($sugg_location_id && pmb_mysql_result($r, 0, 0)) {
 		$sug->sugg_location=$sugg_location_id;
 	} else {
 		$sug->sugg_location=0;
@@ -279,8 +279,8 @@ function sug_fusVal(){
 
 	$fus = new suggestions($chk[0]);
 	$q = suggestions_origine::listOccurences($chk[0], 1);
-	$tab_orig = mysql_query($q, $dbh);
-	$row_orig = mysql_fetch_object($tab_orig);
+	$tab_orig = pmb_mysql_query($q, $dbh);
+	$row_orig = pmb_mysql_fetch_object($tab_orig);
 	$orig = $row_orig->origine;
 	
 	foreach($sug as $key=>$id_sug) {
@@ -312,9 +312,9 @@ function save_unimarc_notice(){
 	global $msg, $idbibli, $id_sug, $dbh;
 	
 	$req_uni = "select notice_unimarc from suggestions where id_suggestion='".$id_sug."'";
-	$res = mysql_query($req_uni,$dbh);
-	if(mysql_num_rows($res)){
-		$notice_uni = mysql_result($res,0,0);
+	$res = pmb_mysql_query($req_uni,$dbh);
+	if(pmb_mysql_num_rows($res)){
+		$notice_uni = pmb_mysql_result($res,0,0);
 	}
 	$z=new z3950_notice("form");
 	if($notice_uni) $z->notice = $notice_uni;
@@ -355,7 +355,7 @@ function save_unimarc_notice(){
 		
 		//On attache la notice à la suggestion
 		$req = " update suggestions set num_notice='".$ret[1]."' where id_suggestion='".$id_sug."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		
 	} else if ($ret[1]){
 		if($z->bull_id && $z->perio_id){
@@ -392,7 +392,7 @@ function save_unimarc_notice(){
 		
 		//On attache la notice à la suggestion
 		$req = " update suggestions set num_notice='".$ret[1]."' where id_suggestion='".$id_sug."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	}
 	else {
 		$retour = "<script src='javascript/tablist.js'></script>";

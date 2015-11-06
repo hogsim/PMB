@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: custom_cote_genes.inc.php,v 1.3 2013-04-11 08:04:09 mbertin Exp $
+// $Id: custom_cote_genes.inc.php,v 1.4 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,25 +29,25 @@ function prefill_cote($id_notice=0,$cote="") {
 	
 		// fetch the dewey code
 		$requete = "SELECT indexint_name FROM indexint, notices where notice_id='$id_notice' and indexint=indexint_id ";
-		$result = @mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_num_rows($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_num_rows($result);
 		if ($nbr_lignes) {
-			$res = mysql_fetch_object($result) ;
+			$res = pmb_mysql_fetch_object($result) ;
 			$res_dewey= $res->indexint_name;
 			}
 			
 		// fetch the title and the volume number
 		$requete = "SELECT index_sew, tnvol FROM notices WHERE notice_id= '$id_notice' ";
-		$result = @mysql_query($requete, $dbh);
-		$res = mysql_fetch_object($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		$res = pmb_mysql_fetch_object($result);
 		$res_title = pmb_strtoupper(pmb_str_replace(" ","",$res->index_sew));
 		$res_nvol = $res->tnvol;
 		
 		// récupération du libellé de la localisation par défaut du catalogueur
 		// si la localisation a dans son libellé ou son codage d'import ENSAI, on récupèrera 4 lettres pour l'auteur, dans les autres cas, on récupèrera 3 lettres
 		$requete = "SELECT location_libelle, locdoc_codage_import FROM docs_location WHERE idlocation= '".$deflt_docs_location."' ";
-		$result = @mysql_query($requete, $dbh);
-		$res = mysql_fetch_object($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		$res = pmb_mysql_fetch_object($result);
 		if (preg_match("#ENSAI#",$res->location_libelle) || preg_match("#ENSAI#",$res->locdoc_codage_import)) {
 				$nb_car_auteur_cote = 4; 
 			} else {
@@ -56,12 +56,12 @@ function prefill_cote($id_notice=0,$cote="") {
 		
 		// fetch the first author, but only if his responsability_type is 0
 		$requete = "SELECT index_author, responsability_type FROM authors, responsability WHERE author_id=responsability_author and responsability_notice = '$id_notice' ORDER BY responsability_type, responsability_ordre LIMIT 1";
-		$result = @mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_num_rows($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_num_rows($result);
 		
 		// build the code using also the author name
 		if ($nbr_lignes) {
-			$res = mysql_fetch_object($result);
+			$res = pmb_mysql_fetch_object($result);
 			$res_author = pmb_strtoupper(pmb_substr(pmb_str_replace(" ","",$res->index_author),0,$nb_car_auteur_cote));
 			$res_cote = $res_dewey." ".$res_author;
 		} else 	{

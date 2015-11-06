@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_tpl.class.php,v 1.3 2013-10-04 14:14:35 dgoron Exp $
+// $Id: notice_tpl.class.php,v 1.5 2015-04-03 14:18:33 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -41,11 +41,11 @@ class notice_tpl {
 		$this->code[0]=array();
 		
 		$req_loc="select idlocation,location_libelle from docs_location";
-		$res_loc=mysql_query($req_loc);
+		$res_loc=pmb_mysql_query($req_loc);
 		
 		$this->location_label[0]=$msg["all_location"];
-		if (mysql_num_rows($res_loc)) {	
-			while (($r=mysql_fetch_object($res_loc))) {
+		if (pmb_mysql_num_rows($res_loc)) {	
+			while (($r=pmb_mysql_fetch_object($res_loc))) {
 				$this->code[$r->idlocation]=array();
 				$this->location_label[$r->idlocation]=$r->location_libelle;
 			}
@@ -73,17 +73,17 @@ class notice_tpl {
 	
 		if($this->id) {
 			$requete = "SELECT * FROM notice_tpl WHERE notpl_id='".$this->id."' LIMIT 1 ";
-			$result = @mysql_query($requete, $dbh);
-			if(mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);				
+			$result = @pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);				
 				$this->name	= $temp->notpl_name;
 				$this->comment	= $temp->notpl_comment;
 				$this->show_opac	= $temp->notpl_show_opac;					
 				$this->id_test	= $temp->notpl_id_test;			
 				$requete = "SELECT * FROM notice_tplcode  WHERE num_notpl='".$this->id."' ";
-				$result_code = @mysql_query($requete, $dbh);
-				if(mysql_num_rows($result_code)) {
-					while(($temp_code= mysql_fetch_object($result_code))) {
+				$result_code = @pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($result_code)) {
+					while(($temp_code= pmb_mysql_fetch_object($result_code))) {
 						$this->code[$temp_code->notplcode_localisation][$temp_code->notplcode_niveau_biblio] [$temp_code->notplcode_typdoc]=$temp_code->nottplcode_code;	
 					}
 				}
@@ -102,10 +102,10 @@ class notice_tpl {
 		global $notice_tpl_liste, $notice_tpl_liste_ligne;
 		
 		$requete = "SELECT * FROM notice_tpl ORDER BY notpl_name ";
-		$result = @mysql_query($requete, $dbh);
-		if(mysql_num_rows($result)) {
+		$result = @pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($result)) {
 			$pair="odd";
-			while(($temp = mysql_fetch_object($result))){	
+			while(($temp = pmb_mysql_fetch_object($result))){	
 				$id = $temp->notpl_id;			
 				$name = $temp->notpl_name;
 				$comment = $temp->notpl_comment;
@@ -206,9 +206,9 @@ class notice_tpl {
 
 		// effacement dans la table
 		$requete = "DELETE FROM notice_tpl WHERE notpl_id='".$this->id."' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		$requete = "DELETE FROM  notice_tplcode  WHERE num_notpl='".$this->id."' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		
 		return false;
 	}
@@ -241,7 +241,7 @@ class notice_tpl {
 		if($this->id) {
 			// update
 			$requete = "UPDATE notice_tpl $requete WHERE notpl_id=".$this->id." ";
-			if(!mysql_query($requete, $dbh)) {		
+			if(!pmb_mysql_query($requete, $dbh)) {		
 				require_once("$include_path/user_error.inc.php"); 
 				warning($msg["notice_tpl_modifier"], $msg["notice_tpl_modifier_erreur"]);
 				return false;
@@ -249,8 +249,8 @@ class notice_tpl {
 		} else {
 			// creation
 			$requete = "INSERT INTO notice_tpl ".$requete;
-			if(mysql_query($requete, $dbh)) {
-				$this->id=mysql_insert_id();				
+			if(pmb_mysql_query($requete, $dbh)) {
+				$this->id=pmb_mysql_insert_id();				
 			} else {
 				require_once("$include_path/user_error.inc.php"); 
 				warning($msg["notice_tpl_ajouter"], $msg["notice_tpl_ajouter_erreur"]);
@@ -260,7 +260,7 @@ class notice_tpl {
 		
 		// insertion du code 
 		$requete = "DELETE FROM  notice_tplcode  WHERE num_notpl='".$this->id."' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		
 		if($value['code'])
 		foreach($value['code'] as $id_location =>$tab_typenotice) {				
@@ -272,7 +272,7 @@ class notice_tpl {
 						notplcode_typdoc='$typedoc',
 						notplcode_niveau_biblio='$typenotice', 
 						nottplcode_code='". addslashes($code)."' ";	
-					if(!mysql_query($requete, $dbh)) {
+					if(!pmb_mysql_query($requete, $dbh)) {
 						require_once("$include_path/user_error.inc.php"); 
 						warning($msg["notice_tpl_ajouter"], $msg["notice_tpl_ajouter_erreur"]);
 						return false;
@@ -303,7 +303,7 @@ class notice_tpl {
 		$this->update($value); 		
 	}
 	
-	function gen_tpl_select($select_name="notice_tpl", $selected_id=0) {		
+	static function gen_tpl_select($select_name="notice_tpl", $selected_id=0) {		
 		global $msg;
 		
 		$requete = "SELECT notpl_id, concat(notpl_name,'. ',notpl_comment) as nom  FROM notice_tpl ORDER BY notpl_name ";

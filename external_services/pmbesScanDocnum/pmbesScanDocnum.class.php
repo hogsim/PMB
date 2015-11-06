@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesScanDocnum.class.php,v 1.1.2.1 2015-03-17 10:35:52 abacarisse Exp $
+// $Id: pmbesScanDocnum.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,16 +37,16 @@ class pmbesScanDocnum extends external_services_api_class {
 				$idLien='';
 				if($explnum['explnum_bulletin']){
 					$query="SELECT 1 FROM bulletins WHERE bulletin_id=".$explnum['explnum_bulletin'];
-					$result=mysql_query($query,$dbh);
+					$result=pmb_mysql_query($query,$dbh);
 					
-					if(mysql_num_rows($result)){
+					if(pmb_mysql_num_rows($result)){
 						$idLien='explnum_bulletin='.$explnum['explnum_bulletin'];
 					}
 				}elseif($explnum['explnum_notice']){
 					$query="SELECT 1 FROM notices WHERE notice_id=".$explnum['explnum_notice'];
-					$result=mysql_query($query,$dbh);
+					$result=pmb_mysql_query($query,$dbh);
 						
-					if(mysql_num_rows($result)){
+					if(pmb_mysql_num_rows($result)){
 						$idLien='explnum_notice='.$explnum['explnum_notice'];
 					}
 				}
@@ -95,8 +95,8 @@ class pmbesScanDocnum extends external_services_api_class {
 								explnum_repertoire="'.addslashes($explnum['explnum_repertoire']).'",
 								explnum_statut="'.addslashes($explnum['explnum_statut']).'"';
 						
-						mysql_query($query,$dbh);
-						$explnum['explnum_id']=mysql_insert_id($dbh);
+						pmb_mysql_query($query,$dbh);
+						$explnum['explnum_id']=pmb_mysql_insert_id($dbh);
 						
 						if($explnum['explnum_id']){
 							
@@ -107,14 +107,14 @@ class pmbesScanDocnum extends external_services_api_class {
 								$report['error'][]=$this->msg['get_doc_num_upload_repertoire_do_not_exist'];
 								//On efface l'entrée
 								$query='DELETE FROM explnum WHERE explnum_id='.$explnum['explnum_id'];
-								mysql_query($query,$dbh);
+								pmb_mysql_query($query,$dbh);
 							
 							}
 							if(!rename($upload_folder.$explnum['explnum_nomfichier'],$upload_repertoire->decoder_chaine($upload_repertoire->repertoire_path).$explnum['explnum_nomfichier'])){
 								$report['error'][]=$this->msg['get_doc_num_rename_error'];
 								//On efface l'entrée
 								$query='DELETE FROM explnum WHERE explnum_id='.$explnum['explnum_id'];
-								mysql_query($query,$dbh);
+								pmb_mysql_query($query,$dbh);
 							}else{
 								//Réussi ici, on réindex et on incrémente le résultat
 								$obj_explnum=new explnum($explnum['explnum_id']);
@@ -133,7 +133,7 @@ class pmbesScanDocnum extends external_services_api_class {
 						$report['error'][]=$this->msg['get_doc_num_file_not_found'];
 						//On efface l'entrée
 						$query='DELETE FROM explnum WHERE explnum_id='.$explnum['explnum_id'];
-						mysql_query($query,$dbh);
+						pmb_mysql_query($query,$dbh);
 					}
 				}else{
 					//doc num sans id notice ou bulletin

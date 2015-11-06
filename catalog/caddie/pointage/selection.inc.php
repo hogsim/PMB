@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: selection.inc.php,v 1.15 2009-05-16 11:12:02 dbellamy Exp $
+// $Id: selection.inc.php,v 1.16 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -25,13 +25,13 @@ if ($idcaddie) {
 					exit();
 				}
 				if (!explain_requete($hp->final_query)) die("<br /><br />".$hp->final_query."<br /><br />".$msg["proc_param_explain_failed"]."<br /><br />".$erreur_explain_rqt);
-				$result_selection = mysql_query($hp->final_query, $dbh);
+				$result_selection = pmb_mysql_query($hp->final_query, $dbh);
 				if (!$result_selection) {
-					error_message_history($msg['caddie_action_invalid_query'],$msg['requete_echouee'].mysql_error(),1);
+					error_message_history($msg['caddie_action_invalid_query'],$msg['requete_echouee'].pmb_mysql_error(),1);
 					exit();
 				}
-				if(mysql_num_rows($result_selection)) {
-					while ($obj_selection = mysql_fetch_object($result_selection)) {
+				if(pmb_mysql_num_rows($result_selection)) {
+					while ($obj_selection = pmb_mysql_fetch_object($result_selection)) {
 						$myCart->pointe_item($obj_selection->object_id,$obj_selection->object_type);
 					}
 				} 
@@ -54,13 +54,13 @@ function show_procs($idcaddie) {
 	// affichage du tableau des procédures
 	if ($PMBuserid!=1) $where=" and (autorisations='$PMBuserid' or autorisations like '$PMBuserid %' or autorisations like '% $PMBuserid %' or autorisations like '% $PMBuserid') ";
 	$requete = "SELECT idproc, type, name, requete, comment, autorisations, parameters FROM caddie_procs WHERE type='SELECT' $where ORDER BY name ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		$rqt_autorisation=explode(" ",$row[5]);
 		if (array_search ($PMBuserid, $rqt_autorisation)!==FALSE || $PMBuserid == 1) {
 			if ($parity % 2) {

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_recordslist_view_carousel.class.php,v 1.8.2.1 2014-11-21 10:55:13 arenou Exp $
+// $Id: cms_module_recordslist_view_carousel.class.php,v 1.11 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -45,9 +45,9 @@ class cms_module_recordslist_view_carousel extends cms_module_carousel_view_caro
 		}
 		
 		$query = "select notice_id,tit1,thumbnail_url,code from notices where notice_id in (".implode(",",$records['records']).") order by field( notice_id, ".implode(",",$records['records']).")";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				if ($opac_show_book_pics=='1' && ($opac_book_pics_url || $row->thumbnail_url)) {
 					$code_chiffre = pmb_preg_replace('/-|\.| /', '', $row->code);
 					$url_image = $opac_book_pics_url ;

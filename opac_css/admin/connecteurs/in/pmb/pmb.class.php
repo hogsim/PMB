@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmb.class.php,v 1.1.2.1 2014-12-01 17:24:40 mbertin Exp $
+// $Id: pmb.class.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -563,6 +563,7 @@ class pmb extends connector {
 		
 		$nb_pages=floor($max_return/40);
 		$stop=false;
+		
 		//construit le tableau pour la recherche multi-critère
 		foreach ($query as $i=>$q) {
 			$t = array();
@@ -715,13 +716,13 @@ class pmb extends connector {
 				//Si conservation des anciennes notices, on regarde si elle existe
 				if (!$this->del_old) {
 					$requete="select count(*) from entrepot_source_".$source_id." where ref='".addslashes($ref)."' and search_id='".addslashes($search_id)."'";
-					$rref=mysql_query($requete);
-					if ($rref) $ref_exists=mysql_result($rref,0,0);
+					$rref=pmb_mysql_query($requete);
+					if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 				}
 				//Si pas de conservation des anciennes notices, on supprime
 				if ($this->del_old) {
 					$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."' and search_id='".addslashes($search_id)."'";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				//Si pas de conservation ou reférence inexistante
 				if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {
@@ -736,14 +737,14 @@ class pmb extends connector {
 					
 					//Récupération d'un ID
 					$requete="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$source_id." ".$ref)."', ".$source_id.")";
-					$rid=mysql_query($requete);
-					if ($rid) $recid=mysql_insert_id();
+					$rid=pmb_mysql_query($requete);
+					if ($rid) $recid=pmb_mysql_insert_id();
 					
 					foreach($n_header as $hc=>$code) {
 						$requete="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid,search_id) values(
 						'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 						'".$hc."','',-1,0,'".addslashes($code)."','',$recid,'".addslashes($search_id)."')";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}
 					for ($i=0; $i<count($fs); $i++) {
 						$ufield=$fs[$i]["ATTRIBS"]["c"];
@@ -762,7 +763,7 @@ class pmb extends connector {
 								if ($charset != "utf-8") {
 									$requete = utf8_decode($requete);
 								}
-								mysql_query($requete);
+								pmb_mysql_query($requete);
 							}
 						} else {
 							$value=$rec_uni_dom->get_datas($fs[$i]);
@@ -773,7 +774,7 @@ class pmb extends connector {
 							if ($charset != "utf-8") {
 								$requete = utf8_decode($requete);
 							}
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 						}
 					}
 				}

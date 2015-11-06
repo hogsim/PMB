@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lettre-livraison.inc.php,v 1.15 2013-04-16 08:16:41 mbertin Exp $
+// $Id: lettre-livraison.inc.php,v 1.16 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -157,7 +157,7 @@ if ($acquisition_pdfliv_print) {
 	
 	$fou = new entites($liv->num_fournisseur);
 	$coord_fou = entites::get_coordonnees($liv->num_fournisseur, '1');
-	$coord_fou = mysql_fetch_object($coord_fou);
+	$coord_fou = pmb_mysql_fetch_object($coord_fou);
 	
 	$id_cde = liens_actes::getParent($id_liv);
 	$cde = new actes($id_cde);
@@ -231,7 +231,7 @@ if ($acquisition_pdfliv_print) {
 	
 	printEntete();
 	
-	while (($row = mysql_fetch_object($lignes))) {
+	while (($row = pmb_mysql_fetch_object($lignes))) {
 	
 		$typ = new types_produits($row->num_type);
 		$col1 = $typ->libelle."\n".$row->code;

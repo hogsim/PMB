@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: backup.class.php,v 1.3 2012-07-31 10:12:16 dgoron Exp $
+// $Id: backup.class.php,v 1.4 2015-04-03 11:16:27 jpermanne Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -33,8 +33,8 @@ class backup extends tache {
 		}
 		
 		$requete = "select sauv_sauvegarde_id, sauv_sauvegarde_nom from sauv_sauvegardes";
-		$result = mysql_query($requete);
-		$nb_rows = mysql_num_rows($result);
+		$result = pmb_mysql_query($requete);
+		$nb_rows = pmb_mysql_num_rows($result);
 		//taille du selecteur
 		if ($nb_rows < 3) $nb=3;
 		else if ($nb_rows > 10) $nb=10;
@@ -48,7 +48,7 @@ class backup extends tache {
 			</div>
 			<div class='colonne_suite'>
 				<select id='form_jeu_sauv' class='saisie-50em' name='form_jeu_sauv[]' size='".$size_select."' multiple>";
-					while ($row = mysql_fetch_object($result)) {
+					while ($row = pmb_mysql_fetch_object($result)) {
 							$form_task .= "<option  value='".$row->sauv_sauvegarde_id."' ".($value_param[$row->sauv_sauvegarde_id] == $row->sauv_sauvegarde_id ? 'selected=\'selected\'' : '' ).">".$row->sauv_sauvegarde_nom."</option>";
 					}
 		$form_task .="</select>";

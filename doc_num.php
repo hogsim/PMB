@@ -3,7 +3,7 @@
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // | creator : Yves PRATTER                                                   |
 // +-------------------------------------------------+
-// $Id: doc_num.php,v 1.19.6.2 2015-01-28 15:11:05 mbertin Exp $
+// $Id: doc_num.php,v 1.22 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path     = ".";                            
@@ -22,25 +22,25 @@ require_once ($class_path."/upload_folder.class.php");
 //gestion des droits
 require_once($class_path."/acces.class.php");
 
-$resultat = mysql_query("SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_nomfichier, explnum_mimetype, explnum_url, 
+$resultat = pmb_mysql_query("SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_nomfichier, explnum_mimetype, explnum_url, 
 			explnum_data, explnum_extfichier, explnum_path, concat(repertoire_path,explnum_path,explnum_nomfichier) as path, repertoire_id
 			FROM explnum left join upload_repertoire on repertoire_id=explnum_repertoire WHERE explnum_id = '$explnum_id' ", $dbh);
-$nb_res = mysql_num_rows($resultat) ;
+$nb_res = pmb_mysql_num_rows($resultat) ;
 
 if (!$nb_res) {
 	header("Location: images/mimetype/unknown.gif");
 	exit ;
 }
 
-$ligne = mysql_fetch_object($resultat);
+$ligne = pmb_mysql_fetch_object($resultat);
 
 $id_for_rigths = $ligne->explnum_notice;
 if($ligne->explnum_bulletin != 0){
 	//si bulletin, les droits sont rattachés à la notice du bulletin, à défaut du pério...
 	$req = "select bulletin_notice,num_notice from bulletins where bulletin_id =".$ligne->explnum_bulletin;
-	$res = mysql_query($req);
-	if(mysql_num_rows($res)){
-		$row = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req);
+	if(pmb_mysql_num_rows($res)){
+		$row = pmb_mysql_fetch_object($res);
 		$id_for_rigths = $row->num_notice;
 		if(!$id_for_rigths){
 			$id_for_rigths = $row->bulletin_notice;

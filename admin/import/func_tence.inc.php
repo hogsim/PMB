@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_tence.inc.php,v 1.10 2009-05-16 11:15:42 dbellamy Exp $
+// $Id: func_tence.inc.php,v 1.11 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -86,7 +86,7 @@ function import_new_notice_suite() {
 		}
 	$mots_cles ? $index_matieres = strip_empty_words($mots_cles) : $index_matieres = '';
 	$rqt_maj = "update notices set index_l='".addslashes($mots_cles)."', index_matieres=' ".addslashes($index_matieres)." ' where notice_id='$notice_id' " ;
-	$res_ajout = mysql_query($rqt_maj, $dbh);
+	$res_ajout = pmb_mysql_query($rqt_maj, $dbh);
 	
 	global $bulletin_ex, $info_207 ;
 	//Cas des périodiques
@@ -94,23 +94,23 @@ function import_new_notice_suite() {
 		// c'est une notice de pério, elle a été insérée en monographie
 		//Notice chapeau existe-t-elle déjà ?
 		$requete="select notice_id from notices where tit1='".addslashes(clean_string($tit[0]['a']))."' and niveau_hierar='1' and niveau_biblio='s'";
-		$resultat=mysql_query($requete);
-		if (@mysql_num_rows($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		if (@pmb_mysql_num_rows($resultat)) {
 			//Si oui, récupération id et destruction de la dite notice
-			$chapeau_id=mysql_result($resultat,0,0);	
+			$chapeau_id=pmb_mysql_result($resultat,0,0);	
 			$requete="delete from notices where notice_id='$notice_id' ";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			$requete="delete from responsability where responsability_notice='$notice_id' ";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			$notice_id = $chapeau_id ; 
 			//Bulletin existe-t-il ?
 			if ($info_207[0]) $num_bull = $info_207[0] ;
 				else $num_bull = $tit[0]['a'] ;
 			$requete="select bulletin_id from bulletins where bulletin_numero='".addslashes($num_bull)."' and bulletin_notice=$chapeau_id";
-			$resultat=mysql_query($requete);
-			if (@mysql_num_rows($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($resultat)) {
 				//Si oui, récupération id bulletin
-				$bulletin_ex=mysql_result($resultat,0,0);
+				$bulletin_ex=pmb_mysql_result($resultat,0,0);
 				} else {
 					//Si non, création bulltin
 					$info=array();
@@ -123,7 +123,7 @@ function import_new_notice_suite() {
 			} else {
 				//Si non, update notice chapeau et création bulletin
 				$requete="update notices set niveau_biblio='s', niveau_hierar='1' where notice_id='$notice_id' ";
-				$resultat=mysql_query($requete);
+				$resultat=pmb_mysql_query($requete);
 
 				$info=array();
 				$bulletin=new bulletinage("",$notice_id);

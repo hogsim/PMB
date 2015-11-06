@@ -1,5 +1,5 @@
 // gestion des forms "collapsibles" en Javascript
-// $Id: tabform.js,v 1.7 2012-08-22 14:59:40 ngantier Exp $
+// $Id: tabform.js,v 1.9 2015-01-27 16:17:10 vtouchard Exp $
 
 // tabCreate() : crée un objet form et affecte les méthodes et propriétés
 
@@ -27,6 +27,13 @@ function expandAll() {
   for (var i = 0; i < tempCollCnt; i++) {
      if((tempColl[i].className == 'child')&&(tempColl[i].getAttribute("hide")!="yes"))
      tempColl[i].style.display = 'block';
+     var callback = tempColl[i].getAttribute("callback");
+     if(callback){
+   	  window[callback]();
+     }
+     if(typeof ajax_resize_elements == "function"){
+   	  ajax_resize_elements();
+     }
   }
   tempColl    = document.getElementsByTagName('IMG');
   tempCollCnt = tempColl.length;
@@ -101,12 +108,28 @@ function expandBase(el, unexpand)
 {
   if (!isDOM)
     return;
-
   var whichEl = document.getElementById(el + 'Child');
   var whichIm = document.getElementById(el + 'Img');
+  var callback = whichEl.getAttribute("callback");
   if (whichEl.style.display == 'none' && whichIm) {
     whichEl.style.display  = 'block';
     whichIm.src            = imgOpened.src;
+    if(typeof(dojo) == "object"){
+   	 var widgets = dijit.registry.findWidgets(whichEl);
+   	 if(widgets.length > 0){
+	   	 for(var i=0 ; i<widgets.length ; i++){
+	   		 if(widgets[i].declaredClass == "map_controler"){
+	   			widgets[i].map.olMap.updateSize();
+	   		 }
+	   	 }
+   	 }
+    }
+    if(callback){
+  	  window[callback]();
+    }
+    if(typeof ajax_resize_elements == "function"){
+  	  ajax_resize_elements();
+    }
   }
   else if (unexpand) {
     whichEl.style.display  = 'none';

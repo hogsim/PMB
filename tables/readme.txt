@@ -23,7 +23,7 @@ data_test.sql : une petite sélection de données de notices, lecteurs, afin de po
 Thésaurus : 3 thésaurus vous sont proposés :
 	unesco.sql : thésaurus hiérarchisé de l'UNESCO, assez important et bien fait.
 	agneaux.sql : plus petit, plus simple mais bien fait aussi.
-	environnement : un thésaurus possible pour un fonds documetaire axé Environnement.
+	environnement : un thésaurus possible pour un fonds documentaire axé Environnement.
 	
 Indexations internes : 4 indexations sont proposées :
 	indexint_100.sql : 100 cases du savoir ou marguerite des couleurs, indexation décimale 

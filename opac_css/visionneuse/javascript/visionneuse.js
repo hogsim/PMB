@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: visionneuse.js,v 1.18.2.1 2014-09-25 12:37:21 arenou Exp $
+// $Id: visionneuse.js,v 1.19 2014-09-25 12:35:13 arenou Exp $
 
 function open_visionneuse(callbackFunction,explnum_id){
 	callback = function(){

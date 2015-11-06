@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collection.class.php,v 1.44.2.1 2014-07-31 09:11:22 dgoron Exp $
+// $Id: collection.class.php,v 1.52 2015-06-05 13:04:00 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -17,6 +17,8 @@ require_once("$class_path/aut_pperso.class.php");
 require_once($class_path."/editor.class.php");
 require_once($class_path."/subcollection.class.php");
 require_once("$class_path/audit.class.php");
+require_once($class_path."/index_concept.class.php");
+require_once($class_path."/vedette/vedette_composee.class.php");
 
 class collection {
 
@@ -68,10 +70,10 @@ class collection {
 			$this->comment	= '';
 		} else {
 			$requete = "SELECT * FROM collections WHERE collection_id=$this->id LIMIT 1 ";
-			$result = @mysql_query($requete, $dbh);
-			if(mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);
-				mysql_free_result($result);
+			$result = @pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);
+				pmb_mysql_free_result($result);
 				$this->id = $temp->collection_id;
 				$this->name = $temp->collection_name;
 				$this->parent = $temp->collection_parent;
@@ -123,25 +125,37 @@ class collection {
 		// récupération du nombre de notices affectées
 		$requete = "SELECT COUNT(1) FROM notices WHERE ";
 		$requete .= "coll_id=$this->id";
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_result($res, 0, 0);
 		if(!$nbr_lignes) {
 			// on regarde si la collection a des collections enfants 
 			$requete = "SELECT COUNT(1) FROM sub_collections WHERE ";
 			$requete .= "sub_coll_parent=".$this->id;
-			$res = mysql_query($requete, $dbh);
-			$nbr_lignes = mysql_result($res, 0, 0);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = pmb_mysql_result($res, 0, 0);
 			if(!$nbr_lignes) {
+
+				// On regarde si l'autorité est utilisée dans des vedettes composées
+				$attached_vedettes = vedette_composee::get_vedettes_built_with_element($this->id, "collection");
+				if (count($attached_vedettes)) {
+					// Cette autorité est utilisée dans des vedettes composées, impossible de la supprimer
+					return '<strong>'.$this->display."</strong><br />".$msg["vedette_dont_del_autority"];
+				}
+				
 				// effacement dans la table des collections
 				$requete = "DELETE FROM collections WHERE collection_id=".$this->id;
-				$result = mysql_query($requete, $dbh);
+				$result = pmb_mysql_query($requete, $dbh);
 				//Import d'autorité
-				$this->delete_autority_sources($this->id);
+				collection::delete_autority_sources($this->id);
 				// liens entre autorités
 				$aut_link= new aut_link(AUT_TABLE_COLLECTIONS,$this->id);
 				$aut_link->delete();
 				$aut_pperso= new aut_pperso("collection",$this->id);
 				$aut_pperso->delete();
+				
+				// nettoyage indexation concepts
+				$index_concept = new index_concept($this->id, TYPE_COLLECTION);
+				$index_concept->delete();
 				
 				audit::delete_audit(AUDIT_COLLECTION,$this->id);
 				return false;
@@ -158,13 +172,13 @@ class collection {
 	// ---------------------------------------------------------------
 	//		delete_autority_sources($idcol=0) : Suppression des informations d'import d'autorité
 	// ---------------------------------------------------------------
-	function delete_autority_sources($idcol=0){
+	static function delete_autority_sources($idcol=0){
 		$tabl_id=array();
 		if(!$idcol){
 			$requete="SELECT DISTINCT num_authority FROM authorities_sources LEFT JOIN collections ON num_authority=collection_id  WHERE authority_type = 'collection' AND collection_id IS NULL";
-			$res=mysql_query($requete);
-			if(mysql_num_rows($res)){
-				while ($ligne = mysql_fetch_object($res)) {
+			$res=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res)){
+				while ($ligne = pmb_mysql_fetch_object($res)) {
 					$tabl_id[]=$ligne->num_authority;
 				}
 			}
@@ -174,15 +188,15 @@ class collection {
 		foreach ( $tabl_id as $value ) {
 	       //suppression dans la table de stockage des numéros d'autorités...
 			$query = "select id_authority_source from authorities_sources where num_authority = ".$value." and authority_type = 'collection'";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while ($ligne = mysql_fetch_object($result)) {
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				while ($ligne = pmb_mysql_fetch_object($result)) {
 					$query = "delete from notices_authorities_sources where num_authority_source = ".$ligne->id_authority_source;
-					mysql_query($query);
+					pmb_mysql_query($query);
 				}
 			}
 			$query = "delete from authorities_sources where num_authority = ".$value." and authority_type = 'collection'";
-			mysql_query($query);
+			pmb_mysql_query($query);
 		}
 	}
 	
@@ -220,31 +234,31 @@ class collection {
 		$aut_link->delete();
 	
 		$requete = "UPDATE notices SET ed1_id=".$n_collection->parent.", coll_id=$by WHERE coll_id=".$this->id;
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 	
 		// b) remplacement dans la table des sous-collections
 		$requete = "UPDATE sub_collections SET sub_coll_parent=$by WHERE sub_coll_parent=".$this->id;
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 	
 		// c) suppression de la collection
 		$requete = "DELETE FROM collections WHERE collection_id=".$this->id;
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		
 		//nettoyage d'autorities_sources
 		$query = "select * from authorities_sources where num_authority = ".$this->id." and authority_type = 'collection'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				if($row->authority_favorite == 1){
 					//on suprime les références si l'autorité a été importée...
 					$query = "delete from notices_authorities_sources where num_authority_source = ".$row->id_authority_source;
-					mysql_result($query);
+					pmb_mysql_result($query);
 					$query = "delete from authorities_sources where id_authority_source = ".$row->id_authority_source;
-					mysql_result($query);
+					pmb_mysql_result($query);
 				}else{
 					//on fait suivre le reste
 					$query = "update authorities_sources set num_authority = ".$by." where num_authority_source = ".$row->id_authority_source;
-					mysql_query($query);
+					pmb_mysql_query($query);
 				}
 			}
 		}
@@ -264,6 +278,7 @@ class collection {
 		global $collection_form;
 	 	global $charset;
 		global $pmb_type_audit;
+		global $thesaurus_concepts_active;
 	
 		if($this->id) {
 			$action = "./autorites.php?categ=collections&sub=update&id=$this->id";
@@ -308,7 +323,12 @@ class collection {
 		$collection_form = str_replace('!!user_input!!',			htmlentities($user_input,ENT_QUOTES, $charset),		$collection_form);
 		$collection_form = str_replace('!!nbr_lignes!!',			$nbr_lignes,										$collection_form);
 		$collection_form = str_replace('!!page!!',					$page,												$collection_form);		
-		
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($this->id, TYPE_COLLECTION);
+			$collection_form = str_replace('!!concept_form!!',		$index_concept->get_form('saisie_collection'),		$collection_form);
+		}else{
+			$collection_form = str_replace('!!concept_form!!',		"",													$collection_form);
+		}
 		if ($pmb_type_audit && $this->id)
 				$bouton_audit= "&nbsp;<input class='bouton' type='button' onClick=\"openPopUp('./audit.php?type_obj=".AUDIT_COLLECTION."&object_id=".$this->id."', 'audit_popup', 700, 500, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\" title=\"".$msg['audit_button']."\" value=\"".$msg['audit_button']."\" />&nbsp;";
 		
@@ -344,6 +364,7 @@ class collection {
 		global $dbh;
 		global $msg,$charset;
 		global $include_path;
+		global $thesaurus_concepts_active;
 		
 		// nettoyage des valeurs en entrée
 		$value['name'] = clean_string($value['name']);
@@ -372,9 +393,9 @@ class collection {
 			// update
 			$requete = 'UPDATE collections '.$requete;
 			$requete .= ' WHERE collection_id='.$this->id.' ;';
-			if(mysql_query($requete, $dbh)) {
+			if(pmb_mysql_query($requete, $dbh)) {
 				$requete = "update notices set ed1_id='".$value[parent]."' WHERE coll_id='".$this->id."' ";
-				$res = mysql_query($requete, $dbh) ;
+				$res = pmb_mysql_query($requete, $dbh) ;
 				// liens entre autorités
 				$aut_link= new aut_link(AUT_TABLE_COLLECTIONS,$this->id);
 				$aut_link->save_form();			
@@ -399,8 +420,8 @@ class collection {
 				}
 			}
 			$requete = 'INSERT INTO collections '.$requete.';';
-			if(mysql_query($requete, $dbh)) {
-				$this->id=mysql_insert_id();
+			if(pmb_mysql_query($requete, $dbh)) {
+				$this->id=pmb_mysql_insert_id();
 				// liens entre autorités
 				$aut_link= new aut_link(AUT_TABLE_COLLECTIONS,$this->id);
 				$aut_link->save_form();
@@ -411,6 +432,15 @@ class collection {
 				return FALSE;
 			}
 		}
+		// Indexation concepts
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($this->id, TYPE_COLLECTION);
+			$index_concept->save();
+		}
+
+		// Mise à jour des vedettes composées contenant cette autorité
+		vedette_composee::update_vedettes_built_with_element($this->id, "collection");
+		
 		if($value['subcollections']){
 			for ( $i=0 ; $i<count($value['subcollections']) ; $i++){
 				$subcoll=stripslashes_array($value['subcollections'][$i]);//La fonction d'import fait les addslashes contrairement à l'update
@@ -444,7 +474,7 @@ class collection {
 	
 		// check sur les éléments du tableau (data['name'] est requis).
 		
-		$long_maxi_name = mysql_field_len(mysql_query("SELECT collection_name FROM collections limit 1"),0);
+		$long_maxi_name = pmb_mysql_field_len(pmb_mysql_query("SELECT collection_name FROM collections limit 1"),0);
 		$data['name'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['name']))),0,$long_maxi_name));
 	
 		//si on a pas d'id, on peut avoir les infos de l'éditeur 
@@ -466,17 +496,17 @@ class collection {
 		
 		/* vérification que l'éditeur existe bien ! */
 		$query = "SELECT ed_id FROM publishers WHERE ed_id='${key1}' LIMIT 1 ";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		if(!$result) 
 			die("can't SELECT publishers ".$query);
-		if (mysql_num_rows($result)==0) 
+		if (pmb_mysql_num_rows($result)==0) 
 			return 0;
 	
 		/* vérification que la collection existe */
 		$query = "SELECT collection_id FROM collections WHERE collection_name='${key0}' AND collection_parent='${key1}' LIMIT 1 ";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		if(!$result) die("can't SELECT collections ".$query);
-		$collection  = mysql_fetch_object($result);
+		$collection  = pmb_mysql_fetch_object($result);
 	
 		/* la collection existe, on retourne l'ID */
 		if($collection->collection_id)
@@ -488,10 +518,10 @@ class collection {
 		$query .= "collection_issn='$key2', ";
 		$query .= "index_coll=' ".strip_empty_words($key0)." ".strip_empty_words($key2)." ', ";
 		$query .= "collection_comment = '".addslashes($data['comment'])."'";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		if(!$result) die("can't INSERT into database");
 		
-		$id = mysql_insert_id($dbh);
+		$id = pmb_mysql_insert_id($dbh);
 		
 		if($data['subcollections']){
 			for ( $i=0 ; $i<count($data['subcollections']) ; $i++){
@@ -526,12 +556,12 @@ class collection {
 	//---------------------------------------------------------------
 	// update_index($id) : maj des n-uplets la table notice_global_index en rapport avec cet collection	
 	//---------------------------------------------------------------
-	function update_index($id) {
+	static function update_index($id) {
 		global $dbh;
 		// On cherche tous les n-uplet de la table notice correspondant à cet auteur.
-		$found = mysql_query("select distinct notice_id from notices where coll_id='".$id."'",$dbh);
+		$found = pmb_mysql_query("select distinct notice_id from notices where coll_id='".$id."'",$dbh);
 		// Pour chaque n-uplet trouvés on met a jour la table notice_global_index avec l'auteur modifié :
-		while($mesNotices = mysql_fetch_object($found)) {
+		while($mesNotices = pmb_mysql_fetch_object($found)) {
 			$notice_id = $mesNotices->notice_id;
 			notice::majNoticesGlobalIndex($notice_id);
 			notice::majNoticesMotsGlobalIndex($notice_id,'collection');
@@ -541,7 +571,7 @@ class collection {
 	//---------------------------------------------------------------
 	// get_informations_from_unimarc : ressort les infos d'une collection depuis une notice unimarc
 	//---------------------------------------------------------------
-	function get_informations_from_unimarc($fields,$from_subcollection=false,$import_subcoll=false){
+	static function get_informations_from_unimarc($fields,$from_subcollection=false,$import_subcoll=false){
 		$data = array();
 		
 		if(!$from_subcollection){
@@ -596,9 +626,9 @@ class collection {
 		
 		/* vérification que la collection existe */
 		$query = "SELECT collection_id FROM collections WHERE collection_name='${key0}' AND collection_parent='${key1}' LIMIT 1 ";
-		$result = @mysql_query($query, $dbh);
+		$result = @pmb_mysql_query($query, $dbh);
 		if(!$result) die("can't SELECT collections ".$query);
-		$collection  = mysql_fetch_object($result);
+		$collection  = pmb_mysql_fetch_object($result);
 	
 		/* la collection existe, on retourne l'ID */
 		if($collection->collection_id)

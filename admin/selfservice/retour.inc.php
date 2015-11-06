@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: retour.inc.php,v 1.3 2014-02-14 08:12:07 ngantier Exp $
+// $Id: retour.inc.php,v 1.4 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -132,39 +132,39 @@ function memo_param() {
 	global $selfservice_retour_retard_msg,$selfservice_retour_blocage_msg,$selfservice_retour_amende_msg;
 	$rqt = "UPDATE parametres SET valeur_param ='$loc_autre_todo' where type_param= 'selfservice' and sstype_param='loc_autre_todo' ";
 	$selfservice_loc_autre_todo=$loc_autre_todo;
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 	
 	$rqt = "UPDATE parametres SET valeur_param ='$resa_ici_todo' where type_param= 'selfservice' and sstype_param='resa_ici_todo' ";
 	$selfservice_resa_ici_todo=stripslashes($resa_ici_todo);
-	mysql_query($rqt);	
+	pmb_mysql_query($rqt);	
 	
 	$rqt = "UPDATE parametres SET valeur_param ='$resa_loc_todo' where type_param= 'selfservice' and sstype_param='resa_loc_todo' ";
 	$selfservice_resa_loc_todo=stripslashes($resa_loc_todo);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 	
 	$rqt = "UPDATE parametres SET valeur_param ='$loc_autre_todo_msg' where type_param= 'selfservice' and sstype_param='loc_autre_todo_msg' ";
 	$selfservice_loc_autre_todo_msg=stripslashes($loc_autre_todo_msg);
-	mysql_query($rqt);	
+	pmb_mysql_query($rqt);	
 	
 	$rqt = "UPDATE parametres SET valeur_param ='$resa_ici_todo_msg' where type_param= 'selfservice' and sstype_param='resa_ici_todo_msg' ";
 	$selfservice_resa_ici_todo_msg=stripslashes($resa_ici_todo_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 	
 	$rqt = "UPDATE parametres SET valeur_param ='$resa_loc_todo_msg' where type_param= 'selfservice' and sstype_param='resa_loc_todo_msg' ";
 	$selfservice_resa_loc_todo_msg=stripslashes($resa_loc_todo_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 	$rqt = "UPDATE parametres SET valeur_param ='$retour_retard_msg' where type_param= 'selfservice' and sstype_param='retour_retard_msg' ";
 	$selfservice_retour_retard_msg=stripslashes($retour_retard_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 	
 	$rqt = "UPDATE parametres SET valeur_param ='$retour_blocage_msg' where type_param= 'selfservice' and sstype_param='retour_blocage_msg' ";
 	$selfservice_retour_blocage_msg=stripslashes($retour_blocage_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 	$rqt = "UPDATE parametres SET valeur_param ='$retour_amende_msg' where type_param= 'selfservice' and sstype_param='retour_amende_msg' ";
 	$selfservice_retour_amende_msg=stripslashes($retour_amende_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 	
 }
 

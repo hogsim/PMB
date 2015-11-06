@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mailtpl.class.php,v 1.3 2013-04-26 12:37:31 mbertin Exp $
+// $Id: mailtpl.class.php,v 1.4 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -26,9 +26,9 @@ class mailtpl {
 		$this->info=array();
 		$this->users=array();
 		$requete_users = "SELECT userid, username FROM users order by username ";
-		$res_users = mysql_query($requete_users);
+		$res_users = pmb_mysql_query($requete_users);
 		$this->all_users=array();
-		while (list($this->all_userid,$all_username)=mysql_fetch_row($res_users)) {
+		while (list($this->all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 			$this->all_users[]=array($this->all_userid,$all_username);
 		}	
 		if(!$this->id){
@@ -37,9 +37,9 @@ class mailtpl {
 		} 
 		$req="select * from mailtpl where id_mailtpl=". $this->id;
 		
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);		
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);		
 			$this->info['id']= $r->id_mailtpl;	
 			$this->info['name']= $r->mailtpl_name;	
 			$this->info['objet']= $r->mailtpl_objet;	
@@ -145,11 +145,11 @@ class mailtpl {
 		
 		if(!$this->id){ // Ajout
 			$req="INSERT INTO mailtpl SET $fields ";	
-			mysql_query($req, $dbh);
-			$this->id = mysql_insert_id($dbh);
+			pmb_mysql_query($req, $dbh);
+			$this->id = pmb_mysql_insert_id($dbh);
 		} else {
 			$req="UPDATE mailtpl SET $fields where id_mailtpl=".$this->id;	
-			mysql_query($req, $dbh);				
+			pmb_mysql_query($req, $dbh);				
 		}	
 		$this->fetch_data();
 	}	
@@ -158,7 +158,7 @@ class mailtpl {
 		global $dbh;
 		
 		$req="DELETE from mailtpl WHERE id_mailtpl=".$this->id;
-		mysql_query($req, $dbh);	
+		pmb_mysql_query($req, $dbh);	
 		
 		$this->fetch_data();	
 	}	
@@ -181,9 +181,9 @@ class mailtpls {
 		$this->info=array();
 		$i=0;
 		$req="select * from mailtpl where  mailtpl_users like '% $PMBuserid %' ";
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){	
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){	
 				$this->info[$i]= $mailtpl=new mailtpl($r->id_mailtpl);	
 				
 				$i++;

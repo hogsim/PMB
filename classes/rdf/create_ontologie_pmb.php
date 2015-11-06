@@ -46,7 +46,6 @@ if (!$store->isSetUp()) {
 	//die();
 }
 
-
 $prefix="PREFIX skos: <http://www.w3.org/2004/02/skos/core#> " .
 		"PREFIX dct: <http://purl.org/dc/terms/> " .
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#> " .
@@ -79,7 +78,7 @@ INSERT INTO <skos>
 {
     <http://www.w3.org/2004/02/skos/core> dct:description "Ontologie PMB basée sur Skos"@fr .
     <http://www.w3.org/2004/02/skos/core> dct:title "Vocabulaire SKOS - PMB"@fr .
-    <http://www.w3.org/2004/02/skos/core> dct:creator "Didier Bellamy" ; dct:creator "Matthieu Bertin"  ; dct:contributor "Florent Tétart" 
+    <http://www.w3.org/2004/02/skos/core> dct:creator "Didier Bellamy" ; dct:creator "Matthieu Bertin"  ; dct:contributor "Florent Tétart" ; dct:date "'.date("c").'" 
 }
 ';
 $rows = $store->query($q);
@@ -174,8 +173,8 @@ $q = $prefix.'
 INSERT INTO <skos>
 {
 	skos:prefLabel rdfs:range rdfs:Literal .
-	skos:prefLabel owl:disjointWith  skos:altLabel .
-	skos:prefLabel owl:disjointWith  skos:hiddenLabel .
+	skos:prefLabel pmb:distinctWith skos:altLabel .
+	skos:prefLabel pmb:distinctWith skos:hiddenLabel
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -212,8 +211,8 @@ $q = $prefix.'
 INSERT INTO <skos>
 {
 	skos:altLabel rdfs:range rdfs:Literal .
-	skos:altLabel owl:disjointWith  skos:prefLabel .
-	skos:altLabel owl:disjointWith  skos:hiddenLabel .
+	skos:altLabel pmb:distinctWith  skos:prefLabel .
+	skos:altLabel pmb:distinctWith  skos:hiddenLabel
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -229,8 +228,8 @@ $q = $prefix.'
 INSERT INTO <skos>
 {
 	skos:hiddenLabel rdfs:range rdfs:Literal .
-	skos:hiddenLabel owl:disjointWith  skos:prefLabel .
-	skos:hiddenLabel owl:disjointWith  skos:altLabel .
+	skos:hiddenLabel pmb:distinctWith  skos:prefLabel .
+	skos:hiddenLabel pmb:distinctWith  skos:altLabel
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -373,9 +372,9 @@ INSERT INTO <skos>
 {
 	skos:broader rdfs:range skos:Concept .
 	skos:broader rdfs:domain skos:Concept .
-	skos:broader owl:disjointWith  skos:narrower .
-	skos:broader owl:disjointWith  skos:related .
-	skos:broader owl:disjointWith  skos:narrowerTransitive .
+	skos:broader pmb:distinctWith  skos:narrower .
+	skos:broader pmb:distinctWith  skos:related .
+	skos:broader pmb:distinctWith  skos:narrowerTransitive
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -392,9 +391,9 @@ INSERT INTO <skos>
 {
 	skos:narrower rdfs:range skos:Concept .
 	skos:narrower rdfs:domain skos:Concept .
-	skos:narrower owl:disjointWith  skos:broader .
-	skos:narrower owl:disjointWith  skos:related .
-	skos:narrower owl:disjointWith  skos:broaderTransitive .
+	skos:narrower pmb:distinctWith  skos:broader .
+	skos:narrower pmb:distinctWith  skos:related .
+	skos:narrower pmb:distinctWith  skos:broaderTransitive
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -411,10 +410,10 @@ INSERT INTO <skos>
 {
 	skos:related rdfs:range skos:Concept .
 	skos:related rdfs:domain skos:Concept .
-	skos:related owl:disjointWith  skos:broader .
-	skos:related owl:disjointWith  skos:broaderTransitive .
-	skos:related owl:disjointWith  skos:narrower .
-	skos:related owl:disjointWith  skos:narrowerTransitive .
+	skos:related pmb:distinctWith  skos:broader .
+	skos:related pmb:distinctWith  skos:broaderTransitive .
+	skos:related pmb:distinctWith  skos:narrower .
+	skos:related pmb:distinctWith  skos:narrowerTransitive
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -431,9 +430,9 @@ INSERT INTO <skos>
 {
 	skos:broaderTransitive rdfs:range skos:Concept .
 	skos:broaderTransitive rdfs:domain skos:Concept .
-	skos:broaderTransitive owl:disjointWith  skos:narrower .
-	skos:broaderTransitive owl:disjointWith  skos:related .
-	skos:broaderTransitive owl:disjointWith  skos:narrowerTransitive .
+	skos:broaderTransitive pmb:distinctWith  skos:narrower .
+	skos:broaderTransitive pmb:distinctWith  skos:related .
+	skos:broaderTransitive pmb:distinctWith  skos:narrowerTransitive
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -450,9 +449,9 @@ INSERT INTO <skos>
 {
 	skos:narrowerTransitive rdfs:range skos:Concept .
 	skos:narrowerTransitive rdfs:domain skos:Concept .
-	skos:narrowerTransitive owl:disjointWith  skos:broader .
-	skos:narrowerTransitive owl:disjointWith  skos:related .
-	skos:narrowerTransitive owl:disjointWith  skos:broaderTransitive .
+	skos:narrowerTransitive pmb:distinctWith  skos:broader .
+	skos:narrowerTransitive pmb:distinctWith  skos:related .
+	skos:narrowerTransitive pmb:distinctWith  skos:broaderTransitive
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -491,10 +490,10 @@ INSERT INTO <skos>
 {
 	skos:broadMatch rdfs:range skos:Concept .
 	skos:broadMatch rdfs:domain skos:Concept .
-	skos:broadMatch owl:disjointWith  skos:exactMatch .
-	skos:broadMatch owl:disjointWith  skos:relatedMatch .
-	skos:broadMatch owl:disjointWith  skos:narrowMatch .
-	skos:broadMatch owl:disjointWith  skos:closeMatch  .
+	skos:broadMatch pmb:distinctWith  skos:exactMatch .
+	skos:broadMatch pmb:distinctWith  skos:relatedMatch .
+	skos:broadMatch pmb:distinctWith  skos:narrowMatch .
+	skos:broadMatch pmb:distinctWith  skos:closeMatch
 }
 ';
 
@@ -513,10 +512,10 @@ INSERT INTO <skos>
 {
 	skos:narrowMatch rdfs:range skos:Concept .
 	skos:narrowMatch rdfs:domain skos:Concept .
-	skos:narrowMatch owl:disjointWith  skos:exactMatch .
-	skos:narrowMatch owl:disjointWith  skos:relatedMatch .
-	skos:narrowMatch owl:disjointWith  skos:broadMatch .
-	skos:narrowMatch owl:disjointWith  skos:closeMatch  .
+	skos:narrowMatch pmb:distinctWith  skos:exactMatch .
+	skos:narrowMatch pmb:distinctWith  skos:relatedMatch .
+	skos:narrowMatch pmb:distinctWith  skos:broadMatch .
+	skos:narrowMatch pmb:distinctWith  skos:closeMatch
 }
 ';
 
@@ -535,10 +534,10 @@ INSERT INTO <skos>
 {
 	skos:relatedMatch rdfs:range skos:Concept .
 	skos:relatedMatch rdfs:domain skos:Concept .
-	skos:relatedMatch owl:disjointWith  skos:exactMatch .
-	skos:relatedMatch owl:disjointWith  skos:narrowMatch .
-	skos:relatedMatch owl:disjointWith  skos:broadMatch .
-	skos:relatedMatch owl:disjointWith  skos:closeMatch  .
+	skos:relatedMatch pmb:distinctWith  skos:exactMatch .
+	skos:relatedMatch pmb:distinctWith  skos:narrowMatch .
+	skos:relatedMatch pmb:distinctWith  skos:broadMatch .
+	skos:relatedMatch pmb:distinctWith  skos:closeMatch
 }
 ';
 
@@ -558,10 +557,10 @@ INSERT INTO <skos>
 {
 	skos:exactMatch rdfs:range skos:Concept .
 	skos:exactMatch rdfs:domain skos:Concept .
-	skos:exactMatch owl:disjointWith  skos:relatedMatch .
-	skos:exactMatch owl:disjointWith  skos:narrowMatch .
-	skos:exactMatch owl:disjointWith  skos:broadMatch .
-	skos:exactMatch owl:disjointWith  skos:closeMatch  .
+	skos:exactMatch pmb:distinctWith  skos:relatedMatch .
+	skos:exactMatch pmb:distinctWith  skos:narrowMatch .
+	skos:exactMatch pmb:distinctWith  skos:broadMatch .
+	skos:exactMatch pmb:distinctWith  skos:closeMatch
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -579,10 +578,10 @@ INSERT INTO <skos>
 {
 	skos:closeMatch rdfs:range skos:Concept .
 	skos:closeMatch rdfs:domain skos:Concept .
-	skos:closeMatch owl:disjointWith  skos:relatedMatch .
-	skos:closeMatch owl:disjointWith  skos:narrowMatch .
-	skos:closeMatch owl:disjointWith  skos:broadMatch .
-	skos:closeMatch owl:disjointWith  skos:exactMatch  .
+	skos:closeMatch pmb:distinctWith  skos:relatedMatch .
+	skos:closeMatch pmb:distinctWith  skos:narrowMatch .
+	skos:closeMatch pmb:distinctWith  skos:broadMatch .
+	skos:closeMatch pmb:distinctWith  skos:exactMatch
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -601,7 +600,7 @@ INSERT INTO <skos>
 skos:semanticRelation rdf:type pmb:noAssertionProperty .
 skos:broaderTransitive rdf:type pmb:noAssertionProperty .
 skos:narrowerTransitive rdf:type pmb:noAssertionProperty .
-skos:mappingRelation rdf:type pmb:noAssertionProperty .
+skos:mappingRelation rdf:type pmb:noAssertionProperty
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -616,17 +615,34 @@ if ($errs = $store->getErrors()) {
 $q = $prefix.'
 INSERT INTO <skos>
 {
-skos:prefLabel pmb:datatype pmb:small_text .
-skos:altLabel pmb:datatype pmb:small_text .
-skos:hiddenLabel pmb:datatype pmb:small_text .
-skos:notation pmb:datatype pmb:small_text .
-skos:note pmb:datatype pmb:text .
-skos:changeNote pmb:datatype pmb:text .
-skos:definition pmb:datatype pmb:text .
-skos:editorialNote pmb:datatype pmb:text .
-skos:example pmb:datatype pmb:text .
-skos:historyNote pmb:datatype pmb:text .
-skos:scopeNote pmb:datatype pmb:text .
+	skos:prefLabel 			pmb:datatype pmb:small_text .
+	skos:altLabel 			pmb:datatype pmb:small_text .
+	skos:hiddenLabel 		pmb:datatype pmb:small_text .
+	skos:notation 			pmb:datatype pmb:small_text .
+	skos:note 				pmb:datatype pmb:text .
+	skos:changeNote 		pmb:datatype pmb:text .
+	skos:definition 		pmb:datatype pmb:text .
+	skos:editorialNote 		pmb:datatype pmb:text .
+	skos:example 			pmb:datatype pmb:text .
+	skos:historyNote 		pmb:datatype pmb:text .
+	skos:scopeNote 			pmb:datatype pmb:text .
+	skos:inScheme			pmb:datatype pmb:resource_selector .
+	skos:hasTopConcept		pmb:datatype pmb:resource_selector .
+	skos:topConceptOf		pmb:datatype pmb:resource_selector .
+	skos:semanticRelation	pmb:datatype pmb:resource_selector .
+	skos:broader			pmb:datatype pmb:resource_selector .
+	skos:narrower			pmb:datatype pmb:resource_selector .
+	skos:related 			pmb:datatype pmb:resource_selector .
+	skos:broaderTransitive 	pmb:datatype pmb:resource_selector .
+	skos:narrowerTransitive pmb:datatype pmb:resource_selector .
+	skos:member 			pmb:datatype pmb:resource_selector .
+	skos:memberList 		pmb:datatype pmb:resource_selector .
+	skos:mappingRelation	pmb:datatype pmb:resource_selector .
+	skos:broadMatch			pmb:datatype pmb:resource_selector .
+	skos:narrowMatch		pmb:datatype pmb:resource_selector .
+	skos:relatedMatch		pmb:datatype pmb:resource_selector .
+	skos:exactMatch			pmb:datatype pmb:resource_selector .
+	skos:closeMatch			pmb:datatype pmb:resource_selector 
 }
 ';
 $rows = $store->query($q, '','',1);
@@ -667,7 +683,55 @@ skos:OrderedCollection pmb:searchLabel skos:prefLabel .
 skos:ConceptScheme pmb:searchLabel skos:altLabel .
 skos:Concept pmb:searchLabel skos:altLabel .
 skos:Collection pmb:searchLabel skos:altLabel .
-skos:OrderedCollection pmb:searchLabel skos:altLabel .
+skos:OrderedCollection pmb:searchLabel skos:altLabel
+}
+';
+$rows = $store->query($q, '','',1);
+if ($errs = $store->getErrors()) {
+	echo "Erreurs: \n";
+	print_r($errs);
+}else{
+	echo "Nb insert ok: ".$rows["result"]["t_count"]."\n\n\n";
+}
+
+
+//ajout du name pour la construction des classes
+$q = $prefix.'
+INSERT INTO <skos>
+{
+	skos:ConceptScheme		pmb:name "conceptscheme" .
+	skos:Concept			pmb:name "concept" .
+	skos:Collection			pmb:name "collection" .
+	skos:OrderedCollection	pmb:name "orderedcollection" .
+	skos:inScheme			pmb:name "inscheme" .
+	skos:hasTopConcept		pmb:name "hastopconcept" .
+	skos:topConceptOf		pmb:name "topconceptof" .
+	skos:prefLabel			pmb:name "preflabel" .
+	skos:altLabel			pmb:name "altlabel" .
+	skos:hiddenLabel		pmb:name "hiddenlabel" .
+	skos:notation			pmb:name "notation" .
+	skos:note				pmb:name "note" .
+	skos:changeNote			pmb:name "changenote" .
+	skos:definition			pmb:name "definition" .
+	skos:editorialNote		pmb:name "editorialnote" .
+	skos:example			pmb:name "example" .
+	skos:historyNote		pmb:name "historynote" .
+	skos:scopeNote			pmb:name "scopenote" .
+	skos:semanticRelation	pmb:name "semanticrelation" .
+	skos:broader			pmb:name "broader" .
+	skos:narrower			pmb:name "narrower" .
+	skos:related 			pmb:name "related" .
+	skos:broaderTransitive 	pmb:name "broadertransitive" .
+	skos:narrowerTransitive pmb:name "narrowertransitive" .
+	skos:member 			pmb:name "member" .
+	skos:memberList 		pmb:name "memberlist" .
+	skos:mappingRelation	pmb:name "mappingrelation" .
+	skos:broadMatch			pmb:name "broadmatch" .	
+	skos:narrowMatch		pmb:name "narrowmatch" .
+	skos:relatedMatch		pmb:name "relatedmatch" .
+	skos:exactMatch			pmb:name "exactmatch" .
+	skos:closeMatch			pmb:name "closematch" .
+	<http://www.w3.org/2004/02/skos/core>					pmb:name "skos"
 }
 ';
 $rows = $store->query($q, '','',1);

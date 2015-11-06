@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_affichage.class.php,v 1.8 2010-10-25 13:10:34 mbertin Exp $
+// $Id: empr_affichage.class.php,v 1.9 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -123,11 +123,11 @@ function fetch_data() {
 	$requete .= " AND s.idcode=e.empr_codestat";
 	$requete .= " AND es.idstatut=e.empr_statut";
 	$requete .= " LIMIT 1";
-	$result = mysql_query($requete, $dbh) or die (mysql_error()." ".$requete) ;
-	if(!mysql_num_rows($result))
+	$result = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." ".$requete) ;
+	if(!pmb_mysql_num_rows($result))
 		return FALSE;
 
-	$empr = mysql_fetch_object($result);
+	$empr = pmb_mysql_fetch_object($result);
 
 	// affectation des propriétés
 	$this->empr_cb        = $empr->empr_cb           ;    // code barre emprunteur
@@ -193,9 +193,9 @@ function fetch_data() {
 	
 	//Groupes
 	$requete="select id_groupe, libelle_groupe from groupe, empr_groupe where empr_id='".$this->id."' and id_groupe=groupe_id";
-	$result=mysql_query($requete);
-	if (mysql_num_rows($result)) {
-		while ($grp_temp=mysql_fetch_object($result)) {
+	$result=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($result)) {
+		while ($grp_temp=pmb_mysql_fetch_object($result)) {
 			$this->groupes[] = "<a href='./circ.php?categ=groups&action=showgroup&groupID=".$grp_temp->id_groupe."'>".htmlentities($grp_temp->libelle_groupe,ENT_QUOTES,$charset)."</a>";
 		}
 	} else 
@@ -314,9 +314,9 @@ function fetch_emprunts() {
 	$requete .= " and t.idtyp_doc=e.expl_typdoc";
 	$requete .= " order by p.pret_retour, p.pret_date, e.expl_cb";
 
-	$result = mysql_query($requete, $dbh);
+	$result = pmb_mysql_query($requete, $dbh);
 	$this->retard=0;
-	while($pret = mysql_fetch_object($result)) {
+	while($pret = pmb_mysql_fetch_object($result)) {
 		if ($pret->expl_notice) {
 			$notice = new mono_display($pret->expl_notice, 0);
 			$this->prets[] = array(
@@ -355,8 +355,8 @@ function fetch_emprunts() {
 	$requete_resa .= " from resa ";
 	$requete_resa .= " where resa_idempr=".$this->id;
 
-	$result_resa = mysql_query($requete_resa, $dbh);
-	$resa = mysql_fetch_object($result_resa);
+	$result_resa = pmb_mysql_query($requete_resa, $dbh);
+	$resa = pmb_mysql_fetch_object($result_resa);
 	$this->nb_reservations = $resa->nb_reservations ;
 	
 	return TRUE;

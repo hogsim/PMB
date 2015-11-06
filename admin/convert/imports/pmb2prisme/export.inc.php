@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export.inc.php,v 1.13 2013-04-17 08:37:34 mbertin Exp $
+// $Id: export.inc.php,v 1.14 2015-04-03 11:16:27 jpermanne Exp $
 
 require_once("$class_path/marc_table.class.php");
 require_once("$class_path/category.class.php");
@@ -10,9 +10,9 @@ require_once("$class_path/category.class.php");
 /*
 function trouve_champ_perso($nom) {
 	$rqt = "SELECT idchamp FROM notices_custom WHERE name='" . addslashes($nom) . "'";
-	$res = mysql_query($rqt);
-	if (mysql_num_rows($res)>0)
-		return mysql_result($res,0);
+	$res = pmb_mysql_query($rqt);
+	if (pmb_mysql_num_rows($res)>0)
+		return pmb_mysql_result($res,0);
 	else
 		return 0;
 }
@@ -61,14 +61,14 @@ function _export_($id,$keep_expl) {
 	
 	if (!$m_thess) {
 		$rqt = "SELECT count(1) FROM thesaurus WHERE active=1";
-	 	$m_thess = mysql_result(mysql_query($rqt),0,0);
+	 	$m_thess = pmb_mysql_result(pmb_mysql_query($rqt),0,0);
 	}
 	
 	$notice="<notice>\n";
 	$requete="SELECT * FROM notices WHERE notice_id=$id";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	
-	$rn=mysql_fetch_object($resultat);
+	$rn=pmb_mysql_fetch_object($resultat);
 	
 	//Référence
 	$notice.="  <REF>".htmlspecialchars($id,ENT_QUOTES,$charset)."</REF>\n";
@@ -82,9 +82,9 @@ function _export_($id,$keep_expl) {
 						"AND notices_custom_values.notices_custom_champ=$no_champ ".
 						"AND notices_custom_integer=notices_custom_list_value ".
 						"AND notices_custom_origine=$id";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$op=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$op=pmb_mysql_result($resultat,0,0);
 			$notice.="  <OP>".htmlspecialchars($op,ENT_QUOTES,$charset)."</OP>\n";
 		}
 	}
@@ -93,9 +93,9 @@ function _export_($id,$keep_expl) {
 	$no_champ = trouve_champ_perso("ds");
 	if ($no_champ>0) {
 		$requete="SELECT notices_custom_date FROM notices_custom_values WHERE notices_custom_champ=$no_champ AND notices_custom_origine=$id";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat))
-			$date=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat))
+			$date=pmb_mysql_result($resultat,0,0);
 		else 
 			$date=date("Y")."-".date("m")."-".date("d");
 		$notice.="<DS>".$date."</DS>\n";
@@ -122,9 +122,9 @@ function _export_($id,$keep_expl) {
 						"AND notices_custom_values.notices_custom_champ=$no_champ ".
 						"AND notices_custom_integer=notices_custom_list_value ".
 						"AND notices_custom_origine=$id";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$notice.="<GEN>".htmlspecialchars(mysql_result($resultat,0,0),ENT_QUOTES,$charset)."</GEN>\n";
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$notice.="<GEN>".htmlspecialchars(pmb_mysql_result($resultat,0,0),ENT_QUOTES,$charset)."</GEN>\n";
 		}
 	}
 		
@@ -133,13 +133,13 @@ function _export_($id,$keep_expl) {
 				"FROM authors, responsability ".
 				"WHERE responsability_notice=$id AND responsability_author=author_id ".
 				"ORDER BY author_type, responsability_type, responsability_ordre";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
 		$au=array();
 		$auco=array();
 		$as=array();
 	
-		while ($ra=mysql_fetch_object($resultat)) {
+		while ($ra=pmb_mysql_fetch_object($resultat)) {
 			$a=$ra->author_type=='70'?strtoupper($ra->author_name):$ra->author_name;
 			if ($ra->author_rejete) $a.=" (".$ra->author_rejete.")";
 			if ($ra->author_type=='70') {
@@ -175,9 +175,9 @@ function _export_($id,$keep_expl) {
 	//Distributeur (DIST)
 	if ($rn->ed2_id) {
 		$requete="SELECT ed_ville,ed_name FROM publishers WHERE ed_id=".$rn->ed2_id;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$re=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$re=pmb_mysql_fetch_object($resultat);
 			$ed="";
 			if ($re->ed_ville) $ed=$re->ed_ville.":";
 			$ed.=$re->ed_name;
@@ -189,8 +189,8 @@ function _export_($id,$keep_expl) {
 	$serie="";
 	if ($rn->tparent_id) {
 		$requete="SELECT serie_name FROM series WHERE serie_id=".$rn->tparent_id;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) $serie=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) $serie=pmb_mysql_result($resultat,0,0);
 	}
 	if ($rn->tnvol) $serie.=($serie?" ":"").$rn->tnvol;
 	if ($serie) $serie.=". ";
@@ -205,8 +205,8 @@ function _export_($id,$keep_expl) {
 	if ($rn->niveau_biblio=='a') {
 		//Recherche des informations du bulletin
 		$requete="SELECT * FROM bulletins, analysis WHERE bulletin_id=analysis_bulletin AND analysis_notice=$id";
-		$resultat=mysql_query($requete);
-		$rb=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		$rb=pmb_mysql_fetch_object($resultat);
 	}
 	
 	//Titre du numéro (TN)
@@ -222,8 +222,8 @@ function _export_($id,$keep_expl) {
 	//Titre de revue (TP)
 	if ($rb) {
 		$requete="SELECT tit1 FROM notices WHERE notice_id=".$rb->bulletin_notice;
-		$resultat=mysql_query($requete);
-		$notice.="<TP>".htmlspecialchars(mysql_result($resultat,0,0),ENT_QUOTES,$charset)."</TP>\n";
+		$resultat=pmb_mysql_query($requete);
+		$notice.="<TP>".htmlspecialchars(pmb_mysql_result($resultat,0,0),ENT_QUOTES,$charset)."</TP>\n";
 	}
 	
 	//Souces (SO)
@@ -241,9 +241,9 @@ function _export_($id,$keep_expl) {
 	//Editeur / Collection (ED)
 	if ($rn->ed1_id) {
 		$requete="SELECT ed_ville,ed_name FROM publishers WHERE ed_id=".$rn->ed1_id;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$red=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$red=pmb_mysql_fetch_object($resultat);
 			$ed="";
 			if ($red->ed_ville) $ed=$red->ed_ville.":";
 			$ed.=$red->ed_name;
@@ -251,9 +251,9 @@ function _export_($id,$keep_expl) {
 		//Collection
 		if ($rn->coll_id) {
 			$requete="SELECT collection_name FROM collections WHERE collection_id=".$rn->coll_id;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$coll_name=mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$coll_name=pmb_mysql_result($resultat,0,0);
 				$ed.=" (".$coll_name.")";
 			}
 		}
@@ -266,9 +266,9 @@ function _export_($id,$keep_expl) {
 		$annee=$rn->year;
 	} else if ($rn->niveau_biblio=='a') {
 		$req_mention_date="SELECT YEAR(date_date) FROM bulletins, analysis WHERE bulletin_id=analysis_bulletin AND analysis_notice=$id";
-		$res_mention_date=mysql_query($req_mention_date);
+		$res_mention_date=pmb_mysql_query($req_mention_date);
 		if ($res_mention_date) {
-			$annee=mysql_result($res_mention_date,0,0);
+			$annee=pmb_mysql_result($res_mention_date,0,0);
 		} else if ($rn->year) {
 			$annee=$rn->year;
 		}
@@ -299,7 +299,7 @@ function _export_($id,$keep_expl) {
 		$notice.="<NO>".htmlspecialchars($no,ENT_QUOTES,$charset)."</NO>\n";
 	
 	$requete="SELECT num_noeud FROM notices_categories WHERE notcateg_notice=$id ORDER BY ordre_categorie";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	$go=array();
 	$hi=array();
 	$denp=array();
@@ -307,7 +307,7 @@ function _export_($id,$keep_expl) {
 	$cd=array();
 	
 	if ($m_thess>1) {
-		while (list($categ_id)=mysql_fetch_row($resultat)) {
+		while (list($categ_id)=pmb_mysql_fetch_row($resultat)) {
 			$categ=new category($categ_id);
 			if (trouve_thesaurus("GO")==$categ->thes->id_thesaurus) {
 				$go[]=$categ->libelle;
@@ -323,7 +323,7 @@ function _export_($id,$keep_expl) {
 		}
 	} else {
 		
-		while (list($categ_id)=mysql_fetch_row($resultat)) {
+		while (list($categ_id)=pmb_mysql_fetch_row($resultat)) {
 			$categ=new categories($categ_id,'fr_FR');
 			$list_categ=categories::listAncestors($categ_id,'fr_FR');
 			reset($list_categ);

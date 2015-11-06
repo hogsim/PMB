@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mono_display_unimarc.class.php,v 1.37.2.1 2014-12-01 17:24:40 mbertin Exp $
+// $Id: mono_display_unimarc.class.php,v 1.39 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -129,15 +129,15 @@ function fetch_auteurs() {
 	$res["auteurs"] = array() ;
 	
 	$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-	$myQuery = mysql_query($requete);
-	$source_id = mysql_result($myQuery, 0, 0);	
+	$myQuery = pmb_mysql_query($requete);
+	$source_id = pmb_mysql_result($myQuery, 0, 0);	
 	
 	$rqt = "select recid,ufield,field_order,usubfield,subfield_order,value from entrepot_source_$source_id where recid='".addslashes($this->notice_id)."' and ufield like '7%' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-	$res_sql=mysql_query($rqt);
+	$res_sql=pmb_mysql_query($rqt);
 	
 	$id_aut="";
 	$n_aut=-1;
-	while ($l=mysql_fetch_object($res_sql)) {
+	while ($l=pmb_mysql_fetch_object($res_sql)) {
 		if ($l->field_order!=$id_aut) {
 			$n_aut++;
 			switch ($l->ufield) {
@@ -273,16 +273,16 @@ function fetch_categories() {
 	global $pmb_keyword_sep;
 	$this->categories_toutes="";
 	$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-	$myQuery = mysql_query($requete);
-	$source_id = mysql_result($myQuery, 0, 0);	
+	$myQuery = pmb_mysql_query($requete);
+	$source_id = pmb_mysql_result($myQuery, 0, 0);	
 
 	$rqt = "select ufield,field_order,usubfield,subfield_order,value from entrepot_source_$source_id where recid='".addslashes($this->notice_id)."' and ufield like '60%' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-	$res_sql=mysql_query($rqt);
+	$res_sql=pmb_mysql_query($rqt);
 
 	$id_categ="";
 	$n_categ=-1;
 	$categ_l=array();
-	while ($l=mysql_fetch_object($res_sql)) {
+	while ($l=pmb_mysql_fetch_object($res_sql)) {
 		if ($l->field_order!=$id_categ) {
 			if ($n_categ!=-1) {
 				$categ_libelle=$categ_l["a"].($categ_l["x"]?" - ".implode(" - ",$categ_l["x"]):"").($categ_l["y"]?" - ".implode(" - ",$categ_l["y"]):"").($categ_l["z"]?" - ".implode(" - ",$categ_l["z"]):"");
@@ -307,17 +307,17 @@ function fetch_langues($quelle_langues=0) {
 	if (!$marc_liste_langues) $marc_liste_langues=new marc_list('lang');
 
 	$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-	$myQuery = mysql_query($requete);
-	$source_id = mysql_result($myQuery, 0, 0);	
+	$myQuery = pmb_mysql_query($requete);
+	$source_id = pmb_mysql_result($myQuery, 0, 0);	
 
 	$rqt = "select ufield,field_order,usubfield,subfield_order,value from entrepot_source_$source_id where recid='".addslashes($this->notice_id)."' and ufield like '101' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-	$res_sql=mysql_query($rqt);
+	$res_sql=pmb_mysql_query($rqt);
 
 	$langues = array() ;
 
 	$subfield=array("0"=>"a","1"=>"c");
 
-	while ($l=mysql_fetch_object($res_sql)) {
+	while ($l=pmb_mysql_fetch_object($res_sql)) {
 		if ($l->usubfield==$subfield[$quelle_langues]) {
 			if ($marc_liste_langues->table[$l->value]) { 
 				$langues[] = array( 
@@ -646,8 +646,8 @@ function do_header() {
 	
 	//on commence par regarder si cette notice n'a pas déjà été intégrér
 	$query = "select rid from notices_externes join external_count on external_count.recid = notices_externes.recid where rid=".$this->notice_id;
-	$result = mysql_query($query);
-	if(mysql_num_rows($result)){
+	$result = pmb_mysql_query($query);
+	if(pmb_mysql_num_rows($result)){
 		$checkbox.=" checked='checked' disabled='disabled'";
 	}
 	$checkbox.= "/>";
@@ -689,10 +689,10 @@ function do_header() {
 	}
 	if ($this->notice->niveau_biblio=='b') {
 		$rqt="select tit1 from bulletins,notices where bulletins.num_notice='".$this->notice_id."' and notices.notice_id=bulletins.bulletin_notice";
-		$execute_query=mysql_query($rqt);
-		$row=mysql_fetch_object($execute_query);
+		$execute_query=pmb_mysql_query($rqt);
+		$row=pmb_mysql_fetch_object($execute_query);
 		$this->header.=" <i>".str_replace("%s",$row->tit1,$msg["bul_titre_perio"])."</i>";
-		mysql_free_result($execute_query);
+		pmb_mysql_free_result($execute_query);
 	}
 
 
@@ -718,11 +718,11 @@ function mono_display_fetch_data() {
 	global $pmb_url_base;
 	
 	$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-	$myQuery = mysql_query($requete, $dbh);
-	$source_id = mysql_result($myQuery, 0, 0);
+	$myQuery = pmb_mysql_query($requete, $dbh);
+	$source_id = pmb_mysql_result($myQuery, 0, 0);
 
 	$requete="select * from entrepot_source_".$source_id." where recid='".addslashes($this->notice_id)."' order by ufield,field_order,usubfield,subfield_order,value";
-	$myQuery = mysql_query($requete, $dbh);
+	$myQuery = pmb_mysql_query($requete, $dbh);
 	
 	$notice="";
 	$lpfo="";
@@ -731,15 +731,15 @@ function mono_display_fetch_data() {
 	$exemplaires = array();
 	$doc_nums = array();
 	
-	if(mysql_num_rows($myQuery)) {
+	if(pmb_mysql_num_rows($myQuery)) {
 		$notice = new stdClass();
 		$notice->notice_id=$this->notice_id;
-		while ($l=mysql_fetch_object($myQuery)) {
+		while ($l=pmb_mysql_fetch_object($myQuery)) {
 			if (!$this->source_id) {
 				$this->source_id=$l->source_id;
 				$requete="select name from connectors_sources where source_id=".$l->source_id;
-				$rsname=mysql_query($requete);
-				if (mysql_num_rows($rsname)) $this->source_name=mysql_result($rsname,0,0);
+				$rsname=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($rsname)) $this->source_name=pmb_mysql_result($rsname,0,0);
 			}
 			$this->unimarc[$l->ufield][$l->field_order][$l->usubfield][$l->subfield_order];
 			switch ($l->ufield) {
@@ -909,18 +909,18 @@ function mono_display_fetch_data() {
 	if (!$this->notice->typdoc) $this->notice->typdoc='a';
 	
 /*	$requete = "SELECT * FROM notices WHERE notice_id='".$this->notice_id."' ";
-	$myQuery = mysql_query($requete, $dbh);
-	if(mysql_num_rows($myQuery)) {
-		$this->notice = mysql_fetch_object($myQuery);
+	$myQuery = pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($myQuery)) {
+		$this->notice = pmb_mysql_fetch_object($myQuery);
 		}
 	$this->langues	= get_notice_langues($this->notice_id, 0) ;	// langues de la publication
 	$this->languesorg	= get_notice_langues($this->notice_id, 1) ; // langues originales*/
 	
 	//on regarde si cette notice externe a déjà été intégrée dans le catalogue
 	$req = "select num_notice, niveau_biblio from external_count join notices_externes on external_count.recid = notices_externes.recid join notices on num_notice = notice_id where rid='".addslashes($this->notice_id)."'";
-	$result = mysql_query($req);
-	if(mysql_num_rows($result)>0){
-		$row = mysql_fetch_object($result);
+	$result = pmb_mysql_query($req);
+	if(pmb_mysql_num_rows($result)>0){
+		$row = pmb_mysql_fetch_object($result);
 		$this->permalink = "";
 		switch($row->niveau_biblio){
 			case "m":
@@ -932,17 +932,17 @@ function mono_display_fetch_data() {
 			case "b" :
 				//on va chercher le numéro de bulletin...
 				$query = "select bulletin_id from bulletins where num_notice = ".$row->num_notice;
-				$res = mysql_query($query);
-				if(mysql_num_rows($res)){
-					$bull_row = mysql_fetch_object($res);
+				$res = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($res)){
+					$bull_row = pmb_mysql_fetch_object($res);
 					$this->permalink = $pmb_url_base."catalog.php?categ=serials&sub=view&bul_id=".$bull_row->bulletin_id;
 				}
 				break;
 			case "a" :
 				$query = "select analysis_bulletin from analysis where analysis_notice = ".$row->num_notice;
-				$res = mysql_query($query);
-				if(mysql_num_rows($res)){
-					$analysis_row = mysql_fetch_object($res);
+				$res = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($res)){
+					$analysis_row = pmb_mysql_fetch_object($res);
 					$this->permalink = $pmb_url_base."catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".$analysis_row->analysis_bulletin."&art_to_show=".$row->num_notice;
 				}
 				break;
@@ -950,7 +950,7 @@ function mono_display_fetch_data() {
 	}
 
 	$this->isbn = $this->notice->code ; 
-	return mysql_num_rows($myQuery);
+	return pmb_mysql_num_rows($myQuery);
 }
 
 // fonction retournant les infos d'exemplaires pour une notice donnée

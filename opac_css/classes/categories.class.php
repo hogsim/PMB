@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categories.class.php,v 1.16.6.4 2015-03-05 09:21:51 mbertin Exp $
+// $Id: categories.class.php,v 1.21 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -28,8 +28,8 @@ class categories{
 		$this->num_noeud = $num_noeud;				
 		$this->langue = $langue;
 		$q = "select count(1) from categories where num_noeud = '".$this->num_noeud."' and langue = '".$this->langue."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) != 0) {
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) != 0) {
 			$this->load();
 		} 
 	}
@@ -41,8 +41,8 @@ class categories{
 		global $dbh;
 
 		$q = "select * from categories where num_noeud = '".$this->num_noeud."' and langue = '".$this->langue."' limit 1";
-		$r = mysql_query($q, $dbh);
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		$obj = pmb_mysql_fetch_object($r);
 		$this->libelle_categorie = $obj->libelle_categorie;				
 		$this->note_application = $obj->note_application;				
 		$this->comment_public = $obj->comment_public;				
@@ -67,7 +67,7 @@ class categories{
 		$q.= "comment_voir = '".addslashes($this->comment_voir)."', ";
 		$q.= "index_categorie = ' ".addslashes(strip_empty_words($this->libelle_categorie,$this->langue))." ' ";
 		$q.= "where num_noeud = '".$this->num_noeud."' and langue = '".$this->langue."' "; 
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		categories::update_index($this->num_noeud);
 		
 	}
@@ -78,8 +78,8 @@ class categories{
 		global $dbh;
 		
 		$q = "select count(1) from categories where num_noeud = '".$num_noeud."' and langue = '".$langue."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) == 0) return FALSE;
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) == 0) return FALSE;
 			else return TRUE;		
 	}
 	
@@ -89,7 +89,7 @@ class categories{
 		global $dbh;
 		
 		$q = "delete from categories where num_noeud = '".$num_noeud."' and langue = '".$langue."' ";
-		$r = @mysql_query($q, $dbh);
+		$r = @pmb_mysql_query($q, $dbh);
 	}		
 
 
@@ -113,9 +113,9 @@ class categories{
 			else $lg=$thes->langue_defaut; 
 			$q = "select libelle_categorie from categories where num_noeud = '".$id."' ";
 			$q.= "and langue = '".$lg."' limit 1";
-			$r = mysql_query($q, $dbh);
-			if (mysql_num_rows($r))	{
-				$lib_list.= mysql_result($r, 0, 0); 
+			$r = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_num_rows($r))	{
+				$lib_list.= pmb_mysql_result($r, 0, 0); 
 				if ($id != $num_noeud) $lib_list.= ':';
 			}
 		}
@@ -147,9 +147,9 @@ class categories{
 			$q.= "and categories.langue = '".$lg."' ";
 			$q.= "and categories.num_noeud = noeuds.id_noeud ";
 			$q.= "limit 1";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
-			while ($row = mysql_fetch_object($r))	{
+			while ($row = pmb_mysql_fetch_object($r))	{
 				$anc_list[$id]['num_noeud'] = $row->num_noeud;
 				$anc_list[$id]['num_parent'] = $row->num_parent;
 				$anc_list[$id]['num_renvoi_voir'] = $row->num_renvoi_voir;
@@ -196,7 +196,7 @@ class categories{
 		if (!$keep_tilde) $q.= "and catdef.libelle_categorie not like '~%' ";
 		if ($ordered !== 0) $q.= "order by ".$ordered." ";
 		$q.=$limit;
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r;
 	}
 	
@@ -211,13 +211,12 @@ class categories{
 		}
 		$thes = thesaurus::getByEltId($num_noeud);
 		$q = "select id_noeud from noeuds where num_thesaurus = '".$thes->id_thesaurus."' and autorite = 'ORPHELINS' ";
-		$r = mysql_query($q, $dbh);
-		if($r && mysql_num_rows($r)){
-			$num_noeud_orphelins = mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		if($r && pmb_mysql_num_rows($r)){
+			$num_noeud_orphelins = pmb_mysql_result($r, 0, 0);
 		}else{
 			$num_noeud_orphelins=0;
 		}
-		
 		$list = array();
 		if($opac_categories_nav_max_display > 0) $limit= " limit $opac_categories_nav_max_display ";
 		else $limit='';
@@ -236,10 +235,10 @@ class categories{
 		if (!$keep_tilde) $q.= "and catdef.libelle_categorie not like '~%' ";
 		if ($ordered !== 0) $q.= "order by ".$ordered." ";
 		$q.=$limit;
-		$r = mysql_query($q, $dbh);	
+		$r = pmb_mysql_query($q, $dbh);	
 		return $r;
 	}	
-		
+	
 	function getlibelle($num_noeud=0, $langue=""){
 		global $dbh;
 		$lib="";
@@ -252,9 +251,9 @@ class categories{
 		else $lg=$thes->langue_defaut; 
 		$q = "select libelle_categorie from categories where num_noeud = '".$num_noeud."' ";
 		$q.= "and langue = '".$lg."' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r))	{
-			$lib= mysql_result($r, 0, 0); 
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r))	{
+			$lib= pmb_mysql_result($r, 0, 0); 
 		}
 		
 		return $lib;

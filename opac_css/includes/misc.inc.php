@@ -2,12 +2,13 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: misc.inc.php,v 1.56.2.2 2014-10-28 10:44:32 mbertin Exp $
+// $Id: misc.inc.php,v 1.63 2015-06-08 15:00:23 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once("$class_path/semantique.class.php");
 require_once($class_path."/parse_format.class.php");
+require_once($class_path."/curl.class.php");
 
 //ajout des mots vides calculés
 $add_empty_words=semantique::add_empty_words();
@@ -19,10 +20,10 @@ function get_vignette($notice_id) {
 	global $opac_url_base;
 	
 	$requete="select code,thumbnail_url from notices where notice_id=$notice_id";
-	$res=mysql_query($requete);
+	$res=pmb_mysql_query($requete);
 	
 	if ($res) {
-		$notice=mysql_fetch_object($res);
+		$notice=pmb_mysql_fetch_object($res);
 		if ($notice->code || $notice->thumbnail_url) {
 			if ($notice->thumbnail_url) 
 				$url_image_ok=$notice->thumbnail_url;
@@ -351,8 +352,8 @@ function test_title_query($query, $operator=TRUE, $force_regexp=FALSE) {
 	
 	// récupération du nombre de lignes
 	$rws = "SELECT count(1) FROM notices WHERE ${query_result['restr']}";
-	$result = @mysql_query($rws, $dbh);
-	$query_result['nbr_rows'] = @mysql_result($result, 0, 0);
+	$result = @pmb_mysql_query($rws, $dbh);
+	$query_result['nbr_rows'] = @pmb_mysql_result($result, 0, 0);
 	
 	return $query_result;
 	}
@@ -398,9 +399,9 @@ function current_page() {
 //	fonction gen_liste qui génère des combo_box super sympas
 // ----------------------------------------------------------------------------
 function gen_liste ($requete, $champ_code, $champ_info, $nom, $on_change, $selected, $liste_vide_code, $liste_vide_info,$option_premier_code,$option_premier_info) {
-	$resultat_liste=mysql_query($requete);
+	$resultat_liste=pmb_mysql_query($requete);
 	$renvoi="<select name=\"$nom\"  id=\"$nom\" onChange=\"$on_change\">\n";
-	$nb_liste=mysql_num_rows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$renvoi.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n";
 		} else {
@@ -411,9 +412,9 @@ function gen_liste ($requete, $champ_code, $champ_info, $nom, $on_change, $selec
 				}
 			$i=0;
 			while ($i<$nb_liste) {
-				$renvoi.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" ";
-				if ($selected==mysql_result($resultat_liste,$i,$champ_code)) $renvoi.="selected";
-				$renvoi.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n";
+				$renvoi.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" ";
+				if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) $renvoi.="selected";
+				$renvoi.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n";
 				$i++;
 				}
 			}
@@ -633,11 +634,11 @@ function pmb_substr_replace($string,$replacement,$start,$length=null) {
 	if ($charset != 'utf-8'){
 		return substr_replace($string, $replacement, $start,$length);
 	}else{
-		$result  = mb_substr ($string, 0, $start, 'UTF-8');
+		$result  = mb_substr ($string, 0, $start, $charset);
 	    $result .= $replacement;
 	    if ($length > 0)
 	    {
-	        $result .= mb_substr($string, ($start + $length), null, 'UTF-8');
+	        $result .= mb_substr($string, ($start + $length), null, $charset);
 	    }
 	    return $result;
 	}
@@ -880,4 +881,143 @@ function pmb_obj2array($obj){
 		$array = $obj;
 	}
 	return $array;
+}
+
+//------like print_r but more readable--for debugging purposes
+function printr($arr,$filter="",$name="") {
+	//array_shift($args) ;
+	print "<pre>\n" ;
+	if ($name) {
+		print "Printing content of array <b>$name:</b>\n";
+	}
+	if ($filter == "" || ! is_array($arr) ) {
+		print_r($arr) ;
+	} else {
+		if (is_array($arr)) {
+				ksort($arr);
+				foreach($arr as $key => $val) {
+					if (preg_match("#$filter#", $key) || preg_match("#$filter#", $val) ) {
+						print "[" . $key . "] => " . $val ."\n" ;
+					}
+				}
+		}
+	}
+
+	print "</pre>";
+	return ;
+}
+
+function get_msg_to_display($message) {
+	global $msg;
+
+	if (substr($message, 0, 4) == "msg:") {
+		return $msg[substr($message, 4)];
+	} else {
+		return $message;
+	}
+}
+
+/**
+ * Enregistre dans la session
+ */
+function add_value_session($code,$value, $in_array = true) {
+	$session_none = false;
+	if (session_status() == 1) {
+		$session_none = true;
+		session_start();
+	}
+	if ($in_array) {
+		if (is_array($_SESSION[$code]) && count($_SESSION[$code])) {
+			if(!in_array($value, $_SESSION[$code])) {
+				$_SESSION[$code][] = $value;
+			}
+		} else {
+			$_SESSION[$code] = array($value);
+		}
+	} else {
+		$_SESSION[$code] = $value;
+	}
+	if ($session_none) {
+		session_write_close();
+	}
+}
+
+/**
+ * Génération d'un log
+ */
+function generate_log() {
+	global $dbh,$log, $infos_notice, $infos_expl;
+
+	$rqt= " select empr_prof,empr_cp, empr_ville as ville, empr_year, empr_sexe, empr_login, empr_date_adhesion, empr_date_expiration, count(pret_idexpl) as nbprets, count(resa.id_resa) as nbresa, code.libelle as codestat, es.statut_libelle as statut, categ.libelle as categ, gr.libelle_groupe,dl.location_libelle as location
+								from empr e
+								left join empr_codestat code on code.idcode=e.empr_codestat
+								left join empr_statut es on e.empr_statut=es.idstatut
+								left join empr_categ categ on categ.id_categ_empr=e.empr_categ
+								left join empr_groupe eg on eg.empr_id=e.id_empr
+								left join groupe gr on eg.groupe_id=gr.id_groupe
+								left join docs_location dl on e.empr_location=dl.idlocation
+								left join resa on e.id_empr=resa_idempr
+								left join pret on e.id_empr=pret_idempr
+								where e.empr_login='".addslashes($_SESSION['user_code'])."'
+								group by resa_idempr, pret_idempr";
+	$res=pmb_mysql_query($rqt,$dbh);
+	if($res){
+		$empr_carac = pmb_mysql_fetch_array($res);
+		$log->add_log('empr',$empr_carac);
+	}
+
+	$log->add_log('num_session',session_id());
+	$log->add_log('expl',$infos_expl);
+	$log->add_log('docs',$infos_notice);
+
+	$log->save();
+}
+
+
+/**
+ * Charge et lance la compression d'un fichier CSS
+ */
+function loadandcompresscss($file){
+	global $opac_default_style;
+	$relocate = true;
+	if(strpos($file,"?") && strpos($file,"./styles/".$opac_default_style."/") === false && strpos($file,"./styles/common/") === false){
+		$aCurl = new Curl();
+		$content = $aCurl->get($file);
+		$content=$content->body;
+		$relocate = false;
+	}else{
+		if(strpos($file,"?")){
+			$file = substr($file,0,strpos($file,"?"));
+		}
+		$content = file_get_contents($file);
+	}
+	return compresscss($content, $file,$relocate);
+
+}
+
+/**
+ * Compression d'un fichier CSS
+ */
+function compresscss($content,$file,$relocate=true){
+	if(preg_match_all("!@import\s+url\(['\"]([^'^\"]*)['\"]\);!",$content,$matches)){
+		$css_filepath = dirname($file);
+		for($i=0 ; $i< count($matches[0]) ; $i++){
+			$content = str_replace($matches[0][$i],loadandcompresscss($css_filepath."/".$matches[1][$i]),$content);
+		}
+	}
+	
+	
+	if($relocate && preg_match_all("!url\(['\"]?([^'^\")]+)['\"]?\)!",$content,$matches)){
+		for($i=0 ; $i< count($matches[0]) ; $i++){
+			$target = $matches[1][$i];
+			$target = ".".dirname($file)."/".str_replace(".".dirname($file)."/","",$target);
+			$content = str_replace($matches[0][$i],"url('".$target."')",$content);
+		}
+	}
+	$content = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $content);
+	// Remove space after colons
+	$content = preg_replace('!\s?:\s?!', ':', $content);
+	// Remove whitespace
+	$content = str_replace(array("\r", "\n\n", "\t",), '', $content);
+	return $content;
 }

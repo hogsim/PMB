@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tva_achats.class.php,v 1.9 2013-11-29 08:32:35 dgoron Exp $
+// $Id: tva_achats.class.php,v 1.10 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,8 +33,8 @@ class tva_achats{
 		global $dbh;
 		
 		$q = "select * from tva_achats where id_tva = '".$this->id_tva."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->libelle = $obj->libelle;
 		$this->taux_tva = $obj->taux_tva;
 		$this->num_cp_compta = $obj->num_cp_compta;
@@ -53,13 +53,13 @@ class tva_achats{
 		
 			$q = "update tva_achats set taux_tva ='".$this->taux_tva."', libelle = '".$this->libelle."', num_cp_compta = '".$this->num_cp_compta."' ";
 			$q.= "where id_tva = '".$this->id_tva."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
 		} else {
 			
 			$q = "insert into tva_achats set libelle = '".$this->libelle."', taux_tva = '".$this->taux_tva."', num_cp_compta = '".$this->num_cp_compta."' ";
-			$r = mysql_query($q, $dbh);
-			$this->id_tva = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_tva = pmb_mysql_insert_id($dbh);
 			
 		}
 
@@ -74,7 +74,7 @@ class tva_achats{
 		if(!$id_tva) return; 	
 
 		$q = "delete from tva_achats where id_tva = '".$id_tva."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -93,8 +93,8 @@ class tva_achats{
 		global $dbh;
 
 		$q = "select count(1) from tva_achats  ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 				
 	}
 
@@ -104,8 +104,8 @@ class tva_achats{
 		
 		global $dbh;
 		$q = "select count(1) from tva_achats where id_tva = '".$id_tva."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -116,8 +116,8 @@ class tva_achats{
 		global $dbh;
 		$q = "select count(1) from tva_achats where libelle = '".$libelle."' ";
 		if ($id_tva) $q.= "and id_tva != '".$id_tva."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -128,8 +128,8 @@ class tva_achats{
 		global $dbh;
 		if (!$id_tva) return 0;
 		$q = "select count(1) from types_produits where num_tva_achat = '".$id_tva."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -140,8 +140,8 @@ class tva_achats{
 		global $dbh;
 		if (!$id_tva) return 0;
 		$q = "select count(1) from frais where num_tva_achat = '".$id_tva."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 	
@@ -150,7 +150,7 @@ class tva_achats{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE tva_achats', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE tva_achats', $dbh);
 		return $opt;
 				
 	}

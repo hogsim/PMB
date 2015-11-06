@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_modules_parser.class.php,v 1.5 2013-09-26 10:15:58 arenou Exp $
+// $Id: cms_modules_parser.class.php,v 1.7 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -71,13 +71,14 @@ class cms_modules_parser {
 	}
 
 	public function get_cadres_list(){
+		global $dbh;
 		if(count($this->cadres_list) == 0){
 			$this->cadres_list= array();
 			$this->cadres_classement_list= array();
 			$query = "select * from cms_cadres order by cadre_classement, cadre_name";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$this->cadres_list[] = $row;
 					if($row->cadre_classement)$this->cadres_classement_list[$row->cadre_classement]=1;
 				}
@@ -86,12 +87,13 @@ class cms_modules_parser {
 		return $this->cadres_list;
 	}
 
-	public function get_module_class_by_id($id){
+	public static function get_module_class_by_id($id){
+		global $dbh;
 		$id+=0;
 		$query = "select * from cms_cadres where id_cadre = ".$id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			return new $row->cadre_object($row->id_cadre);
 		}
 	}
@@ -113,5 +115,5 @@ class cms_modules_parser {
 			}
 		}
 		return $this->managed_modules;
-	}	
+	}
 }

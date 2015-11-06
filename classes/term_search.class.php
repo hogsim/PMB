@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: term_search.class.php,v 1.24 2012-08-23 14:58:10 mbertin Exp $
+// $Id: term_search.class.php,v 1.25 2015-04-03 11:16:20 jpermanne Exp $
 //
 // Gestion de la recherche des termes dans le thésaurus
 
@@ -130,13 +130,13 @@ class term_search {
 				$q.= "and catdef.num_thesaurus = '".$this->id_thes."' ";
 				$q.= "and catdef.langue = '".$this->thes->langue_defaut."' "; 
 				$q.= "and catdef.libelle_categorie not like '~%' ";
-				$r = mysql_query($q);
-				$this->n_total=mysql_result($r, 0, 0);
+				$r = pmb_mysql_query($q);
+				$this->n_total=pmb_mysql_result($r, 0, 0);
 			
 			} else {		//Recherche dans la langue de l'interface ou dans la langue par défaut du thesaurus
 
 				$q = "drop table if exists cattmp ";
-				$r = mysql_query($q, $dbh);
+				$r = pmb_mysql_query($q, $dbh);
 	
 				$q1 = "create temporary table cattmp engine=myisam select ";
 				$q1.= "if(catlg.num_noeud is null, catdef.libelle_categorie, catlg.libelle_categorie) as categ_libelle ";
@@ -147,11 +147,11 @@ class term_search {
 				$q1.= "and catdef.num_thesaurus = '".$this->id_thes."' ";
 				$q1.= "and catdef.langue = '".$this->thes->langue_defaut."' "; 
 				$q1.= "and catdef.libelle_categorie not like '~%' ";
-				$r1 = mysql_query($q1, $dbh);
+				$r1 = pmb_mysql_query($q1, $dbh);
 				$q2 = "select count(distinct categ_libelle) from cattmp ";
-				$r2 = mysql_query($q2);
+				$r2 = pmb_mysql_query($q2);
 				
-				$this->n_total=mysql_result($r2, 0, 0);
+				$this->n_total=pmb_mysql_result($r2, 0, 0);
 			}
 			
 		} else {
@@ -159,7 +159,7 @@ class term_search {
 			//tous les thesaurus
 			//on recherche dans la langue de l'interface ou dans la langue par défaut du thesaurus
 			$q = "drop table if exists cattmp ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 
 			$q1 = "create temporary table cattmp engine=myisam select ";
 			$q1.= "id_thesaurus, ";
@@ -170,11 +170,11 @@ class term_search {
 			$q1.= "where 1 ";
 			if ($where_term) $q1.= "and (if(catlg.num_noeud is null, ".$members_catdef["where"].", ".$members_catlg["where"].") ) ";
 			$q1.= "and catdef.libelle_categorie not like '~%' ";
-			$resultat1 = mysql_query($q1, $dbh);
+			$resultat1 = pmb_mysql_query($q1, $dbh);
 			
 			$q2 = "select count(distinct id_thesaurus,categ_libelle) from cattmp ";					
-		  	$r2=mysql_query($q2);
-		 	$this->n_total=mysql_result($r2,0,0);
+		  	$r2=pmb_mysql_query($q2);
+		 	$this->n_total=pmb_mysql_result($r2,0,0);
 		}
 
 }
@@ -273,13 +273,13 @@ class term_search {
 			$requete.= "limit ".$this->offset.",".$this->n_per_page;
 		}
 
-		$resultat=mysql_query($requete, $dbh);
+		$resultat=pmb_mysql_query($requete, $dbh);
 		
 		//On récupère le nombre de résultat
 		if(!$this->n_total){
 			$qry = "SELECT FOUND_ROWS() AS NbRows";
-			if($resnum = mysql_query($qry)){
-				$this->n_total=mysql_result($resnum,0,0);
+			if($resnum = pmb_mysql_query($qry)){
+				$this->n_total=pmb_mysql_result($resnum,0,0);
 			}
 		}
 		
@@ -296,7 +296,7 @@ class term_search {
 		$res.="</div>";
 		//Affichage des termes trouvés
 		$class='colonne2';
-		while ($r=mysql_fetch_object($resultat)) {
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			$show=1;
 			
 			//S'il n'y a qu'un seul résultat, vérification que ce n'est pas un terme masqué

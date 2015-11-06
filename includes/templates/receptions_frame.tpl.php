@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: receptions_frame.tpl.php,v 1.7.6.1 2014-03-20 17:00:18 dgoron Exp $
+// $Id: receptions_frame.tpl.php,v 1.9 2014-09-18 16:01:16 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -284,10 +284,12 @@ $recept_deliv_form_explnum = "
 			<div class='colonne4'>
 				<label class='etiquette' for='f_fichier'>".htmlentities($msg['explnum_fichier'], ENT_QUOTES,$charset)."</label>
 				<br /><label class='etiquette' for='f_url'>".htmlentities($msg['explnum_url'], ENT_QUOTES,$charset)."</label>
+				<br /><label class='etiquette' for='f_explnum_statut'>".htmlentities($msg['acquisition_recept_explnum_statut'], ENT_QUOTES,$charset)."</label>
 			</div>
 			<div class='colonne2'>
 				<input type='file' size='50' class='saisie-80em' name='f_fichier' id='f_fichier' />
 				<br /><input type='text' class='saisie-80em' name='f_url' id='f_url' />
+				<br />!!statut_list!!
 			</div>
 			<div class='colonne4'>
 				<div class='right'>

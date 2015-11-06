@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_delete.inc.php,v 1.36 2012-09-06 09:15:32 dbellamy Exp $
+// $Id: notice_delete.inc.php,v 1.37 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -28,35 +28,35 @@ if ($acces_m==0) {
 	print "<div class='row'><h1>{$msg[416]}</h1></div>";
 	if($id) {
 		$query = "select count(1) as qte from exemplaires where expl_notice=$id";
-		$result = mysql_query($query, $dbh);
-		$expl = mysql_result($result, 0, 0); 
+		$result = pmb_mysql_query($query, $dbh);
+		$expl = pmb_mysql_result($result, 0, 0); 
 		if($expl) {
 			// il y a des exemplaires : impossible de supprimer cette notice
 			error_message($msg[416], $msg[420], 1, "./catalog.php?categ=isbd&id=$id");
 		} else {
 			$query="select count(*) as qte from notices_relations where linked_notice=$id";
 			// SUPPRIME DU WHERE : num_notice=$id or 
-			$result = mysql_query($query, $dbh);
-			$notc = mysql_result($result, 0, 0); 
+			$result = pmb_mysql_query($query, $dbh);
+			$notc = pmb_mysql_result($result, 0, 0); 
 			if ($notc) {
 				error_message($msg[416], $msg["notice_parent_used"], 1, "./catalog.php?categ=isbd&id=$id");
 			} else {
 				$query = "select count(1) from demandes where num_notice=$id";
-				$result = mysql_query($query, $dbh);
-				$dmde = mysql_result($result, 0, 0); 
+				$result = pmb_mysql_query($query, $dbh);
+				$dmde = pmb_mysql_result($result, 0, 0); 
 				if($dmde) 
 					error_message($msg[416], $msg["notice_demande_used"], 1, "./catalog.php?categ=isbd&id=$id");
 				else {
 					$abort_delete = 0;
 					$query = "select count(1) as qte, name from caddie_content, caddie where type='NOTI' and object_id='$id' and caddie_id=idcaddie group by name";
-					$result = mysql_query($query, $dbh);
-					$caddie = @mysql_result($result, 0, 0);
+					$result = pmb_mysql_query($query, $dbh);
+					$caddie = @pmb_mysql_result($result, 0, 0);
 					// La notice est au moins dans un caddie
 					if ($caddie) {
 						$abort_delete = 1;
 						switch ($pmb_confirm_delete_from_caddie) {
 							case 0: //On interdit
-								$name = mysql_result($result, 0, 'name'); 
+								$name = pmb_mysql_result($result, 0, 'name'); 
 								error_message($msg[416], $msg['suppr_notice_dans_caddie'].$name, 1, "./catalog.php?categ=isbd&id=$id");							
 								break;
 							case 1: //
@@ -67,7 +67,7 @@ if ($acces_m==0) {
 									$abort_delete = 0;
 								}
 								else {
-									$name = mysql_result($result, 0, 'name');	
+									$name = pmb_mysql_result($result, 0, 'name');	
 									echo $msg['suppr_notice_dans_caddie_info'].$name."<br /><br />".$msg["confirm_suppr"]."?<br />";
 									echo '<input type="button" class="bouton" onClick="document.location = \'./catalog.php?categ=delete&id='.$id.'&caddie_confirmation=1\'" value="'.$msg['63'].'" />&nbsp;';
 									echo '<input type="button" class="bouton" onClick="history.go(-1)" value="'.$msg['76'].'" />';
@@ -78,12 +78,12 @@ if ($acces_m==0) {
 					if (!$abort_delete){		// suppression de la notice
 						$ret_param="";
 						$query="select linked_notice from notices_relations where num_notice=$id";		
-						$result = mysql_query($query, $dbh);
+						$result = pmb_mysql_query($query, $dbh);
 						$not_mere = 0;
-						if (mysql_numrows($result)) $not_mere = mysql_result($result, 0, 0);
+						if (pmb_mysql_num_rows($result)) $not_mere = pmb_mysql_result($result, 0, 0);
 						if ($not_mere > 0){
 							// perio ou mono?
-							$n=mysql_fetch_object(@mysql_query("select * from notices where notice_id=".$not_mere));
+							$n=pmb_mysql_fetch_object(@pmb_mysql_query("select * from notices where notice_id=".$not_mere));
 							if ($n->niveau_biblio == 'm'|| $n->niveau_biblio == 'b') {
 								$ret_param="?categ=isbd&id=$not_mere";
 							} elseif ($n->niveau_biblio == 's' || $n->niveau_biblio == 'a') {

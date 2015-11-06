@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_pages.class.php,v 1.1 2012-03-20 08:43:18 ngantier Exp $
+// $Id: cms_pages.class.php,v 1.2 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -29,19 +29,19 @@ class cms_page {
 		if(!$this->id)	return false;					
 		// les infos base...	
 		$rqt = "select * from cms_pages where id_page ='".$this->id."'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$row = mysql_fetch_object($res);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$row = pmb_mysql_fetch_object($res);
 			$this->hash = $row->page_hash;
 			$this->name = $row->page_name;
 			$this->description = $row->page_description;
 		}		
 		// Variables d'environnement
 		$rqt = "select * from cms_vars where var_num_page ='".$this->id."' order by var_name";
-		$res = mysql_query($rqt);	
+		$res = pmb_mysql_query($rqt);	
 		$i=0;	
-		if(mysql_num_rows($res)){					
-			while($row = mysql_fetch_object($res)){
+		if(pmb_mysql_num_rows($res)){					
+			while($row = pmb_mysql_fetch_object($res)){
 				$this->vars[$i]['id']=$row->id_var;
 				$this->vars[$i]['name']=$row->var_name;
 				$this->vars[$i]['comment']=$row->var_comment;

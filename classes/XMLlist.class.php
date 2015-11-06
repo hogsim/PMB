@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: XMLlist.class.php,v 1.26 2014-01-29 15:47:53 mbertin Exp $
+// $Id: XMLlist.class.php,v 1.32 2015-06-12 15:40:22 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -13,17 +13,19 @@ if ( ! defined( 'XML_LIST_CLASS' ) ) {
 
 class XMLlist {
 	
-	var $analyseur;
-	var $fichierXml;
-	var $fichierXmlSubst; // nom du fichier XML de substitution au cas où.
-	var $current;
-	var $table;
-	var $tablefav;
-	var $flag_fav;
-	var $s;
-	var $flag_elt ; // pour traitement des entrées supprimées
-	var $flag_order;
-	var $order;
+	public $analyseur;
+	public $fichierXml;
+	public $fichierXmlSubst; // nom du fichier XML de substitution au cas où.
+	public $current;
+	public $table;
+	public $table_js;
+	public $tablefav;
+	public $flag_fav;
+	public $s;
+	public $flag_elt ; // pour traitement des entrées supprimées
+	public $flag_order;
+	public $order;
+	public $js_group;
 
 	// constructeur
 	function XMLlist($fichier, $s=1) {
@@ -42,7 +44,10 @@ class XMLlist {
 		if($nom == 'ENTRY' && $attributs['ORDER']) {
 			$this->flag_order = true;
 			$this->order[$attributs['CODE']] =  $attributs['ORDER'];
-			}			
+		}	
+		if($nom == 'ENTRY' && $attributs['JS']){
+			$this->js_group = $attributs['JS'];
+		}
 		if($nom == 'XMLlist') {
 			$this->table = array();
 			$this->fav = array();
@@ -55,14 +60,17 @@ class XMLlist {
 		if($nom == 'ENTRY' && $attributs['CODE']) {
 			$this->flag_elt = false ;
 			$this->current = $attributs['CODE'];
-			}
+		}
 		if($nom == 'ENTRY' && $attributs['ORDER']) {
 			$this->flag_order = true;
 			$this->order[$attributs['CODE']] =  $attributs['ORDER'];
-			}
+		}
+		if($nom == 'ENTRY' && $attributs['JS']){
+			$this->js_group = $attributs['JS'];
+		}
 		if($nom == 'ENTRY' && $attributs['FAV']) {
 			$this->flag_fav =  $attributs['FAV'];
-			}
+		}
 	}
 	
 	function finBalise($parser, $nom) {
@@ -71,6 +79,7 @@ class XMLlist {
 			$this->table[$this->current] = "__".$this->current."**".$this->table[$this->current];
 		} 
 		$this->current = '';
+		$this->js_group = "";
 		}
 
 	function finBaliseSubst($parser, $nom) {
@@ -80,6 +89,7 @@ class XMLlist {
 		} 
 		if ((!$this->flag_elt) && ($nom=='ENTRY')) unset($this->table[$this->current]) ;
 		$this->current = '';
+		$this->js_group = "";
 		$this->flag_fav =  false;
 		}
 	
@@ -87,9 +97,19 @@ class XMLlist {
 		global $_starttag; 
 		if($this->current)
 			if ($_starttag) {
-				$this->table[$this->current] = $data;
+				if($this->js_group){
+					$this->table_js[$this->js_group][$this->current] = $data;
+				}else{
+					$this->table[$this->current] = $data;
+				}
 				$_starttag=false;
-			} else $this->table[$this->current] .= $data;
+			} else {
+				if($this->js_group){
+					$this->table_js[$this->js_group][$this->current].= $data;
+				}else{
+					$this->table[$this->current] .= $data;
+				}
+			}
 		}
 
 	function texteSubst($parser, $data) {
@@ -97,10 +117,20 @@ class XMLlist {
 		$this->flag_elt = true ;
 		if ($this->current) {
 			if ($_starttag) {
-				$this->table[$this->current] = $data;
+				if($this->js_group){
+					$this->table_js[$this->js_group][$this->current] = $data;
+				}else{
+					$this->table[$this->current] = $data;
+				}
 				$_starttag=false;
-			} else $this->table[$this->current] .= $data;
-			$this->tablefav[$this->current] = $this->flag_fav;
+			} else {
+				if($this->js_group){
+					$this->table_js[$this->js_group][$this->current].= $data;
+				}else{
+					$this->table[$this->current] .= $data;
+				}
+			}
+			if ($this->flag_fav) $this->tablefav[$this->current] = $this->flag_fav;
 		}
 	}
 	
@@ -146,9 +176,20 @@ class XMLlist {
 		if($dejaParse){
 			fclose($fp);
 			$tmp = fopen($tempFile, "r");
-			$this->table = unserialize(fread($tmp,filesize($tempFile)));
+			$tables = unserialize(fread($tmp,filesize($tempFile)));
+			if(count($tables)!= 3){
+				unlink($tempFile);
+				$this->analyser();
+				return;
+			}
+			$this->table = $tables[0];
+			$this->table_js = $tables[1];
+			$this->tablefav = $tables[2];
 			fclose($tmp);
 		} else {
+			$this->table = array();
+			$this->table_js = array();
+			$this->tablefav = array();
 			$file_size=filesize ($this->fichierXml);
 			$data = fread ($fp, $file_size);
 	
@@ -206,6 +247,28 @@ class XMLlist {
 				}
 				$this->table=$tmp;
 			}
+			if ($this->s && is_array($this->table_js)) {
+				reset($this->table_js);
+				$tmp=array();
+				$tmp=array_map("convert_diacrit",$this->table_js);//On enlève les accents
+				$tmp=array_map("strtoupper",$tmp);//On met en majuscule
+				asort($tmp);//Tri sur les valeurs en majuscule sans accent
+				foreach ( $tmp as $key => $value ) {
+					$tmp[$key]=$this->table_js[$key];//On reprend les bons couples clé / libellé
+				}
+				$this->table_js=$tmp;
+			}
+			if ($this->s && is_array($this->tablefav) && count($this->tablefav)) {
+				reset($this->tablefav);
+				$tmp=array();
+				$tmp=array_map("convert_diacrit",$this->tablefav);//On enlève les accents
+				$tmp=array_map("strtoupper",$tmp);//On met en majuscule
+				asort($tmp);//Tri sur les valeurs en majuscule sans accent
+				foreach ( $tmp as $key => $value ) {
+					$tmp[$key]=$this->tablefav[$key];//On reprend les bons couples clé / libellé
+				}
+				$this->tablefav=$tmp;
+			}
 			if($this->flag_order == true){
 				$table_tmp = array();
 				asort($this->order);
@@ -214,10 +277,29 @@ class XMLlist {
 					unset($this->table[$key]);
 				}
 				$this->table = $table_tmp + $this->table;//array_merge réécrivait les clés numériques donc problème.
+				$table_tmp = array();
+				asort($this->order);
+				foreach ($this->order as $key =>$value){
+					$table_tmp[$key] = $this->table_js[$key];
+					unset($this->table_js[$key]);
+				}
+				$this->table_js = $table_tmp + $this->table_js;//array_merge réécrivait les clés numériques donc problème.
+				if (count($this->tablefav)) {
+					$table_tmp = array();
+					asort($this->order);
+					foreach ($this->order as $key =>$value){
+						if (isset($this->tablefav[$key])) {
+							$table_tmp[$key] = $this->tablefav[$key];
+							unset($this->tablefav[$key]);
+						}
+					}
+					$this->tablefav = $table_tmp + $this->tablefav;//array_merge réécrivait les clés numériques donc problème.
+				}
 			}
+			
 			//on écrit le temporaire
 			$tmp = fopen($tempFile, "wb");
-			fwrite($tmp,serialize($this->table));
+			fwrite($tmp,serialize(array($this->table,$this->table_js,$this->tablefav)));
 			fclose($tmp);
 		}
 	}

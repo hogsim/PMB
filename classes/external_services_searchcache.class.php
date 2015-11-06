@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: external_services_searchcache.class.php,v 1.15.6.1 2014-06-11 12:10:20 mbertin Exp $
+// $Id: external_services_searchcache.class.php,v 1.17 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -114,17 +114,17 @@ class external_services_searchcache {
 			
 		$this->cache->delete_objectref_list_multiple_using_query(CACHE_TYPE_NOTICE, "SELECT es_searchcache_searchid FROM es_searchcache WHERE es_searchcache_date + INTERVAL 1 WEEK < NOW()", 'pmbesSearch');
 		$sql2 = "DELETE FROM es_searchcache WHERE es_searchcache_date + INTERVAL ".$this->cache_duration." SECOND < NOW()";
-		mysql_query($sql2, $dbh);
+		pmb_mysql_query($sql2, $dbh);
 			
 		//Cherchons avec le paramètre
 		if ($search_unique_id) {
 			$sql = "SELECT es_searchcache.*, (es_searchcache_date + INTERVAL ".$this->cache_duration." SECOND <= NOW()) AS outdated FROM es_searchcache WHERE es_searchcache_searchid = '".addslashes($this->search_realm)."_".$search_unique_id."'";
-			$res = mysql_query($sql, $dbh);
-			if (!mysql_numrows($res)) {
+			$res = pmb_mysql_query($sql, $dbh);
+			if (!pmb_mysql_num_rows($res)) {
 				$search_unique_id = "";
 			}
 			else {
-				$row = mysql_fetch_assoc($res);
+				$row = pmb_mysql_fetch_assoc($res);
 				$this->serialized_search = $row["es_searchcache_serializedsearch"];
 				$this->cache_date = $row["es_searchcache_date"];
 				$this->outdated = $row["outdated"];
@@ -135,19 +135,19 @@ class external_services_searchcache {
 				if ($this->PMBUserId != -1)
 					$ids[] = "'".$row["es_searchcache_searchid"]."_".$this->PMBUserId."'";
 				$sql = "UPDATE es_searchcache SET es_searchcache_date = NOW() WHERE es_searchcache_searchid IN (".implode(',', $ids).")";
-				//mysql_query($sql, $dbh); Si on repousse la date il faudrai aussi le faire pour ce qui est dans la table es_cache_blob sinon cela pose problème
+				//pmb_mysql_query($sql, $dbh); Si on repousse la date il faudrai aussi le faire pour ce qui est dans la table es_cache_blob sinon cela pose problème
 			}
 		}
 		
 		//Pas trouvé? Cherchons avec la recherche nue sans filtrage
 		if (!$newsearch && !$found && !$search_unique_id && $current_search_uniqueid && ($this->PMBUserId == -1)) {
 			$sql = "SELECT es_searchcache.*, (es_searchcache_date + INTERVAL ".$this->cache_duration." SECOND <= NOW()) AS outdated FROM es_searchcache WHERE es_searchcache_searchid = '".addslashes($this->search_realm)."_".$id_prefix.$current_search_uniqueid."'";
-			$res = mysql_query($sql, $dbh);
-			if (!mysql_numrows($res)) {
+			$res = pmb_mysql_query($sql, $dbh);
+			if (!pmb_mysql_num_rows($res)) {
 				$search_unique_id = "";
 			}
 			else {
-				$row = mysql_fetch_assoc($res);
+				$row = pmb_mysql_fetch_assoc($res);
 				$this->serialized_search = $row["es_searchcache_serializedsearch"];
 				$this->cache_date = $row["es_searchcache_date"];
 				$this->outdated = $row["outdated"];
@@ -157,7 +157,7 @@ class external_services_searchcache {
 				if ($this->PMBUserId != -1)
 					$ids[] = "'".$row["es_searchcache_searchid"]."_".$this->PMBUserId."'";
 				$sql = "UPDATE es_searchcache SET es_searchcache_date = NOW() WHERE es_searchcache_searchid es_searchcache_searchid IN (".implode(',', $ids).")";
-				//mysql_query($sql, $dbh); Comme la requete est mauvaise ça ne sert à rien de la faire
+				//pmb_mysql_query($sql, $dbh); Comme la requete est mauvaise ça ne sert à rien de la faire
 			}			
 		}
 		
@@ -200,7 +200,7 @@ class external_services_searchcache {
 
 			//Mise en cache de la recherche brute
 			$sql = "REPLACE INTO es_searchcache (es_searchcache_searchid, es_searchcache_date, es_searchcache_serializedsearch) VALUES ('".addslashes($this->search_realm)."_".$this->search_unique_id."', NOW(), '".addslashes($this->serialized_search)."')";					
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 
 			//Et on vide le cache!
 			$this->cache->delete_objectref_list(CACHE_TYPE_NOTICE, $this->search_realm."_".$this->search_unique_id, 'pmbesSearch');
@@ -209,8 +209,8 @@ class external_services_searchcache {
 
 			//Vérifions si le champs de pertinence existe bien
 			$has_pert = false;
-			$result_fields = mysql_query("SHOW COLUMNS FROM ".$table);
-			while ($row_field = mysql_fetch_assoc($result_fields)) {
+			$result_fields = pmb_mysql_query("SHOW COLUMNS FROM ".$table);
+			while ($row_field = pmb_mysql_fetch_assoc($result_fields)) {
 				if ($row_field["Field"] == "pert")
 					$has_pert = true;
     		}
@@ -239,7 +239,7 @@ class external_services_searchcache {
 				
 				//Mise en cache de la recherche brute
 				$sql = "REPLACE INTO es_searchcache (es_searchcache_searchid, es_searchcache_date, es_searchcache_serializedsearch) VALUES ('".addslashes($this->search_realm)."_".$this->search_unique_id."', NOW(), '".addslashes($this->serialized_search)."')";					
-				mysql_query($sql, $dbh);
+				pmb_mysql_query($sql, $dbh);
 	
 				//Et on vide le cache!
 				$this->cache->delete_objectref_list(CACHE_TYPE_NOTICE, $this->search_realm."_".$this->search_unique_id, 'pmbesSearch');
@@ -247,8 +247,8 @@ class external_services_searchcache {
 				//Et on remplit le cache!
 				//Vérifions si le champs de pertinence existe bien
 				$has_pert = false;
-				$result_fields = mysql_query("SHOW COLUMNS FROM ".$table);
-				while ($row_field = mysql_fetch_assoc($result_fields)) {
+				$result_fields = pmb_mysql_query("SHOW COLUMNS FROM ".$table);
+				while ($row_field = pmb_mysql_fetch_assoc($result_fields)) {
 					if ($row_field["Field"] == "pert")
 						$has_pert = true;
 	    		}
@@ -273,7 +273,7 @@ class external_services_searchcache {
 					$statut_j='';
 					$statut_r='';
 				} else {
-					$user_code = mysql_result(mysql_query("SELECT empr_login FROM empr WHERE id_empr = ".$this->OPACEmprId), 0, 0);
+					$user_code = pmb_mysql_result(pmb_mysql_query("SELECT empr_login FROM empr WHERE id_empr = ".$this->OPACEmprId), 0, 0);
 					$statut_j=',notice_statut';
 					$statut_r="and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($user_code ?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")";
 				}
@@ -283,7 +283,7 @@ class external_services_searchcache {
 				
 				//Mise en cache de la recherche brute
 				$sql = "REPLACE INTO es_searchcache (es_searchcache_searchid, es_searchcache_date, es_searchcache_serializedsearch) VALUES ('".addslashes($this->search_realm)."_".$this->search_unique_id."', NOW(), '".addslashes($this->serialized_search)."')";					
-				mysql_query($sql, $dbh);
+				pmb_mysql_query($sql, $dbh);
 	
 				//Et on vide le cache!
 				$this->cache->delete_objectref_list(CACHE_TYPE_NOTICE, $this->search_realm."_".$this->search_unique_id, 'pmbesSearch');
@@ -291,8 +291,8 @@ class external_services_searchcache {
 				//Et on remplit le cache!
 				//Vérifions si le champs de pertinence existe bien
 				$has_pert = false;
-				$result_fields = mysql_query("SHOW COLUMNS FROM ".$table);
-				while ($row_field = mysql_fetch_assoc($result_fields)) {
+				$result_fields = pmb_mysql_query("SHOW COLUMNS FROM ".$table);
+				while ($row_field = pmb_mysql_fetch_assoc($result_fields)) {
 					if ($row_field["Field"] == "pert")
 						$has_pert = true;
 	    		}
@@ -304,7 +304,7 @@ class external_services_searchcache {
 				$this->cache->encache_objectref_list_from_select_with_content(CACHE_TYPE_NOTICE, $this->search_realm."_".$this->search_unique_id, 'pmbesSearch', $requete);
 			}
 		}
-		mysql_query("drop table if exists $table",$dbh);
+		pmb_mysql_query("drop table if exists $table",$dbh);
 		$this->outdated = false;
 	}
 	
@@ -341,8 +341,8 @@ class external_services_searchcache {
 			$requete .= $limit;
 		}
 		
-		$res = mysql_query($requete, $dbh);
-		while($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($requete, $dbh);
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$records[] = $row["notice_id"];
 		}
 
@@ -356,8 +356,8 @@ class external_services_searchcache {
 		global $dbh;
 		$requete = $this->cache->get_objectref_list_with_content_sql(CACHE_TYPE_NOTICE, $this->search_realm."_".$this->search_unique_id, 'pmbesSearch', "notice_id","pert");
 		$req = "SELECT distinct(typdoc) as docType FROM (".$requete.") as every_derived_table_must_have_its_own_alias LEFT JOIN notices ON every_derived_table_must_have_its_own_alias.notice_id = notices.notice_id";
-		$res = mysql_query($req, $dbh);
-		while($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($req, $dbh);
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$records[] = $row["docType"];
 		}	
 		return $records;

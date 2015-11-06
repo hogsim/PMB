@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: author.inc.php,v 1.27 2012-07-30 12:26:20 ngantier Exp $
+// $Id: author.inc.php,v 1.29 2015-04-16 16:09:56 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -69,12 +69,12 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 			<ul>";
 	if($type)	$restrict_type=" and author_type='$type' ";
 	
-	$found = mysql_query("select author_id, ".$pert.",author_type, author_name, author_rejete,author_see from authors $clause $restrict_type group by author_id $tri $limiter", $dbh);
-	while(($mesAuteurs = mysql_fetch_object($found))) {
+	$found = pmb_mysql_query("select author_id, ".$pert.",author_type, author_name, author_rejete,author_see from authors $clause $restrict_type group by author_id $tri $limiter", $dbh);
+	while(($mesAuteurs = pmb_mysql_fetch_object($found))) {
 		$psNom="";
 		if ($mesAuteurs->author_see){
-			$pseud = mysql_query("select author_name, author_rejete from authors where author_id='".$mesAuteurs->author_see."'", $dbh);
-			$psAut = mysql_fetch_object($pseud);
+			$pseud = pmb_mysql_query("select author_name, author_rejete from authors where author_id='".$mesAuteurs->author_see."'", $dbh);
+			$psAut = pmb_mysql_fetch_object($pseud);
 			$psNom = "(".$msg['see'].": ".$psAut->author_name.",".$psAut->author_rejete.")";
 		}
 		if($mesAuteurs->author_type == 71 || $mesAuteurs->author_type == 72) {
@@ -83,9 +83,9 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 			$auteur_isbd=$congres->isbd_entry;	
 			$aff_type="";
 			if($mesAuteurs->author_type == 72) $aff_type=" / ".$msg["congres_libelle"];
-			print pmb_bidi("<li class='categ_colonne'><font class='notice_fort'><a href='index.php?lvl=author_see&id=".$mesAuteurs->author_id."' title='".$congres->info_bulle."'>".$auteur_isbd." ".$psNom.$aff_type."</a></font></li>\n");
+			print pmb_bidi("<li class='categ_colonne'><font class='notice_fort'><a href='index.php?lvl=author_see&id=".$mesAuteurs->author_id."&from=search' title='".$congres->info_bulle."'>".$auteur_isbd." ".$psNom.$aff_type."</a></font></li>\n");
 		} else {
-			print pmb_bidi("<li class='categ_colonne'><font class='notice_fort'><a href='index.php?lvl=author_see&id=".$mesAuteurs->author_id."' >".$mesAuteurs->author_name." ".$mesAuteurs->author_rejete." ".$psNom."</a></font></li>\n");
+			print pmb_bidi("<li class='categ_colonne'><font class='notice_fort'><a href='index.php?lvl=author_see&id=".$mesAuteurs->author_id."&from=search' >".$mesAuteurs->author_name." ".$mesAuteurs->author_rejete." ".$psNom."</a></font></li>\n");
 		}
 	}	
 	print "</ul>";

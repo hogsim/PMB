@@ -2,13 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: facette_search.class.php,v 1.41.2.4 2015-08-12 15:35:08 jpermanne Exp $
+// $Id: facette_search.class.php,v 1.55 2015-05-26 08:21:38 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($base_path."/includes/notice_affichage.inc.php");
 require_once($class_path."/acces.class.php");
 require_once($class_path."/suggest.class.php");
+require_once($class_path."/facette_search_compare.class.php");
 
 class facettes{
 	public $tab_facettes_record;
@@ -21,10 +22,14 @@ class facettes{
 	
 	function facette_existing(){
 		global $msg,$dbh,$charset;
+		global $opac_view_filter_class;
 		
 		$req = "SELECT * FROM facettes WHERE facette_visible=1 ORDER BY facette_order, facette_name";
-		$req = mysql_query($req,$dbh);
-		while($rslt = mysql_fetch_object($req)){
+		$req = pmb_mysql_query($req,$dbh);
+		while($rslt = pmb_mysql_fetch_object($req)){
+			if($opac_view_filter_class) {
+				if(!$opac_view_filter_class->is_selected("facettes", $rslt->id_facette+0))  continue;
+			}
 			$tab_temp = array();
 			$tab_temp = array(
 					'id'=> $rslt->id_facette+0,
@@ -71,20 +76,20 @@ class facettes{
 				$end_req_sql = "order by ".$type_sort." ".$order_sort." ".$limit;
 				
 				//AND (lang = '' OR lang = ".$lang.")
-				$req = "select value ,count(distinct id_notice) as nb_result from (SELECT value,id_notice FROM notices_fields_global_index 
-										WHERE id_notice IN (".$tab_id_notice.")
-										AND code_champ = ".($this->tab_facettes_record[$i]['id_critere']+0)."
-										AND code_ss_champ = ".($this->tab_facettes_record[$i]['id_ss_critere']+0)."
-										AND lang in ('','".$lang."')) as sub 
-										GROUP BY value ".$end_req_sql;
-				$res = @mysql_query($req,$dbh);
+				$req = "select distinct value ,count(id_notice) as nb_result from (SELECT value,id_notice FROM notices_fields_global_index 
+					WHERE id_notice IN (".$tab_id_notice.")
+					AND code_champ = ".($this->tab_facettes_record[$i]['id_critere']+0)."
+					AND code_ss_champ = ".($this->tab_facettes_record[$i]['id_ss_critere']+0)."
+					AND lang in ('','".$lang."','".substr($lang,0,2)."')) as sub 
+					GROUP BY value ".$end_req_sql;
+				$res = pmb_mysql_query($req,$dbh);
 				$j=0;
 				$array_tmp = array();
 				$array_value = array();
 				$array_nb_result = array();
 				
-				if(mysql_num_rows($res)){
-					while($rslt = mysql_fetch_object($res)){				
+				if(pmb_mysql_num_rows($res)){
+					while($rslt = pmb_mysql_fetch_object($res)){				
 						$array_tmp[$j] =  $rslt->value." "."(".($rslt->nb_result+0).")";
 						$array_value[$j] = $rslt->value;
 						$array_nb_result[$j] = ($rslt->nb_result+0);
@@ -119,13 +124,17 @@ class facettes{
 			$tmpArray = array();
 			$tmpArray['facette_libelle'] = htmlentities($facette_opac['value'][$j],ENT_QUOTES,$charset);
 			$tmpArray['facette_number'] = htmlentities($facette_opac['nb_result'][$j],ENT_QUOTES,$charset);
+			
+			$tmpArray['facette_id']=facette_search_compare::gen_compare_id($facette_opac['name'],$facette_opac['value'][$j],$facette_opac['code_champ'],$facette_opac['code_ss_champ'],$facette_opac['nb_result'][$j]);
+			
 			if ($charset!='utf-8') {
-				$tmpArray['facette_value'] = json_encode(array(utf8_encode($facette_opac['name']),utf8_encode($facette_opac['value'][$j]),$facette_opac['code_champ'],$facette_opac['code_ss_champ']));
+				$tmpArray['facette_value'] = json_encode(array(utf8_encode($facette_opac['name']),utf8_encode($facette_opac['value'][$j]),$facette_opac['code_champ'],$facette_opac['code_ss_champ'],$tmpArray['facette_id'],$facette_opac['nb_result'][$j]));
 			} else {
-				$tmpArray['facette_value'] = json_encode(array($facette_opac['name'],$facette_opac['value'][$j],$facette_opac['code_champ'],$facette_opac['code_ss_champ']));
+				$tmpArray['facette_value'] = json_encode(array($facette_opac['name'],$facette_opac['value'][$j],$facette_opac['code_champ'],$facette_opac['code_ss_champ'],$tmpArray['facette_id'],$facette_opac['nb_result'][$j]));
 			}
 			$tmpArray['facette_value'] = htmlentities($tmpArray['facette_value'],ENT_QUOTES,$charset);
 			$tmpArray['facette_link'] = "./index.php?lvl=more_results&mode=extended".$fields_search;
+			
 			$arrayRetour[]=$tmpArray;
 		}
 		return json_encode($arrayRetour);
@@ -198,6 +207,13 @@ class facettes{
 						$form_name="search_tous";
 						$lvl_msg=$msg["tous"];
 						if ($mode=="tous") $current=true;
+						break;
+					default:
+						if(substr($mod_search, 0,10) == "authperso_"){
+							$form_name="search_".$mod_search;
+							$lvl_msg=$level['name'];
+							if ($mode==$mod_search) $current=true;
+						}
 						break;
 				}
 				if ($n % 2) $pair_impair = "odd"; else $pair_impair = "even";
@@ -364,20 +380,22 @@ class facettes{
 	}
 
 	public static function get_facette_wrapper(){
-		return "
+		global $opac_compare_notice_active;
+		global $base_path;
+		global $msg;
+		$script ="
 		<script> 		
-			function test(elmt){
-				var idElmt=elmt.rowIndex;
-				var tab = document.getElementById('facette_list');
-				var tr_tab = tab.getElementsByTagName('th');
-				alert(tr_tab[idElmt].rowIndex);
-				if(idElmt > 0) idElmt = idElmt/2;
-				idElmt = idElmt.toString();
-				var list = document.getElementById(idElmt);
-				if(list.style.display == 'none'){
-					list.style.display = 'block';
-				}else list.style.display = 'none';
-
+			function test(elmt_id){
+				var elmt_list=document.getElementById(elmt_id);
+				for(i in elmt_list.rows){
+					if(elmt_list.rows[i].firstElementChild && elmt_list.rows[i].firstElementChild.nodeName!='TH'){
+						if(elmt_list.rows[i].style.display == 'none'){
+							elmt_list.rows[i].style.display = 'block';
+						}else{
+							elmt_list.rows[i].style.display = 'none';
+						}
+					}
+				}
 			}
 			
 			function facette_see_more(id,json_facette_plus){
@@ -392,13 +410,15 @@ class facettes{
 					//on ajoute les lignes au tableau
 					for(var i=0;i<jsonArray.length;i++) {
 						var newRow = myTable.insertRow(-1);
+						
+						newRow.setAttribute('style','display:block');
 						var newCell = newRow.insertCell(0);
 						newCell.innerHTML = \"<span class='facette_coche'><input type='checkbox' name='check_facette[]' value='\" + jsonArray[i]['facette_value'] + \"'></span>\";
 						newCell = newRow.insertCell(1);
 						newCell.innerHTML = \"<a class='facette_link' href='\" + jsonArray[i]['facette_link'] + \"'>\"
-										+ \"<span class='facette_libelle'>\" + jsonArray[i]['facette_libelle'] + \"</span> \"
-										+ \"<span class='facette_number'>[\" + jsonArray[i]['facette_number'] + \"]</span>\"
-										+ \"</a>\";
+											+ \"<span class='facette_libelle'>\" + jsonArray[i]['facette_libelle'] + \"</span> \"
+											+ \"<span class='facette_number'>[\" + jsonArray[i]['facette_number'] + \"]</span>\"
+											+ \"</a>\";
 					}
 				});
 			}
@@ -408,13 +428,19 @@ class facettes{
 				var form = document.facettes_multi;
 				for (i=0, n=form.elements.length; i<n; i++){
 					if ((form.elements[i].checked == true)) {
+						document.getElementById('filtre_compare_facette').value='filter';
+						document.getElementById('filtre_compare_form_values').value='filter';
 						form.submit();
+						return true;
 					}
 				}
+				return false;
+			}";
+			if($opac_compare_notice_active*1=='1'){
+				$script.=facette_search_compare::get_compare_wrapper();
 			}
-			</script>
-		";
-			
+			$script.="</script>";
+		return $script;	
 	}
 	
 	public function create_table_facettes(){
@@ -423,13 +449,30 @@ class facettes{
 		return $return;		
 	}
 	
+	public static function get_nb_result_groupby($facettes){
+		$nb_result=0;
+		foreach($facettes as $facette){
+			$nb_result+=$facette['nb_result'];
+		}
+		return $nb_result;
+	}
+	
 	public function create_ajax_table_facettes(){
+		global $opac_compare_notice_active;
+		global $base_path;
 		global $charset;
 		global $mode;
 		global $msg;
 		
 		$arrayFacettesNotClicked = array();
 		$facette_plus = array();
+		
+		if($opac_compare_notice_active*1=="1"){
+			//les parametres nécéssaires
+			global $pmb_compare_notice_template;
+			global $pmb_compare_notice_nb;
+			$facette_compare=new facette_search_compare($pmb_compare_notice_template,$pmb_compare_notice_nb);
+		}
 		
 		foreach ($this->tab_facettes_opac as $keyFacette=>$vTabFacette) {
 			$affiche = true;
@@ -469,11 +512,19 @@ class facettes{
 						$facette_plus[$this->tab_facettes_record[$keyFacette]['id']]['code_champ']=$vTabFacette['code_champ'];
 						$facette_plus[$this->tab_facettes_record[$keyFacette]['id']]['code_ss_champ']=$vTabFacette['code_ss_champ'];
 						$facette_plus[$this->tab_facettes_record[$keyFacette]['id']]['name']=$vTabFacette['name'];
+						
+						if($opac_compare_notice_active*1=="1"){
+							$id=facette_search_compare::gen_compare_id($vTabFacette['name'],$vLibelle,$vTabFacette['code_champ'],$vTabFacette['code_ss_champ'],$vTabFacette['nb_result'][$keyValue]);
+							
+							if($facette_compare->facette_compare[$id]){
+								$facette_compare->set_available_compare($id,true);
+							}
+						}
 					}
 				}
 			}
 		}
-
+		
 		if (count($_SESSION['facette'])) {
 			$table_facette_clicked = "<table id='active_facette'>";
 			$tr_surbrillance = "onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='".$pair_impair."'\" ";
@@ -495,7 +546,7 @@ class facettes{
 						if($tmp){
 							$table_facette_clicked .= "<br>";
 						}
-						$table_facette_clicked .= $vDetail[0]." : ".$vDetailLib;
+						$table_facette_clicked .= $vDetail[0]." : ".(substr($vDetailLib, 0, 4) == "msg:" ? $msg[substr($vDetailLib, 4)] : $vDetailLib);
 						$tmp++;
 					}
 				}
@@ -510,33 +561,67 @@ class facettes{
 			}
 			$table_facette_clicked .= "</table>";
 		}
-
+		
 		if (count($arrayFacettesNotClicked)) {
-			$table_facette .= "<form name='facettes_multi' method='POST' action='./index.php?lvl=more_results&mode=extended&facette_test=1'>";
+			
 			foreach ($arrayFacettesNotClicked as $tmpName=>$facette) {
 				$flagSeeMore = false;
 				$tmpArray = explode("_",$tmpName);
 				$idfacette = array_pop($tmpArray);
 				$name = implode($tmpArray);
+				
+				$currentFacette=current($facette);
+				
+				$idGroupBy=facette_search_compare::gen_groupby_id($name,$currentFacette['code_champ'],$currentFacette['code_ss_champ']);
+
+				$groupBy=facette_search_compare::gen_groupby($name,$currentFacette['code_champ'],$currentFacette['code_ss_champ'],$idGroupBy);
+
 				$table_facette .= "<table id='facette_list_".$idfacette."'>";
-				$table_facette .= "
-					<tr>
-						<th onclick='javascript:test(this);' colspan='2'>
+				$table_facette .= "<tr>";
+				if($opac_compare_notice_active*1=="1" && count($facette_compare->facette_compare)){
+					$table_facette .= "
+						<th style='width=\"90%\' onclick='javascript:test(\"facette_list_".$idfacette."\");' colspan='2'>
 							".htmlentities($name,ENT_QUOTES,$charset)."
-						</th>
-					</tr>";
+						</th>";
+					$table_facette.=facette_search_compare::get_groupby_row($facette_compare,$groupBy,$idGroupBy);
+					if($facette_compare->facette_groupby[$idGroupBy]){
+						$facette_compare->set_available_groupby($idGroupBy,true);
+					}
+				}else{
+					$table_facette .= "
+						<th onclick='javascript:test(\"facette_list_".$idfacette."\");'>
+							".htmlentities($name,ENT_QUOTES,$charset)."
+						</th>";
+				}
+				$table_facette .= "</tr>";
+
 				$j=0;
 				foreach ($facette as $detailFacette) {
 					$link =  "./index.php?lvl=more_results&mode=extended&facette_test=1";
 					$link .= "&name=".rawurlencode($name)."&value=".rawurlencode($detailFacette['libelle'])."&champ=".$detailFacette['code_champ']."&ss_champ=".$detailFacette['code_ss_champ']."";
+					
+					$id=facette_search_compare::gen_compare_id($name,$detailFacette['libelle'],$detailFacette['code_champ'],$detailFacette['code_ss_champ'],$detailFacette['nb_result']);
+					
 					if ($charset!='utf-8') {
-						$cacValue = json_encode(array(utf8_encode($name),utf8_encode($detailFacette['libelle']),$detailFacette['code_champ'],$detailFacette['code_ss_champ']));
+						$cacValue = json_encode(array(utf8_encode($name),utf8_encode($detailFacette['libelle']),$detailFacette['code_champ'],$detailFacette['code_ss_champ'],$id,$detailFacette['nb_result']));
 					} else {
-						$cacValue = json_encode(array($name,$detailFacette['libelle'],$detailFacette['code_champ'],$detailFacette['code_ss_champ']));
+						$cacValue = json_encode(array($name,$detailFacette['libelle'],$detailFacette['code_champ'],$detailFacette['code_ss_champ'],$id,$detailFacette['nb_result']));
 					}					
-					if (!isset($detailFacette['see_more'])) {					
+					if (!isset($detailFacette['see_more'])) {
+						
+						if($opac_compare_notice_active*1=="1"){
+							if(!sizeof($facette_compare->facette_compare[$id])){
+								$onclick='select_compare_facette(\''.htmlentities($cacValue,ENT_QUOTES,$charset).'\')';
+								$img='double_section_arrow_16.png';
+							}else{
+								$facette_compare->set_available_compare($id,true);
+								$onclick='';
+								$img='vide.png';
+							}
+						}
+						
 						$table_facette .= "
-							<tr>
+							<tr style='display: block;'>
 								<td class='facette_col_coche'>
 									<span class='facette_coche'>
 										<input type='checkbox' name='check_facette[]' value='".htmlentities($cacValue,ENT_QUOTES,$charset)."'>
@@ -545,7 +630,7 @@ class facettes{
 								<td  class='facette_col_info'>
 									<a href='".$link."'>
 										<span class='facette_libelle'>
-											".htmlentities($detailFacette['libelle'],ENT_QUOTES,$charset)."
+											".htmlentities((substr($detailFacette['libelle'], 0, 4) == "msg:" ? $msg[substr($detailFacette['libelle'], 4)] : $detailFacette['libelle']),ENT_QUOTES,$charset)."
 										</span>
 										<span class='facette_number'>
 											[".htmlentities($detailFacette['nb_result'],ENT_QUOTES,$charset)."]
@@ -557,7 +642,7 @@ class facettes{
 					} elseif(!$flagSeeMore) {
 						$table_facette .= "
 							<tr>
-								<td colspan='2'>
+								<td colspan='3'>
 									<a href='javascript:facette_see_more(".$idfacette.",".json_encode(pmb_utf8_array_encode($facette_plus[$idfacette]),JSON_HEX_APOS | JSON_HEX_QUOT).");'>".$msg["facette_plus_link"]."</a>
 								</td>
 							</tr>";
@@ -566,19 +651,58 @@ class facettes{
 				}
 				$table_facette .="</table>";
 			}
-			$table_facette .= "<input class='bouton' type='button' value='".$msg["facette_filtre"]."' name='filtre' onClick='valid_facettes_multi()'>";
-			$table_facette .= "</form>";
-		}
-
-		$table = "";
-		if(count($_SESSION['facette'])){
-			$table .= "<h3>".$msg['facette_active']."</h3>".$table_facette_clicked."<br/>";
-		}
-		if(count($arrayFacettesNotClicked)){
-			$table .= "<h3>".$msg['facette_list']."</h3>".$table_facette."<br/>";
+			$table_facette .= "<input type='hidden' value='' id='filtre_compare_facette' name='filtre_compare'>";
+			$table_facette .= "<input class='bouton' type='button' value='".htmlentities($msg["facette_filtre"],ENT_QUOTES,$charset)."' name='filtre' onClick='valid_facettes_multi()'>";
+			if($opac_compare_notice_active*1=="1"){
+				$table_facette .= "<input class='bouton' type='button' value='".htmlentities($msg["facette_compare"],ENT_QUOTES,$charset)."' name='compare' onClick='valid_facettes_compare()'>";
+			}
 		}
 		
+		$table = "<form name='facettes_multi' class='facettes_multis' method='POST' action='./index.php?lvl=more_results&mode=extended&facette_test=1'>";
+		if(count($_SESSION['facette'])){
+			$table .= "<h3>".htmlentities($msg['facette_active'],ENT_QUOTES,$charset)."</h3>".$table_facette_clicked."<br/>";
+		}
+		
+		if($opac_compare_notice_active*1=="1"){
+			//Le tableau des critères de comparaisons
+			if(count($facette_compare->facette_compare)){
+				$table_compare=$facette_compare->gen_table_compare();
+				
+				$table .= "<h3 class='facette_compare_MainTitle'><table><tr><td style='width:90%;'>".htmlentities($msg['facette_list_compare_crit'],ENT_QUOTES,$charset)."</td>
+				<td><a href='$base_path/index.php?lvl=more_results&get_last_query=1&reinit_compare=1' class='facette_compare_raz'><img alt='".htmlentities($msg['facette_compare_reinit'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['facette_compare_reinit'],ENT_QUOTES,$charset)."' width='18px' height='18px' src='$base_path/images/cross.png'/></a></td></tr></table>
+				</h3><table id='facette_compare'>".$table_compare."</table><br/>";
+				
+				//Le tableau des critères de comparaisons
+				if(count($facette_compare->facette_groupby)){
+					$table_groupby=$facette_compare->gen_table_groupby();
+				}
+				$table .= "<h3 class='facette_compare_SubTitle'><img id='facette_compare_not_clickable' src='$base_path/images/group_by.png'/> ".htmlentities($msg['facette_list_groupby_crit'],ENT_QUOTES,$charset)."</h3><table id='facette_groupby'>".$table_groupby."</table><br/>";
+			}
+			
+			//le bouton de retour
+			if($_SESSION['filtre_compare']=='compare'){
+				$table .= "<input type='button' class='bouton backToResults' value='".htmlentities($msg['facette_compare_search_result'],ENT_QUOTES,$charset)."' onclick='document.location.href=\"$base_path/index.php?lvl=more_results&get_last_query=1\"'/><br /><br />";
+			}elseif($_SESSION['filtre_compare']!='compare' && count($facette_compare->facette_compare)){
+				$table .= "<input type='button' class='bouton' value='".htmlentities($msg['facette_compare_search_compare'],ENT_QUOTES,$charset)."' onclick='valid_compare();'/><br /><br />";
+			}
+		}
+		
+		if(count($arrayFacettesNotClicked)){
+			if($opac_compare_notice_active*1=="1"){
+				$table .= "<div id='facettes_help'></div>";
+				$table .= "<h3 class='facette_compare_listTitle'>".htmlentities($msg['facette_list_compare'],ENT_QUOTES,$charset)." &nbsp;<img onclick='open_popup(document.getElementById(\"facettes_help\"),\"".htmlentities($msg['facette_compare_helper_message'],ENT_QUOTES,$charset)."\");' height='18px' width='18px' title='".htmlentities($msg['facette_compare_helper'],ENT_QUOTES,$charset)."' alt='".htmlentities($msg['facette_compare_helper'],ENT_QUOTES,$charset)."' src='$base_path/images/quest.png'/></h3>".$table_facette."<br/>";
+			}else{
+				$table .= "<h3 class='facette_compare_listTitle'>".htmlentities($msg['facette_list'],ENT_QUOTES,$charset)."</h3>".$table_facette."<br/>";
+			}
+		}
+		$table .= "</form>";
 		return $table;
+	}
+	
+	public static function session_filtre_compare(){
+		global $filtre_compare;
+		
+		$_SESSION['filtre_compare']=$filtre_compare;
 	}
 	
 	public static function make_facette_suggest($id_notice_array){
@@ -656,7 +780,7 @@ class facettes{
 		$id_notice+=0;
 		$notice_list=array();	
 		$req = "select expl_cote from exemplaires where expl_notice=$id_notice";
-		$res = @mysql_query($req,$dbh);
+		$res = @pmb_mysql_query($req,$dbh);
 		
 		$nb_result = $opac_nb_notices_similaires;
 		if($nb_result>6 || $nb_result<0 || !(isset($opac_nb_notices_similaires))){
@@ -672,16 +796,16 @@ class facettes{
 			$nb_asc = $nb_result-$nb_desc;
 		}		
 		
-		if($res && mysql_num_rows($res)){
-			$r=mysql_fetch_object($res);
+		if($res && pmb_mysql_num_rows($res)){
+			$r=pmb_mysql_fetch_object($res);
 			$cote=$r->expl_cote;			
 			$query = "
 			(select distinct expl_notice from exemplaires where expl_notice!=0 and expl_cote >= '".$cote."' and expl_notice!=$id_notice order by expl_cote asc limit ".$nb_asc.")
 				union 
 			(select distinct expl_notice from exemplaires where expl_notice!=0 and expl_cote < '".$cote."' and expl_notice!=$id_notice  order by expl_cote desc limit ".$nb_desc.")" ;
-			$result = mysql_query($query,$dbh);
-			if(mysql_num_rows($result) > 0){				
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result) > 0){				
+				while($row = pmb_mysql_fetch_object($result)){
 					$notice_list[] = $row->expl_notice;
 				}
 			}			
@@ -718,27 +842,27 @@ class facettes{
 		 */
 		// 7337 43421
 		
-		$res=mysql_query($req,$dbh);
+		$res=pmb_mysql_query($req,$dbh);
 		$where_mots="";
-		if($res && mysql_num_rows($res)){
-			while($r=mysql_fetch_object($res)){
+		$notice_list=array();
+		if($res && pmb_mysql_num_rows($res)){
+			while($r=pmb_mysql_fetch_object($res)){
 				if($where_mots)$where_mots.=" or ";
 				$where_mots.="(code_champ =".$r->code_champ." AND code_ss_champ =".$r->code_ss_champ." AND num_word =".$r->num_word." and id_notice != ".$id_notice.")";
 			}
 		}
-		
-		$nb_result = $opac_nb_notices_similaires;
-		if($nb_result>6 || $nb_result<0 || !(isset($opac_nb_notices_similaires))){
-			$nb_result=6;
-		}
-		$req = "select id_notice, sum(pond) as s from notices_mots_global_index where $where_mots group by id_notice order by s desc limit ".$nb_result;
-		
-		$res = @mysql_query($req,$dbh);		
-		$notice_list=array();
-		if($res && mysql_num_rows($res)){
-			while($r=mysql_fetch_object($res)){
-				if($r->s >80)
-					$notice_list[] = $r->id_notice;
+		if($where_mots){
+			$nb_result = $opac_nb_notices_similaires;
+			if($nb_result>6 || $nb_result<0 || !(isset($opac_nb_notices_similaires))){
+				$nb_result=6;
+			}
+			$req = "select id_notice, sum(pond) as s from notices_mots_global_index where $where_mots group by id_notice order by s desc limit ".$nb_result;
+			$res = @pmb_mysql_query($req,$dbh);		
+			if($res && pmb_mysql_num_rows($res)){
+				while($r=pmb_mysql_fetch_object($res)){
+					if($r->s >80)
+						$notice_list[] = $r->id_notice;
+				}
 			}
 		}
 		return $notice_list;
@@ -765,9 +889,9 @@ class facettes{
 				$acces_v = $dom_2->getRights($_SESSION['id_empr_session'],$notice_id,4);
 			} else {
 				$requete = "SELECT notice_visible_opac, expl_visible_opac, notice_visible_opac_abon, expl_visible_opac_abon, explnum_visible_opac, explnum_visible_opac_abon FROM notices, notice_statut WHERE notice_id ='".$notice_id."' and id_notice_statut=statut ";
-				$myQuery = mysql_query($requete, $dbh);
-				if($myQuery && mysql_num_rows($myQuery)) {
-					$statut_temp = mysql_fetch_object($myQuery);
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				if($myQuery && pmb_mysql_num_rows($myQuery)) {
+					$statut_temp = pmb_mysql_fetch_object($myQuery);
 					if(!$statut_temp->notice_visible_opac)	$acces_v=FALSE;
 					if($statut_temp->notice_visible_opac_abon && !$_SESSION['id_empr_session'])	$acces_v=FALSE;
 				} else 	$acces_v=FALSE;
@@ -775,8 +899,8 @@ class facettes{
 			if(!$acces_v) continue;
 			
 			$req = "select * from notices where notice_id=$notice_id";			
-			$res = @mysql_query($req,$dbh);
-			if($r=mysql_fetch_object($res)){
+			$res = @pmb_mysql_query($req,$dbh);
+			if($r=pmb_mysql_fetch_object($res)){
 				$image="";
 				
 				if (substr($opac_notice_reduit_format_similaire,0,1)!="H" && $opac_show_book_pics=='1') {

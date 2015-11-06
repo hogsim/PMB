@@ -2,11 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart.php,v 1.25 2013-04-08 14:56:08 mbertin Exp $
+// $Id: cart.php,v 1.27 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
 $base_auth = "";
+$base_use_dojo = 1;
 require_once ("$base_path/includes/init.inc.php");
 
 switch ($object_type) {
@@ -72,6 +73,13 @@ switch ($action) {
 	case 'new_cart':
 		$cart_form = str_replace('!!autorisations_users!!', aff_form_autorisations("",1), $cart_form);
 		$cart_form = str_replace('!!formulaire_action!!', "./cart.php?action=valid_new_cart&object_type=$object_type&item=$item", $cart_form);
+		if(($object_type=="EMPR") || ($object_type=="GROUP")) {
+			$classementGen = new classementGen('empr_caddie', '0');
+		}else{
+			$classementGen = new classementGen('caddie', '0');
+		}
+		$cart_form = str_replace("!!object_type!!",$classementGen->object_type,$cart_form);
+		$cart_form = str_replace("!!classements_liste!!",$classementGen->getClassementsSelectorContent($PMBuserid,$classementGen->libelle),$cart_form);
 	break;
 	case 'del_cart':
 		if(($object_type=="EMPR") || ($object_type=="GROUP")) {
@@ -85,8 +93,10 @@ switch ($action) {
 		
 		if(($object_type=="EMPR") || ($object_type=="GROUP")) {
 			$myCart = new empr_caddie(0);
+			$classementField = "classementGen_empr_caddie";
 		} else {			
 			$myCart = new caddie(0);
+			$classementField = "classementGen_caddie";
 		}
 		$myCart->name = preg_replace('/\"|\'/', ' ', stripslashes($cart_name));
 		$myCart->type = $cart_type;
@@ -94,6 +104,7 @@ switch ($action) {
 		if (is_array($cart_autorisations)) $autorisations=implode(" ",$cart_autorisations);
 				else $autorisations="";
 		$myCart->autorisations = $autorisations;
+		$myCart->classementGen = $$classementField;
 		$myCart->create_cart();
 	break;
 }
@@ -118,4 +129,4 @@ switch ($object_type) {
 print "<script>self.focus();</script>";
 
 print $footer;
-mysql_close($dbh);
+pmb_mysql_close($dbh);

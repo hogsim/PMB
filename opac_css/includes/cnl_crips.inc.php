@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cnl_crips.inc.php,v 1.5 2012-09-18 15:13:10 mbertin Exp $
+// $Id: cnl_crips.inc.php,v 1.6 2015-04-03 11:16:16 jpermanne Exp $
 
 
 function search_other_function_filters() {
@@ -11,8 +11,8 @@ function search_other_function_filters() {
 	$r="<select name='thematique'>";
 	$r.="<option value=''>Toutes les thématiques</option>";
 	$requete="select * from notices_custom_lists where notices_custom_champ=17 order by notices_custom_list_lib";
-	$resultat=mysql_query($requete);
-	while (($res=mysql_fetch_object($resultat))) {
+	$resultat=pmb_mysql_query($requete);
+	while (($res=pmb_mysql_fetch_object($resultat))) {
 		$r.="<option value='".htmlentities($res->notices_custom_list_value,ENT_QUOTES,$charset)."' ";
 		if ($res->notices_custom_list_value==$thematique) $r.="selected";
 		$r.=">".$res->notices_custom_list_lib;
@@ -61,8 +61,8 @@ function search_other_function_human_query($n) {
 	if ($thematique) {
 		$r="thématique : ";
 		$requete="select notices_custom_list_lib from notices_custom_lists where notices_custom_champ=17 and notices_custom_list_value='".$thematique."' limit 1";
-		$res=mysql_query($requete);
-		$r.=@mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete);
+		$r.=@pmb_mysql_result($res,0,0);
 	}		
 	return $r;
 }

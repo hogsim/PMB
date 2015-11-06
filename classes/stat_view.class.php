@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: stat_view.class.php,v 1.12.6.1 2015-01-30 14:25:50 jpermanne Exp $
+// $Id: stat_view.class.php,v 1.14 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -174,9 +174,9 @@ class stat_view {
 			";
 
 	 	$requete_vue = "select * from statopac_vues order by date_consolidation desc";
-	 	$res = mysql_query($requete_vue,$dbh);
+	 	$res = pmb_mysql_query($requete_vue,$dbh);
 	 	$vue_affichage="";	
-		if(mysql_num_rows($res) == 0){			
+		if(pmb_mysql_num_rows($res) == 0){			
 			$stat_opac_view_form = str_replace('!!liste_vues!!',$msg['stat_no_view_created'],$stat_opac_view_form);
 			$stat_opac_view_form = str_replace('!!options_conso!!','',$stat_opac_view_form);
 			$stat_opac_view_form = str_replace('!!btn_consolide!!','',$stat_opac_view_form);
@@ -185,7 +185,7 @@ class stat_view {
 			$vue_affichage="";
 			$parity=1;
 			$btn_consolide= "<input class='bouton' type='submit' value=\"".$msg[stat_consolide_view]."\" onClick=\"this.form.act.value='consolide_view'; document.view.action='./admin.php?categ=opac&sub=stat&section=view_list'\"/>";
-			while(($vue = mysql_fetch_object($res))){
+			while(($vue = pmb_mysql_fetch_object($res))){
 				$min_date='';
 				$max_date='';
 				$view_scope = htmlentities($msg['stat_view_no_scope'],ENT_QUOTES,$charset);
@@ -195,9 +195,9 @@ class stat_view {
 					$view_scope = sprintf(htmlentities($msg['stat_view_scope'],ENT_QUOTES,$charset),formatdate($min_date),formatdate($max_date));
 				}
 				$rqt="select * from statopac_request where num_vue='".addslashes($vue->id_vue)."' order by name";
-				$result = mysql_query($rqt, $dbh);
+				$result = pmb_mysql_query($rqt, $dbh);
 				$liste_requete ="";
-				while(($request = mysql_fetch_object($result))){
+				while(($request = pmb_mysql_fetch_object($result))){
 					if ($parity % 2) {
 						$pair_impair = "even";
 					} else {
@@ -238,9 +238,9 @@ class stat_view {
 			$max_date='';
 			$stat_scope = htmlentities($msg['stat_no_scope'],ENT_QUOTES,$charset);
 			$q_sc = 'select min(date_log) as min_date, max(date_log) as max_date from statopac';
-			$r_sc = mysql_query($q_sc,$dbh);
-			if ($r_sc && mysql_num_rows($r_sc)) {
-				$res_sc=mysql_fetch_object($r_sc);
+			$r_sc = pmb_mysql_query($q_sc,$dbh);
+			if ($r_sc && pmb_mysql_num_rows($r_sc)) {
+				$res_sc=pmb_mysql_fetch_object($r_sc);
 				$min_date=$res_sc->min_date;
 				$max_date=$res_sc->max_date;
 				if ($min_date!='0000-00-00 00:00:00' && $min_date!='0000-00-00 00:00:00') {
@@ -319,8 +319,8 @@ class stat_view {
 			$btn_suppr = "<input class='bouton' type='submit'  value='$msg[63]' onClick='if(confirm_delete()) this.form.act.value=\"suppr_view\";'/>";
 			
 			$requete = "select nom_vue, comment from statopac_vues where id_vue='".addslashes($vue_id)."'";
-			$resultat = mysql_query($requete, $dbh);
-			while(($vue=mysql_fetch_object($resultat))){
+			$resultat = pmb_mysql_query($requete, $dbh);
+			while(($vue=pmb_mysql_fetch_object($resultat))){
 				$stat_view_addview_form=str_replace("!!name_view!!",htmlentities($vue->nom_vue,ENT_QUOTES,$charset),$stat_view_addview_form);
 				$stat_view_addview_form=str_replace("!!view_comment!!",htmlentities($vue->comment,ENT_QUOTES, $charset),$stat_view_addview_form);
 			}			
@@ -331,9 +331,9 @@ class stat_view {
 				
 			$res="";		
 			$requete="select id_col, nom_col, expression, filtre, ordre, datatype from statopac_vues_col where num_vue='".$vue_id."' order by ordre";
-			$resultat=mysql_query($requete, $dbh);
+			$resultat=pmb_mysql_query($requete, $dbh);
 			
-			if(mysql_num_rows($resultat) == 0){
+			if(pmb_mysql_num_rows($resultat) == 0){
 				$res="<div class='row'>".$msg["stat_no_col_associate"]."</div>";
 				$stat_view_addview_form=str_replace("!!table_colonne!!",$res,$stat_view_addview_form);		
 				$stat_view_addview_form=str_replace("!!view_title!!",$msg["stat_view_modif_title"],$stat_view_addview_form);
@@ -343,7 +343,7 @@ class stat_view {
 				$res.="<tr><th>".$msg["stat_col_order"]."</th><th>".$msg["stat_col_name"]."</th><th>".$msg["stat_col_expr"]."</th><th>".$msg["stat_col_filtre"]."</th><th>".$msg['stat_col_type']."</th>";
 				$parity=1;
 				$n=0;
-				while ($r=mysql_fetch_object($resultat)) {
+				while ($r=pmb_mysql_fetch_object($resultat)) {
 					if ($parity % 2) {
 						$pair_impair = "even";
 					} else {
@@ -401,8 +401,8 @@ class stat_view {
 			return $stat_view_addcol_form;
 		} else {
 			$requete="select nom_col, expression, filtre, datatype from statopac_vues_col where id_col='".$id_col."'";
-			$resultat=mysql_query($requete, $dbh);
-			while (($col=mysql_fetch_object($resultat))){
+			$resultat=pmb_mysql_query($requete, $dbh);
+			while (($col=pmb_mysql_fetch_object($resultat))){
 				$col_name = htmlentities($col->nom_col,ENT_QUOTES,$charset);
 				$expr = htmlentities($col->expression,ENT_QUOTES,$charset);
 				$filtre = htmlentities($col->filtre,ENT_QUOTES,$charset);
@@ -442,20 +442,20 @@ class stat_view {
 		
 		if((!$id_col) && $vue_id){
 			$req_ordre = "select max(ordre) from statopac_vues_col where num_vue='".addslashes($vue_id)."'";
-			$resultat = mysql_query($req_ordre, $dbh);
-			if($resultat) $order = mysql_result($resultat,0,0);
+			$resultat = pmb_mysql_query($req_ordre, $dbh);
+			if($resultat) $order = pmb_mysql_result($resultat,0,0);
 			else $order=0;
 			$ordre = $order+1;
 			$req = "INSERT INTO statopac_vues_col(nom_col,expression,filtre,num_vue, ordre,datatype) VALUES ('".$col_name."', '".$expr_col."','".$expr_filtre."','".$vue_id."','".$ordre."', '".$datatype."')";
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 		} else {
 			$rqt="select * from statopac_vues_col where nom_col='".$col_name."' and expression='".$expr_col."' and num_vue='".$vue_id."' and filtre='".$expr_filtre."' and datatype='".$datatype."'";
-			$res_exist = mysql_query($rqt, $dbh);
-			if(mysql_num_rows($res_exist)){
+			$res_exist = pmb_mysql_query($rqt, $dbh);
+			if(pmb_mysql_num_rows($res_exist)){
 				$modif=0;
 			} else $modif=1;
 			$req = "UPDATE statopac_vues_col SET nom_col='".$col_name."', expression='".$expr_col."', num_vue='".$vue_id."', filtre='".$expr_filtre."', datatype='".$datatype."', maj_flag=$modif  WHERE id_col='".$id_col."'";
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 		}
 	} 
 	
@@ -467,10 +467,10 @@ class stat_view {
 		
 		if(!$vue_id){
 			$req = "INSERT INTO statopac_vues(nom_vue,comment) VALUES ('".$view_name."', '".$view_comment."')";
-			mysql_query($req, $dbh);
+			pmb_mysql_query($req, $dbh);
 		} else {
 			$req = "UPDATE statopac_vues SET nom_vue='".$view_name."', comment='".$view_comment."' WHERE id_vue='".$vue_id."'";
-			mysql_query($req, $dbh);
+			pmb_mysql_query($req, $dbh);
 		}
 	}
 	
@@ -482,13 +482,13 @@ class stat_view {
 		
 		if($vue_id){
 			$req="DELETE FROM statopac_vues where id_vue='".$vue_id."'";
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 			$req="DELETE FROM statopac_vues_col where num_vue='".$vue_id."'";
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 			$req="DELETE FROM statopac_request where num_vue='".$vue_id."'";
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 			$req="DROP TABLE statopac_vue_".$vue_id;
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 		}
 	}
 	
@@ -500,13 +500,13 @@ class stat_view {
 		
 		if($vue_id){
 			$req="DELETE FROM statopac_vues_col where num_vue='".$vue_id."'";
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 			$req="DELETE FROM statopac_request where num_vue='".$vue_id."'";
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 			$req="DELETE FROM statopac_vue_".$vue_id;
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 			$req="update statopac_vues set date_consolidation='0000-00-00 00:00:00', date_debut_log='0000-00-00 00:00:00', date_fin_log='0000-00-00 00:00:00' where num_vue='".$vue_id."'";
-			$resultat=mysql_query($req, $dbh);
+			$resultat=pmb_mysql_query($req, $dbh);
 		}
 	}
 	
@@ -518,20 +518,20 @@ class stat_view {
 		
 		if($id_col){
 			$req="SELECT nom_col,num_vue FROM statopac_vues_col WHERE id_col='".$id_col."'";
-			$res=mysql_query($req, $dbh);
-			if(mysql_num_rows($res)){
+			$res=pmb_mysql_query($req, $dbh);
+			if(pmb_mysql_num_rows($res)){
 				//On supprime la colonne de la vue
-				$id_vue=mysql_result($res,0,1);
-				mysql_query("ALTER TABLE statopac_vue_".$id_vue." DROP `".mysql_result($res,0,0)."`", $dbh);
+				$id_vue=pmb_mysql_result($res,0,1);
+				pmb_mysql_query("ALTER TABLE statopac_vue_".$id_vue." DROP `".pmb_mysql_result($res,0,0)."`", $dbh);
 				$req="DELETE FROM statopac_vues_col where id_col='".$id_col."'";
-				$resultat=mysql_query($req, $dbh);
+				$resultat=pmb_mysql_query($req, $dbh);
 				//On recalcule l'ordre des colonnes
 				$req="SELECT id_col FROM statopac_vues_col WHERE num_vue ='".$id_vue."' ORDER BY ordre";
-				$res=mysql_query($req, $dbh);
-				if(mysql_num_rows($res)){
+				$res=pmb_mysql_query($req, $dbh);
+				if(pmb_mysql_num_rows($res)){
 					$ordre=1;
-					while ($ligne=mysql_fetch_object($res)) {
-						mysql_query("UPDATE statopac_vues_col SET ordre='".$ordre."' WHERE id_col='".$ligne->id_col."'", $dbh);
+					while ($ligne=pmb_mysql_fetch_object($res)) {
+						pmb_mysql_query("UPDATE statopac_vues_col SET ordre='".$ordre."' WHERE id_col='".$ligne->id_col."'", $dbh);
 						$ordre++;
 					}
 				}
@@ -546,19 +546,19 @@ class stat_view {
 		global $dbh;
 		
 		$requete="select ordre from statopac_vues_col where id_col='".$col_id."'";
-		$resultat=mysql_query($requete, $dbh);
-		$ordre=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete, $dbh);
+		$ordre=pmb_mysql_result($resultat,0,0);
 		$requete="select max(ordre) as ordre from statopac_vues_col where ordre<".addslashes($ordre);
-		$resultat=mysql_query($requete, $dbh);
-		$ordre_max=@mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete, $dbh);
+		$ordre_max=@pmb_mysql_result($resultat,0,0);
 		if ($ordre_max) {
 			$requete="select id_col from statopac_vues_col where ordre='".addslashes($ordre_max)."' limit 1";
-			$resultat=mysql_query($requete, $dbh);
-			$idcol_max=mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete, $dbh);
+			$idcol_max=pmb_mysql_result($resultat,0,0);
 			$requete="update statopac_vues_col set ordre='".addslashes($ordre_max)."' where id_col='".$col_id."'";
-			mysql_query($requete, $dbh); 
+			pmb_mysql_query($requete, $dbh); 
 			$requete="update statopac_vues_col set ordre='".addslashes($ordre)."' where id_col='".addslashes($idcol_max)."'";
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 		}
 	}
 	
@@ -569,19 +569,19 @@ class stat_view {
 		global $dbh;
 		
 		$requete="select ordre from statopac_vues_col where id_col='".$col_id."'";
-		$resultat=mysql_query($requete, $dbh);
-		$ordre=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete, $dbh);
+		$ordre=pmb_mysql_result($resultat,0,0);
 		$requete="select min(ordre) as ordre from statopac_vues_col where ordre>".addslashes($ordre);
-		$resultat=mysql_query($requete, $dbh);
-		$ordre_min=@mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete, $dbh);
+		$ordre_min=@pmb_mysql_result($resultat,0,0);
 		if ($ordre_min) {
 			$requete="select id_col from statopac_vues_col where ordre='".addslashes($ordre_min)."' limit 1";
-			$resultat=mysql_query($requete, $dbh);
-			$idcol_min=mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete, $dbh);
+			$idcol_min=pmb_mysql_result($resultat,0,0);
 			$requete="update statopac_vues_col set ordre='".addslashes($ordre_min)."'  where id_col='".$col_id."'";
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 			$requete="update statopac_vues_col set ordre='".addslashes($ordre)."'  where id_col='".addslashes($idcol_min)."'";
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 		}
 	}
 	
@@ -679,16 +679,16 @@ class stat_view {
 				//On va vérifier les colonnes de la vue existante
 				$nbColAjout=0;
 				foreach ($arrayCols as $col){
-					$res = mysql_query("SELECT * FROM statopac_vues_col WHERE num_vue=".$vue_id." AND expression='".addslashes($col[1])."'", $dbh);
+					$res = pmb_mysql_query("SELECT * FROM statopac_vues_col WHERE num_vue=".$vue_id." AND expression='".addslashes($col[1])."'", $dbh);
 					if($res){
-						if(!mysql_num_rows($res)){
+						if(!pmb_mysql_num_rows($res)){
 							//on va ajouter une colonne, on vérifie qu'il n'y a pas déjà une colonne avec le même nom
 							$ok = false;
 							$suffixe=0;
 							while(!$ok){
-								$res2 = mysql_query("SELECT * FROM statopac_vues_col WHERE num_vue=".$vue_id." AND nom_col='".addslashes($col[0]).($suffixe?$suffixe:"")."'", $dbh);
+								$res2 = pmb_mysql_query("SELECT * FROM statopac_vues_col WHERE num_vue=".$vue_id." AND nom_col='".addslashes($col[0]).($suffixe?$suffixe:"")."'", $dbh);
 								if($res2){
-									if(!mysql_num_rows($res2)){
+									if(!pmb_mysql_num_rows($res2)){
 										$ok=true;
 										if($suffixe){
 											$arrayFichier[2] = preg_replace('`(?<=\W)'.$col[0].'(?<!\W)`',$col[0].$suffixe,$arrayFichier[2]);
@@ -696,11 +696,11 @@ class stat_view {
 										}
 									}
 								}else{
-									echo mysql_error()."<br />";
+									echo pmb_mysql_error()."<br />";
 								}
 								$suffixe++;
 							}
-							mysql_query("INSERT INTO statopac_vues_col
+							pmb_mysql_query("INSERT INTO statopac_vues_col
 										SET nom_col='".addslashes($col[0])."',
 										expression='".addslashes($col[1])."',
 										filtre='".addslashes($col[2])."',
@@ -709,24 +709,24 @@ class stat_view {
 							$nbColAjout++;
 						}else{
 							//une colonne existe déjà avec la même fonction : on adapte la requête qu'on importe
-							$row=mysql_fetch_object($res);
+							$row=pmb_mysql_fetch_object($res);
 							$arrayFichier[2] = str_replace('`(?<=\W)'.$col[0].'(?<!\W)`',$row->nom_col,$arrayFichier[2]);
 						}
 					}else{
-						echo mysql_error()."<br />";
+						echo pmb_mysql_error()."<br />";
 					}
 				}
 				
 				//Ajout requete
 				$contenu=implode("",$arrayFichier);
-				mysql_query($contenu, $dbh) ;
-				if (mysql_error()) {
-					echo mysql_error()."<br /><br />".htmlentities($contenu,ENT_QUOTES, $charset)."<br /><br />" ;
+				pmb_mysql_query($contenu, $dbh) ;
+				if (pmb_mysql_error()) {
+					echo pmb_mysql_error()."<br /><br />".htmlentities($contenu,ENT_QUOTES, $charset)."<br /><br />" ;
 				}else{
-					$idStat = mysql_insert_id();
+					$idStat = pmb_mysql_insert_id();
 
 					//maj num_vue sur requete
-					mysql_query("UPDATE statopac_request SET num_vue=".$vue_id." WHERE idproc=".$idStat, $dbh);
+					pmb_mysql_query("UPDATE statopac_request SET num_vue=".$vue_id." WHERE idproc=".$idStat, $dbh);
 					
 					if($nbColAjout){
 						print "<h3>".$msg["stat_import_consolide"]."</h3>";

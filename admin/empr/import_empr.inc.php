@@ -13,27 +13,27 @@ require_once("$class_path/emprunteur.class.php");
 $base_path=".";
 
 $querry = "select valeur_param from parametres where type_param = 'empr' and sstype_param='corresp_import' ";
-$res = mysql_query($querry, $dbh);
-$obj = mysql_fetch_object($res) ;
+$res = pmb_mysql_query($querry, $dbh);
+$obj = pmb_mysql_fetch_object($res) ;
 
 if ($obj->valeur_param) {
 	$OrdreImportEmpr=unserialize($obj->valeur_param);
 } else {
 	$querry = "DESCRIBE empr;";
-	$res = mysql_query($querry, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($querry, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 	if($nbr) {
 		$k = 0;$OrdreImportEmpr=array();
 		for($j=0;$j<$nbr;$j++) {
-			$row=mysql_fetch_row($res);
+			$row=pmb_mysql_fetch_row($res);
 			$OrdreImportEmpr[$row[0]] = 0;
 		}
 	}
 	// recup des champs perso
 	$querry = "SELECT * from empr_custom;";
-	$res = mysql_query($querry, $dbh);
-	if (mysql_num_rows($res)) {
-		while (($row=mysql_fetch_array($res,MYSQL_ASSOC))){
+	$res = pmb_mysql_query($querry, $dbh);
+	if (pmb_mysql_num_rows($res)) {
+		while (($row=pmb_mysql_fetch_array($res,MYSQL_ASSOC))){
 			$OrdreImportEmpr[$row['name']] = 0;
 		}
 	}
@@ -53,14 +53,14 @@ function show_import_choix_fichier($dbh,$from_ldap) {
 	global $msg;
 	global $charset;
 	global $current_module ;
-	// $result = mysql_query("Select duree_adhesion, libelle From empr_categ;", $dbh) or die($msg["err_sql"]);
+	// $result = pmb_mysql_query("Select duree_adhesion, libelle From empr_categ;", $dbh) or die($msg["err_sql"]);
 	// premier formulaire pour avoir le nom du fichier a importer, le s?parateur de champ
 	// et indiquer dans quel groupe importation va allez
 
 	// MaxMan
-	$result = mysql_query("Select id_categ_empr, libelle From empr_categ;", $dbh) or die($msg["err_sql"]);
+	$result = pmb_mysql_query("Select id_categ_empr, libelle From empr_categ;", $dbh) or die($msg["err_sql"]);
 
-	$result2 = mysql_query("Select idcode, libelle From empr_codestat;", $dbh) or die($msg["err_sql"]);
+	$result2 = pmb_mysql_query("Select idcode, libelle From empr_codestat;", $dbh) or die($msg["err_sql"]);
 
 	if (!$from_ldap) {
 		$formtype="<form class='form-$current_module' name='form1' ENCTYPE=\"multipart/form-data\" method='post' action=\"./admin.php?categ=empr&sub=implec&action=FichierOK\">
@@ -90,7 +90,7 @@ function show_import_choix_fichier($dbh,$from_ldap) {
 			<div class='colonne2'>
 				<label class='etiquette' for='form_import_lec'>". $msg["import_lec_Cat"]."</label>
 				<select name='selectGroupe'>";
-	while(($row = mysql_fetch_row($result))) // pour remplir la listBox
+	while(($row = pmb_mysql_fetch_row($result))) // pour remplir la listBox
 		print "<option value='".
 					htmlentities($row[0],ENT_QUOTES, $charset)."'>".
 					htmlentities($row[1],ENT_QUOTES, $charset).
@@ -102,7 +102,7 @@ function show_import_choix_fichier($dbh,$from_ldap) {
 			<label class='etiquette' for='form_import_stat'>". $msg[60]."</label>
 			<select name='selectStat'>";
 	
-	while(($row = mysql_fetch_row($result2))) // pour remplir la listBox
+	while(($row = pmb_mysql_fetch_row($result2))) // pour remplir la listBox
 		print "<option value='".
 					htmlentities($row[0],ENT_QUOTES, $charset)."'>".
 					htmlentities($row[1],ENT_QUOTES, $charset).
@@ -155,8 +155,8 @@ function show_import($dbh, $buffer,$from_ldap) {
 
 	// pourrait utiliser la fonction desc_table, ? faire plus tard! parce que l? est d?ja fonctionnel
 	$querry = "DESCRIBE empr;";
-	$res = mysql_query($querry, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($querry, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	//printr($OrdreImportEmpr,'','ORDREIMPORT');
 	
@@ -164,7 +164,7 @@ function show_import($dbh, $buffer,$from_ldap) {
 		$k = 0;
 		for($j=0;$j<$nbr;$j++) {
 			
-			$row=mysql_fetch_row($res);
+			$row=pmb_mysql_fetch_row($res);
 
 			if (empty($_POST[$row[0]]))
 				$ordre[$k] = $OrdreImportEmpr[$row[0]];
@@ -213,11 +213,11 @@ function show_import($dbh, $buffer,$from_ldap) {
 	}
 	// recup des champs perso
 	$querry = "SELECT * from empr_custom ";
-	$res = mysql_query($querry, $dbh);
-	if (mysql_num_rows($res)) {
+	$res = pmb_mysql_query($querry, $dbh);
+	if (pmb_mysql_num_rows($res)) {
 		print "<tr><td colspan='3' class='nobrd'><hr /></td></tr>";
 		print "<tr><td colspan='3' class='nobrd'><b>".htmlentities($msg['1131'], ENT_QUOTES, $charset)."</b></td></tr>";
-		while (($row=mysql_fetch_array($res,MYSQL_ASSOC))) {
+		while (($row=pmb_mysql_fetch_array($res,MYSQL_ASSOC))) {
 			print "<tr>";
 			
 			if (empty($_POST[$row['name']]))
@@ -257,15 +257,15 @@ function choix_supp_empr($dbh,$from_ldap)
 {
 global $msg;
 	$querry = "Select empr_date_expiration From empr order by empr_date_expiration;";
-	$result = mysql_query($querry, $dbh) or die($msg["select_echoue"]."!<p>".$querry);
-	if (mysql_num_rows($result) >= 1) {
+	$result = pmb_mysql_query($querry, $dbh) or die($msg["select_echoue"]."!<p>".$querry);
+	if (pmb_mysql_num_rows($result) >= 1) {
 		// choisir la date ? deleter d'apr?s les dates d'exiprations
 		print "<form class='form-$current_module' name='form3' method='post' action=\"./admin.php?categ=empr&sub=implec&action=ConfirmationDel\">";
 		print "<h3>".$msg["date_enlever"]."</h3>";
 		$compteur = 0;
 		$trouve = 0;
 		print "<table border='0'>";
-		while(($row = mysql_fetch_row($result))) {
+		while(($row = pmb_mysql_fetch_row($result))) {
 			$compteur++;
 			$empr_date_expiration_tmp = $row[0];
 			if( $empr_date_expiration != $empr_date_expiration_tmp) {
@@ -293,17 +293,17 @@ global $msg;
 function desc_table($dbh, $table) {
 
 	$querry = "Select * from $table";
-	$res = mysql_query($querry, $dbh);
-	$nbr = mysql_num_fields($res);
+	$res = pmb_mysql_query($querry, $dbh);
+	$nbr = pmb_mysql_num_fields($res);
 
 	if($nbr) {
 		for($j=0;$j<$nbr;$j++) {
-				$desc_table[$j][0] = mysql_field_name($res,$j);
-				$desc_table[$j][1] = mysql_field_type($res,$j);
-				$desc_table[$j][2] = mysql_field_len($res,$j);
+				$desc_table[$j][0] = pmb_mysql_field_name($res,$j);
+				$desc_table[$j][1] = pmb_mysql_field_type($res,$j);
+				$desc_table[$j][2] = pmb_mysql_field_len($res,$j);
 				$desc_table[$j][3] = estNumerique($desc_table[$j][1], $desc_table[$j][2]);
 				// j'ai seulement besoin de l'auto_increment, $desc_table[$j][4] est vrai si trouv?!
-				$desc_table[$j][4] = array_search ( "auto_increment", explode( " ", mysql_field_flags($res,$j) ) );
+				$desc_table[$j][4] = array_search ( "auto_increment", explode( " ", pmb_mysql_field_flags($res,$j) ) );
 		}
 		//print_r($desc_table);
 		return $desc_table;
@@ -372,8 +372,8 @@ function aujourdhui($nbjour=0) {
 // sert a savoir si un etudiant existe d?j?
 function return_cb($dbh, $cb) {
 	$querry = "select empr_cb from empr where empr_cb = '".$cb."' ";
-	$res = mysql_query($querry, $dbh);
-	$row = mysql_fetch_row($res);    // lecture d'une seul ligne, le id de l'?diteur
+	$res = pmb_mysql_query($querry, $dbh);
+	$row = pmb_mysql_fetch_row($res);    // lecture d'une seul ligne, le id de l'?diteur
 #    return intval($row[0]);
 	return ($row[0]);  // cb can be NOT numeric (MaxMan)!!!
 }
@@ -389,7 +389,7 @@ function save_fields_association() {
 		}
 	}
 	$querry = "update parametres set valeur_param='".serialize($OrdreImportEmpr)."' where type_param = 'empr' and sstype_param='corresp_import' ";
-	mysql_query($querry, $dbh);
+	pmb_mysql_query($querry, $dbh);
 
 //	$h=fopen("$base_path/admin/empr/ordimport.txt",'w');
 //	fwrite($h,serialize($OrdreImportEmpr));
@@ -484,17 +484,17 @@ switch($action) {
 				//champs perso
 				$perso=array();
 				$querry = "SELECT * from empr_custom;";
-				$res = mysql_query($querry, $dbh);
+				$res = pmb_mysql_query($querry, $dbh);
 				$k=0;
-				if (mysql_num_rows($res)) {
-					while ($row=mysql_fetch_array($res,MYSQL_ASSOC)) {
+				if (pmb_mysql_num_rows($res)) {
+					while ($row=pmb_mysql_fetch_array($res,MYSQL_ASSOC)) {
 						$perso[$k++]=$row;
 					}
 				}
 				//printr($perso,'','PERSO');die;
 				
-				$result = mysql_query("Select duree_adhesion From empr_categ where id_categ_empr='$_POST[selectGroupe]';", $dbh) or die($msg["err_sql"]);
-				$row = mysql_fetch_row($result);
+				$result = pmb_mysql_query("Select duree_adhesion From empr_categ where id_categ_empr='$_POST[selectGroupe]';", $dbh) or die($msg["err_sql"]);
+				$row = pmb_mysql_fetch_row($result);
 				$dur=htmlentities($row[0],ENT_QUOTES, $charset);
 				// mise en tampon du ficher
 				$buffer = fread ( $ficher, filesize ($file_lec));
@@ -534,7 +534,7 @@ switch($action) {
 					for($j=$cpt; $j>=0; $j--) {
 						// el?ve les " et les espaces en debut et fin du string(pour chaque champ!)
 						$bufferChamp[$j+1] = trim($bufferChamp[$j], "\"");
-						$bufferChamp[$j+1] = mysql_escape_string ( $bufferChamp[$j+1] );
+						$bufferChamp[$j+1] = pmb_mysql_escape_string( $bufferChamp[$j+1] );
 					}
 					$bufferChamp[0] = "";
 
@@ -550,21 +550,21 @@ switch($action) {
 #									$query2 = 'update empr set '.$desc_empr[$i][0].' = "'.substr ( $bufferChamp[$$desc_empr[$i][0]].", ".$bufferChamp[$plus1], 0, $desc_empr[$i][2]).'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
 #									MaxMan: pas d'exception pour l'addresse									
 									$query2 = 'update empr set '.$desc_empr[$i][0].' = "'.substr ( $bufferChamp[$$desc_empr[$i][0]], 0, $desc_empr[$i][2]).'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-								$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<br />";
+								$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<br />";
 							}
 						}
 						// update pour inserer la date de creation , modif, date_adhesion...
 						$query2 = 'update empr set empr_modif  = "'.aujourdhui(1).'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						$query2 = 'update empr set empr_categ = '.$_POST[selectGroupe].' where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						$query2 = 'update empr set empr_codestat =  '.$_POST[selectStat].' where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						$query2 = 'update empr set empr_date_expiration = "'.aujourdhui($dur).'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query."<hr />";
 						if ($from_ldap){
 							$query2 = "update empr set empr_ldap = '1' where empr_cb = '".$bufferChamp[$$desc_empr[1][0]]."';";
-							$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+							$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						}								
 
 
@@ -601,30 +601,30 @@ switch($action) {
 						$query = "insert into empr ($fields) values ($values);";
 						
 						//print $query;
-						$res = mysql_query($query, $dbh) or print $msg["ins_echoue"]."<p>".$query."<hr />";
+						$res = pmb_mysql_query($query, $dbh) or print $msg["ins_echoue"]."<p>".$query."<hr />";
 						// update pour ins?rer la date de cr?ation , modif, date_adhesion...
 						$query2 = 'update empr set empr_creation = "'.aujourdhui(1).'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						$query2 = 'update empr set empr_modif  = "'.aujourdhui(1).'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						$query2 = 'update empr set empr_date_adhesion = "'.aujourdhui(1).'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						$query2 = 'update empr set empr_date_expiration = "'.aujourdhui($dur).'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						$query2 = 'update empr set empr_categ = '.$_POST[selectGroupe].' where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						$query2 = 'update empr set empr_codestat = '.$_POST[selectStat].' where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+						$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						if ($from_ldap){
 							$query2 = "update empr set empr_ldap = '1' where empr_cb = '".$bufferChamp[$$desc_empr[1][0]]."';";
-							$res = mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
+							$res = pmb_mysql_query($query2, $dbh) or print $msg["upd_echoue"]."<p>".$query2."<hr />";
 						}
 					}
 					// Gestion de la localisation des lecteurs; prend la loc par défaut du user si non défini
 					if ($pmb_lecteurs_localises) {
 						if (!$empr_location) $empr_location = $deflt2docs_location ;
 						$req_location = 'update empr set empr_location = "'.$empr_location.'" where empr_cb = "'.$bufferChamp[$$desc_empr[1][0]].'";';
-						$res = mysql_query($req_location, $dbh) or print $msg["upd_echoue"]."<p>".$req_location."<hr />";							
+						$res = pmb_mysql_query($req_location, $dbh) or print $msg["upd_echoue"]."<p>".$req_location."<hr />";							
 					}
 										
 					//at this point the empr is OK (inserted or updated)
@@ -632,27 +632,27 @@ switch($action) {
 					//recup id_empr
 					//printr($bufferChamp,'','TXTRECORD');
 					$querry ="SELECT id_empr FROM empr WHERE empr_cb = '".$bufferChamp[$$desc_empr[1][0]]."';";
-					$res = mysql_query($querry, $dbh);
-					if (mysql_num_rows($res)==1) { //deve esistere un solo lettore! 
-						$row=mysql_fetch_array($res,MYSQL_ASSOC);
+					$res = pmb_mysql_query($querry, $dbh);
+					if (pmb_mysql_num_rows($res)==1) { //deve esistere un solo lettore! 
+						$row=pmb_mysql_fetch_array($res,MYSQL_ASSOC);
 						$empr_id=$row['id_empr'];
 						reset($perso);
 						foreach ($perso as $dummykey=>$cp) {
 							$querry ="SELECT * FROM empr_custom_values WHERE empr_custom_champ = ".$cp['idchamp']." AND empr_custom_origine=".$empr_id.";";
-							$res = mysql_query($querry, $dbh);
-							if (mysql_num_rows($res)) { // le champ existe: update
+							$res = pmb_mysql_query($querry, $dbh);
+							if (pmb_mysql_num_rows($res)) { // le champ existe: update
 								$field="empr_custom_".$cp['datatype'];
 								$value="'".$bufferChamp[$_POST[$cp['name']]]."'" ;
 								$querry = "UPDATE empr_custom_values SET $field = $value WHERE empr_custom_champ = ".$cp['idchamp']." AND empr_custom_origine=".$empr_id.";";
 								//print "$querry<br />";
-								$res = mysql_query($querry, $dbh) or print $msg["upd_echoue"]."<p>".$querry."<hr />";
+								$res = pmb_mysql_query($querry, $dbh) or print $msg["upd_echoue"]."<p>".$querry."<hr />";
 									
 							} else { //le champ n'existe pas: insert
 								$fields="empr_custom_champ,empr_custom_origine,empr_custom_".$cp['datatype'];
 								$values=$cp['idchamp'].",".$empr_id.",'".$bufferChamp[$_POST[$cp['name']]]."'" ;
 								$querry = "INSERT INTO empr_custom_values ($fields) VALUES ($values);";
 								//print "$querry<br />";
-								$res = mysql_query($querry, $dbh) or print $msg["ins_echoue"]."<p>".$querry."<hr />";
+								$res = pmb_mysql_query($querry, $dbh) or print $msg["ins_echoue"]."<p>".$querry."<hr />";
 							}
 						}
 					} else 
@@ -683,12 +683,12 @@ switch($action) {
 					print " </tr>";
 
 					$querry = "Select id_empr,empr_cb,empr_nom,empr_prenom From empr where empr_date_expiration = '$val';";
-					$res = mysql_query($querry, $dbh) or die($msg["select_echoue"]."<p>".$querry);
-					$nbr1 = mysql_num_fields($res);
-					$nbr2 = mysql_num_rows($res);
+					$res = pmb_mysql_query($querry, $dbh) or die($msg["select_echoue"]."<p>".$querry);
+					$nbr1 = pmb_mysql_num_fields($res);
+					$nbr2 = pmb_mysql_num_rows($res);
 					if($nbr2 > 5) $nbr2 = 5;        // max de 5 r?ponces par date
 					for($j = 0;$j < $nbr2; $j++) {
-						$row = mysql_fetch_row($res);
+						$row = pmb_mysql_fetch_row($res);
 						print " <tr>";
 						for ($i = 0; $i < $nbr1; $i++)
 								print " <td>$row[$i]</td>";
@@ -722,11 +722,11 @@ switch($action) {
 			//print $cle.", ". $val;
 			if (substr($cle, 0, 7) == "datedel") {
 				$querry = "select id_empr,empr_cb,empr_nom,empr_prenom From empr where empr_date_expiration = '$val';";
-				$res = mysql_query($querry, $dbh) or die($msg["sqlselect_errdel1"]."<br />".$msg["sqlselect_errdel2"].$querry);
-				while($row = mysql_fetch_row($res)) {
+				$res = pmb_mysql_query($querry, $dbh) or die($msg["sqlselect_errdel1"]."<br />".$msg["sqlselect_errdel2"].$querry);
+				while($row = pmb_mysql_fetch_row($res)) {
 					$querry1 = "select * From pret where pret_idempr = ".$row[0].";";
-					$result3 = mysql_query($querry1, $dbh);
-					$row2 = mysql_fetch_row($result3);
+					$result3 = pmb_mysql_query($querry1, $dbh);
+					$row2 = pmb_mysql_fetch_row($result3);
 					//print $row2[0]."test";
 					if ($row2[0] == "") {
 						emprunteur::del_empr($row[0]);
@@ -744,7 +744,7 @@ switch($action) {
 								print " <td>".$empr[0]."</td>";
 							print " </tr>";
 						}
-						$nbr1 = mysql_num_fields($res);
+						$nbr1 = pmb_mysql_num_fields($res);
 						print " <tr>";
 						for ($i = 0; $i < $nbr1; $i++)
 							print " <td>$row[$i]</td>";
@@ -753,9 +753,9 @@ switch($action) {
 
 				}
 				// a cause des prets qui peuvent etre en cours (et qui ne sont pas deletes)
-				// mysql_num_rows($res) - $cmpt($cmpt: sont ceux qui n'ont pas ete delete)
+				// pmb_mysql_num_rows($res) - $cmpt($cmpt: sont ceux qui n'ont pas ete delete)
 				print "</table>";
-				print $msg["personnes_delete"].(mysql_num_rows($res) - $cmpt)."<p>";
+				print $msg["personnes_delete"].(pmb_mysql_num_rows($res) - $cmpt)."<p>";
 			}
 		}
 		print "<a href='./admin.php?categ=empr&sub=implec' title='".$msg[654]."'><img name='gg.gif' src='./images/gg.gif' width='38' height='26'></a>";

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_records.class.php,v 1.13 2013-09-05 07:15:15 apetithomme Exp $
+// $Id: cms_module_common_datasource_records.class.php,v 1.16 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -18,8 +18,10 @@ class cms_module_common_datasource_records extends cms_module_common_datasource_
 	public function get_available_selectors(){
 		return array(
 			"cms_module_common_selector_shelve",
+			"cms_module_common_selector_type_article",
 			"cms_module_common_selector_type_section",
-			"cms_module_common_selector_type_article"
+			"cms_module_common_selector_type_article_generic",
+			"cms_module_common_selector_type_section_generic"
 		);
 	}
 
@@ -39,10 +41,10 @@ class cms_module_common_datasource_records extends cms_module_common_datasource_
 			if(is_array($shelves) && count($shelves)){
 				foreach ($shelves as $shelve_id){
 					$query = "select id_tri from etagere where idetagere =".$shelve_id;
-					$result = mysql_query($query);
+					$result = pmb_mysql_query($query);
 					$records = $notices = array();
-					if($result && mysql_num_rows($result)){
-						while($row = mysql_fetch_object($result)){
+					if($result && pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							notices_caddie($shelve_id, $notices, '', '', '',0,$row->id_tri);
 						}
 					}

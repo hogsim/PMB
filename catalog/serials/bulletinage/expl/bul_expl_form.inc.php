@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bul_expl_form.inc.php,v 1.50.2.2 2015-05-07 10:23:20 jpermanne Exp $
+// $Id: bul_expl_form.inc.php,v 1.55 2015-05-07 10:21:31 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -45,16 +45,16 @@ function do_selector_bul_section($section_id, $location_id) {
 	if (!$location_id) $location_id=$deflt_location;
 
 	$rqtloc = "SELECT idlocation FROM docs_location order by location_libelle";
-	$resloc = mysql_query($rqtloc, $dbh);
-	while ($loc=mysql_fetch_object($resloc)) {
+	$resloc = pmb_mysql_query($rqtloc, $dbh);
+	while ($loc=pmb_mysql_fetch_object($resloc)) {
 		$requete = "SELECT idsection, section_libelle FROM docs_section, docsloc_section where idsection=num_section and num_location='$loc->idlocation' order by section_libelle";
-		$result = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_num_rows($result);
+		$result = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_num_rows($result);
 		if ($nbr_lignes) {
 			if ($loc->idlocation==$location_id) $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:block\">";
 				else $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:none\">";
 			$selector .= "<select name='f_ex_section".$loc->idlocation."' id='f_ex_section".$loc->idlocation."'>";
-			while($line = mysql_fetch_row($result)) {
+			while($line = pmb_mysql_fetch_row($result)) {
 				$selector .= "<option value='$line[0]'";
 				$line[0] == $section_id ? $selector .= ' SELECTED>' : $selector .= '>';
 	 			$selector .= htmlentities($line[1],ENT_QUOTES, $charset).'</option>';
@@ -75,45 +75,46 @@ function bul_do_form($obj, $bul_id=0) {
 	global $option_num_auto;
 	global $pmb_rfid_activate,$pmb_rfid_serveur_url,$charset;
 	global $pmb_expl_show_dates,$pmb_expl_show_lastempr;
+	global $thesaurus_concepts_active;
 				
 	if (isset($option_num_auto)) {
   		$requete="DELETE from exemplaires_temp where sess not in (select SESSID from sessions)";
-   		$res = mysql_query($requete,$dbh);
+   		$res = pmb_mysql_query($requete,$dbh);
     	//Appel à la fonction de génération automatique de cb
     	$code_exemplaire =init_gen_code_exemplaire(0,$obj->expl_bulletin);	
     	do {
     		$code_exemplaire = gen_code_exemplaire(0,$obj->expl_bulletin,$code_exemplaire);
     		$requete="select expl_cb from exemplaires WHERE expl_cb='$code_exemplaire'";
-    		$res0 = mysql_query($requete,$dbh);
+    		$res0 = pmb_mysql_query($requete,$dbh);
     		$requete="select cb from exemplaires_temp WHERE cb='$code_exemplaire' AND sess <>'".SESSid."'";
-    		$res1 = mysql_query($requete,$dbh);
-    	} while((mysql_num_rows($res0)||mysql_num_rows($res1)));
+    		$res1 = pmb_mysql_query($requete,$dbh);
+    	} while((pmb_mysql_num_rows($res0)||pmb_mysql_num_rows($res1)));
     		
    		//Memorise dans temps le cb et la session pour le cas de multi utilisateur session
    		$obj->expl_cb = $code_exemplaire;
    		$requete="INSERT INTO exemplaires_temp (cb ,sess) VALUES ('$obj->expl_cb','".SESSid."')";
-   		$res = mysql_query($requete,$dbh);
+   		$res = pmb_mysql_query($requete,$dbh);
 	}
 	
 	//on compte le nombre de prets pour cet exemplaire 
 	$req = "select count(arc_expl_id) as nb_prets from pret_archive where arc_expl_id = ".$obj->expl_id;
-	$res = mysql_query($req);
-	if(mysql_num_rows($res)){	
-		$arch_pret = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req);
+	if(pmb_mysql_num_rows($res)){	
+		$arch_pret = pmb_mysql_fetch_object($res);
 		$nb_prets = $arch_pret->nb_prets ;
 	}else $nb_prets = 0;
 	if($nb_prets){
 		//dernière date de pret pour cet exemplaire 
 		$req = "select date_format(last_loan_date, '".$msg["format_date"]."') as date_last from exemplaires where expl_id = ".$obj->expl_id;
-		$res = mysql_query($req);
-		if(mysql_num_rows($res)){
-			$expl_pret = mysql_fetch_object($res);
+		$res = pmb_mysql_query($req);
+		if(pmb_mysql_num_rows($res)){
+			$expl_pret = pmb_mysql_fetch_object($res);
 			$date_last = $expl_pret->date_last ;
 			$info_nb_prets=str_replace("!!nb_prets!!",$nb_prets,$msg['expl_nbprets']);
 			$query = "select count(pret_idexpl) ";
 			$query .= "from pret, empr where pret_idexpl='".$obj->expl_id."' and pret_idempr=id_empr ";
-			$result = mysql_query($query, $dbh);
-			if ($result && mysql_result($result,0,0)) {
+			$result = pmb_mysql_query($query, $dbh);
+			if ($result && pmb_mysql_result($result,0,0)) {
 				$info_date_last = str_replace("!!date_last!!",$date_last,$msg['expl_lastpret_encours']);
 			} else {
 				$info_date_last = str_replace("!!date_last!!",$date_last,$msg['expl_lastpret_retour']);
@@ -195,6 +196,12 @@ function bul_do_form($obj, $bul_id=0) {
 		$bul_expl_form = str_replace('<!-- exp_return_date -->',format_date($obj->expl_date_retour),$bul_expl_form);
 	}
 	
+	// Indexation concept
+	if($thesaurus_concepts_active == 1){
+		$index_concept = new index_concept($obj->expl_id, TYPE_EXPL);
+		$bul_expl_form = str_replace('<!-- index_concept_form -->', $index_concept->get_form("expl"), $bul_expl_form);
+	}
+	
 	// select "type_antivol"
 	$selector="";
 	if ($pmb_antivol>0) {
@@ -247,7 +254,42 @@ function bul_do_form($obj, $bul_id=0) {
 		$perso="<div class='row'>".$perso."</div>";
 	} else $perso="";
 	$bul_expl_form = str_replace("!!champs_perso!!",$perso,$bul_expl_form);
-
+	
+	
+	// circulation des périodique
+	$perio_circ_tpl="";
+	$in_circ=0;	
+	if($obj->expl_id){
+		$req = "select * from serialcirc_expl where num_serialcirc_expl_id=".$obj->expl_id;		
+		$res_in_circ = pmb_mysql_query($req);
+		if(pmb_mysql_num_rows($res_in_circ)){
+			$in_circ=1;
+			$perio_circ_tpl="<label class='etiquette'>".$msg['serialcirc_expl_in_circ']."</label>";
+		}
+	}
+	if(!$in_circ){
+		$req = "select * from abts_abts, bulletins, serialcirc where abts_abts.num_notice =bulletin_notice and  bulletin_id=".$obj->expl_bulletin." and num_serialcirc_abt=abt_id
+		order by abt_name";
+		$res_circ = pmb_mysql_query($req);
+		if($nb=pmb_mysql_num_rows($res_circ)){
+			$perio_circ_tpl="<input type='checkbox' name='serial_circ_add' value='1'> ".$msg['serialcirc_add_expl'];
+			if($nb>1){
+				$perio_circ_tpl.="<select name='abt_id'>";
+			}
+			while($circ = pmb_mysql_fetch_object($res_circ)){
+				if($nb==1){
+					$perio_circ_tpl.="<input type='hidden' name='abt_id' value='".$circ->abt_id."' >";
+					break;
+				}
+				$perio_circ_tpl.="<option value='".$circ->abt_id."'> ".htmlentities($circ->abt_name,ENT_QUOTES,$charset)."</option>";	
+			}
+			if($nb>1){
+				$perio_circ_tpl.="</select>";
+			}			
+		}
+	}
+		
+	$bul_expl_form = str_replace("!!perio_circ_tpl!!",$perio_circ_tpl,$bul_expl_form);
 	// bouton supprimer si modification
 	if ($obj->expl_id) {
 		$del_button = "<input type='button' class='bouton' value=' $msg[63] ' onClick=\"confirm_expl_delete();\">";	
@@ -309,9 +351,9 @@ function bul_do_form($obj, $bul_id=0) {
 	$query .= " date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour, ";
 	$query .= " IF(pret_retour>sysdate(),0,1) as retard " ; 
 	$query .= " from pret, empr where pret_idexpl='".$obj->expl_id."' and pret_idempr=id_empr ";
-	$result = mysql_query($query, $dbh);
-	if (mysql_num_rows($result)) {
-		$pret = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query, $dbh);
+	if (pmb_mysql_num_rows($result)) {
+		$pret = pmb_mysql_fetch_object($result);
 		$last_pret .= "<hr /><div class='row'><b>$msg[380]</b> ";
 		$link = "<a href='./circ.php?categ=pret&form_cb=".rawurlencode($pret->empr_cb)."'>";
 		$last_pret .= $link.$pret->empr_prenom.' '.$pret->empr_nom.' ('.$pret->empr_cb.')</a>';
@@ -332,8 +374,8 @@ if ($gestion_acces_active==1 && $gestion_acces_user_notice==1) {
 	$dom_1= $ac->setDomain(1);
 	$acces_j = $dom_1->getJoin($PMBuserid,8,'bulletin_notice');
 	$q = "select count(1) from bulletins $acces_j  where bulletin_id=".$bul_id;
-	$r = mysql_query($q, $dbh);
-	if(mysql_result($r,0,0)==0) {
+	$r = pmb_mysql_query($q, $dbh);
+	if(pmb_mysql_result($r,0,0)==0) {
 		$acces_m=0;
 	}
 }
@@ -356,9 +398,9 @@ if ($acces_m==0) {
 	if ($expl_id) {
 		// c'est une modif
 		$requete = "SELECT * FROM exemplaires WHERE expl_id=$expl_id AND expl_notice=0 LIMIT 1";
-		$myQuery = mysql_query($requete, $dbh);
-		if (mysql_num_rows($myQuery)) {
-			$expl = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($myQuery)) {
+			$expl = pmb_mysql_fetch_object($myQuery);
 			if ($action=='dupl_expl') {
 				$expl_id_from=$expl->expl_id;
 				$expl->expl_id=0;
@@ -372,8 +414,8 @@ if ($acces_m==0) {
 		// création d'un exemplaire
 		// avant toute chose, on regarde si ce cb n'existe pas déjà
 		$requete = "SELECT count(1) FROM exemplaires WHERE expl_cb='".$noex."' ";
-		$myQuery = mysql_query($requete, $dbh);
-		if(!mysql_result($myQuery, 0, 0)) {
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(!pmb_mysql_result($myQuery, 0, 0)) {
 			$expl = new stdClass();
 			$expl->expl_cb = $noex;
 			$expl->expl_id = 0;

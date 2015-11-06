@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: restore.inc.php,v 1.8 2013-04-11 08:02:52 mbertin Exp $
+// $Id: restore.inc.php,v 1.9 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -43,7 +43,7 @@ if($file)
 
 			$valeur = preg_replace("/\n/m", "", $valeur);
 			if($valeur) {
-				$result = mysql_query($valeur, $dbh);
+				$result = pmb_mysql_query($valeur, $dbh);
 				if(!$result) {
 					print "<font color=#ff0000><strong>".$msg[540]."</strong></font> ".$msg['admin_misc_requete']." $cle&nbsp;: $valeur<hr />";
 					$error_flag = TRUE;

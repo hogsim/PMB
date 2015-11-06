@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categ_update.inc.php,v 1.21.6.2 2014-04-03 07:52:23 jpermanne Exp $
+// $Id: categ_update.inc.php,v 1.28 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -23,6 +23,8 @@ require_once("$class_path/categories.class.php");
 require_once("$class_path/XMLlist.class.php");
 require_once("$class_path/aut_pperso.class.php");
 require_once($class_path."/synchro_rdf.class.php");
+require_once($class_path."/index_concept.class.php");
+require_once("$class_path/map/map_edition_controler.class.php");
 
 if (noeuds::isRacine($id)) {
 	error_form_message($msg['categ_forb']);
@@ -76,8 +78,8 @@ if($pmb_synchro_rdf){
 		}
 		//enfants
 		$res=noeuds::listChilds($id,1);
-		if(mysql_num_rows($res)){
-			while($row=mysql_fetch_array($res)){
+		if(pmb_mysql_num_rows($res)){
+			while($row=pmb_mysql_fetch_array($res)){
 				$arrayIdImpactes[]=$row[0];
 			}
 		}
@@ -113,10 +115,21 @@ if($id) {
 	$noeud->save();
 	$id = $noeud->id_noeud;
 }
+// Indexation concepts
+if($thesaurus_concepts_active == 1 ){
+	$index_concept = new index_concept($id, TYPE_CATEGORY);
+	$index_concept->save();
+}
 // liens entre autorités 
 require_once("$class_path/aut_link.class.php");
 $aut_link= new aut_link(AUT_TABLE_CATEG,$id);
 $aut_link->save_form();
+
+global $pmb_map_activate;
+if($pmb_map_activate){
+	$map = new map_edition_controler(AUT_TABLE_CATEG, $id);
+	$map->save_form();
+}
 
 $aut_pperso= new aut_pperso("categ",$id);
 $aut_pperso->save_form();
@@ -144,19 +157,19 @@ if (!noeuds::isProtected($id)) {
 
 	//Ajout des renvois "voir aussi"
 	$requete="DELETE FROM voir_aussi WHERE num_noeud_orig=".$id;
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	for ($i=0; $i<$max_categ; $i++) {
 		$categ_id="f_categ_id".$i;
 		$categ_rec = "f_categ_rec".$i;
 		if ($$categ_id && $$categ_id!=$id) {
 			$requete="INSERT INTO voir_aussi (num_noeud_orig, num_noeud_dest, langue) VALUES ($id,".$$categ_id.",'".$thes->langue_defaut."' )";
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 			if ($$categ_rec) {
 				$requete="INSERT INTO voir_aussi (num_noeud_orig, num_noeud_dest, langue) VALUES (".$$categ_id.",".$id.",'".$thes->langue_defaut."' )";				
 			} else {
 				$requete="DELETE from voir_aussi where num_noeud_dest = '".$id."' and num_noeud_orig = '".$$categ_id."'	";
 			}
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 	
 		}
 	}
@@ -174,8 +187,8 @@ if($pmb_synchro_rdf){
 	}
 	//enfants
 	$res=noeuds::listChilds($id,1);
-	if(mysql_num_rows($res)){
-		while($row=mysql_fetch_array($res)){
+	if(pmb_mysql_num_rows($res)){
+		while($row=pmb_mysql_fetch_array($res)){
 			if((!count($arrayIdImpactes))||(!in_array($row[0],$arrayIdImpactes))){
 				$arrayIdImpactes[]=$row[0];
 			}

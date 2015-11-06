@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pointage_expl.php,v 1.16.8.2 2015-04-16 11:42:47 jpermanne Exp $
+// $Id: pointage_expl.php,v 1.19 2015-04-16 11:39:22 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path="../..";                            
@@ -56,7 +56,7 @@ switch ($action) {
 			$requete .= " transfert_statut_origine=".$book_statut_id.", ";
 			$requete .= " transfert_section_origine=".$book_section_id." ";
 			$requete .= " WHERE expl_cb='".$noex_valide."'";
-			$result = @mysql_query($requete, $dbh);
+			$result = @pmb_mysql_query($requete, $dbh);
 		}
                 	
 		/* on a un num d'exemplaire à afficher */
@@ -72,10 +72,10 @@ switch ($action) {
 			$requete .= " left join notices n on e.expl_notice=n.notice_id ";
 			$requete .= " WHERE e.expl_cb='".$noex."'";
 			$requete .= " LIMIT 1";
-			$result = mysql_query($requete, $dbh) or die (mysql_error()." ".$requete);
+			$result = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." ".$requete);
                 	
-			if(mysql_num_rows($result)) {
-				$item = mysql_fetch_object($result);
+			if(pmb_mysql_num_rows($result)) {
+				$item = pmb_mysql_fetch_object($result);
 				$header="";
 				if($item->tparent_id) {
 					$serie = new serie($item->tparent_id);

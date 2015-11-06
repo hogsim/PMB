@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.2.6.1 2014-04-03 07:54:22 jpermanne Exp $ -->
+$Id: manifest.xml,v 1.6 2015-07-17 15:02:23 dgoron Exp $ -->
 <manifest>
 	<name>pmbesClean</name>
 	<methods>
@@ -181,6 +181,16 @@ $Id: manifest.xml,v 1.2.6.1 2014-04-03 07:54:22 jpermanne Exp $ -->
 				<result name="result" type="scalar" dataType="string" description="msg:indexDocnum_result"/>
 			</outputs>
 		</method>
+		<method name="cleanRdfStore" rights="" version="1.0" comment="msg:cleanRdfStore_description" language_independant="true">
+			<pmb_requirements>
+				<pmb_requirement start_path="class" file="rdf/ontology.class.php"/>
+			</pmb_requirements>
+			<inputs/>
+			<outputs>
+				<description>msg:cleanRdfStore_output_description</description>
+				<result name="result" type="scalar" dataType="string" description="msg:cleanRdfStore_result"/>
+			</outputs>
+		</method>
 		<method name="cleanSynchroRdfStore" rights="" version="1.0" comment="msg:cleanSynchroRdfStore_description" language_independant="true">
 			<pmb_requirements>
 				<pmb_requirement start_path="class" file="synchro_rdf.class.php"/>
@@ -190,6 +200,47 @@ $Id: manifest.xml,v 1.2.6.1 2014-04-03 07:54:22 jpermanne Exp $ -->
 			<outputs>
 				<description>msg:cleanSynchroRdfStore_output_description</description>
 				<result name="result" type="scalar" dataType="string" description="msg:cleanSynchroRdfStore_result"/>
+			</outputs>
+		</method>
+		<method name="cleanFAQ" rights="" version="1.0" comment="msg:cleanFAQ_description" language_independant="true">
+			<pmb_requirements>
+				<pmb_requirement start_path="class" file="indexation.class.php"/>
+			</pmb_requirements>
+			<inputs/>
+			<outputs>
+				<description>msg:cleanFAQ_output_description</description>
+				<result name="result" type="scalar" dataType="string" description="msg:cleanFAQ_result"/>
+			</outputs>
+		</method>
+		<method name="cleanCMS" rights="" version="1.0" comment="msg:cleanCMS_description" language_independant="true">
+			<pmb_requirements>
+				<pmb_requirement start_path="class" file="cms/cms_article.class.php"/>
+				<pmb_requirement start_path="class" file="cms/cms_section.class.php"/>
+			</pmb_requirements>
+			<inputs/>
+			<outputs>
+				<description>msg:cleanCMS_output_description</description>
+				<result name="result" type="scalar" dataType="string" description="msg:cleanCMS_result"/>
+			</outputs>
+		</method>
+		<method name="cleanConcept" rights="" version="1.0" comment="msg:cleanConcept_description" language_independant="true">
+			<pmb_requirements>
+				<pmb_requirement start_path="class" file="onto/onto_index.class.php"/>
+			</pmb_requirements>
+			<inputs/>
+			<outputs>
+				<description>msg:cleanConcept_output_description</description>
+				<result name="result" type="scalar" dataType="string" description="msg:cleanConcept_result"/>
+			</outputs>
+		</method>
+		<method name="hashEmprPassword" rights="" version="1.0" comment="msg:hashEmprPassword_description" language_independant="true">
+			<pmb_requirements>
+				<pmb_requirement start_path="class" file="emprunteur.class.php"/>
+			</pmb_requirements>
+			<inputs/>
+			<outputs>
+				<description>msg:hashEmprPassword_output_description</description>
+				<result name="result" type="scalar" dataType="string" description="msg:hashEmprPassword_result"/>
 			</outputs>
 		</method>
 	</methods>

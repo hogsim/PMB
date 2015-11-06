@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: File.php,v 1.5 2013-04-25 16:02:17 mbertin Exp $
+// $Id: File.php,v 1.6 2015-04-03 11:16:24 jpermanne Exp $
 namespace Sabre\PMB;
 
 use Sabre\DAV;
@@ -60,9 +60,9 @@ class File extends DAV\File {
     			return true;
     		}elseif($query != ""){
     			//on doit s'assurer que la personne connectée est dispose des droits...
-    			$result = mysql_query($query);
-    			if(mysql_num_rows($result)){
-    				if(in_array(mysql_result($result,0,0),$tab)){
+    			$result = pmb_mysql_query($query);
+    			if(pmb_mysql_num_rows($result)){
+    				if(in_array(pmb_mysql_result($result,0,0),$tab)){
     					return true;
     				}
     			}

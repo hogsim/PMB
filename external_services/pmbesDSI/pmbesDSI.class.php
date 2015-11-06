@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesDSI.class.php,v 1.2 2013-10-22 12:35:36 dgoron Exp $
+// $Id: pmbesDSI.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -42,13 +42,13 @@ class pmbesDSI extends external_services_api_class {
 			if ($id_classement>0) $clause.= " and num_classement='$id_classement' " ;
 			
 			$requete = "SELECT COUNT(1) FROM bannettes $clause ";
-			$res = mysql_query($requete, $dbh);
-			$nbr_lignes = mysql_result($res, 0, 0);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = pmb_mysql_result($res, 0, 0);
 			if($nbr_lignes) {
 				$requete = "SELECT id_bannette, nom_bannette, date_last_remplissage, date_last_envoi, proprio_bannette, bannette_auto, nb_notices_diff FROM bannettes $clause ORDER BY nom_bannette, id_bannette ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 		
-				while ($row = mysql_fetch_assoc($res)) {
+				while ($row = pmb_mysql_fetch_assoc($res)) {
 					$result[] = array(
 						"id_bannette" => $row["id_bannette"],
 						"nom_bannette" => utf8_normalize($row["nom_bannette"]),

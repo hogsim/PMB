@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sessions.inc.php,v 1.2.2.2 2015-05-19 14:29:28 apetithomme Exp $
+// $Id: sessions.inc.php,v 1.2 2015-05-19 14:29:28 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -31,8 +31,8 @@ function checkEmpr($SESSNAME, $allow=0,$user_connexion='') {
 	
 	// On n'a pa encore globalisé les paramètres, on va chercher la durée de session directement dans la table
 	$query = "select valeur_param from parametres where type_param = 'opac' and sstype_param = 'duration_session_auth'";
-	$result = mysql_query($query, $dbh);
-	$opac_duration_session_auth = mysql_result($result, 0, 0);
+	$result = pmb_mysql_query($query, $dbh);
+	$opac_duration_session_auth = pmb_mysql_result($result, 0, 0);
 	
 	// récupère les infos de session dans les cookies
 	$PHPSESSID = $_COOKIE["$SESSNAME-SESSID"];
@@ -46,8 +46,8 @@ function checkEmpr($SESSNAME, $allow=0,$user_connexion='') {
 	// recherche de la session ouverte dans la table
 	$query = "SELECT SESSID, login, IP, SESSstart, LastOn, SESSNAME FROM sessions WHERE ";
 	$query .= "SESSID='$PHPSESSID'";
-	$result = mysql_query($query, $dbh);
-	$numlignes = mysql_num_rows($result);
+	$result = pmb_mysql_query($query, $dbh);
+	$numlignes = pmb_mysql_num_rows($result);
 
 	if(!$result || !$numlignes) {
 		$checkempr_type_erreur = CHECK_EMPR_NO_SESSION ;
@@ -55,7 +55,7 @@ function checkEmpr($SESSNAME, $allow=0,$user_connexion='') {
 	}
 	
 	// vérification de la durée de la session
-	$session = mysql_fetch_object($result);
+	$session = pmb_mysql_fetch_object($result);
 	// durée depuis le dernier rafraichissement
 	if(($session->LastOn+$opac_duration_session_auth) < time()) {
 		$checkempr_type_erreur = CHECK_EMPR_SESSION_DEPASSEE ;
@@ -81,7 +81,7 @@ function checkEmpr($SESSNAME, $allow=0,$user_connexion='') {
 	
 	// on avait bien stocké le sessid, on va pouvoir remettre à jour le laston, avec sessid dans la clause where au lieu de id en outre.
 	$query = "UPDATE sessions SET LastOn='$t' WHERE sessid='$id_session' ";
-	$result = mysql_query($query, $dbh) or die (mysql_error());
+	$result = pmb_mysql_query($query, $dbh) or die (pmb_mysql_error());
 
 	if(!$result) {
 		$checkempr_type_erreur = CHECK_EMPR_PB_ENREG_SESSION ;
@@ -131,7 +131,7 @@ function startSession($SESSNAME, $login) {
 	$query .= ", '$SESSstart'";
 	$query .= ", '$SESSNAME' )";
 
-	$result = mysql_query($query, $dbh);
+	$result = pmb_mysql_query($query, $dbh);
 	if(!$result) {
 		$checkempr_type_erreur = CHECK_EMPR_PB_OUVERTURE_SESSION ;
 		return CHECK_EMPR_PB_OUVERTURE_SESSION ;
@@ -176,7 +176,7 @@ function cleanTable($SESSNAME) {
 
 	// suppression des sessions inactives
 	$query = "DELETE FROM sessions WHERE LastOn < ".$time_out." and SESSNAME = '".$SESSNAME."'";
-	$result = mysql_query($query, $dbh);
+	$result = pmb_mysql_query($query, $dbh);
 	}
 
 // sessionDelete : fin d'une session
@@ -211,7 +211,7 @@ function sessionDelete($SESSNAME) {
 	$query = "DELETE FROM sessions WHERE login='$login'";
 	$query .= " AND SESSNAME='$SESSNAME' and SESSID='$PHPSESSID'";
 
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if($result)
 		return TRUE;
 

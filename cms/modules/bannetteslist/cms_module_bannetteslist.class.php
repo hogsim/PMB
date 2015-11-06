@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_bannetteslist.class.php,v 1.1.2.2 2014-09-25 14:27:09 arenou Exp $
+// $Id: cms_module_bannetteslist.class.php,v 1.1 2014-09-16 13:52:54 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

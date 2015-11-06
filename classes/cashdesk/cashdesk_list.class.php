@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cashdesk_list.class.php,v 1.5 2014-01-07 15:44:04 ngantier Exp $
+// $Id: cashdesk_list.class.php,v 1.6 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -20,10 +20,10 @@ class cashdesk_list {
 		// les data...	
 		$this->cashdesk_list=array();	
 		$rqt = "select * from cashdesk order by cashdesk_name";
-		$res = mysql_query($rqt);
+		$res = pmb_mysql_query($rqt);
 		$i=0;
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){
 				$this->cashdesk_list[$i]['id'] = $row->cashdesk_id;
 				$this->cashdesk_list[$i]['name'] = $row->cashdesk_name;
 				$i++;

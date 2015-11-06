@@ -2,12 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: isbd.inc.php,v 1.47.4.1 2014-04-17 08:06:25 dgoron Exp $
+// $Id: isbd.inc.php,v 1.49 2015-04-03 11:16:25 jpermanne Exp $
 
 require_once ($include_path."/avis_notice.inc.php");
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
-
+	
 //droits d'acces utilisateur/notice (lecture)
 $acces_l=1;
 if ($gestion_acces_active==1 && $gestion_acces_user_notice==1) {
@@ -74,8 +74,8 @@ if ($acces_l==0) {
 	
 	global $at_least_one_has_expl;
 	$requete_compte_expl_id="select 1 from exemplaires where expl_notice='".$id."'";
-	$resultat_compte_expl_id=mysql_query($requete_compte_expl_id);
-	if (!mysql_num_rows($resultat_compte_expl_id)) {
+	$resultat_compte_expl_id=pmb_mysql_query($requete_compte_expl_id);
+	if (!pmb_mysql_num_rows($resultat_compte_expl_id)) {
 		$message=$msg["confirm_suppr_notice"];
 		if ($isbd->nb_expl!=0) $at_least_one_has_expl++;
 		if ($at_least_one_has_expl) $message=$msg["del_expl_noti_child"];

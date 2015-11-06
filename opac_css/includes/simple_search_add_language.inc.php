@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: simple_search_add_language.inc.php,v 1.4 2012-07-16 07:48:04 dgoron Exp $
+// $Id: simple_search_add_language.inc.php,v 1.5 2015-04-03 11:16:16 jpermanne Exp $
 
 function search_other_function_filters() {
 	global $code_langue_restrict;
@@ -11,10 +11,10 @@ function search_other_function_filters() {
 	$r="<select name='code_langue_restrict'>";
 	$r.="<option value=''>".$msg[all_languages]."</option>";
 	$requete="select distinct code_langue from notices_langues where code_langue is not null and code_langue!='' order by ordre_langue";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
     // on met les balises <option> dans un tableau, indexé par le nom traduit de la langue
     $t=array();
-    while ($res=mysql_fetch_object($resultat)) {
+    while ($res=pmb_mysql_fetch_object($resultat)) {
         if ($marc_liste_langues->table[$res->code_langue]) {
             $s="<option value='".htmlentities($res->code_langue,ENT_QUOTES,$charset)."' ";
             if ($res->code_langue==$code_langue_restrict) $s.="selected";

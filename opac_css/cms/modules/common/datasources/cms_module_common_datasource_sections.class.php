@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_sections.class.php,v 1.5 2013-09-06 08:00:05 apetithomme Exp $
+// $Id: cms_module_common_datasource_sections.class.php,v 1.6 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -54,10 +54,10 @@ class cms_module_common_datasource_sections extends cms_module_common_datasource
 					$query .= " order by ".$this->parameters["sort_by"];
 					if ($this->parameters["sort_order"] != "") $query .= " ".$this->parameters["sort_order"];
 				} 
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
 					$return = array();
-					while($row=mysql_fetch_object($result)){
+					while($row=pmb_mysql_fetch_object($result)){
 						$return[] = $row->id_section;
 					}
 				}

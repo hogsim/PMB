@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: diarization_docnum.class.php,v 1.1 2014-01-10 15:46:42 apetithomme Exp $
+// $Id: diarization_docnum.class.php,v 1.2 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -85,10 +85,10 @@ class diarization_docnum {
 	public function diarize() {
 		// On commence par supprimer
 		$query = "delete from explnum_segments where explnum_segment_explnum_num = ".$this->explnum->explnum_id;
-		mysql_query($query);
+		pmb_mysql_query($query);
 		
 		$query = "delete from explnum_speakers where explnum_speaker_explnum_num = ".$this->explnum->explnum_id;
-		mysql_query($query);
+		pmb_mysql_query($query);
 		
 		// Gestion de la progress_bar
 		$progress_bar = new progress_bar("upload to server");
@@ -119,15 +119,15 @@ class diarization_docnum {
 		
 		foreach ($speakers as $speaker) {
 			$query = "insert into explnum_speakers (explnum_speaker_explnum_num, explnum_speaker_speaker_num, explnum_speaker_gender) values (".$this->explnum->explnum_id.", '".$speaker->getID()."', '".$speaker->getGender()."')";
-			mysql_query($query);
-			$speakers_ids[$speaker->getID()] = mysql_insert_id();
+			pmb_mysql_query($query);
+			$speakers_ids[$speaker->getID()] = pmb_mysql_insert_id();
 		}
 		
 		$segments = $this->speechFile->getSegments();
 		
 		foreach ($segments as $segment) {
 			$query = "insert into explnum_segments (explnum_segment_explnum_num, explnum_segment_speaker_num, explnum_segment_start, explnum_segment_duration, explnum_segment_end) values (".$this->explnum->explnum_id.", '".$speakers_ids[$segment->getSpeaker()->getID()]."', ".$segment->getStart().", ".$segment->getDuration().", ".$segment->getEnd().")";
-			mysql_query($query);
+			pmb_mysql_query($query);
 		}
 	}
 }

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestion_import.class.php,v 1.4 2009-11-04 14:37:53 kantin Exp $
+// $Id: suggestion_import.class.php,v 1.5 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,8 +37,8 @@ class suggestion_import{
 			left join suggestions on num_suggestion=id_suggestion
 			left join suggestions_origine so on so.num_suggestion=id_suggestion
 			where id_explnum_doc='".$explnumdoc_id."'";
-			$res = mysql_query($req,$dbh);
-			$expl = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			$expl = pmb_mysql_fetch_object($res);
 			$import_file = htmlentities($expl->data,ENT_QUOTES,$charset);
 			$import_sug_form = str_replace('!!explnum_id!!',$explnumdoc_id,$import_sug_form);
 			$source = $expl->sugg_source;
@@ -55,9 +55,9 @@ class suggestion_import{
 		} 
 		$import_sug_form = str_replace('!!import_file!!',$import_file,$import_sug_form);
 		$req = "select * from suggestions_source order by libelle_source";
-		$res= mysql_query($req,$dbh);
+		$res= pmb_mysql_query($req,$dbh);
 		$option = "<option value='0'>".htmlentities($msg['acquisition_sugg_no_src'],ENT_QUOTES,$charset)."</option>";
-		while(($src=mysql_fetch_object($res))){
+		while(($src=pmb_mysql_fetch_object($res))){
 			if($src->id_source == $source) $selected="selected";
 			$option .= "<option value='".$src->id_source."' $selected>".htmlentities($src->libelle_source,ENT_QUOTES,$charset)."</option>";
 			$selected ="";

@@ -24,4 +24,7 @@
 	<section name="classement">Options pour les plans de classement</section>	
 	<section name="transferts">Options générales des transferts</section>
 	<section name="pdfrel">Options de mise en page des relances</section>	
+	<section name="search">Options pour les recherches</section>	
+	<section name="concepts">Options pour les concepts</section>		
+	<section name="map">Options pour le géoréférencement</section>	
 </pmbsections>

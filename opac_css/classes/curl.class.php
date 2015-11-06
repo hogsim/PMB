@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: curl.class.php,v 1.7 2013-04-11 08:23:48 mbertin Exp $
+// $Id: curl.class.php,v 1.9 2015-04-03 13:33:18 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -34,10 +34,6 @@ class Curl {
 	var $limit=0;	
 	var $body_overflow;
 	var $timeout=0;
-	
-	function Curl() {
-		$this->__construct();
-	}
 	
 	function __construct() {
 		// initialisation des libellés de réponse
@@ -212,15 +208,15 @@ class Curl {
 		
 		return $response;
 	}
+	
+	function set_option($option, $value) {
+		$this->options[$option] = $value;
+	}
 }
  
 class CurlResponse {
 	var $body = '';
 	var $headers = array();
-	
-	function CurlResponse($response) {
-		$this->__construct($response);
-	}
 	
 	function __construct($response) {
 		# Extract headers from response

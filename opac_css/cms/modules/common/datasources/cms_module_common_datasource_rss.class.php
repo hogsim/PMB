@@ -2,14 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_rss.class.php,v 1.8.2.2 2014-11-25 16:35:44 dgoron Exp $
+// $Id: cms_module_common_datasource_rss.class.php,v 1.12 2015-05-15 10:43:57 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once("$class_path/curl.class.php");
 
 class cms_module_common_datasource_rss extends cms_module_common_datasource{
-	
+
 	public function __construct($id=0){
 		parent::__construct($id);
 	}
@@ -21,34 +21,45 @@ class cms_module_common_datasource_rss extends cms_module_common_datasource{
 			"cms_module_common_selector_rss",
 			"cms_module_common_selector_type_article",
 			"cms_module_common_selector_type_section",
+			"cms_module_common_selector_type_article_generic",
+			"cms_module_common_selector_type_section_generic"
 		);
 	}
-	
+
 	/*
 	 * Sauvegarde du formulaire, revient à remplir la propriété parameters et appeler la méthode parente...
 	 */
 	public function save_form(){
-		global $cms_module_common_datasource_rss_limit;
-		
+		global $cms_module_common_datasource_rss_limit,$cms_module_common_datasource_rss_timeout;
+
 		$this->parameters= array();
 		$this->parameters['nb_max_elements'] = $cms_module_common_datasource_rss_limit+0;
+		$this->parameters['timeout'] = $cms_module_common_datasource_rss_timeout+0;
 		return parent::save_form();
 	}
-	
+
 	public function get_form(){
 		$form = parent::get_form();
 		$form.= "
 			<div class='row'>
 				<div class='colonne3'>
-					<label for='cms_module_common_datasource_rss_limit'>".$this->format_text($this->msg['cms_module_common_datasource_rss_limit'])."</label> 
+					<label for='cms_module_common_datasource_rss_limit'>".$this->format_text($this->msg['cms_module_common_datasource_rss_limit'])."</label>
 				</div>
 				<div class='colonne-suite'>
 					<input type='text' name='cms_module_common_datasource_rss_limit' value='".$this->parameters['nb_max_elements']."'/>
 				</div>
+			</div>
+			<div class='row'>
+					<div class='colonne3'>
+					<label for='cms_module_common_datasource_rss_timeout'>".$this->format_text($this->msg['cms_module_common_datasource_rss_timeout'])."</label>
+				</div>
+				<div class='colonne-suite'>
+					<input type='text' name='cms_module_common_datasource_rss_timeout' value='".$this->parameters['timeout']."'/>
+				</div>
 			</div>";
 		return $form;
 	}
-	
+
 	/*
 	 * Récupération des données de la source...
 	 */
@@ -65,7 +76,7 @@ class cms_module_common_datasource_rss extends cms_module_common_datasource{
 			$information = array();
 			$loaded=false;
 			$aCurl = new Curl();
-			$aCurl->timeout=2;
+			$aCurl->timeout=$this->parameters['timeout'];
 			$url = $selector->get_value();
 			if(is_array($url)){
 				$url = $url[0];
@@ -86,7 +97,7 @@ class cms_module_common_datasource_rss extends cms_module_common_datasource{
 						'description',
 						'generator',
 						'link'
-					); 
+					);
 					$informations = $this->get_informations($channel,$elements,1);
 					//on va lire les infos des items...
 					$informations['items'] =array();
@@ -141,11 +152,11 @@ class cms_module_common_datasource_rss extends cms_module_common_datasource{
 			}
 			@ini_set("zend.ze1_compatibility_mode", "1");
 			return $informations;
-			
+
 		}
 		return false;
 	}
-	
+
 	protected function get_informations($node,$elements,$first_only=false){
 		global $charset;
 		$informations = array();
@@ -161,7 +172,7 @@ class cms_module_common_datasource_rss extends cms_module_common_datasource{
 		}
 		return $informations;
 	}
-	
+
 	protected function get_atom_informations($node,$atom_elements,$first_only=false){
 		global $charset;
 		$informations = array();
@@ -181,7 +192,7 @@ class cms_module_common_datasource_rss extends cms_module_common_datasource{
 					$element = $atom_element;
 					break;
 			}
-			
+
 			if($items->length == 1 || $first_only){
 				if ($element == "link") {
 					$informations[$element] = $this->charset_normalize($items->item(0)->getAttribute('href'),"utf-8");
@@ -202,7 +213,7 @@ class cms_module_common_datasource_rss extends cms_module_common_datasource{
 		}
 		return $informations;
 	}
-	
+
 	public function get_format_data_structure(){
 		return array(
 			array(

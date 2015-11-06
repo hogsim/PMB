@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: etagere.tpl.php,v 1.12 2011-03-30 14:54:21 arenou Exp $
+// $Id: etagere.tpl.php,v 1.15 2015-03-30 07:14:50 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -15,37 +15,60 @@ function test_form(form)
 {
 	if(form.form_etagere_name.value.length == 0)
 	{
-		alert(\"$msg[etagere_name_oblig]\");
+		alert(\"".$msg['etagere_name_oblig']."\");
 		return false;
 	}
 	return true;
 }
 </script>
 
-<form class='form-$current_module' name='etagere_form' method='post' action='!!formulaire_action!!'>
+<form class='form-$current_module' name='etagere_form'  enctype='multipart/form-data'  method='post' action='!!formulaire_action!!'>
 <h3>!!formulaire_titre!!</h3>
 <div class='form-contenu'>
 <!--	type	-->
 <div class='row'>
-	<label class='etiquette' for='form_type'>$msg[etagere_name]</label>
-	</div>
+	<label class='etiquette' for='form_type'>".$msg['etagere_name']."</label>
+</div>
 <div class='row'>
 	<input type='text' class='saisie-80em' name='form_etagere_name' value='!!name!!' />
-	</div>
+</div>
 <div class='row'>
-	<label class='etiquette' for='form_type'>$msg[etagere_visible_date]</label>
-	</div>
+	<label class='etiquette' for='form_type'>".$msg['etagere_visible_date']."</label>
+</div>
+<div class='row'>".
+	$msg['etagere_visible_date_all']."&nbsp;<input type=checkbox name=form_visible_all value='1' !!checkbox_all!! class='checkbox' onClick=\"vadidite_check(this.form)\" />&nbsp;&nbsp;".$msg['etagere_visible_date_deb']."<input type='text' class='saisie-10em' name='form_visible_deb' value='!!form_visible_deb!!' />&nbsp;".$msg['etagere_visible_date_fin']."&nbsp;<input type='text' class='saisie-10em' name='form_visible_fin' value='!!form_visible_fin!!' />&nbsp;".$msg['etagere_visible_accueil']."&nbsp;<input type=checkbox name=form_visible_accueil value='1' !!checkbox_accueil!! class='checkbox'  />
+</div>
 <div class='row'>
-	$msg[etagere_visible_date_all]&nbsp;<input type=checkbox name=form_visible_all value='1' !!checkbox_all!! class='checkbox' onClick=\"vadidite_check(this.form)\" />&nbsp;&nbsp;$msg[etagere_visible_date_deb]<input type='text' class='saisie-10em' name='form_visible_deb' value='!!form_visible_deb!!' />&nbsp;$msg[etagere_visible_date_fin]&nbsp;<input type='text' class='saisie-10em' name='form_visible_fin' value='!!form_visible_fin!!' />&nbsp;$msg[etagere_visible_accueil]&nbsp;<input type=checkbox name=form_visible_accueil value='1' !!checkbox_accueil!! class='checkbox'  />
-	</div>
-<div class='row'>
-	<label class='etiquette' for='form_type'>$msg[etagere_comment]</label>
-	</div>
+	<label class='etiquette' for='form_type'>".$msg['etagere_comment']."</label>
+</div>
 <div class='row'>
 	<textarea id='f_n_contenu' class='saisie-80em' name='form_etagere_comment' cols='62' rows='5' wrap='virtual'>!!comment!!</textarea>
-	</div>
+</div>
 <div class='row'>
-	<label class='etiquette' for='form_type'>$msg[etagere_autorisations]</label>
+<div class='row'>
+	<label class='etiquette' for='form_type'>".$msg['etagere_thumbnail_url']."</label>
+</div>
+<div class='row'>
+	<input type='text' class='saisie-80em' id='f_thumbnail_url' name='f_thumbnail_url' value=\"!!thumbnail_url!!\" />
+	<input type='button' class='bouton' value='".$msg['raz']."' onClick=\"try{document.getElementById('f_thumbnail_url').value='';document.getElementById('f_img_load').value='';} catch(e) {}; \"/>	
+</div>
+";
+global $pmb_notice_img_folder_id;
+if($pmb_notice_img_folder_id) {
+	$etagere_form.="
+	<div title='".htmlentities($msg['etagere_img_load'],ENT_QUOTES, $charset)."' >
+		<!--    Vignette upload    -->
+		<div class='row'>
+			<label for='f_img_load' class='etiquette'>".$msg['etagere_img_load']."</label>!!message_folder!!
+		</div>
+		<div class='row'>
+			<input type='file' class='saisie-80em' id='f_img_load' name='f_img_load' value='' />
+		</div>
+	</div>";
+}
+$etagere_form.="
+<div class='row'>
+	<label class='etiquette' for='form_type'>".$msg['etagere_autorisations']."</label>
 	<input type='button' class='bouton_small' value='".$msg['tout_cocher_checkbox']."' onclick='check_checkbox(document.getElementById(\"auto_id_list\").value,1);' align='middle'>
 	<input type='button' class='bouton_small' value='".$msg['tout_decocher_checkbox']."' onclick='check_checkbox(document.getElementById(\"auto_id_list\").value,0);' align='middle'>
 	</div>
@@ -73,6 +96,14 @@ function test_form(form)
 		}
 	</script>
 	</div>
+</div>
+<div class='row'>
+	<label class='etiquette' for='form_type'>".$msg['etagere_classement_list']."</label>
+</div>
+<div class='row'>
+	<select data-dojo-type='dijit/form/ComboBox' id='classementGen_!!object_type!!' name='classementGen_!!object_type!!'>
+		!!classements_liste!!
+	</select>
 </div>
 <!--	boutons	-->
 <div class='row'>

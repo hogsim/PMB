@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pdf.php,v 1.38 2011-08-16 12:17:31 dbellamy Exp $
+// $Id: pdf.php,v 1.39 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -140,4 +140,4 @@ switch ($pdfdoc) {
 		break;
 }
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);

@@ -2,12 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: input_iso_2709.inc.php,v 1.8 2010-11-30 15:21:18 arenou Exp $
+// $Id: input_iso_2709.inc.php,v 1.9 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 function _get_n_notices_($fi,$file_in,$input_params,$origine="") {
-	//mysql_query("delete from import_marc");
+	//pmb_mysql_query("delete from import_marc");
 	global $charset;
 	global $output_params;
 	$index=array();
@@ -25,7 +25,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine="") {
 			$t['POS']=$n_;
 			$t['LENGHT']=$i+1;
 			$requete="insert into import_marc (no_notice, notice, origine) values($n,'".addslashes($notice)."','$origine')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$index[]=$t;
 			if($n==1){
 				$iso=new iso2709_record($notice);
@@ -42,7 +42,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine="") {
 		$t['POS']=$n_;
 		$t['LENGHT']=$i+1;
 		$requete="insert into import_marc (no_notice, notice, origine) values($n,'".addslashes($notice)."','$origine')";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		$index[]=$t;
 		$n++;
 	}

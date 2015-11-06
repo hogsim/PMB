@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: start_import.php,v 1.21 2013-03-20 11:11:02 mbertin Exp $
+// $Id: start_import.php,v 1.22 2015-04-03 11:16:22 jpermanne Exp $
 
 //Execution de l'import
 $base_path = "../..";
@@ -186,7 +186,7 @@ if (!$first) {
 	fclose($fo);
 
 	//Vidage de la table de log
-	//mysql_query("delete from error_log where error_origin='convert.log'");
+	//pmb_mysql_query("delete from error_log where error_origin='convert.log'");
 }
 
 function convert_notice($notice,$encoding) {
@@ -237,8 +237,8 @@ function convert_notice($notice,$encoding) {
 }
 
 $requete="select count(1) from import_marc where origine='$origine'";
-$resultat=mysql_query($requete);
-$n_notices=mysql_result($resultat,0,0);
+$resultat=pmb_mysql_query($requete);
+$n_notices=pmb_mysql_result($resultat,0,0);
 
 $percent = @ round(($n_current / $n_notices) * 100);
 if ($percent == 0)
@@ -264,11 +264,11 @@ fseek($fo, filesize("$base_path/temp/".$file_out));
 
 for ($i = $n_current; $i < $n_current + $n_per_pass; $i ++) {
 	$requete="select notice, encoding from import_marc where no_notice=".($i+1)." and origine='$origine'";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 
-	if (mysql_num_rows($resultat)!=0) {
+	if (pmb_mysql_num_rows($resultat)!=0) {
 		//Si la notice existe début de conversion
-		$obj=mysql_fetch_object($resultat);
+		$obj=pmb_mysql_fetch_object($resultat);
 		$notice_ = convert_notice($obj->notice,$obj->encoding);
 		@fwrite($fo, $notice_);
 		$z ++;
@@ -279,8 +279,8 @@ for ($i = $n_current; $i < $n_current + $n_per_pass; $i ++) {
 //Y-a-t-il eu des erreurs ?
 if ($message_convert != "") {
 	$requete="insert into error_log (error_date,error_origin, error_text) values(now(),'convert.log ".$origine."','".addslashes($message_convert)."')";
-	mysql_query($requete);
-	echo mysql_error();
+	pmb_mysql_query($requete);
+	echo pmb_mysql_error();
 }
 
 //Fin du fichier de notice ?
@@ -289,7 +289,7 @@ if ($z < $n_per_pass) {
 	@ fwrite($fo, _get_footer_($output_params));
 	fclose($fo);
 	$requete="delete from import_marc where origine='$origine'";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	if ($redirect) {
 		$redirect .= "&file_in=".rawurlencode($file_in)."&suffix=".$output_params['SUFFIX']."&origine=".$origine."&import_type=$import_type&outputtype=".$output_params["TYPE"]."&converted=1";
 		$location = "parent.document.location='".$redirect."'";

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_history.inc.php,v 1.1.2.2 2014-06-05 09:51:36 dgoron Exp $
+// $Id: search_history.inc.php,v 1.3 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -11,6 +11,7 @@ if($idcaddie) {
 	print pmb_bidi(aff_cart_titre ($myCart));
 	switch ($action) {
 		case 'pointe_item':
+			print aff_cart_nb_items ($myCart) ;
 			switch ($myCart->type) {
 				case "EXPL" :
 					$sc=new search(true,"search_fields_expl");
@@ -23,27 +24,28 @@ if($idcaddie) {
 			if(is_object($sc)) {
 				$table=$sc->get_results("./catalog.php?categ=caddie&sub=pointage&moyen=search_history","",true);
 				$requete="select count(1) from $table"; 
-	   			$res = mysql_query($requete);
-	    		if($res) $nb_results=mysql_result(mysql_query($requete),0,0);
+	   			$res = pmb_mysql_query($requete);
+	    		if($res) $nb_results=pmb_mysql_result(pmb_mysql_query($requete),0,0);
 	    		else $nb_results=0;
 	    		if ($nb_results) {
 		    		switch ($myCart->type) {
 						case "EXPL" :
 		    				$requete="select $table.* from ".$table.", exemplaires where exemplaires.expl_id=$table.expl_id";
-	    			 		$resultat=mysql_query($requete,$dbh);
-	    			 		while ($row = mysql_fetch_object($resultat)) {
+	    			 		$resultat=pmb_mysql_query($requete,$dbh);
+	    			 		while ($row = pmb_mysql_fetch_object($resultat)) {
 	    						$res_ajout = $myCart->pointe_item($row->expl_id,$myCart->type);
 	    			 		}
 							break;
 						case "NOTI" :
 		    				$requete="select $table.* from ".$table;
-	    			 		$resultat=mysql_query($requete,$dbh);
-	    			 		while ($row = mysql_fetch_object($resultat)) {
+	    			 		$resultat=pmb_mysql_query($requete,$dbh);
+	    			 		while ($row = pmb_mysql_fetch_object($resultat)) {
 	    						$res_ajout = $myCart->pointe_item($row->notice_id,$myCart->type);
 	    			 		}
 							break;
 					}
 	    		}
+	    		print "<h3>".$msg["caddie_menu_pointage_apres_pointage"]."</h3>";
 				print pmb_bidi(aff_cart_nb_items ($myCart)) ;
 				print $sc->show_search_history($idcaddie, $myCart->type, "./catalog.php?categ=caddie&sub=pointage&moyen=search_history", "pointe_item");
 			}

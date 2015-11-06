@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collections.tpl.php,v 1.23 2014-01-23 13:52:36 ngantier Exp $
+// $Id: collections.tpl.php,v 1.24 2014-07-30 09:54:05 apetithomme Exp $
 
 // templates pour gestion des autorités collections
 
@@ -14,6 +14,7 @@ $selector_prop = "toolbar=no, dependent=yes, width=$selector_x_size, height=$sel
 // $collection_form : form saisie collection
 
 $collection_form = jscript_unload_question()."
+<script src='javascript/ajax.js'></script>
 <script type='text/javascript'>
 <!--
 	function test_form(form)
@@ -100,6 +101,7 @@ function check_link(id) {
 <div class='row'>
 	<textarea class='saisie-80em' id='comment' name='comment' cols='62' rows='4' wrap='virtual'>!!comment!!</textarea>
 </div>
+!!concept_form!!
 !!aut_pperso!!
 <!-- aut_link -->
 </div>
@@ -131,6 +133,7 @@ function check_link(id) {
 
 // $sub_collection_form : form saisie sous collection
 $sub_collection_form = jscript_unload_question()."
+<script src='javascript/ajax.js'></script>
 <script type='text/javascript'>
 <!--
 function test_form(form) {
@@ -223,6 +226,7 @@ function check_link(id) {
 <div class='row'>
 	<textarea class='saisie-80em' id='comment' name='comment' cols='62' rows='4' wrap='virtual'>!!comment!!</textarea>
 </div>
+!!concept_form!!
 !!aut_pperso!!
 <!-- aut_link -->
 		<div class='row'></div>
@@ -246,6 +250,7 @@ function check_link(id) {
 </form>
 <script type='text/javascript'>
 	document.forms['saisie_sub_collection'].elements['collection_nom'].focus();
+	ajax_parse_dom();
 </script>
 ";
 

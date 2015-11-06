@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: catal_form.tpl.php,v 1.119.2.8 2015-10-27 14:25:57 jpermanne Exp $
+// $Id: catal_form.tpl.php,v 1.133 2015-06-19 07:29:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -890,6 +890,9 @@ $ptab[6] = "
         <span>$msg[324]$msg[1901]$msg[325]</span>
     </div>
 </div>
+
+!!index_concept_form!!
+
 </div>
 ";
 
@@ -1029,32 +1032,29 @@ function chklnk_f_lien(element){
 		}
 		document.getElementById('f_lien_check').appendChild(wait);
 		var testlink = encodeURIComponent(element.value);
-		var req = new XMLHttpRequest();
-		req.open('GET', './ajax.php?module=ajax&categ=chklnk&timeout=!!pmb_curl_timeout!!&link='+testlink, true);
-		req.onreadystatechange = function (aEvt) {
-		  if (req.readyState == 4) {
-		  	if(req.status == 200){
-				var img = document.createElement('img');
-			    var src='';
-			    if(req.responseText == '200'){
-			    	if((element.value.substr(0,7) != 'http://') && (element.value.substr(0,8) != 'https://')) element.value = 'http://'+element.value;
-					//impec, on print un petit message de confirmation
-					src = 'images/tick.gif';
-				}else{
-			      //problème...
-					src = 'images/error.png';
-					img.setAttribute('style','height:1.5em;');
-			    }
-			    img.setAttribute('src',src);
-				img.setAttribute('align','top');
-				while(document.getElementById('f_lien_check').firstChild){
-					document.getElementById('f_lien_check').removeChild(document.getElementById('f_lien_check').firstChild);
-				}
-				document.getElementById('f_lien_check').appendChild(img);
+			var check = new http_request();
+		if(check.request('./ajax.php?module=ajax&categ=chklnk',true,'&timeout=0&link='+testlink)){
+			alert(check.get_text());
+		}else{
+			var result = check.get_text();
+			var img = document.createElement('img');
+			var src='';
+			if(result == '200') {
+				if((element.value.substr(0,7) != 'http://') && (element.value.substr(0,8) != 'https://')) element.value = 'http://'+element.value;
+				//impec, on print un petit message de confirmation
+				src = 'images/tick.gif';
+			}else{
+				//problème...
+				src = 'images/error.png';
+				img.setAttribute('style','height:1.5em;');
 			}
-		  }
-		};
-		req.send(null);
+			img.setAttribute('src',src);
+			img.setAttribute('align','top');
+			while(document.getElementById('f_lien_check').firstChild){
+				document.getElementById('f_lien_check').removeChild(document.getElementById('f_lien_check').firstChild);
+			}
+			document.getElementById('f_lien_check').appendChild(img);
+		}
 	}
 }
 </script>
@@ -1089,6 +1089,57 @@ function chklnk_f_lien(element){
     <input type='text' class='saisie-80em' id='f_eformat' name='f_eformat' value=\"!!eformat!!\" />
 </div>
 </div>
+</div>
+";
+
+//    ----------------------------------------------------
+//    Onglet map
+//    ----------------------------------------------------
+global $pmb_map_activate;
+if ($pmb_map_activate)
+$ptab[14] = "
+<!-- onglet 14 -->
+<div id='el14Parent' class='parent'>
+<h3>
+    <img src='./images/plus.gif' class='img_plus' name='imEx' id='el14Img' onClick=\"expandBase('el14', true); return false;\" title='".$msg["notice_map_onglet_title"]."' border='0' /> ".$msg["notice_map_onglet_title"]."
+</h3>
+</div>
+
+<div id='el14Child' class='child' etirable='yes' title='".htmlentities($msg[notice_map_onglet_title],ENT_QUOTES, $charset)."'>
+	<div id='el14Child_0' title='".htmlentities($msg[notice_map],ENT_QUOTES, $charset)."' movable='yes'>
+		<div id='el14Child_0a' class='row'>
+		    <label class='etiquette'>$msg[notice_map]</label>
+		</div>
+		<div id='el14Child_0b' class='row'>
+			!!notice_map!!
+	    </div>
+	</div>
+		
+</div>
+";
+
+//    ----------------------------------------------------
+//    Onglet Nomenclature
+//    ----------------------------------------------------
+global $pmb_nomenclature_activate;
+if ($pmb_nomenclature_activate)
+$ptab[15] = "
+<!-- onglet 15 -->
+<div id='el15Parent' class='parent'>
+<h3>
+    <img src='./images/plus.gif' class='img_plus' name='imEx' id='el15Img' onClick=\"expandBase('el15', true); return false;\" title='".$msg["notice_nomenclature_onglet_title"]."' border='0' /> ".$msg["notice_nomenclature_onglet_title"]."
+</h3>
+</div>
+
+<div id='el15Child' class='child' etirable='yes' title='".htmlentities($msg[notice_nomenclature_onglet_title],ENT_QUOTES, $charset)."'>
+	<div id='el15Child_0' title='".htmlentities($msg[notice_nomenclature_onglet_title],ENT_QUOTES, $charset)."' movable='yes'>
+		<div id='el15Child_0a' class='row'>
+		</div>
+		<div id='el15Child_0b' class='row'>
+			!!nomenclature_form!!			
+	    </div>
+	</div>
+		
 </div>
 ";
 
@@ -1142,7 +1193,7 @@ $ptab[130]="
 				<input type='button' class='bouton' value='$msg[raz]' onclick=\"this.form.f_rel_!!n_rel!!.value=''; this.form.f_rel_id_!!n_rel!!.value='0'; this.form.f_rel_rank_!!n_rel!!.value='0';\"/>
 				<input type='hidden' id='f_rel_id_!!n_rel!!' name='f_rel_id_!!n_rel!!' value='!!notice_relations_id!!'/>
 				<input type='hidden' id='f_rel_rank_!!n_rel!!' name='f_rel_rank_!!n_rel!!' value='!!notice_relations_rank!!'/>
-				<input type='button' class='bouton' value='+' onClick=\"add_rel();\"/>
+				&nbsp;<input type='button' class='bouton' value='+' onClick=\"add_rel();\"/>
 			</div>
 		</div>
 		<div class='row'></div>";
@@ -1328,7 +1379,16 @@ $ptab[10] = "
 			!!notice_statut!!
 	    </div>
 	</div>
-
+	<div id='el10Child_7' title='".htmlentities($msg["notice_is_new_gestion"],ENT_QUOTES, $charset)."' movable='yes'>
+		<!--    Nouveauté    -->
+		<div id='el10Child_7a' class='row'>
+		    <label for='f_new_gestion' class='etiquette'>".$msg["notice_is_new_gestion"]."</label>
+		</div>
+		<div id='el10Child_7b' class='row'>
+		    <input type='radio' name='f_notice_is_new' !!checked_no!! value='0'>".$msg["notice_is_new_gestion_no"]."<br>
+		    <input type='radio' name='f_notice_is_new' !!checked_yes!! value='1'>".$msg["notice_is_new_gestion_yes"]."<br>
+		</div>
+	</div>	
 	<div id='el10Child_1' title='".htmlentities($msg[notice_commentaire_gestion],ENT_QUOTES, $charset)."' movable='yes'>
 		<!--    commentaire de gestion    -->
 		<div id='el10Child_1a' class='row'>
@@ -1373,8 +1433,18 @@ $ptab[10].= "
 		   !!indexation_lang!!
 		</div>
 	</div>
-		
-</div>";
+";
+global $pmb_notices_show_dates;
+if($pmb_notices_show_dates)
+	$ptab[10].= "
+		<div id='el10Child_9' title='".htmlentities($msg[noti_crea_date],ENT_QUOTES, $charset)."' movable='yes'>
+			<div id='el10Child_9a' class='row'>
+				!!dates_notice!!
+			</div>
+		</div>";
+$ptab[10].= "
+</div>
+";
 
 
 // $form_notice : formulaire de notice
@@ -1479,8 +1549,13 @@ $form_notice .= "<hr class='spacer' />
 <hr class='spacer' />
 !!tab11!!
 <hr class='spacer' />
+!!tab14!!
+<hr class='spacer' />
+!!tab15!!
+<hr class='spacer' />
 !!tab10!!
 <hr class='spacer' />
+!!authperso!!
 </div>
 
 <div class='row'>
@@ -1508,17 +1583,40 @@ $notice_replace = "
 <div class='form-contenu'>
     <div class='row'>
         <label class='etiquette' for='par'>$msg[160]</label>
-        </div>
+	</div>
     <div class='row'>
         <input type='text' class='saisie-50emr' value='' name='notice_libelle' readonly>
         <input class='bouton' type='button' onclick=\"openPopUp('./select.php?what=notice&caller=notice_replace&param1=by&param2=notice_libelle&no_display=!!id!!', 'select_notice', 600, 400, -2, -2, '$selector_prop')\" title='$msg[157]' value='$msg[parcourir]' />
         <input type='button' class='bouton' value='$msg[raz]' onclick=\"this.form.notice_libelle.value=''; this.form.by.value='0'; \" />
         <input type='hidden' name='by' value=''>
-        </div>
     </div>
+	!!notice_replace_categories!!
+</div>
 <div class='row'>
     <input type='button' class='bouton' value='$msg[76]' onClick=\"history.go(-1);\">
     <input type='submit' class='bouton' value='$msg[159]'>
     </div>
 </form>
 ";
+
+$notice_replace_categories = "
+<div class='row'>&nbsp;</div>
+<div class='row'>
+	<label class='etiquette' for='keep_categories_label'>".$msg["notice_replace_keep_categories"]."</label>
+</div>
+<div class='row'>
+	".$msg[39]." <input type='radio' name='keep_categories' value='0' checked='checked' onclick=\"document.getElementById('notice_replace_categories').setAttribute('style','display:none;');\" />
+	".$msg[40]." <input type='radio' name='keep_categories' value='1' onclick=\"document.getElementById('notice_replace_categories').setAttribute('style','');\" />
+</div>
+<div class='row'>&nbsp;</div>
+<div class='row' id='notice_replace_categories' style='display:none';>
+	!!notice_replace_category!!
+	<input type='hidden' id='f_nb_categ' name='f_nb_categ' value='!!nb_categ!!' /> 
+</div>
+		";
+$notice_replace_category = "
+<div class='row'>
+	<input type='checkbox' id='f_categ!!icateg!!' name='f_categ!!icateg!!' checked='checked' />
+	!!categ_libelle!!
+	<input type='hidden' name='f_categ_id!!icateg!!' id='f_categ_id!!icateg!!' value='!!categ_id!!' />
+</div>";

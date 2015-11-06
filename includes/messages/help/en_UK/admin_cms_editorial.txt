@@ -1,7 +1,7 @@
-<h1>Administration du contenu &eacute;ditorial</h1>
+<h1>Administration of the editorial content</h1>
 
-<p>La section <b>administration du contenu &eacute;ditorial</b> permet de d&eacute;finir les param&egrave;tres de l&apos;application pour le contenu &eacute;ditorial.
+<p>The <b>administration of the editorial content</b> section allows to set the parameters of the application for the editorial content.
 <ul>
-<li><b>Statuts de publication</b> permet de d&eacute;finir les statuts, afin de distinguer les droits de visibilit&eacute; dans l&apos;OPAC</li>
+<li><b>Publication states</b> allows to set the states, in order to set the viewing rights in the OPAC</li>
 </ul></p>
  

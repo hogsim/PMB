@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sel_searcher.class.php,v 1.4.6.3 2015-02-12 15:33:32 jpermanne Exp $
+// $Id: sel_searcher.class.php,v 1.8 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -297,15 +297,15 @@ class sel_searcher_notice_mono extends sel_searcher {
 			$suite_rqt.="or code='".formatISBN($isbn_verif,10)."' ";
 			
 			$q_count = "select count(*) from notices where ".$restrict." and (0 ".$suite_rqt.")";
-			$r_count = mysql_query($q_count, $dbh);
-			$n_count = mysql_result($r_count,0,0);
+			$r_count = pmb_mysql_query($q_count, $dbh);
+			$n_count = pmb_mysql_result($r_count,0,0);
 			$this->nbresults = $n_count;
 			
 			$q_list = "select notice_id from notices where ".$restrict." and (0 ".$suite_rqt.")";
 			if(!$results_show_all){
 				$q_list.=" limit ".$this->page*$nb_per_page.", ".$nb_per_page." "; 
 			}
-			$r_list = mysql_query($q_list,$dbh);
+			$r_list = pmb_mysql_query($q_list,$dbh);
 			$this->t_query=$r_list;
 			if(!$results_show_all){
 				$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -323,15 +323,15 @@ class sel_searcher_notice_mono extends sel_searcher {
 				$q_members = $aq->get_query_members("notices","index_wew","index_sew","notice_id");
 					
 				$q_count = "select count(*) from notices where ".$restrict." and (".$q_members["where"]." ".$suite_rqt.")";
-				$r_count = mysql_query($q_count, $dbh);
-				$n_count = mysql_result($r_count,0,0);
+				$r_count = pmb_mysql_query($q_count, $dbh);
+				$n_count = pmb_mysql_result($r_count,0,0);
 				$this->nbresults = $n_count;
 				
 				$q_list = "select notice_id, ".$q_members['select']." as pert from notices where ".$restrict." and (".$q_members["where"]." ".$suite_rqt.") ".$q_members['post'];
 				if(!$results_show_all){
 					$q_list.=" limit ".$this->page*$nb_per_page.", ".$nb_per_page." "; 
 				}
-				$r_list = mysql_query($q_list,$dbh);
+				$r_list = pmb_mysql_query($q_list,$dbh);
 				$this->t_query=$r_list;
 				if(!$results_show_all){
 					$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -382,7 +382,7 @@ class sel_searcher_notice_mono extends sel_searcher {
 					</div>";
 			print "<form name='searcher_results_check_form'>";
 			// on lance la requête
-			while(($nz=mysql_fetch_object($this->t_query))) {
+			while(($nz=pmb_mysql_fetch_object($this->t_query))) {
 				// notice de monographie
 				$mono = new sel_mono_display($nz->notice_id,$this->base_url,'sel_searcher_select_');
 				$mono->action=$this->action;
@@ -443,15 +443,15 @@ class sel_searcher_notice_article extends sel_searcher {
 			
 			$q_members = $aq->get_query_members("notices","index_wew","index_sew","notice_id");			
 			$q_count = "select count(*) from notices where ".$restrict." and (".$q_members["where"]." ".$suite_rqt.")";
-			$r_count = mysql_query($q_count, $dbh);
-			$n_count = mysql_result($r_count,0,0);
+			$r_count = pmb_mysql_query($q_count, $dbh);
+			$n_count = pmb_mysql_result($r_count,0,0);
 			$this->nbresults = $n_count;
 			
 			$q_list = "select notice_id, ".$q_members['select']." as pert from notices where ".$restrict." and (".$q_members["where"]." ".$suite_rqt.") ".$q_members['post'];
 			if(!$results_show_all){
 				$q_list.=" limit ".$this->page*$nb_per_page.", ".$nb_per_page." "; 
 			}
-			$r_list = mysql_query($q_list,$dbh);
+			$r_list = pmb_mysql_query($q_list,$dbh);
 			$this->t_query=$r_list;
 			if(!$results_show_all){
 				$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -501,7 +501,7 @@ class sel_searcher_notice_article extends sel_searcher {
 					</div>";
 			print "<form name='searcher_results_check_form'>";
 			// on lance la requête
-			while(($nz=mysql_fetch_object($this->t_query))) {
+			while(($nz=pmb_mysql_fetch_object($this->t_query))) {
 				// notice d'article
 				$art = new sel_article_display($nz->notice_id,$this->base_url,'sel_searcher_select_');
 				$art->action=$this->action;
@@ -553,15 +553,15 @@ class sel_searcher_bulletin extends sel_searcher {
 		if (isISSN(stripslashes($elt_query))) {
 			$suite_rqt.=" or code='".$issn_verif."' ";
 			$q_count = "select count(distinct notice_id) from notices, bulletins where ".$restrict." and (0 ".$suite_rqt.")";
-			$r_count = mysql_query($q_count);
-			$n_count = mysql_result($r_count,0,0);
+			$r_count = pmb_mysql_query($q_count);
+			$n_count = pmb_mysql_result($r_count,0,0);
 			$this->nbresults = $n_count;
 			
 			$q_list = "select distinct(notice_id) from notices, bulletins where ".$restrict." and (0 ".$suite_rqt.")";
 			if(!$results_show_all){
 				$q_list .=" limit ".$this->page*$nb_per_page.", ".$nb_per_page." "; 
 			}
-			$r_list = mysql_query($q_list,$dbh);
+			$r_list = pmb_mysql_query($q_list,$dbh);
 			$this->t_query=$r_list;
 			if(!$results_show_all){
 				$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -577,15 +577,15 @@ class sel_searcher_bulletin extends sel_searcher {
 			} else {
 				$q_members = $aq->get_query_members("notices","index_wew","index_sew","notice_id");	
 				$q_count = "select count(distinct notice_id) from notices, bulletins where ".$restrict." and (".$q_members["where"]." ".$suite_rqt.")";
-				$r_count = mysql_query($q_count);
-				$n_count = mysql_result($r_count,0,0);
+				$r_count = pmb_mysql_query($q_count);
+				$n_count = pmb_mysql_result($r_count,0,0);
 				$this->nbresults = $n_count;
 				
 				$q_list = "select distinct(notice_id), ".$q_members['select']." as pert from notices, bulletins where ".$restrict." and (".$q_members["where"]." ".$suite_rqt.") ".$q_members['post'];
 				if(!$results_show_all){
 					$q_list.=" limit ".$this->page*$nb_per_page.", ".$nb_per_page." "; 
 				}
-				$r_list = mysql_query($q_list,$dbh);
+				$r_list = pmb_mysql_query($q_list,$dbh);
 				$this->t_query=$r_list;
 				if(!$results_show_all){
 					$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -617,11 +617,11 @@ class sel_searcher_bulletin extends sel_searcher {
 				}
 				break;
 		}
-		$r_count = mysql_query($q_count, $dbh);
-		$n_count = mysql_result($r_count,0,0);
+		$r_count = pmb_mysql_query($q_count, $dbh);
+		$n_count = pmb_mysql_result($r_count,0,0);
 		$this->nbresults=$n_count;
 		
-		$r_list = mysql_query($q_list, $dbh);
+		$r_list = pmb_mysql_query($q_list, $dbh);
 		$this->t_query=$r_list;
 		if(!$results_show_all){
 			$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -649,7 +649,7 @@ class sel_searcher_bulletin extends sel_searcher {
 			print $this->aut_b_list;
 
 			// on lance la requete
-			while(($nz=mysql_fetch_object($this->t_query))) {
+			while(($nz=pmb_mysql_fetch_object($this->t_query))) {
 				// notice de perio
 				$perio = new sel_serial_display($nz->notice_id, $this->base_url);
 				$perio->action="<a href='".$this->base_url."&typ_query=".$this->cur_typ_query."&etat=aut_search&aut_type=perio&aut_id=!!aut_id!!' >!!display!!</a>";
@@ -695,7 +695,7 @@ class sel_searcher_bulletin extends sel_searcher {
 					</div>";
 			print "<form name='searcher_results_check_form'>";
 			// on lance la requête
-			while(($nz=mysql_fetch_object($this->t_query))) {
+			while(($nz=pmb_mysql_fetch_object($this->t_query))) {
 				// bulletin
 				$bull = new sel_bulletin_display($nz->bulletin_id, $this->base_url,'sel_searcher_select_');
 				$bull->action=$this->action;
@@ -747,8 +747,8 @@ class sel_searcher_frais extends sel_searcher {
 			error_message($msg["searcher_syntax_error"],sprintf($msg["searcher_syntax_error_desc"],$aq->current_car,$aq->input_html,$aq->error_message));
 		} else {
 			$q_count=$aq->get_query_count('frais','libelle','index_libelle','id_frais');
-			$r_count = mysql_query($q_count);
-			$n_count = mysql_result($r_count,0,0);
+			$r_count = pmb_mysql_query($q_count);
+			$n_count = pmb_mysql_result($r_count,0,0);
 			$this->nbresults = $n_count;
 			
 			if(!$results_show_all){
@@ -756,7 +756,7 @@ class sel_searcher_frais extends sel_searcher {
 			}else{
 				$q_list = $aq->get_query('frais','libelle','index_libelle','id_frais');
 			}
-			$r_list = mysql_query($q_list,$dbh);
+			$r_list = pmb_mysql_query($q_list,$dbh);
 			$this->t_query=$r_list;
 			if(!$results_show_all){
 				$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -792,7 +792,7 @@ class sel_searcher_frais extends sel_searcher {
 					</div>";
 			print "<form name='searcher_results_check_form'>";
 			// on lance la requête
-			while(($nz=mysql_fetch_object($this->t_query))) {
+			while(($nz=pmb_mysql_fetch_object($this->t_query))) {
 				
 				// frais annexes
 				$frais = new sel_frais_display($nz->id_frais, $this->base_url,'sel_searcher_select_');
@@ -853,15 +853,15 @@ class sel_searcher_abt extends sel_searcher {
 		if (isISSN(stripslashes($elt_query))) {
 			$suite_rqt.=" or code='".$issn_verif."' ";			
 			$q_count = "select count(abt_id) from notices, abts_abts where ".$restrict." and (0 ".$suite_rqt.")";
-			$r_count = mysql_query($q_count);
-			$n_count = mysql_result($r_count,0,0);
+			$r_count = pmb_mysql_query($q_count);
+			$n_count = pmb_mysql_result($r_count,0,0);
 			$this->nbresults = $n_count;
 			
 			$q_list = "select tit1, abt_id, abt_name from notices, abts_abts where ".$restrict." and (0 ".$suite_rqt.") ORDER BY 1,3";
 			if(!$results_show_all){
 				$q_list .= " limit ".$this->page*$nb_per_page.", ".$nb_per_page." ";
 			} 
-			$r_list = mysql_query($q_list,$dbh);
+			$r_list = pmb_mysql_query($q_list,$dbh);
 			$this->t_query=$r_list;
 			if(!$results_show_all){
 				$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -878,8 +878,8 @@ class sel_searcher_abt extends sel_searcher {
 			} else {
 				$q_members = $aq->get_query_members("notices","index_wew","index_sew","abt_id");			
 				$q_count = "select count(abt_id) from notices, abts_abts where ".$restrict." and (".$q_members["where"]." ".$suite_rqt.")";
-				$r_count = mysql_query($q_count);
-				$n_count = mysql_result($r_count,0,0);
+				$r_count = pmb_mysql_query($q_count);
+				$n_count = pmb_mysql_result($r_count,0,0);
 				$this->nbresults = $n_count;
 				
 				$q_list = "select abt_id, ".$q_members['select']." as pert from notices, abts_abts where ".$restrict." and (".$q_members["where"]." ".$suite_rqt.") ".$q_members['post'];
@@ -892,7 +892,7 @@ class sel_searcher_abt extends sel_searcher {
 						FROM notices n, abts_abts a, (".$q_list.") as q 
 						WHERE q.abt_id=a.abt_id AND a.num_notice=n.notice_id 
 						ORDER BY 1 ASC,3 DESC";
-				$r_list = mysql_query($new_q_list,$dbh);
+				$r_list = pmb_mysql_query($new_q_list,$dbh);
 				$this->t_query=$r_list;
 				if(!$results_show_all){
 					$this->nbepage=ceil($this->nbresults/$nb_per_page);
@@ -943,7 +943,7 @@ class sel_searcher_abt extends sel_searcher {
 					</div>";
 			print "<form name='searcher_results_check_form'>";
 			// on lance la requête 
-			while(($nz=mysql_fetch_object($this->t_query))) {
+			while(($nz=pmb_mysql_fetch_object($this->t_query))) {
 				// abonnement
 				$abt = new sel_abt_display($nz->abt_id, $this->base_url,'sel_searcher_select_');
 				$abt->action=$this->action;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export_notices.inc.php,v 1.5 2009-12-09 14:30:30 mbertin Exp $
+// $Id: export_notices.inc.php,v 1.6 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -27,8 +27,8 @@ function cree_export_notices($liste=array(), $typeexport='pmbxml2marciso', $expl
 			$id=$liste[$z];			
 			// Exclure de l'export (opac, panier) les fiches interdites de diffusion dans administration, Notices > Origines des notices NG72
 			$sql="select orinot_diffusion from origine_notice,notices where notice_id = '$id' and origine_catalogage = orinot_id";	
-			$res=mysql_query($sql,$dbh);
-			$diffusable = mysql_result($res,0,0);
+			$res=pmb_mysql_query($sql,$dbh);
+			$diffusable = pmb_mysql_result($res,0,0);
 			if($diffusable){
 				$export= new start_export($id,$typeexport) ;
 				$e_notice.=$export->output_notice;

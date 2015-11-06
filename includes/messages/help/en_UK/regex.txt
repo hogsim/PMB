@@ -1,8 +1,8 @@
 <?php
 
-// $Id: regex.txt,v 1.8 2012-12-04 15:45:32 mbertin Exp $
+// $Id: regex.txt,v 1.9 2015-06-22 14:46:46 pmbs Exp $
 
-// documentation succincte sur les expressions r&eacute;guli&egrave;res
+// short documentation about the most used expressions
 
 $content = "
 <table border='0' width='100%'>

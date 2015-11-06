@@ -13,14 +13,9 @@ if($opac_fonction_affichage_liste_bull && file_exists($base_path."/includes/".$o
 function affichage_liste_bulletins_normale($res) {
 	global $charset, $dbh;
 	
-	while(($tableau=mysql_fetch_array($res))) {
-	
-		$sql = "SELECT COUNT(1) FROM explnum WHERE explnum_bulletin='".$tableau["bulletin_id"]."'";
-		$result = @mysql_query($sql, $dbh);
-		$count=mysql_result($result, 0, 0);
-		
+	while(($tableau=pmb_mysql_fetch_array($res))) {
 		print "<span class='liste_bulletins'>";
-		if ($count){
+		if ($tableau['nbexplnum']>0){
 			$padding = "";
 			print '<img src="./images/attachment.png">';
 		}
@@ -41,7 +36,7 @@ function affichage_liste_bulletins_tableau($res) {
 
 	print "<table cellpadding='2' class='exemplaires' width='100%'><tr><th><b>".$msg[bull_numero]."</b></th><th><b>".$msg[bull_mention_date]."</b></th><th><b>".$msg['etat_collection_title']."</b></th></tr>";
 	$odd_even=1;
-	while(($tableau=mysql_fetch_array($res))) {
+	while(($tableau=pmb_mysql_fetch_array($res))) {
 
 		if ($odd_even==0) {
 			$pair_impair="odd";
@@ -62,14 +57,15 @@ function affichage_liste_bulletins_tableau($res) {
 	print "</table><br /><br />";
 }
 
+
 function affichage_liste_bulletins_depliable($res) {
 	global $charset, $dbh;
 	$resultat_aff="";
-	while(($tableau=mysql_fetch_array($res))) {
+	while(($tableau=pmb_mysql_fetch_array($res))) {
 
 		$sql = "SELECT COUNT(1) FROM explnum WHERE explnum_bulletin='".$tableau["bulletin_id"]."'";
-		$result = @mysql_query($sql, $dbh);
-		$count=mysql_result($result, 0, 0);
+		$result = @pmb_mysql_query($sql, $dbh);
+		$count=pmb_mysql_result($result, 0, 0);
 
 		$titre="";
 		if($count)$titre.= '<img src="./images/attachment.png">';
@@ -82,7 +78,7 @@ function affichage_liste_bulletins_depliable($res) {
 		//	($id,$titre,$contenu,$maximise=0) {
 		$resultat_aff.=gen_plus("bull_id_".$tableau['bulletin_id'],$titre, get_bulletin_list_func($tableau['bulletin_id']) );
 	}
-	
+
 	print $resultat_aff;
 }
 
@@ -99,12 +95,12 @@ function get_bulletin_list_func($id){
 	$largeur = 500;
 	$requete = "SELECT bulletin_id, bulletin_numero, bulletin_notice, mention_date, date_date, bulletin_titre, bulletin_cb, date_format(date_date, '".$msg["format_date_sql"]."') as aff_date_date,num_notice FROM bulletins WHERE bulletin_id='$id'";
 
-	$res = @mysql_query($requete, $dbh);
-	while(($obj=mysql_fetch_array($res))) {
+	$res = @pmb_mysql_query($requete, $dbh);
+	while(($obj=pmb_mysql_fetch_array($res))) {
 		//on cherches des documents numériques
 		$req = "select explnum_id from explnum where explnum_bulletin = ".$obj["bulletin_id"];
-		$resultat = mysql_query($req, $dbh) or die ($req." ".mysql_error());
-		$nb_ex = mysql_num_rows($resultat);
+		$resultat = pmb_mysql_query($req, $dbh) or die ($req." ".pmb_mysql_error());
+		$nb_ex = pmb_mysql_num_rows($resultat);
 		//on met le nécessaire pour la visionneuse
 		if($opac_visionneuse_allow && $nb_ex){
 			$resultat_aff.= "
@@ -117,8 +113,8 @@ function get_bulletin_list_func($id){
 		$typdocchapeau="a";
 		$icon="";
 		$requete3 = "SELECT notice_id,typdoc FROM notices WHERE notice_id='".$obj["bulletin_notice"]."' ";
-		$res3 = @mysql_query($requete3, $dbh);
-		while(($obj3=mysql_fetch_object($res3))) {
+		$res3 = @pmb_mysql_query($requete3, $dbh);
+		while(($obj3=pmb_mysql_fetch_object($res3))) {
 			$notice3 = new notice($obj3->notice_id);
 			$typdocchapeau=$obj3->typdoc;
 		}
@@ -152,13 +148,13 @@ function get_bulletin_list_func($id){
 	} else {
 		// construction des dépouillements
 		$requete = "SELECT * FROM analysis, notices, notice_statut WHERE analysis_bulletin='$id' AND notice_id = analysis_notice AND statut = id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").") ";
-		$res = @mysql_query($requete, $dbh);
-		if (mysql_num_rows($res)) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($res)) {
 			$depouill= "<h3>".$msg['bull_dep']."</h3>";
 			if ($opac_notices_depliable) $depouill .= $begin_result_liste;
-			if ($opac_cart_allow) $depouill.="<a href=\"cart_info.php?id=".$id."&lvl=analysis&header=".rawurlencode(strip_tags($notice_header))."\" target=\"cart_info\" class=\"img_basket\">".$msg["cart_add_result_in"]."</a>";
+			if ($opac_cart_allow) $depouill.="<a href=\"cart_info.php?id=".$id."&lvl=analysis&header=".rawurlencode(strip_tags($notice_header))."\" target=\"cart_info\" class=\"img_basket\" title='".$msg["cart_add_result_in"]."'>".$msg["cart_add_result_in"]."</a>";
 			$depouill.= "<blockquote>";
-			while(($obj=mysql_fetch_array($res))) {
+			while(($obj=pmb_mysql_fetch_array($res))) {
 				$depouill.= pmb_bidi(aff_notice($obj["analysis_notice"]));
 			}
 			$depouill.= "</blockquote>";
@@ -171,7 +167,7 @@ function get_bulletin_list_func($id){
 				$resa_check=check_statut(0,$id) ;
 				if ($resa_check) {
 					$requete_resa = "SELECT count(1) FROM resa WHERE resa_idbulletin='$id'";
-					$nb_resa_encours = mysql_result(mysql_query($requete_resa,$dbh), 0, 0) ;
+					$nb_resa_encours = pmb_mysql_result(pmb_mysql_query($requete_resa,$dbh), 0, 0) ;
 					if ($nb_resa_encours) $message_nbresa = str_replace("!!nbresa!!", $nb_resa_encours, $msg["resa_nb_deja_resa"]) ;
 
 					if (($_SESSION["user_code"] && $allow_book) && $opac_resa && !$popup_resa) {
@@ -191,9 +187,9 @@ function get_bulletin_list_func($id){
 						$ret_resa .= $message_nbresa ;
 						$ret_resa .= "<br />";
 					}/* elseif ($fonction=='notice_affichage_custom_bretagne') {
-						if ($opac_resa_popup) $reserver = "<a href='#' onClick=\"if(confirm('".$msg["confirm_resa"]."')){w=window.open('./do_resa.php?lvl=resa&id_notice=".$this->notice_id."&oresa=popup','doresa','scrollbars=yes,width=500,height=600,menubar=0,resizable=yes'); w.focus(); return false;}else return false;\" id=\"bt_resa\">".$msg["bulletin_display_place_resa"]."</a>" ;
-						else $reserver = "<a href='./do_resa.php?lvl=resa&id_notice=".$this->notice_id."&oresa=popup' onClick=\"return confirm('".$msg["confirm_resa"]."')\" id=\"bt_resa\">".$msg["bulletin_display_place_resa"]."</a>" ;
-						$reservernbre = $message_nbresa ;
+					if ($opac_resa_popup) $reserver = "<a href='#' onClick=\"if(confirm('".$msg["confirm_resa"]."')){w=window.open('./do_resa.php?lvl=resa&id_notice=".$this->notice_id."&oresa=popup','doresa','scrollbars=yes,width=500,height=600,menubar=0,resizable=yes'); w.focus(); return false;}else return false;\" id=\"bt_resa\">".$msg["bulletin_display_place_resa"]."</a>" ;
+					else $reserver = "<a href='./do_resa.php?lvl=resa&id_notice=".$this->notice_id."&oresa=popup' onClick=\"return confirm('".$msg["confirm_resa"]."')\" id=\"bt_resa\">".$msg["bulletin_display_place_resa"]."</a>" ;
+					$reservernbre = $message_nbresa ;
 					}*/ else $ret_resa = "";
 					$resultat_aff.= pmb_bidi($ret_resa) ;
 				}
@@ -207,8 +203,9 @@ function get_bulletin_list_func($id){
 			if (($explnum = show_explnum_per_notice(0, $id, ''))) $resultat_aff.= pmb_bidi("<a name='docnum'><h3>".$msg["explnum"]."</h3></a>".$explnum);
 		}
 	}
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 
 	$resultat_aff.= notice_affichage::autres_lectures (0,$id);
 	return($resultat_aff);
 }
+?>

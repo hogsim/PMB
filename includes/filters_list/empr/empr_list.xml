@@ -115,4 +115,8 @@
 		</field>
 		<field name="msg:empr_filter_expl_loc" id="13" function="filter_loc_expl" defaultvalue="msg:all_location"/>
 	</specialfields>
+	
+	<!-- Table de référence pour les champs personnalisés de prêts -->
+	<reference dynamicfields="yes" prefixname="pret" tablekey="pret_idempr">pret</reference>
+	<referencekey>pret_arc_id</referencekey>
 </fields>

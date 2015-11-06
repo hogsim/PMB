@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_scd_lyon3.inc.php,v 1.12 2007-12-07 13:39:47 touraine37 Exp $
+// $Id: func_scd_lyon3.inc.php,v 1.13 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -110,7 +110,7 @@ function import_new_notice_suite() {
 			// insertion dans la table notices_categories
 			$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$categ_parent."' " ;
 
-			$res_ajout = @mysql_query($rqt_ajout, $dbh);
+			$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		}
 				
 		// récup des categ géo à loger sous la categ géo principale
@@ -127,7 +127,7 @@ function import_new_notice_suite() {
 		if ($categ_parent != $id_rech_geo) {
 			// insertion dans la table notices_categories
 			$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$categ_parent."' " ;
-			$res_ajout = @mysql_query($rqt_ajout, $dbh);
+			$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		}
 		
 		// récup des categ chrono à loger sous la categ chrono principale
@@ -145,7 +145,7 @@ function import_new_notice_suite() {
 			// insertion dans la table notices_categories
 			$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$categ_parent."' " ;
 
-			$res_ajout = @mysql_query($rqt_ajout, $dbh);
+			$res_ajout = @pmb_mysql_query($rqt_ajout, $dbh);
 		}
 	}
 	

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: history_functions.inc.php,v 1.2.14.1 2014-05-14 12:18:21 mbertin Exp $
+// $Id: history_functions.inc.php,v 1.4 2014-12-18 08:21:15 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -54,6 +54,7 @@ function reorg_tableau_suppr($tableau_suppr) {
 			$_SESSION["notice_view".(string)$i]="";
 			$_SESSION["search_type".(string)$i]="";
 			$_SESSION["user_query".(string)$i]="";
+			$_SESSION["map_emprises_query".(string)$i]="";
 			$_SESSION["typdoc".(string)$i]="";
 			$_SESSION["look_TITLE".(string)$i]="";
 	       	$_SESSION["look_AUTHOR".(string)$i]="";

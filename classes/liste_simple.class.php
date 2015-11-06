@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liste_simple.class.php,v 1.3.2.1 2014-08-07 12:49:46 abacarisse Exp $
+// $Id: liste_simple.class.php,v 1.8 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 require_once($include_path."/templates/liste_simple.tpl.php");
@@ -32,8 +32,8 @@ class liste_simple{
 			$this->lib_liste ='';
 		} else {
 			$req = "select $this->colonne_lib_nom as lib from $this->table where $this->colonne_id_nom ='".$this->id_liste."'";
-			$res = mysql_query($req,$dbh);
-			$list = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			$list = pmb_mysql_fetch_object($res);
 			$this->lib_liste = $list->lib;
 		}
 		
@@ -142,8 +142,8 @@ class liste_simple{
 		</tr>";
 		$tab_list =array();
 		$req = "select * from $this->table order by $this->colonne_lib_nom";
-		$res=mysql_query($req,$dbh);
-		while ($row = mysql_fetch_object($res)){
+		$res=pmb_mysql_query($req,$dbh);
+		while ($row = pmb_mysql_fetch_object($res)){
 			$nom = $this->colonne_lib_nom;
 			$id = $this->colonne_id_nom;
 			$tab_list[$row->$id] = $row->$nom;
@@ -182,7 +182,10 @@ class liste_simple{
 		} else {
 			$req="update $this->table set $this->colonne_lib_nom='".$libelle."' where $this->colonne_id_nom='".$this->id_liste."'";
 		}		
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
+		if(!$this->id_liste){
+			$this->id_liste = pmb_mysql_insert_id($dbh);
+		}
 	}	
 	
 	/*
@@ -197,12 +200,21 @@ class liste_simple{
 			$error=true;
 		} else {		
 			$req="delete from $this->table where $this->colonne_id_nom='".$this->id_liste."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 		
 		return $error;
 	}
 	
+	function getLabel($id){
+		global $dbh;
+		
+		$query='SELECT '.$this->colonne_lib_nom.' FROM '.$this->table.' WHERE '.$this->colonne_id_nom.'='.$id;
+		$result=pmb_mysql_query($query,$dbh);
+		if(!pmb_mysql_error($dbh) && pmb_mysql_num_rows($result)){
+			return pmb_mysql_result($result, 0,0);
+		}
+	}
 	
 	/*
 	 * Retourne un sélecteur correspondant à la liste
@@ -211,11 +223,12 @@ class liste_simple{
 		global $dbh,$charset,$msg;
 		
 		$req = "select * from $this->table order by $this->colonne_lib_nom";
-		$res = mysql_query($req,$dbh);
+
+		$res = pmb_mysql_query($req,$dbh);
 		$select = "";
 		$selector = "<select name='$this->colonne_id_nom' $action >";
 		if($default) $selector .= "<option value='0'>".htmlentities($msg[$this->messages['selector_all']],ENT_QUOTES,$charset)."</option>";
-		while(($list=mysql_fetch_object($res))){
+		while(($list=pmb_mysql_fetch_object($res))){
 			$id = $this->colonne_id_nom;
 			$nom = $this->colonne_lib_nom;
 			if($idliste == $list->$id) $select="selected";
@@ -230,39 +243,6 @@ class liste_simple{
 
 	//Vérifie si le thème de demande est utilisé dans les demandes	
 	function hasElements(){		
-	}
-}
-
-/*
- * Classe des types de demandes
- */
-class demandes_types extends liste_simple {
-	
-	/*
-	 * Définition des paramètres
-	 */
-	function setParametres(){
-		$this->setMessages('demandes_ajout_type','demandes_modif_type','demandes_del_type','demandes_add_type','demandes_no_type_available','demandes_used_type');
-		$this->setActions('admin.php?categ=demandes&sub=type','admin.php?categ=demandes&sub=type');
-	}
-	/*
-	 * Vérifie si le type de demande est utilisé dans les demandes
-	 */	
-	function hasElements(){
-		
-		global $dbh;
-		
-		$q = "select count(1) from demandes where type_demande = '".$this->id_liste."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
-	}
-	
-	static function get_qty() {
-		
-		global $dbh;
-		$q = "select count(1) from demandes_type";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
 	}
 }
 
@@ -286,16 +266,16 @@ class demandes_themes extends liste_simple {
 		global $dbh;
 		
 		$q = "select count(1) from demandes where theme_demande = '".$this->id_liste."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 	}
 	
 	static function get_qty() {
 		
 		global $dbh;
 		$q = "select count(1) from demandes_theme";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 	}
 	
 }

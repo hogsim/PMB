@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reader.class.php,v 1.2 2012-07-31 10:12:16 dgoron Exp $
+// $Id: reader.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -87,7 +87,7 @@ class reader extends tache {
 			left join taches t on t.num_planificateur = p.id_planificateur
 			left join tache_docnum tdn on tdn.tache_docnum_repertoire=p.rep_upload
 			where t.id_tache=".$id_tache;
-		$res_query = mysql_query($rqt, $dbh);
+		$res_query = pmb_mysql_query($rqt, $dbh);
 		
 		$parameters = $this->unserialize_task_params();
 		
@@ -95,17 +95,17 @@ class reader extends tache {
 			$empr_location_id = ($parameters["empr_location_id"] ? $parameters["empr_location_id"] : "0");
 			if ($empr_location_id != "0") {
 				$query = "select name from docs_location where idlocation=".$empr_location_id;
-				$res = mysql_query($query, $dbh);
+				$res = pmb_mysql_query($query, $dbh);
 				if ($res) {
-					$location_name = mysql_result($res,0,"name");
+					$location_name = pmb_mysql_result($res,0,"name");
 				}
 			}
 			$empr_statut_edit = ($parameters["empr_statut_edit"] ? $parameters["empr_statut_edit"] : "0");
 			if ($empr_statut_edit != "0") {
 				$query = "select statut_libelle from empr_statut where idstatut=".$empr_statut_edit;
-				$res = mysql_query($query, $dbh);
+				$res = pmb_mysql_query($query, $dbh);
 				if ($res) {
-					$statut_name = mysql_result($res,0,"statut_libelle");
+					$statut_name = pmb_mysql_result($res,0,"statut_libelle");
 				}
 			}
 			$count = count($parameters["chk_reader"]);

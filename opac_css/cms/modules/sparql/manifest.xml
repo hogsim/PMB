@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.2 2014-01-31 07:41:50 gueluneau Exp $ -->
+$Id: manifest.xml,v 1.3 2014-11-17 15:46:51 arenou Exp $ -->
 
 <manifest>
 	<name>Interrogation SPARQL</name>
@@ -23,6 +23,8 @@ $Id: manifest.xml,v 1.2 2014-01-31 07:41:50 gueluneau Exp $ -->
 		<views>
 			<view>cms_module_sparql_view_django</view>
 			<view>cms_module_sparql_view_carousel</view>
+			<view>cms_module_sparql_view_carousel_responsive</view>
+			
 		</views>
 		<conditions>
 			<condition></condition>	

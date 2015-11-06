@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_article_edit.inc.php,v 1.2 2013-09-06 08:00:05 apetithomme Exp $
+// $Id: cms_article_edit.inc.php,v 1.3 2015-05-11 08:10:40 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -16,4 +16,4 @@ if($id != "new"){
 	$article = new cms_article();
 }
 
-print $article->get_form("cms_article_edit","cms_article_edit", $base_path."/cms.php?categ=articles&sub=save");
+print $article->get_form("cms_article_edit","cms_article_edit", "");

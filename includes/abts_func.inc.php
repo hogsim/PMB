@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts_func.inc.php,v 1.4 2009-02-12 14:37:37 kantin Exp $
+// $Id: abts_func.inc.php,v 1.5 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -129,8 +129,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 		$date_MySQL = "'$year-$month-$day'";
 	}
 	$rqt_date = "select date_format(".$date_MySQL.", '%d') as current_day, date_format(".$date_MySQL.", '%m') as current_month_2, date_format(".$date_MySQL.", '%c') as current_month, date_format(".$date_MySQL.", '%Y') as current_year " ;
-	$resultatdate=mysql_query($rqt_date);
-	$resdate=mysql_fetch_object($resultatdate);
+	$resultatdate=pmb_mysql_query($rqt_date);
+	$resdate=pmb_mysql_fetch_object($resultatdate);
 	$current_day 		= $resdate->current_day;
 	$current_month 		= $resdate->current_month;
 	$current_month_2	= $resdate->current_month_2;
@@ -138,8 +138,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 	$date_MySQL_firstday = "'$year-$current_month_2-01'";
 	$rqt_date = "select date_format(".$date_MySQL_firstday.", '%w') as first_day_pos,
 				date_format(DATE_SUB(DATE_ADD(".$date_MySQL_firstday.", INTERVAL 1 MONTH),INTERVAL 1 DAY), '%d') as nb_days_month " ;
-	$resultatdate=mysql_query($rqt_date);
-	$resdate=mysql_fetch_object($resultatdate);
+	$resultatdate=pmb_mysql_query($rqt_date);
+	$resdate=pmb_mysql_fetch_object($resultatdate);
 	$first_day_pos 		= $resdate->first_day_pos;
 	$first_day_pos 		= ($first_day_pos == 0) ? 7 : $first_day_pos;
 	$nb_days_month 		= $resdate->nb_days_month ;
@@ -150,8 +150,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 			appelant avec date au 04/10/2003 >> lien du 04/11/2003 absent */
 	$date_MySQL_caller = "'".substr($date_caller, 0 ,4)."-".substr($date_caller, 4 ,2)."-".substr($date_caller, 6 ,2)."'";
 	$rqt_date = "select date_format(".$date_MySQL_caller.", '%d') as current_day, date_format(".$date_MySQL_caller.", '%c') as current_month, date_format(".$date_MySQL_caller.", '%Y') as current_year ";
-	$resultatdate=mysql_query($rqt_date);
-	$resdate=mysql_fetch_object($resultatdate);
+	$resultatdate=pmb_mysql_query($rqt_date);
+	$resdate=pmb_mysql_fetch_object($resultatdate);
 	$caller_day 		= $resdate->current_day;
 	$caller_month 		= $resdate->current_month;
 	$caller_year 		= $resdate->current_year;
@@ -228,8 +228,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 		if($num_abt){// Pour la grille abonnement
 			$type_serie=$type_horsserie=0;
 			$requete = "select type from abts_grille_abt where num_abt='$num_abt' and date_parution ='$obj'";
-			$resultat=mysql_query($requete);		
-			while($r=mysql_fetch_object($resultat)){
+			$resultat=pmb_mysql_query($requete);		
+			while($r=pmb_mysql_fetch_object($resultat)){
 				$type=$r->type;				
 				if ($type==1)$type_serie=1;
 				if ($type==2)$type_horsserie=2;	
@@ -238,8 +238,8 @@ function calendar_gestion($date = '', $navbar=0, $url_maj_base='', $base_url_moi
 		}
 		else{// Pour la grille modèle			
 			$requete = "select type_serie from abts_grille_modele where num_modele='$modele_id' and date_parution ='$obj'";
-			$resultat=mysql_query($requete);			
-			while($r=mysql_fetch_object($resultat)){
+			$resultat=pmb_mysql_query($requete);			
+			while($r=pmb_mysql_fetch_object($resultat)){
 				$type_serie=$r->type_serie;					
 				$serie+=$type_serie;		
 			}

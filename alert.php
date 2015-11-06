@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: alert.php,v 1.13 2013-02-14 14:32:53 dgoron Exp $
+// $Id: alert.php,v 1.14 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -33,6 +33,6 @@ if ($current_alert=="demandes") {
 
 print "<div id='contenu-frame'><div class='erreur'>$aff_alerte</div></div></body></html>" ;
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 ?>

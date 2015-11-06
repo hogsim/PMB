@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: commandes.inc.php,v 1.74.2.5 2015-04-13 13:31:05 jpermanne Exp $
+// $Id: commandes.inc.php,v 1.81 2015-07-16 12:16:51 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -90,7 +90,7 @@ function show_list_cde($id_bibli) {
 	}
 	
 	$bib = new entites($id_bibli);
-	$bib_coord = mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
+	$bib_coord = pmb_mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
 	
 	//Creation selecteur etablissement
 	$sel_bibli ="<select class='saisie-50em' id='id_bibli' name='id_bibli' onchange=\"submit();\" >";
@@ -178,11 +178,11 @@ function show_list_cde($id_bibli) {
 	
 		//Affichage liste des commandes	
 		$cde_list="";
-		$nbr = mysql_num_rows($res);
+		$nbr = pmb_mysql_num_rows($res);
 		
 		$parity=1;
 		for($i=0;$i<$nbr;$i++) {
-			$row=mysql_fetch_object($res);
+			$row=pmb_mysql_fetch_object($res);
 //TODO A modifier si une seule date de livraison par acte			
 			$dateech = $row->date_ech_calc;
 			if ($dateech != '00000000') $dateech=formatdate($dateech); else $dateech = '';
@@ -311,8 +311,8 @@ function show_list_exercices($id_bibli, $fct, $url, $id_dev=0) {
 	global $current_module;
 	
 	$q =  entites::getCurrentExercices($id_bibli);
-	$r = mysql_query($q, $dbh);
-	$n = mysql_num_rows($r);
+	$r = pmb_mysql_query($q, $dbh);
+	$n = pmb_mysql_num_rows($r);
 	switch ($n) {
 		case 0 :
 			//Pas d'exercice actif pour la bibliothèque
@@ -322,7 +322,7 @@ function show_list_exercices($id_bibli, $fct, $url, $id_dev=0) {
 			break;
 		case 1 :
 			//1 seul exercice actif pour la bibliotheque
-			$row = mysql_fetch_object($r);
+			$row = pmb_mysql_fetch_object($r);
 			eval($fct."(".$id_bibli.", ".$row->id_exercice.", ".$id_dev.");");
 			break;
 		default :
@@ -330,7 +330,7 @@ function show_list_exercices($id_bibli, $fct, $url, $id_dev=0) {
 			$aff.= "<h3>".htmlentities($msg['acquisition_menu_chx_exe'], ENT_QUOTES, $charset)."</h3><div class='row'></div>";
 			$aff.= "<table>";
 			$parity=1;
-			while(($row=mysql_fetch_object($r))) {
+			while(($row=pmb_mysql_fetch_object($r))) {
 				if ($parity % 2) {
 					$pair_impair = "even";
 				} else {
@@ -398,8 +398,8 @@ function show_cde($id_bibli, $id_exer, $id_cde) {
 			$coord = new coordonnees($def_id_adr_fac);
 		} else {
 			$coord_fac = entites::get_coordonnees($id_bibli, '1');
-			if (mysql_num_rows($coord_fac) != 0) {
-				$coord = mysql_fetch_object($coord_fac);
+			if (pmb_mysql_num_rows($coord_fac) != 0) {
+				$coord = pmb_mysql_fetch_object($coord_fac);
 				$id_adr_fac = $coord->id_contact;
 			} else {
 				$id_adr_fac='0';
@@ -420,8 +420,8 @@ function show_cde($id_bibli, $id_exer, $id_cde) {
 			$coord = new coordonnees($def_id_adr_liv);
 		} else {
 			$coord_liv = entites::get_coordonnees($id_bibli, '2');
-			if (mysql_num_rows($coord_liv) != 0) {
-				$coord = mysql_fetch_object($coord_liv);
+			if (pmb_mysql_num_rows($coord_liv) != 0) {
+				$coord = pmb_mysql_fetch_object($coord_liv);
 				$id_adr_liv = $coord->id_contact;
 			} else {
 				$id_adr_liv='0';
@@ -482,8 +482,8 @@ function show_cde($id_bibli, $id_exer, $id_cde) {
 		$fou = new entites($id_fou);
 		$lib_fou = htmlentities($fou->raison_sociale, ENT_QUOTES, $charset);
 		$coord = entites::get_coordonnees($fou->id_entite, '1');
-		if (mysql_num_rows($coord) != 0) {
-			$coord = mysql_fetch_object($coord);
+		if (pmb_mysql_num_rows($coord) != 0) {
+			$coord = pmb_mysql_fetch_object($coord);
 			$id_adr_fou = $coord->id_contact;
 			if($coord->libelle != '') $adr_fou = htmlentities($coord->libelle, ENT_QUOTES, $charset)."\n";
 			if($coord->contact !='') $adr_fou.=  htmlentities($coord->contact, ENT_QUOTES, $charset)."\n";
@@ -531,7 +531,7 @@ function show_cde($id_bibli, $id_exer, $id_cde) {
 		$tab_liens = liens_actes::getChilds($id_cde);
 		$liens_liv = '';
 		$liens_fac = '';
-		while(($row_liens = mysql_fetch_object($tab_liens))) {
+		while(($row_liens = pmb_mysql_fetch_object($tab_liens))) {
 			if( ($row_liens->type_acte) == TYP_ACT_LIV ) {
 				$liens_liv.= "<br /><a href=\"./acquisition.php?categ=ach&sub=livr&action=modif&id_bibli=".$id_bibli."&id_liv=".$row_liens->num_acte_lie."\">".$row_liens->numero."</a>"; 
 			} 
@@ -648,6 +648,14 @@ function show_cde($id_bibli, $id_exer, $id_cde) {
 			
 		}
 	}
+	//Date validation
+	if ($cde->date_valid != '0000-00-00') {
+		$form = str_replace('!!date_valid_label!!',htmlentities($msg['acquisition_cde_date_val'], ENT_QUOTES, $charset),$form);
+		$form = str_replace('!!date_valid!!',formatdate($cde->date_valid),$form);
+	} else {
+		$form = str_replace('!!date_valid_label!!','',$form);
+		$form = str_replace('!!date_valid!!','',$form);
+	}
 	
 	//complement formulaire
 	$form = str_replace('<!-- sel_statut -->', $sel_statut, $form);
@@ -737,7 +745,7 @@ function show_lig_cde($id_cde, $mod=TRUE) {
 	}
 	$lgstat_form=lgstat::getHtmlSelect(array(), FALSE, array('id'=>'lg_statut[!!i!!]', 'name'=>'lg_statut[!!i!!]'));
 	$lignes = actes::getLignes($id_cde);
-	while (($row = mysql_fetch_object($lignes))) {		
+	while (($row = pmb_mysql_fetch_object($lignes))) {		
 		$i++;	
 		$form.= $row_form;
 		$form = str_replace('!!no!!', $i, $form);
@@ -877,7 +885,7 @@ function show_lig_cde($id_cde, $mod=TRUE) {
 			//recherche des lignes de livraison
 			$lig_liv = lignes_actes::getLivraisons($row->id_ligne);
 			$rec = 0;
-			while (($row_liv = mysql_fetch_object($lig_liv))) {
+			while (($row_liv = pmb_mysql_fetch_object($lig_liv))) {
 				$rec = $rec + $row_liv->nb;
 			}
 			$form = str_replace('!!rec!!', $rec, $form);
@@ -933,8 +941,8 @@ function show_cde_from_dev($id_bibli, $id_exer, $id_dev) {
 	$fou = new entites($id_fou);
 	$lib_fou = htmlentities($fou->raison_sociale, ENT_QUOTES, $charset);
 	$coord = entites::get_coordonnees($fou->id_entite, '1');
-	if (mysql_num_rows($coord) != 0) {
-		$coord = mysql_fetch_object($coord);
+	if (pmb_mysql_num_rows($coord) != 0) {
+		$coord = pmb_mysql_fetch_object($coord);
 		$id_adr_fou = $coord->id_contact;
 		if($coord->libelle != '') $adr_fou = htmlentities($coord->libelle, ENT_QUOTES, $charset)."\n";
 		if($coord->contact != '') $adr_fou.= htmlentities($coord->contact, ENT_QUOTES, $charset)."\n";
@@ -1077,7 +1085,7 @@ function show_lig_cde_from_dev($id_dev) {
 	
 	$lgstat_form=lgstat::getHtmlSelect(array(0=>$deflt3lgstatcde), FALSE, array('id'=>'lg_statut[!!i!!]','name'=>'lg_statut[!!i!!]'));
 	$lignes = actes::getLignes($id_dev);
-	while (($row = mysql_fetch_object($lignes))) {
+	while (($row = pmb_mysql_fetch_object($lignes))) {
 		$i++;	
 		$form.= $modif_cde_row_form;
 		$form = str_replace('!!no!!', $i, $form);
@@ -1216,8 +1224,8 @@ function show_list_biblio_from_sug($sugchk) {
 	$te = array();
 	foreach($tab_bib[0] as $k=>$v) {
 		$qe =  entites::getCurrentExercices($v);
-		$re = mysql_query($qe, $dbh);
-		while (($rowe=mysql_fetch_object($re))) {
+		$re = pmb_mysql_query($qe, $dbh);
+		while (($rowe=pmb_mysql_fetch_object($re))) {
 			$te[$rowe->id_exercice][0]=$v;
 			$te[$rowe->id_exercice][1]=$tab_bib[1][$k];
 			$te[$rowe->id_exercice][2]=$rowe->libelle; 
@@ -1322,8 +1330,8 @@ function show_cde_from_sug($id_bibli, $id_exer, $sugchk) {
 		$coord = new coordonnees($def_id_adr_fac);
 	} else {
 		$coord_fac = entites::get_coordonnees($id_bibli, '1');
-		if (mysql_num_rows($coord_fac) != 0) {
-			$coord = mysql_fetch_object($coord_fac);
+		if (pmb_mysql_num_rows($coord_fac) != 0) {
+			$coord = pmb_mysql_fetch_object($coord_fac);
 			$id_adr_fac = $coord->id_contact;
 		} else {
 			$id_adr_fac='0';
@@ -1345,8 +1353,8 @@ function show_cde_from_sug($id_bibli, $id_exer, $sugchk) {
 		$coord = new coordonnees($def_id_adr_liv);
 	} else {
 		$coord_liv = entites::get_coordonnees($id_bibli, '2');
-		if (mysql_num_rows($coord_liv) != 0) {
-			$coord = mysql_fetch_object($coord_liv);
+		if (pmb_mysql_num_rows($coord_liv) != 0) {
+			$coord = pmb_mysql_fetch_object($coord_liv);
 			$id_adr_liv = $coord->id_contact;
 		} else {
 			$id_adr_liv='0';
@@ -1478,9 +1486,9 @@ function show_lig_cde_from_sug($sugchk) {
 		
 		if ($sug->num_notice) {
 			$q = "select niveau_biblio from notices where notice_id='".$sug->num_notice."' "; 
-			$r = mysql_query($q,$dbh);
-			if(mysql_num_rows($r)) {
-				$nb=mysql_result($r,0,0);
+			$r = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($r)) {
+				$nb=pmb_mysql_result($r,0,0);
 			}
 		}
 		
@@ -1673,18 +1681,18 @@ function sold_cde() {
 	//Si oui statut commande >> facture
 	$tab_cde = actes::getLignes($id_cde);
 	$facture = true;
-	while(($row_cde = mysql_fetch_object($tab_cde))) {
+	while(($row_cde = pmb_mysql_fetch_object($tab_cde))) {
 
 		$tab_liv = lignes_actes::getLivraisons($row_cde->id_ligne);
 		$tab_fac = lignes_actes::getFactures($row_cde->id_ligne);
 
 		$nb_liv = 0;
-		while (($row_liv = mysql_fetch_object($tab_liv))) {
+		while (($row_liv = pmb_mysql_fetch_object($tab_liv))) {
 			$nb_liv = $nb_liv + $row_liv->nb;
 		}
 
 		$nb_fac = 0;
-		while(($row_fac = mysql_fetch_object($tab_fac))) {
+		while(($row_fac = pmb_mysql_fetch_object($tab_fac))) {
 			$nb_fac = $nb_fac + $row_fac->nb;
 		}
 		
@@ -1701,7 +1709,7 @@ function sold_cde() {
 		//Si de plus toutes les factures sont payées, Statut commande=payé
 		$tab_pay = liens_actes::getChilds($id_cde, TYP_ACT_FAC);
 		$paye= true;
-		while (($row_pay = mysql_fetch_object($tab_pay))) {
+		while (($row_pay = pmb_mysql_fetch_object($tab_pay))) {
 			if(($row_pay->statut & STA_ACT_PAY) != STA_ACT_PAY){
 				$paye = false;
 				break;
@@ -1739,7 +1747,7 @@ function arc_cde(){
 	
 	//Archivage des factures et bl correspondants
 	$list_childs = liens_actes::getChilds($id_cde);
-	while (($row = mysql_fetch_object($list_childs))) {
+	while (($row = pmb_mysql_fetch_object($list_childs))) {
 		$act = new actes($row->num_acte_lie);
 		$act->statut = ($act->statut | STA_ACT_ARC);
 		$act->update_statut();
@@ -1859,7 +1867,8 @@ function update_cde() {
 				$cde->numero=addslashes($cde->numero);
 			}*/
 			$cde->nom_acte = trim($nom_acte);
-			if ($action == 'valid') { 
+			if ($action == 'valid') {
+				$cde->date_valid = date("Y-m-d");
 				$cde->statut = STA_ACT_ENC; //Statut commande = A valider->en cours
 			}
 			$cde->num_fournisseur = $id_fou;
@@ -1988,8 +1997,8 @@ function duplicate_cde($id_bibli, $id_cde) {
 	$fou = new entites($id_fou);
 	$lib_fou = htmlentities($fou->raison_sociale, ENT_QUOTES, $charset);
 	$coord = entites::get_coordonnees($fou->id_entite, '1');
-	if (mysql_num_rows($coord) != 0) {
-		$coord = mysql_fetch_object($coord);
+	if (pmb_mysql_num_rows($coord) != 0) {
+		$coord = pmb_mysql_fetch_object($coord);
 		$id_adr_fou = $coord->id_contact;
 		if($coord->libelle != '') $adr_fou = htmlentities($coord->libelle, ENT_QUOTES, $charset)."\n";
 		if($coord->contact !='') $adr_fou.=  htmlentities($coord->contact, ENT_QUOTES, $charset)."\n";
@@ -2203,7 +2212,8 @@ function valid_cde_list() {
 			$cde=new actes($id_cde);
 			if ($cde->type_acte==TYP_ACT_CDE && $cde->statut==STA_ACT_AVA) {
 				$cde->statut=STA_ACT_ENC;
-				$cde->update_statut();
+				$cde->date_valid=date("Y-m-d");
+				$cde->save();
 			}
 		}
 	}
@@ -2259,13 +2269,13 @@ function print_cde($id_bibli=0, $id_cde=0, $by_mail=FALSE) {
 	if (!($id_bibli && $id_cde)) return;
 
 	$bib = new entites($id_bibli);
-	$bib_coord = mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
+	$bib_coord = pmb_mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
 
 	$cde = new actes($id_cde);
 	
 	$id_fou = $cde->num_fournisseur;
 	$fou = new entites($id_fou);
-	$fou_coord = mysql_fetch_object(entites::get_coordonnees($id_fou,1));
+	$fou_coord = pmb_mysql_fetch_object(entites::get_coordonnees($id_fou,1));
 	
 	$no_mail=FALSE;
 	if ( $by_mail==FALSE || !($acquisition_pdfcde_by_mail && strpos($bib_coord->email,'@') && strpos($fou_coord->email,'@')) ) {

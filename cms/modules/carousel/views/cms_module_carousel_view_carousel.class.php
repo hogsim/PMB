@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_carousel_view_carousel.class.php,v 1.21 2013-01-24 15:57:49 apetithomme Exp $
+// $Id: cms_module_carousel_view_carousel.class.php,v 1.23 2014-12-18 16:31:50 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 require_once($include_path."/h2o/h2o.php");
@@ -153,9 +153,9 @@ class cms_module_carousel_view_carousel extends cms_module_common_view_django{
 		return parent::save_form();	
 	}
 	
-	public function get_headers(){
+	public function get_headers($datas=array()){
 		global $base_path;
-		$headers = parent::get_headers();
+		$headers = parent::get_headers($datas);
 		$headers[]= "<script type='text/javascript' src='".$base_path."/cms/modules/common/includes/javascript/jquery.bxSlider.min.js'></script>";
 		$args = array(
 			'do' => "generate_css"
@@ -345,10 +345,7 @@ class cms_module_carousel_view_carousel extends cms_module_common_view_django{
  				'var' => "records[i].content",
  				'desc' => $this->msg['cms_module_carousel_view_carousel_record_content_desc']
  		);
-		$format_datas[]= array(
-			 'var' => "id",
-			 'desc'=> $this->msg['cms_module_carousel_view_carousel_id_desc']
-		);
+		$format_datas = array_merge($format_datas,parent::get_format_data_structure());
 		return $format_datas;
 	}
 }

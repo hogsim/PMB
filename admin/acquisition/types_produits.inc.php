@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: types_produits.inc.php,v 1.14 2009-05-16 11:11:54 dbellamy Exp $
+// $Id: types_produits.inc.php,v 1.15 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -27,19 +27,19 @@ function show_list_type() {
 	$aff.= "</tr>";
 
 	$q = types_produits::listTypes();
-	$res = mysql_query($q, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($q, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 	$tab_tva=array();
 	if ($acquisition_gestion_tva) {
 		$q2 = tva_achats::listTva();
-		$r2 = mysql_query($q2, $dbh);
-		while($row=mysql_fetch_object($r2)) {
+		$r2 = pmb_mysql_query($q2, $dbh);
+		while($row=pmb_mysql_fetch_object($r2)) {
 			$tab_tva[$row->id_tva]=$row->libelle;
 		}
 	}
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 			if ($parity % 2) {
 				$pair_impair = "even";
 			} else {
@@ -92,8 +92,8 @@ function show_type_form($id=0) {
 	if ($acquisition_gestion_tva) {
 		$form_tva = "<select id='tva_achat' name ='tva_achat' >";
 		$q = tva_achats::listTva();
-		$res = mysql_query($q, $dbh);
-		while ($row=mysql_fetch_object($res)) {
+		$res = pmb_mysql_query($q, $dbh);
+		while ($row=pmb_mysql_fetch_object($res)) {
 			$form_tva.="<option value='".$row->id_tva."' ";
 			if ($id ) {
 				if ($type->num_tva_achat == $row->id_tva) $form_tva.="selected ";

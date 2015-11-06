@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesMySQL.class.php,v 1.2 2012-07-31 10:12:16 dgoron Exp $
+// $Id: pmbesMySQL.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -36,23 +36,23 @@ class pmbesMySQL extends external_services_api_class {
 			if($action) {	
 				@set_time_limit($pmb_set_time_limit);
 				$db = DATA_BASE;
-				$tables = mysql_list_tables($db);
-				$num_tables = @mysql_num_rows($tables);
+				$tables = pmb_mysql_list_tables($db);
+				$num_tables = @pmb_mysql_num_rows($tables);
 			
 				$i = 0;
 				while($i < $num_tables) {
-					$table[$i] = mysql_tablename($tables, $i);
+					$table[$i] = pmb_mysql_tablename($tables, $i);
 					$i++;
 				}
 	
 				while(list($cle, $valeur) = each($table)) {
 					$requete = $action." TABLE ".$valeur." ";
-					$res = @mysql_query($requete, $dbh);
-					$nbr_lignes = @mysql_num_rows($res);
+					$res = @pmb_mysql_query($requete, $dbh);
+					$nbr_lignes = @pmb_mysql_num_rows($res);
 	
 					if($nbr_lignes) {			
 						for($i=0; $i < $nbr_lignes; $i++) {
-							$row = mysql_fetch_row($res);
+							$row = pmb_mysql_fetch_row($res);
 							$tab = array();
 							foreach($row as $dummykey=>$col) {
 								if(!$col) $col="&nbsp;";

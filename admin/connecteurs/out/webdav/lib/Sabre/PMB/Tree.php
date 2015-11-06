@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: Tree.php,v 1.6 2014-01-22 14:08:33 arenou Exp $
+// $Id: Tree.php,v 1.7 2015-04-03 11:16:24 jpermanne Exp $
 
 namespace Sabre\PMB;
 
@@ -41,9 +41,9 @@ class Tree extends DAV\ObjectTree {
 				$tab = array();
     		}else{
     			$query = "select notice_id from notices";
-    			$result = mysql_query($query);
-    			if(mysql_num_rows($result)){
-    				while($row = mysql_fetch_object($result)){
+    			$result = pmb_mysql_query($query);
+    			if(pmb_mysql_num_rows($result)){
+    				while($row = pmb_mysql_fetch_object($result)){
     					if($this->restricted_notices) $this->restricted_notices.=",";
     					$this->restricted_notices.=$row->notice_id;
     				}

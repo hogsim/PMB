@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_filter_articles_by_cp.class.php,v 1.2.6.1 2014-11-26 11:26:02 dgoron Exp $
+// $Id: cms_module_common_filter_articles_by_cp.class.php,v 1.3 2014-11-26 11:24:21 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

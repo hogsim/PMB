@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: create_form.inc.php,v 1.12 2013-03-11 14:33:31 dgoron Exp $
+// $Id: create_form.inc.php,v 1.13 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -36,8 +36,8 @@ if($saisieISBN) {
 		}
 	}
 	$requete = "SELECT notice_id FROM notices WHERE (".($code?"code='$code'":"").(($code&&$code10)?" or ":"").($code10?"code='$code10'":"").")";
-	$myQuery = mysql_query($requete, $dbh);
-	$temp_nb_notice = mysql_num_rows($myQuery) ;
+	$myQuery = pmb_mysql_query($requete, $dbh);
+	$temp_nb_notice = pmb_mysql_num_rows($myQuery) ;
 }
 
 
@@ -51,7 +51,7 @@ if(!$temp_nb_notice) {
 } else {
 	
 	// isbn connu 
-	$notice = mysql_fetch_object($myQuery);
+	$notice = pmb_mysql_fetch_object($myQuery);
 	
 	//verification des droits de modification notice
 	$acces_m=1;

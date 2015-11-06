@@ -2,7 +2,7 @@
 // +--------------------------------------------------------------------------+
 // | PMB est sous licence GPL, la réutilisation du code est cadrée            |
 // +--------------------------------------------------------------------------+
-// $Id: help.php,v 1.1 2011-07-29 12:32:11 dgoron Exp $
+// $Id: help.php,v 1.2 2015-07-17 15:03:59 dgoron Exp $
 
 //Impression
 
@@ -15,13 +15,7 @@ $base_noheader=1;
 require($base_path."/includes/init.inc.php");
 
 if ($action_help=="configure_time") {
-//	$param['bg_color']		= '#EEEEEE';
-//	print '<style type="text/css">
-//		<!--
-//		.row_help { background-color : '.$param['bg_color'].'; }
-//		-->
-//		</style>';
-
+	header ("Content-Type: text/html; charset=$charset");
 	print $std_header;
 	print "<h3>".$msg["planificateur_help_perio"]."</h3>\n";
 	print "<table >
@@ -66,27 +60,8 @@ if ($action_help=="configure_time") {
 				07-37{9}
 			</td>
 		</tr>
-	</table>";
-	
-//	print "<b>".$msg["planificateur_help_format_h"]."</b>
-//	<ul>
-//		<li>".$msg["planificateur_help_h_all"]."</li>
-//		<li>".$msg["planificateur_help_h_fixe"]."</li>
-//		<li>".$msg["planificateur_help_h_interval"]."</li>
-//		<li>".$msg["planificateur_help_h_interval2"]."</li>
-//	</ul>
-//	";
-//	
-//	print "<b>".$msg["planificateur_help_format_m"]."</b>
-//	<ul>
-//		<li>".$msg["planificateur_help_m_all"]."</li>
-//		<li>".$msg["planificateur_help_m_fixe"]."</li>
-//		<li>".$msg["planificateur_help_m_interval"]."</li>
-//		<li>".$msg["planificateur_help_m_interval2"]."</li>
-//	</ul>
-//	";
- 	
-	print "</body></html>";
+	</table>
+	</body></html>";
 }
 
 ?>

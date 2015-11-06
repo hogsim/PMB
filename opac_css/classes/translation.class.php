@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: translation.class.php,v 1.1 2009-03-27 10:23:27 ngantier Exp $
+// $Id: translation.class.php,v 1.2 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");
@@ -37,9 +37,9 @@ function get_text($id,$trans_table,$trans_field,$text="",$mylang="") {
 		$mylang=$lang;
 	}
 	$req="SELECT * FROM translation WHERE trans_table='".$trans_table."' and trans_field='$trans_field' and trans_num='".$id."' and trans_lang='".$mylang."' ";
-	$myQuery = mysql_query($req, $dbh);
-	if(mysql_num_rows($myQuery)){		
-		$myreq=mysql_fetch_object($myQuery) ;
+	$myQuery = pmb_mysql_query($req, $dbh);
+	if(pmb_mysql_num_rows($myQuery)){		
+		$myreq=pmb_mysql_fetch_object($myQuery) ;
 		if($myreq->trans_text)return($myreq->trans_text);			
 	} 
 	return $text;

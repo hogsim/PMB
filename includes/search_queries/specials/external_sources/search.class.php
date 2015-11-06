@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.20 2014-02-28 15:51:05 dgoron Exp $
+// $Id: search.class.php,v 1.22 2015-04-03 13:57:45 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -46,11 +46,11 @@ class external_sources {
     	
     	//Recherche des sources
     	$requete="SELECT connectors_categ_sources.num_categ, connectors_sources.source_id, connectors_categ.connectors_categ_name as categ_name, connectors_sources.name, connectors_sources.comment, connectors_sources.repository, connectors_sources.opac_allowed, source_sync.cancel FROM connectors_sources LEFT JOIN connectors_categ_sources ON (connectors_categ_sources.num_source = connectors_sources.source_id) LEFT JOIN connectors_categ ON (connectors_categ.connectors_categ_id = connectors_categ_sources.num_categ) LEFT JOIN source_sync ON (connectors_sources.source_id = source_sync.source_id AND connectors_sources.repository=2) ORDER BY connectors_categ_sources.num_categ DESC, connectors_sources.name";
-    	$resultat=mysql_query($requete);
+    	$resultat=pmb_mysql_query($requete);
     	$r="<select name='field_".$this->n_ligne."_s_".$this->id."[]' multiple='yes'>";
     	$current_categ=0;
     	$count = 0;
-    	while ($source=mysql_fetch_object($resultat)) {
+    	while ($source=pmb_mysql_fetch_object($resultat)) {
     		if ($current_categ !== $source->num_categ) {
     			$current_categ = $source->num_categ;
     			$source->categ_name = $source->categ_name ? $source->categ_name : $msg["source_no_category"];
@@ -88,20 +88,18 @@ class external_sources {
     	
     	//Override le timeout du serveur mysql, pour être sûr que le socket dure assez longtemps pour aller jusqu'aux ajouts des résultats dans la base. 
 		$sql = "set wait_timeout = 300";
-		mysql_query($sql);
-    	
-    	$conn=new connecteurs();
+		pmb_mysql_query($sql);
     	
     	for ($i=0; $i<count($valeur); $i++) {
     		//Recherche de la source
-    		$source=$conn->get_class_name($valeur[$i]);
+    		$source=connecteurs::get_class_name($valeur[$i]);
     		require_once($base_path."/admin/connecteurs/in/$source/$source.class.php");
     		eval("\$src=new $source(\"".$base_path."/admin/connecteurs/in/".$source."\");");
     		$params=$src->get_source_params($valeur[$i]);
     		if ($params["REPOSITORY"]==2) {
     			$source_id=$valeur[$i];
     			$source_name_sql = "SELECT name FROM connectors_sources WHERE source_id = ".addslashes($source_id);
-    			$source_name = mysql_result(mysql_query($source_name_sql), 0, 0);
+    			$source_name = pmb_mysql_result(pmb_mysql_query($source_name_sql), 0, 0);
 
     			$unimarc_query=$this->search->make_unimarc_query();
     			$search_id=md5(serialize($unimarc_query));
@@ -110,23 +108,23 @@ class external_sources {
 				//Vérification du ttl
 				$ttl=$params["TTL"];
 				$requete="delete from entrepot_source_$source_id where unix_timestamp(now())-unix_timestamp(date_import)>".$ttl.';';
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 
     			$requete="select count(1) from entrepot_source_$source_id where search_id='".addslashes($search_id)."'";
-				$resultat=mysql_query($requete);
-				$search_exists=mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$search_exists=pmb_mysql_result($resultat,0,0);
 
 				$requete="select count(1) from entrepot_source_$source_id where search_id='".addslashes($search_id)."' and unix_timestamp(now())-unix_timestamp(date_import)>".$ttl;
-				$resultat=mysql_query($requete);
-				if ((mysql_result($resultat,0,0)) || ((!mysql_result($resultat,0,0))&&(!$search_exists))) {
+				$resultat=pmb_mysql_query($requete);
+				if ((pmb_mysql_result($resultat,0,0)) || ((!pmb_mysql_result($resultat,0,0))&&(!$search_exists))) {
 					//Recherche si on a le droit
 					$flag_search=true;
 					$requete="select (unix_timestamp(now())-unix_timestamp(date_sync)) as sec from source_sync where source_id=$source_id";
-					$res_sync=mysql_query($requete);
-					if (mysql_num_rows($res_sync)) {
-						$rsync=mysql_fetch_object($res_sync);
+					$res_sync=pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($res_sync)) {
+						$rsync=pmb_mysql_fetch_object($res_sync);
 						if ($rsync->sec>300) {
-							mysql_query("delete from source_sync where source_id=".$source_id);
+							pmb_mysql_query("delete from source_sync where source_id=".$source_id);
 						} else $flag_search=false;
 					}
 					if ($flag_search) {
@@ -143,7 +141,7 @@ class external_sources {
 						}
 						//Il y a eu trois essais infructueux, on dï¿½sactive pendant 5 min !!
 						if ($flag_error) {
-							mysql_query("insert into source_sync (source_id,date_sync,cancel) values($source_id,now(),2)");
+							pmb_mysql_query("insert into source_sync (source_id,date_sync,cancel) values($source_id,now(),2)");
 							$error_messages[$source_name][] = sprintf($msg["externalsource_isblocked"], date("H:i", time() + 5*60));
 						}
 					}
@@ -170,7 +168,7 @@ class external_sources {
     	$t_table="t_sources_".$this->n_ligne;
     	//$requete="create temporary table ".$t_table." select distinct recid as notice_id from entrepots where source_id in (".implode(",",$valeur).")";
     	$requete="create temporary table ".$t_table." (notice_id integer unsigned not null)";
-    	mysql_query($requete);
+    	pmb_mysql_query($requete);
 		return $t_table; 
     }
     
@@ -188,8 +186,8 @@ class external_sources {
     	
     	if(isset($valeur) && is_array($valeur) && count($valeur)){
     		$requete="select name from connectors_sources where source_id in (".implode(",",$valeur).")";
-	    	$resultat=mysql_query($requete);
-	    	while ($r=mysql_fetch_object($resultat)) {
+	    	$resultat=pmb_mysql_query($requete);
+	    	while ($r=pmb_mysql_fetch_object($resultat)) {
 	    		$litteral[]=$r->name;
 	    	}
     	}

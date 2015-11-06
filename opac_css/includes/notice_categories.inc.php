@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_categories.inc.php,v 1.8 2012-03-28 12:02:26 dgoron Exp $
+// $Id: notice_categories.inc.php,v 1.9 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,8 +19,8 @@ function get_notice_categories($notice=0) {
 	$rqt.= "AND notices_categories.num_noeud=noeuds.id_noeud ";
 	$rqt.= "ORDER BY ordre_categorie";
 
-	$res_sql = mysql_query($rqt, $dbh);
-	while ($notice=mysql_fetch_object($res_sql)) {
+	$res_sql = pmb_mysql_query($rqt, $dbh);
+	while ($notice=pmb_mysql_fetch_object($res_sql)) {
 		$categories[] = array( 
 				'categ_id' => $notice->categ_id,
 				'categ_parent' => $notice->categ_parent,
@@ -40,8 +40,8 @@ function get_notice_langues($notice=0, $quelle_langues=0) {
 
 	$langues = array() ;
 	$rqt = "select code_langue from notices_langues where num_notice='$notice' and type_langue=$quelle_langues order by ordre_langue ";
-	$res_sql = mysql_query($rqt, $dbh);
-	while ($notice=mysql_fetch_object($res_sql)) {
+	$res_sql = pmb_mysql_query($rqt, $dbh);
+	while ($notice=pmb_mysql_fetch_object($res_sql)) {
 		if ($notice->code_langue)
 			$langues[] = array( 
 				'lang_code' => $notice->code_langue,

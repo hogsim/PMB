@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: user_modif.inc.php,v 1.49.2.1 2015-01-23 09:23:33 jpermanne Exp $
+// $Id: user_modif.inc.php,v 1.53 2015-06-05 12:36:58 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -11,19 +11,29 @@ require_once("$class_path/actes.class.php");
 require_once("$class_path/suggestions_map.class.php");
 require_once("$class_path/lignes_actes_statuts.class.php");
 
+require_once("$class_path/onto/common/onto_common_uri.class.php");
+require_once("$class_path/onto/onto_store_arc2.class.php");
+require_once("$class_path/onto/onto_handler.class.php");
+require_once("$class_path/onto/onto_root_ui.class.php");
+require_once("$class_path/onto/common/onto_common_ui.class.php");
+require_once("$class_path/onto/common/onto_common_controler.class.php");
+require_once("$class_path/onto/skos/onto_skos_concept_ui.class.php");
+require_once("$class_path/onto/skos/onto_skos_controler.class.php");
+require_once("$class_path/onto/onto_param.class.php");
+
 $requete = "SELECT username, nom, prenom, rights, userid, user_lang, ";
 $requete .="nb_per_page_search, nb_per_page_select, nb_per_page_gestion, ";
 $requete .="param_popup_ticket, param_sounds, ";
 $requete .="user_email, user_alert_resamail, user_alert_demandesmail, user_alert_subscribemail, user_alert_suggmail, explr_invisible, explr_visible_mod, explr_visible_unmod, grp_num FROM users WHERE userid='$id' LIMIT 1 ";
-$res = mysql_query($requete, $dbh);
-$nbr = mysql_num_rows($res);
+$res = pmb_mysql_query($requete, $dbh);
+$nbr = pmb_mysql_num_rows($res);
 if ($nbr) {
-	$usr=mysql_fetch_object($res);
+	$usr=pmb_mysql_fetch_object($res);
 } else die ('Unknown user');
 
 $requete_param = "SELECT * FROM users WHERE userid='$id' LIMIT 1 ";
-$res_param = mysql_query($requete_param, $dbh);
-$field_values = mysql_fetch_row ( $res_param );
+$res_param = pmb_mysql_query($requete_param, $dbh);
+$field_values = pmb_mysql_fetch_row( $res_param );
 
 $param_user="<div class='row'><b>".$msg["1500"]."</b></div>\n";
 $deflt_user="<div class='row'><b>".$msg["1501"]."</b></div>\n";
@@ -31,8 +41,8 @@ $deflt_user="<div class='row'><b>".$msg["1501"]."</b></div>\n";
 $acquisition_user_param="";
 
 $i = 0;
-while ($i < mysql_num_fields($res_param)) {
-	$field = mysql_field_name($res_param, $i) ;
+while ($i < pmb_mysql_num_fields($res_param)) {
+	$field = pmb_mysql_field_name($res_param, $i) ;
 	$field_deb = substr($field,0,6);
 	switch ($field_deb) {
 
@@ -82,16 +92,16 @@ while ($i < mysql_num_fields($res_param)) {
 				if ($pmb_droits_explr_localises && $usr->explr_visible_mod) $where_clause_explr = "where idlocation in (".$usr->explr_visible_mod.")";
 				else $where_clause_explr = "";
 				$rqtloc = "SELECT idlocation FROM docs_location $where_clause_explr order by location_libelle";
-				$resloc = mysql_query($rqtloc, $dbh);
-				while ($loc=mysql_fetch_object($resloc)) {
+				$resloc = pmb_mysql_query($rqtloc, $dbh);
+				while ($loc=pmb_mysql_fetch_object($resloc)) {
 					$requete = "SELECT idsection, section_libelle FROM docs_section, docsloc_section where idsection=num_section and num_location='$loc->idlocation' order by section_libelle";
-					$result = mysql_query($requete, $dbh);
-					$nbr_lignes = mysql_num_rows($result);
+					$result = pmb_mysql_query($requete, $dbh);
+					$nbr_lignes = pmb_mysql_num_rows($result);
 					if ($nbr_lignes) {
 						if ($loc->idlocation==$location_user_section ) $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:block\">\r\n";
 						else $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:none\">\r\n";
 						$selector .= "<select name='f_ex_section".$loc->idlocation."' id='f_ex_section".$loc->idlocation."'>\r\n";
-						while($line = mysql_fetch_row($result)) {
+						while($line = pmb_mysql_fetch_row($result)) {
 							$selector .= "<option value='$line[0]' ";
 							$selector .= (($line[0] == $field_values[$i]) ? "selected='selected' >" : '>');
 				 			$selector .= htmlentities($line[1],ENT_QUOTES, $charset).'</option>\r\n';
@@ -109,11 +119,11 @@ while ($i < mysql_num_fields($res_param)) {
 			} elseif ($field=="deflt_upload_repertoire") {
 				$selector = "";
 					$requpload = "select repertoire_id, repertoire_nom from upload_repertoire";
-					$resupload = mysql_query($requpload, $dbh);
+					$resupload = pmb_mysql_query($requpload, $dbh);
 					$selector .=  "<div id='upload_section'>";
 					$selector .= "<select name='form_deflt_upload_repertoire'>";
 					$selector .= "<option value='0'>".$msg[upload_repertoire_sql]."</option>";
-					while(($repupload = mysql_fetch_object($resupload))){
+					while(($repupload = pmb_mysql_fetch_object($resupload))){
 						$selector .= "<option value='".$repupload->repertoire_id."' ";
 						if ($field_values[$i] == $repupload->repertoire_id ) {
 							$selector .= "selected='selected' ";
@@ -131,8 +141,8 @@ while ($i < mysql_num_fields($res_param)) {
 						</div>";
 			} elseif($field=="deflt_import_thesaurus"){
 				$requete="select * from thesaurus order by 2";
-				$resultat_liste=mysql_query($requete,$dbh);
-				$nb_liste=mysql_num_rows($resultat_liste);
+				$resultat_liste=pmb_mysql_query($requete,$dbh);
+				$nb_liste=pmb_mysql_num_rows($resultat_liste);
 				if ($nb_liste==0) {
 					$deflt_user.="" ;
 				} else {
@@ -144,7 +154,7 @@ while ($i < mysql_num_fields($res_param)) {
 								<select class='saisie-30em' name=\"form_".$field."\">";
 					$j=0;
 					while ($j<$nb_liste) {
-						$liste_values = mysql_fetch_row ( $resultat_liste );
+						$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 						$deflt_user.="<option value=\"".$liste_values[0]."\" " ;
 						if ($field_values[$i]==$liste_values[0]) {
 							$deflt_user.="selected='selected' " ;
@@ -158,39 +168,96 @@ while ($i < mysql_num_fields($res_param)) {
 				}
 				
 			} elseif ($field=="deflt_short_loan_activate") {
-					$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n
-						<div class='colonne_suite'>
-						<input type='checkbox' class='checkbox'";
-					if ($field_values[$i]==1) $deflt_user.=" checked"; 
-					$deflt_user.=" value='1' name='form_$field'></div></div>\n" ;
+				$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n
+					<div class='colonne_suite'>
+					<input type='checkbox' class='checkbox'";
+				if ($field_values[$i]==1) $deflt_user.=" checked"; 
+				$deflt_user.=" value='1' name='form_$field'></div></div>\n" ;
 			} elseif ($field=="deflt_cashdesk"){
-					$requete="select * from cashdesk order by cashdesk_name";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
-					if ($nb_liste==0) {
-						$deflt_user.="" ;
-					} else {
-						$deflt_user.="
-							<div class='row'>
-								<div class='colonne60'>".$msg[$field]."&nbsp;:&nbsp;
-								</div>\n
-								<div class='colonne_suite'>
-									<select class='saisie-30em' name=\"form_".$field."\">";
-						$j=0;
-						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_object( $resultat_liste );
-							$deflt_user.="<option value=\"".$liste_values->cashdesk_id."\" " ;
-							if ($field_values[$i]==$liste_values->cashdesk_id) {
-								$deflt_user.="selected" ;
-							}
-							$deflt_user.=">".htmlentities($liste_values->cashdesk_name,ENT_QUOTES,$charset)."</option>\n" ;
-							$j++;
+				$requete="select * from cashdesk order by cashdesk_name";
+				$resultat_liste=pmb_mysql_query($requete,$dbh);
+				$nb_liste=pmb_mysql_num_rows($resultat_liste);
+				if ($nb_liste==0) {
+					$deflt_user.="" ;
+				} else {
+					$deflt_user.="
+						<div class='row'>
+							<div class='colonne60'>".$msg[$field]."&nbsp;:&nbsp;
+							</div>\n
+							<div class='colonne_suite'>
+								<select class='saisie-30em' name=\"form_".$field."\">";
+					$j=0;
+					while ($j<$nb_liste) {
+						$liste_values = pmb_mysql_fetch_object( $resultat_liste );
+						$deflt_user.="<option value=\"".$liste_values->cashdesk_id."\" " ;
+						if ($field_values[$i]==$liste_values->cashdesk_id) {
+							$deflt_user.="selected" ;
 						}
-						$deflt_user.="</select>
-								</div>
-							</div>\n" ;
+						$deflt_user.=">".htmlentities($liste_values->cashdesk_name,ENT_QUOTES,$charset)."</option>\n" ;
+						$j++;
 					}
-				}else {
+					$deflt_user.="</select>
+							</div>
+						</div>\n" ;
+				}
+			} elseif(($field=="deflt_concept_scheme")){
+				$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n";
+				$deflt_user.="<div class='colonne_suite'>";
+				
+				
+				$onto_store_config = array(
+						/* db */
+						'db_name' => DATA_BASE,
+						'db_user' => USER_NAME,
+						'db_pwd' => USER_PASS,
+						'db_host' => SQL_SERVER,
+						/* store */
+						'store_name' => 'ontology',
+						/* stop after 100 errors */
+						'max_errors' => 100,
+						'store_strip_mb_comp_str' => 0
+				);
+				$data_store_config = array(
+						/* db */
+						'db_name' => DATA_BASE,
+						'db_user' => USER_NAME,
+						'db_pwd' => USER_PASS,
+						'db_host' => SQL_SERVER,
+						/* store */
+						'store_name' => 'rdfstore',
+						/* stop after 100 errors */
+						'max_errors' => 100,
+						'store_strip_mb_comp_str' => 0
+				);
+				
+				$tab_namespaces=array(
+						"skos"	=> "http://www.w3.org/2004/02/skos/core#",
+						"dc"	=> "http://purl.org/dc/elements/1.1",
+						"dct"	=> "http://purl.org/dc/terms/",
+						"owl"	=> "http://www.w3.org/2002/07/owl#",
+						"rdf"	=> "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+						"rdfs"	=> "http://www.w3.org/2000/01/rdf-schema#",
+						"xsd"	=> "http://www.w3.org/2001/XMLSchema#",
+						"pmb"	=> "http://www.pmbservices.fr/ontology#"
+				);
+				
+				
+				$onto_handler = new onto_handler($class_path."/rdf/skos_pmb.rdf", "arc2", $onto_store_config, "arc2", $data_store_config,$tab_namespaces,'http://www.w3.org/2004/02/skos/core#prefLabel','http://www.w3.org/2004/02/skos/core#ConceptScheme');
+				
+				$params=new onto_param();
+				$params->concept_scheme=$deflt_concept_scheme;
+				$onto_controler=new onto_skos_controler($onto_handler, $params);
+				
+				$deflt_user.=onto_skos_concept_ui::get_scheme_list_selector($onto_controler, $params,true,'','form_deflt_concept_scheme');
+				$deflt_user.="</div></div>\n" ;
+				
+			} elseif ($field=="deflt_notice_replace_keep_categories") {
+				$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n
+					<div class='colonne_suite'>
+						".$msg[39]." <input type='radio' name='form_$field' value='0' ".(!$field_values[$i] ? "checked='checked'" : "")." />
+						".$msg[40]." <input type='radio' name='form_$field' value='1' ".($field_values[$i] ? "checked='checked'" : "")." />
+					</div></div>\n" ;
+			} else {
 				$deflt_table = substr($field,6);
 				if($deflt_table == "integration_notice_statut") $deflt_table= "notice_statut";
 				switch($field) {
@@ -208,8 +275,8 @@ while ($i < mysql_num_fields($res_param)) {
 						break;
 				}
 
-				$resultat_liste=mysql_query($requete,$dbh);
-				$nb_liste=mysql_num_rows($resultat_liste);
+				$resultat_liste=pmb_mysql_query($requete,$dbh);
+				$nb_liste=pmb_mysql_num_rows($resultat_liste);
 				if ($nb_liste==0) {
 					$deflt_user.="" ;
 				} else {
@@ -221,7 +288,7 @@ while ($i < mysql_num_fields($res_param)) {
 								<select class='saisie-30em' name=\"form_".$field."\">";
 					$j=0;
 					while ($j<$nb_liste) {
-						$liste_values = mysql_fetch_row ( $resultat_liste );
+						$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 						$deflt_user.="<option value=\"".$liste_values[0]."\" " ;
 						if ($field_values[$i]==$liste_values[0]) {
 							$deflt_user.="selected='selected' " ;
@@ -351,8 +418,8 @@ while ($i < mysql_num_fields($res_param)) {
 				// localisation des lecteurs
 				$deflt_table = substr($field,6);
 				$requete="select * from ".$deflt_table." order by 2";
-				$resultat_liste=mysql_query($requete,$dbh);
-				$nb_liste=mysql_num_rows($resultat_liste);
+				$resultat_liste=pmb_mysql_query($requete,$dbh);
+				$nb_liste=pmb_mysql_num_rows($resultat_liste);
 				if ($nb_liste==0) {
 					$deflt_user.="" ;
 				} else {
@@ -365,7 +432,7 @@ while ($i < mysql_num_fields($res_param)) {
 
 					$j=0;
 					while ($j<$nb_liste) {
-						$liste_values = mysql_fetch_row ( $resultat_liste );
+						$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 						$deflt_user.="<option value=\"".$liste_values[0]."\" " ;
 						if ($field_values[$i]==$liste_values[0]) {
 							$deflt_user.="selected='selected' " ;
@@ -378,8 +445,8 @@ while ($i < mysql_num_fields($res_param)) {
 			} else {
 				$deflt_table = substr($field,6);
 				$requete="select * from ".$deflt_table." order by 2 ";
-				$resultat_liste=mysql_query($requete,$dbh);
-				$nb_liste=mysql_numrows($resultat_liste);
+				$resultat_liste=pmb_mysql_query($requete,$dbh);
+				$nb_liste=pmb_mysql_num_rows($resultat_liste);
 				if ($nb_liste==0) {
 					$deflt_user.="" ;
 				} else {
@@ -391,7 +458,7 @@ while ($i < mysql_num_fields($res_param)) {
 								<select class='saisie-30em' name=\"form_".$field."\">";
 					$j=0;
 					while ($j<$nb_liste) {
-						$liste_values = mysql_fetch_row ( $resultat_liste );
+						$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 						$deflt_user.="<option value=\"".$liste_values[0]."\" " ;
 						if ($field_values[$i]==$liste_values[0]) {
 							$deflt_user.="selected='selected' " ;
@@ -503,9 +570,9 @@ while ($i < mysql_num_fields($res_param)) {
 					break;
 			}
 			if($q) {
-				$r=mysql_query($q, $dbh);
-				$nb=mysql_num_rows($r);
-				while($row=mysql_fetch_row($r)) {
+				$r=pmb_mysql_query($q, $dbh);
+				$nb=pmb_mysql_num_rows($r);
+				while($row=pmb_mysql_fetch_row($r)) {
 					$t[$row[0]]=$row[1];
 				}
 			}
@@ -551,9 +618,9 @@ if ($pmb_droits_explr_localises) {
 			<div class='colonne_suite'>&nbsp;</div>
 		</div>\n";
 	$requete_droits_expl="select idlocation, location_libelle from docs_location order by location_libelle";
-	$resultat_droits_expl=mysql_query($requete_droits_expl);
+	$resultat_droits_expl=pmb_mysql_query($requete_droits_expl);
 	$temp="";
-	while ($j=mysql_fetch_array($resultat_droits_expl)) {
+	while ($j=pmb_mysql_fetch_array($resultat_droits_expl)) {
 		$temp.=$j["idlocation"].",";
 		$visibilite_expl_user.= "
 			<div class='row'>
@@ -572,11 +639,11 @@ if ($pmb_droits_explr_localises) {
 		$visibilite_expl_user .="\n<option value='explr_visible_mod' ".($as_mod!== FALSE && $as_mod!== NULL?"selected='selected' ":"").">".$msg["explr_visible_mod"]."</option>";
 		$visibilite_expl_user.="</select></div></div>\n" ;
 	}
-	mysql_free_result($resultat_droits_expl);
+	pmb_mysql_free_result($resultat_droits_expl);
 
 	if ((!$explr_invisible)&&(!$explr_visible_unmod)&&(!$explr_visible_mod)) {
 		$rqt="UPDATE users SET explr_invisible=0,explr_visible_mod=0,explr_visible_unmod='".substr($temp,0,strlen($temp)-1)."' WHERE userid=$id";
-		@mysql_query($rqt);
+		@pmb_mysql_query($rqt);
 	}
 
 	$deflt_user .=$visibilite_expl_user;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: coordonnees.inc.php,v 1.5 2009-05-16 10:52:44 dbellamy Exp $
+// $Id: coordonnees.inc.php,v 1.6 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -39,7 +39,7 @@ function show_results($dbh, $nbr_lignes=0, $page=0) {
 		// on lance la vraie requête
 		$res = entites::get_coordonnees($id_bibli, '-1', $debut, $nb_per_page);
 
-		while($row=mysql_fetch_object($res)) {
+		while($row=pmb_mysql_fetch_object($res)) {
 				
 			$adresse = '';
 			$adresse1 = '';
@@ -75,7 +75,7 @@ function show_results($dbh, $nbr_lignes=0, $page=0) {
 			print "<br />";
 
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 

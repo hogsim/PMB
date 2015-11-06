@@ -2,19 +2,20 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: import_genes.inc.php,v 1.14 2013-08-20 08:50:21 mbertin Exp $
+// $Id: import_genes.inc.php,v 1.16 2015-06-02 13:24:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once($class_path."/parametres_perso.class.php");
 require_once($class_path."/docs_location.class.php");
+require_once("$class_path/emprunteur.class.php");
 
 // on récupère les champs personnalisés emprunteurs
 $idchamp=array();
 $rqt="select idchamp, name from empr_custom";
-$r = mysql_query($rqt) or die(mysql_error()."<br /><br />$rqt<br /><br />");
-if (mysql_num_rows($r)) {
-	while (($idchamp_obj=mysql_fetch_object($r))) {
+$r = pmb_mysql_query($rqt) or die(pmb_mysql_error()."<br /><br />$rqt<br /><br />");
+if (pmb_mysql_num_rows($r)) {
+	while (($idchamp_obj=pmb_mysql_fetch_object($r))) {
 		$idchamp[$idchamp_obj->name] = $idchamp_obj->idchamp;
 	}
 } 
@@ -29,9 +30,9 @@ switch($action) {
     case 1:
 		// on récupère la localisation
 		$rqt="select location_libelle from docs_location where idlocation='$empr_location_id'";
-		$r = mysql_query($rqt) or die(mysql_error()."<br /><br />$rqt<br /><br />");
-		if (mysql_num_rows($r)) {
-			while (($idchamp_obj=mysql_fetch_object($r))) {
+		$r = pmb_mysql_query($rqt) or die(pmb_mysql_error()."<br /><br />$rqt<br /><br />");
+		if (pmb_mysql_num_rows($r)) {
+			while (($idchamp_obj=pmb_mysql_fetch_object($r))) {
 				$empr_location_lib = $idchamp_obj->location_libelle;
 			}
 		}
@@ -183,8 +184,8 @@ function cre_login($nom, $prenom, $dbh) {
     $debut_log = $empr_login;
     while ($pb==1) {
         $requete = "SELECT empr_login FROM empr WHERE empr_login like '$empr_login' AND (empr_nom <> '$nom' OR empr_prenom <> '$prenom') LIMIT 1 ";
-        $res = mysql_query($requete, $dbh);
-        $nbr_lignes = mysql_num_rows($res);
+        $res = pmb_mysql_query($requete, $dbh);
+        $nbr_lignes = pmb_mysql_num_rows($res);
         if ($nbr_lignes) {
             $empr_login = $debut_log.$num_login ;
             $num_login++;
@@ -219,9 +220,9 @@ function import_eleves_ensae($separateur, $dbh, $type_import){
             // les lecteurs de la localisation et appartenant aux groupes $id_grp vont être marqués :
             //          empr_prof = !!A SUPPRIMER!!
 			$rqt = "select distinct empr_id from empr_groupe join empr on empr_id=id_empr where empr_location=$empr_location_id and empr_categ=$id_categ_empr and groupe_id in (".implode(',',$id_grp).")";
-        	$r = mysql_query($rqt) or die(mysql_error()."<br /><br />$rqt<br /><br />");
-			while ($empr=mysql_fetch_object($r)) {
-				mysql_query("update empr set empr_prof='!!A SUPPRIMER!!' where id_empr=".$empr->empr_id) or die("update empr set empr_prof='!!A SUPPRIMER!!' where id_empr=".$empr->empr_id);
+        	$r = pmb_mysql_query($rqt) or die(pmb_mysql_error()."<br /><br />$rqt<br /><br />");
+			while ($empr=pmb_mysql_fetch_object($r)) {
+				pmb_mysql_query("update empr set empr_prof='!!A SUPPRIMER!!' where id_empr=".$empr->empr_id) or die("update empr set empr_prof='!!A SUPPRIMER!!' where id_empr=".$empr->empr_id);
 			} 
 
         }
@@ -266,8 +267,8 @@ function import_eleves_ensae($separateur, $dbh, $type_import){
             	
             	// Traitement de l'élève
 				$rqt="select empr_custom_origine as id_empr from empr_custom_values where empr_custom_champ=".$idchamp['id_etudiant']." and empr_custom_small_text='".addslashes($idetudiant)."' ";
-            	$nb = mysql_query($rqt,$dbh);
-            	$nb_enreg=mysql_num_rows($nb);
+            	$nb = pmb_mysql_query($rqt,$dbh);
+            	$nb_enreg=pmb_mysql_num_rows($nb);
 	            switch ($nb_enreg) {
 	                case 0:
 	                	//Cet élève n'est pas enregistré
@@ -279,12 +280,14 @@ function import_eleves_ensae($separateur, $dbh, $type_import){
 	                    $req_insert .= "empr_prof='', empr_lang='fr_FR', empr_statut=1, ";
 	                    $req_insert .= "empr_location='$empr_location_id', ";
 	                    $req_insert .= "empr_modif='$date_auj', empr_date_adhesion = '$date_auj', empr_date_expiration = '$date_an_proch' ";
-						$insert = mysql_query($req_insert,$dbh) or die("<br />".mysql_error()."<br />".$req_insert);
+						$insert = pmb_mysql_query($req_insert,$dbh) or die("<br />".pmb_mysql_error()."<br />".$req_insert);
 	                    if (!$insert) {
-	                        print("<b>Echec de la création de l'élève suivant (Erreur : ".mysql_error().") : </b><br />");
+	                        print("<b>Echec de la création de l'élève suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
 	                        print("<br />");
 	                    } else {
-		                    $id_cree = mysql_insert_id();
+		                    $id_cree = pmb_mysql_insert_id();
+		                    emprunteur::update_digest($login,$anneenaiss);
+		                    emprunteur::hash_password($login,$anneenaiss);
 		                    $resu = gestion_groupe($id_groupe, $id_cree, $dbh);
 		                    gestion_champ_portail($id_cree, $dbh);
 		                    gestion_champ_numero_casier($id_cree, $casier, $dbh);
@@ -296,16 +299,16 @@ function import_eleves_ensae($separateur, $dbh, $type_import){
 	
 	                case 1:
 	                	//Cet élève est déja enregistré
-	                	$empr=mysql_fetch_object($nb) ;
+	                	$empr=pmb_mysql_fetch_object($nb) ;
 	                    $req_update = "UPDATE empr SET empr_nom='".addslashes($nom)."', empr_prenom='".addslashes($prenom)."', empr_cb='".addslashes($cb)."', ";
 	                    $req_update .= "empr_tel1='".addslashes($tel1)."', empr_tel2='".addslashes($tel2)."', empr_year = '".addslashes($anneenaiss)."', empr_categ =$id_categ_empr, empr_codestat=8, empr_modif='$date_auj', empr_sexe='$sexe', ";
 	                    $req_update .= "empr_mail='".addslashes($emails)."', ";
 	                    $req_update .= "empr_prof='', empr_lang='fr_FR', empr_statut=1, ";
 	                    $req_update .= "empr_date_expiration = '$date_an_proch' ";
 	                    $req_update .= "WHERE id_empr = '".$empr->id_empr."'";
-	                    $update = mysql_query($req_update, $dbh) or die("<br />".mysql_error()."<br />".$req_update);
+	                    $update = pmb_mysql_query($req_update, $dbh) or die("<br />".pmb_mysql_error()."<br />".$req_update);
 	                    if (!$update) {
-	                        print("<b>Echec de la modification de l'élève suivant (Erreur : ".mysql_error().") : </b><br />");
+	                        print("<b>Echec de la modification de l'élève suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
 	                        print("<br />");
 	                    } else {
 	                    	$resu = gestion_groupe($id_groupe, $empr->id_empr, $dbh);
@@ -317,7 +320,7 @@ function import_eleves_ensae($separateur, $dbh, $type_import){
 	                    $j++;
 	                    break;
 	                default:
-	                    print("<b>Echec pour l'élève suivant (Erreur : ".mysql_error().") : </b><br />");
+	                    print("<b>Echec pour l'élève suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
 	                    print "<ul><li><font color=red><b>Absent de la base PMB $voie</b></font></li>
 								<li><font color=red>$nom</font></li>
 								<li><font color=red>$prenom</font></li>
@@ -334,18 +337,18 @@ function import_eleves_ensae($separateur, $dbh, $type_import){
         // post traitement
         if ($type_import == 'maj_complete' && implode(',',$id_grp)!="") {
 			$req_select_verif_pret = "SELECT id_empr FROM empr WHERE empr_prof='!!A SUPPRIMER!!' ";
-            $select_verif_pret = mysql_query($req_select_verif_pret,$dbh);
-            while ($verif_pret = mysql_fetch_array($select_verif_pret)) {
+            $select_verif_pret = pmb_mysql_query($req_select_verif_pret,$dbh);
+            while ($verif_pret = pmb_mysql_fetch_array($select_verif_pret)) {
             	//pour tous les emprunteurs qui ne figurent pas dans le fichier
 				$rqt_del = "delete from empr_groupe where empr_id=".$verif_pret["id_empr"];
-				$resultat_del=mysql_query($rqt_del);
-				@mysql_query ("insert into empr_caddie_content set empr_caddie_id=$idemprcaddie, object_id=".$verif_pret["id_empr"]) ;
+				$resultat_del=pmb_mysql_query($rqt_del);
+				@pmb_mysql_query("insert into empr_caddie_content set empr_caddie_id=$idemprcaddie, object_id=".$verif_pret["id_empr"]) ;
                 $cpt_suppr++;
             }
         	// On supprime les groupes qui ne sont plus utilisés parmi ceux qui étaient sélectionnés bien entendu
-        	mysql_query("create temporary table tmpidgroupe as SELECT distinct id_groupe FROM groupe left join empr_groupe on groupe_id=id_groupe WHERE empr_id is null",$dbh) or die(mysql_error()."<br />");
+        	pmb_mysql_query("create temporary table tmpidgroupe as SELECT distinct id_groupe FROM groupe left join empr_groupe on groupe_id=id_groupe WHERE empr_id is null",$dbh) or die(pmb_mysql_error()."<br />");
         	$req_del_groupe = "delete from groupe where id_groupe in (select id_groupe from tmpidgroupe) and id_groupe in (".implode(',',$id_grp).")";
-            mysql_query($req_del_groupe,$dbh) or die(mysql_error()."<br />".$req_del_groupe);
+            pmb_mysql_query($req_del_groupe,$dbh) or die(pmb_mysql_error()."<br />".$req_del_groupe);
         }
         //Affichage des insert et update
         if ($cpt_insert) print($cpt_insert." élèves créés. <br />");
@@ -360,23 +363,23 @@ function import_eleves_ensae($separateur, $dbh, $type_import){
 
 function gestion_groupe($id_groupe, $id_empr, $dbh) {
 	//insertion dans la table empr_groupe
-	$delete_empr_grpe = mysql_query("delete from empr_groupe where empr_id=$id_empr",$dbh);
-    $insert_empr_grpe = mysql_query("INSERT INTO empr_groupe(empr_id, groupe_id) VALUES ($id_empr,$id_groupe)",$dbh);
+	$delete_empr_grpe = pmb_mysql_query("delete from empr_groupe where empr_id=$id_empr",$dbh);
+    $insert_empr_grpe = pmb_mysql_query("INSERT INTO empr_groupe(empr_id, groupe_id) VALUES ($id_empr,$id_groupe)",$dbh);
 }
 
 function gestion_groupe_add($id_groupe, $id_empr, $dbh) {
 	//insertion dans la table empr_groupe
-    $insert_empr_grpe = mysql_query("INSERT INTO empr_groupe(empr_id, groupe_id) VALUES ($id_empr,$id_groupe)",$dbh);
+    $insert_empr_grpe = pmb_mysql_query("INSERT INTO empr_groupe(empr_id, groupe_id) VALUES ($id_empr,$id_groupe)",$dbh);
 }
 
 function gestion_empr_categ($libelle, $dbh) {
 	$rqt="SELECT id_categ_empr FROM empr_categ where libelle ='".addslashes($libelle)."' "; 
-    $r_categ = mysql_query($rqt) or die(mysql_error()."<br /><br />$rqt<br /><br />");
-	if (($categ=mysql_fetch_object($r_categ))) {
+    $r_categ = pmb_mysql_query($rqt) or die(pmb_mysql_error()."<br /><br />$rqt<br /><br />");
+	if (($categ=pmb_mysql_fetch_object($r_categ))) {
 		$id_categ_empr=	$categ->id_categ_empr;					
 	}else {
-		mysql_query("INSERT INTO empr_categ(libelle, duree_adhesion ) VALUES ('".addslashes($libelle)."',365)",$dbh);
-		$id_categ_empr = mysql_insert_id();
+		pmb_mysql_query("INSERT INTO empr_categ(libelle, duree_adhesion ) VALUES ('".addslashes($libelle)."',365)",$dbh);
+		$id_categ_empr = pmb_mysql_insert_id();
 	}
 	return $id_categ_empr;
 }
@@ -384,12 +387,12 @@ function gestion_empr_categ($libelle, $dbh) {
 function gestion_empr_idcode_codestat($idcode, $dbh) {
 	// Si pas existant, on en crée un avec '-' comme label
 	$rqt="SELECT * FROM empr_codestat where idcode ='$idcode' "; 
-    $r_codestat = mysql_query($rqt) or die(mysql_error()."<br /><br />$rqt<br /><br />");
-	if (($codestat=mysql_fetch_object($r_codestat))) {
+    $r_codestat = pmb_mysql_query($rqt) or die(pmb_mysql_error()."<br /><br />$rqt<br /><br />");
+	if (($codestat=pmb_mysql_fetch_object($r_codestat))) {
 		$idcode = $codestat->idcode;					
 	}else {
-		mysql_query("INSERT INTO empr_codestat(libelle ) VALUES ('".addslashes("-")."')",$dbh);
-		$idcode = mysql_insert_id();
+		pmb_mysql_query("INSERT INTO empr_codestat(libelle ) VALUES ('".addslashes("-")."')",$dbh);
+		$idcode = pmb_mysql_insert_id();
 	}
 	return $idcode;
 }
@@ -397,28 +400,28 @@ function gestion_empr_idcode_codestat($idcode, $dbh) {
 function gestion_champ_portail($id_empr, $dbh) {
 	global $idchamp;
 	//insertion dans la table empr_custom_values
-	$del = @mysql_query("delete from empr_custom_values where empr_custom_origine='$id_empr' and empr_custom_champ='".$idchamp['portail_only']."' ",$dbh);
-	$ins = @mysql_query("insert into empr_custom_values set empr_custom_origine='$id_empr', empr_custom_champ='".$idchamp['portail_only']."', empr_custom_integer='1' ",$dbh);
+	$del = @pmb_mysql_query("delete from empr_custom_values where empr_custom_origine='$id_empr' and empr_custom_champ='".$idchamp['portail_only']."' ",$dbh);
+	$ins = @pmb_mysql_query("insert into empr_custom_values set empr_custom_origine='$id_empr', empr_custom_champ='".$idchamp['portail_only']."', empr_custom_integer='1' ",$dbh);
 }
 
 function gestion_champ_id_etudiant($id_empr, $valeur="", $dbh) {
 	global $idchamp;
 	//insertion dans la table empr_custom_values
-	$del = @mysql_query("delete from empr_custom_values where empr_custom_origine='$id_empr' and empr_custom_champ='".$idchamp['id_etudiant']."' ",$dbh);
-	$ins = @mysql_query("insert into empr_custom_values set empr_custom_origine='$id_empr', empr_custom_champ='".$idchamp['id_etudiant']."', empr_custom_small_text='".$valeur."' ",$dbh);
+	$del = @pmb_mysql_query("delete from empr_custom_values where empr_custom_origine='$id_empr' and empr_custom_champ='".$idchamp['id_etudiant']."' ",$dbh);
+	$ins = @pmb_mysql_query("insert into empr_custom_values set empr_custom_origine='$id_empr', empr_custom_champ='".$idchamp['id_etudiant']."', empr_custom_small_text='".$valeur."' ",$dbh);
 }
 
 function gestion_champ_numero_casier($id_empr, $valeur, $dbh) {
 	global $idchamp;
 	//insertion dans la table empr_custom_values
-	$del = @mysql_query("delete from empr_custom_values where empr_custom_origine='$id_empr' and empr_custom_champ='".$idchamp['numero_casier']."' ",$dbh);
-	$ins = @mysql_query("insert into empr_custom_values set empr_custom_origine='$id_empr', empr_custom_champ='".$idchamp['numero_casier']."', empr_custom_small_text='".addslashes($valeur)."' ",$dbh);
+	$del = @pmb_mysql_query("delete from empr_custom_values where empr_custom_origine='$id_empr' and empr_custom_champ='".$idchamp['numero_casier']."' ",$dbh);
+	$ins = @pmb_mysql_query("insert into empr_custom_values set empr_custom_origine='$id_empr', empr_custom_champ='".$idchamp['numero_casier']."', empr_custom_small_text='".addslashes($valeur)."' ",$dbh);
 }
 
 function gestion_empr_statut($libelle, $dbh) {
 	$rqt="SELECT idstatut FROM empr_statut where statut_libelle ='".addslashes($libelle)."' "; 
-    $r_statut = mysql_query($rqt,$dbh) or die(mysql_error()."<br /><br />$rqt<br /><br />");
-	if (($statut=mysql_fetch_object($r_statut))) {
+    $r_statut = pmb_mysql_query($rqt,$dbh) or die(pmb_mysql_error()."<br /><br />$rqt<br /><br />");
+	if (($statut=pmb_mysql_fetch_object($r_statut))) {
 		return $statut->idstatut;
 	} else {
 		return 0;
@@ -430,8 +433,8 @@ function quel_groupe($lib) {
 	global $groupes ;
 	if (count($groupes)==0) {
 		$rqt="select id_groupe, libelle_groupe from groupe order by 2";
-		$r = mysql_query($rqt) or die(mysql_error()."<br /><br />$rqt<br /><br />");
-		while ($idgroupe_obj=mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($rqt) or die(pmb_mysql_error()."<br /><br />$rqt<br /><br />");
+		while ($idgroupe_obj=pmb_mysql_fetch_object($r)) {
 			$groupes[$idgroupe_obj->libelle_groupe] = $idgroupe_obj->id_groupe;
 		} 
 	}
@@ -439,8 +442,8 @@ function quel_groupe($lib) {
 		return $groupes[$lib];
 	} else {
 		// création du groupe et retour de son id
-		$insert_grpe = mysql_query("INSERT INTO groupe(libelle_groupe) VALUES('".addslashes($lib)."')");
-		$groupes[$lib] = mysql_insert_id();
+		$insert_grpe = pmb_mysql_query("INSERT INTO groupe(libelle_groupe) VALUES('".addslashes($lib)."')");
+		$groupes[$lib] = pmb_mysql_insert_id();
 		return $groupes[$lib];
 	}
 	return 0;
@@ -528,8 +531,8 @@ function import_eleves_ensai($separateur, $dbh, $type_import){
             	
             	// Traitement de l'élève
 				$rqt="select * from empr where empr_cb='".addslashes($cb)."'  ";
-            	$nb = mysql_query($rqt,$dbh);
-            	$nb_enreg=mysql_num_rows($nb);
+            	$nb = pmb_mysql_query($rqt,$dbh);
+            	$nb_enreg=pmb_mysql_num_rows($nb);
 	            switch ($nb_enreg) {
 	                case 0:
 	                	//Cet élève n'est pas enregistré
@@ -542,12 +545,14 @@ function import_eleves_ensai($separateur, $dbh, $type_import){
 	                    $req_insert .= "empr_location='17', "; //17=ENSAI
 	                    $req_insert .= "empr_creation='$date_auj', empr_modif='$date_auj', empr_date_adhesion = '$date_adhesion', empr_date_expiration = '$date_fin_adhesion' ";
 	                    
-	                    $insert = mysql_query($req_insert,$dbh) or die("<br />".mysql_error()."<br />".$req_insert);
+	                    $insert = pmb_mysql_query($req_insert,$dbh) or die("<br />".pmb_mysql_error()."<br />".$req_insert);
 	                    if (!$insert) {
-	                        print("<b>Echec de la création de l'élève suivant (Erreur : ".mysql_error().") : </b><br />");
+	                        print("<b>Echec de la création de l'élève suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
 	                        print("<br />");
 	                    } else {
-		                    $id_cree = mysql_insert_id();
+		                    $id_cree = pmb_mysql_insert_id();
+		                    emprunteur::update_digest($login,$login);
+		                    emprunteur::hash_password($login,$login);
 		                    gestion_groupe_add($id_groupe1, $id_cree, $dbh);
 		                    gestion_groupe_add($id_groupe2, $id_cree, $dbh);
 		                    gestion_groupe_add($id_groupe3, $id_cree, $dbh);

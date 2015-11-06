@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rss.inc.php,v 1.8.2.1 2014-04-03 15:29:43 dgoron Exp $
+// $Id: rss.inc.php,v 1.9 2014-04-03 15:23:24 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -25,7 +25,7 @@ switch($suite) {
     case 'update':
     	$flux = new rss_flux($id_rss_flux) ;
 
-    	$temp=new stdClass();
+		$temp=new stdClass();
 		$temp->id_rss_flux         	=$id_rss_flux ;
 		$temp->nom_rss_flux        	=$nom_rss_flux ;
 		$temp->link_rss_flux       	=$link_rss_flux ;

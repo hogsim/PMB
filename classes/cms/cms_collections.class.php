@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_collections.class.php,v 1.4.2.2 2014-11-18 14:25:55 arenou Exp $
+// $Id: cms_collections.class.php,v 1.8 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,16 +23,16 @@ class cms_collections extends cms_root{
 	protected function fetch_datas(){
 		$this->collections=array();
 		$query = "select id_collection from cms_collections order by collection_title asc";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->collections[] = new cms_collection($row->id_collection);
 			}
 		}	
 	}
 
 	public function get_table($form_link=""){
-		global $msg;
+		global $msg,$charset;
 		
 		if(!$form_link){
 			$form_link="./cms.php?categ=collection&sub=collection&action=edit";
@@ -106,22 +106,22 @@ class cms_collections extends cms_root{
 				}
 			}
 			require(['dojo/ready', 'dojox/widget/DialogSimple'], function(ready, Dialog) {
-				ready(function() {
-					openEditDialog = function(id){
-						try{
-							var dialog = dijit.byId('dialog_document');
-						}catch(e){}
-						if(!dialog){
-							var dialog = new Dialog({title:'',id:'dialog_document'});
+					ready(function() {
+						openEditDialog = function(id){
+							try{
+								var dialog = dijit.byId('dialog_document');
+							}catch(e){}
+							if(!dialog){
+								var dialog = new Dialog({title:'',id:'dialog_document'});
+							}
+							var path ='./ajax.php?module=cms&categ=documents&caller=editorial_form&action=get_form&id='+id;
+							dialog.attr('href', path);
+							dialog.startup();
+							dialog.show();
 						}
-						var path ='./ajax.php?module=cms&categ=documents&caller=editorial_form&action=get_form&id='+id;
-						dialog.attr('href', path);
-						dialog.startup();
-						dialog.show();
-					}
+					});
 				});
-			});
-		</script>
+			</script>
 		<h3>".htmlentities($msg['cms_documents_add'])."</h3>";
 		foreach($this->collections as $collection){
 			$coll_form = "<div class='row'>&nbsp;</div>";
@@ -164,9 +164,9 @@ class cms_collection extends cms_root{
 	
 	public function fetch_datas(){
 		$query = "select id_collection,collection_title, collection_description, collection_num_parent, collection_num_storage, count(id_document) as nb_doc from cms_collections left join cms_documents on document_type_object='collection' and document_num_object = id_collection where id_collection = ".$this->id." group by id_collection";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			$this->id = $row->id_collection;
 			$this->title = $row->collection_title;
 			$this->description = $row->collection_description;
@@ -219,8 +219,8 @@ class cms_collection extends cms_root{
 		global $cms_collection_id,$cms_collection_title,$cms_collection_description,$cms_collection_num_parent,$storage_method;
 		
 		$this->id = $cms_collection_id*1;
-		$this->title= $cms_collection_title;
-		$this->description = $cms_collection_description;
+		$this->title= stripslashes($cms_collection_title);
+		$this->description = stripslashes($cms_collection_description);
 		$this->num_parent = $cms_collection_num_parent;
 		$this->num_storage = $storage_method;
 		
@@ -238,9 +238,9 @@ class cms_collection extends cms_root{
 			collection_num_parent = '".addslashes($this->num_parent)."',
 			collection_num_storage = '".addslashes($this->num_storage)."'";
 		
-		$result = mysql_query($query.$clause);
+		$result = pmb_mysql_query($query.$clause);
 		if(!$this->id &&$result){
-			$this->id = mysql_insert_id();
+			$this->id = pmb_mysql_insert_id();
 		}
 // 		$storages = new storages();
 // 		$storages->save_form("collection",$this->id);
@@ -250,13 +250,13 @@ class cms_collection extends cms_root{
 		global $msg;
 		//on commence par vérifier si on a des documents dans la collection 
 		$query = "select id_document from cms_documents where document_type_object = 'collection' and document_num_object='".$this->id."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
 			//oui, on affiche une erreur
 			error_message($msg['540'], $msg['cms_collection_cant_delete_with_documents']);
 		}else{
 			$query = "delete from cms_collections where id_collection = ".$this->id;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query);
 			if($result) {
 				return true;
 			}
@@ -268,9 +268,9 @@ class cms_collection extends cms_root{
 	public function get_documents(){
 		$this->documents =array();
 		$query = "select id_document from cms_documents where document_type_object = 'collection' and document_num_object='".$this->id."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->documents[] = new cms_document($row->id_document);
 			}
 		}
@@ -371,9 +371,9 @@ class cms_collection extends cms_root{
 			document_type_object = 'collection',
 			document_num_object = ".$this->id."	
 		";
-		if(mysql_query($query)){
+		if(pmb_mysql_query($query)){
 			if($get_item_render){
-				$document = new cms_document(mysql_insert_id());
+				$document = new cms_document(pmb_mysql_insert_id());
 				$document->regen_vign();
 				if($from == "form"){
 					$result = $document->get_item_form(true);

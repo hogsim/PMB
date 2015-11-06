@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: includes_etagere.inc.php,v 1.18 2011-09-30 08:12:19 dgoron Exp $
+// $Id: includes_etagere.inc.php,v 1.21 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -82,6 +82,8 @@ $liens_opac['lien_rech_motcle'] 		= "./index.php?lvl=more_results&mode=keyword&u
 $liens_opac['lien_rech_categ'] 			= "./index.php?lvl=categ_see&id=!!id!!";
 $liens_opac['lien_rech_perio'] 			= "./index.php?lvl=notice_display&id=!!id!!";
 $liens_opac['lien_rech_bulletin'] 		= "./index.php?lvl=bulletin_display&id=!!id!!";
+$liens_opac['lien_rech_concept'] 		= "./index.php?lvl=concept_see&id=!!id!!";
+$liens_opac['lien_rech_authperso'] 		= "./index.php?lvl=authperso_see&id=!!id!!";
 */
 
 
@@ -100,5 +102,5 @@ $liens_opac['lien_rech_bulletin'] 		= "./index.php?lvl=bulletin_display&id=!!id!
  
 // print $etageres_footer;
 	
-//mysql_close($dbh);
+//pmb_mysql_close($dbh);
 

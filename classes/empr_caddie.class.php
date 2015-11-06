@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_caddie.class.php,v 1.5.6.1 2015-05-20 11:46:31 jpermanne Exp $
+// $Id: empr_caddie.class.php,v 1.10 2015-06-18 14:30:00 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -26,6 +26,8 @@ var $comment = ""		;	// description du contenu du panier
 var $nb_item = 0		;	// nombre d'enregistrements dans le panier
 var $nb_item_pointe = 0		;	// nombre d'enregistrements pointés dans le panier
 var $autorisations = ""		;	// autorisations accordées sur ce panier
+var $classementGen = ""		;	// classement
+var $liaisons = array("mailing" => array()); // Liaisons associées à un panier
 
 // ---------------------------------------------------------------
 //		empr_caddie($id) : constructeur
@@ -51,22 +53,34 @@ function getData() {
 		$this->comment	= '';
 		$this->nb_item	= 0;
 		$this->autorisations	= "";
+		$this->classementGen	= "";
 	} else {
 		$requete = "SELECT * FROM empr_caddie WHERE idemprcaddie='$this->idemprcaddie' ";
-		$result = @mysql_query($requete, $dbh);
-		if(mysql_num_rows($result)) {
-			$temp = mysql_fetch_object($result);
-			mysql_free_result($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($result)) {
+			$temp = pmb_mysql_fetch_object($result);
+			pmb_mysql_free_result($result);
 			$this->idemprcaddie = $temp->idemprcaddie;
 			$this->name = $temp->name;
 			$this->comment = $temp->comment;
 			$this->autorisations = $temp->autorisations;
+			$this->classementGen = $temp->empr_caddie_classement;
+			
+			//liaisons
+			$req="SELECT id_planificateur, num_type_tache, libelle_tache FROM planificateur WHERE num_type_tache=8 AND param REGEXP 's:11:\"empr_caddie\";s:[0-9]+:\"".$this->idemprcaddie."\";'";
+			$res=pmb_mysql_query($req,$dbh);
+			if($res && pmb_mysql_num_rows($res)){
+				while ($ligne=pmb_mysql_fetch_object($res)){
+					$this->liaisons["mailing"][]=array("id"=>$ligne->id_planificateur,"id_bis"=>$ligne->num_type_tache,"lib"=>$ligne->libelle_tache);
+				}
+			}
 		} else {
 			// pas de caddie avec cet id
 			$this->idemprcaddie = 0;
 			$this->name = '';
 			$this->comment = '';
 			$this->autorisations = "";
+			$this->classementGen = "";
 		}
 		$this->compte_items();
 	}
@@ -78,21 +92,22 @@ static function get_cart_list() {
 	$cart_list=array();
 	if ($PMBuserid!=1) $where=" where (autorisations='$PMBuserid' or autorisations like '$PMBuserid %' or autorisations like '% $PMBuserid %' or autorisations like '% $PMBuserid') ";
 	$requete = "SELECT * FROM empr_caddie $where order by name ";
-	$result = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) {
-		while ($temp = mysql_fetch_object($result)) {
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		while ($temp = pmb_mysql_fetch_object($result)) {
 			$nb_item = 0 ;
 			$nb_item_pointe = 0 ;
 			$rqt_nb_item="select count(1) from empr_caddie_content where empr_caddie_id='".$temp->idemprcaddie."' ";
-			$nb_item = mysql_result(mysql_query($rqt_nb_item, $dbh), 0, 0);
+			$nb_item = pmb_mysql_result(pmb_mysql_query($rqt_nb_item, $dbh), 0, 0);
 			$rqt_nb_item_pointe = "select count(1) from empr_caddie_content where empr_caddie_id='".$temp->idemprcaddie."' and (flag is not null and flag!='') ";
-			$nb_item_pointe = mysql_result(mysql_query($rqt_nb_item_pointe, $dbh), 0, 0);
+			$nb_item_pointe = pmb_mysql_result(pmb_mysql_query($rqt_nb_item_pointe, $dbh), 0, 0);
 
 			$cart_list[] = array( 
 				'idemprcaddie' => $temp->idemprcaddie,
 				'name' => $temp->name,
 				'comment' => $temp->comment,
 				'autorisations' => $temp->autorisations,
+				'empr_caddie_classement' => $temp->empr_caddie_classement,
 				'nb_item' => $nb_item,
 				'nb_item_pointe' => $nb_item_pointe
 				);
@@ -104,9 +119,9 @@ static function get_cart_list() {
 // création d'un panier vide
 function create_cart() {
 	global $dbh;
-	$requete = "insert into empr_caddie set name='".$this->name."', comment='".$this->comment."', autorisations='".$this->autorisations."' ";
-	$result = @mysql_query($requete, $dbh);
-	$this->idemprcaddie = mysql_insert_id($dbh);
+	$requete = "insert into empr_caddie set name='".$this->name."', comment='".$this->comment."', autorisations='".$this->autorisations."', empr_caddie_classement='".$this->classementGen."' ";
+	$result = @pmb_mysql_query($requete, $dbh);
+	$this->idemprcaddie = pmb_mysql_insert_id($dbh);
 	$this->compte_items();
 	}
 
@@ -118,7 +133,7 @@ function add_item($item=0) {
 	if (!$item) return CADDIE_ITEM_NULL ;
 	
 	$requete = "replace into empr_caddie_content set empr_caddie_id='".$this->idemprcaddie."', object_id='".$item."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	return CADDIE_ITEM_OK ;
 	}
 
@@ -126,7 +141,7 @@ function add_item($item=0) {
 function del_item($item=0) {
 	global $dbh;
 	$requete = "delete FROM empr_caddie_content where empr_caddie_id='".$this->idemprcaddie."' and object_id='".$item."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 }
 
@@ -146,25 +161,25 @@ function del_item_base($item=0) {
 function del_item_all_caddies($item) {
 	global $dbh;
 	$requete = "select idemprcaddie FROM empr_caddie ";
-	$result = mysql_query($requete, $dbh);
-	for($i=0;$i<mysql_num_rows($result);$i++) {
-		$temp=mysql_fetch_object($result);
+	$result = pmb_mysql_query($requete, $dbh);
+	for($i=0;$i<pmb_mysql_num_rows($result);$i++) {
+		$temp=pmb_mysql_fetch_object($result);
 		$requete_suppr = "delete from empr_caddie_content where empr_caddie_id='".$temp->idemprcaddie."' and object_id='".$item."' ";
-		$result_suppr = mysql_query($requete_suppr, $dbh);
+		$result_suppr = pmb_mysql_query($requete_suppr, $dbh);
 	}
 }
 
 function del_item_flag() {
 	global $dbh;
 	$requete = "delete FROM empr_caddie_content where empr_caddie_id='".$this->idemprcaddie."' and (flag is not null and flag!='') ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 }
 
 function del_item_no_flag() {
 	global $dbh;
 	$requete = "delete FROM empr_caddie_content where empr_caddie_id='".$this->idemprcaddie."' and (flag is null or flag='') ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 }
 
@@ -172,14 +187,14 @@ function del_item_no_flag() {
 function depointe_items() {
 	global $dbh;
 	$requete = "update empr_caddie_content set flag=null where empr_caddie_id='".$this->idemprcaddie."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 }	
 
 function pointe_item($item=0) {
 	global $dbh;
 	$requete = "update empr_caddie_content set flag='1' where empr_caddie_id='".$this->idemprcaddie."' and object_id='".$item."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 	return CADDIE_ITEM_OK ;
 }
@@ -189,7 +204,7 @@ function depointe_item($item=0) {
 
 	if ($item) {
 		$requete = "update empr_caddie_content set flag=null where empr_caddie_id='".$this->idemprcaddie."' and object_id='".$item."' ";
-		$result = @mysql_query($requete, $dbh);
+		$result = @pmb_mysql_query($requete, $dbh);
 		if ($result) {
 			$this->compte_items();
 			return 1;
@@ -203,16 +218,16 @@ function depointe_item($item=0) {
 function delete() {
 	global $dbh;
 	$requete = "delete FROM empr_caddie_content where empr_caddie_id='".$this->idemprcaddie."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$requete = "delete FROM empr_caddie where idemprcaddie='".$this->idemprcaddie."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 }
 
 // sauvegarde du panier
 function save_cart() {
 	global $dbh;
-	$requete = "update empr_caddie set name='".$this->name."', comment='".$this->comment."', autorisations='".$this->autorisations."' where idemprcaddie='".$this->idemprcaddie."'";
-	$result = @mysql_query($requete, $dbh);
+	$requete = "update empr_caddie set name='".$this->name."', comment='".$this->comment."', autorisations='".$this->autorisations."', empr_caddie_classement='".$this->classementGen."' where idemprcaddie='".$this->idemprcaddie."'";
+	$result = @pmb_mysql_query($requete, $dbh);
 }
 
 
@@ -232,9 +247,9 @@ function get_cart($flag="") {
 			$requete = "SELECT * FROM empr_caddie_content where empr_caddie_id='".$this->idemprcaddie."' ";
 			break ;
 		}
-	$result = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) {
-		while ($temp = mysql_fetch_object($result)) {
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		while ($temp = pmb_mysql_fetch_object($result)) {
 			$cart_list[] = $temp->object_id;
 		}
 	} 
@@ -247,9 +262,9 @@ function compte_items() {
 	$this->nb_item = 0 ;
 	$this->nb_item_pointe = 0 ;
 	$rqt_nb_item="select count(1) from empr_caddie_content where empr_caddie_id='".$this->idemprcaddie."' ";
-	$this->nb_item = mysql_result(mysql_query($rqt_nb_item, $dbh), 0, 0);
+	$this->nb_item = pmb_mysql_result(pmb_mysql_query($rqt_nb_item, $dbh), 0, 0);
 	$rqt_nb_item_pointe = "select count(1) from empr_caddie_content where empr_caddie_id='".$this->idemprcaddie."' and (flag is not null and flag!='') ";
-	$this->nb_item_pointe = mysql_result(mysql_query($rqt_nb_item_pointe, $dbh), 0, 0);
+	$this->nb_item_pointe = pmb_mysql_result(pmb_mysql_query($rqt_nb_item_pointe, $dbh), 0, 0);
 }
 
 function verif_empr_item($id) {
@@ -257,11 +272,32 @@ function verif_empr_item($id) {
 	global $dbh;
 	if ($id) {
 		$query = "select count(1) from pret where pret_idempr=".$id." limit 1 ";
-		$result = mysql_query($query, $dbh);
-		if(mysql_result($result, 0, 0)) return 1 ;
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_result($result, 0, 0)) return 1 ;
 		return 0 ;
 		
 	} else return 0 ;
+}
+
+static function show_actions($id_caddie = 0) {
+	global $msg,$empr_cart_action_selector;
+
+	$liste_actions = "<option value='' selected='selected'></option>";
+	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=supprpanier&action=choix_quoi&idemprcaddie=".$id_caddie."&item='>".$msg["empr_caddie_menu_action_suppr_panier"]."</option>";
+	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=transfert&action=transfert&idemprcaddie=".$id_caddie."&item='>".$msg["empr_caddie_menu_action_transfert"]."</option>";
+	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=edition&action=choix_quoi&idemprcaddie=".$id_caddie."&item=".$id_caddie."&item=0'>".$msg["empr_caddie_menu_action_edition"]."</option>";
+	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=mailing&action=envoi&idemprcaddie=".$id_caddie."&item=".$id_caddie."&item=0'>".$msg["empr_caddie_menu_action_mailing"]."</option>";
+	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=selection&action=&idemprcaddie=".$id_caddie."&item=".$id_caddie."&item=0'>".$msg["empr_caddie_menu_action_selection"]."</option>";
+	$liste_actions .= "<option value='./circ.php?categ=caddie&sub=action&quelle=supprbase&action=choix_quoi&idemprcaddie=".$id_caddie."&item='>".$msg["empr_caddie_menu_action_suppr_base"]."</option>";
+
+	$to_show = $empr_cart_action_selector;
+	$to_show = str_replace("!!object_id!!",$id_caddie,$to_show);
+	$to_show = str_replace("!!object_type!!",$type_caddie,$to_show);
+	$to_show = str_replace("!!actions_liste!!",$liste_actions,$to_show);
+	$to_show = str_replace("!!lib_action!!",$msg["empr_caddie_menu_action"],$to_show);
+	$to_show = str_replace("!!msg_object_action!!",$msg["empr_caddie_menu_action"],$to_show);
+
+	return $to_show;
 }
 	
 } // fin de déclaration de la classe

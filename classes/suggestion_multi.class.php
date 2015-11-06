@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestion_multi.class.php,v 1.15 2013-10-04 11:48:41 dgoron Exp $
+// $Id: suggestion_multi.class.php,v 1.16 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -35,10 +35,10 @@ class suggestion_multi{
 		global $origine_id, $type_origine, $acquisition_sugg_categ, $acquisition_sugg_localises;
 		
 		$req = "select * from suggestions_source order by libelle_source";
-		$res= mysql_query($req,$dbh);
+		$res= pmb_mysql_query($req,$dbh);
 		$option = "<option value='0' selected>".htmlentities($msg['acquisition_sugg_no_src'],ENT_QUOTES,$charset)."</option>";
 		$select="";
-		while(($src=mysql_fetch_object($res))){
+		while(($src=pmb_mysql_fetch_object($res))){
 			$select = ($src_liste == $src->id_source ? "selected" : "");
 			$option .= "<option value='".$src->id_source."' $select >".htmlentities($src->libelle_source,ENT_QUOTES,$charset)."</option>";
 		}	
@@ -109,8 +109,8 @@ class suggestion_multi{
 			if($type_origine)
 				$req = "select concat(empr_prenom,' ',empr_nom) as nom from empr where id_empr='".$origine_id."'";
 			 else $req = "select concat(prenom,' ',nom) as nom from users where userid='".$origine_id."'";
-			$res = mysql_query($req,$dbh);
-			$empr = mysql_fetch_object($res); 
+			$res = pmb_mysql_query($req,$dbh);
+			$empr = pmb_mysql_fetch_object($res); 
 			$multi_sug_form = str_replace('!!user_txt!!',$empr->nom,$multi_sug_form);
 		}
 		
@@ -189,11 +189,11 @@ class suggestion_multi{
 						$uni = new suggestions_unimarc($$unimarc);
 						$req .= ", notice_unimarc ='".addslashes($uni->sugg_uni_notice)."'";							
 					} 
-					mysql_query($req,$dbh);	
+					pmb_mysql_query($req,$dbh);	
 					
 					if (is_object($uni)) $uni->delete();
 						
-					$sug_orig = new suggestions_origine($id_user, mysql_insert_id());
+					$sug_orig = new suggestions_origine($id_user, pmb_mysql_insert_id());
 					$sug_orig->type_origine = $type_user;
 					$sug_orig->save();
 					

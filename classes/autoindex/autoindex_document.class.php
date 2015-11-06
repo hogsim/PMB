@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: autoindex_document.class.php,v 1.8 2014-03-12 14:13:04 dbellamy Exp $
+// $Id: autoindex_document.class.php,v 1.9 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -335,9 +335,9 @@ class autoindex_document {
 			
 			$q_restrict = '1 ';
 			$q0 = "select group_concat(id_noeud) from noeuds where autorite in ('TOP','ORPHELINS','NONCLASSES')";
-			$r0 = mysql_query($q0, $dbh);
-			if(mysql_num_rows($r0)) {
-				$q_restrict= 'num_noeud not in('.mysql_result($r0,0,0).') ';
+			$r0 = pmb_mysql_query($q0, $dbh);
+			if(pmb_mysql_num_rows($r0)) {
+				$q_restrict= 'num_noeud not in('.pmb_mysql_result($r0,0,0).') ';
 			}
 			
 			//recherche des termes pour lesquels on a une correspondance exacte avec l'un des mots du document
@@ -359,9 +359,9 @@ class autoindex_document {
 					$q1.= "and langue='".$this->lang."' ";
 				}
 				$q1.= "and index_categorie like '% ".$word->label." %' ";
-				$r1 = mysql_query($q1, $dbh);
-				if(mysql_num_rows($r1)) {
-					while($row1 = mysql_fetch_object($r1)) {
+				$r1 = pmb_mysql_query($q1, $dbh);
+				if(pmb_mysql_num_rows($r1)) {
+					while($row1 = pmb_mysql_fetch_object($r1)) {
 						if(!$terms[$row1->num_noeud]) {
 // $terms1[]=$row1->libelle_categorie;
 							$terms[$row1->num_noeud]['label']=$row1->libelle_categorie;
@@ -393,13 +393,13 @@ class autoindex_document {
 					if ($this->lang) {
 						$q2.= "and lang='".$this->lang."' ";
 					}
-					$r2 = mysql_query($q2, $dbh);
-					if (!mysql_num_rows($r2) && $this->wo_lang) {
+					$r2 = pmb_mysql_query($q2, $dbh);
+					if (!pmb_mysql_num_rows($r2) && $this->wo_lang) {
 						$q2 = "select word from words where $q2_restrict and stem='".addslashes($stem->label)."' and lang='' ";
-						$r2 = mysql_query($q2, $dbh);
+						$r2 = pmb_mysql_query($q2, $dbh);
 					}
-					if (mysql_num_rows($r2)) {
-						while ($row2 = mysql_fetch_object($r2)) {
+					if (pmb_mysql_num_rows($r2)) {
+						while ($row2 = pmb_mysql_fetch_object($r2)) {
 							$q3 = "select num_noeud, libelle_categorie, num_renvoi_voir, path from noeuds join categories on num_noeud=id_noeud where $q_restrict ";
 							if ($this->id_thesaurus) {
 								$q3.= "and noeuds.num_thesaurus=".$this->id_thesaurus." ";
@@ -408,9 +408,9 @@ class autoindex_document {
 								$q3.= "and langue='".$this->lang."' ";
 							}
 							$q3.= "and index_categorie like '% ".$row2->word." %' ";
-							$r3 = mysql_query($q3, $dbh);
-							if(mysql_num_rows($r3)) {
-								while($row3 = mysql_fetch_object($r3)) {
+							$r3 = pmb_mysql_query($q3, $dbh);
+							if(pmb_mysql_num_rows($r3)) {
+								while($row3 = pmb_mysql_fetch_object($r3)) {
 									if(!$terms[$row3->num_noeud]) {
 // $terms2[]=$row3->libelle_categorie;
 										$terms[$row3->num_noeud]['label']=$row3->libelle_categorie;

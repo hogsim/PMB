@@ -3,10 +3,15 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: template.xml,v 1.1 2014-01-07 10:16:16 arenou Exp $ -->
+$Id: template.xml,v 1.2 2015-06-15 12:55:33 pmbs Exp $ -->
 <template default_lang='fr_FR'>
 	<content lang='fr_FR'><![CDATA[
 		<div>{{nb_records.0.total}} documents dans le fonds</div>
+		]]>
+	</content>
+	
+	<content lang='en_UK'><![CDATA[
+		<div>{{nb_records.0.total}} documents in the base</div>
 		]]>
 	</content>
 </template>

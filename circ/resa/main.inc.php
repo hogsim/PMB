@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.14 2011-09-30 08:01:23 dgoron Exp $
+// $Id: main.inc.php,v 1.16 2015-04-24 14:20:58 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -28,12 +28,12 @@ require_once("$class_path/explnum.class.php");
 // inclusions principales
 require_once("$include_path/templates/resa.tpl.php");
 
-// gestion des liens en rech resa ou pas 
+// gestion des liens en rech resa ou pas
 $link = "./circ.php?categ=resa&id_empr=$id_empr&groupID=$groupID&id_notice=!!id!!";
 $link_serial = "./circ.php?categ=resa&id_empr=$id_empr&groupID=$groupID&mode=view_serial&serial_id=!!id!!";
 $link_analysis = '';
 $link_bulletin = "./circ.php?categ=resa&id_empr=$id_empr&groupID=$groupID&id_bulletin=!!id!!";
-				
+
 if (!$id_empr) {
 	// pas d'id empr, quelque chose ne va pas
 	error_message($msg[350], $msg[54], 1 , './circ.php');
@@ -45,12 +45,12 @@ if (!$id_empr) {
 	} else {
 		// récupération nom emprunteur
 		$requete = "SELECT empr_nom, empr_prenom, empr_cb FROM empr WHERE id_empr=$id_empr LIMIT 1";
-		$result = @mysql_query($requete, $dbh);
-		if(!mysql_num_rows($result)) {
+		$result = @pmb_mysql_query($requete, $dbh);
+		if(!pmb_mysql_num_rows($result)) {
 			// pas d'emprunteur correspondant, quelque chose ne va pas
 			error_message($msg[350], $msg[54], 1 , './circ.php');
 		} else {
-			$empr = mysql_fetch_object($result);
+			$empr = pmb_mysql_fetch_object($result);
 			$name = $empr->empr_prenom;
 			$name ? $name .= ' '.$empr->empr_nom : $name = $empr->empr_nom;
 			echo window_title($database_window_title.$name.$msg[1003].$msg[352]);
@@ -82,7 +82,7 @@ if (!$id_empr) {
 					// autres recherches
 					print $menu_search[4];
 					include('./circ/resa/others.inc.php');
-					break;			
+					break;
 				case 'view_serial':
 					// affichage de la liste des éléments bulletinés pour un périodique
 					include('./circ/resa/view_serial.inc.php');
@@ -91,7 +91,7 @@ if (!$id_empr) {
 					// recherches avancees
 					print $menu_search[6];
 					include('./circ/resa/extended/main.inc.php');
-					break;	
+					break;
 				default :
 					// recherche auteur/titre
 					print $menu_search[0];

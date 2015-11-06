@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_doc.class.php,v 1.2 2009-09-24 13:18:58 kantin Exp $
+// $Id: explnum_doc.class.php,v 1.4 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -31,9 +31,9 @@ class explnum_doc{
 			$this->explnum_doc_extfichier = '';
 		} else {
 			$req = "select * from explnum_doc where id_explnum_doc='".$this->explnum_doc_id."'";
-			$res=mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$expl = mysql_fetch_object($res);
+			$res=pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$expl = pmb_mysql_fetch_object($res);
 				$this->explnum_doc_nomfichier = $expl->explnum_doc_nomfichier;
 	 			$this->explnum_doc_contenu = $expl->explnum_doc_data;
 	 			$this->explnum_doc_mime = $expl->explnum_doc_mimetype;
@@ -61,8 +61,8 @@ class explnum_doc{
 					 explnum_doc_mimetype='".addslashes($this->explnum_doc_mime)."',
 					 explnum_doc_extfichier='".addslashes($this->explnum_doc_extfichier)."',
 					 explnum_doc_data='".addslashes($this->explnum_doc_contenu)."'";
-			mysql_query($req,$dbh);
-			$this->explnum_doc_id = mysql_insert_id();
+			pmb_mysql_query($req,$dbh);
+			$this->explnum_doc_id = pmb_mysql_insert_id();
 					 
 		} else{
 			//Modification
@@ -72,7 +72,7 @@ class explnum_doc{
 					 explnum_doc_extfichier='".addslashes($this->explnum_doc_extfichier)."',
 					 explnum_doc_data='".addslashes($this->explnum_doc_contenu)."'
 					 where id_explnum_doc='".$this->explnum_doc_id."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 	
@@ -119,6 +119,41 @@ class explnum_doc{
 			
 			unlink($file_name);
 		}
+	}
+	
+	/*
+	 * Affiche les documents numériques dans un tableau
+	*/
+	function show_docnum_table($docnum_tab=array()){
+		global $charset;
+	
+		create_tableau_mimetype();
+		$display = "";
+		if($docnum_tab){
+			$nb_doc = 0;
+			$display .= "<table>
+			<tbody>";
+			for($i=0;$i<count($docnum_tab);$i++){
+				$nb_doc++;
+				if($nb_doc == 1) $display .= "<tr>";
+				$alt = htmlentities($docnum_tab[$i]['explnum_doc_nomfichier'],ENT_QUOTES,$charset).' - '.htmlentities($docnum_tab[$i]['explnum_doc_mimetype'],ENT_QUOTES,$charset);
+				$display .= "<td class='docnum' style='width:25%;border:1px solid #CCCCCC;padding : 5px 5px'>
+				<a target='_blank' alt='$alt' title='$alt' href=\"./explnum_doc.php?explnumdoc_id=".$docnum_tab[$i]['id_explnum_doc']."\">
+				<img src='./images/mimetype/".icone_mimetype($docnum_tab[$i]['explnum_doc_mimetype'],$docnum_tab[$i]['explnum_doc_extfichier'])."' alt='$alt' title='$alt' >
+				</a>
+				<br />
+				<div class='explnum_type'>".$docnum_tab[$i]['explnum_doc_mimetype']."</div>
+				</td>
+				";
+				if($nb_doc == 4) {
+					$display .= "</tr>";
+					$nb_doc=0;
+				}
+			}
+			$display .= "</tbody></table>";
+		}
+	
+		return $display;
 	}
 }
 ?>

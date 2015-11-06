@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reindex_synchrordfstore.inc.php,v 1.2.2.2 2014-04-03 07:51:48 jpermanne Exp $
+// $Id: reindex_synchrordfstore.inc.php,v 1.3 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,16 +29,16 @@ if (!isset($start)) {
 $v_state=urldecode($v_state);
 
 if (!$count) {
-	$notices = mysql_query("SELECT count(1) FROM notices", $dbh);
-	$count = mysql_result($notices, 0, 0);
+	$notices = pmb_mysql_query("SELECT count(1) FROM notices", $dbh);
+	$count = pmb_mysql_result($notices, 0, 0);
 }
 	
 print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_synchrordfstore_reindexation"], ENT_QUOTES, $charset)."</h2>";
 
 $NoIndex = 1;
 
-$query = mysql_query("select notice_id from notices order by notice_id LIMIT $start, $lot");
-if(mysql_num_rows($query)) {
+$query = pmb_mysql_query("select notice_id from notices order by notice_id LIMIT $start, $lot");
+if(pmb_mysql_num_rows($query)) {
 		
 	// définition de l'état de la jauge
 	$state = floor($start / ($count / $jauge_size));
@@ -52,7 +52,7 @@ if(mysql_num_rows($query)) {
 	
 	// affichage du % d'avancement et de l'état
 	print "<div align='center'>$percent%</div>";
-	while($mesNotices = mysql_fetch_assoc($query)) {		
+	while($mesNotices = pmb_mysql_fetch_assoc($query)) {		
 		$synchro_rdf->addRdf($mesNotices['notice_id'],0); 
 		$notice=new notice($mesNotices['notice_id']);
 		$niveauB=strtolower($notice->biblio_level);
@@ -62,7 +62,7 @@ if(mysql_num_rows($query)) {
 			$synchro_rdf->addRdf(0,$bulletin);
 		}
 	}
-mysql_free_result($query);
+pmb_mysql_free_result($query);
 
 $next = $start + $lot;
 print "

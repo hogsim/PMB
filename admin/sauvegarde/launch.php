@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: launch.php,v 1.7 2009-05-16 11:11:53 dbellamy Exp $
+// $Id: launch.php,v 1.8 2015-04-03 11:16:21 jpermanne Exp $
 
 //Page de lancement d'un sauvegarde
 $base_path="../..";
@@ -16,15 +16,15 @@ print "<div id=\"contenu-frame\">\n";
 print "<h1>".$msg["sauv_launch_titre"]."</h1>\n";
 //Récupération de l'id utilisateur
 $requete="select userid from users where username='".SESSlogin."'";
-$resultat=mysql_query($requete) or die(mysql_error());
+$resultat=pmb_mysql_query($requete) or die(pmb_mysql_error());
 
-$userid=mysql_result($resultat,0,0);
+$userid=pmb_mysql_result($resultat,0,0);
 
 $requete="select sauv_sauvegarde_id, sauv_sauvegarde_nom, sauv_sauvegarde_users from sauv_sauvegardes";
-$resultat=mysql_query($requete) or die(mysql_error());
+$resultat=pmb_mysql_query($requete) or die(pmb_mysql_error());
 
 $sauvegardes=array();
-while ($res=mysql_fetch_object($resultat)) {
+while ($res=pmb_mysql_fetch_object($resultat)) {
 	$users=explode(",",$res->sauv_sauvegarde_users);
 	$as=array_search($userid,$users);
 	if (($as!==false)||($as!==null)) {

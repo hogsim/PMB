@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: drag_n_drop.js,v 1.19 2012-11-02 16:15:28 arenou Exp $
+// $Id: drag_n_drop.js,v 1.23 2015-01-15 11:07:30 vtouchard Exp $
 
 
 /*
@@ -89,6 +89,17 @@ allow_drag['editionsstatefilters']=new Array();
 allow_drag['editionsstatefilters']['editionsstatefilters']=true;
 allow_drag['editionsstatefilterslist']=new Array();
 allow_drag['editionsstatefilterslist']['editionsstatefilterslist']=true;
+allow_drag['concept']=new Array();
+allow_drag['concept']['concept']=true;
+allow_drag['vedette_composee_subdivision']=new Array();
+allow_drag['vedette_composee_subdivision']['vedette_composee_available_fields']=true;
+allow_drag['vedette_composee_subdivision']['vedette_composee_element']=true;
+allow_drag['vedette_composee_element']=new Array();
+allow_drag['vedette_composee_element']['vedette_composee_element']=true;
+allow_drag['vedette_composee_delete_element']=new Array();
+allow_drag['vedette_composee_delete_element']['vedette_composee_element']=true;
+allow_drag['instru']=new Array();
+allow_drag['instru']['instru']=true;
 
 var r_x=new Array();
 var r_y=new Array();
@@ -340,8 +351,15 @@ function move_dragged(e) {
 		var pos=getCoordinate(e);
 
 		//Positionnement du clone pour que le pointeur de la souris soit au milieu !
-		var encx=current_drag.offsetWidth;
-		var ency=current_drag.offsetHeight;
+		// On gère le cas de la présence d'un handler
+		var current_drag_handler = document.getElementById(current_drag.getAttribute("handler"));
+		if (current_drag_handler) {
+			var encx=current_drag_handler.offsetWidth;
+			var ency=current_drag_handler.offsetHeight;
+		} else {
+			var encx=current_drag.offsetWidth;
+			var ency=current_drag.offsetHeight;
+		}
 		current_drag.style.left=(pos[0]-(encx/2))+"px";
 		current_drag.style.top=(pos[1]-(ency/2))+"px";
 
@@ -412,8 +430,16 @@ function create_dragged(targ) {
 		current_drag.style.visibility="hidden";
 		current_drag=document.getElementById("att").appendChild(current_drag);
 		current_drag.style.width=targ.offsetWidth;
-		var encx=current_drag.offsetWidth;
-		var ency=current_drag.offsetHeight;
+
+		// On gère le cas de la présence d'un handler
+		var current_drag_handler = document.getElementById(current_drag.getAttribute("handler"));
+		if (current_drag_handler) {
+			var encx=current_drag_handler.offsetWidth;
+			var ency=current_drag_handler.offsetHeight;
+		} else {
+			var encx=current_drag.offsetWidth;
+			var ency=current_drag.offsetHeight;
+		}
 		current_drag.style.left=(posxdown-(encx/2))+"px";
 		current_drag.style.top=(posydown-(ency/2))+"px";
 		current_drag.style.zIndex=2000;
@@ -558,7 +584,6 @@ function recalc_recept() {
 //Calcul de l'encombrement d'un recepteur
 function calc_recept(i) {
 	try {
-
 		var r=document.getElementById(recept[i]);
 		var pos=findPos(r);
 		r_x[i]=pos[0];

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cod_stat.inc.php,v 1.11 2009-11-13 10:30:49 mbertin Exp $
+// $Id: cod_stat.inc.php,v 1.12 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -31,13 +31,13 @@ function show_codstat($dbh) {
 	// affichage du tableau des utilisateurs
 
 	$requete = "SELECT idcode, libelle FROM empr_codestat ORDER BY libelle, idcode ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -73,8 +73,8 @@ switch($action) {
 	case 'update':
 		// no duplication
 		$requete = " SELECT count(1) FROM empr_codestat WHERE (libelle='$form_libelle' AND idcode!='$id' )  LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 				error_form_message($form_libelle.$msg["docs_label_already_used"]);
 		} else {
@@ -82,14 +82,14 @@ switch($action) {
 			if(!empty($form_libelle)) {
 				if($id) {
 					$requete = "UPDATE empr_codestat SET libelle='$form_libelle' WHERE idcode=$id ";
-					$res = mysql_query($requete, $dbh);
+					$res = pmb_mysql_query($requete, $dbh);
 				} else {
 					$requete = "SELECT count(1) FROM empr_codestat WHERE libelle='$form_libelle' LIMIT 1 ";
-					$res = mysql_query($requete, $dbh);
-					$nbr = mysql_result($res, 0, 0);
+					$res = pmb_mysql_query($requete, $dbh);
+					$nbr = pmb_mysql_result($res, 0, 0);
 					if($nbr == 0) {
 						$requete = "INSERT INTO empr_codestat (idcode,libelle) VALUES ('', '$form_libelle') ";
-						$res = mysql_query($requete, $dbh);
+						$res = pmb_mysql_query($requete, $dbh);
 					}
 				}
 			}
@@ -106,9 +106,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT libelle FROM empr_codestat WHERE idcode=$id LIMIT 1;";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_row($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_row($res);
 				codstat_form($row[0], $id);
 			} else {
 				show_codstat($dbh);
@@ -120,12 +120,12 @@ switch($action) {
 	case 'del':
 		if($id) {
 			$total = 0;
-			$total = mysql_result(mysql_query("select count(1) from empr where empr_codestat ='".$id."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from empr where empr_codestat ='".$id."' ", $dbh), 0, 0);
 			if ($total==0) {
 				$requete = "DELETE FROM empr_codestat WHERE idcode=$id ;";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete = "OPTIMIZE TABLE empr_codestat ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_codstat($dbh);
 				} else {
 					error_message(	$msg[294], $msg[1707], 1, 'admin.php?categ=empr&sub=codstat&action=');

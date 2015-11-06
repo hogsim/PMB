@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: authors.tpl.php,v 1.31.2.2 2014-08-05 12:26:19 apetithomme Exp $
+// $Id: authors.tpl.php,v 1.35 2014-10-29 11:07:37 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -215,12 +215,14 @@ function display_part(type)
 <div class='row'>
 	<textarea class='saisie-80em' id='author_comment' name='author_comment' cols='62' rows='4' wrap='virtual'>!!author_comment!!</textarea>
 </div>
+!!concept_form!!
 !!aut_pperso!!
 <div class='row'>
 	<label class='etiquette' for='author_import_denied'>".$msg['authority_import_denied']."</label> &nbsp;
 	<input type='checkbox' id='author_import_denied' name='author_import_denied' value='1' !!author_import_denied!!/>
 </div>
 <!-- aut_link -->
+<!-- map -->
 </div>
 <!--	boutons	-->
 <div class='row'>

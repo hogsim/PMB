@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: indexint.inc.php,v 1.29 2013-10-30 15:00:54 dgoron Exp $
+// $Id: indexint.inc.php,v 1.30 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,8 +32,8 @@ if ($add_notice) $clause.= ' and notice_id in ('.$add_notice.')';
 $tri = 'order by pert desc, index_indexint';
 $pert=$members["select"]." as pert";
 
-$indexint = mysql_query("SELECT COUNT(distinct indexint_id) FROM indexint $clause", $dbh);
-$nb_result_indexint = mysql_result($indexint, 0 , 0);
+$indexint = pmb_mysql_query("SELECT COUNT(distinct indexint_id) FROM indexint $clause", $dbh);
+$nb_result_indexint = pmb_mysql_result($indexint, 0 , 0);
 
 //Enregistrement des stats
 if($pmb_logs_activate){

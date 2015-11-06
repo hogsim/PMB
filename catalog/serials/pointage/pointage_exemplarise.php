@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pointage_exemplarise.php,v 1.49.2.6 2015-07-16 12:34:46 jpermanne Exp $
+// $Id: pointage_exemplarise.php,v 1.58 2015-07-16 12:33:42 jpermanne Exp $
 
 // définition du minimum nécéssaire
 $base_path="./../../..";
@@ -84,16 +84,16 @@ function do_selector_bul_section($section_id, $location_id) {
 	if (!$location_id) $location_id=$deflt_location;
 
 	$rqtloc = "SELECT idlocation FROM docs_location order by location_libelle";
-	$resloc = mysql_query($rqtloc, $dbh);
-	while ($loc=mysql_fetch_object($resloc)) {
+	$resloc = pmb_mysql_query($rqtloc, $dbh);
+	while ($loc=pmb_mysql_fetch_object($resloc)) {
 		$requete = "SELECT idsection, section_libelle FROM docs_section, docsloc_section where idsection=num_section and num_location='$loc->idlocation' order by section_libelle";
-		$result = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_num_rows($result);
+		$result = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_num_rows($result);
 		if ($nbr_lignes) {			
 			if ($loc->idlocation==$location_id) $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:block\">";
 				else $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:none\">";
 			$selector .= "<select name='f_ex_section".$loc->idlocation."' id='f_ex_section".$loc->idlocation."'>";
-			while($line = mysql_fetch_row($result)) {
+			while($line = pmb_mysql_fetch_row($result)) {
 				$selector .= "<option value='$line[0]'";
 				$line[0] == $section_id ? $selector .= ' SELECTED>' : $selector .= '>';
 	 			$selector .= htmlentities($line[1],ENT_QUOTES, $charset).'</option>';
@@ -111,11 +111,16 @@ function bul_do_form($obj) {
 	global $dbh,$charset;
 	global $pmb_type_audit,$select_categ_prop,$pmb_antivol ;
 	global $id_bull,$bul_id,$serial_id,$numero,$pmb_rfid_activate,$pmb_rfid_serveur_url;
+	global $deflt_explnum_statut;
 	
 	if(!$obj->abt_numeric)$bul_expl_form1 = str_replace('!!expl_bulletinage_tpl!!', $expl_bulletinage_tpl, $bul_expl_form1);	
 	else $bul_expl_form1 = str_replace('!!expl_bulletinage_tpl!!', "", $bul_expl_form1);	
 	$action = "./pointage_exemplarise.php?act=update&id_bull=$id_bull&bul_id=$bul_id";
 	
+	// statut
+	$select_statut = gen_liste_multiple ("select id_explnum_statut, gestion_libelle from explnum_statut order by 2", "id_explnum_statut", "gestion_libelle", "id_explnum_statut", "f_explnum_statut", "", $deflt_explnum_statut, "", "","","",0) ;
+	$bul_expl_form1 = str_replace('!!statut_list!!', $select_statut, $bul_expl_form1);
+			
 	// mise à jour des champs de gestion
 	$bul_expl_form1 = str_replace('!!bul_id!!', $obj->expl_bulletin, $bul_expl_form1);
 	$bul_expl_form1 = str_replace('!!id_form!!', md5(microtime()), $bul_expl_form1);
@@ -227,23 +232,23 @@ function bul_do_form($obj) {
 }
 
 function sql_value($rqt) {
-	if($result=mysql_query($rqt))
-		if($row = mysql_fetch_row($result))	return $row[0];
+	if($result=pmb_mysql_query($rqt))
+		if($row = pmb_mysql_fetch_row($result))	return $row[0];
 	return '';
 }
 
 $requete = "SELECT * FROM abts_grille_abt WHERE id_bull='$id_bull'";
-$abtsQuery = mysql_query($requete, $dbh);
-if(mysql_num_rows($abtsQuery)) {
-	$abts = mysql_fetch_object($abtsQuery);
+$abtsQuery = pmb_mysql_query($requete, $dbh);
+if(pmb_mysql_num_rows($abtsQuery)) {
+	$abts = pmb_mysql_fetch_object($abtsQuery);
 	$modele_id = $abts->modele_id;
 	$abt_id = $abts->num_abt;
 	$value['date_date']=$abts->date_parution;
 }
 $requete = "SELECT * FROM abts_abts WHERE abt_id='$abt_id'";
-$abtsQuery = mysql_query($requete, $dbh);
-if(mysql_num_rows($abtsQuery)) {
-	$abts = mysql_fetch_object($abtsQuery);
+$abtsQuery = pmb_mysql_query($requete, $dbh);
+if(pmb_mysql_num_rows($abtsQuery)) {
+	$abts = pmb_mysql_fetch_object($abtsQuery);
 	$abt_numeric = $abts->abt_numeric;
 	$exemp_auto = $abts->exemp_auto;
 	$type_antivol = $abts->type_antivol;
@@ -252,9 +257,9 @@ if(mysql_num_rows($abtsQuery)) {
 	
 }
 $requete = "SELECT num_notice,format_periode FROM abts_modeles WHERE modele_id='$modele_id'";
-$abtsQuery = mysql_query($requete, $dbh);
-if(mysql_num_rows($abtsQuery)) {
-	$abts = mysql_fetch_object($abtsQuery);
+$abtsQuery = pmb_mysql_query($requete, $dbh);
+if(pmb_mysql_num_rows($abtsQuery)) {
+	$abts = pmb_mysql_fetch_object($abtsQuery);
 	$format_periode = $abts->format_periode;
 	$serial_id = $abts->num_notice;
 }
@@ -272,9 +277,9 @@ $print_format->var_format['START_DATE'] = $date_debut;
 $print_format->var_format['END_DATE'] = $date_fin;
 
 $requete = "SELECT * FROM abts_abts_modeles WHERE modele_id='$modele_id' and abt_id='$abt_id' ";
-$abtsabtsQuery = mysql_query($requete, $dbh);
-if(mysql_num_rows($abtsabtsQuery)) {
-	$abtsabts = mysql_fetch_object($abtsabtsQuery);
+$abtsabtsQuery = pmb_mysql_query($requete, $dbh);
+if(pmb_mysql_num_rows($abtsabtsQuery)) {
+	$abtsabts = pmb_mysql_fetch_object($abtsabtsQuery);
 	$print_format->var_format['START_NUM'] = $abtsabts->num;
 	$print_format->var_format['START_VOL'] = $abtsabts->vol;
 	$print_format->var_format['START_TOM'] = $abtsabts->tome;	
@@ -319,19 +324,24 @@ if(($act=='update') ) {
 		}
 		// si le code-barre saisi est déjà utilisé, on affiche une erreur
 		$requete = "SELECT COUNT(1) FROM exemplaires WHERE expl_cb='$f_ex_cb'";
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_result($myQuery, 0, 0))  { 
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_result($myQuery, 0, 0))  { 
 			print "<script>alert('".addslashes($msg['pointage_message_code_utilise'])."'); history.go(-1);</script>";
 			exit();
 		}
-		// Dépiéger l'exemplaire (lié à l'abonnement) du dernier bulletin
+		// Dépiéger l'exemplaire (lié à l'abonnement) du dernier bulletin		
 		if($num_statut) {
-			$requete="SELECT bulletin_id  FROM bulletins where date_date<'$date_date' and bulletin_notice='$serial_id' ORDER BY date_date DESC LIMIT 1";
-			$result_dernier = mysql_query($requete);
-			if ($r_dernier = mysql_fetch_object($result_dernier)) {
-				$dernier_bul_id	=$r_dernier->bulletin_id;
-				$requete = "update exemplaires set expl_statut=$num_statut where expl_bulletin=$dernier_bul_id and expl_abt_num='$abt_id' ";
-				mysql_query($requete, $dbh);
+			//A ne faire que si l'abonnement n'a pas de liste de circulation associée...
+			$query = "select id_serialcirc from serialcirc where num_serialcirc_abt = ".$abt_id;
+			$result = pmb_mysql_query($query,$dbh);
+			if(!pmb_mysql_num_rows($result)){
+				$requete="SELECT bulletin_id  FROM bulletins where date_date<'$date_date' and bulletin_notice='$serial_id' ORDER BY date_date DESC LIMIT 1";
+				$result_dernier = pmb_mysql_query($requete,$dbh);
+				if ($r_dernier = pmb_mysql_fetch_object($result_dernier)) {
+					$dernier_bul_id	=$r_dernier->bulletin_id;
+					$requete = "update exemplaires set expl_statut=$num_statut where expl_bulletin=$dernier_bul_id and expl_abt_num='$abt_id' ";
+					pmb_mysql_query($requete, $dbh);
+				}
 			}
 		}
 		
@@ -358,8 +368,8 @@ if(($act=='update') ) {
 		$values .= ", expl_abt_num='$abt_id'";
 		$requete = "INSERT INTO exemplaires set $values , create_date=sysdate() ";
 	
-		$myQuery = mysql_query($requete, $dbh);
-		$expl_id=mysql_insert_id();	
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		$expl_id=pmb_mysql_insert_id();	
 		audit::insert_creation (AUDIT_EXPL, $expl_id) ;
 
 		//parametres_perso de l'exemplaire
@@ -381,14 +391,14 @@ if(($act=='update') ) {
 	}
 	//Mis à jour du bulletin avec les valeurs du formulaire	
 	$requete = "UPDATE bulletins set bulletin_numero='$bul_no',date_date='$date_date', mention_date='$bul_date', bulletin_titre='$bul_titre' WHERE bulletin_id='$bul_id' ";
-	$myQuery = mysql_query($requete, $dbh);
+	$myQuery = pmb_mysql_query($requete, $dbh);
 	
 	// Mise a jour de la table notices_mots_global_index pour toutes les notices en relation avec l'exemplaire
 	$req_maj="SELECT bulletin_notice,num_notice, analysis_notice FROM bulletins LEFT JOIN analysis ON analysis_bulletin=bulletin_id WHERE bulletin_id='".$bul_id."'";
-	$res_maj=mysql_query($req_maj);
-	if($res_maj && mysql_num_rows($res_maj)){
+	$res_maj=pmb_mysql_query($req_maj);
+	if($res_maj && pmb_mysql_num_rows($res_maj)){
 		$first=true;//Pour la premiere ligne de résultat on doit indexer aussi la notice de périodique et de bulletin au besoin
-		while ( $ligne=mysql_fetch_object($res_maj) ) {
+		while ( $ligne=pmb_mysql_fetch_object($res_maj) ) {
 			if($first){
 				if($ligne->bulletin_notice){
 					notice::majNoticesMotsGlobalIndex($ligne->bulletin_notice,'expl');
@@ -406,7 +416,7 @@ if(($act=='update') ) {
 	
 	// Déclaration du bulletin comme reçu
 	$requete="update abts_grille_abt set state='2' where id_bull= '$id_bull' ";	
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	
 	
 	if($f_fichier["name"]!=""){	
@@ -427,7 +437,7 @@ if(($act=='update') ) {
 		$explnum = new explnum();	
 		// Url de retour après téléchargement du document.	
 		$retour ="$base_path/catalog/serials/pointage/pointage_exemplarise.php?act=memo_doc_num&id_bull=$id_bull&bul_id=$bul_id";		
-		$explnum->mise_a_jour(0, $bul_id, $f_filename, $f_url, $retour,0,0);	
+		$explnum->mise_a_jour(0, $bul_id, $f_filename, $f_url, $retour,0,0, $f_explnum_statut);	
 		exit();
 	}else{	
 		// Pas de doc numérique, on ferme l'iframe 
@@ -443,7 +453,7 @@ if(($act=='update') ) {
 	if($nonrecevable) {
 		$value['bul_titre'] = $msg['abonnements_bulletin_non_recevable'] ;
 		$requete="update abts_grille_abt set state='3' where id_bull= '$id_bull' ";	
-		mysql_query($requete);		
+		pmb_mysql_query($requete);		
 		abts_pointage::delete_retard($abt_id);
 		$templates=str_replace("!!form!!","<script type='text/javascript'>parent.kill_frame_periodique();</script>",$templates);//Il ne faut pas utiliser la fonction Fermer() pour pouvoir recevoir un bulletin que l'on aurai coché "Non recevable" par erreur
 		print $templates;
@@ -456,9 +466,9 @@ if(($act=='update') ) {
 		
 	//Récupération des infos du bulletin pour les proposer sur la frame
 	$requete = "SELECT * FROM bulletins where bulletin_numero='$numero' and bulletin_notice='$serial_id' and date_date='".$value['date_date']."'";
-	$bull_Query = mysql_query($requete, $dbh);
-	if(mysql_num_rows($bull_Query)) {	
-		$bull = mysql_fetch_object($bull_Query);
+	$bull_Query = pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($bull_Query)) {	
+		$bull = pmb_mysql_fetch_object($bull_Query);
 		$bul_id= $bull->bulletin_id;
 		$expl->date_date = $bull->date_date;
 		$expl->bul_date = $bull->mention_date;
@@ -467,20 +477,20 @@ if(($act=='update') ) {
 	if($flag_exemp_auto==1)	{
 		//Génération automatique de code barre, activé pour cet abonnement
   		$requete="DELETE from exemplaires_temp where sess not in (select SESSID from sessions)";
-   		$res = mysql_query($requete,$dbh); 	
+   		$res = pmb_mysql_query($requete,$dbh); 	
     	//Appel à la fonction de génération automatique de cb
     	$code_exemplaire =init_gen_code_exemplaire(0,$bul_id);
     	do {
     		$code_exemplaire = gen_code_exemplaire(0,$bul_id,$code_exemplaire);
     		$requete="select expl_cb from exemplaires WHERE expl_cb='$code_exemplaire'";
-    		$res0 = mysql_query($requete,$dbh);
+    		$res0 = pmb_mysql_query($requete,$dbh);
     		$requete="select cb from exemplaires_temp WHERE cb='$code_exemplaire' AND sess <>'".SESSid."'";
-    		$res1 = mysql_query($requete,$dbh);
-    	} while((mysql_num_rows($res0)||mysql_num_rows($res1)));
+    		$res1 = pmb_mysql_query($requete,$dbh);
+    	} while((pmb_mysql_num_rows($res0)||pmb_mysql_num_rows($res1)));
     		
    		//Memorise dans temps le cb et la session pour le cas de multi utilisateur session
    		$requete="INSERT INTO exemplaires_temp (cb ,sess) VALUES ('$code_exemplaire','".SESSid."')";
-   		$res = mysql_query($requete,$dbh);
+   		$res = pmb_mysql_query($requete,$dbh);
 		$expl->expl_cb=$code_exemplaire;	
 		//Focus sur le bouton 'Enregistre'
 		$expl->focus="<script type='text/javascript' >document.forms[\"expl\"].bouton_enregistre.focus();</script>";
@@ -500,9 +510,9 @@ if(($act=='update') ) {
 		$expl->abt_numeric=0;
 
 		$requete = "SELECT * FROM abts_abts WHERE abt_id='$abt_id'";
-		$abtsQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($abtsQuery)) {
-			$abts = mysql_fetch_object($abtsQuery);
+		$abtsQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($abtsQuery)) {
+			$abts = pmb_mysql_fetch_object($abtsQuery);
 			$expl->expl_cote = $abts->cote;
 			$expl->expl_location = $abts->location_id;
 			$expl->expl_section = $abts->section_id;
@@ -518,9 +528,9 @@ if(($act=='update') ) {
 		}				
 		// sélection de la cote dewey de la notice chapeau pour pré-renseignement de la cote en création expl
 		$query_cote = "select indexint_name from indexint, notices, bulletins where bulletin_id='$bul_id' and bulletin_notice=notice_id and notices.indexint=indexint.indexint_id ";
-		$myQuery_cote = mysql_query($query_cote , $dbh);
-		if(mysql_num_rows($myQuery_cote)) {
-			$pre_cote = mysql_fetch_object($myQuery_cote);
+		$myQuery_cote = pmb_mysql_query($query_cote , $dbh);
+		if(pmb_mysql_num_rows($myQuery_cote)) {
+			$pre_cote = pmb_mysql_fetch_object($myQuery_cote);
 			$expl->expl_cote = $pre_cote->indexint_name ;
 		}	
 	}	

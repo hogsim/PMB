@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart.inc.php,v 1.37 2013-07-15 13:56:29 dgoron Exp $
+// $Id: cart.inc.php,v 1.38 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -120,9 +120,9 @@ function aff_cart_notices($liste, $caddie_type, $idcaddie=0) {
 			while(list($cle, $notice) = each($liste)) {
 				// affichage de la liste des notices sous la forme 'expandable'
 				$requete = "SELECT * FROM notices WHERE notice_id=$notice LIMIT 1";
-				$fetch = mysql_query($requete, $dbh);
-				if(mysql_num_rows($fetch)) {
-					$notice = mysql_fetch_object($fetch);
+				$fetch = pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($fetch)) {
+					$notice = pmb_mysql_fetch_object($fetch);
 					if($notice->niveau_biblio != 's' && $notice->niveau_biblio != 'a') {
 						// notice de monographie
 						$link = './catalog.php?categ=isbd&id=!!id!!';

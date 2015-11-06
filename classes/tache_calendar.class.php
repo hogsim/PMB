@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tache_calendar.class.php,v 1.6.2.2 2014-09-05 12:26:50 dgoron Exp $
+// $Id: tache_calendar.class.php,v 1.9 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -29,9 +29,9 @@ class tache_calendar {
 		
 		$sql = "SELECT id_planificateur, num_type_tache, libelle_tache, perio_heure, perio_minute, perio_jour_mois, perio_jour, perio_mois 
 				FROM planificateur WHERE id_planificateur=".$num_planificateur;
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		if ($res) {
-			while ($obj_sql=mysql_fetch_object($res)) {
+			while ($obj_sql=pmb_mysql_fetch_object($res)) {
 				//renseignements Jour J
 				$date_du_jour = getdate();
 				

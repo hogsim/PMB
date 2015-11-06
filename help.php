@@ -3,7 +3,7 @@
 
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: help.php,v 1.6 2005-01-30 21:43:59 gautier Exp $
+// $Id: help.php,v 1.7 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -29,5 +29,5 @@ switch($whatis) {
 	}
 print "<script>self.focus();</script>";
 print $footer;
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 ?>

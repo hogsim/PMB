@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_bdp72.inc.php,v 1.1.2.1 2015-04-21 14:38:10 mbertin Exp $
+// $Id: func_bdp72.inc.php,v 1.2 2015-04-21 14:42:45 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

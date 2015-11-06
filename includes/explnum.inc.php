@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum.inc.php,v 1.74.2.4 2015-01-30 15:28:38 mbertin Exp $
+// $Id: explnum.inc.php,v 1.88 2015-07-16 10:03:11 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -127,7 +127,7 @@ function reduire_image ($userfile_name) {
 	if(extension_loaded('imagick')) {
 		mysql_set_wait_timeout(3600);
 		$error=false;
-		try {
+		try {		
 			$img = new Imagick();
 			$img->readImage($bidon."[0]");
 			if(($img->getImageWidth() > $pmb_vignette_x) || ($img->getImageHeight() > $pmb_vignette_y)){// Si l'image est trop grande on la réduit
@@ -136,7 +136,7 @@ function reduire_image ($userfile_name) {
 			$img->setImageFormat( "png" );
 			$img->setCompression(Imagick::COMPRESSION_LZW);
 			$img->setCompressionQuality(90);
-			$contenu_vignette = $img->getImageBlob();
+			$contenu_vignette = $img->getImageBlob();			
 		} catch(Exception $ex) {
 			$error=true;
 		}		
@@ -454,7 +454,7 @@ function explnum_update($f_explnum_id, $f_notice, $f_bulletin, $f_nom, $f_url, $
 		$requete.= ", explnum_path='".$path."'";
 		
 		$requete .= $limiter;
-		mysql_query($requete, $dbh) ;
+		pmb_mysql_query($requete, $dbh) ;
 		
 		
 		//Indexation du document
@@ -462,7 +462,7 @@ function explnum_update($f_explnum_id, $f_notice, $f_bulletin, $f_nom, $f_url, $
 				   			
 		if($pmb_indexation_docnum){										
 			if(!$f_explnum_id && $ck_index){			
-				$id_explnum = mysql_insert_id();
+				$id_explnum = pmb_mysql_insert_id();
 				$indexation = new indexation_docnum($id_explnum, $scanned_texte);
 				$indexation->indexer();
 			} elseif($f_explnum_id && $ck_index){
@@ -477,8 +477,8 @@ function explnum_update($f_explnum_id, $f_notice, $f_bulletin, $f_nom, $f_url, $
 		// on reaffiche l'ISBD
 		print "<div class='row'><div class='msg-perio'>".$msg['maj_encours']."</div></div>";
 		$id_form = md5(microtime());
-		if (mysql_error()) {
-			echo "MySQL error : ".mysql_error() ;
+		if (pmb_mysql_error()) {
+			echo "MySQL error : ".pmb_mysql_error() ;
 			print "
 				<form class='form-$current_module' name=\"dummy\" method=\"post\" action=\"$retour\" >
 					<input type='submit' class='bouton' name=\"id_form\" value=\"Ok\">
@@ -505,18 +505,25 @@ function explnum_update($f_explnum_id, $f_notice, $f_bulletin, $f_nom, $f_url, $
 }
 
 
-function explnum_add_from_url($f_notice_id, $f_nom, $f_url, $overwrite=true, $source_id=0, $filename='', $f_path='') {
+function explnum_add_from_url($f_notice_id, $f_bulletin_id, $f_nom, $f_url, $overwrite=true, $source_id=0, $filename='', $f_path='', $f_statut) {
 	
 	global $dbh, $base_path;
+	
+	if($f_bulletin_id){
+		$f_notice_id = 0;
+	}else if (!$f_bulletin_id && $f_notice_id){
+		$f_bulletin_id = 0;
+	}
 	if (!$overwrite) {
 		$sql_find = "SELECT count(*) FROM explnum WHERE explnum_notice = ".$f_notice_id." AND explnum_nom = '".addslashes($f_nom)."'";
-		$res = mysql_query($sql_find, $dbh);
-		$count = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($sql_find, $dbh);
+		$count = pmb_mysql_result($res, 0, 0);
 		if ($count)
 			return;		
 	}
+	
 	$sql_delete = "DELETE FROM explnum WHERE explnum_notice = ".$f_notice_id." AND explnum_nom = '".addslashes($f_nom)."' ";
-	mysql_query($sql_delete, $dbh);
+	pmb_mysql_query($sql_delete, $dbh);
 	
 	$original_filename = basename($f_url);
 	$extension = substr($original_filename,strripos($original_filename,'.')*1+1);
@@ -548,9 +555,9 @@ function explnum_add_from_url($f_notice_id, $f_nom, $f_url, $overwrite=true, $so
 		$rep_upload=0;
 		if ($source_id){
 			$check_rep = "select rep_upload from connectors_sources where source_id = ".$source_id;
-			$res = mysql_query($check_rep);
-			if(mysql_num_rows($res)){
-				$rep_upload = mysql_result($res,0,0);
+			$res = pmb_mysql_query($check_rep);
+			if(pmb_mysql_num_rows($res)){
+				$rep_upload = pmb_mysql_result($res,0,0);
 			}
 		}
 		if($rep_upload != 0){
@@ -571,28 +578,38 @@ function explnum_add_from_url($f_notice_id, $f_nom, $f_url, $overwrite=true, $so
 			}
 			rename("$base_path/temp/".$tmp_filename,$upload_folder->encoder_chaine($rep_path.$new_filename));
 			$path =$upload_folder->formate_path_to_save($upload_folder->formate_path_to_nom($rep_path));
-			$insert_sql = "INSERT INTO explnum (explnum_notice, explnum_nom, explnum_nomfichier, explnum_mimetype, explnum_extfichier, explnum_vignette, explnum_repertoire, explnum_path) VALUES (";
+			$insert_sql = "INSERT INTO explnum (explnum_notice, explnum_bulletin, explnum_nom, explnum_nomfichier, explnum_mimetype, explnum_extfichier, explnum_vignette, explnum_repertoire, explnum_path, explnum_docnum_statut) VALUES (";
 			$insert_sql .= $f_notice_id.",";
+			$insert_sql .= $f_bulletin_id.",";
 			$insert_sql .= "'".addslashes($f_nom)."',";
 			$insert_sql .= "'".addslashes($new_filename)."',";
 			$insert_sql .= "'".addslashes($mimetype)."',";
 			$insert_sql .= "'".addslashes($extension)."',";
 			$insert_sql .= "'".addslashes($vignette)."',";
 			$insert_sql .= "'".addslashes($rep_upload)."',";
-			$insert_sql .= "'".addslashes($path)."'";
+			$insert_sql .= "'".addslashes($path)."',";
+			$insert_sql .= $f_statut;
 			$insert_sql .= ")";		
 		} else {			
-			$insert_sql = "INSERT INTO explnum (explnum_notice, explnum_nom, explnum_nomfichier, explnum_mimetype, explnum_extfichier, explnum_data, explnum_vignette) VALUES (";
+			$insert_sql = "INSERT INTO explnum (explnum_notice, explnum_bulletin, explnum_nom, explnum_nomfichier, explnum_mimetype, explnum_extfichier, explnum_data, explnum_vignette, explnum_docnum_statut) VALUES (";
 			$insert_sql .= $f_notice_id.",";
+			$insert_sql .= $f_bulletin_id.",";
 			$insert_sql .= "'".addslashes($f_nom)."',";
 			$insert_sql .= "'".addslashes($new_filename)."',";
 			$insert_sql .= "'".addslashes($mimetype)."',";
 			$insert_sql .= "'".addslashes($extension)."',";
 			$insert_sql .= "'".addslashes($content)."',";
-			$insert_sql .= "'".addslashes($vignette)."'";
+			$insert_sql .= "'".addslashes($vignette)."',";
+			$insert_sql .= $f_statut;
 			$insert_sql .= ")";
 		}
-		mysql_query($insert_sql, $dbh);
+		if(pmb_mysql_query($insert_sql, $dbh)){
+			$docnum_id = pmb_mysql_insert_id($dbh);
+			if($docnum_id){
+				$index = new indexation_docnum($docnum_id);
+				$index->indexer();
+			}
+		}
 		
 /*
 		$aCurl = new Curl();
@@ -619,9 +636,9 @@ function explnum_add_from_url($f_notice_id, $f_nom, $f_url, $overwrite=true, $so
 		//si la source du connecteur est précisée, on regarde si on a pas un répertoire associé
 		if ($source_id){
 			$check_rep = "select rep_upload from connectors_sources where source_id = ".$source_id;
-			$res = mysql_query($check_rep);
-			if(mysql_num_rows($res)){
-				$rep_upload = mysql_result($res,0,0);
+			$res = pmb_mysql_query($check_rep);
+			if(pmb_mysql_num_rows($res)){
+				$rep_upload = pmb_mysql_result($res,0,0);
 			}
 		}
 */
@@ -656,7 +673,7 @@ function explnum_add_from_url($f_notice_id, $f_nom, $f_url, $overwrite=true, $so
 			$insert_sql .= "'".addslashes($vignette)."'";
 			$insert_sql .= ")";
 		}
-		mysql_query($insert_sql, $dbh);
+		pmb_mysql_query($insert_sql, $dbh);
 		
 		unlink("$base_path/temp/".$afilename);	
 */
@@ -664,43 +681,56 @@ function explnum_add_from_url($f_notice_id, $f_nom, $f_url, $overwrite=true, $so
 }
 
 
-function explnum_add_url($f_notice_id, $f_nom, $f_url, $overwrite=true) {
+function explnum_add_url($f_notice_id, $f_bulletin_id, $f_nom, $f_url, $overwrite=true, $f_statut=0) {
 	
 	global $dbh;
-	
+	if($f_bulletin_id){
+		$f_notice_id = 0;
+	}else if (!$f_bulletin_id && $f_notice_id){
+		$f_bulletin_id = 0;
+	}
 	if (!$overwrite) {
 		$sql_find = "SELECT count(*) FROM explnum WHERE explnum_notice = ".$f_notice_id." AND explnum_nom = ".addslashes($f_nom);
-		$res = mysql_query($sql_find, $dbh);
-		$count = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($sql_find, $dbh);
+		$count = pmb_mysql_result($res, 0, 0);
 		if ($count)
 			return;		
 	}
 	$sql_delete = "DELETE FROM explnum WHERE explnum_notice = ".$f_notice_id." AND explnum_nom = ".addslashes($f_nom);
-	mysql_query($sql_delete, $dbh);
+	pmb_mysql_query($sql_delete, $dbh);
 	
 	$original_filename = basename($f_url);
 	$extension = strrchr($original_filename, '.');
-	
-	$insert_sql = "INSERT INTO explnum (explnum_notice, explnum_nom, explnum_nomfichier, explnum_url, explnum_mimetype, explnum_extfichier) VALUES (";
+	$insert_sql = "INSERT INTO explnum (explnum_notice, explnum_bulletin, explnum_nom, explnum_nomfichier, explnum_url, explnum_mimetype, explnum_extfichier, explnum_docnum_statut) VALUES (";
 	$insert_sql .= $f_notice_id.",";
+	$insert_sql .= $f_bulletin_id.",";
 	$insert_sql .= "'".addslashes($f_nom)."',";
 	$insert_sql .= "'".addslashes($original_filename)."',";
 	$insert_sql .= "'".addslashes($f_url)."',";
 	$insert_sql .= "'"."URL"."',";
-	$insert_sql .= "'".addslashes($extension)."'";
+	$insert_sql .= "'".addslashes($extension)."',";
+	$insert_sql .= $f_statut;
 	$insert_sql .= ")";
-	mysql_query($insert_sql, $dbh);
+	
+	if(pmb_mysql_query($insert_sql, $dbh)){
+		$docnum_id = pmb_mysql_insert_id($dbh);
+		if($docnum_id){
+			$index = new indexation_docnum($docnum_id);
+			$index->indexer();
+		}
+	}
 }
 
 
 // fonction retournant les infos d'exemplaires numeriques pour une notice ou un bulletin donne
-function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='',$param_aff=array()) {
+function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='',$param_aff=array(),$return_count = false) {
 	
 	// params :
 	// $link_expl= lien associe a l'exemplaire avec !!explnum_id!! a mettre a jour
 	global $dbh;
 	global $charset;
 	global $use_dsi_diff_mode;
+	global $base_path,$msg;
 	
 	if (!$no_notice && !$no_bulletin) return "";
 
@@ -712,22 +742,48 @@ function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='',$param_
 	create_tableau_mimetype() ;
 
 	// recuperation du nombre d'exemplaires
-	$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier FROM explnum WHERE ";
+	$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier, explnum_docnum_statut 
+			FROM explnum WHERE ";
 	if ($no_notice) $requete .= "explnum_notice='$no_notice' ";
 		else $requete .= "explnum_bulletin='$no_bulletin' ";
 	if($no_notice)
-		$requete .= "union SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier
+		$requete .= "union SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier, explnum_docnum_statut
 			FROM explnum, bulletins
 			WHERE bulletin_id = explnum_bulletin
 			AND bulletins.num_notice='".$no_notice."'";
 	$requete .= " order by explnum_mimetype, explnum_id ";
-	$res = mysql_query($requete, $dbh) or die ($requete." ".mysql_error());
-	$nb_ex = mysql_num_rows($res);
-
+	$res = pmb_mysql_query($requete, $dbh) or die ($requete." ".pmb_mysql_error());
+	$nb_ex = pmb_mysql_num_rows($res);
+	
+	if ($return_count) {
+		return $nb_ex;
+	}
 	if($nb_ex) {
 		// on recupere les donnees des exemplaires
 		$i = 1 ;
-		while (($expl = mysql_fetch_object($res))) {
+		while (($expl = pmb_mysql_fetch_object($res))) {
+			
+			// couleur de l'img en fonction du statut
+			if ($expl->explnum_docnum_statut) {
+				$rqt_st = "SELECT * FROM explnum_statut WHERE  id_explnum_statut='".$expl->explnum_docnum_statut."' ";
+				$Query_statut = pmb_mysql_query($rqt_st, $dbh)or die ($rqt_st. " ".pmb_mysql_error()) ;
+				$r_statut = pmb_mysql_fetch_object($Query_statut);
+				$class_img = " class='docnum_".$r_statut->class_html."' ";
+				if ($expl->explnum_docnum_statut>1) {
+					$txt = $r_statut->opac_libelle;
+				}else $txt="";
+				
+				$statut_libelle_div="
+					<div id='zoom_statut_docnum".$expl->explnum_id."' style='border: 2px solid rgb(85, 85, 85); background-color: rgb(255, 255, 255); position: absolute; z-index: 2000; display: none;'>
+						<b>$txt</b>
+					</div>
+				";
+				
+			} else {
+				$class_img = " class='docnum_statutnot1' " ;
+				$txt = "" ;
+			}
+			
 			if ($i==1) $ligne="<tr><td class='docnum' width='25%'>!!1!!</td><td class='docnum' width='25%'>!!2!!</td><td class='docnum' width='25%'>!!3!!</td><td class='docnum' width='25%'>!!4!!</td></tr>" ;
 			if ($link_expl) {
 				$tlink = str_replace("!!explnum_id!!", $expl->explnum_id, $link_expl);
@@ -743,9 +799,14 @@ function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='',$param_
 			if ($expl->explnum_vignette) $obj="<img src='".$tmpprefix_url_image."vig_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' border='0'>";
 				else // trouver l'icone correspondant au mime_type
 				$obj="<img src='".$tmpprefix_url_image."images/mimetype/".icone_mimetype($expl->explnum_mimetype, $expl->explnum_extfichier)."' alt='$alt' title='$alt' border='0'>";
-			
+				
+			$obj_suite="$statut_libelle_div
+				<a  href='#' onmouseout=\"z=document.getElementById('zoom_statut_docnum".$expl->explnum_id."'); z.style.display='none'; \" onmouseover=\"z=document.getElementById('zoom_statut_docnum".$expl->explnum_id."'); z.style.display=''; \">
+					<div class='vignette_doc_num' ><img $class_img width='10' height='10' src='./images/spacer.gif'></div>
+				</a>
+			";			
 			$expl_liste_obj = "<center>";
-			$expl_liste_obj .= "<a href='".$tmpprefix_url_image."doc_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' target='_blank'>".$obj."</a><br />" ;
+			$expl_liste_obj .= "<a href='".$tmpprefix_url_image."doc_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' target='_blank'>".$obj."</a>$obj_suite<br />" ;
 			
 			if ($_mimetypes_byext_[$expl->explnum_extfichier]["label"]) $explmime_nom = $_mimetypes_byext_[$expl->explnum_extfichier]["label"] ;
 			elseif ($_mimetypes_bymimetype_[$expl->explnum_mimetype]["label"]) $explmime_nom = $_mimetypes_bymimetype_[$expl->explnum_mimetype]["label"] ;
@@ -757,8 +818,24 @@ function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='',$param_
 			} else {
 				$expl_liste_obj .= htmlentities($expl->explnum_nom,ENT_QUOTES, $charset)."<div class='explnum_type'>".htmlentities($explmime_nom,ENT_QUOTES, $charset)."</div>";
 			}
+			//recherche des concepts...
+			$query = "select num_concept,value from index_concept join skos_fields_global_index on num_concept = id_item and code_champ = 1  where num_object = ".$expl->explnum_id." and type_object = 11 order by order_concept";
+			$result = pmb_mysql_query($query,$dbh);
+			$concept= "";
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
+					if($concept){
+						$concept.=" / ";
+					}
+					if (SESSrights & AUTORITES_AUTH){
+						$concept.="<a href='".$base_path."/autorites.php?categ=concepts&sub=concept&action=edit&id=".$row->num_concept."' title='".addslashes($msg['concept_menu'].": ".htmlentities($row->value,ENT_QUOTES,$charset))."'>".htmlentities($row->value,ENT_QUOTES,$charset)."</a>";
+					}else{
+						$concept.="<span title='".addslashes($msg['concept_menu'].": ".htmlentities($row->value,ENT_QUOTES,$charset))."'>".htmlentities($row->value,ENT_QUOTES,$charset)."</span>";
+					}
+				}
+			}
 			
-			$expl_liste_obj .= "</center>";
+			$expl_liste_obj .= $concept."</center>";
 			$ligne = str_replace("!!$i!!", $expl_liste_obj, $ligne);
 			$i++;
 			if ($i==5) {
@@ -859,9 +936,9 @@ function explnum_allow_opac($no_notice, $no_bulletin) {
 	$id_for_right = $no_notice;
 	if($no_bulletin){
 		$query = "select num_notice,bulletin_notice from bulletins where bulletin_id = ".$no_bulletin;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$infos = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$infos = pmb_mysql_fetch_object($result);
 			if($infos->num_notice){
 				$id_for_right = $infos->num_notice;
 			}else{
@@ -875,13 +952,130 @@ function explnum_allow_opac($no_notice, $no_bulletin) {
 		$docnum_visible = $dom_2->getRights(0,$id_for_right,16);
 	} else {
 		$requete = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM notices, notice_statut WHERE notice_id ='".$id_for_right."' and id_notice_statut=statut ";
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)) {
-			$statut_temp = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)) {
+			$statut_temp = pmb_mysql_fetch_object($myQuery);
 			if(!$statut_temp->explnum_visible_opac)	$docnum_visible=false;
 			if($statut_temp->explnum_visible_opac_abon)	$docnum_visible=false;
 		} else 	$docnum_visible=false;
 	}
 	return $docnum_visible;
+}
+
+// fonction retournant les infos d'exemplaires numeriques en relation avec une notice donne
+function show_explnum_in_relation($no_notice, $link_expl='',$param_aff=array()) {
+	global $dbh;
+	global $charset;
+	global $base_path,$msg;
+	global $_mimetypes_bymimetype_, $_mimetypes_byext_ ;
+	global $prefix_url_image ;
+	
+	if (!$no_notice) return "";
+	
+	create_tableau_mimetype() ;
+
+	// recuperation du nombre d'exemplaires
+	$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier, explnum_docnum_statut
+			FROM explnum 
+			JOIN index_concept on index_concept.num_object = explnum_id AND index_concept.type_object=11
+			JOIN vedette_link on vedette_link.num_object=index_concept.num_concept AND vedette_link.type_object=1
+			JOIN vedette_object on vedette_object.num_vedette=vedette_link.num_vedette AND vedette_object.object_type=10 and vedette_object.object_id='$no_notice'
+			ORDER BY explnum_mimetype, explnum_id ";
+	$res = pmb_mysql_query($requete, $dbh) or die ($requete." ".pmb_mysql_error());
+	$nb_ex = pmb_mysql_num_rows($res);
+
+	if($nb_ex) {
+		// on recupere les donnees des exemplaires
+		$i = 1 ;
+		while (($expl = pmb_mysql_fetch_object($res))) {
+				
+			// couleur de l'img en fonction du statut
+			if ($expl->explnum_docnum_statut) {
+				$rqt_st = "SELECT * FROM explnum_statut WHERE  id_explnum_statut='".$expl->explnum_docnum_statut."' ";
+				$Query_statut = pmb_mysql_query($rqt_st, $dbh)or die ($rqt_st. " ".pmb_mysql_error()) ;
+				$r_statut = pmb_mysql_fetch_object($Query_statut);
+				$class_img = " class='docnum_".$r_statut->class_html."' ";
+				if ($expl->explnum_docnum_statut>1) {
+					$txt = $r_statut->opac_libelle;
+				} else $txt="";
+
+				$statut_libelle_div="
+					<div id='zoom_statut_docnum".$expl->explnum_id."' style='border: 2px solid rgb(85, 85, 85); background-color: rgb(255, 255, 255); position: absolute; z-index: 2000; display: none;'>
+					<b>$txt</b>
+					</div>
+					";
+			} else {
+				$class_img = " class='docnum_statutnot1' " ;
+				$txt = "" ;
+			}
+				
+			if ($i==1) $ligne="<tr><td class='docnum' width='25%'>!!1!!</td><td class='docnum' width='25%'>!!2!!</td><td class='docnum' width='25%'>!!3!!</td><td class='docnum' width='25%'>!!4!!</td></tr>" ;
+			if ($link_expl) {
+				$tlink = str_replace("!!explnum_id!!", $expl->explnum_id, $link_expl);
+				$tlink = str_replace("!!notice_id!!", $expl->explnum_notice, $tlink);
+				$tlink = str_replace("!!bulletin_id!!", $expl->explnum_bulletin, $tlink);
+			}
+			$alt = htmlentities($expl->explnum_nom." - ".$expl->explnum_mimetype,ENT_QUOTES, $charset) ;
+				
+			if ($prefix_url_image) $tmpprefix_url_image = $prefix_url_image;
+			else $tmpprefix_url_image = "./" ;
+
+			if ($expl->explnum_vignette) $obj="<img src='".$tmpprefix_url_image."vig_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' border='0'>";
+			else // trouver l'icone correspondant au mime_type
+				$obj="<img src='".$tmpprefix_url_image."images/mimetype/".icone_mimetype($expl->explnum_mimetype, $expl->explnum_extfichier)."' alt='$alt' title='$alt' border='0'>";
+
+			$obj_suite="$statut_libelle_div
+			<a  href='#' onmouseout=\"z=document.getElementById('zoom_statut_docnum".$expl->explnum_id."'); z.style.display='none'; \" onmouseover=\"z=document.getElementById('zoom_statut_docnum".$expl->explnum_id."'); z.style.display=''; \">
+			<div class='vignette_doc_num' ><img $class_img width='10' height='10' src='./images/spacer.gif'></div>
+			</a>
+			";
+			$expl_liste_obj = "<center>";
+			$expl_liste_obj .= "<a href='".$tmpprefix_url_image."doc_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' target='_blank'>".$obj."</a>$obj_suite<br />" ;
+					
+			if ($_mimetypes_byext_[$expl->explnum_extfichier]["label"]) $explmime_nom = $_mimetypes_byext_[$expl->explnum_extfichier]["label"] ;
+			elseif ($_mimetypes_bymimetype_[$expl->explnum_mimetype]["label"]) $explmime_nom = $_mimetypes_bymimetype_[$expl->explnum_mimetype]["label"] ;
+			else $explmime_nom = $expl->explnum_mimetype ;
+			if($param_aff["mine_type"]) $explmime_nom="";
+			if ($tlink) {
+				$expl_liste_obj .= "<a href='$tlink'>";
+				$expl_liste_obj .= htmlentities($expl->explnum_nom,ENT_QUOTES, $charset)."</a><div class='explnum_type'>".htmlentities($explmime_nom,ENT_QUOTES, $charset)."</div>";
+			} else {
+				$expl_liste_obj .= htmlentities($expl->explnum_nom,ENT_QUOTES, $charset)."<div class='explnum_type'>".htmlentities($explmime_nom,ENT_QUOTES, $charset)."</div>";
+			}
+			//recherche des concepts...
+			$query = "select num_concept,value from index_concept join skos_fields_global_index on num_concept = id_item and code_champ = 1  where num_object = ".$expl->explnum_id." and type_object = 11 order by order_concept";
+			$result = pmb_mysql_query($query,$dbh);
+			$concept= "";
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
+					if($concept){
+						$concept.=" / ";
+					}	
+					if (SESSrights & AUTORITES_AUTH){
+						$concept.="<a href='".$base_path."/autorites.php?categ=concepts&sub=concept&action=edit&id=".$row->num_concept."' title='".addslashes($msg['concept_menu'].": ".htmlentities($row->value,ENT_QUOTES,$charset))."'>".htmlentities($row->value,ENT_QUOTES,$charset)."</a>";
+					}else{
+						$concept.="<span title='".addslashes($msg['concept_menu'].": ".htmlentities($row->value,ENT_QUOTES,$charset))."'>".htmlentities($row->value,ENT_QUOTES,$charset)."</span>";
+					}
+				}
+			}	
+		
+			$expl_liste_obj .= $concept."</center>";
+			$ligne = str_replace("!!$i!!", $expl_liste_obj, $ligne);
+			$i++;
+			if ($i==5) {
+				$ligne_finale .= $ligne ;
+				$i=1;
+			}
+		}
+		if (!$ligne_finale) $ligne_finale = $ligne ;
+		elseif ($i!=1) $ligne_finale .= $ligne ;
+
+		$ligne_finale = str_replace('!!2!!', "&nbsp;", $ligne_finale);
+		$ligne_finale = str_replace('!!3!!', "&nbsp;", $ligne_finale);
+		$ligne_finale = str_replace('!!4!!', "&nbsp;", $ligne_finale);
+
+	} else return "";
+	$entry .= "<table class='docnum'>$ligne_finale</table>";
+	return $entry;
 }
 ?>

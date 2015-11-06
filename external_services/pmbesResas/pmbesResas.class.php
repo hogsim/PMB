@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesResas.class.php,v 1.2 2011-12-28 11:31:02 pmbs Exp $
+// $Id: pmbesResas.class.php,v 1.3 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -38,9 +38,9 @@ class pmbesResas extends external_services_api_class {
 		
 			$requete  = "SELECT id_resa FROM resa WHERE (resa_idempr='$empr_id')"; 
 				
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			if ($res)
-				while($row = mysql_fetch_assoc($res)) {
+				while($row = pmb_mysql_fetch_assoc($res)) {
 					$result[] = $row["id_resa"];
 				}
 		
@@ -63,10 +63,10 @@ class pmbesResas extends external_services_api_class {
 				throw new Exception("Missing parameter: idempr");
 				
 			$sql = "SELECT id_empr, empr_cb, empr_nom, empr_prenom FROM empr WHERE id_empr = ".$idempr;
-			$res = mysql_query($sql);
+			$res = pmb_mysql_query($sql);
 			if (!$res)
 				throw new Exception("Not found: idempr = ".$idempr);
-			$row = mysql_fetch_assoc($res);
+			$row = pmb_mysql_fetch_assoc($res);
 	
 			$result = $row;
 			
@@ -150,9 +150,9 @@ class pmbesResas extends external_services_api_class {
 //			$f_loc=0;
 //		}	
 //
-//		$req = mysql_query($sql) or die("Erreur SQL !<br />".$sql."<br />".mysql_error()); 	
+//		$req = pmb_mysql_query($sql) or die("Erreur SQL !<br />".$sql."<br />".pmb_mysql_error()); 	
 //		
-//		while ($data = mysql_fetch_assoc($req)) {
+//		while ($data = pmb_mysql_fetch_assoc($req)) {
 //			$result[] = array (
 //				"resa_idnotice" => $data['resa_idnotice'],
 //				"resa_idbulletin" => $data['resa_idbulletin'],
@@ -180,7 +180,7 @@ class pmbesResas extends external_services_api_class {
 //		}
 		
 //		//on parcours la liste des réservations
-//		while ($data = mysql_fetch_array($req)) {
+//		while ($data = pmb_mysql_fetch_array($req)) {
 //			$resa_idnotice = $data['resa_idnotice'];
 //			$resa_idbulletin = $data['resa_idbulletin'];
 //			$resa_idempr = $data['resa_idempr'] ;
@@ -191,8 +191,8 @@ class pmbesResas extends external_services_api_class {
 //			if($f_loc &&!$idempr && $data['resa_cb'] && $data['resa_confirmee']){
 //				// Dans la liste des résa à traiter, on n'affiche pas la résa qui a été affecté par un autre site
 //				$query = "SELECT expl_location FROM exemplaires WHERE expl_cb='".$data['resa_cb']."' ";
-//				$res = @mysql_query($query, $dbh);
-//				if(($data_expl = mysql_fetch_array($res))){
+//				$res = @pmb_mysql_query($query, $dbh);
+//				if(($data_expl = pmb_mysql_fetch_array($res))){
 //					if($data_expl['expl_location']!=$f_loc) {
 //						$no_aff=1;
 //						continue;
@@ -215,16 +215,16 @@ class pmbesResas extends external_services_api_class {
 //				$query = "SELECT count(1) FROM exemplaires, docs_statut WHERE expl_statut=idstatut AND pret_flag=1 $sql_expl_loc ";
 //				if ($resa_idnotice)  $query .= " AND expl_notice=".$resa_idnotice;
 //					elseif ($resa_idbulletin) $query .= " AND expl_bulletin=".$resa_idbulletin;
-//				$tresult = @mysql_query($query, $dbh);
-//				$total_ex = mysql_result($tresult, 0, 0);
+//				$tresult = @pmb_mysql_query($query, $dbh);
+//				$total_ex = pmb_mysql_result($tresult, 0, 0);
 //				if($sql_expl_loc && !$total_ex) $no_aff=1;
 //				// on compte le nombre d'exemplaires sortis
 //				$query = "SELECT count(1) as qte FROM exemplaires , pret WHERE pret_idexpl=expl_id $sql_expl_loc ";
 //				if ($resa_idnotice) $query .= " and expl_notice=".$resa_idnotice;
 //					elseif ($resa_idbulletin) $query .= " and expl_bulletin=".$resa_idbulletin;
 //	
-//				$tresult = @mysql_query($query, $dbh);
-//				$total_sortis = mysql_result($tresult, 0, 0);
+//				$tresult = @pmb_mysql_query($query, $dbh);
+//				$total_sortis = pmb_mysql_result($tresult, 0, 0);
 //				
 //				// on en déduit le nombre d'exemplaires disponibles
 //				$total_dispo = $total_ex - $total_sortis;
@@ -244,8 +244,8 @@ class pmbesResas extends external_services_api_class {
 //							$query .= " AND expl_location=".$dest_loc;
 //							if ($resa_idnotice)  $query .= " AND expl_notice=".$resa_idnotice;
 //								elseif ($resa_idbulletin) $query .= " AND expl_bulletin=".$resa_idbulletin;
-//							$tresult = mysql_query($query, $dbh);
-//							$total_ex = mysql_result($tresult, 0);
+//							$tresult = pmb_mysql_query($query, $dbh);
+//							$total_ex = pmb_mysql_result($tresult, 0);
 //							
 //							if ($total_ex==0) {
 //								//on a pas d'exemplaires sur le site de retrait
@@ -254,15 +254,15 @@ class pmbesResas extends external_services_api_class {
 //								$query .= " AND expl_location<>".$dest_loc;
 //								if ($resa_idnotice)  $query .= " AND expl_notice=".$resa_idnotice;
 //									elseif ($resa_idbulletin) $query .= " AND expl_bulletin=".$resa_idbulletin;
-//								$tresult = mysql_query($query, $dbh);
-//								$total_ex = mysql_result($tresult, 0);
+//								$tresult = pmb_mysql_query($query, $dbh);
+//								$total_ex = pmb_mysql_result($tresult, 0);
 //								
 //								if ($total_ex!=0) { 
 //									//on en a au moins un ailleurs!
 //									//on regarde si un des exemplaires n'est pas en transfert pour cette resa !
 //									$query = "SELECT count(1) FROM transferts WHERE etat_transfert=0 AND origine=4 AND origine_comp=".$data['id_resa'];
-//									$tresult = mysql_query($query, $dbh);
-//									$nb_trans = mysql_result($tresult, 0);
+//									$tresult = pmb_mysql_query($query, $dbh);
+//									$nb_trans = pmb_mysql_result($tresult, 0);
 //									
 //									if ($nb_trans!=0) {
 //										//on a un transfert en cours
@@ -284,9 +284,9 @@ class pmbesResas extends external_services_api_class {
 //							elseif ($resa_idbulletin) $query .= " WHERE e.expl_bulletin=".$resa_idbulletin;
 //						$query .= " AND e.expl_id=p.pret_idexpl";
 //						$query .= " ORDER BY p.pret_retour LIMIT 1";
-//						$tresult = mysql_query($query, $dbh);
-//						if (mysql_num_rows($tresult)) {
-//							$situation = mysql_result($tresult, 0, 0);
+//						$tresult = pmb_mysql_query($query, $dbh);
+//						if (pmb_mysql_num_rows($tresult)) {
+//							$situation = pmb_mysql_result($tresult, 0, 0);
 //						}else {
 //							$situation = $msg["resa_no_expl"];
 //						}
@@ -294,8 +294,8 @@ class pmbesResas extends external_services_api_class {
 //							//on regarde si un des exemplaires n'est pas en transfert pour cette resa !
 //							$query = "SELECT count(1) FROM transferts WHERE origine_comp=".$data['id_resa'];
 //							$no_aff=0;
-//							$tresult = mysql_query($query, $dbh);
-//							$nb_trans = mysql_result($tresult, 0);
+//							$tresult = pmb_mysql_query($query, $dbh);
+//							$nb_trans = pmb_mysql_result($tresult, 0);
 //							if ($nb_trans!=0) {
 //								//on a un transfert en cours
 //								$situation = "<strong>" . $msg["transferts_circ_resa_lib_en_transfert"] . "</strong>";
@@ -304,8 +304,8 @@ class pmbesResas extends external_services_api_class {
 //								$query .= " AND expl_location<>".$f_loc;
 //								if ($resa_idnotice)  $query .= " AND expl_notice=".$resa_idnotice;
 //									elseif ($resa_idbulletin) $query .= " AND expl_bulletin=".$resa_idbulletin;
-//								$tresult = mysql_query($query, $dbh);
-//								$total_ex = mysql_result($tresult, 0);
+//								$tresult = pmb_mysql_query($query, $dbh);
+//								$total_ex = pmb_mysql_result($tresult, 0);
 //								
 //								if ($total_ex!=0) { 
 //									//on en a au moins un ailleurs!
@@ -324,8 +324,8 @@ class pmbesResas extends external_services_api_class {
 //									elseif ($resa_idbulletin) $query .= " AND expl_bulletin=".$resa_idbulletin;		
 //									$query .= ")";
 //											
-//									$tresult = mysql_query($query, $dbh);
-//									$nb_trans = mysql_result($tresult, 0);
+//									$tresult = pmb_mysql_query($query, $dbh);
+//									$nb_trans = pmb_mysql_result($tresult, 0);
 //									if (!$nb_trans) {
 //										$situation = $msg["resa_no_expl"];
 //									} else
@@ -482,7 +482,7 @@ class pmbesResas extends external_services_api_class {
 		
 			if ($f_loc) $query .= " and empr_location=$f_loc ";
 			
-			$result = mysql_query($query, $dbh);
+			$result = pmb_mysql_query($query, $dbh);
 			$headers  = "MIME-Version: 1.0\n";
 			$headers .= "Content-type: text/html; charset=".$charset."\n";
 		
@@ -502,11 +502,11 @@ class pmbesResas extends external_services_api_class {
 			eval ("\$pdflettreresa_madame_monsieur=\"".$$var."\";");
 					
 			$tab_resa = array();
-			while ($empr=mysql_fetch_object($result)) {
+			while ($empr=pmb_mysql_fetch_object($result)) {
 				$id_empr = $empr->id_empr ;				
 				$rqt_maj = "update resa set resa_confirmee=1 where id_resa in (".$id_resa.") AND resa_cb is not null and resa_cb!=''" ;
 				if ($id_empr_concerne) $rqt_maj .= " and resa_idempr=$id_empr_concerne ";
-				mysql_query($rqt_maj, $dbh);
+				pmb_mysql_query($rqt_maj, $dbh);
 				if (($pdflettreresa_priorite_email==1 || $pdflettreresa_priorite_email==2) && $empr->empr_mail) {
 					$to = $empr->empr_prenom." ".$empr->empr_nom." <".$empr->empr_mail.">";
 					$output_final = "<html><body>" ;
@@ -524,21 +524,21 @@ class pmbesResas extends external_services_api_class {
 					$lieu_retrait="";
 					if($pmb_transferts_actif && $transferts_choix_lieu_opac==3) {
 						$rqt = "select resa_confirmee, resa_cb,resa_loc_retrait from resa where id_resa in (".$id_resa.")  and resa_cb is not null and resa_cb!='' ";
-						$res = mysql_query ($rqt, $dbh) ;
-						if(($resa_lue = mysql_fetch_object($res))) {
+						$res = pmb_mysql_query($rqt, $dbh) ;
+						if(($resa_lue = pmb_mysql_fetch_object($res))) {
 							if ($resa_lue->resa_confirmee) {
 								if ($resa_lue->resa_loc_retrait) {
 									$loc_retait=$resa_lue->resa_loc_retrait;
 								} else {
 									$rqt = "select expl_location from exemplaires where expl_cb='".$resa_lue->resa_cb."' ";
-									$res = mysql_query ($rqt, $dbh) ;
-									if(($res_expl = mysql_fetch_object($res))) {	
+									$res = pmb_mysql_query($rqt, $dbh) ;
+									if(($res_expl = pmb_mysql_fetch_object($res))) {	
 										$loc_retait=$res_expl->expl_location;						
 									}
 								}
 								$rqt = "select location_libelle from docs_location where idlocation=".$loc_retait;
-								$res = mysql_query ($rqt, $dbh) ;
-								if(($res_expl = mysql_fetch_object($res))) {	
+								$res = pmb_mysql_query($rqt, $dbh) ;
+								if(($res_expl = pmb_mysql_fetch_object($res))) {	
 									$lieu_retrait=str_replace("!!location!!",$res_expl->location_libelle,$msg["resa_lettre_lieu_retrait"]);						
 								}		
 							}
@@ -672,9 +672,9 @@ class pmbesResas extends external_services_api_class {
 				$location_biblio = $deflt2docs_location;
 			}
 			$query = "select name, adr1,adr2,cp,town,state,country,phone,email,website,logo from docs_location where idlocation=".$location_biblio;
-			$res = mysql_query($query,$dbh);
-			if (mysql_num_rows($res) == 1) {
-				$row = mysql_fetch_object($res);
+			$res = pmb_mysql_query($query,$dbh);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$row = pmb_mysql_fetch_object($res);
 				$biblio_name = $row->name;
 				$biblio_adr1 = $row->adr1;
 				$biblio_adr2 = $row->adr2;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cfile.class.php,v 1.9 2011-09-06 08:54:30 jpermanne Exp $
+// $Id: cfile.class.php,v 1.10 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -231,13 +231,13 @@ class cfile extends connector {
 			//Si conservation des anciennes notices, on regarde si elle existe
 			if (!$this->del_old) {
 				$requete="select count(*) from entrepot_source_$source_id where ref='".addslashes($ref)."'";
-				$rref=mysql_query($requete);
-				if ($rref) $ref_exists=mysql_result($rref,0,0);
+				$rref=pmb_mysql_query($requete);
+				if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 			}
 			//Si pas de conservation des anciennes notices, on supprime
 			if ($this->del_old) {
 				$requete="delete from entrepot_source_$source_id where ref='".addslashes($ref)."'";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 			}
 			//Si pas de conservation ou reférence inexistante
 			if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {
@@ -251,14 +251,14 @@ class cfile extends connector {
 				
 				//Récupération d'un ID
 				$requete="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$source_id." ".$ref)."', $source_id)";
-				$rid=mysql_query($requete);
-				if ($rid) $recid=mysql_insert_id();
+				$rid=pmb_mysql_query($requete);
+				if ($rid) $recid=pmb_mysql_insert_id();
 				
 				foreach($n_header as $hc=>$code) {
 					$requete="insert into entrepot_source_$source_id (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid,search_id) values(
 					'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 					'".$hc."','',-1,0,'".addslashes($code)."','',$recid,'".addslashes($search_id)."')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				$field_order=0;
 				foreach($exemplaires as $exemplaire) {
@@ -268,7 +268,7 @@ class cfile extends connector {
 						'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 						'996','".addslashes($exkey)."',".$field_order.",".$sub_field_order.",'".addslashes($exvalue)."',
 						' ".addslashes(strip_empty_words($exvalue))." ',$recid,'".addslashes($search_id)."')";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 						$sub_field_order++;						
 					}					
 					$field_order++;					
@@ -282,7 +282,7 @@ class cfile extends connector {
 									'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 									'".addslashes($field)."','".addslashes($sfield)."',".$field_order.",".$j.",'".addslashes($vals[$j])."',
 									' ".addslashes(strip_empty_words($vals[$j]))." ',$recid,'".addslashes($search_id)."')";
-									mysql_query($requete);
+									pmb_mysql_query($requete);
 								}
 							}
 						} else {
@@ -290,7 +290,7 @@ class cfile extends connector {
 							'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 							'".addslashes($field)."','',".$field_order.",0,'".addslashes($val[$i])."',
 							' ".addslashes(strip_empty_words($val[$i]))." ',$recid,'".addslashes($search_id)."')";
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 						}
 						$field_order++;
 					}
@@ -464,7 +464,7 @@ class cfile extends connector {
 			$this->loadfile_in_table_unimarc($final_file, $origine);
 	
 			$import_marc_count = "SELECT count(*) FROM import_marc";
-			$count_total = mysql_result(mysql_query($import_marc_count, $dbh), 0, 0);
+			$count_total = pmb_mysql_result(pmb_mysql_query($import_marc_count, $dbh), 0, 0);
 			if (!$count_total) {
 				return 0;
 			}
@@ -473,8 +473,8 @@ class cfile extends connector {
 	
 			//Et c'est parti
 			$import_sql = "SELECT id_import, notice FROM import_marc WHERE origine = ".$origine;
-			$res = mysql_query($import_sql);
-			while ($row = mysql_fetch_assoc($res)) {
+			$res = pmb_mysql_query($import_sql);
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$xmlunimarc=new xml_unimarc();
 				$nxml=$xmlunimarc->iso2709toXML_notice($row["notice"]);
 				$xmlunimarc->notices_xml_[0] = '<?xml version="1.0" encoding="'.$charset.'"?>'.$xmlunimarc->notices_xml_[0];
@@ -488,14 +488,14 @@ class cfile extends connector {
 				}
 				
 				$sql_delete = "DELETE FROM import_marc WHERE id_import = ".$row['id_import'];
-				@mysql_query($sql_delete);
+				@pmb_mysql_query($sql_delete);
 				
 				if (floor(100 * $count_lu / $count_total) > $latest_percent) {
 					//Mise à jour de source_sync pour reprise en cas d'erreur
 	/*				$envt["current_origine"]=$origine;
 					$envt["already_read_count"]=$count_lu;
 					$requete="update source_sync set env='".addslashes(serialize($envt))."' where source_id=".$source_id;
-					mysql_query($requete);*/
+					pmb_mysql_query($requete);*/
 					
 					//Inform
 					call_user_func($callback_progress,$count_lu / $count_total,$count_lu,$count_total);
@@ -514,7 +514,7 @@ class cfile extends connector {
 			$this->loadfile_in_table_xml($final_file, $origine);
 			
 			$import_marc_count = "SELECT count(*) FROM import_marc";
-			$count_total = mysql_result(mysql_query($import_marc_count, $dbh), 0, 0);
+			$count_total = pmb_mysql_result(pmb_mysql_query($import_marc_count, $dbh), 0, 0);
 			if (!$count_total) {
 				return 0;
 			}
@@ -523,8 +523,8 @@ class cfile extends connector {
 	
 			//Et c'est parti
 			$import_sql = "SELECT id_import, notice FROM import_marc WHERE origine = ".$origine;
-			$res = mysql_query($import_sql);
-			while ($row = mysql_fetch_assoc($res)) {
+			$res = pmb_mysql_query($import_sql);
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$xmlunimarc = '<?xml version="1.0" encoding="'.$charset.'"?>'.$row["notice"];
 				
 				if ($xslt_exemplaire) {
@@ -536,14 +536,14 @@ class cfile extends connector {
 				$count_lu++;
 				
 				$sql_delete = "DELETE FROM import_marc WHERE id_import = ".$row['id_import'];
-				@mysql_query($sql_delete);
+				@pmb_mysql_query($sql_delete);
 				
 				if (floor(100 * $count_lu / $count_total) > $latest_percent) {
 					//Mise à jour de source_sync pour reprise en cas d'erreur
 	/*				$envt["current_origine"]=$origine;
 					$envt["already_read_count"]=$count_lu;
 					$requete="update source_sync set env='".addslashes(serialize($envt))."' where source_id=".$source_id;
-					mysql_query($requete);*/
+					pmb_mysql_query($requete);*/
 					
 					//Inform
 					call_user_func($callback_progress,$count_lu / $count_total,$count_lu,$count_total);		
@@ -606,7 +606,7 @@ class cfile extends connector {
 					$str_lu = $str_lu.$car_lu;
 					$j++;
 					$sql = "INSERT INTO import_marc (notice, origine) VALUES(\"".addslashes($str_lu)."\", $origine)";
-					$sql_result = mysql_query($sql) or die ("Couldn't insert record!");
+					$sql_result = pmb_mysql_query($sql) or die ("Couldn't insert record!");
 					$str_lu="";
 				}
 			} else { /* the wole file has been read */
@@ -638,7 +638,7 @@ class cfile extends connector {
 				if ($i1!==false) {
 					$notice=substr($fcontents,$i,$i1+strlen("</notice>")-$i);
 					$requete="insert into import_marc (no_notice, notice, origine) values($n,'".addslashes($notice)."','$origine')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 					$n++;
 					$index[]=$n;
 					$fcontents=substr($fcontents,$i1+strlen("</notice>"));

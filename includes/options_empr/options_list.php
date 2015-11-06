@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: options_list.php,v 1.29 2011-01-20 16:14:54 arenou Exp $
+// $Id: options_list.php,v 1.30 2015-04-03 11:16:28 jpermanne Exp $
 
 //Gestion des options de type list
 $base_path="../..";
@@ -65,18 +65,18 @@ if ($first==1) {
 	}
 	
 	$requete="delete from ".$_custom_prefixe_."_custom_lists where ".$_custom_prefixe_."_custom_champ=".$idchamp;
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	$requete="SELECT datatype FROM ".$_custom_prefixe_."_custom WHERE idchamp = $idchamp";
-	$resultat = mysql_query($requete);
-	$dtype = mysql_result($resultat,0,0);
+	$resultat = pmb_mysql_query($requete);
+	$dtype = pmb_mysql_result($resultat,0,0);
 	for ($i=0; $i<count($ITEM); $i++) {
 		if($VALUE[$i] !== "") {
 			/* On ne met pas a jour car on ne peut modifier que les valeurs qui ne sont pas utilisées*/
 			/*
 			$requete="UPDATE ".$_custom_prefixe_."_custom_values SET ".$_custom_prefixe_."_custom_".$dtype." = '".$VALUE[$i]."' WHERE  ".$_custom_prefixe_."_custom_champ = $idchamp AND ".$_custom_prefixe_."_custom_$dtype = '".$EXVAL[$i]."'";
-			mysql_query($requete);*/
+			pmb_mysql_query($requete);*/
 			$requete="insert into ".$_custom_prefixe_."_custom_lists (".$_custom_prefixe_."_custom_champ, ".$_custom_prefixe_."_custom_list_value, ".$_custom_prefixe_."_custom_list_lib, ordre) values($idchamp, '".$VALUE[$i]."','".$ITEM[$i]."','".$ORDRE[$i]."')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}			
 	}
 	
@@ -114,10 +114,10 @@ if ($first==1) {
 		//Récupération des valeurs de la liste
 		if ($idchamp) {
 			$requete="select ".$_custom_prefixe_."_custom_list_value, ".$_custom_prefixe_."_custom_list_lib, ordre from ".$_custom_prefixe_."_custom_lists where ".$_custom_prefixe_."_custom_champ=$idchamp order by ordre";
-			$resultat=mysql_query($requete);
-			if (mysql_numrows($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
 				$i=0;
-				while (($r=mysql_fetch_array($resultat))) {
+				while (($r=pmb_mysql_fetch_array($resultat))) {
 					$ITEM[$i]=$r[$_custom_prefixe_."_custom_list_lib"];
 					$VALUE[$i]=$r[$_custom_prefixe_."_custom_list_value"];
 					$ORDRE[$i]=$r["ordre"];
@@ -241,8 +241,8 @@ if ($first==1) {
 		echo "<tr><td></td><td><b>".$msg["parperso_options_list_value"]."</b></td><td><b>".$msg["parperso_options_list_lib"]."</b></td><td><b>".$msg["parperso_options_list_order"]."</b></td></tr>\n";
 		$n=0;
 		$requete="SELECT datatype FROM ".$_custom_prefixe_."_custom WHERE idchamp = $idchamp";
-		$resultat = mysql_query($requete);
-		$dtype = mysql_result($resultat,0,0);
+		$resultat = pmb_mysql_query($requete);
+		$dtype = pmb_mysql_result($resultat,0,0);
 		
 		for ($i=0; $i<count($ITEM); $i++) {
 			if($DEL[$i]!=1) {
@@ -250,9 +250,9 @@ if ($first==1) {
 				$is_deletable=true;
 				if($VALUE[$i] !== "") {
 					$r_deletable="select count(".$_custom_prefixe_."_custom_origine) as C,".$_custom_prefixe_."_custom_".$dtype." as T from ".$_custom_prefixe_."_custom_values where ".$_custom_prefixe_."_custom_champ=".$idchamp." and ".$_custom_prefixe_."_custom_".$dtype."='".addslashes($VALUE[$i])."' GROUP BY T";
-					$r_del=mysql_query($r_deletable);
+					$r_del=pmb_mysql_query($r_deletable);
 					if ($r_del) {
-						$objdel = mysql_fetch_object($r_del);
+						$objdel = pmb_mysql_fetch_object($r_del);
 						if ($objdel->T != $VALUE[$i]){
 							$is_deletable=true;
 						}elseif($objdel->C > 0){

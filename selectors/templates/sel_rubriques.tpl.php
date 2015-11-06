@@ -3,7 +3,7 @@
 
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sel_rubriques.tpl.php,v 1.6.18.1 2015-01-23 09:39:56 jpermanne Exp $
+// $Id: sel_rubriques.tpl.php,v 1.7 2015-01-23 09:42:50 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: analysis_update.inc.php,v 1.51.2.3 2015-02-03 09:42:55 jpermanne Exp $
+// $Id: analysis_update.inc.php,v 1.58 2015-04-18 13:01:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -25,8 +25,8 @@ if ($forcage == 1) {
 	if($serial_id)	$requete.= " and notice_id != '$analysis_id' ";
 	//$requete.= " limit 1 ";
 		
-	$result=mysql_query($requete, $dbh);	
-	if ($dbls=mysql_num_rows($result)) {
+	$result=pmb_mysql_query($requete, $dbh);	
+	if ($dbls=pmb_mysql_num_rows($result)) {
 		//affichage de l'erreur, en passant tous les param postés (serialise) pour l'éventuel forcage 
 		$tab = new stdClass();
 		$tab->POST = addslashes_array($_POST);
@@ -66,7 +66,7 @@ if ($forcage == 1) {
 		}
 		$enCours=1;
 		while($enCours<=$maxAffiche){
-			$r=mysql_fetch_object($result);
+			$r=pmb_mysql_fetch_object($result);
 			if($r->niveau_biblio != 's' && $r->niveau_biblio != 'a') {
 				// notice de monographie
 				$nt = new mono_display($r->notice_id,1,'catalog.php?categ=isbd&id='.$r->notice_id);
@@ -238,8 +238,8 @@ if ($acces_m==0) {
 			  date_date='".$f_bull_new_date."',
 			  bulletin_titre='".$f_bull_new_titre."',
 			  bulletin_notice='".$serial_id."'";
-		mysql_query($req,$dbh);
-		$bul_id = mysql_insert_id();
+		pmb_mysql_query($req,$dbh);
+		$bul_id = pmb_mysql_insert_id();
 		if($pmb_synchro_rdf){
 			$synchro_rdf->addRdf(0,$bul_id);
 		}
@@ -247,10 +247,30 @@ if ($acces_m==0) {
 	$table['serial_id']     =  $serial_id;
 	$table['bul_id']        =  $bul_id;
 	
+	if($analysis_id) {
+		$req_new="select notice_is_new, notice_date_is_new from notices where notice_id=$analysis_id ";
+		$res_new=pmb_mysql_query($req_new, $dbh);
+		if (pmb_mysql_num_rows($res_new)) {
+			if($r=pmb_mysql_fetch_object($res_new)){
+				if($r->notice_is_new==$f_notice_is_new){ // pas de changement du flag
+					$req_notice_date_is_new= "";
+				}elseif($f_notice_is_new){ // Changement du flag et affecté comme new
+					$req_notice_date_is_new= ", notice_date_is_new =now() ";
+				}else{// raz date
+					$req_notice_date_is_new= ", notice_date_is_new ='' ";
+				}
+			}
+		}
+	}else{
+		if($f_notice_is_new){ // flag affecté comme new en création
+			$req_notice_date_is_new= ", notice_date_is_new =now() ";
+		}
+	}
+	$table['notice_is_new'] = $f_notice_is_new+0;
 	
 	if (!$nberrors) {
 		$myAnalysis = new analysis($analysis_id, $bul_id);
-		$result = $myAnalysis->analysis_update($table);
+		$result = $myAnalysis->analysis_update($table, $req_notice_date_is_new);
 	} else {
 		error_message_history($msg["notice_champs_perso"],$p_perso->error_message,1);
 		exit();
@@ -258,13 +278,13 @@ if ($acces_m==0) {
 	
 	if($id_sug && $result){
 		$req_sug = "update suggestions set num_notice='".$result."' where id_suggestion='".$id_sug."'";
-		mysql_query($req_sug,$dbh); 
+		pmb_mysql_query($req_sug,$dbh); 
 	}
 	
 	if ($result) {
 		//Traitement des liens
 		$requete="DELETE FROM notices_relations WHERE num_notice='$result' OR linked_notice='$result'";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		for ($i=0; $i<$max_rel; $i++) {
 			$f_rel="f_rel_type_".$i;
 			$f_rel=explode('-', ${$f_rel});
@@ -279,17 +299,17 @@ if ($acces_m==0) {
 			if ($f_rel_id) {
 				if($f_rel_direction=='up'){
 					$requete="INSERT INTO notices_relations VALUES('$result','$f_rel_id','$f_rel_type','$f_rel_rank')";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 				}elseif($f_rel_direction=='down'){
 					$requete="INSERT INTO notices_relations VALUES('$f_rel_id','$result','$f_rel_type','$f_rel_rank')";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 				}
 			}
 		}
 		
 		// traitement des auteurs
 		$rqt_del = "DELETE FROM responsability WHERE responsability_notice='$result' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "INSERT INTO responsability (responsability_author, responsability_notice, responsability_fonction, responsability_type, responsability_ordre) VALUES ";
 		$i=0;
 		while ($i<=count ($f_aut)-1) {
@@ -299,22 +319,31 @@ if ($acces_m==0) {
 				$type_aut=$f_aut[$i]['type'];
 				$ordre_aut = $f_aut[$i]['ordre'];
 				$rqt = $rqt_ins . " ('$id_aut','$result','$fonc_aut','$type_aut', $ordre_aut) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 			$i++;
 		}
 		
 		// traitement des categories
 		$rqt_del = "DELETE FROM notices_categories WHERE notcateg_notice='$result' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "INSERT INTO notices_categories (notcateg_notice, num_noeud, ordre_categorie) VALUES ";
 		while (list ($key, $val) = each ($f_categ)) {
 			$id_categ=$val['id'];
 			if ($id_categ) {
 				$ordre_categ = $val['ordre'];
 				$rqt = $rqt_ins . " ('$result','$id_categ', $ordre_categ ) " ; 
-				$res_ins = mysql_query($rqt, $dbh);
+				$res_ins = pmb_mysql_query($rqt, $dbh);
 			}
+		}
+		
+		// Indexation concepts
+		global $thesaurus_concepts_active;
+		require_once($class_path."/index_concept.class.php");
+		
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($result, TYPE_NOTICE);
+			$index_concept->save();
 		}
 	
 		// traitement des langues
@@ -333,14 +362,14 @@ if ($acces_m==0) {
 		}
 	
 		$rqt_del = "delete from notices_langues where num_notice='$result' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "insert into notices_langues (num_notice, type_langue, code_langue, ordre_langue) VALUES ";
 		while (list ($key, $val) = each ($f_lang_form)) {
 			$tmpcode_langue=$val['code'];
 			if ($tmpcode_langue) {
 				$tmpordre_langue = $val['ordre'];
 				$rqt = $rqt_ins . " ('$result',0, '$tmpcode_langue', $tmpordre_langue) " ; 
-				$res_ins = mysql_query($rqt, $dbh);
+				$res_ins = pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
@@ -351,7 +380,7 @@ if ($acces_m==0) {
 			if ($tmpcode_langue) {
 				$tmpordre_langue = $val['ordre'];
 				$rqt = $rqt_ins . " ('$result',1, '$tmpcode_langue', $tmpordre_langue) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		//Traitement des champs persos
@@ -367,7 +396,7 @@ if ($acces_m==0) {
 			//mise a jour des droits d'acces user_notice (idem notice mere perio)
 			if ($gestion_acces_user_notice==1) {
 				$q = "replace into acces_res_1 select $result, res_prf_num, usr_prf_num, res_rights, res_mask from acces_res_1 where res_num=".$myAnalysis->bulletin_notice;
-				mysql_query($q, $dbh);
+				pmb_mysql_query($q, $dbh);
 			} 
 	
 			//mise a jour des droits d'acces empr_notice 

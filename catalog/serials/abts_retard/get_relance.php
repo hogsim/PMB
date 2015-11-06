@@ -3,7 +3,7 @@
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // | creator : Yves PRATTER                                                   |
 // +-------------------------------------------------+
-// $Id: get_relance.php,v 1.1.8.1 2015-02-18 10:22:33 jpermanne Exp $
+// $Id: get_relance.php,v 1.2 2015-02-18 10:23:10 jpermanne Exp $
 
 $base_path="./../../..";                            
 $base_auth = "";  

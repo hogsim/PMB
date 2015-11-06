@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sauvegarde_list.tpl.php,v 1.9.12.1 2014-10-31 19:35:42 Alexandre Exp $
+// $Id: sauvegarde_list.tpl.php,v 1.10 2014-10-31 19:38:55 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

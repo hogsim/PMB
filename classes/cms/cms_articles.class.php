@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_articles.class.php,v 1.2 2013-07-26 14:29:36 apetithomme Exp $
+// $Id: cms_articles.class.php,v 1.3 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,18 +30,18 @@ class cms_articles {
 	protected function _recursive_fetch_data($num_parent=0){
 		if($num_parent != 0){
 			$rqt = "select id_article from cms_articles where num_section='".$num_parent."'";
-			$res = mysql_query($rqt);
-			if(mysql_num_rows($res)){
-				while($row = mysql_fetch_object($res)){
+			$res = pmb_mysql_query($rqt);
+			if(pmb_mysql_num_rows($res)){
+				while($row = pmb_mysql_fetch_object($res)){
 					$this->list[]=$row->id_article;
 				}
 			}
 		}
 		if($this->recursive){
 			$rqt = "select id_section from cms_sections where section_num_parent = '".$num_parent."'";
-			$res = mysql_query($rqt);
-			if(mysql_num_rows($res)){
-				while($row = mysql_fetch_object($res)){
+			$res = pmb_mysql_query($rqt);
+			if(pmb_mysql_num_rows($res)){
+				while($row = pmb_mysql_fetch_object($res)){
 					$this->_recursive_fetch_data($row->id_section);
 				}
 			}	
@@ -59,9 +59,9 @@ class cms_articles {
 	public function get_section_title(){
 		if(!$this->section_title){
 			$rqt = "select section_title from cms_sections where id_section='".$this->num_section."'";
-			$res = mysql_query($rqt);
-			if(mysql_num_rows($res)){
-				$this->section_title = mysql_result($res,0,0);
+			$res = pmb_mysql_query($rqt);
+			if(pmb_mysql_num_rows($res)){
+				$this->section_title = pmb_mysql_result($res,0,0);
 			}
 		}
 		return $this->section_title;
@@ -74,10 +74,10 @@ class cms_articles {
 		$list = str_replace("!!cms_articles_list_title!!", sprintf($msg['cms_articles_list_title'],$this->get_section_title()),$cms_articles_list);
 		if($this->get_nb_articles()){
 			$rqt = "select *from cms_articles where id_article in (".implode(",",$this->list).")";
-			$res = mysql_query($rqt);
+			$res = pmb_mysql_query($rqt);
 			$items="";
-			if(mysql_num_rows($res)){
-				while($row = mysql_fetch_object($res)){
+			if(pmb_mysql_num_rows($res)){
+				while($row = pmb_mysql_fetch_object($res)){
 					$item = str_replace("!!cms_article_logo_src!!","",$cms_articles_list_item);
 					$item = str_replace("!!cms_article_title!!",htmlentities($row->article_title,ENT_QUOTES),$item);
 					$items.=$item;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.inc.php,v 1.42.2.3 2014-12-24 09:03:35 dbellamy Exp $
+// $Id: search.inc.php,v 1.46 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -190,11 +190,11 @@ if($user_input){
 $requete.= " num_thesaurus, index_categorie ";
 $requete.= "LIMIT ".$debut.",".$nb_per_page." ";
 
-$res = mysql_query($requete, $dbh);
+$res = pmb_mysql_query($requete, $dbh);
 if(!$nbr_lignes){
 	$qry = "SELECT FOUND_ROWS() AS NbRows";
-	if($resnum = mysql_query($qry)){
-		$nbr_lignes=mysql_result($resnum,0,0);
+	if($resnum = pmb_mysql_query($qry)){
+		$nbr_lignes=pmb_mysql_result($resnum,0,0);
 	}
 }
 
@@ -212,13 +212,13 @@ if($nbr_lignes) {
 	
 	$num_auth_present=false;
 	$req="SELECT id_authority_source FROM authorities_sources WHERE authority_type='category' AND TRIM(authority_number) !='' LIMIT 1";
-	$res_aut=mysql_query($req,$dbh);
-	if($res_aut && mysql_num_rows($res_aut)){
+	$res_aut=pmb_mysql_query($req,$dbh);
+	if($res_aut && pmb_mysql_num_rows($res_aut)){
 		$categ_list=str_replace("<!--!!col_num_autorite!!-->","<th>".$msg["authorities_number"]."</th>",$categ_list);
 		$num_auth_present=true;
 	}
 	
-	while(($categ=mysql_fetch_object($res))) {
+	while(($categ=pmb_mysql_fetch_object($res))) {
 		
 		$temp = new categories($categ->categ_id, $categ->langue);
 		if ($id_thes == -1) {
@@ -271,11 +271,11 @@ if($nbr_lignes) {
 		//Numéros d'autorite
 		if($num_auth_present){
 			$requete="SELECT authority_number,origin_authorities_name, origin_authorities_country FROM authorities_sources JOIN origin_authorities ON num_origin_authority=id_origin_authorities WHERE authority_type='category' AND num_authority='".$categ->categ_id."' AND TRIM(authority_number) !='' GROUP BY authority_number,origin_authorities_name,origin_authorities_country ORDER BY authority_favorite DESC, origin_authorities_name";
-			$res_aut=mysql_query($requete,$dbh);
-			if($res_aut && mysql_num_rows($res_aut)){
+			$res_aut=pmb_mysql_query($requete,$dbh);
+			if($res_aut && pmb_mysql_num_rows($res_aut)){
 				$categ_list .= "<td>";
 				$first=true;
-				while ($aut = mysql_fetch_object($res_aut)) {
+				while ($aut = pmb_mysql_fetch_object($res_aut)) {
 					if(!$first)$categ_list .=", ";
 					$categ_list .=htmlentities($aut->authority_number,ENT_QUOTES,$charset);
 					if($tmp=trim($aut->origin_authorities_name)){
@@ -297,7 +297,7 @@ if($nbr_lignes) {
 	} // fin while
 	
 
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 
 
 	//Création barre de navigation

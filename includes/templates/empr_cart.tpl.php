@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_cart.tpl.php,v 1.12 2010-04-15 13:28:35 erwanmartin Exp $
+// $Id: empr_cart.tpl.php,v 1.15 2015-06-18 14:30:00 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -45,7 +45,15 @@ function test_form(form)
 	</div>
 <div class='row'>
 	!!autorisations_users!!
-	</div>
+</div>
+<div class='row'>
+	<label class='etiquette' for='form_type'>".$msg['empr_caddie_classement_list']."</label>
+</div>
+<div class='row'>
+	<select data-dojo-type='dijit/form/ComboBox' id='classementGen_!!object_type!!' name='classementGen_!!object_type!!'>
+		!!classements_liste!!
+	</select>
+</div>
 </div>
 <!--	boutons	-->
 <div class='row'>
@@ -95,9 +103,18 @@ function test_form(form)
 </div>
 <div class='row'>
 	!!autorisations_users!!
-	</div>
+</div>
+<div class='row'>
+	<label class='etiquette' for='form_type'>".$msg['empr_caddie_classement_list']."</label>
+</div>
+<div class='row'>
+	<select data-dojo-type='dijit/form/ComboBox' id='classementGen_!!object_type!!' name='classementGen_!!object_type!!'>
+		!!classements_liste!!
+	</select>
+</div>
 </div>
 <!--	boutons	-->
+<!-- liaisons -->
 <div class='row'>
 	<div class='left'>
 		<input type='button' class='bouton' value='$msg[76]' onClick=\"document.location='!!formulaire_annuler!!';\">&nbsp;
@@ -105,7 +122,7 @@ function test_form(form)
 		<input type='hidden' name='form_actif' value='1'>
 	</div>
 	<div class='right'>
-		<input type='button' class='bouton' value=' $msg[supprimer] ' onClick=\"javascript:confirmation_delete(!!idemprcaddie!!,'!!name_suppr!!')\" />
+		<input type='button' class='bouton' value=' $msg[supprimer] ' onClick=\"!!javascript_delete!!\" />
 	</div>
 </div>
 <div class='row'></div>
@@ -114,6 +131,18 @@ function test_form(form)
 		document.forms['cart_form'].elements['cart_name'].focus();
 </script>
 ";
+
+$liaison_tpl = "
+<div id='el0Parent' class='parent' >
+<h3>
+<img src='./images/plus.gif' class='img_plus' align='bottom' name='imEx' id='el0Img' title='$msg[empr_caddie_used_in]' border='0' onClick=\"expandBase('el0', true); return false;\" />
+$msg[empr_caddie_used_in]
+</h3>
+</div>
+<div id='el0Child' class='child'>
+<!-- info_liaisons -->
+</div>
+<div class='row'>&nbsp;</div>";
 
 // $empr_cart_procs_form : template form procédures stockées
 $empr_cart_procs_form = "
@@ -513,4 +542,15 @@ $empr_cart_choix_quoi_exporter = "
 	</div>
 </form>
 ";
+
+$empr_cart_action_selector = "<div data-dojo-type='dijit/form/DropDownButton'>
+				<span>!!lib_action!!</span>
+			    <div data-dojo-type='dijit/TooltipDialog' id='empr_cart_action_selector_!!object_id!!'>
+			    	<label class='etiquette'>!!msg_object_action!!</label>
+			   		<br />
+					<select  id='empr_cart_action_selector_!!object_type!!_!!object_id!!' name='empr_cart_action_selector_!!object_type!!_!!object_id!!' onChange='window.location.href=this.options[this.selectedIndex].value;'>
+						!!actions_liste!!
+					</select>
+			    </div>
+			</div>";
 

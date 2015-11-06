@@ -2,13 +2,13 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: alter_v4.inc.php,v 1.568.6.1 2015-08-05 12:15:32 mbertin Exp $
+// $Id: alter_v4.inc.php,v 1.569 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 settype ($action,"string");
 
-mysql_query("set names latin1 ", $dbh);
+pmb_mysql_query("set names latin1 ", $dbh);
 
 switch ($action) {
 	case "lancement":
@@ -567,7 +567,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.01");
 		break;
@@ -612,7 +612,7 @@ switch ($action) {
 		
 		//Vérifie si un thésaurus était présent, sinon, crée les éléments nécessaires
 		$q = "select count(1) from noeuds where autorite = 'ORPHELINS'";
-		if (mysql_result(mysql_query($q, $dbh), 0, 0) == 0) {
+		if (pmb_mysql_result(pmb_mysql_query($q, $dbh), 0, 0) == 0) {
 		$rqt = "INSERT INTO noeuds SET
 				autorite = 'ORPHELINS',
 				num_parent = '1',
@@ -637,7 +637,7 @@ switch ($action) {
 		}
 			
 		$q = "select count(1) from noeuds where autorite = 'NONCLASSES'";
-		if (mysql_result(mysql_query($q, $dbh), 0, 0) == 0) {
+		if (pmb_mysql_result(pmb_mysql_query($q, $dbh), 0, 0) == 0) {
 			$rqt = "INSERT INTO noeuds SET
 					autorite = 'NONCLASSES',
 					num_parent = '1',
@@ -663,7 +663,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.02");
 		break;
@@ -686,7 +686,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.03");
 		break;
@@ -715,7 +715,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.04");
 		break;
@@ -739,7 +739,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.05");
 		break;
@@ -751,7 +751,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.06");
 		break;
@@ -760,19 +760,19 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='mode_pmb' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='mode_pmb' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'thesaurus', 'mode_pmb', '0', 'Niveau d\'utilisation des thésaurus.\n 0 : Un seul thésaurus par défaut.\n 1 : Choix du thésaurus possible.', '',0) ";
 			echo traite_rqt($rqt, "insert thesaurus_mode_pmb=0 into parameters");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='defaut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='defaut' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'thesaurus', 'defaut', '1', 'Identifiant du thésaurus par défaut.', '',0) ";
 			echo traite_rqt($rqt, "insert thesaurus_defaut=0 into parameters");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='liste_trad' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='liste_trad' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'thesaurus', 'liste_trad', '".$lang."', 'Liste des langues affichées dans les thésaurus.\n(ex : fr_FR,en_UK,...,ar)', '',0) ";
 			echo traite_rqt($rqt, "insert thesaurus_liste_trad=fr_FR into parameters");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='thesaurus' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='thesaurus' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'thesaurus', '0', 'Niveau d\'utilisation des thésaurus.\n 0 : Un seul thésaurus par défaut.\n 1 : Choix du thésaurus possible.', 'm_thesaurus',0) ";
 			echo traite_rqt($rqt, "insert opac_thesaurus=0 into parameters");
 			}
@@ -792,7 +792,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.07");
 		break;
@@ -805,7 +805,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.08");
 		break;
@@ -814,7 +814,7 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='active' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='active' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'acquisition', 'active', '0', 'Module acquisitions activé.\n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert acquisition_active=0 into parameters");
 		}
@@ -1040,12 +1040,12 @@ switch ($action) {
 				)  ";
 		echo traite_rqt($rqt, "create table liens_actes");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='gestion_tva' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='gestion_tva' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'acquisition', 'gestion_tva', '0', 'Gestion de la TVA.\n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert acquisition_gestion_tva=0 into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='poids_sugg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='poids_sugg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'acquisition', 'poids_sugg', 'U=1.00,E=0.70,V=0.00', 
 					'Pondération des suggestions par défaut en pourcentage.\n U=Utilisateurs, E=Emprunteurs, V=Visiteurs.\n ex : U=1.00,E=0.70,V=0.00 \n',
@@ -1053,7 +1053,7 @@ switch ($action) {
 			echo traite_rqt($rqt, "insert acquisition_poids_sugg=0 into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='keyword_sep' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='keyword_sep' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'keyword_sep', ' ', 'Séparateur des mots clés dans la partie indexation libre, espace ou ; ou , ou ...')";
 			echo traite_rqt($rqt,"insert pmb_keyword_sep=' ' into parametres");
 			}
@@ -1062,7 +1062,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.09");
 		break;
@@ -1104,7 +1104,7 @@ switch ($action) {
 		echo traite_rqt($rqt, "add index_acte to actes");
 		
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='format' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='format' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'acquisition', 'format', '8,CA,DD,BL,FA', 
 					'Taille du Numéro et Préfixes des actes d\'achats.\nex : 8,CA,DD,BL,FA \n8 = Préfixe + 8 Chiffres\nCA=Commande Achat, DD=Demande de Devis,BL=Bon de Livraison, FA=Facture Achat \n',
@@ -1114,7 +1114,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.10");
 		break;
@@ -1130,98 +1130,98 @@ switch ($action) {
 				ADD libelle TEXT NOT NULL AFTER num_type  ";
 		echo traite_rqt($rqt, "add num_produit, num_type, libelle to lignes_actes");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='budget' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='budget' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'acquisition', 'budget', '0', 'Utilisation d\'un budget pour les commandes.\n 0:optionnel\n 1:obligatoire','',0) ";
 			echo traite_rqt($rqt, "insert acquisition_budget into parameters");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='format_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='format_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','format_page','210x297','Largeur x Hauteur de la page en mm','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_format_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='orient_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='orient_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','orient_page','P','Orientation de la page: P=Portrait, L=Paysage','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_orient_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='marges_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='marges_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','marges_page','10,20,10,10','Marges de page en mm : Haut,Bas,Droite,Gauche','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_marges_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_logo' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_logo' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_logo','10,10,20,20','Position du logo: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_logo into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_raison' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_raison' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_raison','35,10,100,10,16','Position Raison sociale: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_raison into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_date' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_date' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_date','150,10,0,6,8','Position Date: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_date into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_adr_fac' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_adr_fac' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_adr_fac','10,35,60,5,10','Position Adresse de facturation: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_adr_fac into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_adr_liv' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_adr_liv' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_adr_liv','10,75,60,5,10','Position Adresse de livraison: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_adr_liv into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_adr_fou' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_adr_fou' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_adr_fou','100,55,100,6,14','Position Adresse fournisseur: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_adr_fou into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_num' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_num' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_num','10,110,0,10,16','Position numéro de commande: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_num into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='text_size' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='text_size' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','text_size','10','Taille de la police texte','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_text_size into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='text_before' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='text_before' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','text_before','','Texte avant le tableau de commande','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_text_before into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='text_after' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='text_after' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','text_after','','Texte après le tableau de commande','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_text_after into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='tab_cde' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='tab_cde' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','tab_cde','5,10','Table de commandes: Hauteur ligne,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_tab_cde into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_tot' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_tot' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_tot','10,40,5,10','Position total de commande: Distance par rapport au bord gauche de la page, Largeur, Hauteur ligne,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_tot into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_footer' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_footer' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_footer','15,8','Position bas de page: Distance par rapport au bas de page, Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_footer into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_sign' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='pos_sign' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','pos_sign','10,60,5,10','Position signature: Distance par rapport au bord gauche de la page, Largeur, Hauteur ligne,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_pos_sign into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='text_sign' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfcde' and sstype_param='text_sign' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfcde','text_sign','Le responsable de la bibliothèque.','Texte signature','',0)" ;
 			echo traite_rqt($rqt,"insert pdfcde_text_sign into parametres") ;
@@ -1231,7 +1231,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.11");
 		break;
@@ -1247,92 +1247,92 @@ switch ($action) {
 		$rqt = "ALTER TABLE actes ADD reference VARCHAR(255) DEFAULT '' NOT NULL AFTER commentaires ";
 		echo traite_rqt($rqt, "add reference to actes");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='format_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='format_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','format_page','210x297','Largeur x Hauteur de la page en mm','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_format_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='orient_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='orient_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','orient_page','P','Orientation de la page: P=Portrait, L=Paysage','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_orient_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='marges_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='marges_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','marges_page','10,20,10,10','Marges de page en mm : Haut,Bas,Droite,Gauche','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_marges_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_logo' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_logo' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_logo','10,10,20,20','Position du logo: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_logo into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_raison' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_raison' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_raison','35,10,100,10,16','Position Raison sociale: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_raison into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_date' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_date' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_date','150,10,0,6,8','Position Date: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_date into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_adr_fac' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_adr_fac' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_adr_fac','10,35,60,5,10','Position Adresse de facturation: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_adr_fac into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_adr_liv' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_adr_liv' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_adr_liv','10,75,60,5,10','Position Adresse de livraison: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_adr_liv into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_adr_fou' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_adr_fou' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_adr_fou','100,55,100,6,14','Position Adresse fournisseur: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_adr_fou into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_num' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_num' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_num','10,110,0,10,16','Position numéro de commande: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_num into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='text_size' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='text_size' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','text_size','10','Taille de la police texte','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_text_size into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='text_before' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='text_before' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','text_before','','Texte avant le tableau de commande','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_text_before into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='comment' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='comment' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','comment','0','Affichage des commentaires : 0=non, 1=oui','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_comment into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='text_after' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='text_after' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','text_after','','Texte après le tableau de commande','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_text_after into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='tab_dev' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='tab_dev' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','tab_dev','5,10','Table de commandes: Hauteur ligne,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_tab_cde into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_footer' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_footer' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_footer','15,8','Position bas de page: Distance par rapport au bas de page, Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_footer into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_sign' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='pos_sign' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','pos_sign','10,60,5,10','Position signature: Distance par rapport au bord gauche de la page, Largeur, Hauteur ligne,Taille police','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_pos_sign into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='text_sign' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdfdev' and sstype_param='text_sign' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pdfdev','text_sign','Le responsable de la bibliothèque.','Texte signature','',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_text_sign into parametres") ;
@@ -1344,7 +1344,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.12");
 		break;
@@ -1361,7 +1361,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.13");
 		break;
@@ -1374,7 +1374,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.14");
 		break;
@@ -1387,7 +1387,7 @@ switch ($action) {
 		$rqt = "CREATE TABLE rss_flux_content (num_rss_flux INT( 9 ) UNSIGNED DEFAULT 0 NOT NULL, type_contenant char(3) default 'BAN' not null, num_contenant INT( 9 ) UNSIGNED DEFAULT 0 NOT NULL , PRIMARY KEY  (num_rss_flux, type_contenant, num_contenant)) " ;
 		echo traite_rqt($rqt,"create table rss_flux_content");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='export_allow' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='export_allow' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'export_allow', '1', 'Export de notices à partir de l\'opac : \n 0 : interdit \n 1 : pour tous \n 2 : pour les abonnés uniquement', 'a_general', 0)";
 			echo traite_rqt($rqt,"insert opac_export_allow='1' into parametres");
 			}
@@ -1399,18 +1399,18 @@ switch ($action) {
 		$rqt = "CREATE TABLE bannette_exports ( num_bannette int(11) unsigned NOT NULL default 0, export_format int(3) NOT NULL default 0, export_data longblob NOT NULL default '', export_nomfichier varchar(255) default '', PRIMARY KEY  (num_bannette,export_format)) ";
 		echo traite_rqt($rqt,"create table bannette_exports ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='resa_planning' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='resa_planning' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'resa_planning', '0', 'Utiliser un planning de réservation ? \n 0: Non \n 1: Oui', 'a_general', 0)";
 			echo traite_rqt($rqt,"insert opac_resa_planning='0' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='resa_contact' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='resa_contact' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'resa_contact', '<a href=\'mailto:pmb@sigb.net\'>pmb@sigb.net</a>', 'Code HTML d\'information sur la personne à contacter par exemple en cas de problème de réservation.', 'a_general', 0)";
 			echo traite_rqt($rqt,"insert opac_resa_contact='pmb@sigb.net' into parametres");
 			}
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.15");		
 		break;
@@ -1423,7 +1423,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.16");
 		break;
@@ -1481,7 +1481,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.17");
 		break;
@@ -1491,11 +1491,11 @@ switch ($action) {
 		// +-------------------------------------------------+
 		$rqt = "ALTER TABLE lignes_actes ADD remise float(8,2) NOT NULL DEFAULT '000000.00' ";
 		echo traite_rqt($rqt, "ALTER TABLE lignes_actes ADD remise");
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='default_operator' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='default_operator' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'default_operator', '0', 'Opérateur par défaut. 0 : OR, 1 : AND.', 'c_recherche', 0) ";
 			echo traite_rqt($rqt, "insert opac_default_operator into parameters"); 
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='modules_search_all' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='modules_search_all' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'modules_search_all', '2', 'Recherche simple dans l\'ensemble des champs :0 : interdite,  1 : autorisée,  2 : autorisée et validée par défaut', 'c_recherche', 0) ";
 			echo traite_rqt($rqt, "insert opac_modules_search_all into parameters");
 			} 
@@ -1505,7 +1505,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.18");
 		break;
@@ -1513,52 +1513,52 @@ switch ($action) {
 	case "v4.18": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_format_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_format_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_format_page','210x297','Largeur x Hauteur de la page en mm','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_format_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_orient_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_orient_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_orient_page','P','Orientation de la page: P=Portrait, L=Paysage','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_orient_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_marges_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_marges_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_marges_page','10,20,10,10','Marges de page en mm : Haut,Bas,Droite,Gauche','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_marges_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_raison' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_raison' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_pos_raison','10,10,100,10,16','Position Raison sociale: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_pos_raison into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_adr_liv' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_adr_liv' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_pos_adr_liv','10,20,60,5,10','Position Adresse de livraison: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_pos_adr_liv into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_adr_fou' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_adr_fou' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_pos_adr_fou','110,20,100,5,10','Position éléments fournisseur: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_pos_adr_fou into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_num' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_num' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_pos_num','10,60,0,6,14','Position numéro Commande/Livraison: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_pos_num into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_tab_liv' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_tab_liv' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_tab_liv','5,10','Table de livraisons: Hauteur ligne,Taille police','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_tab_liv into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_footer' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_footer' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_pos_footer','15,8','Position bas de page: Distance par rapport au bas de page, Taille police','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_pos_footer into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='default_operator' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='default_operator' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'default_operator', '0', 'Opérateur par défaut. \n 0 : OR, \n 1 : AND.', '', 0) ";
 			echo traite_rqt($rqt, "insert pmb_default_operator into parameters"); 
 			}
@@ -1572,7 +1572,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE empr DROP poids_sugg" ;
 		echo traite_rqt($rqt,"drop empr.poids_sugg ");
 		 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'mailretard' and sstype_param='priorite_email_3' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'mailretard' and sstype_param='priorite_email_3' "))==0){
 			$rqt = "INSERT INTO parametres VALUES (0,'mailretard','priorite_email_3','0','Faire le troisième niveau de relance par mail :\n 0 : Non, lettre \n 1 : Oui, par mail','',0)" ;
 			echo traite_rqt($rqt,"insert mailretard_priorite_email_3 into parametres") ;
 			}
@@ -1580,7 +1580,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.19");
 		break;
@@ -1593,7 +1593,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.20");
 		break;
@@ -1615,7 +1615,7 @@ switch ($action) {
 		echo traite_rqt($rqt, "add field num_fournisseur to suggestions");
 		$rqt = "ALTER TABLE suggestions ADD num_notice INT(8) UNSIGNED NOT NULL DEFAULT '0' ";
 		echo traite_rqt($rqt, "add field num_notice to suggestions");
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_suggest' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_suggest' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'opac','show_suggest','0','Proposer de faire des suggestions dans l\'OPAC.\n 0 : Non.\n 1 : Oui, avec authentification.\n 2 : Oui, sans authentification.','suggestion',0)" ;
 			echo traite_rqt($rqt,"insert opac_show_suggest into parametres") ;
@@ -1623,7 +1623,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.21");
 		break;
@@ -1652,7 +1652,7 @@ switch ($action) {
 		echo traite_rqt($rqt, "add field url_suggestion to suggestions");		
 
 		//Ajout d'un parametre permettant de préciser si l'on informe par email de l'évolution des suggestions 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='email_sugg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='email_sugg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'acquisition', 'email_sugg', '0', 
 					'Information par email de l\'évolution des suggestions.\n 0 : Non\n 1 : Oui',
@@ -1681,169 +1681,169 @@ switch ($action) {
 		echo traite_rqt($rqt, "modify length num_cp_compta in table rubriques");
 
 		//Paramètres de mise en page BL (suite)
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_text_size' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_text_size' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_text_size','10','Taille de la police texte','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_pos_footer into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_date' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_pos_date' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_pos_date','170,10,0,6,8','Position Date: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_pos_date into parametres") ;
 		}
 
 		//Paramètres de mise en page facture 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_text_size' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_text_size' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_text_size','10','Taille de la police texte','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_text_size into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_format_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_format_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_format_page','210x297','Largeur x Hauteur de la page en mm','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_format_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_orient_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_orient_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_orient_page','P','Orientation de la page: P=Portrait, L=Paysage','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_orient_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_marges_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_marges_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_marges_page','10,20,10,10','Marges de page en mm : Haut,Bas,Droite,Gauche','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_marges_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_raison' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_raison' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_pos_raison','10,10,100,10,16','Position Raison sociale: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_pos_raison into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_date' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_date' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_pos_date','170,10,0,6,8','Position Date: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_pos_date into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_adr_fac' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_adr_fac' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_pos_adr_fac','10,20,60,5,10','Position Adresse de facturation: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_pos_adr_fac into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_adr_fou' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_adr_fou' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_pos_adr_fou','110,20,100,5,10','Position éléments fournisseur: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_pos_adr_fou into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_num' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_num' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_pos_num','10,60,0,6,14','Position numéro Commande/Facture: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_pos_num into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_tab_fac' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_tab_fac' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_tab_fac','5,10','Table de facturation: Hauteur ligne,Taille police','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_tab_fac into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_tot' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_tot' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_pos_tot','10,40,5,10','Position total de commande: Distance par rapport au bord gauche de la page, Largeur, Hauteur ligne,Taille police','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_pos_tot into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_footer' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_pos_footer' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_pos_footer','15,8','Position bas de page: Distance par rapport au bas de page, Taille police','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_pos_footer into parametres") ;
 		}
 
 		//Paramètres de mise en page listes de suggestion
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_text_size' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_text_size' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_text_size','8','Taille de la police texte','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_text_size into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_format_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_format_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_format_page','210x297','Largeur x Hauteur de la page en mm','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_format_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_orient_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_orient_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_orient_page','P','Orientation de la page: P=Portrait, L=Paysage','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_orient_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_marges_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_marges_page' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_marges_page','10,20,10,10','Marges de page en mm : Haut,Bas,Droite,Gauche','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_marges_page into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_pos_titre' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_pos_titre' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_pos_titre','10,10,100,10,16','Position titre: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_pos_titre into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_pos_date' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_pos_date' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_pos_date','170,10,0,6,8','Position Date: Distance par rapport au bord gauche de la page,Distance par rapport au haut de la page,Largeur,Hauteur,Taille police','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_pos_date into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_tab_sug' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_tab_sug' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_tab_sug','5,10','Table de suggestions: Hauteur ligne,Taille police','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_tab_sug into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_pos_footer' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_pos_footer' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_pos_footer','15,8','Position bas de page: Distance par rapport au bas de page, Taille police','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_pos_footer into parametres") ;
 		}
 
 		//Paramètres envoi de mails des suggestions 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_rej_obj' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_rej_obj' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_rej_obj','Rejet suggestion','Objet du mail de rejet de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_rej_obj into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_rej_cor' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_rej_cor' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_rej_cor','Votre suggestion du !!date!! est rejetée.\n\n','Corps du mail de rejet de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_rej_cor into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_con_obj' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_con_obj' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_con_obj','Confirmation suggestion','Objet du mail de confirmation de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_con_obj into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_con_cor' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_con_cor' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_con_cor','Votre suggestion du !!date!! est retenue pour un prochain achat.\n\n','Corps du mail de confirmation de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_con_cor into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_aba_obj' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_aba_obj' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_aba_obj','Abandon suggestion','Objet du mail d\'abandon de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_aba_obj into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_aba_cor' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_aba_cor' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_aba_cor','Votre suggestion du !!date!! n\'est pas retenue ou n\'est pas disponible à la vente.\n\n','Corps du mail d\'abandon de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_aba_cor into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_cde_obj' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_cde_obj' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_cde_obj','Commande suggestion','Objet du mail de commande de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_cde_obj into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_cde_cor' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_cde_cor' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_cde_cor','Votre suggestion du !!date!! est en commande.\n\n','Corps du mail de commande de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_cde_cor into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_rec_obj' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_rec_obj' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_rec_obj','Réception suggestion','Objet du mail de réception de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_rec_obj into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_rec_cor' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='mel_rec_cor' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','mel_rec_cor','Votre suggestion du !!date!! a été reçue et sera bientôt disponible en réservation.\n\n','Corps du mail de réception de suggestion','mel',0)" ;
 			echo traite_rqt($rqt,"insert mel_rec_cor into parametres") ;
@@ -1852,7 +1852,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.22");
 		break;
@@ -1934,7 +1934,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.23");
 		break;
@@ -1942,23 +1942,23 @@ switch ($action) {
 	case "v4.23": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_tags_search' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_tags_search' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'allow_tags_search', '0', 'Recherche par tag (mots clés utilisateurs) \n 1 = oui \n 0 = non', 'c_recherche', 0)" ;
 			echo traite_rqt($rqt,"insert opac_allow_tags_search into parametres") ;
 			}		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_add_tag' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_add_tag' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'allow_add_tag', '0', 'Permettre aux utilisateurs d\'ajouter un tag à une notice.\n 0 : non\n 1 : oui\n 2 : identification obligatoire pour ajouter ', 'a_general', 0) ";
 			echo traite_rqt($rqt,"insert opac_allow_add_tag into parametres") ;
 			}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='avis_allow' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='avis_allow' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'avis_allow', '0', 'Permet de consulter/ajouter un avis pour les notices \n 0 : non \n 1 : sans être identifié : consultation possible, ajout impossible \n 2 : identification obligatoire pour consulter et ajouter ', 'a_general', 0) ";
 			echo traite_rqt($rqt,"insert opac_avis_allow into parametres") ;
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='avis_nb_max' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='avis_nb_max' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'opac', 'avis_nb_max', '30', 'Nombre maximal de commentaires conservé par notice. Les plus vieux sont effacés au profit des plus récents quand ce nombre est atteint.', 'a_general', 0) ";
 			echo traite_rqt($rqt,"insert opac_avis_nb_max into parametres") ;
@@ -1991,7 +1991,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.24");
 		break;
@@ -2018,7 +2018,7 @@ switch ($action) {
 		echo traite_rqt($rqt, "drop old_categories");
 		$rqt = "ALTER TABLE lignes_actes ADD type_ligne INT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER id_ligne ";
 		echo traite_rqt($rqt,"add type_ligne to lignes_actes") ;
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='show_rtl' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='show_rtl' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'pmb', 'show_rtl', '0', 'Affichage possible de droite a gauche \n 0 non \n 1 oui', '', 0)" ;
 			echo traite_rqt($rqt,"insert pmb_show_rtl into parametres") ;
@@ -2026,7 +2026,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.25");
 		break;
@@ -2034,7 +2034,7 @@ switch ($action) {
 	case "v4.25": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='avis_show_writer' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='avis_show_writer' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'avis_show_writer', '0', 'Afficher le rédacteur de l\'avis \n 0 : non \n 1 : Prénom NOM \n 2 : login OPAC uniquement ', 'a_general', 0) ";
 			echo traite_rqt($rqt,"insert opac_avis_show_writer into parametres") ;
@@ -2046,7 +2046,7 @@ switch ($action) {
 				descr_format LONGTEXT,
 				PRIMARY KEY  (grille_typdoc,grille_niveau_biblio,grille_localisation))";
 		echo traite_rqt($rqt,"CREATE TABLE grilles ") ;
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='form_editables' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='form_editables' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'pmb', 'form_editables', '0', 'Grilles de notices éditables \n 0 non \n 1 oui', '', 0)" ;
 			echo traite_rqt($rqt,"insert pmb_form_editables into parametres") ;
@@ -2054,7 +2054,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE users ADD xmlta_doctype varchar(2) NOT NULL DEFAULT 'a' " ;
 		echo traite_rqt($rqt, "add user param xmlta_doctype");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_to_cde' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_to_cde' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'acquisition', 'sugg_to_cde', '0', 'Transfert des suggestions en commande.\n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert sugg_to_cde=0 into parametres");
 			}
@@ -2088,14 +2088,14 @@ switch ($action) {
 				)  ";	
 		echo traite_rqt($rqt, "create table notices_langues ");
 		$sql_migr = "select notice_id, lang_code from notices where lang_code!='' " ;
-		$res_migr = mysql_query($sql_migr,$dbh);
-		while ($obj_migr=mysql_fetch_object($res_migr)) {
-			@mysql_query("insert into notices_langues (num_notice, type_langue , code_langue) values ($obj_migr->notice_id,0,'$obj_migr->lang_code')") ;
+		$res_migr = pmb_mysql_query($sql_migr,$dbh);
+		while ($obj_migr=pmb_mysql_fetch_object($res_migr)) {
+			@pmb_mysql_query("insert into notices_langues (num_notice, type_langue , code_langue) values ($obj_migr->notice_id,0,'$obj_migr->lang_code')") ;
 			}
 		$sql_migr = "select notice_id, org_lang_code from notices where org_lang_code!='' " ;
-		$res_migr = mysql_query($sql_migr,$dbh);
-		while ($obj_migr=mysql_fetch_object($res_migr)) {
-			@mysql_query("insert into notices_langues (num_notice, type_langue , code_langue) values ($obj_migr->notice_id,1,'$obj_migr->org_lang_code')") ;
+		$res_migr = pmb_mysql_query($sql_migr,$dbh);
+		while ($obj_migr=pmb_mysql_fetch_object($res_migr)) {
+			@pmb_mysql_query("insert into notices_langues (num_notice, type_langue , code_langue) values ($obj_migr->notice_id,1,'$obj_migr->org_lang_code')") ;
 			}
 		$rqt = "ALTER TABLE notices_langues ADD PRIMARY KEY (num_notice,type_langue,code_langue)" ;
 		echo traite_rqt($rqt, "alter table notices_langues add primary key");
@@ -2105,12 +2105,12 @@ switch ($action) {
 		$rqt = "ALTER TABLE notices drop org_lang_code " ;
 		echo traite_rqt($rqt, "alter table notices drop org_lang_code ");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'categories' and sstype_param='categ_in_line' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'categories' and sstype_param='categ_in_line' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'categories', 'categ_in_line', '0', 'Affichage des catégories en ligne.\n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert categories_categ_in_line=0 into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='categories_categ_in_line' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='categories_categ_in_line' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'categories_categ_in_line', '0', 'Affichage des catégories en ligne.\n 0 : Non.\n 1 : Oui.', 'i_categories',0) ";
 			echo traite_rqt($rqt, "insert opac_categories_categ_in_line=0 into parametres");
 			}
@@ -2118,7 +2118,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.26");
 		break;
@@ -2126,12 +2126,12 @@ switch ($action) {
 	case "v4.26": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='label_construct_script' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='label_construct_script' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'pmb', 'label_construct_script', '', 'Script de construction d\'étiquette de cote', '', 0)" ;
 			echo traite_rqt($rqt,"insert pmb_label_construct_script into parametres") ;
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'dsi' and sstype_param='func_after_diff' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'dsi' and sstype_param='func_after_diff' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'dsi', 'func_after_diff', '', 'Script à exécuter après diffusion d\'une bannette', '', 0)" ;
 			echo traite_rqt($rqt,"insert dsi_func_after_diff into parametres") ;
@@ -2139,7 +2139,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.27");
 		break;
@@ -2149,9 +2149,9 @@ switch ($action) {
 		// +-------------------------------------------------+
 		@set_time_limit(0);
 		$sql_corr = "select s.typdoc as typdoc_s, a.notice_id as notice_id_dep from notices as s, analysis, bulletins, notices as a where a.niveau_biblio='a' and s.niveau_biblio='s' and s.notice_id=bulletin_notice and analysis_bulletin=bulletin_id and analysis_notice=a.notice_id " ;
-		$res_corr = mysql_query($sql_corr,$dbh);
-		while ($obj_corr=mysql_fetch_object($res_corr)) {
-			@mysql_query("update notices set typdoc='".$obj_corr->typdoc_s."', update_date=update_date where notice_id='".$obj_corr->notice_id_dep."'") ;
+		$res_corr = pmb_mysql_query($sql_corr,$dbh);
+		while ($obj_corr=pmb_mysql_fetch_object($res_corr)) {
+			@pmb_mysql_query("update notices set typdoc='".$obj_corr->typdoc_s."' where notice_id='".$obj_corr->notice_id_dep."'") ;
 			}
 		echo traite_rqt("select 1 from users","update analysis notices doctype with serial doctype ") ;
 
@@ -2184,7 +2184,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.28");
 		break;
@@ -2192,33 +2192,33 @@ switch ($action) {
 	case "v4.28": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='notice_groupe_fonction' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='notice_groupe_fonction' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'notice_groupe_fonction', '', 'Quel fichier/fonction inclure pour la présentation des resultats si toutes les notices d\'une recherche sont parmi les types mentionnés \n exemple : a,b text;c,d music;k photo fera include(text.inc.php) et appel à la fonction text()', 'd_aff_recherche', 0) ";
 			echo traite_rqt($rqt,"insert opac_notice_groupe_fonction into parametres") ;
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_mean_size_x' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_mean_size_x' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'photo_mean_size_x', '', 'Taille X de la photo format \'moyen\', si vide, pas de redimensionnement ', 'm_photo', 0) ";
 			echo traite_rqt($rqt,"insert opac_photo_mean_size_x into parametres") ;
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_mean_size_y' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_mean_size_y' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'photo_mean_size_y', '', 'Taille Y de la photo format \'moyen\', si vide, pas de redimensionnement ', 'm_photo', 0) ";
 			echo traite_rqt($rqt,"insert opac_photo_mean_size_y into parametres") ;
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_watermark' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_watermark' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'photo_watermark', '', 'Watermark à ajouter sur les photos, si vide, pas de watermark', 'm_photo', 0) ";
 			echo traite_rqt($rqt,"insert opac_photo_watermark into parametres") ;
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_show_form' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_show_form' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'photo_show_form', '', 'Afficher le formulaire de commande de photo ? \n 0: Non \n 1:Oui', 'm_photo', 0) ";
 			echo traite_rqt($rqt,"insert opac_photo_show_form into parametres") ;
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_email_form' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_email_form' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'photo_email_form', '', 'Emails des destinataires des commandes de photo à séparer par des espaces si multiples.', 'm_photo', 0) ";
 			echo traite_rqt($rqt,"insert opac_photo_email_form into parametres") ;
@@ -2227,7 +2227,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.29");
 		break;
@@ -2235,14 +2235,14 @@ switch ($action) {
 	case "v4.29": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_watermark_transparency' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_watermark_transparency' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'photo_watermark_transparency', '50', 'Transparence du watermark de 0 à 100 en % ', 'm_photo', 0) ";
 			echo traite_rqt($rqt,"insert opac_photo_watermark_transparency=50 into parametres") ;
 			}
 
 		// $opac_show_onglet_empr
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_onglet_empr' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_onglet_empr' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'show_onglet_empr', '0', 'Afficher l\'onglet de compte emprunteur avec les onglets de recherche ? \n 0: Non \n 1: Oui ', 'f_modules', 0) ";
 			echo traite_rqt($rqt,"insert opac_show_onglet_empr=0 into parametres") ;
@@ -2258,7 +2258,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.30");
 		break;
@@ -2266,12 +2266,12 @@ switch ($action) {
 	case "v4.30": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='url_base' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='url_base' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'pmb', 'url_base', 'http://SERVER/DIRECTORY/', 'URL de base de la gestion : typiquement mettre l\'url http://monserveur/pmb/ ne pas oublier le / final','')";
 			echo traite_rqt($rqt,"insert pmb_url_base=http://SERVER/DIRECTORY/ into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_empr' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_empr' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'show_empr', '0', 'Afficher l\'emprunteur actuel dans la liste des exemplaires ?\n 0 : non\n 1 : pour les abonnés\n 2 : pour tout le monde ', 'a_general', 0) ";
 			echo traite_rqt($rqt,"insert opac_show_empr=0 into parametres") ;
@@ -2289,13 +2289,13 @@ switch ($action) {
 		echo traite_rqt($rqt,"add index libelle_categorie on categories") ;
 
 		// $opac_show_login_form_next
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_login_form_next' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_login_form_next' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'show_login_form_next', '', 'Après connexion de l\'emprunteur se diriger vers quel module ? \n Vide = Compte emprunteur \n index.php = Retour en accueil', 'f_modules', 0) ";
 			echo traite_rqt($rqt,"insert opac_show_login_form_next='' into parametres") ;
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_term_troncat_search' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_term_troncat_search' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'allow_term_troncat_search', '0', 'Troncature automatique à droite \n 1 = oui \n 0 = non', 'c_recherche', 0)" ;
 			echo traite_rqt($rqt,"insert opac_allow_term_troncat_search=0 into parametres") ;
@@ -2304,7 +2304,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.31");
 		break;
@@ -2313,19 +2313,19 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		// Affichage de résultats sur la première page
-		if(mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_results_first_page' "))==0){
+		if(pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_results_first_page' "))==0){
 			$rqt = "INSERT INTO parametres ( id_param , type_param , sstype_param , valeur_param , comment_param , section_param , gestion ) 		 
 				VALUES (0 , 'opac', 'show_results_first_page', '0', 'Affichage de résultats sur la première page lors d\'une recherche pour tous les champs \n 0=non \n 1=oui.', 'd_aff_recherche', '0')";
 			echo traite_rqt($rqt, "insert opac_show_results_first_page=0 into parametres");
 			}
 		// Nombre de résultats
-		if(mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='nb_results_first_page' "))==0){
+		if(pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='nb_results_first_page' "))==0){
 			$rqt = "INSERT INTO parametres ( id_param , type_param , sstype_param , valeur_param , comment_param , section_param , gestion ) 
 				VALUES (0 , 'opac', 'nb_results_first_page', '10', 'Nombres de notices à afficher lors d\'une recherche pour le critère Tous les champs.', 'd_aff_recherche', '0')";
 			echo traite_rqt($rqt, "insert opac_nb_results_first_page=10 into parametres");
 			}
 		// Ajout d'un paramètre pour l'affichage ou non des infobulles dans les catégories
-		if(mysql_num_rows(mysql_query("select 1 from parametres where type_param='opac' and sstype_param='show_infobulles_categ'"))==0){
+		if(pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='opac' and sstype_param='show_infobulles_categ'"))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'opac', 'show_infobulles_categ', '0', 'Affichage des infobulles sur les libellés des catégories. \n 0=non \n 1=oui', 'i_categories', '0')";
 			echo traite_rqt($rqt, " insert opac_show_infobulles_categ=0 into parametres");
@@ -2343,7 +2343,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.32");
 		break;
@@ -2352,7 +2352,7 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		//Ajout d'un parametre d'affichage personnalise des suggestions (gestion)
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_display' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_display' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'acquisition', 'sugg_display', '', 
 					'Nom de la fonction personnalisée d\'affichage des suggestions',	'',0) ";
@@ -2360,7 +2360,7 @@ switch ($action) {
 		}
 
 		//Ajout d'un parametre pour affecter les suggestions a une categorie de suggestions cote gestion
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_categ' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_categ' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'acquisition', 'sugg_categ', '0', 
 					'Affectation des suggestions à une catégorie de suggestions.\n 0 : Non\n 1 : Oui',
@@ -2369,7 +2369,7 @@ switch ($action) {
 		}
 
 		//Categorie de suggestions par defaut cote gestion
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_categ_default' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_categ_default' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'acquisition', 'sugg_categ_default', '1', 
 					'Identifiant de la catégorie de suggestions par défaut.',
@@ -2378,14 +2378,14 @@ switch ($action) {
 		}
 		
 		//Ajout d'un parametre pour affecter les suggestions a une categorie cote OPAC
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='sugg_categ' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='sugg_categ' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'opac','sugg_categ','0','Affectation des suggestions à une catégorie de suggestions.\n 0 : Non.\n 1 : Oui.','a_general',0)" ;
 			echo traite_rqt($rqt,"insert opac_sugg_categ into parametres") ;
 		}
 
 		//Categorie de suggestions par defaut cote OPAC
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='sugg_categ_default' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='sugg_categ_default' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES (0, 'opac', 'sugg_categ_default', '1', 
 					'Identifiant de la catégorie de suggestions par défaut.',
@@ -2406,31 +2406,31 @@ switch ($action) {
 		echo traite_rqt($rqt, "alter table suggestions add default num_categ");  
 
 		//Parametre script de substitution pour impression listes de suggestions
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_print' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfsug_print' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfsug_print','','Quel script utiliser pour personnaliser l\'impression des listes de suggestions ?','pdfsug',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_print into parametres") ;
 		}
 		//Parametre script de substitution pour impression devis
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfdev_print' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfdev_print' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfdev_print','','Quel script utiliser pour personnaliser l\'impression des devis ?','pdfdev',0)" ;
 			echo traite_rqt($rqt,"insert pdfdev_print into parametres") ;
 		}
 		//Parametre script de substitution pour impression commande
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfcde_print' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfcde_print' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfcde_print','','Quel script utiliser pour personnaliser l\'impression des commandes ?','pdfcde',0)" ;
 			echo traite_rqt($rqt,"insert pdfsug_print into parametres") ;
 		}
 		//Parametre script de substitution pour impression bon de livraison
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_print' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdfliv_print' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdfliv_print','','Quel script utiliser pour personnaliser l\'impression des bons de livraison ?','pdfliv',0)" ;
 			echo traite_rqt($rqt,"insert pdfliv_print into parametres") ;
 		}
 		//Parametre script de substitution pour impression facture
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_print' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='pdffac_print' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','pdffac_print','','Quel script utiliser pour personnaliser l\'impression des factures ?','pdffac',0)" ;
 			echo traite_rqt($rqt,"insert pdffac_print into parametres") ;
@@ -2439,7 +2439,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.33");
 		break;
@@ -2448,7 +2448,7 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		// Correction tnvol = NULL sur création de périos
-		$rqt = "update notices set tnvol='', update_date=update_date where tnvol is null "; 
+		$rqt = "update notices set tnvol='' where tnvol is null "; 
 		echo traite_rqt($rqt, "update notice set tnvol not null ");
 		$rqt = "alter table notices change tnvol tnvol varchar(100) not null default '' "; 
 		echo traite_rqt($rqt, "update notice set tnvol not null ");
@@ -2456,7 +2456,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.34");
 		break;
@@ -2465,14 +2465,14 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		//Parametre format d'affichage du reduit de notices cote Gestion 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='notice_reduit_format' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='notice_reduit_format' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'pmb','notice_reduit_format', '0','Format d\'affichage des réduits des notices : \n 0 = titre+auteur principal\n 1 = titre+auteur principal+date édition\n','',0)" ;
 			echo traite_rqt($rqt,"insert notice_reduit_format into parametres") ;
 			}
 		
 		//Parametre resa planifiees cote Gestion
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='resa_planning' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='resa_planning' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'resa_planning', '0', 'Utiliser un planning de réservation ? \n 0: Non \n 1: Oui', '', 0)";
 			echo traite_rqt($rqt,"insert resa_planning='0' into parametres");
 			}
@@ -2480,7 +2480,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.35");
 		break;
@@ -2488,7 +2488,7 @@ switch ($action) {
 	case "v4.35": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='antivol' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='antivol' "))==0) {
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'antivol', '0', 'Système magnétique antivol à télécommander ? \n 1 Oui \n 0 Non')";
 			echo traite_rqt($rqt,"insert pmb_antivol='0' into parametres");
 			}
@@ -2499,7 +2499,7 @@ switch ($action) {
 		//                 >1 : autres traitements
 
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='custom_calc_numero' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='custom_calc_numero' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'acquisition','custom_calc_numero','','Fonction personnalisée de numérotation des actes d\'achats.','',0)" ;
 			echo traite_rqt($rqt,"insert acquisition_custom_calc_numero into parametres") ;
@@ -2508,7 +2508,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.36");
 		break;
@@ -2539,7 +2539,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.37");
 		break;
@@ -2563,12 +2563,12 @@ switch ($action) {
 		$rqt = "insert into notices_relations select notice_id, notice_parent,relation_type,0 from notices where notice_parent>0";
 		echo traite_rqt($rqt,"insert into notices_relations old relations ") ;
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='numero_exemplaire_auto' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='numero_exemplaire_auto' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param ,comment_param) VALUES ('pmb','numero_exemplaire_auto','0','Autorise la numérotation automatique d\'exemplaire ? \r\n1 Oui 0 Non')" ;
 			echo traite_rqt($rqt,"insert pmb_numero_exemplaire_auto into parametres") ;
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='numero_exemplaire_auto_script' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='numero_exemplaire_auto_script' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param ,comment_param) VALUES ('pmb','numero_exemplaire_auto_script','gen_code/gen_code_exemplaire.php','Nom du fichier de Script php pour la génération des codes d\'exemplaires en automatique')" ;
 			echo traite_rqt($rqt,"insert pmb_numero_exemplaire_auto_script into parametres") ;
 			}
@@ -2576,22 +2576,22 @@ switch ($action) {
 		$rqt = "CREATE TABLE exemplaires_temp (cb VARCHAR( 50 ) NOT NULL ,sess VARCHAR( 12 ) NOT NULL ,UNIQUE (cb))";
 		echo traite_rqt($rqt,"create table exemplaires_temp ") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='lecteur_controle_doublons' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='lecteur_controle_doublons' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param ,comment_param) VALUES ('empr','lecteur_controle_doublons','0','Contrôle sur les doublons de lecteurs:\r\n0 : pas de controle sur les doublons, en saisie de fiche de lecteur. \r\n1,empr_nom,empr_prenom,... : recherche doublons sur les champs \'empr\', \r\n2,empr_nom,empr_prenom,... : recherche doublons sur les champs \'empr\', et champ personnalisables.\r\n3,empr_nom, empr_prenom ,... : idem, en rajoutant le test sur le groupe.')" ;
 			echo traite_rqt($rqt,"insert empr_lecteur_controle_doublons into parametres") ;
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='pret_nombre_prolongation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='pret_nombre_prolongation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param ,type_param ,sstype_param ,valeur_param ,comment_param ,section_param ,gestion) VALUES (NULL , 'pmb', 'pret_nombre_prolongation', '3', 'Nombre de prolongations autorisées', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_pret_nombre_prolongation into parametres") ;
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='pret_restriction_prolongation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='pret_restriction_prolongation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param ,type_param ,sstype_param ,valeur_param ,comment_param ,section_param ,gestion) VALUES (NULL , 'pmb', 'pret_restriction_prolongation', '0', '0 : pas de restriction\r\n1 : prolongation limitée au paramètre pret_nombre_prolongation \r\n2 : prolongation gérée par les quotas ', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_pret_restriction_prolongation into parametres") ;
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='pret_prolongation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='pret_prolongation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param ,type_param ,sstype_param ,valeur_param ,comment_param ,section_param ,gestion)VALUES (NULL , 'opac','pret_prolongation', '0', '0 : pas de prolongation\r\n1 : prolongation autorisée', 'a_general', '0')" ;
 			echo traite_rqt($rqt,"insert opac_pret_prolongation into parametres") ;
 			}
@@ -2658,7 +2658,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.38");
 		break;
@@ -2672,12 +2672,12 @@ switch ($action) {
 		$rqt = "ALTER TABLE empr_statut ADD allow_sugg tinyint(4) NOT NULL default '1', ADD allow_prol tinyint(4) NOT NULL default '1' ";
 		echo traite_rqt($rqt, "ALTER TABLE empr_statut ADD allow_sugg, allow_prol ");
 
-		if (mysql_num_rows(mysql_query("select 1 from empr_statut where idstatut=1 "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from empr_statut where idstatut=1 "))==0){
 			$rqt = "INSERT INTO empr_statut (idstatut ,statut_libelle) VALUES (1, 'Actif')" ;
 			echo traite_rqt($rqt,"insert Actif into empr_statut into parametres") ;
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from empr_statut where idstatut=2 "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from empr_statut where idstatut=2 "))==0){
 			$rqt = "INSERT INTO empr_statut (idstatut, statut_libelle, allow_loan, allow_book, allow_opac, allow_dsi, allow_dsi_priv, allow_sugg, allow_prol) VALUES (2, 'Interdit', 0, 0, 0, 0, 0, 0, 0)" ;
 			echo traite_rqt($rqt,"insert Interdit into empr_statut into parametres") ;
 			}
@@ -2715,13 +2715,13 @@ switch ($action) {
 		
 		//Recherche des bulletins
 		/*$requete="select bulletin_id,bulletin_numero,bulletin_notice,mention_date,date_date,bulletin_titre,index_titre,bulletin_cb from bulletins where num_notice=0";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		
-		while ($r=mysql_fetch_object($resultat)) {
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			//Recherche de la notice mère
 			$requete="select * from notices where notice_id=".$r->bulletin_notice;
-			$res_perio=mysql_query($requete);
-			$r_p=mysql_fetch_object($res_perio);
+			$res_perio=pmb_mysql_query($requete);
+			$r_p=pmb_mysql_fetch_object($res_perio);
 			//Création de la notice 
 			
 			if ($r->bulletin_titre) 
@@ -2733,20 +2733,20 @@ switch ($action) {
 			$requete="insert into notices (typdoc,tit1,index_wew,index_sew,niveau_biblio,niveau_hierar) values('".$r_p->typdoc."',
 			'".addslashes($titre)."','".addslashes($titre)."',
 			' ".addslashes(strip_empty_words($titre))." ','b',2)";
-			mysql_query($requete);
-			$id_bull=mysql_insert_id();
+			pmb_mysql_query($requete);
+			$id_bull=pmb_mysql_insert_id();
 			$requete="update bulletins set num_notice=".$id_bull." where bulletin_id=".$r->bulletin_id;
-			mysql_query($requete);  
+			pmb_mysql_query($requete);  
 			//Mise à jour des liens bulletin -> notice mère
 			$requete="insert into notices_relations (num_notice,linked_notice,relation_type,rank) values($id_bull,$r_p->notice_id,'b',1)";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			//Recherche des articles
 			$requete="select analysis_notice from analysis where analysis_bulletin=".$r->bulletin_id;
-			$resultat_analysis=mysql_query($requete);
+			$resultat_analysis=pmb_mysql_query($requete);
 			$n=1;
-			while ($r_a=mysql_fetch_object($resultat_analysis)) {
+			while ($r_a=pmb_mysql_fetch_object($resultat_analysis)) {
 				$requete="insert into notices_relations (num_notice,linked_notice,relation_type,rank) values(".$r_a->analysis_notice.",$id_bull,'a',$n)";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$n++;
 			}
 		}*/
@@ -2817,7 +2817,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE abts_periodicites add seuil_periodicite INT(4) DEFAULT 0";
 		echo traite_rqt($rqt, "ALTER TABLE abts_periodicites add seuil_periodicite");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='surlignage' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='surlignage' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'surlignage', '0', 'Surligner les mots recherchés :\n0 : pas de surlignage\n1 : surlignage obligatoire\n2 : surlignage activable\n3 : surlignage désactivable', 'd_aff_recherche', 0) ";
 			echo traite_rqt($rqt,"insert opac_surlignage into parametres") ;
@@ -2826,7 +2826,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.39");
 		break;
@@ -2850,12 +2850,12 @@ switch ($action) {
 		echo traite_rqt($rqt, "INSERT parametre pmb_first_week_day_format");
 
 		// il faut créer l'origine de catalogage id=1 libelle = INTERNE
-		$rqt_verif=mysql_query("select orinot_id, orinot_nom from origine_notice where orinot_id=1 ");
-		if (mysql_num_rows($rqt_verif)==0){
-			$rqt_id_interne = mysql_query("select orinot_id from origine_notice where orinot_nom='INTERNE' ");
-			if (mysql_num_rows($rqt_id_interne)) {
+		$rqt_verif=pmb_mysql_query("select orinot_id, orinot_nom from origine_notice where orinot_id=1 ");
+		if (pmb_mysql_num_rows($rqt_verif)==0){
+			$rqt_id_interne = pmb_mysql_query("select orinot_id from origine_notice where orinot_nom='INTERNE' ");
+			if (pmb_mysql_num_rows($rqt_id_interne)) {
 				// Id 1 n'existe pas mais libellé 'INTERNE' existe, on lui met l'id 1
-				$id_interne=mysql_fetch_object($rqt_id_interne) ;
+				$id_interne=pmb_mysql_fetch_object($rqt_id_interne) ;
 				$idinterne=$id_interne->orinot_id;
 				$rqt = "update origine_notice set orinot_id=1 where orinot_id=$idinterne" ;
 				echo traite_rqt($rqt,"UPDATE origine_notice set id=1 where lable=INTERNE") ;
@@ -2864,21 +2864,21 @@ switch ($action) {
 					echo traite_rqt($rqt,"INSERT interne into origine_notice") ;
 					}
 			} else {
-				$verif=mysql_fetch_object($rqt_verif) ;
+				$verif=pmb_mysql_fetch_object($rqt_verif) ;
 				if ($verif->orinot_nom!='INTERNE') {
 					// existe bien avec Id 1 mais libellé pas 'INTERNE'
-					$rqt_origine = mysql_query("SELECT max(orinot_id) as maxid FROM origine_notice ");
-					$id_max = mysql_fetch_object($rqt_origine);
+					$rqt_origine = pmb_mysql_query("SELECT max(orinot_id) as maxid FROM origine_notice ");
+					$id_max = pmb_mysql_fetch_object($rqt_origine);
 					$maxid=$id_max->maxid+1;
-					mysql_query("update origine_notice set orinot_id=$maxid where orinot_id=1 ");
+					pmb_mysql_query("update origine_notice set orinot_id=$maxid where orinot_id=1 ");
 					$rqt = "INSERT INTO origine_notice (orinot_id,orinot_nom,orinot_pays,orinot_diffusion) VALUES (1, 'INTERNE', 'FR', '1')" ;
 					echo traite_rqt($rqt,"INSERT interne into origine_notice") ;
 					}
 				}
-		$rqt = "update notices set origine_catalogage=1, update_date=update_date where origine_catalogage=0 or origine_catalogage is null" ;
+		$rqt = "update notices set origine_catalogage=1 where origine_catalogage=0 or origine_catalogage is null" ;
 		echo traite_rqt($rqt,"update notices set origine_catalogage") ;
 			
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='export_allow_expl' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='export_allow_expl' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'export_allow_expl', '0', 'Exporter les exemplaires avec les notices : \n 0 : Non \n 1 : Oui', 'a_general', 0)";
 			echo traite_rqt($rqt,"insert opac_export_allow_expl='0' into parametres");
 			}
@@ -2898,13 +2898,13 @@ switch ($action) {
 		$rqt = "CREATE TABLE tris (id_tri int(4) NOT NULL auto_increment, tri_par varchar(100) NOT NULL default '', nom_tri varchar(100) NOT NULL default '', tri_par_texte varchar(100) NOT NULL default '',  PRIMARY KEY  (id_tri))";
 		echo traite_rqt($rqt, "CREATE TABLE tris "); 
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='nb_max_tri' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='nb_max_tri' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'nb_max_tri', '50', 'Nombre maximum de notices pour lesquelles le tri est autorisé.', 'c_recherche', 0) ";
 			echo traite_rqt($rqt,"insert opac_nb_max_tri into parametres") ;
 			}
 			
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='nb_max_tri' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='nb_max_tri' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'pmb', 'nb_max_tri', '50', 'Nombre maximum de notices pour lesquelles le tri est autorisé.', '', 0) ";
 			echo traite_rqt($rqt,"insert pmb_nb_max_tri into parametres") ;
@@ -2913,7 +2913,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.40");
 		break;
@@ -2927,13 +2927,13 @@ switch ($action) {
 		$rqt = "ALTER TABLE abts_modeles ADD num_increment INT NOT NULL default '0' AFTER num_combien ,ADD num_date_unite INT NOT NULL default '0' AFTER num_increment ,ADD num_increment_date INT NOT NULL default '0' AFTER num_date_unite";
 		echo traite_rqt($rqt, "ALTER TABLE abts_modeles ADD num_increment, num_date_unite, num_increment_date "); 
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='nb_max_criteres_tri' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='nb_max_criteres_tri' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'nb_max_criteres_tri', '3', 'Nombre maximum de critères de tri à afficher.', 'c_recherche', 0) ";
 			echo traite_rqt($rqt,"insert opac_nb_max_criteres_tri into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='show_caddie' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='show_caddie' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'empr', 'show_caddie', '0', 'Afficher le module de paniers de lecteurs: \n 0: Non \n 1: Oui', '', 0) ";
 			echo traite_rqt($rqt,"insert empr_show_caddie into parametres") ;
@@ -2948,12 +2948,12 @@ switch ($action) {
 		$rqt = "ALTER TABLE abts_modeles ADD format_periode VARCHAR( 255 ) NOT NULL default '' ";
 		echo traite_rqt($rqt,"ALTER TABLE abts_modeles ADD format_periode ");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='pics_url' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='pics_url' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'empr', 'pics_url', '', 'URL des photos des emprunteurs, dans le chemin fourni, !!num_carte!! sera remplacé par le numéro de carte du lecteur. \n exemple : http://www.monsite/photos/lecteurs/!!num_carte!!.jpg')";
 			echo traite_rqt($rqt,"insert empr_pics_url='' into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='pics_max_size' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='pics_max_size' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'empr', 'pics_max_size', '100', 'Taille maximale des photos des emprunteurs, en largeur ou en hauteur')";
 			echo traite_rqt($rqt,"insert empr_pics_max_size='100' into parametres");
 			}
@@ -2961,7 +2961,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.41");
 		break;
@@ -2983,27 +2983,27 @@ switch ($action) {
 		$rqt = "update parametres set type_param='thesaurus', sstype_param=concat('categories_',sstype_param) where type_param='categories' and section_param='categories'";
 		echo traite_rqt($rqt,"update parametres for categories type_param ");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='classement_mode_pmb' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='classement_mode_pmb' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('thesaurus', 'classement_mode_pmb', '0', 'Niveau d\'utilisation des plans de classement des indexations. \n 0 : Un seul plan de classement. \n 1 : Choix du plan de classement possible.', 'classement', '0')";
 			echo traite_rqt($rqt,"insert thesaurus_classement_mode_pmb='0' into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='classement_defaut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='classement_defaut' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('thesaurus', 'classement_defaut', '1', 'Identifiant du plan de classement par défaut.', 'classement', '0')";
 			echo traite_rqt($rqt,"insert thesaurus_classement_defaut='1' into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='electronic_loan_ticket' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='electronic_loan_ticket' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('empr', 'electronic_loan_ticket', '0', 'Envoyer un ticket de prêt électronique ? \n 0: Non, \n 1: Oui', '', '0')";
 			echo traite_rqt($rqt,"insert empr_electronic_loan_ticket='0' into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='electronic_loan_ticket_obj' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='electronic_loan_ticket_obj' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('empr', 'electronic_loan_ticket_obj', '!!biblio_name!! : emprunt(s) du !!date!!', 'Objet du mail de ticket électronique de prêt', '', '0')";
 			echo traite_rqt($rqt,"insert empr_electronic_loan_ticket_obj into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='electronic_loan_ticket_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='electronic_loan_ticket_msg' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('empr', 'electronic_loan_ticket_msg', 'Bonjour, <br />Voici la liste de vos emprunts et/ou réservations en date du !!date!! :<br /><br />!!all_loans!! !!all_reservations!!<br />Retrouvez toutes ces informations sur votre compte à l\'adresse <a href=!!biblio_website!!>!!biblio_website!!</a>.', 'Corps du mail de ticket électronique de prêt', '', '0')";
 			echo traite_rqt($rqt,"insert empr_electronic_loan_ticket_msg into parametres");
 			}
@@ -3027,7 +3027,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.42");
 		break;
@@ -3036,7 +3036,7 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		// visibilité des exemplaires
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='droits_explr_localises' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='droits_explr_localises' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('pmb', 'droits_explr_localises', '0', 'Les droits de gestion des exemplaires sont-ils localisés ? \n 0: Non \n 1: Oui', '', '0')";
 			echo traite_rqt($rqt,"insert pmb_droits_explr_localises into parametres");
 			}
@@ -3050,16 +3050,16 @@ switch ($action) {
 		$rqt = "ALTER TABLE users ADD explr_visible_unmod varchar( 255 ) default '0'";
 		echo traite_rqt($rqt,"ALTER TABLE users ADD explr_visible_unmod ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='fiche_depliee' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='fiche_depliee' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('empr','fiche_depliee', '1', 'La fiche emprunteur sera automatiquement : \n 0 : pliée \n 1 : dépliée', '', '0')";
 			echo traite_rqt($rqt,"insert empr_fiche_depliee into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='statut_adhes_depassee' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='statut_adhes_depassee' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('empr','statut_adhes_depassee', '2', 'id du statut pour lequel les emprunteurs dont la date d\'adhesion est dépassée n\'apparaissent pas en zone d\'alerte', '', '0')";
 			echo traite_rqt($rqt,"insert empr_statut_adhes_depassee into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='authorized_styles' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='authorized_styles' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','authorized_styles', '$opac_default_style', 'Styles de l\'OPAC autorisés, séparés par une virgule', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_authorized_styles into parametres");
 			}
@@ -3097,7 +3097,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.43");
 		break;
@@ -3108,33 +3108,33 @@ switch ($action) {
 
 		// re-correction des typedoc de dépouillements
 		$sql_corr = "select s.typdoc as typdoc_s, a.notice_id as notice_id_dep from notices as s, analysis, bulletins, notices as a where a.niveau_biblio='a' and s.niveau_biblio='s' and s.notice_id=bulletin_notice and analysis_bulletin=bulletin_id and analysis_notice=a.notice_id " ;
-		$res_corr = mysql_query($sql_corr,$dbh);
-		while ($obj_corr=mysql_fetch_object($res_corr)) {
-			@mysql_query("update notices set typdoc='".$obj_corr->typdoc_s."', update_date=update_date where notice_id='".$obj_corr->notice_id_dep."'") ;
+		$res_corr = pmb_mysql_query($sql_corr,$dbh);
+		while ($obj_corr=pmb_mysql_fetch_object($res_corr)) {
+			@pmb_mysql_query("update notices set typdoc='".$obj_corr->typdoc_s."' where notice_id='".$obj_corr->notice_id_dep."'") ;
 			}
 		echo traite_rqt("select 1 from users","update analysis notices doctype with serial doctype ") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='relance_adhesion' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='relance_adhesion' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('empr','relance_adhesion', '0', 'Les relances d\'adhésion sont envoyées : \n 0 : exclusivement par lettre \n 1 : mail, à défaut par lettre', '', '0')";
 			echo traite_rqt($rqt,"insert empr_relance_adhesion=0 into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='show_rows' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='show_rows' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('empr','show_rows', 'b,n,a,v,y,s,1', 'Colonnes affichées en liste de lecteurs, saisir les colonnes séparées par des virgules. Les colonnes disponibles pour l\'affichage de la liste des emprunteurs sont : \n n: nom+prénom \n a: adresse \n b: code-barre \n c: catégories \n g: groupes \n l: localisation \n s: statut \n cp: code postal \n v: ville \n y: année de naissance \n #n : id des champs personnalisés \n 1: icône panier', '','0')";
 			echo traite_rqt($rqt,"insert empr_show_rows=b,n,a,v,y,s,1 into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sort_rows' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sort_rows' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('empr','sort_rows', 'n,c,l,s', 'Colonnes qui seront disponibles pour le tri des emprunteurs. Les colonnes possibles sont : \n n: nom+prénom \n c: catégories \n g: groupes \n l: localisation \n s: statut \n cp: code postal \n v: ville \n y: année de naissance \n #n : id des champs personnalisés','', '0')";
 			echo traite_rqt($rqt,"insert empr_sort_rows=n,c,l,s into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='filter_rows' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='filter_rows' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('empr','filter_rows', 'cp,v,y,s', 'Colonnes qui seront disponibles en filtres de la liste des emprunteurs. Les colonnes possibles sont : \n cp: code postal \n c: catégories \n g: groupes \n l: localisation \n s: statut \n v: ville \n y: année de naissance \n #n : id des champs personnalisés', '', '0')";
 			echo traite_rqt($rqt,"insert empr_filter_rows=cp,v,y,s into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='header_format' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='header_format' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('empr','header_format', '', 'Champs personnalisés qui seront affichés dans l\'entête de la fiche emprunteur. Saisir les ids séparés par des virgules', '', '0')";
 			echo traite_rqt($rqt,"insert empr_header_format= into parametres");
 			}
@@ -3142,12 +3142,12 @@ switch ($action) {
 		$rqt = "ALTER TABLE pret_archive ADD arc_empr_statut INT( 10 ) UNSIGNED DEFAULT '1' NOT NULL AFTER arc_empr_sexe";
 		echo traite_rqt($rqt,"alter table pret_archive add empr_statut");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='archivage_prets' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='archivage_prets' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('empr','archivage_prets', '0', 'Archiver les prêts des emprunteurs ? \n 0: Non \n 1: Oui\nATTENTION pour la France: nous attirons votre attention sur l\'obligation de déclarer votre traitement à la CNIL (www.cnil.fr) si vous activez cette fonctionnalité.', '', '0')";
 			echo traite_rqt($rqt,"insert empr_archivage_prets='0' into parametres");
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='archivage_prets_purge' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='archivage_prets_purge' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('empr','archivage_prets_purge', '0', 'Nombre de jours maximum pendant lesquels doivent être conservées les archives nominatives de prêts : \n0: illimité \nN: N jours', '', '0')";
 			echo traite_rqt($rqt,"insert empr_archivage_prets_purge='0' into parametres");
 			}
@@ -3167,35 +3167,35 @@ switch ($action) {
 		$rqt = "ALTER TABLE empr_statut ADD allow_tag TINYINT(4) UNSIGNED DEFAULT 1 NOT NULL ";
 		echo traite_rqt($rqt,"alter table empr_statut add allow_tag=1 ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','autres_lectures', '0', 'Afficher les emprunts des autres lecteurs du document courant ? \n 0: Non \n 1: Oui', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_autres_lectures='0' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures_tri' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures_tri' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','autres_lectures_tri', 'rand()', 'Tri des autres lectures proposées : \n rand(): aléatoire \n tit: par Titre', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_autres_lectures_tri='rand()' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures_nb_mini_emprunts' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures_nb_mini_emprunts' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','autres_lectures_nb_mini_emprunts', '100', 'Nombre minimum d\'emprunts pour être comptabilisés \n 1: un seul emprunt suffit pour proposer la notice comme lecture associée \n N: N emprunts minimum nécessaires ', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_autres_lectures_nb_mini_emprunts='100' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures_nb_maxi' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures_nb_maxi' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','autres_lectures_nb_maxi', '0', 'Nombre maximum de lectures associées proposées', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_autres_lectures_nb_maxi='0' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures_nb_jours_maxi' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='autres_lectures_nb_jours_maxi' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','autres_lectures_nb_jours_maxi', '1', 'Délai en jours au delà duquel les emprunts ne sont pas comptabilisés, 0 pour illimité', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_autres_lectures_nb_jours_maxi='1' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='empr_hist_nb_max' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='empr_hist_nb_max' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','empr_hist_nb_max', '0', 'Nombre maximum de prêts précédents à afficher, 0 pour illimité', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_empr_hist_nb_max='0' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='empr_hist_nb_jour_max' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='empr_hist_nb_jour_max' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','empr_hist_nb_jour_max', '1', 'Délai en jours au delà duquel les prêts précédents ne sont pas affichés, 0 pour illimité', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_empr_hist_nb_jour_max='1' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_tags_search_min_occ' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_tags_search_min_occ' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','allow_tags_search_min_occ', '1', 'Nombre mini d\'occurrences d\'un tag pour être affiché, 1 pour tous', 'c_recherche', '0')";
 			echo traite_rqt($rqt,"insert opac_allow_tags_search_min_occ='1' into parametres");
 			}
@@ -3203,21 +3203,21 @@ switch ($action) {
 		$rqt = "CREATE TABLE collections_state (id_serial mediumint(8) unsigned NOT NULL default 0, location_id smallint(5) unsigned NOT NULL default 0, state_collections text not null default '', PRIMARY KEY  (id_serial,location_id))" ;
 		echo traite_rqt($rqt,"create table collections_state");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='etat_collections_localise' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='etat_collections_localise' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('pmb','etat_collections_localise', '0', 'L\'état des collections est-il localisé ? \n 0 : non \n 1 : oui', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_etat_collections_localise='0' into parametres");
 			}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='clean_nb_elements' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='clean_nb_elements' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('pmb','clean_nb_elements', '100', 'Nombre d\'éléments traités par passe en nettoyage de base', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_clean_nb_elements='100' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_activate' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_activate' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('pmb','rfid_activate', '0', 'Enregistrements des prêts par platine RFID ? \n 0: Non \n 1: Oui', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_rfid_activate='0' into parametres");
 			}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='bull_results_per_page' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='bull_results_per_page' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','bull_results_per_page', '12', 'Nombre de bulletins affichés par page dans l\'affichage d\'un périodique','e_aff_notice','0')" ;
 			echo traite_rqt($rqt,"insert opac_bull_results_per_page='12' into parametres");
 			}
@@ -3228,7 +3228,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.44");
 		break;
@@ -3262,12 +3262,12 @@ switch ($action) {
 				)";
 		echo traite_rqt($rqt, "CREATE TABLE connectors_sources ");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_serveur_url' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_serveur_url' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('pmb','rfid_serveur_url', '', 'URL du serveur de webservices RFID', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_rfid_serveur_url='' into parametres");
 			}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='authorized_information_pages' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='authorized_information_pages' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'authorized_information_pages', '1', 'Pages \"includable\" dans la page de l\'opac ./index.php?lvl=information&askedpage= : \n Mettre les noms des fichiers séparés par une virgule', 'a_general', 0)";
 			echo traite_rqt($rqt,"insert opac_authorized_information_pages='' into parametres");
 			}
@@ -3290,7 +3290,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE entites CHANGE num_cp_client num_cp_client VARCHAR(255) NOT NULL ";
 		echo traite_rqt($rqt, "ALTER TABLE entites CHANGE num_cp_client VARCHAR(255) ");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='notice_controle_doublons' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='notice_controle_doublons' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param,comment_param ,section_param ,gestion) VALUES ('pmb','notice_controle_doublons', '0', 'Contrôle sur les doublons en saisie de la notice \n 0: Pas de contrôle sur les doublons, \n 1,tit1,tit2, ... : Recherche par méthode _exacte_ de doublons sur des champs, défini dans le fichier notice.xml  \n 2,tit1,tit2, ... : Recherche par _similitude_ ', '', '0')";
 			echo traite_rqt($rqt,"insert pmb_notice_controle_doublons=0 into parametres");
 			}
@@ -3304,27 +3304,27 @@ switch ($action) {
 		$rqt = "ALTER TABLE notices ADD INDEX sig_index (signature) ";
 		echo traite_rqt($rqt, "ALTER TABLE notices ADD index(signature)");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='title_ponderation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='title_ponderation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'title_ponderation', '0.5', 'Majoration de la pondération des mots du titre \n   mettre 0 (zero) pour interdire la majoration \n ATTENTION utiliser le point décimal ', 'c_recherche', 0) ";
 			echo traite_rqt($rqt, "insert opac_title_ponderation=0.5 into parameters"); 
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='title_ponderation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='title_ponderation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'title_ponderation', '0.5', 'Majoration de la pondération des mots du titre \n   mettre 0 (zero) pour interdire la majoration \n ATTENTION utiliser le point décimal ', '', 0) ";
 			echo traite_rqt($rqt, "insert pmb_title_ponderation=0.5 into parameters"); 
 			}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='param_etiq_codes_barres' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='param_etiq_codes_barres' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'param_etiq_codes_barres', '', 'Paramètres de sauvegarde des paramètres d\'édition d\'étiquettes codes-barres', '', 1) ";
 			echo traite_rqt($rqt, "insert pmb_param_etiq_codes_barres='' into parameters"); 
 			}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='javascript_office_editor' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='javascript_office_editor' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'javascript_office_editor', '', 'Code HTML à insérer pour remplacer les textarea par un éditeur Office javascript', '', 0)";
 			echo traite_rqt($rqt, "insert pmb_javascript_office_editor='' into parameters"); 
 			}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='biblio_post_adress' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='biblio_post_adress' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'biblio_post_adress', '', 'Bloc d\'information après le bloc adresse, dans la feuille de style, voir id post_adress', 'b_aff_general', 0)";
 			echo traite_rqt($rqt, "insert opac_biblio_post_adress='' into parameters"); 
 			}
@@ -3356,14 +3356,14 @@ switch ($action) {
 		$rqt = "ALTER TABLE empr_statut ADD allow_pwd TINYINT(4) UNSIGNED DEFAULT 1 NOT NULL ";
 		echo traite_rqt($rqt,"alter table empr_statut add allow_pwd=1 ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_external_search' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_external_search' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'allow_external_search', '0', 'Autorisation ou non de la recherche par connecteurs externes dans l\'OPAC \n 0 : Non \n 1 : Oui','c_recherche',0)";
 			echo traite_rqt($rqt,"insert opac_external_term_search='0' into parametres");
 			}
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.45");
 		break;
@@ -3383,7 +3383,7 @@ switch ($action) {
 		$rqt = "create table linked_mots (num_mot mediumint(8) unsigned not null default 0,num_linked_mot mediumint(8) unsigned not null default 0,type_lien tinyint(1) not null default 1,ponderation float(2) not null default 1,primary key (num_mot, num_linked_mot, type_lien))";
 		echo traite_rqt($rqt,"create table linked_mots ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='nb_noti_calc_empty_words' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='nb_noti_calc_empty_words' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param, section_param, gestion) VALUES ('pmb','nb_noti_calc_empty_words', '50', 'Un mot sera considéré comme vide s\'il apparaît dans un nombre de notices minimum. Saisir le pourcentage par rapport au nombre de notices total.', '', '1')";
 			echo traite_rqt($rqt,"insert pmb_nb_noti_calc_empty_words='0' into parametres");
 			}
@@ -3391,7 +3391,7 @@ switch ($action) {
 		$rqt = "CREATE TABLE source_sync (source_id int(10) unsigned NOT NULL default 0, nrecu varchar(255) not null default '', ntotal varchar(255) not null default '', message varchar(255) not null default '', date_sync datetime not null default '0000-00-00 00:00:00', percent int(10) unsigned NOT NULL default 0, env text not null default '', cancel int(10) unsigned NOT NULL default 0, PRIMARY KEY (source_id))";
 		echo traite_rqt($rqt,"CREATE TABLE source_sync ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='fonction_affichage_liste_bull' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='fonction_affichage_liste_bull' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'opac','fonction_affichage_liste_bull', '','Fonction d\'affichage des listes de bulletins','e_aff_notice',0)" ;
 			echo traite_rqt($rqt,"insert opac_fonction_affichage_liste_bull into parametres") ;
@@ -3439,7 +3439,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.46");
 		break;
@@ -3455,7 +3455,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.47");
 		break;
@@ -3485,7 +3485,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE entrepots DROP INDEX ufield";
 		echo traite_rqt($rqt,"ALTER TABLE entrepots DROP INDEX ufield");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='allow_external_search' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='allow_external_search' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'allow_external_search', '0', 'Autorisation ou non de la recherche par connecteurs externes (masque également le menu Administration-Connecteurs) \n 0 : Non \n 1 : Oui','',0)";
 			echo traite_rqt($rqt,"insert pmb_external_term_search='0' into parametres");
 			}
@@ -3493,7 +3493,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.48");
 		break;
@@ -3522,15 +3522,15 @@ switch ($action) {
 				)";
 		echo traite_rqt($rqt,"CREATE TABLE transferts_demandes ");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'transferts' and sstype_param='gestion_transferts' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'transferts' and sstype_param='gestion_transferts' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param) VALUES ('transferts', 'gestion_transferts', '0', 'Activation de la gestion des transferts\n 0: Non \n 1: Oui', 'transferts')";
 			echo traite_rqt($rqt,"insert transferts_gestion_transferts='0' into parametres");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'transferts' and sstype_param='transfert_statut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'transferts' and sstype_param='transfert_statut' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param) VALUES ('transferts', 'transfert_statut', '0', 'Id du statut dans lequel sont placés les documents en cours de transfert', 'transferts')";
 			echo traite_rqt($rqt,"insert transferts_transfert_statut='0' into parametres");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'dsi' and sstype_param='bannette_notices_order' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'dsi' and sstype_param='bannette_notices_order' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param) VALUES ('dsi', 'bannette_notices_order', 'index_serie, tnvol, index_sew', 'Ordre des notices au sein de la bannette: \n index_serie, tnvol, index_sew : par titre \n create_date desc : par date de saisie décroissante \n rand() : aléatoire')";
 			echo traite_rqt($rqt,"insert dsi_bannette_notices_order='index_serie, tnvol, index_sew' into parametres");
 		}
@@ -3538,23 +3538,23 @@ switch ($action) {
 		$rqt="alter table rss_flux add rss_flux_content longblob NOT NULL default '', add rss_flux_last timestamp NOT NULL default '0000-00-00 00:00:00'";
 		echo traite_rqt($rqt,"alter table rss_flux add rss_flux_content, add rss_flux_last ");
   
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_show' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_show' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','websubscribe_show', '0', 'Afficher la possibilité de s\'inscrire en ligne ? \n 0: Non \n 1: Oui', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_websubscribe_show='0' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_empr_status' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_empr_status' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','websubscribe_empr_status', '2,1', 'Id des statuts des inscrits séparés par une virgule: en attente de validation, validés', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_websubscribe_empr_status='2,1' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_empr_categ' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_empr_categ' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','websubscribe_empr_categ', '0', 'Id de la catégorie des inscrits par le web non adhérents complets', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_websubscribe_empr_categ='0' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_empr_stat' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_empr_stat' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','websubscribe_empr_stat', '0', 'Id du code statistique des inscrits par le web non adhérents complets', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_websubscribe_empr_stat='0' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_valid_limit' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_valid_limit' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','websubscribe_valid_limit', '24', 'Durée maximum des inscriptions en attente de validation', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_websubscribe_valid_limit='24' into parametres");
 			}
@@ -3585,7 +3585,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.49");
 		break;
@@ -3593,15 +3593,15 @@ switch ($action) {
 	case "v4.49": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='mail_html_format' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='mail_html_format' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'mail_html_format', '1', 'Format d\'envoi des mails : \n 0: Texte brut\n 1: HTML \nAttention, ne fonctionne qu\'en mode d\'envoi smtp !')";
 			echo traite_rqt($rqt,"insert pmb_mail_html_format='1' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='mail_html_format' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='mail_html_format' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'mail_html_format', '1', 'Format d\'envoi des mails à partir de l\'opac: \n 0: Texte brut\n 1: HTML \nAttention, ne fonctionne qu\'en mode d\'envoi smtp !', 'a_general', 0)";
 			echo traite_rqt($rqt,"insert opac_mail_html_format='1' into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_empr_location' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='websubscribe_empr_location' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('opac','websubscribe_empr_location', '0', 'Id de la localisation des inscrits par le web non adhérents complets', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_websubscribe_empr_location='0' into parametres");
 			}
@@ -3614,7 +3614,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.50");
 		break;
@@ -3627,7 +3627,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"ALTER TABLE bannettes ADD typeexport ");
 		$rqt = "ALTER TABLE bannettes ADD prefixe_fichier VARCHAR( 50 ) NOT NULL default '' ";
 		echo traite_rqt($rqt,"ALTER TABLE bannettes ADD prefixe_fichier ");
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_bannette_export' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_bannette_export' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'opac', 'allow_bannette_export', '0', 'Possibilité pour les lecteurs de recevoir les notices de leurs bannettes privées en pièce jointe au mail ?\n 0: Non \n 1: Oui','l_dsi')";
 			echo traite_rqt($rqt,"insert opac_allow_bannette_export=0 into parametres");
 			}
@@ -3658,7 +3658,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.51");
 		break;
@@ -3675,7 +3675,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.52");
 		break;
@@ -3690,7 +3690,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.53");
 		break;
@@ -3698,27 +3698,27 @@ switch ($action) {
 	case "v4.53": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='expl_data' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='expl_data' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'opac', 'expl_data', 'expl_cb,expl_cote,tdoc_libelle,location_libelle,section_libelle', 'Colonne des exemplaires, dans l\'ordre donné, séparé par des virgules : expl_cb,expl_cote,tdoc_libelle,location_libelle,section_libelle','e_aff_notice')";
 			echo traite_rqt($rqt,"insert opac_expl_data=expl_cb,expl_cote,tdoc_libelle,location_libelle,section_libelle into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='expl_order' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='expl_order' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'opac', 'expl_order', 'location_libelle,section_libelle,expl_cote,tdoc_libelle', 'Ordre d\'affichage des exemplaires, dans l\'ordre donné, séparé par des virgules : location_libelle,section_libelle,expl_cote,tdoc_libelle','e_aff_notice')";
 			echo traite_rqt($rqt,"insert opac_expl_order=location_libelle,section_libelle,expl_cote,tdoc_libelle into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='curl_available' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='curl_available' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'opac', 'curl_available', '1', 'La librairie cURL est-elle disponible pour les interrogations RSS notamment ? \n 0: Non \n 1: Oui','a_general')";
 			echo traite_rqt($rqt,"insert opac_curl_available=1 into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='curl_available' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='curl_available' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'curl_available', '1', 'La librairie cURL est-elle disponible pour les interrogations RSS notamment ? \n 0: Non \n 1: Oui')";
 			echo traite_rqt($rqt,"insert pmb_curl_available=1 into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='opac' and sstype_param='thesaurus_defaut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='opac' and sstype_param='thesaurus_defaut' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, gestion, section_param) VALUES (0, 'opac', 'thesaurus_defaut', '1', 'Identifiant du thésaurus par défaut.', 0, 'i_categories') ";
 			echo traite_rqt($rqt, "insert opac_thesaurus_defaut=1 into parameters");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='opac' and sstype_param='recherches_pliables' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='opac' and sstype_param='recherches_pliables' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, gestion, section_param) VALUES (0, 'opac', 'recherches_pliables', '0', 'Les cases à cocher de la recherche simple sont-elles pliées ? \n 0: Non \n 1: Oui et pliée par défaut \n 2: Oui et dépliée par défaut', 0, 'c_recherche') ";
 			echo traite_rqt($rqt, "insert opac_recherches_pliables=0 into parameters");
 			}
@@ -3726,7 +3726,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.54");
 		break;
@@ -3734,11 +3734,11 @@ switch ($action) {
 	case "v4.54": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='pmb' and sstype_param='rfid_ip_port' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='pmb' and sstype_param='rfid_ip_port' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param, comment_param, gestion) VALUES ('pmb', 'rfid_ip_port', '192.168.0.10,SerialPort=10;', 'Association ip du poste de prêt et Numéro du port utilisé par le serveur RFID. Ex: 192.168.0.10,SerialPort=10; IpPosteClient,SerialPort=NumPortPlatine; séparer par des points-virgules pour désigner tous les postes' , '0')";
 			echo traite_rqt($rqt, "insert pmb_rfid_ip_port into parameters");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='pmb' and sstype_param='pret_timeout_temp' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='pmb' and sstype_param='pret_timeout_temp' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param,comment_param ) VALUES ('pmb', 'pret_timeout_temp', '15', 'Temps en minutes, après lequel un prêt temporaire est effacé' )";
 			echo traite_rqt($rqt, "insert pmb_pret_timeout_temp into parameters");
 			}
@@ -3760,7 +3760,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.55");
 		break;
@@ -3779,7 +3779,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.56");
 		break;
@@ -3787,12 +3787,12 @@ switch ($action) {
 	case "v4.56": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='permalink' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='permalink' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'opac', 'permalink', '0', 'Afficher l\'Id de la notice avec un lien permanent ? \n 0: Non \n 1: Oui','e_aff_notice')";
 			echo traite_rqt($rqt,"insert opac_permalink=0 into parametres");
 			}
 			
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdflettreretard' and sstype_param='3after_recouvrement' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdflettreretard' and sstype_param='3after_recouvrement' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param, comment_param, section_param, gestion) VALUES ('pdflettreretard', '3after_recouvrement', 'Sans nouvelles de votre part dans les sept jours, nous nous verrons contraints de déléguer au Trésor Public le recouvrement des ouvrages ci-dessus.', 'Texte apparaissant après la liste des ouvrages en recouvrement s\'il n\'y a pas d\'autres ouvrages en niveau 1 et 2', '', '0')";
 			echo traite_rqt($rqt,"insert pdflettreretard_3after_recouvrement=... into parametres");
 			}
@@ -3834,7 +3834,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.57");
 		break;
@@ -3842,11 +3842,11 @@ switch ($action) {
 	case "v4.57": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pdflettreretard' and sstype_param='impression_tri' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pdflettreretard' and sstype_param='impression_tri' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param, comment_param, section_param, gestion) VALUES ('pdflettreretard', 'impression_tri', 'empr_cp,empr_ville,empr_nom,empr_prenom', 'Tri pour l\'impression des lettres de relances ? Les champs sont ceux de la table empr séparés par des virgules. Exemple: empr_nom, empr_prenom', '', '0')";
 			echo traite_rqt($rqt,"insert pdflettreretard_impression_tri=cp,ville,nom,prenom into parametres");
 			}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='pret_date_retour_adhesion_depassee' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='pret_date_retour_adhesion_depassee' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param, comment_param, section_param, gestion) VALUES ('pmb', 'pret_date_retour_adhesion_depassee', '0', 'La date de retour peut-elle dépasser la date de fin d\'adhésion ? \n 0: Non: la date de retour sera calculée pour ne pas dépasser la date de fin d\'adhésion. \n 1: Oui, la date de retour du prêt sera indépendante de la date de fin d\'adhésion.', '', '0')";
 			echo traite_rqt($rqt,"insert pmb_pret_date_retour_adhesion_depassee=0 into parametres");
 			}
@@ -3856,7 +3856,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.58");
 		break;
@@ -3874,7 +3874,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.59");
 		break;
@@ -3888,7 +3888,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.60");
 		break;
@@ -3897,13 +3897,13 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='extended_search_auto' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='extended_search_auto' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'extended_search_auto', '1', 'En recherche multicritères, la sélection d\'un champ ajoute celui-ci automatiquement sans avoir besoin de cliquer sur le bouton Ajouter ? \n 0: Non \n 1: Oui', 'c_recherche', 0) ";
 			echo traite_rqt($rqt,"insert opac_extended_search_auto=1 into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='extended_search_auto' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='extended_search_auto' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param)
 					VALUES (0, 'pmb', 'extended_search_auto', '1', 'En recherche multicritères, la sélection d\'un champ ajoute celui-ci automatiquement sans avoir besoin de cliquer sur le bouton Ajouter ? \n 0: Non \n 1: Oui') ";
 			echo traite_rqt($rqt,"insert pmb_extended_search_auto=1 into parametres") ;
@@ -3917,12 +3917,12 @@ switch ($action) {
 		$rqt = "ALTER TABLE responsability ADD responsability_ordre smallint(2) UNSIGNED NOT NULL DEFAULT 0";
 		echo traite_rqt($rqt,"ALTER TABLE responsability ADD responsability_ordre") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='categories_affichage_ordre'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='categories_affichage_ordre'"))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param)
 					VALUES (0, 'thesaurus', 'categories_affichage_ordre', '0', 'Paramétrage de l\'ordre d\'affichage des catégories d\'une notice.\nPar ordre alphabétique: 0(par défaut)\nPar ordre de saisie: 1','categories') ";
 			echo traite_rqt($rqt,"insert thesaurus_categories_affichage_ordre=0 into parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='categories_affichage_ordre'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='categories_affichage_ordre'"))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param)
 					VALUES (0, 'opac', 'categories_affichage_ordre', '0', 'Paramétrage de l\'ordre d\'affichage des catégories d\'une notice.\nPar ordre alphabétique: 0(par défaut)\nPar ordre de saisie: 1', 'i_categories') ";
 			echo traite_rqt($rqt,"insert opac_categories_affichage_ordre=0 into parametres") ;
@@ -3931,7 +3931,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE notices_categories ADD ordre_categorie smallint(2) UNSIGNED NOT NULL DEFAULT 0";
 		echo traite_rqt($rqt,"ALTER TABLE notices_categories ADD ordre_categorie") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_driver' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_driver' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('pmb','rfid_driver', '', 'Driver du pilote RFID : le nom du répertoire contenant les javascripts propres au matériel en place.', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_rfid_driver='' into parametres");
 			}
@@ -3939,7 +3939,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.61");
 		break;
@@ -3950,19 +3950,19 @@ switch ($action) {
 		$rqt = "ALTER TABLE notices CHANGE year year VARCHAR( 50 )";
 		echo traite_rqt($rqt,"ALTER TABLE notices CHANGE year VARCHAR( 50 )") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='scan_pmbws_client_url'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='scan_pmbws_client_url'"))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param)
 					VALUES (0, 'pmb', 'scan_pmbws_client_url', '', 'URL de l\'interface de numérisation (client du webservice)','') ";
 			echo traite_rqt($rqt,"insert pmb_scan_pmbws_client_url into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='scan_pmbws_url'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='scan_pmbws_url'"))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param)
 					VALUES (0, 'pmb', 'scan_pmbws_url', '', 'URL du webservice de pilotage du scanner','') ";
 			echo traite_rqt($rqt,"insert pmb_scan_pmbws_url into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='biblio_main_header'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='biblio_main_header'"))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param)
 					VALUES (0, 'opac', 'biblio_main_header', '', 'Texte pouvant apparaitre dans le bloc principal, au dessus de tous les autres, nécessaire pour certaines mises en page particulières.','b_aff_general') ";
 			echo traite_rqt($rqt,"insert opac_biblio_main_header into parametres") ;
@@ -3971,7 +3971,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.62");
 		break;
@@ -3979,12 +3979,12 @@ switch ($action) {
 	case "v4.62": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='sugg_localises'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='sugg_localises'"))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES ( 'opac', 'sugg_localises', '0', 'Activer la localisation des suggestions des lecteurs ? \n 0: Pas de localisation possible.\n 1: Localisation au choix du lecteur.\n 2: Localisation restreinte à la localisation du lecteur.', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_sugg_localises into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_localises'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'acquisition' and sstype_param='sugg_localises'"))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES ( 'acquisition', 'sugg_localises', '0', 'Activer la localisation des suggestions ? \n 0: Pas de localisation possible. \n 1: Localisation activée.', '', '0')";
 			echo traite_rqt($rqt,"insert acquisition_sugg_localises into parametres") ;
 		}
@@ -3994,23 +3994,23 @@ switch ($action) {
 
 		// suppression des modeles    
 		$rqt = "DELETE FROM abts_modeles WHERE num_notice not in (select notice_id from notices where niveau_biblio='s')";
-		mysql_query($rqt, $dbh);    
+		pmb_mysql_query($rqt, $dbh);    
 
 		// suppression des abonnements    
 		$rqt = "DELETE FROM abts_abts WHERE num_notice not in (select notice_id from notices where niveau_biblio='s')";
-		mysql_query($rqt, $dbh);    
+		pmb_mysql_query($rqt, $dbh);    
 
 	    // vide la grille d'abonnement
     	$rqt = "DELETE FROM abts_grille_abt WHERE num_abt not in (select abt_id from abts_abts)";
-    	mysql_query($rqt, $dbh);        
+    	pmb_mysql_query($rqt, $dbh);        
 		
 	    // elimine les liens entre modele et abonnements
 	    $rqt = "DELETE FROM abts_abts_modeles WHERE modele_id not in (select modele_id from abts_modeles)";
-	    mysql_query($rqt, $dbh);                
+	    pmb_mysql_query($rqt, $dbh);                
     	
 	    // vide la grille de modele
 	    $rqt = "DELETE FROM abts_grille_modele WHERE num_modele not in (select modele_id from abts_modeles) ";
-	    mysql_query($rqt, $dbh);        
+	    pmb_mysql_query($rqt, $dbh);        
 	    
 		//pour jointures avec la table acte
 		$rqt = "ALTER TABLE lignes_actes DROP INDEX num_acte ";
@@ -4021,7 +4021,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.63");
 		break;
@@ -4059,7 +4059,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE empr ADD INDEX i_empr_typabt (type_abt) " ;
 		echo traite_rqt($rqt,"create index i_empr_typabt");
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'opac' and sstype_param='categories_nav_max_display' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'opac' and sstype_param='categories_nav_max_display' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param ,comment_param ,section_param ,gestion)
 					VALUES ('opac', 'categories_nav_max_display', '200', 'Limiter l\'affichage des catégories en navigation dans les sous-catégories. 0: Pas de limitation. >0: Nombre max de catégories à afficher', 'i_categories','0') ";
 			echo traite_rqt($rqt,"INSERT opac_categories_nav_max_display INTO parametres") ;
@@ -4090,13 +4090,13 @@ switch ($action) {
 		$rqt = "ALTER TABLE pret ADD INDEX i_pret_idempr (pret_idempr) " ;
 		echo traite_rqt($rqt,"create index i_pret_idempr");
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'pmb' and sstype_param='pret_aff_limitation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'pmb' and sstype_param='pret_aff_limitation' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param,comment_param ,section_param ,gestion) 
 				VALUES ( 'pmb', 'pret_aff_limitation', '0', 'Activer la limitation de l\'affichage de la liste des prêts dans la fiche lecteur ? \n 0: Inactif. \n 1: Limitation activée', '','0')";
 			echo traite_rqt($rqt,"INSERT pmb_pret_aff_limitation INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'pmb' and sstype_param='pret_aff_nombre' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'pmb' and sstype_param='pret_aff_nombre' "))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param,comment_param ,section_param ,gestion)
 				VALUES ( 'pmb', 'pret_aff_nombre', '10', 'Nombre de prêts à afficher si le paramètre pret_aff_limitation est actif. \n 0: tout voir, illimité. \n ## Nombre de prêts à afficher sur la première page', '','0')";
 			echo traite_rqt($rqt,"INSERT pmb_pret_aff_nombre INTO parametres") ;
@@ -4115,7 +4115,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.64");
 		break;
@@ -4124,151 +4124,151 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='printer_ticket_url'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='printer_ticket_url'"))==0){
 			$rqt = "INSERT INTO parametres (type_param ,sstype_param ,valeur_param,comment_param ,section_param ,gestion) VALUES ( 'pmb', 'printer_ticket_url', '', 'Permet d\'utiliser une imprimante de ticket, connectée en local sur le poste de prêt client. Vide : pas d\'imprimante. Url (http://localhost/printer/bixolon_srp350.php ) : imprimante active.', '','0')";
 			echo traite_rqt($rqt,"insert pmb_printer_ticket_url into parametres") ;
 		}
 
 	    //pour les transferts
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='gestion_transferts' "))==1){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='gestion_transferts' "))==1){
 			$rqt = "DELETE FROM parametres WHERE type_param='transferts' AND sstype_param='gestion_transferts'";
 			echo traite_rqt($rqt,"DELETE gestion_transferts INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres where type_param= 'transferts' and sstype_param='transfert_statut' "))==1){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres where type_param= 'transferts' and sstype_param='transfert_statut' "))==1){
 			$rqt = "DELETE FROM parametres WHERE type_param='transferts' AND sstype_param='transfert_statut'";
 			echo traite_rqt($rqt,"DELETE transfert_statut INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'pmb' and sstype_param='transferts_actif' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'pmb' and sstype_param='transferts_actif' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param)
 					VALUES (0, 'pmb', 'transferts_actif', '0', 'Active le systeme de transferts d\'exemplaires entre sites\n 0: Non \n 1: Oui') ";
 			echo traite_rqt($rqt,"INSERT transferts_actif INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='statut_validation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='statut_validation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'statut_validation', '0', '1', 'id du statut dans lequel seront placés les documents dont le transfert est validé') ";
 			echo traite_rqt($rqt,"INSERT statut_validation INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='statut_transferts' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='statut_transferts' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'statut_transferts', '0', '1', 'id du statut dans lequel seront placés les documents en cours de transit') ";
 			echo traite_rqt($rqt,"INSERT satut_transferts INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='validation_actif' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='validation_actif' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'validation_actif', '1', '1', 'Active la validation des transferts\n 0: Non \n 1: Oui') ";
 			echo traite_rqt($rqt,"INSERT validation_actif INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='nb_jours_pret_defaut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='nb_jours_pret_defaut' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'nb_jours_pret_defaut', '30', '1', 'Nombre de jours de pret par defaut') ";
 			echo traite_rqt($rqt,"INSERT nb_jours_pret_defaut INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='nb_jours_alerte' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='nb_jours_alerte' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'nb_jours_alerte', '7', '1', 'Nombre de jours avant la fin du pret ou l\'alerte s\'affiche') ";
 			echo traite_rqt($rqt,"INSERT nb_jours_alerte INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='transfert_transfere_actif' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='transfert_transfere_actif' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'transfert_transfere_actif', '0', '1', 'Autorise le transfert d\'exemplaire deja transferer') ";
 			echo traite_rqt($rqt,"INSERT transfert_transfere_actif INTO parametres") ;
 		}
 
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='tableau_nb_lignes' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='tableau_nb_lignes' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'tableau_nb_lignes', '10', '1', 'Nombre de transferts affichés dans les tableaux') ";
 			echo traite_rqt($rqt,"INSERT tableau_nb_lignes into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='envoi_lot' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='envoi_lot' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'envoi_lot', '0', '1', 'traitement par lot possible en envoi') ";
 			echo traite_rqt($rqt,"INSERT envoi_lot into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='reception_lot' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='reception_lot' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'reception_lot', '0', '1', 'traitement par lot possible en reception') ";
 			echo traite_rqt($rqt,"INSERT reception_lot into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_lot' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_lot' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'retour_lot', '0', '1', 'traitement par lot possible en retour') ";
 			echo traite_rqt($rqt,"INSERT retour_lot into parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_origine' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_origine' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'retour_origine', '0', '1', 'Force le retour de l\'exemplaire dans son lieu d\'origine\n 0: Non \n 1: Oui') ";
 			echo traite_rqt($rqt,"INSERT retour_origine INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_origine_force' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_origine_force' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'retour_origine_force', '1', '1', 'Permet de forcer le retour de l\'exemplaire\n 0: Non \n 1: Oui') ";
 			echo traite_rqt($rqt,"INSERT retour_origine_force INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_action_defaut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_action_defaut' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'retour_action_defaut', '1', '1', 'Action par defaut lors du retour d\'un emprunt\n 0: change localisation \n 1: genere transfert') ";
 			echo traite_rqt($rqt,"INSERT retour_action_defaut INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_action_autorise_autre' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_action_autorise_autre' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'retour_action_autorise_autre', '1', '1', 'Autorise une autre action lors du retour de l\'exemplaire\n 0: Non\n 1: Oui') ";
 			echo traite_rqt($rqt,"INSERT retour_action_autorise_autre INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_change_localisation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_change_localisation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'retour_change_localisation', '1', '1', 'Sauvegarde de la localisation lors du changement\n 0: Non \n 1: Oui') ";
 			echo traite_rqt($rqt,"INSERT retour_change_localisation INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_etat_transfert' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_etat_transfert' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'retour_etat_transfert', '1', '1', 'Etat du transfert lors de sa generation auto\n 0: creer \n 1: envoyer') ";
 			echo traite_rqt($rqt,"INSERT retour_etat_transfert INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_motif_transfert' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='retour_motif_transfert' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'retour_motif_transfert', 'Transfert suite au retour de l\'exemplaire sur notre site', '1', 'Motif du transfert lors de sa generation auto') ";
 			echo traite_rqt($rqt,"INSERT retour_motif_transfert INTO parametres") ;
 		}
 
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='choix_lieu_opac' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='choix_lieu_opac' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'choix_lieu_opac', '0', '1', '0 pour pas de choix et obligatoirement dans la localisation ou est enregistré l\'utilisateur, 1 pour n\'importe quelle localisation au choix, 2 pour un lieu fixe précisé, 3 pour le lieu de l\'exemplaire') ";
 			echo traite_rqt($rqt,"INSERT choix_lieu_opac INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='site_fixe' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='site_fixe' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'site_fixe', '1', '1', 'id du site pour le retrait des livres si choix_lieu_opac=2') ";
 			echo traite_rqt($rqt,"INSERT retour_origine INTO parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='resa_motif_transfert' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='resa_motif_transfert' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'resa_motif_transfert', 'Transfert suite à une réservation', '1', 'Motif du transfert lors de sa generation auto pour une réservation') ";
 			echo traite_rqt($rqt,"INSERT resa_motif_transfert INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='resa_etat_transfert' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='resa_etat_transfert' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'resa_etat_transfert', '1', '1', 'Etat du transfert lors de sa generation auto\n 0: creer \n 1: envoyer') ";
 			echo traite_rqt($rqt,"INSERT resa_etat_transfert INTO parametres") ;
@@ -4341,7 +4341,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.65");
 		break;
@@ -4351,7 +4351,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		
 		@set_time_limit(0);
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='recherche_ajax_mode'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='recherche_ajax_mode'"))==0){
 			$rqt = "INSERT INTO parametres (id_param ,type_param ,sstype_param ,valeur_param,comment_param ,section_param ,gestion)
 					VALUES ( 0 , 'pmb', 'recherche_ajax_mode', '1', 'Affichage accéléré des résultats de recherche: \"réduit\" uniquement, la suite est chargée lors du click sur le \"+\". \n 0: Inactif \n 1: Actif', '', '0')";
 			echo traite_rqt($rqt,"insert pmb_recherche_ajax_mode into parametres") ;
@@ -4383,10 +4383,10 @@ switch ($action) {
 
 		//Récupération de la liste des sources
 		$sql_liste_sources = "SELECT source_id FROM connectors_sources ";
-		$res_liste_sources = mysql_query($sql_liste_sources, $dbh) or die(mysql_error());
+		$res_liste_sources = pmb_mysql_query($sql_liste_sources, $dbh) or die(pmb_mysql_error());
 
 		//Pour chaque source
-		while ($row=mysql_fetch_row($res_liste_sources)) {
+		while ($row=pmb_mysql_fetch_row($res_liste_sources)) {
 			//On créer la table
 			$sql_create_table = "CREATE TABLE entrepot_source_".$row[0]." (
 							  connector_id varchar(20) NOT NULL default '',
@@ -4417,7 +4417,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.66");
 		break;
@@ -4425,7 +4425,7 @@ switch ($action) {
 	case "v4.66": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='expl_title_display_format'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='expl_title_display_format'"))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param ,section_param ,gestion)
 			VALUES ('pmb', 'expl_title_display_format', 'expl_location,expl_section,expl_cote,expl_cb','Format d\'affichage du titre de l\'exemplaire en recherche multi-critères d\'exemplaires. Les libellés des champs correspondent aux champs de la table exemplaires, ou aux id de champs personnalisés. Séparés par une virgule. Les champs disposant d\'un libellé seront remplacés par le libellé correspondant. Exemple: expl_location,expl_section,expl_cote,expl_cb', '', '0')";
 			echo traite_rqt($rqt,"insert pmb_expl_title_display_format into parametres") ;
@@ -4501,13 +4501,13 @@ switch ($action) {
 		$rqt = "update parametres set comment_param=concat(comment_param,' \n 2: n\'afficher l\'onglet empr que lorsque l\'utilisateur est authentifié (et dans ce cas le clic sur l\'onglet mène vers empr.php)') where type_param='opac' and sstype_param='show_onglet_empr' and comment_param not like '%ne vers empr.php)%' " ;
 		echo traite_rqt($rqt,"update parametres set comment_param=... where type_param='opac' and sstype_param='show_onglet_empr' ") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='empr_code_info'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='empr_code_info'"))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param ,section_param ,gestion)
 			VALUES ('opac', 'empr_code_info', '','Code HTML affiché au dessus des boutons dans la fiche emprunteur.', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_empr_code_info into parametres") ;
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='term_search_height_bottom'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='term_search_height_bottom'"))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param,comment_param ,section_param ,gestion)
 			VALUES ('opac', 'term_search_height_bottom', '120','Hauteur de la partie supérieure de la frame de recherche par termes (en px)', 'c_recherche', '0')";
 			echo traite_rqt($rqt,"insert opac_term_search_height_bottom into parametres") ;
@@ -4533,14 +4533,14 @@ switch ($action) {
 				)  " ;
 		echo traite_rqt($rqt,"CREATE TABLE infopages ") ;
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_library_code'"))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_library_code'"))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion ) 
 			VALUES ( 'pmb','rfid_library_code', '' , 'Code numérique d\'identification de la bibliothèque propriétaire des exemplaires (10 caractères)', '', '0')";
 			echo traite_rqt($rqt,"insert pmb_rfid_library_code into parametres") ;
 		}
 
 		// $opac_show_infopages_id
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_infopages_id' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_infopages_id' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'show_infopages_id', '', 'Id des infopages à afficher sous la recherche simple, séparées par des virgules.', 'f_modules', 0) ";
 			echo traite_rqt($rqt,"insert opac_show_infopages_id=0 into parametres") ;
@@ -4549,7 +4549,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.67");
 		break;
@@ -4569,52 +4569,52 @@ switch ($action) {
 		$rqt = "ALTER TABLE noeuds ADD INDEX key_path ( path ( 1000 ) )" ;
 		echo traite_rqt($rqt,"ALTER TABLE noeuds ADD INDEX key_path") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_montant' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_montant' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion) 
 				VALUES ( 'thesaurus','auto_postage_montant', '0', 'Activer la recherche des notices des catégories mères ? \n  0 non, \n 1 oui', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters thesaurus_auto_postage_montant") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_descendant' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_descendant' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion) 
 				VALUES ( 'thesaurus','auto_postage_descendant', '0', 'Activer la recherche des notices des catégories filles. \n 0 non, \n 1 oui', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters thesaurus_auto_postage_descendant") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_nb_descendant' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_nb_descendant' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion) 
 				VALUES ( 'thesaurus','auto_postage_nb_descendant', '0', 'Nombre de niveaux de recherche de notices dans les catégories filles. \n *: illimité, \n n: nombre de niveaux', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters thesaurus_auto_postage_nb_descendant") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_nb_montant' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_nb_montant' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion) 
 				VALUES ( 'thesaurus','auto_postage_nb_montant', '0', 'Nombre de niveaux de recherche de notices dans les catégories mères. \n *: illimité, \n n: nombre de niveaux', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters thesaurus_auto_postage_nb_montant") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_etendre_recherche' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_etendre_recherche' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion) 
 				VALUES ( 'thesaurus', 'auto_postage_etendre_recherche', '0', 'Proposer la possibilité d\'étendre la recherche dans les catégories mères ou filles. \n 0: non, \n 1: Exclusivement dans les catégories filles, \n 2: Etendre dans les catégories mères et filles, \n 3: Exclusivement dans les catégories mères. ', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters thesaurus_auto_postage_etendre_recherche") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_montant' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_montant' "))==0) {
 		$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion) 
 				VALUES ( 'opac','auto_postage_montant', '0', 'Activer la recherche des notices des catégories mères. \n 0 non, \n 1 oui', 'i_categories', 0)" ;
 		echo traite_rqt($rqt,"insert into parameters opac_auto_postage_montant") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_descendant' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_descendant' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion) 
 				VALUES ( 'opac', 'auto_postage_descendant', '0', 'Activer la recherche des notices des catégories filles. \n 0 non, \n 1 oui', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters opac_auto_postage_descendant") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_nb_descendant' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_nb_descendant' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion)
 				VALUES ( 'opac', 'auto_postage_nb_descendant', '0', 'Nombre de niveaux de recherche de notices dans les catégories filles. \n *: illimité, \n n: nombre de niveaux', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters opac_auto_postage_nb_descendant") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_nb_montant' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_nb_montant' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES ( 'opac', 'auto_postage_nb_montant', '0', 'Nombre de niveaux de recherche de notices dans les catégories mères. \n *: illimité, \n n: nombre de niveaux', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters opac_auto_postage_nb_montant") ;
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_etendre_recherche' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='auto_postage_etendre_recherche' "))==0) {
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param,comment_param, section_param, gestion) 
 				VALUES ( 'opac','auto_postage_etendre_recherche', '0', 'Proposer la possibilité d\'étendre la recherche dans les catégories mères ou filles. \n 0: non, \n 1: Exclusivement dans les catégories filles, \n 2: Etendre dans les catégories mères et filles, \n 3: Exclusivement dans les catégories mères. ', 'i_categories', 0)" ;
 			echo traite_rqt($rqt,"insert into parameters opac_auto_postage_etendre_recherche") ;
@@ -4623,13 +4623,13 @@ switch ($action) {
 		echo traite_rqt($rqt, "add param_allloc in table users");
 		
 		//parametre general d'activation de la gestion droits acces 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='active' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='active' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'gestion_acces', 'active', '0', 'Module gestion des droits d\'accès activé ?\n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert gestion_acces=0 into parameters");
 		}
 
 		//parametres activation gestion droits acces utilisateurs - notices 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='user_notice' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='user_notice' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'gestion_acces', 'user_notice', '0', 'Gestion des droits d\'accès des utilisateurs aux notices \n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert gestion_acces_user_notice=0 into parameters");
 		}
@@ -4666,7 +4666,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.68");
 		break;
@@ -4701,7 +4701,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE collections CHANGE collection_web collection_web TEXT NOT NULL default '' ";
 		echo traite_rqt($rqt,"ALTER TABLE collections CHANGE collection_web TEXT ");
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='abt_end_delay' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='abt_end_delay' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param, section_param, gestion ) 
 				VALUES ( 'pmb', 'abt_end_delay', '30' , 'Délais d\'alerte d\'avertissement des abonnements arrivant à échéance (en jours)', '', '0')";
 			echo traite_rqt($rqt, "insert pmb_abt_end_delay=30 into parameters");
@@ -4811,13 +4811,13 @@ switch ($action) {
 		)";
 		echo traite_rqt($rqt, "CREATE TABLE notices_titres_uniformes");						
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='set_time_limit' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='set_time_limit' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param, section_param, gestion ) 
 				VALUES ( 'pmb', 'set_time_limit', '1200' , 'max_execution_time de certaines opérations (export d\'actions personnalisées, envoi DSI, export, etc.) \nAttention, peut être sans effet si l\'hébergement ne l\'autorise pas (free.fr par exemple)\n 0 : illimité (déconseillé) \n ###: ### secondes', '', '0')";
 			echo traite_rqt($rqt, "insert pmb_set_time_limit=1200 into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='expl_list_display_comments' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='expl_list_display_comments' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param, section_param, gestion ) 
 				VALUES ( 'pmb', 'expl_list_display_comments', '0' , 'Afficher les commentaires des exemplaires en liste d\'exemplaires : \n 0 : non \n 1 : commentaire bloquant \n 2 : commentaire non bloquant \n 3 : les deux commentaires', '', '0')";
 			echo traite_rqt($rqt, "insert pmb_expl_list_display_comments=0 into parameters");
@@ -4826,7 +4826,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.69");
 		break;
@@ -4855,7 +4855,7 @@ switch ($action) {
 		echo traite_rqt($rqt, "ALTER TABLE audit ADD INDEX");
 		
 		//Ajout du paramètre insert pmb_confirm_delete_from_caddie (voir mantis://0000588)
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='confirm_delete_from_caddie' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='confirm_delete_from_caddie' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES
 					('pmb', 'confirm_delete_from_caddie', '0', 'Action à réaliser lors de la suppression d''une notice située dans un panier. \r\n0 : Interdire \r\n1 : Supprimer sans confirmation \r\n2 : Demander une confirmation de suppression ', '', 0)";
 			echo traite_rqt($rqt, "insert pmb_confirm_delete_from_caddie=0 into parameters");
@@ -4868,25 +4868,25 @@ switch ($action) {
 		$rqt = "ALTER TABLE notices ADD INDEX i_date_parution (date_parution) ;";
 		echo traite_rqt($rqt, "ALTER TABLE notices ADD INDEX i_date_parution");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='flux_rss_notices_order' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='flux_rss_notices_order' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param) 
 					VALUES (0, 'opac', 'flux_rss_notices_order', ' index_serie, tnvol, index_sew ', 'Ordre d\'affichage des notices dans les flux sortants dans l\'opac \n  index_serie, tnvol, index_sew : tri par titre de série et titre \n rand()  : aléatoire \n notice_id desc par ordre décroissant de création de notice', 'l_dsi')";
 			echo traite_rqt($rqt,"insert opac_flux_rss_notices_order=' index_serie, tnvol, index_sew ' into parametres");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='modules_search_titre_uniforme' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='modules_search_titre_uniforme' "))==0) {
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'opac', 'modules_search_titre_uniforme', '1', 'Recherche dans les titres uniformes : \n 0 : interdite, \n 1 : autorisée, \n 2 : autorisée et validée par défaut', 'c_recherche', 0) ";
 			echo traite_rqt($rqt, "insert opac_modules_search_titre_uniforme into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='congres_affichage_mode' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='congres_affichage_mode' "))==0) {
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param,valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'opac', 'congres_affichage_mode', '0', 'Mode d\'affichage des congrès: \n 0 : Comme pour les auteurs, \n 1 : ajout d\'un navigateur de congrès', 'd_aff_recherche', 0) ";
 			echo traite_rqt($rqt, "insert opac_congres_affichage_mode into parameters");
 		}
 			
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_suggest_notice' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_suggest_notice' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'opac','show_suggest_notice','0','Afficher le lien de proposition de suggestion sur une notice existante.\n 0 : Non.\n 1 : Oui, avec authentification.\n 2 : Oui, sans authentification.','f_modules',0)" ;
 			echo traite_rqt($rqt,"insert opac_show_suggest_notice into parametres") ;
@@ -4895,7 +4895,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.70");
 		break;
@@ -4908,7 +4908,7 @@ switch ($action) {
 		echo traite_rqt($rqt, "alter table explnum add explnum_statut");
 
 		//ajout parametre pour gerer statut spécifique sur les exemplaires numeriques
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='explnum_statut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='explnum_statut' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) 
 						VALUES ('pmb','explnum_statut', '0', 'Utiliser un statut sur les documents numériques \n 0: non \n 1: oui', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_explnum_statut=0 into parametres");
@@ -4917,7 +4917,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.71");
 		break;
@@ -4925,19 +4925,19 @@ switch ($action) {
 	case "v4.71": 
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='modules_search_titre_uniforme' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='modules_search_titre_uniforme' "))==0) {
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'opac', 'modules_search_titre_uniforme', '1', 'Recherche dans les titres uniformes : \n 0 : interdite, \n 1 : autorisée, \n 2 : autorisée et validée par défaut', 'c_recherche', 0) ";
 			echo traite_rqt($rqt, "insert opac_modules_search_titre_uniforme into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='congres_affichage_mode' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='congres_affichage_mode' "))==0) {
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param,valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'opac', 'congres_affichage_mode', '0', 'Mode d\'affichage des congrès: \n 0 : Comme pour les auteurs, \n 1 : ajout d\'un navigateur de congrès', 'd_aff_recherche', 0) ";
 			echo traite_rqt($rqt, "insert opac_congres_affichage_mode into parameters");
 		}
 			
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_empty_items_block' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_empty_items_block' "))==0) {
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param,valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'opac', 'show_empty_items_block', '1', 'Afficher le bloc exemplaires même si aucun exemplaire sur la notice ? : \n 0 : Non, \n 1 : Oui', 'd_aff_recherche', 0) ";
 			echo traite_rqt($rqt, "insert opac_show_empty_items_block=1 into parameters");
@@ -4961,7 +4961,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.72");
 		break;
@@ -4976,19 +4976,19 @@ switch ($action) {
 			echo traite_rqt($rqt, "Update opac_show_languages, opac_default_lang must be set even if opac_show_languages is set to 0");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='printer_ticket_script' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='printer_ticket_script' "))==0) {
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param,valeur_param, comment_param, section_param, gestion) 
 					VALUES (NULL,'pmb', 'printer_ticket_script', '', 'Script permettant de personaliser l\'impression du ticket de prêt. Le répertoire du script est à paramétrer à partir de la racine de PMB.\nSi vide PMB utilise ./circ/ticket-pret.inc.php', '', '0')";
 			echo traite_rqt($rqt, "insert pmb_printer_ticket_script='' into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='curl_proxy' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='curl_proxy' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) 
 					VALUES (0, 'opac', 'curl_proxy', '', 'Paramétrage de proxy de cURL, vide si aucun proxy, sinon\nhost,port,user,password;2nd_host et ainsi de suite','a_general')";
 			echo traite_rqt($rqt,"insert opac_curl_proxy='' into parametres");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='curl_proxy' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='curl_proxy' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) 
 					VALUES (0, 'pmb', 'curl_proxy', '', 'Paramétrage de proxy de cURL, vide si aucun proxy, sinon\nhost,port,user,password;2nd_host et ainsi de suite','')";
 			echo traite_rqt($rqt,"insert pmb_curl_proxy='' into parametres");
@@ -4998,7 +4998,7 @@ switch ($action) {
 		$rqt = "delete from parametres where type_param='acquisition' and sstype_param='pdfdev_comment' " ;
 		echo traite_rqt($rqt,"delete acquisition_pdfdev_comment from parametres") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='latest_order' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='latest_order' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) 
 					VALUES (0, 'pmb', 'latest_order', 'notice_id desc', 'Tri des dernières notices ? \n notice_id desc : par id de notice décroissant: idéal mais peut être problématique après une migration ou un import \n create_date desc: par la colonne date de création.','')";
 			echo traite_rqt($rqt,"insert pmb_latest_order='notice_id desc' into parametres");
@@ -5013,7 +5013,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE empr_custom ADD exclusion_obligatoire INT(1) UNSIGNED NOT NULL DEFAULT 0" ;
 		echo traite_rqt($rqt,"ALTER TABLE empr_custom ADD exclusion_obligatoire ") ;
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='opac' and sstype_param='password_forgotten_show' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='opac' and sstype_param='password_forgotten_show' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) 
 					VALUES ('opac','password_forgotten_show', '1', 'Afficher le lien  \"Mot de passe oublié ?\" \n 0: Non \n 1: Oui', 'f_modules', '0')";
 			echo traite_rqt($rqt,"insert opac_password_forgotten_show='1' into parametres");
@@ -5106,14 +5106,14 @@ switch ($action) {
 		$rqt = "ALTER TABLE users ADD deflt_arch_type INT( 6 ) UNSIGNED DEFAULT 0 NOT NULL ";        
 		echo traite_rqt($rqt,"ALTER TABLE users ADD deflt_arch_type INT( 6 )") ;        
 		
-        if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='aff_expl_localises' "))==0) {
+        if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='aff_expl_localises' "))==0) {
             $rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param) 
             	VALUES ( 'opac','aff_expl_localises', '0', 'Activer l\'affichage des exemplaires localisés par onglet.\n 0 : désactivé \n 1: premier onglet affiche les exemplaires de la localisation du lecteur, le deuxieme affiche tous les exemplaires','e_aff_notice')";
             echo traite_rqt($rqt,"insert opac_aff_expl_localises=0");
         }
 		
 		//parametres activation gestion droits acces emprunteurs - notices 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='empr_notice' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='empr_notice' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'gestion_acces', 'empr_notice', '0', 'Gestion des droits d\'accès des emprunteurs aux notices \n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert gestion_acces_empr_notice=0 into parameters");
@@ -5122,8 +5122,8 @@ switch ($action) {
 		@set_time_limit(0);
 		//modification structure table de stockage des droits ressources/utilisateurs
 		$rqt = "describe acces_rights dom_rights ";
-		$res = mysql_query($rqt, $dbh);
-		$typ = mysql_result($res,0,1);
+		$res = pmb_mysql_query($rqt, $dbh);
+		$typ = pmb_mysql_result($res,0,1);
 		if ($typ && substr($typ,0,3)!='int') {
 			$rqt= "create temporary table acces_rights_tmp as select * from acces_rights ";
 			echo traite_rqt($rqt,"create temporary table acces_rights_tmp") ;
@@ -5137,9 +5137,9 @@ switch ($action) {
 		
 		//modification structure table de stockage des droits ressources/utilisateurs (domaine user_notice)
 		$rqt = "describe acces_res_1 res_rights ";
-		$res = mysql_query($rqt, $dbh);
-		if(!mysql_errno()) {
-			$typ = mysql_result($res,0,1);
+		$res = pmb_mysql_query($rqt, $dbh);
+		if(!pmb_mysql_errno()) {
+			$typ = pmb_mysql_result($res,0,1);
 			if ($typ && substr($typ,0,3)!='int') {
 				$rqt= "create temporary table acces_res_1_tmp as select * from acces_res_1 ";
 				echo traite_rqt($rqt,"create temporary table acces_res_1_tmp");
@@ -5161,9 +5161,9 @@ switch ($action) {
 				echo traite_rqt($rqt,"alter table acces_res_1 add primary key ") ;
 				flush();
 				$rqt= "SELECT distinct usr_prf_num FROM acces_rights where dom_num=1 order by 1 ";
-				$res= mysql_query($rqt, $dbh);
+				$res= pmb_mysql_query($rqt, $dbh);
 				$pos=1;
-				while(($row=mysql_fetch_object($res))) {
+				while(($row=pmb_mysql_fetch_object($res))) {
 					$rqt = "insert into acces_res_1 (select res_num, prf_num, ".$row->usr_prf_num.", conv(reverse(lpad(conv(ord(mid(res_rights,".$pos.",1)),10,2),8,'0')),2,10) , ( (conv(reverse(lpad(conv(ord(mid(res_rights,".$pos.",1)),10,2),8,'0')),2,10)) xor (conv(reverse(lpad(conv(ord(mid(res_mask ,".$pos.",1)),10,2),8,'0')),2,10)) ) from acces_res_1_tmp ) ";
 					echo traite_rqt($rqt,"update acces_res_1 values for user profile=".($pos)) ;
 					flush();
@@ -5173,14 +5173,14 @@ switch ($action) {
 		}
 
 		// $opac_show_infopages_id_top
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_infopages_id_top' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_infopages_id_top' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'show_infopages_id_top', '', 'Id des infopages à afficher SUR la recherche simple, séparées par des virgules.', 'f_modules', 0) ";
 			echo traite_rqt($rqt,"insert opac_show_infopages_id_top=0 into parametres") ;
 		}
 		
 		// $opac_show_search_title
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_search_title' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_search_title' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion)
 					VALUES (0, 'opac', 'show_search_title', '0', 'Afficher le titre du bloc de recherche : \n 0 : Non, \n 1 : Oui', 'f_modules', 0) ";
 			echo traite_rqt($rqt,"insert opac_show_search_title=0 into parametres") ;
@@ -5221,7 +5221,7 @@ switch ($action) {
 		   )";    
 		echo traite_rqt($rqt,"CREATE TABLE translation ") ;  
 		// paramètre d'activation de l'onglet 'Recherches préférées' en Opac	
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_personal_search' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_personal_search' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			VALUES (0, 'opac', 'allow_personal_search', '0', 'Activer l\'affichage de l\'onglet des recherches personalisées \n 0 : Non.\n 1 : Oui.', 'c_recherche',0) ";
 			echo traite_rqt($rqt, "insert pmb_liste_trad into parameters");
@@ -5267,7 +5267,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.73");
 		break;
@@ -5277,19 +5277,19 @@ switch ($action) {
 		// +-------------------------------------------------+
 
 		// paramètre LDAP en OPAC seulement	
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'ldap' and sstype_param='opac_only' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'ldap' and sstype_param='opac_only' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			VALUES (0,'ldap','opac_only','0','Ne pas utiliser l\'authentification LDAP en gestion: \n 0: Non \n 1 : Oui, en OPAC uniquement','',0) ";
 			echo traite_rqt($rqt, "insert ldap_opac_only=0 into parameters");
 		}			
 		
 		//Opérateur de recherche pour les recherches sur plusieurs valeurs
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='multi_search_operator' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='multi_search_operator' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'pmb', 'multi_search_operator', 'or', 'Type d\'opérateur de recherche pour les listes avec plusieurs valeurs: \n or : pour le OU \n and : pour le ET', '', '0')";
 			echo traite_rqt($rqt,"insert multi_search_operator='or' into parametres ");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='multi_search_operator' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='multi_search_operator' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'multi_search_operator', 'or', 'Type d\'opérateur de recherche pour les listes avec plusieurs valeurs: \n or : pour le OU \n and : pour le ET', 'c_recherche', '0')";
 			echo traite_rqt($rqt,"insert opac_multi_search_operator='or' into parametres ");
@@ -5298,7 +5298,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.74");
 		break;
@@ -5334,7 +5334,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.75");
 		break;
@@ -5343,7 +5343,7 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		// transfert
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='pret_statut_transfert' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'transferts' and sstype_param='pret_statut_transfert' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'transferts', 'pret_statut_transfert', '0', '1', 'Autoriser le prêt lorsque l\'exemplaire est en transfert') ";
 			echo traite_rqt($rqt,"INSERT pret_statut_transfert INTO parametres") ;
@@ -5351,7 +5351,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.76");
 		break;
@@ -5361,134 +5361,134 @@ switch ($action) {
 		// +-------------------------------------------------+
 		// Pour import/export des notices liées 
 		//    sert à définir les différents paramètres pour l'export des notices liées en gestion
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='generer_liens' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='generer_liens' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'generer_liens', '0', 'Générer les liens entre les notices pour l\'export', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_generer_liens='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_mere' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_mere' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_mere', '0', 'Exporter les notices liées mères', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_mere='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_fille' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_fille' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_fille', '0', 'Exporter les notices liées filles', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_fille='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_bull_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_bull_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_bull_link', '1', 'Exporter les liens vers les bulletins pour les notices d\'article', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_bull_link='1' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_perio_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_perio_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_perio_link', '1', 'Exporter les liens vers les périodiques pour les notices d\'article', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_perio_link='1' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_art_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_art_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_art_link', '1', 'Exporter les liens vers les articles pour les notices de périodique', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_art_link='1' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_bulletinage' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_bulletinage' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_bulletinage', '0', 'Générer le bulletinage pour les notices de périodiques', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_bulletinage='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_notice_perio_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_notice_perio_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_notice_perio_link', '0', 'Exporter les notices liées de périodique', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_notice_perio_link='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_notice_art_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_notice_art_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_notice_art_link', '0', 'Exporter les notices liées d\'article', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_notice_art_link='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_notice_mere_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_notice_mere_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_notice_mere_link', '0', 'Exporter les notices mères liées', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_notice_mere_link='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_notice_fille_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'exportparam' and sstype_param='export_notice_fille_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'exportparam', 'export_notice_fille_link', '0', 'Exporter les notices filles liées', '', '1')";
 			echo traite_rqt($rqt,"insert exportparam_export_notice_fille_link='0' into parametres ");
 		}
 	
 		//    sert à définir les différents paramètres pour l'export des notices liées en OPAC
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_generer_liens' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_generer_liens' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_generer_liens', '0', 'Générer les liens entre les notices pour l\'export', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_generer_liens='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_mere' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_mere' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_mere', '0', 'Exporter les notices liées mères', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_mere='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_fille' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_fille' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_fille', '0', 'Exporter les notices liées filles', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_fille='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_bull_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_bull_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_bull_link', '1', 'Exporter les liens vers les bulletins pour les notices d\'article', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_bull_link='1' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_perio_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_perio_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_perio_link', '1', 'Exporter les liens vers les périodiques pour les notices d\'article', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_perio_link='1' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_art_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_art_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_art_link', '1', 'Exporter les liens vers les articles pour les notices de périodique', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_art_link='1' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_bulletinage' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_bulletinage' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_bulletinage', '0', 'Générer le bulletinage pour les notices de périodiques', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_bulletinage='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_notice_perio_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_notice_perio_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_notice_perio_link', '0', 'Exporter les notices liées de périodique', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_notice_perio_link='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_notice_art_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_notice_art_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_notice_art_link', '0', 'Exporter les notices liées d\'article', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_notice_art_link='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_notice_mere_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_notice_mere_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_notice_mere_link', '0', 'Exporter les notices mères liées', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_notice_mere_link='0' into parametres ");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_notice_fille_link' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='exp_export_notice_fille_link' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'exp_export_notice_fille_link', '0', 'Exporter les notices filles liées', '', '1')";
 			echo traite_rqt($rqt,"insert opac_exp_export_notice_fille_link='0' into parametres ");
@@ -5501,20 +5501,20 @@ switch ($action) {
 		//STATISTIQUEs DE L'OPAC
 
 		//Paramètres pour les statistiques de l'OPAC
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='perio_vidage_log' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='perio_vidage_log' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'pmb', 'perio_vidage_log', '1', 'Périodicité de vidage de la table de logs (en jours)', '', '0')";
 			echo traite_rqt($rqt,"insert perio_vidage_log='1' into parametres ");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='perio_vidage_stat' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='perio_vidage_stat' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'pmb', 'perio_vidage_stat', '1,30', 'Périodicité de vidage de la table de logs (en jours) : mode,jours \n 1,x : vider tous les x jours \n 2,x : vider tout ce qui a plus de x jours \n 0 : ne rien faire', '', '0')";
 			echo traite_rqt($rqt,"insert perio_vidage_stat='1,30' into parametres ");
 		}
 		
 		// suppr param en trop
-		mysql_query("delete from parametres where type_param= 'opac' and sstype_param='logs_activate' ");
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='logs_activate' "))==0){
+		pmb_mysql_query("delete from parametres where type_param= 'opac' and sstype_param='logs_activate' ");
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='logs_activate' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'pmb', 'logs_activate', '0', 'Activer les statistiques pour l\'OPAC: \n 0 : non activé \n 1 : activé', '', '0')";
 			echo traite_rqt($rqt,"insert logs_activate='0' into parametres ");
@@ -5603,29 +5603,29 @@ switch ($action) {
 		echo traite_rqt($rqt,"CREATE TABLE opac_liste_lecture ") ;
 		
 		//param	
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='opac' and sstype_param='shared_lists' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='opac' and sstype_param='shared_lists' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'shared_lists', '0', 'Activer les listes de lecture partagées \n 0 : non activées \n 1 : activées', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_shared_lists='0' into parametres ");
 		}
 		
 		// Indexation des docs numériques	
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='indexation_docnum' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='indexation_docnum' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'pmb', 'indexation_docnum', '0', 'Activer l\'indexation des documents numériques \n 0 : non activée \n 1 : activée', '', '0')";
 			echo traite_rqt($rqt,"insert indexation_docnum='0' into parametres ");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='indexation_docnum_allfields' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='indexation_docnum_allfields' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'pmb', 'indexation_docnum_allfields', '0', 'Activer par défaut la recherche dans les documents numériques pour la recherche \"Tous les champs\" \n 0 : non activée \n 1 : activée', '', '0')";
 			echo traite_rqt($rqt,"insert indexation_docnum_allfields='0' into parametres ");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='indexation_docnum_allfields' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='indexation_docnum_allfields' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'indexation_docnum_allfields', '0', 'Activer par défaut la recherche dans les documents numériques pour la recherche \"Tous les champs\" \n 0 : non activée \n 1 : activée', 'c_recherche', '0')";
 			echo traite_rqt($rqt,"insert opac_indexation_docnum_allfields='0' into parametres ");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='modules_search_docnum' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='modules_search_docnum' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'modules_search_docnum', '0', 'Recherche simple dans les documents numériques \n 0 : interdite \n 1 : autorisée \n 2 : autorisée et validée par défault', 'c_recherche', '0')";
 			echo traite_rqt($rqt,"insert opac_modules_search_docnum='0' into parametres ");
@@ -5634,7 +5634,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"ALTER TABLE explnum ADD explnum_index_sew, explnum_index_wew ");
 
 		// localisation des réservations
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'pmb' and sstype_param='location_reservation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'pmb' and sstype_param='location_reservation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'pmb', 'location_reservation', '0', '0', 'Utiliser la gestion de la réservation localisée?\n 0: Non\n 1: Oui') ";
 			echo traite_rqt($rqt,"INSERT location_reservation INTO parametres") ;
@@ -5652,7 +5652,7 @@ switch ($action) {
 		echo traite_rqt($rqt, "ALTER TABLE resa_loc ADD INDEX i_resa_emprloc (resa_emprloc)");
 		
 		// Extensions
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='extension_tab' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='extension_tab' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'pmb', 'extension_tab', '0', 'Afficher l\'onglet Extension ? \n 0 : Non \n 1 : Oui', '', '0')";
 			echo traite_rqt($rqt,"insert pmb_extension_tab='0' into parametres ");
@@ -5696,7 +5696,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE users ADD deflt_upload_repertoire INT( 8 ) NOT NULL default 0 ";
 		echo traite_rqt($rqt,"ALTER TABLE users ") ;
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='indexation_docnum_default' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='indexation_docnum_default' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'pmb', 'indexation_docnum_default', '0', 'Indexer le document numérique par défaut ? \n 0 : Non \n 1 : Oui', '', '0')";
 			echo traite_rqt($rqt,"insert pmb_indexation_docnum_default='0' into parametres ");
@@ -5707,7 +5707,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"ALTER TABLE opac_liste_lecture ") ;
 		
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='opac' and sstype_param='shared_lists_readonly' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='opac' and sstype_param='shared_lists_readonly' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'shared_lists_readonly', '0', 'Listes de lecture partagées en lecture seule \n 0 : non activées \n 1 : activées', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_shared_lists_readonly='0' into parametres ");
@@ -5717,21 +5717,21 @@ switch ($action) {
 		echo traite_rqt($rqt,"ALTER TABLE abo_liste_lecture") ;
 		
 		// Paramètres pour la connexion auto
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='opac' and sstype_param='connexion_phrase' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='opac' and sstype_param='connexion_phrase' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'connexion_phrase', '', 'Phrase permettant l\'encodage de la connexion automatique à partir d\'un mail', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_connexion_phrase='' into parametres ");
 		}
 		
 		// Afficher le numéro du lecteur sous l'adresse dans les différentes lettres
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='afficher_numero_lecteur_lettres' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='afficher_numero_lecteur_lettres' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES ('pmb', 'afficher_numero_lecteur_lettres', '1', 'Afficher le numéro du lecteur sous l''adresse dans les différentes lettres.\r\n0: non\r\n1: oui', '', 0) ";
 			echo traite_rqt($rqt, "insert afficher_numero_lecteur_lettres into parameters");
 		}
 
 		// Place le bloc d'adresse selon des coordonnées absolues
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='lettres_bloc_adresse_position_absolue' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='lettres_bloc_adresse_position_absolue' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES ('pmb', 'lettres_bloc_adresse_position_absolue', '0 100 40', 'Place le bloc d''adresse selon des coordonnées absolues.\nactivé x y\nactivé : activer cette fonction (valeurs: 0/1)\nx : Position horizontale\ny : Position verticale', '', 0)";
 			echo traite_rqt($rqt, "insert lettres_bloc_adresse_position_absolue into parameters");
@@ -5740,14 +5740,14 @@ switch ($action) {
 
 		// CONNECTEURS SORTANTS
 		// Durée de vie des recherches dans le cache, pour les services externes, en secondes.
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='external_service_search_cache' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='external_service_search_cache' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES ('pmb', 'external_service_search_cache', '3600', 'Durée de vie des recherches dans le cache, pour les services externes, en secondes.', '', 0)";
 			echo traite_rqt($rqt, "insert afficher_numero_lecteur_lettres into parameters");
 		}
 
 		// Durée de vie des sessions pour les services externes, en secondes..
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='external_service_session_duration' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='external_service_session_duration' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES ('pmb', 'external_service_session_duration', '600', 'Durée de vie des sessions pour les services externes, en secondes.', '', 0)";
 			echo traite_rqt($rqt, "insert afficher_numero_lecteur_lettres into parameters");
@@ -5942,7 +5942,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE suggestions_origine ADD INDEX i_origine (origine,type_origine)";
 		echo traite_rqt($rqt, "ADD INDEX i_origine to suggestions_origine");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param='opac' and sstype_param='allow_multiple_sugg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param='opac' and sstype_param='allow_multiple_sugg' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'allow_multiple_sugg', '0', 'Autoriser les suggestions multiples.\r\n0: non\r\n1: oui', 'a_general', '0')";
 			echo traite_rqt($rqt,"insert opac_allow_multiple_sugg='0' into parametres ");
@@ -6000,7 +6000,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE bannettes ADD notice_tpl int(10) unsigned  NOT NULL DEFAULT 0 ";		
 		echo traite_rqt($rqt, "ALTER TABLE bannettes ADD notice_tpl ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='bannette_notices_template' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='bannette_notices_template' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES ('opac', 'bannette_notices_template', '0', 'Id du template de notice utilisé par défaut en diffusion de bannettes. Si vide ou à 0, le template classique est utilisé.', 'l_dsi', 0)";
 			echo traite_rqt($rqt, "insert bannette_notices_template into parameters");
@@ -6018,7 +6018,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.77");
 		break;
@@ -6225,11 +6225,11 @@ switch ($action) {
 		echo traite_rqt($rqt,"CREATE TABLE explnum_doc_sugg") ;
 		
 		$rqt = "select id_explnum_doc, num_doc from explnum_doc where type_doc='sug'";
-		$res = mysql_query($rqt);
+		$res = pmb_mysql_query($rqt);
 		if($res){
-			while($explnum_sug = mysql_fetch_object($res)){
+			while($explnum_sug = pmb_mysql_fetch_object($res)){
 				$req = "insert into explnum_doc_sugg set num_explnum_doc='".$explnum_sug->id_explnum_doc."', num_suggestion='".$explnum_sug->num_doc."'";
-				mysql_query($rqt);
+				pmb_mysql_query($rqt);
 			}
 		}
 		echo traite_rqt("select 1","insert into explnum_doc_sugg");
@@ -6245,16 +6245,16 @@ switch ($action) {
 		
 		
 		//Module des demandes 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'demandes' and sstype_param='active' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'demandes' and sstype_param='active' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'demandes', 'active', '0', 'Module demandes activé.\n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert demandes_active=0 into parameters");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'demandes' and sstype_param='demandes_statut_notice' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'demandes' and sstype_param='demandes_statut_notice' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'demandes', 'statut_notice', '0', 'Id du statut de notice pour la notice de demandes.', '',0) ";
 			echo traite_rqt($rqt, "insert demandes_statut_notice=0 into parameters");
 		}
 	
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='demandes_active' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='demandes_active' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'demandes_active', '0', 'Activer les demandes pour l\'OPAC.\n 0 : Non.\n 1 : Oui.', 'a_general',0) ";
 			echo traite_rqt($rqt, "insert opac_demandes_active=0 into parameters");
 		}
@@ -6352,7 +6352,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.78");
 		break;
@@ -6377,22 +6377,22 @@ switch ($action) {
 		// paramètre de gestion des titres uniformes
 		// on initialise à 1 si $pmb_form_editables est à 1
 		$pmb_use_uniform_title=$pmb_form_editables;
-		$resnbtu=mysql_query("SELECT * FROM titres_uniformes");
-		if (mysql_num_rows($resnbtu)) $pmb_use_uniform_title=1;
-		$resnbgrilles=mysql_query("SELECT * FROM grilles");
-		if (mysql_num_rows($resnbgrilles)) $pmb_use_uniform_title=1;
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='use_uniform_title' "))==0){
+		$resnbtu=pmb_mysql_query("SELECT * FROM titres_uniformes");
+		if (pmb_mysql_num_rows($resnbtu)) $pmb_use_uniform_title=1;
+		$resnbgrilles=pmb_mysql_query("SELECT * FROM grilles");
+		if (pmb_mysql_num_rows($resnbgrilles)) $pmb_use_uniform_title=1;
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='use_uniform_title' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'use_uniform_title', '".$pmb_use_uniform_title."', 'Utiliser les titres uniformes ? \n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert pmb_use_uniform_title=$pmb_use_uniform_title into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='print_expl_default' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='print_expl_default' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'print_expl_default', '0', 'En impression de panier, imprimer les exemplaires est coché par défaut \n 0 : Non \n 1 : Oui', 'a_general', 0)";
 			echo traite_rqt($rqt,"insert opac_print_expl_default='0' into parametres");
 		}
 		
 		//Paramètres d'inclusion auto des notes dans le rapport
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'demandes' and sstype_param='include_note' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'demandes' and sstype_param='include_note' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'demandes', 'include_note', '0', 'Inclure automatiquement les notes dans le rapport documentaire.', '',0) ";
 			echo traite_rqt($rqt, "insert demandes_include_note=0 into parameters");
 		}
@@ -6400,7 +6400,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.79");
 		break;
@@ -6416,7 +6416,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.80");
 		break;
@@ -6425,7 +6425,7 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='ie_reload_on_resize' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='ie_reload_on_resize' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'opac', 'ie_reload_on_resize', '0', 'Recharger la page si l\'utilisateur redimensionne son navigateur (pb de CSS avec IE) ? \n 0: Non \n 1: Oui','a_general')";
 			echo traite_rqt($rqt,"insert opac_ie_reload_on_resize=0 into parametres");
 		}
@@ -6439,54 +6439,54 @@ switch ($action) {
 		echo traite_rqt($rqt,"ALTER TABLE explnum_doc CHANGE explnum_doc_data mediumblob") ;
 	 	
  		//Parametre affichage des dates de creation et modification exemplaires
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='expl_show_dates' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='expl_show_dates' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'expl_show_dates', '0', 'Afficher les dates de création et de modification des exemplaires ? \n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert expl_show_dates=0 into parameters");
 		}
 
 		//parametres valeurs par defaut en modification de notice pour la gestion des droits d'acces utilisateurs - notices 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='user_notice_def' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='user_notice_def' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'gestion_acces', 'user_notice_def', '0', 'Valeur par défaut en modification de notice pour les droits d\'accès utilisateurs - notices \n 0 : Recalculer.\n 1 : Choisir.', '',0) ";
 			echo traite_rqt($rqt, "insert gestion_acces_user_notice_def=0 into parameters");
 		}
 
 		//parametres valeur par defaut en modification de notice pour la gestion des droits d'acces emprunteurs - notices 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='empr_notice_def' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'gestion_acces' and sstype_param='empr_notice_def' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 				VALUES (0, 'gestion_acces', 'empr_notice_def', '0', 'Valeur par défaut en modification de notice pour les droits d\'accès emprunteurs - notices \n 0 : Recalculer.\n 1 : Choisir.', '',0) ";
 			echo traite_rqt($rqt, "insert gestion_acces_empr_notice_def=0 into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_exemplaires_analysis' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_exemplaires_analysis' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'opac', 'show_exemplaires_analysis', '0', 'Afficher les exemplaires du bulletin sous l\'article affiché ? \n 0: Non \n 1: Oui','e_aff_notice')";
 			echo traite_rqt($rqt,"insert opac_show_exemplaires_analysis=0 into parametres");
 		}
 		
 		//paramètres pour afficher l'id de la notice dans le detail de la notice
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='show_notice_id' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='show_notice_id' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'show_notice_id', '0', 'Afficher l\'identifiant de la notice dans le descriptif ? \n 0 : Non.\n 1 : Oui. \n 1,X : Oui avec préfixe X', '',0) ";
 			echo traite_rqt($rqt, "insert pmb_show_notice_id=0 into parameters");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='section_notices_order' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='section_notices_order' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) VALUES (0, 'opac', 'section_notices_order', ' index_serie, tnvol, index_sew ', 'Ordre d\'affichage des notices dans les sections dans l\'opac \n  index_serie, tnvol, index_sew : tri par titre de série et titre ','k_section')";
 			echo traite_rqt($rqt,"insert opac_section_notices_order=' index_serie, tnvol, index_sew ' into parametres");
 		}
 		
 		//Parametre pour l'affichage d'un onglet aide et d'un lien dans la barre de navigation
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_onglet_help' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_onglet_help' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,section_param) 
 					VALUES (0, 'opac', 'show_onglet_help', '0', 'Afficher l\'onglet HELP avec les onglets de recherche affichant l\'infopage et un lien vers l\'infopage dans la barre de navigation \n 0 : Non.\n ## : id de l\'infopage. \n','f_modules')";
 			echo traite_rqt($rqt,"insert opac_show_onglet_help='0' into parametres");
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='navig_empr' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='navig_empr' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'navig_empr', '0', 'Afficher l\'onglet \"Votre compte\" dans la barre de navigation de l\'Opac ? \n 0 : Non \n 1 : Oui', '', '0')";
 			echo traite_rqt($rqt,"insert opac_navig_empr='0' into parametres ");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='confirm_resa' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='confirm_resa' "))==0){
 			$rqt="INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 			  		VALUES (NULL, 'opac', 'confirm_resa', '0', 'Demander la confirmation sur la réservation d\'un exemplaire en Opac ? \n 0 : Non \n 1 : Oui', '', '0')";
 			echo traite_rqt($rqt,"insert opac_confirm_resa='0' into parametres ");
@@ -6502,7 +6502,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.81");
 		break;
@@ -6518,19 +6518,19 @@ switch ($action) {
 		echo traite_rqt($rqt,"alter table es_cache_int add index cache_index") ;
 		
 		//Création de la cote en ajax
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='prefill_cote_ajax' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='prefill_cote_ajax' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'prefill_cote_ajax', '', 'Script personnalisé de construction de la cote de l\'exemplaire en ajax')";
 			echo traite_rqt($rqt,"insert pmb_prefill_cote_ajax='' into parametres");
 		}
 		
 		//Masquer les infos de localisation dans l'entête
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='hide_biblioinfo_letter' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='hide_biblioinfo_letter' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'hide_biblioinfo_letter', '0', 'Masquer les informations de localisation dans l\'entête des lettres (pour les bibliothèques possédant du papier à entête)')";
 			echo traite_rqt($rqt,"insert pmb_hide_biblioinfo_letter=0 into parametres");
 		}
 		
 		//Code lecteur + email en position absolue
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='lettres_code_mail_position_absolue' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='lettres_code_mail_position_absolue' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'lettres_code_mail_position_absolue', '0 100 6', 'Placer le code lecteur et le mail selon des coordonnées absolues.\n activé x y \n activé : activer cette fonction (valeurs: 0/1) \n x : Position horizontale \n y : Position verticale')";
 			echo traite_rqt($rqt,"insert pmb_lettres_code_mail_position_absolue='0 100 6' into parametres");
 		}
@@ -6544,7 +6544,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"UPDATE parametres set valeur_param=20 where type_param='pdflettreresa' and sstype_param='taille_bloc_expl'");
 		
 		//Paramètres pour définir un statut permettant de restreindre les droits d'origine d'un emprunteur dont l'abonnement est dépassé
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='adhesion_expired_status' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='adhesion_expired_status' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param) VALUES (0, 'opac', 'adhesion_expired_status','0','Id du statut permettant de restreindre les droits des emprunteurs dont l\'abonnement est dépassé. \n\rPMB fera un AND logique avec les droits d\'origine.','a_general')";
 			echo traite_rqt($rqt,"insert opac_adhesion_expired_status=0 into parametres");
 		}
@@ -6561,7 +6561,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.82");
 		break;
@@ -6579,7 +6579,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.83");
 		break;
@@ -6588,13 +6588,13 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		//Paramètres pour définir l'action par défaut à effectuer lors d'un retour si il y a demande de résa
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='resa_retour_action_defaut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='resa_retour_action_defaut' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param) VALUES (0, 'pmb', 'resa_retour_action_defaut','0','Définit l\'action par défaut à effectuer lors d\'un retour si le document est réservé.\n0, Valider la réservation.\n1, A traiter plus tard.','')";
 			echo traite_rqt($rqt,"insert pmb_resa_retour_action_defaut=0 into parametres");
 		}
 		
 		//Paramètres pour définir le format d'affichage des notices filles
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='notice_fille_format' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='notice_fille_format' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param) VALUES (0, 'pmb', 'notice_fille_format','0','Affichage des notices filles \n 0: avec leurs détails (notice dépliable avec un plus) \n 1: Juste l\'entête','')";
 			echo traite_rqt($rqt,"insert pmb_notice_fille_format=0 into parametres");
 		}
@@ -6602,7 +6602,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.84");
 		break;
@@ -6647,7 +6647,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.85");
 		break;
@@ -6665,7 +6665,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"ALTER TABLE suggestions_origine DROP PRIMARY KEY, ADD PRIMARY KEY(origine,num_suggestion,type_origine)");
 		
 		//Masquer le message d'erreur en retour de prêt d'un document issu d'une autre localisation
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='hide_retdoc_loc_error' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='hide_retdoc_loc_error' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'hide_retdoc_loc_error', '0', 'Masquer le message d\'erreur en retour de prêt d\'un document issu d\'une autre localisation')";
 			echo traite_rqt($rqt,"insert pmb_hide_retdoc_loc_error=0 into parametres");
 		}
@@ -6683,7 +6683,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.86");
 		break;
@@ -6693,104 +6693,104 @@ switch ($action) {
 		// +-------------------------------------------------+
 
 		//Activation de la gestion de borne de prêt
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='selfservice_allow' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='selfservice_allow' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'pmb', 'selfservice_allow', '0', 'Activer de la gestion de la borne de prêt?\n0 : Non. \n1 : Oui.')";
 			echo traite_rqt($rqt,"insert pmb_selfservice_allow=0 into parametres");
 		}
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='loc_autre_todo' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='loc_autre_todo' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'loc_autre_todo', '0', '1', 'Action à effectuer si le document est issu d\'une autre localisation') ";
 			echo traite_rqt($rqt,"INSERT selfservice_loc_autre_todo INTO parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='loc_autre_todo_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='loc_autre_todo_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'loc_autre_todo_msg', '', '1', 'Message si le document est réservé sur une autre localisation') ";
 			echo traite_rqt($rqt,"INSERT selfservice_loc_autre_todo_msg INTO parametres") ;
 		}		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='resa_ici_todo' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='resa_ici_todo' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'resa_ici_todo', '0', '1', 'Action à effectuer si le document est réservé sur cette localisation') ";
 			echo traite_rqt($rqt,"INSERT selfservice_resa_ici_todo INTO parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='resa_ici_todo_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='resa_ici_todo_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'resa_ici_todo_msg', '', '1', 'Message si le document est réservé sur cette localisation') ";
 			echo traite_rqt($rqt,"INSERT selfservice_resa_ici_todo_msg INTO parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='resa_loc_todo' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='resa_loc_todo' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'resa_loc_todo', '0', '1', 'Action à effectuer si le document est réservé sur une autre localisation') ";
 			echo traite_rqt($rqt,"INSERT selfservice_resa_loc_todo INTO parametres") ;
 		}		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='resa_loc_todo_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='resa_loc_todo_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'resa_loc_todo_msg', '', '1', 'Message si le document est réservé sur une autre localisation') ";
 			echo traite_rqt($rqt,"INSERT selfservice_resa_loc_todo_msg INTO parametres") ;
 		}		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='retour_retard_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='retour_retard_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'retour_retard_msg', '', '1', 'Message si le document est rendu en retard') ";
 			echo traite_rqt($rqt,"INSERT selfservice_retour_retard_msg INTO parametres") ;
 		}		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='retour_blocage_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='retour_blocage_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'retour_blocage_msg', '', '1', 'Message si le document est rendu en retard avec blocage') ";
 			echo traite_rqt($rqt,"INSERT selfservice_retour_blocage_msg INTO parametres") ;
 		}		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='retour_amende_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='retour_amende_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'retour_amende_msg', '', '1', 'Message si le document est rendu en retard avec amende') ";
 			echo traite_rqt($rqt,"INSERT selfservice_retour_amende_msg INTO parametres") ;
 		}
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_carte_invalide_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_carte_invalide_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_carte_invalide_msg', 'Votre carte n\'est pas valide !', '1', 'Message borne de prêt: Votre carte n\'est pas valide !') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_carte_invalide_msg INTO parametres") ;
 		}		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_pret_interdit_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_pret_interdit_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_pret_interdit_msg', 'Vous n\'êtes pas autorisé à emprunter !', '1', 'Message borne de prêt: Vous n\'êtes pas autorisé à emprunter !') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_pret_interdit_msg INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_deja_prete_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_deja_prete_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_deja_prete_msg', 'Document déjà prêté ! allez le signaler !', '1', 'Message borne de prêt: Document déjà prêté ! allez le signaler !') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_deja_prete_msg INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_deja_prete_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_deja_prete_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_deja_prete_msg', 'Document déjà prêté ! allez le signaler !', '1', 'Message borne de prêt: Document déjà prêté ! allez le signaler !') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_deja_prete_msg INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_deja_reserve_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_deja_reserve_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_deja_reserve_msg', 'Vous ne pouvez pas emprunter ce document', '1', 'Message borne de prêt: Vous ne pouvez pas emprunter ce document') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_deja_reserve_msg INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_quota_bloc_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_quota_bloc_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_quota_bloc_msg', 'Vous ne pouvez pas emprunter ce document', '1', 'Message borne de prêt: Vous ne pouvez pas emprunter ce document') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_quota_bloc_msg INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_non_pretable_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_non_pretable_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_non_pretable_msg', 'Ce document n\'est pas prêtable', '1', 'Message borne de prêt: Ce document n\'est pas prêtable') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_non_pretable_msg INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_expl_inconnu_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_expl_inconnu_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_expl_inconnu_msg', 'Ce document est inconnu', '1', 'Message borne de prêt: Ce document est inconnu') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_expl_inconnu_msg INTO parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_prolonge_non_msg' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("SELECT 1 FROM parametres WHERE type_param= 'selfservice' and sstype_param='pret_prolonge_non_msg' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, gestion, comment_param)
 					VALUES (0, 'selfservice', 'pret_prolonge_non_msg', 'Le prêt ne peut être prolongé', '1', 'Message borne de prêt: Le prêt ne peut être prolongé') ";
 			echo traite_rqt($rqt,"INSERT selfservice_pret_prolonge_non_msg INTO parametres") ;
@@ -6798,13 +6798,13 @@ switch ($action) {
 		
 		//Paramètres pour afficher les résultats en mode phototèque
 		//on supprime cette mise à jour, on la vire dans la version 4.88, la visionneuse la remplace....
-		//		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_result_to_phototheque' "))==0) {
+		//		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_result_to_phototheque' "))==0) {
 		//			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param) 
 		//				VALUES (0,'opac', 'photo_result_to_phototheque','0','Afficher le résultat d\'une recherche (liste des documents numériques associés aux notices résultats) en mode photothèque','m_photo')";
 		//			echo traite_rqt($rqt,"insert opac_photo_result_to_phototheque=0 into parametres");
 		//		}
 		//Paramètres pour filtrer le type de documents à afficher en mode phototèque
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_filtre_mimetype' "))==0) {
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_filtre_mimetype' "))==0) {
 			$rqt = "INSERT INTO parametres (id_param, type_param,sstype_param, valeur_param, comment_param, section_param) 
 				VALUES (0,'opac', 'photo_filtre_mimetype','','Liste des mimetypes utilisés pour l\'affichage des résultats en mode photothèque séparés par une virgule et entre cotes (ex:\'application/pdf\',\'image/png\')','m_photo')";
 			echo traite_rqt($rqt,"insert opac_photo_filtre_mimetype='' into parametres");
@@ -6813,7 +6813,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.89");
 		break;
@@ -6834,27 +6834,27 @@ switch ($action) {
 		echo traite_rqt($rqt,"alter table es_cache_blob add index cache_index ") ; 
 		
 		// Gestion sms
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_activation' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_activation' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'empr', 'sms_activation', '0', 'Activation de l\'envoi de sms. \n 0: Inactif \n 1: Actif')";
 			echo traite_rqt($rqt,"insert empr_sms_activation='0' into parametres");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_config' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_config' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'empr', 'sms_config', '', 'Paramétrage de l\'envoi de sms. \nUsage:\n class_name=nom_de_la_classe;param_connection;\nExemple:\n class_name=smstrend;login=xxxx@sigb.net;password=xxxx;tpoa=xxxx;')";
 			echo traite_rqt($rqt,"insert empr_sms_config='' into parametres");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_msg_resa_dispo' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_msg_resa_dispo' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'empr', 'sms_msg_resa_dispo', 'Bonjour,\nUn document réservé est disponible.\nConsultez votre compte!', 'Texte du sms envoyé lors de la validation d\'une réservation')";
 			echo traite_rqt($rqt,"insert empr_sms_msg_resa_dispo into parametres");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_msg_resa_suppr' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_msg_resa_suppr' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'empr', 'sms_msg_resa_suppr', 'Bonjour,\nUne réservation est supprimée.\nConsultez votre compte!', 'Texte du sms envoyé lors de la suppression d\'une réservation')";
 			echo traite_rqt($rqt,"insert empr_sms_msg_resa_suppr into parametres");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_msg_retard' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'empr' and sstype_param='sms_msg_retard' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'empr', 'sms_msg_retard', 'Bonjour,\nVous avez un ou plusieurs document(s) en retard.\nConsultez votre compte!', 'Texte du sms envoyé lors de la suppression d\'une réservation')";
 			echo traite_rqt($rqt,"insert empr_sms_msg_retard into parametres");
@@ -6885,13 +6885,13 @@ switch ($action) {
 		echo traite_rqt($rqt,"CREATE TABLE log_expl_retard ") ;
 	
 		//Client du serveur de procédures externes:
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='procedure_server_address' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='procedure_server_address' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'pmb', 'procedure_server_address', '', 'Adresse du serveur de procédures distances.')";
 			echo traite_rqt($rqt,"insert procedure_server_address='' into parametres");
 		}
 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='procedure_server_credentials' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='procedure_server_credentials' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'pmb', 'procedure_server_credentials', '', 'Autentification sur le serveur de procédures distantes.\n1ère ligne: email\n2ème ligne: mot de passe.')";
 			echo traite_rqt($rqt,"insert procedure_server_credentials='' into parametres");
@@ -6900,13 +6900,13 @@ switch ($action) {
  		$rqt = "ALTER TABLE docsloc_section ADD num_pclass int(10) not null default 0";
 		echo traite_rqt($rqt,"alter table docsloc_section ADD num_pclass ");
 		$requete="SELECT id_pclass FROM pclassement";
-		$res=mysql_query($requete,$dbh);
-		if(mysql_num_rows($res) == 1) {
-			$requete="UPDATE docsloc_section SET num_pclass='".mysql_result($res,0,0)."' WHERE num_pclass='0'";
-			mysql_query($requete,$dbh);
+		$res=pmb_mysql_query($requete,$dbh);
+		if(pmb_mysql_num_rows($res) == 1) {
+			$requete="UPDATE docsloc_section SET num_pclass='".pmb_mysql_result($res,0,0)."' WHERE num_pclass='0'";
+			pmb_mysql_query($requete,$dbh);
 		} elseif (!$thesaurus_classement_mode_pmb) {
 			$requete="UPDATE docsloc_section SET num_pclass='".$thesaurus_classement_defaut."' WHERE num_pclass='0'";
-			mysql_query($requete,$dbh);
+			pmb_mysql_query($requete,$dbh);
 		}
 		
 		$rqt = " CREATE TABLE explnum_location(
@@ -6917,7 +6917,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"CREATE TABLE explnum_location") ;
 		
 		// Ajout d'un 2eme mode de prêt RFID
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_pret_mode' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_pret_mode' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) 
 					VALUES (0, 'pmb', 'rfid_pret_mode', '0', 'Mode de fonctionnement du prêt:\n 0: Un document retiré de la platine est retiré du prêt.\n 1: Un document retiré de la platine est conservé pour faciliter le prêt de nombreux documents. ')";
 			echo traite_rqt($rqt,"insert pmb_rfid_pret_mode into parametres");
@@ -6938,7 +6938,7 @@ switch ($action) {
 		//Module fiches 
 		$rqt = "update parametres set type_param='fiches' where type_param='fichier' and sstype_param='active' ";
 		echo traite_rqt($rqt, "update fiches_active into parameters (previous error)");
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'fiches' and sstype_param='active' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'fiches' and sstype_param='active' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'fiches', 'active', '0', 'Module \'fiches\' activé.\n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert fiches_active=0 into parameters");
 		}
@@ -6986,15 +6986,15 @@ switch ($action) {
 		echo traite_rqt($rqt,"create table gestfic0_custom_values ");
 		
 		//Module Visionneuse
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='visionneuse_allow' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='visionneuse_allow' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'visionneuse_allow', '0', 'Visionneuse activée.\n 0 : Non.\n 1 : Oui.', 'm_photo',0) ";
 			echo traite_rqt($rqt, "insert visionneuse_allows=0 into parameters");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_result_to_phototheque' "))){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='photo_result_to_phototheque' "))){
 			$rqt = "DELETE FROM parametres WHERE type_param= 'opac' and sstype_param='photo_result_to_phototheque' ";
 			echo traite_rqt($rqt, "delete phototheque from parameters");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='visionneuse_params' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='visionneuse_params' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'opac', 'visionneuse_params', '', 'tableau de correspondance mimetype=>class','m_photo',1) ";
 			echo traite_rqt($rqt, "insert visionneuse_params into parameters");
 		}
@@ -7060,13 +7060,13 @@ switch ($action) {
 		$rqt = "ALTER TABLE procs ADD proc_notice_tpl_field VARCHAR(255) NOT NULL default '' ";		
 		echo traite_rqt($rqt, "ALTER TABLE procs ADD proc_notice_tpl_field ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_self_checkout' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='allow_self_checkout' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'opac','allow_self_checkout','0','Proposer de faire du prêt autonome dans l\'OPAC.\n 0 : Non.\n 1 : Autorise le prêt de document.\n 2 : Autorise le retour de document.\n 3 : Autorise le prêt et le retour de document.\n','a_general',0)" ;
 			echo traite_rqt($rqt,"insert opac_allow_self_checkout into parametres") ;
 		}
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='self_checkout_url_connector' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='self_checkout_url_connector' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) 
 					VALUES(0,'opac','self_checkout_url_connector','','URL du connecteur en gestion permettant d\'effectuer le prêt autonome.','a_general',0)" ;
 			echo traite_rqt($rqt,"insert opac_self_checkout_url_connector into parametres") ;
@@ -7094,7 +7094,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE recouvrements ADD date_relance3  datetime NOT NULL default '0000-00-00 00:00:00'";
 		echo traite_rqt($rqt,"alter table recouvrements add date_relance3 ");
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'finance' and sstype_param='recouvrement_lecteur_statut' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'finance' and sstype_param='recouvrement_lecteur_statut' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,gestion) 
 					VALUES (0, 'finance', 'recouvrement_lecteur_statut', '0', 'Mémorise le statut que prennent les lecteurs lors du passage en recouvrememnt', 1)";
 			echo traite_rqt($rqt,"insert finance_recouvrement_lecteur_statut into parametres");
@@ -7112,7 +7112,7 @@ switch ($action) {
 		$rqt = "ALTER TABLE log_retard ADD log_mail int(1) unsigned NOT NULL default 0";
 		echo traite_rqt($rqt,"alter table log_retard add log_mail ");		
 				
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'internal' and sstype_param='emptylogstatopac' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'internal' and sstype_param='emptylogstatopac' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param,gestion) 
 					VALUES (0, 'internal', 'emptylogstatopac', '0', 'Paramètre interne, ne pas modifier\r\n =1 si vidage des logs en cours', 0)";
 			echo traite_rqt($rqt,"insert internal_emptylogstatopac=0 into parametres");
@@ -7121,7 +7121,7 @@ switch ($action) {
 		//Module fichier 
 		$rqt = "update parametres set type_param='fiches' where type_param='fichier' and sstype_param='active' ";
 		echo traite_rqt($rqt, "update fiches_active into parameters");
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'fiches' and sstype_param='active' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'fiches' and sstype_param='active' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'fiches', 'active', '0', 'Module \'fiches\' activé.\n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert fiches_active=0 into parameters");
 		}
@@ -7136,17 +7136,17 @@ switch ($action) {
 		$rqt = "ALTER TABLE categories ADD index_path_word_categ TEXT NOT NULL ";
 		echo traite_rqt($rqt,"alter table categories add index_path_word_categ ");		
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'thesaurus', 'auto_postage_search', '0', 'Activer l\'indexation des catégories mères et filles pour la recherche de notices. \n 0 non, \n 1 oui', 'i_categories', 0)";
 			echo traite_rqt($rqt,"insert thesaurus_auto_postage_search=0 into parametres");			
 		}	
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search_nb_descendant' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search_nb_descendant' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'thesaurus', 'auto_postage_search_nb_descendant', '0', 'Nombre de niveaux de recherche de notices dans les catégories filles. \n *: illimité, \n n: nombre de niveaux', 'i_categories', 0)";
 			echo traite_rqt($rqt,"insert thesaurus_auto_postage_search_nb_descendant=0 into parametres");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search_nb_montant' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search_nb_montant' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'thesaurus', 'auto_postage_search_nb_montant', '0', 'Nombre de niveaux de recherche de notices dans les catégories mères. \n *: illimité, \n n: nombre de niveaux', 'i_categories', 0)";
 			echo traite_rqt($rqt,"insert thesaurus_auto_postage_search_nb_montant=0 into parametres");
@@ -7162,7 +7162,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.91");
 		break;
@@ -7178,17 +7178,17 @@ switch ($action) {
 		$rqt = "ALTER TABLE categories ADD index_path_word_categ TEXT NOT NULL ";
 		echo traite_rqt($rqt,"alter table categories add index_path_word_categ ");		
 		
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'thesaurus', 'auto_postage_search', '0', 'Activer l\'indexation des catégories mères et filles pour la recherche de notices. \n 0 non, \n 1 oui', 'i_categories', 0)";
 			echo traite_rqt($rqt,"insert thesaurus_auto_postage_search=0 into parametres");			
 		}	
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search_nb_descendant' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search_nb_descendant' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'thesaurus', 'auto_postage_search_nb_descendant', '0', 'Nombre de niveaux de recherche de notices dans les catégories filles. \n *: illimité, \n n: nombre de niveaux', 'i_categories', 0)";
 			echo traite_rqt($rqt,"insert thesaurus_auto_postage_search_nb_descendant=0 into parametres");
 		}
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search_nb_montant' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'thesaurus' and sstype_param='auto_postage_search_nb_montant' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'thesaurus', 'auto_postage_search_nb_montant', '0', 'Nombre de niveaux de recherche de notices dans les catégories mères. \n *: illimité, \n n: nombre de niveaux', 'i_categories', 0)";
 			echo traite_rqt($rqt,"insert thesaurus_auto_postage_search_nb_montant=0 into parametres");
@@ -7219,20 +7219,20 @@ switch ($action) {
 		echo traite_rqt($rqt,"ALTER TABLE import_marc ADD encoding VARCHAR(50)");
 		
 		// navigation bulletins
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_bulletin_nav' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_bulletin_nav' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'opac', 'show_bulletin_nav', '0', 'Affichage d\'un navigateur dans les bulletins d\'un périodique. \n 0 non \n 1 oui','f_modules', 0)";
 			echo traite_rqt($rqt,"insert opac_show_bulletin_nav=0 into parametres");
 		}	
 		// Jouer l'alerte sonore si le prêt et le retour se passe sans erreur
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='play_pret_sound' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='play_pret_sound' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param, gestion) VALUES (0, 'pmb', 'play_pret_sound', '1', 'Jouer l\'alerte sonore si le prêt et le retour se passe sans erreur ? \n 0 : Non.\n 1 : Oui.', '',0) ";
 			echo traite_rqt($rqt, "insert pmb_play_pret_sound=1 into parameters");
 		}
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.92");
 		break;
@@ -7260,7 +7260,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.93");
 		break;
@@ -7282,7 +7282,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"alter table empr_codestat resize field libelle");	 
 		
 		//script de vérification de saisie d'une notice perso
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='catalog_verif_js' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='catalog_verif_js' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'pmb', 'catalog_verif_js', '', 'Script de vérification de saisie de notice','', 0)";
 			echo traite_rqt($rqt,"insert catalog_verif_js into parametres");
@@ -7303,7 +7303,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v4.94");
 		break;
@@ -7313,7 +7313,7 @@ switch ($action) {
 		echo "<table ><tr><th>".$msg['admin_misc_action']."</th><th>".$msg['admin_misc_resultat']."</th></tr>";
 		// +-------------------------------------------------+
 		// CSS add on
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='default_style_addon' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='default_style_addon' "))==0){
 			$rqt = "INSERT INTO parametres ( type_param, sstype_param, valeur_param, comment_param,section_param,gestion) 
 					VALUES ( 'opac', 'default_style_addon', '', 'Ajout de styles CSS aux feuilles déjà incluses ?\n Ne mettre que le code CSS, exemple:  body {background-color: #FF0000;}','a_general', 0)";
 			echo traite_rqt($rqt,"insert opac_default_style_addon into parametres");
@@ -7325,17 +7325,17 @@ switch ($action) {
 		
 		//ajout de l'indicateur dans les entrepots...
 		$rqt = "select source_id from connectors_sources";
-		$res = mysql_query($rqt);
+		$res = pmb_mysql_query($rqt);
 		$rqt= array();
-		if(mysql_num_rows($res)){
-			while ($r= mysql_fetch_object($res)){
-				mysql_query("alter table entrepot_source_".$r->source_id." add field_ind char(2) not null default '  ' after ufield");
+		if(pmb_mysql_num_rows($res)){
+			while ($r= pmb_mysql_fetch_object($res)){
+				pmb_mysql_query("alter table entrepot_source_".$r->source_id." add field_ind char(2) not null default '  ' after ufield");
 			}
 		}
 		echo traite_rqt("select 1 ","alter table entrepot_source add field_ind");
 			
 		// rfid
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_gates_server_url' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='rfid_gates_server_url' "))==0){
 			$rqt = "INSERT INTO parametres (type_param, sstype_param,valeur_param,comment_param, section_param, gestion) VALUES ('pmb','rfid_gates_server_url', '', 'URL du serveur des portiques RFID', '', '0')" ;
 			echo traite_rqt($rqt,"insert pmb_rfid_gates_server_url='' into parametres");
 		}
@@ -7344,7 +7344,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"alter table connectors_sources add upload_doc_num");
 		
 		//Separateur de valeurs de champs perso 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='perso_sep' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='perso_sep' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'perso_sep', '/', 'Séparateur des valeurs de champ perso, espace ou ; ou , ou ...')";
 			echo traite_rqt($rqt,"insert pmb_perso_sep='/' into parametres");
 		}
@@ -7375,7 +7375,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"ALTER TABLE explnum ADD FULLTEXT i_f_explnumwew ") ;
 	
 		// Type de recherche sur documents numériques 
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='search_full_text' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'pmb' and sstype_param='search_full_text' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param) VALUES (0, 'pmb', 'search_full_text', '0', 'Utiliser un index MySQL FULLTEXT pour la recherche sur les documents numériques \n 0: Non \n 1: Oui')";
 			echo traite_rqt($rqt,"insert pmb_search_full_text='0' into parametres");
 		}
@@ -7385,7 +7385,7 @@ switch ($action) {
 		echo traite_rqt($rqt,"alter table infopages add restrict_infopage");
 		
 		// Parser HTML OPAC
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='parse_html' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='parse_html' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param) VALUES (0, 'opac', 'parse_html', '0', 'Activer le parse HTML des pages OPAC \n 0: Non \n 1: Oui','a_general')";
 			echo traite_rqt($rqt,"insert opac_parse_html='0' into parametres");
 		}
@@ -7406,13 +7406,13 @@ switch ($action) {
 		echo traite_rqt($rqt,"create table sources_enrichment");	
 		
 		// Enrichissement OPAC
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='notice_enrichment' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='notice_enrichment' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param) VALUES (0, 'opac', 'notice_enrichment', '0', 'Activer l\'enrichissement des notices\n 0: Non \n 1: Oui','e_aff_notice')";
 			echo traite_rqt($rqt,"insert opac_notice_enrichment='0' into parametres");
 		}	
 		
 		// Social Network
-		if (mysql_num_rows(mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_social_network' "))==0){
+		if (pmb_mysql_num_rows(pmb_mysql_query("select 1 from parametres where type_param= 'opac' and sstype_param='show_social_network' "))==0){
 			$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param, comment_param, section_param) VALUES (0, 'opac', 'show_social_network', '0', 'Activer les partages sur les réseaux sociaux \n 0: Non \n 1: Oui','e_aff_notice')";
 			echo traite_rqt($rqt,"insert show_social_network='0' into parametres");
 		}
@@ -7424,7 +7424,7 @@ switch ($action) {
 		// +-------------------------------------------------+
 		echo "</table>";
 		$rqt = "update parametres set valeur_param='".$action."' where type_param='pmb' and sstype_param='bdd_version' " ;
-		$res = mysql_query($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		echo "<strong><font color='#FF0000'>".$msg[1807].$action." !</font></strong><br />";
 		echo form_relance ("v5.00");
 		break;

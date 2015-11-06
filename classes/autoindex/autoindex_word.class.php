@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: autoindex_word.class.php,v 1.3 2014-02-27 17:12:40 dbellamy Exp $
+// $Id: autoindex_word.class.php,v 1.4 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -123,9 +123,9 @@ class autoindex_word extends autoindex_stem {
 		}
 		$q.= " limit 1";
 		//echo $q."\r\n";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			$row = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$row = pmb_mysql_fetch_object($r);
 			$this->id = $row->id_word;
 			$this->stem = $row->stem;
 			
@@ -136,9 +136,9 @@ class autoindex_word extends autoindex_stem {
 			//on ajoute aussi l'identifiant des mots sans langue
 			$q1 ="select id_word, stem from words where word='".addslashes($this->label)."' and lang='' limit 1";
 			//echo $q1."\r\n";
-			$r1 = mysql_query($q1, $dbh);
-			if (mysql_num_rows($r1)) {
-				$row = mysql_fetch_object($r1);
+			$r1 = pmb_mysql_query($q1, $dbh);
+			if (pmb_mysql_num_rows($r1)) {
+				$row = pmb_mysql_fetch_object($r1);
 				if($this->id) {
 					$this->wo_lang_id = $row->id_word;
 				} else {

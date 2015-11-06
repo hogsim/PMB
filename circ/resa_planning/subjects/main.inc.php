@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.2 2007-03-10 09:03:17 touraine37 Exp $
+// $Id: main.inc.php,v 1.3 2015-04-24 14:20:58 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,9 +19,10 @@ $id_thes = thesaurus::getSessionThesaurusId();
 
 
 $link = "./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id_empr&groupID=$groupID&id_notice=!!id!!";
-$link_serial = '';
+$link_serial = "./circ.php?categ=resa_planning&resa_action=search_resa&id_empr=$id_empr&groupID=$groupID&mode=view_serial&serial_id=!!id!!";
 $link_analysis = '';
-$link_bulletin = '';
+$link_bulletin = "./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id_empr&groupID=$groupID&id_bulletin=!!id!!";
+$link_notice_bulletin = "./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id_empr&groupID=$groupID&id_bulletin=!!id!!";
 
 $unq = md5(microtime());
 $browser_url = './circ/resa_planning/subjects/categ_browser.php?id_thes='.$id_thes.'&id_empr='.$id_empr.'&groupID='.$groupID.'&unq='.$unq;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: frame_livraison.php,v 1.27 2008-12-24 14:38:10 dbellamy Exp $
+// $Id: frame_livraison.php,v 1.28 2015-04-03 11:16:26 jpermanne Exp $
 
 //Liste les lignes d'une facture
 $base_path="../../..";                            
@@ -87,7 +87,7 @@ function show_lig_from_cde() {
 
 	$nb_lig = 0;
 	
-	while (($row_cde = mysql_fetch_object($lignes_cde))) {
+	while (($row_cde = pmb_mysql_fetch_object($lignes_cde))) {
 		
 		if ($row_cde->type_ligne == 3) {	// Frais, non livrables
 			
@@ -96,7 +96,7 @@ function show_lig_from_cde() {
 			//recherche des lignes de livraison
 			$lignes_liv = lignes_actes::getLivraisons($row_cde->id_ligne);
 			$sol = $row_cde->nb;
-			while (($row_liv = mysql_fetch_object($lignes_liv))) {
+			while (($row_liv = pmb_mysql_fetch_object($lignes_liv))) {
 				$sol = $sol - $row_liv->nb;
 			}
 			$rec = 0;
@@ -147,7 +147,7 @@ function show_lig_liv() {
 	
 		$nb_lig = 0;
 
-		while (($row_cde = mysql_fetch_object($lignes_cde))) {
+		while (($row_cde = pmb_mysql_fetch_object($lignes_cde))) {
 			
 			
 			if ($row_cde->type_ligne == 3) {	// Frais, non livrables
@@ -158,7 +158,7 @@ function show_lig_liv() {
 				//recherche des lignes de livraison
 				$lignes_liv = lignes_actes::getLivraisons($row_cde->id_ligne);
 				$rec = 0;
-				while (($row_liv = mysql_fetch_object($lignes_liv))) {
+				while (($row_liv = pmb_mysql_fetch_object($lignes_liv))) {
 					$rec = $rec + $row_liv->nb;
 				}
 				$sol = $row_cde->nb - $rec;
@@ -190,7 +190,7 @@ function show_lig_liv() {
 			
 			$nb_lig = 0;
 			
-			while (($row_cde = mysql_fetch_object($lignes_cde))) {
+			while (($row_cde = pmb_mysql_fetch_object($lignes_cde))) {
 				
 			
 				if ($row_cde->type_ligne == 3) {	// Frais, non livrables
@@ -200,7 +200,7 @@ function show_lig_liv() {
 					//recherche des lignes de livraison
 					$lignes_liv = lignes_actes::getLivraisons($row_cde->id_ligne);
 					$sol = $row_cde->nb;
-					while (($row_liv = mysql_fetch_object($lignes_liv))) {
+					while (($row_liv = pmb_mysql_fetch_object($lignes_liv))) {
 						
 						$sol = $sol - $row_liv->nb; 
 					}
@@ -234,10 +234,10 @@ function show_lig_liv() {
 		if ($id_liv) {
 			$frame = str_replace('<!-- lignes -->', $frame_row_bl_header.'<!-- lignes -->', $frame);
 			$lignes_liv = actes::getLignes($id_liv);
-			$max_lig_liv = mysql_num_rows($lignes_liv);
+			$max_lig_liv = pmb_mysql_num_rows($lignes_liv);
 			$frame = str_replace('!!max_lig_liv!!', $max_lig_liv, $frame);
 		
-			while (($row_liv = mysql_fetch_object($lignes_liv))) {
+			while (($row_liv = pmb_mysql_fetch_object($lignes_liv))) {
 				$nb_lig++;
 				$frame = str_replace('<!-- lignes -->', $frame_row_bl.'<!-- lignes -->', $frame);
 				$frame = str_replace('!!no!!', $nb_lig, $frame);
@@ -773,7 +773,7 @@ function update_liv() {
 	//La commande est-elle soldée
 	$tab_cde = actes::getLignes($id_cde);
 	$solde = true;
-	while (($row_cde = mysql_fetch_object($tab_cde))) {
+	while (($row_cde = pmb_mysql_fetch_object($tab_cde))) {
 		
 		if ($row_cde->type_ligne == 3) {	// Frais, non livrables
 			
@@ -782,7 +782,7 @@ function update_liv() {
 
 			$tab_liv = lignes_actes::getLivraisons($row_cde->id_ligne);
 			$nb_liv = 0;
-			while (($row_liv = mysql_fetch_object($tab_liv))) {
+			while (($row_liv = pmb_mysql_fetch_object($tab_liv))) {
 				$nb_liv = $nb_liv + $row_liv->nb;
 			}
 			

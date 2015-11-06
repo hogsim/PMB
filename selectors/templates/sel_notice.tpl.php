@@ -4,7 +4,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sel_notice.tpl.php,v 1.9 2009-05-16 10:52:55 dbellamy Exp $
+// $Id: sel_notice.tpl.php,v 1.11 2014-12-08 15:05:16 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -34,10 +34,12 @@ $sel_header = "
 $jscript = "
 <script type='text/javascript'>
 <!--
-function set_parent(f_caller, id_value, libelle_value)
+function set_parent(f_caller, id_value, libelle_value, callback)
 {
 	window.opener.document.forms[f_caller].elements['$param1'].value = id_value;
 	window.opener.document.forms[f_caller].elements['$param2'].value = reverse_html_entities(libelle_value);
+	if(callback)
+		window.opener[callback]('$infield');
 	window.close();
 }
 function copier_modele(location)
@@ -55,6 +57,9 @@ function copier_modele(location)
 $sel_search_form ="
 <form name='search_form' method='post' action='$base_url'>
 <input type='text' name='f_user_input' value=\"!!deb_rech!!\">
+	<select id='typdoc-query' name='typdoc_query'>
+		!!typdocfield!!
+	</select> 
 &nbsp;
 <input type='submit' class='bouton_small' value='$msg[142]' />
 </form>

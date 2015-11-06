@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: add_cb_list.inc.php,v 1.1 2010-06-16 12:19:04 ngantier Exp $
+// $Id: add_cb_list.inc.php,v 1.2 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -13,7 +13,7 @@ require_once("$include_path/ajax.inc.php");
 
 if($del_pret){
 	$query = "delete from pret where pret_idempr = '" . $id_empr . "' and pret_temp = '".$_SERVER['REMOTE_ADDR']."'";
-	mysql_query($query);		
+	pmb_mysql_query($query);		
 }
 
 foreach($cb_list as $cb_doc){

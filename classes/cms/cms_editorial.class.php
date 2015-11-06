@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial.class.php,v 1.22.2.11 2015-05-07 14:24:10 dgoron Exp $
+// $Id: cms_editorial.class.php,v 1.43 2015-06-11 14:18:22 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -38,7 +38,7 @@ class cms_editorial extends cms_root {
 	public function __construct($id=2,$type="section",$num_parent=0){
 		$this->type = $type;
 		if($id){
-			$this->id = $id;
+			$this->id = $id*1;
 			$this->fetch_data_cache();
 			$this->logo = new cms_logo($this->id,$this->type);
 		}else{
@@ -73,12 +73,12 @@ class cms_editorial extends cms_root {
 	}
 	
 	protected function get_descriptors(){
-		global $lang;
+		global $lang,$dbh;
 		// les descripteurs...
 		$rqt = "select num_noeud from cms_".$this->type."s_descriptors where num_".$this->type." = '".$this->id."' order by ".$this->type."_descriptor_order";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){
+		$res = pmb_mysql_query($rqt, $dbh);
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){
 				$descriptors = array();
 				$categ = new categories($row->num_noeud, $lang);
 				$descriptors["id"] = $categ->num_noeud;
@@ -91,18 +91,19 @@ class cms_editorial extends cms_root {
 	}
 	
 	protected function get_fields_type(){
+		global $dbh;
 		$this->fields_type = array();
 		$query = "select id_editorial_type from cms_editorial_types where editorial_type_element = '".$this->type."_generic'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$fields_type = new cms_editorial_parametres_perso(mysql_result($result,0,0));
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_num_rows($result)){
+			$fields_type = new cms_editorial_parametres_perso(pmb_mysql_result($result,0,0));
 			$this->fields_type = $fields_type->get_out_values($this->id);
 		}
 		if($this->num_type){
 			$query = "select editorial_type_label from cms_editorial_types where id_editorial_type = ".$this->num_type;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$this->type_content = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query, $dbh);
+			if(pmb_mysql_num_rows($result)){
+				$this->type_content = pmb_mysql_result($result,0,0);
 				$fields_type = new cms_editorial_parametres_perso($this->num_type);
 				$this->fields_type = array_merge($this->fields_type,$fields_type->get_out_values($this->id));
 			}
@@ -114,24 +115,24 @@ class cms_editorial extends cms_root {
 		if($result === true){
 			//documents du portfolio
 			$query = "delete from cms_documents_links where document_link_type_object = '".$this->type."' and document_link_num_object = ".$this->id;
-			mysql_query($query);
+			pmb_mysql_query($query);
 			//l'elément
 			$del = "delete from cms_".$this->type."s where id_".$this->type."='".$this->id."'";
-			mysql_query($del);
+			pmb_mysql_query($del);
 			//ses descripteurs
 			$del_desc = "delete from cms_".$this->type."s_descriptors where num_".$this->type." = '".$this->id."'";
-			mysql_query($del_desc);
+			pmb_mysql_query($del_desc);
 			//ses champs persos
 			$fields_type = new cms_editorial_parametres_perso($this->num_type);
-			$fields_type->delete_values($this->id);
+			$fields_type->delete_values($this->id,$this->type);
 			//indexation
 			$query = "delete from cms_editorial_fields_global_index where num_obj = ".$this->id." and type='".$this->type."'";
-			mysql_query($query);
+			pmb_mysql_query($query);
 			$query = "delete from cms_editorial_words_global_index where num_obj = ".$this->id." and type='".$this->type."'";
-			mysql_query($query);
+			pmb_mysql_query($query);
 			//ses extensions
 			$query ="delete from cms_modules_extensions_datas where extension_datas_type_element ='".$this->type."' and extension_datas_num_element = '".$this->id."'";
-			mysql_query($query);
+			pmb_mysql_query($query);
 			return true;
 		}else{
 			return $result;
@@ -146,6 +147,7 @@ class cms_editorial extends cms_root {
 		global $msg;
 		global $lang;
 		global $base_path;
+		global $pmb_editorial_dojo_editor,$pmb_javascript_office_editor;
 		
 		$fields_form="";
 		$fields_form.=$this->get_id_field();
@@ -190,6 +192,32 @@ class cms_editorial extends cms_root {
 
 		if($close){
 			$form = str_replace("!!cms_editorial_suite!!","",$form);
+		}
+		
+		//chargement en AJAX
+		if ($this->id) {
+			if (!$pmb_editorial_dojo_editor && $pmb_javascript_office_editor) {
+				if (strpos($pmb_javascript_office_editor,'cms_editorial_form_resume')) {
+					$form.= "<script type='text/javascript'>
+						if(typeof(tinyMCE)!= 'undefined') {
+								setTimeout(function(){
+									tinyMCE.execCommand('mceAddControl', true, 'cms_editorial_form_resume');
+								},1);
+							}
+						</script>";
+				}
+				if($this->opt_elements['contenu']==true){
+					if (strpos($pmb_javascript_office_editor,'cms_editorial_form_contenu')) {
+						$form.= "<script type='text/javascript'>
+							if(typeof(tinyMCE)!= 'undefined') {
+									setTimeout(function(){
+										tinyMCE.execCommand('mceAddControl', true, 'cms_editorial_form_contenu');
+									},1);
+								}
+							</script>";
+					}
+				}
+			}
 		}		
 		return $form;
 	}
@@ -212,13 +240,21 @@ class cms_editorial extends cms_root {
 					}
 				} else if(document.forms['$name'].cms_editorial_form_duplicate.value == 1){
 					if ('".$this->type."' == 'section') {
-						if (confirm('".$msg['cms_editorial_form_duplicate_branch_confirm']."')) {
-							cms_".$this->type."_duplicate(1);
+						if (confirm('".$msg['cms_editorial_form_'.$this->type.'_duplicate_confirm']."')) {
+							if (confirm('".$msg['cms_editorial_form_duplicate_branch_confirm']."')) {
+								cms_".$this->type."_duplicate(1);
+							} else {
+								cms_".$this->type."_duplicate(0);
+							}
 						} else {
-							cms_".$this->type."_duplicate(0);
+							return false;
 						}
 					} else {
-						cms_".$this->type."_duplicate(0);
+						if (confirm('".$msg['cms_editorial_form_'.$this->type.'_duplicate_confirm']."')) {
+							cms_".$this->type."_duplicate(0);
+						} else {
+							return false;
+						}
 					}
 				}else{
 					for(var i=0 ; i<document.forms['$name'].elements.length ; i++){
@@ -300,12 +336,25 @@ class cms_editorial extends cms_root {
 	
 	protected function get_resume_field(){
 		global $cms_editorial_resume_field;
-		return str_replace("!!cms_editorial_form_resume!!",$this->resume,$cms_editorial_resume_field);
+		global $cms_editorial_resume_field_no_dojo;
+		global $pmb_editorial_dojo_editor;
+		if($pmb_editorial_dojo_editor){
+			return str_replace("!!cms_editorial_form_resume!!",$this->resume,$cms_editorial_resume_field);
+		}else{
+			return str_replace("!!cms_editorial_form_resume!!",$this->resume,$cms_editorial_resume_field_no_dojo);
+		}
 	}
 	
 	protected function get_contenu_field(){
 		global $cms_editorial_contenu_field;
+		global $cms_editorial_contenu_field_no_dojo;
+		global $pmb_editorial_dojo_editor;
 		if($this->opt_elements['contenu']==true){
+			if($pmb_editorial_dojo_editor){
+				return str_replace("!!cms_editorial_form_contenu!!",$this->contenu,$cms_editorial_contenu_field);
+			}else{
+				return str_replace("!!cms_editorial_form_contenu!!",$this->contenu,$cms_editorial_contenu_field_no_dojo);
+			}
 			return str_replace("!!cms_editorial_form_contenu!!",$this->contenu,$cms_editorial_contenu_field);	
 		}else{
 			return "";		
@@ -594,18 +643,18 @@ class cms_editorial extends cms_root {
 			//qu'est-ce qu'on efface?
 			if($datatype=="all") {
 				$req_del="delete from cms_editorial_words_global_index where num_obj='".$this->id."' and type = '".$this->type."'";
-				mysql_query($req_del,$dbh);
+				pmb_mysql_query($req_del,$dbh);
 				//la table pour les recherche exacte
 				$req_del="delete from cms_editorial_fields_global_index where num_obj='".$this->id."' and type = '".$this->type."'";
-				mysql_query($req_del,$dbh);					
+				pmb_mysql_query($req_del,$dbh);					
 			}else{
 				foreach ( $tab_code_champ as $subfields ) {
 					foreach($subfields as $subfield){
 						$req_del="delete from cms_editorial_words_global_index where num_obj='".$this->id."' and type = '".$this->type."' and code_champ='".$subfield['champ']."'";
-						mysql_query($req_del,$dbh);
+						pmb_mysql_query($req_del,$dbh);
 						//la table pour les recherche exacte
 						$req_del="delete from cms_editorial_fields_global_index where num_obj='".$this->id."' and type = '".$this->type."' and code_champ='".$subfield['champ']."'";
-						mysql_query($req_del,$dbh);	
+						pmb_mysql_query($req_del,$dbh);	
 						break;
 					}
 				}
@@ -614,10 +663,10 @@ class cms_editorial extends cms_root {
 				if(count($tab_pp)){
 					foreach ( $tab_pp as $id ) {
        					$req_del="delete from cms_editorial_words_global_index where num_obj='".$this->id."' and type = '".$this->type."' and code_champ='".$id."' ";
-       					mysql_query($req_del,$dbh);
+       					pmb_mysql_query($req_del,$dbh);
 						//la table pour les recherche exacte
 						$req_del="delete from cms_editorial_fields_global_index where num_obj='".$this->id."' and type = '".$this->type."' and code_champ='".$id."' ";
-						mysql_query($req_del,$dbh);	
+						pmb_mysql_query($req_del,$dbh);	
 					}
 				}
 			}
@@ -626,11 +675,11 @@ class cms_editorial extends cms_root {
 			$tab_insert=array();	
 			$tab_field_insert=array();
 			foreach($tab_req as $k=>$v) {	
-				$r=mysql_query($v["rqt"],$dbh);
+				$r=pmb_mysql_query($v["rqt"],$dbh);
 				$tab_mots=array();
 				$tab_fields=array();
-				if (mysql_num_rows($r)) {
-					while(($tab_row=mysql_fetch_array($r,MYSQL_ASSOC))) {
+				if (pmb_mysql_num_rows($r)) {
+					while(($tab_row=pmb_mysql_fetch_array($r,MYSQL_ASSOC))) {
 						if(isset($tab_row[$tab_languages[$k]])){
 							$lang = $tab_row[$tab_languages[$k]];
 							unset($tab_row[$tab_languages[$k]]);
@@ -674,9 +723,9 @@ class cms_editorial extends cms_root {
 						//on cherche le mot dans la table de mot...
 						$num_word = 0;
 						$query = "select id_word from words where word = '".$mot."' and lang = '".$lang."'";
-						$result = mysql_query($query);
-						if(mysql_num_rows($result)){
-							$num_word = mysql_result($result,0,0);
+						$result = pmb_mysql_query($query);
+						if(pmb_mysql_num_rows($result)){
+							$num_word = pmb_mysql_result($result,0,0);
 						}else{
 							$dmeta = new DoubleMetaPhone($mot);
 							$stemming = new stemming($mot);
@@ -689,8 +738,8 @@ class cms_editorial extends cms_root {
 							$element_to_update.="stem = '".$stemming->stem."'";
 							
 							$query = "insert into words set word = '".$mot."', lang = '".$langage."'".($element_to_update ? ", ".$element_to_update : "");
-							mysql_query($query);
-							$num_word = mysql_insert_id();
+							pmb_mysql_query($query);
+							$num_word = pmb_mysql_insert_id();
 						}
 						if($num_word != 0){
 							$tab_insert[]="(".$this->id.",'".$this->type."',".$tab_code_champ[$k][$nom_champ]['champ'].",".$tab_code_champ[$k][$nom_champ]['ss_champ'].",".$num_word.",".$tab_code_champ[$k][$nom_champ]['pond'].",$pos)";
@@ -727,13 +776,13 @@ class cms_editorial extends cms_root {
 						foreach ( $tab_mots as $mot => $lang ) {
 							//on cherche le mot dans la table de mot...
 							$query = "select id_word from words where word = '".$mot."' and lang = '".$lang."'";
-							$result = mysql_query($query);
-							if(mysql_num_rows($result)){
-								$num_word = mysql_result($result,0,0);
+							$result = pmb_mysql_query($query);
+							if(pmb_mysql_num_rows($result)){
+								$num_word = pmb_mysql_result($result,0,0);
 							}else{
 								$query = "insert into words set word = '".$mot."', lang = '".$lang."'";
-								mysql_query($query);
-								$num_word = mysql_insert_id();
+								pmb_mysql_query($query);
+								$num_word = pmb_mysql_insert_id();
 							}
 							$tab_insert[]="(".$this->id.",'".$this->type."',".$code_champ.",".$code_ss_champ.",".$num_word.",".$p_perso->get_pond($code_ss_champ).",$pos)";
 							$pos++;
@@ -742,10 +791,10 @@ class cms_editorial extends cms_root {
 				}
 			}
 			$req_insert="insert into cms_editorial_words_global_index(num_obj,type,code_champ,code_ss_champ,num_word,pond,position) values ".implode(',',$tab_insert);
-			mysql_query($req_insert,$dbh);
+			pmb_mysql_query($req_insert,$dbh);
 			//la table pour les recherche exacte
 			$req_insert="insert into cms_editorial_fields_global_index(num_obj,type,code_champ,code_ss_champ,ordre,value,lang,pond) values ".implode(',',$tab_field_insert);
-			mysql_query($req_insert,$dbh);				
+			pmb_mysql_query($req_insert,$dbh);				
 		}
 	}
 	
@@ -784,24 +833,7 @@ class cms_editorial extends cms_root {
 		}		
 		$main_fields[] = array(
 			'var' => "logo",
-			'children' => array(
-				array(
-					'var' => "logo.small_vign",
-					'desc' => $msg['cms_module_common_datasource_desc_small_vign']
-				),
-				array(
-					'var' => "logo.vign",
-					'desc' => $msg['cms_module_common_datasource_desc_vign']
-				),
-				array(
-					'var' => "logo.large",
-					'desc' => $msg['cms_module_common_datasource_desc_large']
-				),			
-				array(
-					'var' => "logo.exists",
-					'desc' => $msg['cms_module_common_datasource_desc_logo_exists']
-				),
-			),			
+			'children' => self::prefix_var_tree(cms_logo::get_format_data_structure(false,false),"logo"),		
 			'desc' => $msg['cms_module_common_datasource_desc_logo']
 		);
 		$main_fields[] = array(
@@ -896,9 +928,9 @@ class cms_editorial extends cms_root {
 	public function get_documents(){
 		$this->documents_linked =array();
 		$query = "select document_link_num_document from cms_documents_links join cms_documents on document_link_num_document = id_document where document_link_type_object = '".$this->type."' and document_link_num_object = ".$this->id." order by document_create_date desc";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->documents_linked[] = $row->document_link_num_document;
 			}
 		}	
@@ -907,7 +939,7 @@ class cms_editorial extends cms_root {
 	public function save_documents(){
 		//on commence par tout virer
 		$query = "delete from cms_documents_links where document_link_type_object = '".$this->type."' and document_link_num_object = ".$this->id;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		
 		if(count($this->documents_linked)){
 			$query = "insert into cms_documents_links (document_link_type_object,document_link_num_object,document_link_num_document) values";
@@ -916,7 +948,7 @@ class cms_editorial extends cms_root {
 				if($documents)$documents.=",";
 				$documents.="('".$this->type."',".$this->id.",".$doc.")";
 			}
-			mysql_query($query.$documents);
+			pmb_mysql_query($query.$documents);
 		}
 	}
 }

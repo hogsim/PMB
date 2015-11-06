@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collections_state.inc.php,v 1.8 2009-12-21 11:39:05 mbertin Exp $
+// $Id: collections_state.inc.php,v 1.9 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -11,8 +11,8 @@ function ajax_calculate_collections_state() {
 	
 	$rqt="select bulletin_id,bulletin_numero,mention_date from bulletins where bulletin_notice=$id_serial order by date_date";
 	
-	$execute_query=mysql_query($rqt);
-	$compt=mysql_num_rows($execute_query);
+	$execute_query=pmb_mysql_query($rqt);
+	$compt=pmb_mysql_num_rows($execute_query);
 	$temp="";
 	$i=0;
 	$debut="";
@@ -26,11 +26,11 @@ function ajax_calculate_collections_state() {
 	}
 	
 	//parcours des bulletins de la notice de périodique
-	while ($r=mysql_fetch_object($execute_query)) {
+	while ($r=pmb_mysql_fetch_object($execute_query)) {
 		
 		$rqt1="select expl_id from exemplaires where expl_bulletin=".$r->bulletin_id.$restrict_location;
-		$compt1=mysql_num_rows(mysql_query($rqt1));
-		$temp=mysql_error();
+		$compt1=pmb_mysql_num_rows(pmb_mysql_query($rqt1));
+		$temp=pmb_mysql_error();
 		//remplissage d'un tableau avec des trous si le bulletin n'a aucun exemplaire associé
 		if ($compt1==0) {
 			$t[]="";
@@ -93,11 +93,11 @@ function ajax_modify_collections_state() {
 	global $id_serial,$id_location,$texte_coll_state,$charset;
 	if ($id_location) $restrict_location=" and location_id=$id_location";
 	$rqt1="select state_collections from collections_state where id_serial=$id_serial $restrict_location";
-	$execute_query1=mysql_query($rqt1);
-	if (mysql_num_rows($execute_query1)) $rqt2="update collections_state set state_collections='".$texte_coll_state."' where id_serial=$id_serial $restrict_location";	
+	$execute_query1=pmb_mysql_query($rqt1);
+	if (pmb_mysql_num_rows($execute_query1)) $rqt2="update collections_state set state_collections='".$texte_coll_state."' where id_serial=$id_serial $restrict_location";	
 		else $rqt2="insert into collections_state (id_serial,location_id,state_collections) values ('$id_serial','$id_location','".$texte_coll_state."')";
-	@mysql_query($rqt2);
-	if (mysql_error()) $texte_coll_state=mysql_error();
+	@pmb_mysql_query($rqt2);
+	if (pmb_mysql_error()) $texte_coll_state=pmb_mysql_error();
 	
 	ajax_http_send_response($texte_coll_state,"text/text");
 	return;

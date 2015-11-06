@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: entites.class.php,v 1.40.4.4 2015-05-12 09:11:15 jpermanne Exp $
+// $Id: entites.class.php,v 1.45 2015-05-12 09:14:39 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -51,8 +51,8 @@ class entites{
 		global $dbh;
 		
 		$q = "select * from entites where id_entite = '".$this->id_entite."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->type_entite = $obj->type_entite;
 		$this->num_bibli = $obj->num_bibli;		
 		$this->raison_sociale = $obj->raison_sociale;
@@ -99,7 +99,7 @@ class entites{
 			$q.= "num_frais = '".$this->num_frais."', num_paiement = '".$this->num_paiement."', ";
 			$q.= "index_entite = ' ".strip_empty_words($this->raison_sociale)." '";
 			$q.= "where id_entite = '".$this->id_entite."' ";
-			mysql_query($q, $dbh);
+			pmb_mysql_query($q, $dbh);
 
 		} else {
 
@@ -108,8 +108,8 @@ class entites{
 			$q.= "num_cp_compta = '".$this->num_cp_compta."', site_web = '".$this->site_web."', logo = '".$this->logo."' , autorisations = '".$this->autorisations."', ";
 			$q.= "num_frais = '".$this->num_frais."', num_paiement = '".$this->num_paiement."', ";
 			$q.= "index_entite = ' ".strip_empty_words($this->raison_sociale)." '";
-			mysql_query($q, $dbh);
-			$this->id_entite = mysql_insert_id($dbh);
+			pmb_mysql_query($q, $dbh);
+			$this->id_entite = pmb_mysql_insert_id($dbh);
 			
 		}
 
@@ -124,16 +124,16 @@ class entites{
 		if(!$id_entite) $id_entite = $this->id_entite; 	
 
 		$q = "delete from entites where id_entite = '".$id_entite."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 
 		$q = "delete from coordonnees where num_entite = '".$id_entite."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 				
 		$q = "delete from offres_remises where num_fournisseur = '".$id_entite."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 		$q = "update abts_abts set fournisseur='0' where num_fournisseur = '".$id_entite."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -144,8 +144,8 @@ class entites{
 		global $dbh;
 
 		$q = "SELECT count(1) from entites where id_entite = '".$id_entite."' ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 				
 	}
 
@@ -165,8 +165,8 @@ class entites{
 		if($id_entite !== 0){
 			$q.=" and id_entite != '".$id_entite."'";
 		}
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 				
 	}
 
@@ -176,7 +176,7 @@ class entites{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE entites', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE entites', $dbh);
 		return $opt;
 				
 	}
@@ -222,7 +222,7 @@ class entites{
 		if($nb_per_page && !$debut){
 			$q.= "limit 0,".$nb_per_page;
 		}
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r;				
 	}
 
@@ -243,8 +243,8 @@ class entites{
 		} else {
 			$q = $aq->get_query_count("entites","raison_sociale","index_entite", "id_entite", $restrict);
 		}
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 				
 	}
 
@@ -255,7 +255,7 @@ class entites{
 		global $dbh;
 		
 		$q = "select * from offres_remises, types_produits where num_fournisseur = '".$id_fou."' and id_produit = num_produit order by libelle ";
-		$r = mysql_query($q, $dbh); 
+		$r = pmb_mysql_query($q, $dbh); 
 		return $r;
 				
 	}
@@ -267,17 +267,17 @@ class entites{
 		global $dbh;
 		
 		$q = "select num_produit from offres_remises where num_fournisseur = '".$id_fou."' ";
-		$r = mysql_query($q, $dbh);
-		$c = mysql_num_rows($r);
+		$r = pmb_mysql_query($q, $dbh);
+		$c = pmb_mysql_num_rows($r);
 		$a = array();
-		while(($row = mysql_fetch_object($r))) {
+		while(($row = pmb_mysql_fetch_object($r))) {
 			$a[] = "'".$row->num_produit."'";
 		}
 		$l = implode(" , ", $a );
 		
 		$q = "select id_produit, libelle from types_produits ";
 		if ($c) $q.= "where id_produit not in (".$l.") order by libelle";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r;
 				
 	}
@@ -390,7 +390,7 @@ class entites{
 				$q.=" limit ".$debut.",".$nb_per_page." ";
 			}
 		}  
-		$r = mysql_query($q, $dbh);		
+		$r = pmb_mysql_query($q, $dbh);		
 		return $r;				
 	}
 
@@ -457,8 +457,8 @@ class entites{
 				
 			}
 		}
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0); 
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0); 
 				
 	}
 
@@ -468,8 +468,8 @@ class entites{
 		
 		global $dbh;
 		$q = "select count(1) from coordonnees where num_entite = '".$id_entite."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -489,7 +489,7 @@ class entites{
 			$q.="limit ".$debut ;
 			if($nb_per_page) $q.= ",".$nb_per_page;
 		}
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r;
 		
 	}
@@ -501,8 +501,8 @@ class entites{
 		global $dbh;
 		$q = "select count(1) from exercices where num_entite = '".$id_entite."' ";
 		if($statut != '-1') $q.= "and statut = '".$statut."' ";		
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -512,8 +512,8 @@ class entites{
 		
 		global $dbh;
 		$q = "select count(1) from budgets where num_entite = '".$id_entite."' ";		
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 	
@@ -524,7 +524,7 @@ class entites{
 		global $dbh;
 		
 		$q = "select id_budget, libelle from budgets where num_entite = '".$id_entite."' and statut = '1' ";		
-		$r = mysql_query($q, $dbh); 
+		$r = pmb_mysql_query($q, $dbh); 
 		return $r;
 		
 	}
@@ -541,8 +541,8 @@ class entites{
 
 			//Récupération de l'utilisateur
 		 	$requete_user = "SELECT userid FROM users where username='".SESSlogin."' limit 1 ";
-			$res_user = mysql_query($requete_user, $dbh);
-			$row_user=mysql_fetch_row($res_user);
+			$res_user = pmb_mysql_query($requete_user, $dbh);
+			$row_user=pmb_mysql_fetch_row($res_user);
 			$user_userid=$row_user[0];
 
 		$q.= "and rubriques.autorisations like('% ".$user_userid." %') ";			
@@ -559,7 +559,7 @@ class entites{
 			if($nb_per_page) $q.= "limit ".$nb_per_page;
 		}
 		
-		$r = mysql_query($q, $dbh); 
+		$r = pmb_mysql_query($q, $dbh); 
 		return $r;
 		
 	}	
@@ -578,8 +578,8 @@ class entites{
 
 			//Récupération de l'utilisateur
 		 	$requete_user = "SELECT userid FROM users where username='".SESSlogin."' limit 1 ";
-			$res_user = mysql_query($requete_user, $dbh);
-			$row_user=mysql_fetch_row($res_user);
+			$res_user = pmb_mysql_query($requete_user, $dbh);
+			$row_user=pmb_mysql_fetch_row($res_user);
 			$user_userid=$row_user[0];
 
 		$q.= "and rubriques.autorisations like('% ".$user_userid." %') ";			
@@ -587,8 +587,8 @@ class entites{
 		if(trim($elt_query)){
 			$q.="and rubriques.libelle like '".addslashes(str_replace('*','%',$elt_query))."' ";
 		}
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}	
 	
@@ -606,8 +606,8 @@ class entites{
 		
 		global $dbh;
 		$q = "select count(1) from suggestions where num_entite = '".$id_entite."' ";		
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 	
@@ -618,12 +618,12 @@ class entites{
 		global $dbh;
 		if ($type_entite) {
 			$q = "select count(1) from actes where num_entite = '".$id_entite."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 		} else {
 			$q = "select count(1) from actes where num_fournisseur = '".$id_entite."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 		}
-		return mysql_result($r, 0, 0);
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -634,28 +634,28 @@ class entites{
 		global $dbh;
 				
 			$q = "select id_budget from budgets where num_entite = '".$this->id_entite."' ";
-			$r = mysql_query($q, $dbh);
-			$nb = mysql_num_rows($r);
+			$r = pmb_mysql_query($q, $dbh);
+			$nb = pmb_mysql_num_rows($r);
 		
 			if ($nb != '0') {			
 				$liste= '';
 				for ($i=0; $i<$nb; $i++) { 
-					$row =mysql_fetch_row($r);
+					$row =pmb_mysql_fetch_row($r);
 					$liste.= $row[0];
 					if ($i<$nb-1) $liste.= ', ';
 				}
 			
 			$q = "select id_rubrique, autorisations from rubriques where autorisations != '' and num_budget in (".$liste.") ";
-			$r = mysql_query($q, $dbh); 
+			$r = pmb_mysql_query($q, $dbh); 
 			$aut_entite = explode(' ',$this->autorisations);
 
-			while(($row=mysql_fetch_object($r))) {
+			while(($row=pmb_mysql_fetch_object($r))) {
 				
 				$aut_rub = explode(' ',$row->autorisations);			
 				$aut = array_intersect($aut_entite, $aut_rub);
 				
 				$q1 = "update rubriques set autorisations = '".' '.implode(' ',$aut).' '."' where id_rubrique = '".$row->id_rubrique."' ";
-				mysql_query($q1, $dbh);
+				pmb_mysql_query($q1, $dbh);
 			}
 		}
 		
@@ -686,12 +686,12 @@ class entites{
 		$q = "select id_entite,raison_sociale from entites where type_entite = '1' ";
 		if ($user) $q.= "and autorisations like('% ".$user." %') ";
 		$q.= "order by raison_sociale ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$res = array();
 		if ($sel_all) {
 			$res[0]=$msg['acquisition_coord_all'];
 		}
-		while ($row = mysql_fetch_object($r)){
+		while ($row = pmb_mysql_fetch_object($r)){
 			$res[$row->id_entite] = $row->raison_sociale;
 		}
 		
@@ -725,8 +725,8 @@ class entites{
 		if(is_array($tab) && count($tab)) {
 			$q ="select id_entite, raison_sociale from entites where id_entite in ('".implode("','", $tab)."') ";
 			if($id_bibli) $q.= " and num_bibli='".$id_bibli."' ";
-			$r = mysql_query($q,$dbh);
-			while($row=mysql_fetch_object($r)) {
+			$r = pmb_mysql_query($q,$dbh);
+			while($row=pmb_mysql_fetch_object($r)) {
 				$res[$row->id_entite]=$row->raison_sociale;
 			}
 		}
@@ -738,8 +738,8 @@ class entites{
 	
 		global $dbh;
 		$q = "select count(1) from abts_abts where fournisseur = '".$id_entite."' ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 	
 	}
 	

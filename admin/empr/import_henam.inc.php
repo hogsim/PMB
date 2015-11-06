@@ -100,8 +100,8 @@ function import_lect_par_lect($tab,$dbh){
 	$data['date_adhesion']=date('Y-m-j');
 	$data['date_modif']=date('Y-m-j');
 	
-	if (($result = mysql_query("SELECT DATE_ADD('".addslashes(date('Y-m-j'))."', INTERVAL 1 YEAR)"))) {
-		if (($row = mysql_fetch_row($result))) { 
+	if (($result = pmb_mysql_query("SELECT DATE_ADD('".addslashes(date('Y-m-j'))."', INTERVAL 1 YEAR)"))) {
+		if (($row = pmb_mysql_fetch_row($result))) { 
 			$data['date_expiration']= $row[0];		
 		}
 	}
@@ -113,8 +113,8 @@ function import_lect_par_lect($tab,$dbh){
 	$empr_cb2=$empr_cb;
 	while ($pb==1) {
 		$q = "SELECT empr_cb FROM empr WHERE empr_cb='".addslashes($empr_cb2)."' LIMIT 1 ";
-		$r = mysql_query($q, $dbh);
-		$nb = mysql_num_rows($r);
+		$r = pmb_mysql_query($q, $dbh);
+		$nb = pmb_mysql_num_rows($r);
 		if ($nb) {
 			$empr_cb2 =$empr_cb."-".$num_cb ;
 			$num_cb++;
@@ -197,52 +197,52 @@ function import_lect_par_lect($tab,$dbh){
 		$lect_cree++;
 		if ($tab[13] and count($tab) == 18) {
 			$q="select idchamp from empr_custom where name='email_perso' limit 1";
-			$r = mysql_query($q, $dbh);
-			if (mysql_num_rows($r)) {
-				$idchamp=mysql_result($r,0,0);
+			$r = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_num_rows($r)) {
+				$idchamp=pmb_mysql_result($r,0,0);
 				$q = "insert into empr_custom_values (empr_custom_champ, empr_custom_origine, empr_custom_small_text) ";
 				$q.= "values('".$idchamp."', '".$id_empr."','".addslashes($tab[13])."' ) ";
-				$r=mysql_query($q, $dbh);
+				$r=pmb_mysql_query($q, $dbh);
 			}
 		}
 		if ($tab[0]) {
 			$q="select idchamp from empr_custom where name='matricule' limit 1";
-			$r = mysql_query($q, $dbh);
-			if (mysql_num_rows($r)) {
-				$idchamp=mysql_result($r,0,0);
+			$r = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_num_rows($r)) {
+				$idchamp=pmb_mysql_result($r,0,0);
 				$q = "insert into empr_custom_values (empr_custom_champ, empr_custom_origine, empr_custom_small_text) ";
 				$q.= "values('".$idchamp."', '".$id_empr."','".addslashes($tab[0])."' ) ";
-				$r=mysql_query($q, $dbh);
+				$r=pmb_mysql_query($q, $dbh);
 			}
 		}
 		if(trim($tab[15])){
 			//On créer le groupe si il n'existe pas et on y affecte le lecteur
 			$requete="select id_groupe from groupe where libelle_groupe='".addslashes(trim($tab[15]))."'";
-			$r = mysql_query($requete, $dbh);
-			if (mysql_num_rows($r)) {
-				$id_grp=mysql_result($r,0,0);
+			$r = pmb_mysql_query($requete, $dbh);
+			if (pmb_mysql_num_rows($r)) {
+				$id_grp=pmb_mysql_result($r,0,0);
 			}else{
 				$q= "insert into groupe (libelle_groupe) values ('".addslashes(trim($tab[15]))."') ";
-				$r = mysql_query($q, $dbh);
-				$id_grp =mysql_insert_id($dbh);
+				$r = pmb_mysql_query($q, $dbh);
+				$id_grp =pmb_mysql_insert_id($dbh);
 			}
 			$requete="insert into empr_groupe(empr_id,groupe_id) values ('".$id_empr."','".$id_grp."')";
-			if(!mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";	
+			if(!pmb_mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";	
 		}
 		
 		if(trim($tab[16]) and trim($tab[16]) != trim($tab[15])){
 			//On créer le groupe si il n'existe pas et on y affecte le lecteur
 			$requete="select id_groupe from groupe where libelle_groupe='".addslashes(trim($tab[16]))."'";
-			$r = mysql_query($requete, $dbh);
-			if (mysql_num_rows($r)) {
-				$id_grp=mysql_result($r,0,0);
+			$r = pmb_mysql_query($requete, $dbh);
+			if (pmb_mysql_num_rows($r)) {
+				$id_grp=pmb_mysql_result($r,0,0);
 			}else{
 				$q= "insert into groupe (libelle_groupe) values ('".addslashes(trim($tab[16]))."') ";
-				$r = mysql_query($q, $dbh);
-				$id_grp =mysql_insert_id($dbh);
+				$r = pmb_mysql_query($q, $dbh);
+				$id_grp =pmb_mysql_insert_id($dbh);
 			}
 			$requete="insert into empr_groupe(empr_id,groupe_id) values ('".$id_empr."','".$id_grp."')";
-			if(!mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";	
+			if(!pmb_mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";	
 		}
 	}
 }
@@ -250,27 +250,27 @@ function import_lect_par_lect($tab,$dbh){
 function supp_lect_par_lect($tab,$dbh){
 	global $lect_erreur,$lect_supprime,$lect_interdit;
 	$requete="select id_empr,pret_idexpl from empr left join pret on id_empr=pret_idempr join empr_custom_values on empr_custom_origine=id_empr where empr_cb like '".addslashes($tab[1])."%' and empr_custom_champ='2' and empr_custom_small_text='".addslashes($tab[0])."' group by id_empr";
-	$select = mysql_query($requete,$dbh);
-	$nb_enreg = mysql_num_rows($select);
+	$select = pmb_mysql_query($requete,$dbh);
+	$nb_enreg = pmb_mysql_num_rows($select);
 	if($nb_enreg == 1){
-		$id=mysql_result($select,0,0);
-		if(!mysql_result($select,0,1)){
+		$id=pmb_mysql_result($select,0,0);
+		if(!pmb_mysql_result($select,0,1)){
 			//Si il n'a pas de pret en cours
 			emprunteur::del_empr($id);
 			$lect_supprime++;
 		}else{
 			//On modifi le statut
 			$q="select idstatut from empr_statut where statut_libelle='A supprimer' limit 1";
-			$r = mysql_query($q, $dbh);
-			if (mysql_num_rows($r)) {
-				$id_statut =mysql_result($r,0,0);	
+			$r = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_num_rows($r)) {
+				$id_statut =pmb_mysql_result($r,0,0);	
 			} else {
 				$q= "insert into empr_statut (statut_libelle) values ('A supprimer') ";
-				$r = mysql_query($q, $dbh);
-				$id_statut =mysql_insert_id($dbh);
+				$r = pmb_mysql_query($q, $dbh);
+				$id_statut =pmb_mysql_insert_id($dbh);
 			}
 			$requete="update empr set empr_statut='".$id_statut."' where id_empr='".$id."' ";
-			if(mysql_query($requete)){
+			if(pmb_mysql_query($requete)){
 				$lect_interdit++;
 			}else{
 				$lect_erreur++;
@@ -326,26 +326,26 @@ function maj_lect_par_lect($tab,$dbh,$statut,$id_lect){
 		$requete .= ", empr_date_adhesion='".addslashes(date('Y-m-j'))."'";
 		$requete .= ", empr_modif='".addslashes(date('Y-m-j'))."'";
 		
-		if (($result = mysql_query("SELECT DATE_ADD('".addslashes(date('Y-m-j'))."', INTERVAL 1 YEAR)"))) {
-			if (($row = mysql_fetch_row($result))) { 
+		if (($result = pmb_mysql_query("SELECT DATE_ADD('".addslashes(date('Y-m-j'))."', INTERVAL 1 YEAR)"))) {
+			if (($row = pmb_mysql_fetch_row($result))) { 
 				$requete .= ", empr_date_expiration='".addslashes($row[0])."'";
 			}
 		}
 		$q="select idstatut from empr_statut where statut_libelle='Importé' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			$requete .= ", empr_statut='".mysql_result($r,0,0)."'";
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$requete .= ", empr_statut='".pmb_mysql_result($r,0,0)."'";
 		} else {
 			$q= "insert into empr_statut (statut_libelle) values ('Importé') ";
-			$r = mysql_query($q, $dbh);
-			$requete .= ", empr_statut='".mysql_insert_id($dbh)."'";
+			$r = pmb_mysql_query($q, $dbh);
+			$requete .= ", empr_statut='".pmb_mysql_insert_id($dbh)."'";
 		}
 		
 	}else{
 		$requete .= ", empr_modif='".addslashes(date('Y-m-j'))."'";
 	}
 	$requete .= " where id_empr='".$id_lect."'";
-	if(mysql_query($requete)){
+	if(pmb_mysql_query($requete)){
 		$lect_modif++;
 	}else{
 		$lect_erreur++;
@@ -354,51 +354,51 @@ function maj_lect_par_lect($tab,$dbh,$statut,$id_lect){
 	
 	//Traitement des groupes
 	$requete="delete from empr_groupe where empr_id='".$id_lect."'";
-	if(!mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";
+	if(!pmb_mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";
 	
 	if(trim($tab[15])){
 		//On créer le groupe si il n'existe pas et on y affecte le lecteur
 		$requete="select id_groupe from groupe where libelle_groupe='".addslashes(trim($tab[15]))."'";
-		$r = mysql_query($requete, $dbh);
-		if (mysql_num_rows($r)) {
-			$id_grp=mysql_result($r,0,0);
+		$r = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$id_grp=pmb_mysql_result($r,0,0);
 		}else{
 			$q= "insert into groupe (libelle_groupe) values ('".addslashes(trim($tab[15]))."') ";
-			$r = mysql_query($q, $dbh);
-			$id_grp =mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$id_grp =pmb_mysql_insert_id($dbh);
 		}
 		$requete="insert into empr_groupe(empr_id,groupe_id) values ('".$id_lect."','".$id_grp."')";
-		if(!mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";	
+		if(!pmb_mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";	
 	}
 	
 	if(trim($tab[16]) and trim($tab[16]) != trim($tab[15])){
 		//On créer le groupe si il n'existe pas et on y affecte le lecteur
 		$requete="select id_groupe from groupe where libelle_groupe='".addslashes(trim($tab[16]))."'";
-		$r = mysql_query($requete, $dbh);
-		if (mysql_num_rows($r)) {
-			$id_grp=mysql_result($r,0,0);
+		$r = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$id_grp=pmb_mysql_result($r,0,0);
 		}else{
 			$q= "insert into groupe (libelle_groupe) values ('".addslashes(trim($tab[16]))."') ";
-			$r = mysql_query($q, $dbh);
-			$id_grp =mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$id_grp =pmb_mysql_insert_id($dbh);
 		}
 		$requete="insert into empr_groupe(empr_id,groupe_id) values ('".$id_lect."','".$id_grp."')";
-		if(!mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";	
+		if(!pmb_mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";	
 	}
 	
 	if ($tab[13] and count($tab) == 18) {
 		//Traitement du champs perso email
 		$q="select idchamp from empr_custom where name='email_perso' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			$idchamp=mysql_result($r,0,0);
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$idchamp=pmb_mysql_result($r,0,0);
 			//On supprime l'ancien
 			$requete="delete from empr_custom_values where empr_custom_origine='".$id_lect."' and empr_custom_champ='".$idchamp."'";
-			if(!mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";
+			if(!pmb_mysql_query($requete)) echo "Requete echoué : ".$requete."<br>";
 			//On créer le nouveau
 			$q = "insert into empr_custom_values (empr_custom_champ, empr_custom_origine, empr_custom_small_text) ";
 			$q.= "values('".$idchamp."', '".$id_lect."','".addslashes($tab[13])."' ) ";
-			mysql_query($q, $dbh);
+			pmb_mysql_query($q, $dbh);
 		}
 	}
 	
@@ -469,10 +469,10 @@ function import_empr($dbh){
 	        		
 	        		//On regarde si le lecteur existe déja en le recherchant par son badge
 					$requete="select id_empr from empr join empr_custom_values on empr_custom_origine=id_empr where empr_cb LIKE '".addslashes($lect[$i][1])."%' and empr_custom_champ='2' and empr_custom_small_text='".addslashes($lect[$i][0])."' ";
-					$select = mysql_query($requete,$dbh);
-					$nb_enreg = mysql_num_rows($select);
+					$select = pmb_mysql_query($requete,$dbh);
+					$nb_enreg = pmb_mysql_num_rows($select);
 					if($nb_enreg == 1){
-						maj_lect_par_lect($lect[$i],$dbh,$statut,mysql_result($select,0,0));
+						maj_lect_par_lect($lect[$i],$dbh,$statut,pmb_mysql_result($select,0,0));
 					}elseif($nb_enreg > 1){
 						$lect_erreur++;
 						echo "<b>Erreur : Attention le code barre ".$lect[$i][0]." est en double dans la base veuillez le modifier pour l'un des deux lecteurs<b><br />";
@@ -485,8 +485,8 @@ function import_empr($dbh){
 		        	$group_supp=0;
 		        	if($i+1 == count($lect)){
 		        		$requete="delete groupe from groupe left join empr_groupe on id_groupe=groupe_id where empr_id is null";
-		        		$res=mysql_query($requete, $dbh);
-		        		$group_supp=mysql_affected_rows();
+		        		$res=pmb_mysql_query($requete, $dbh);
+		        		$group_supp=pmb_mysql_affected_rows();
 		        	}
 		        }	
 	        }

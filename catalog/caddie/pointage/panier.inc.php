@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: panier.inc.php,v 1.1.4.1 2014-09-05 08:00:22 dgoron Exp $
+// $Id: panier.inc.php,v 1.2 2014-09-05 07:59:38 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

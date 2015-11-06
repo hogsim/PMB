@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: getimage.php,v 1.11.6.6 2015-05-28 08:00:02 jpermanne Exp $
+// $Id: getimage.php,v 1.22 2015-05-28 07:59:21 jpermanne Exp $
 
 if(isset($_GET['noticecode'])){
 	$noticecode=$_GET['noticecode'];
@@ -22,9 +22,8 @@ $base_noheader = 1;
 $base_nocheck  = 1;
 $base_nobody   = 1;
 
-
-require_once ("$base_path/includes/init.inc.php"); 
-require_once("$class_path/curl.class.php");
+require_once ($base_path."/includes/init.inc.php");
+require_once($class_path."/curl.class.php");
 require_once("$base_path/includes/isbn.inc.php");
 
 session_write_close();
@@ -33,10 +32,23 @@ $poids_fichier_max=1024*1024;//Limite la taille de l'image à 1 Mo
 
 if($notice_id && $pmb_notice_img_folder_id){
 	$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-	$res = mysql_query($req,$dbh);
-	if(mysql_num_rows($res)){
-		$rep=mysql_fetch_object($res);
+	$res = pmb_mysql_query($req,$dbh);
+	if(pmb_mysql_num_rows($res)){
+		$rep=pmb_mysql_fetch_object($res);
 		$img=$rep->repertoire_path."img_".$notice_id;
+		header('Content-Type: image/png');
+		$fp=@fopen($img, "rb");
+		fpassthru($fp);
+		fclose($fp) ;
+		exit;
+	}
+}
+if($etagere_id && $pmb_notice_img_folder_id){
+	$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
+	$res = pmb_mysql_query($req,$dbh);
+	if(pmb_mysql_num_rows($res)){
+		$rep=pmb_mysql_fetch_object($res);
+		$img=$rep->repertoire_path."img_etag_".$etagere_id;
 		header('Content-Type: image/png');
 		$fp=@fopen($img, "rb");
 		fpassthru($fp);
@@ -73,25 +85,38 @@ if ($pmb_curl_available) {
 	$aCurl->options["CURLOPT_ENCODING"]="";
 	$content = $aCurl->get($vigurl);
 	$image=$content->body;
+	$need_copyright_amazon = false;
 	
 	if(!$image || $content->headers['Status-Code'] != 200){
 		$content = $aCurl->get($url_image10);
 		$image=$content->body;
+		if ($image && strpos($url_image10, 'amazon')) {
+			$need_copyright_amazon = true;
+		}
 	}
 	
 	if(!$image || $content->headers['Status-Code'] != 200){
 		$content = $aCurl->get($url_image13);
 		$image=$content->body;
+		if ($image && strpos($url_image13, 'amazon')) {
+			$need_copyright_amazon = true;
+		}
 	}
 	
 	if(!$image || $content->headers['Status-Code'] != 200){
 		$content = $aCurl->get($url_imageEAN);
 		$image=$content->body;
+		if ($image && strpos($url_imageEAN, 'amazon')) {
+			$need_copyright_amazon = true;
+		}
 	}
 	
 	if(!$image || $content->headers['Status-Code'] != 200){
 		$content = $aCurl->get($url_image);
 		$image=$content->body;
+		if ($image && strpos($url_image, 'amazon')) {
+			$need_copyright_amazon = true;
+		}
 	}
 	
 	if(!$image || $content->headers['Status-Code'] != 200 || $content->headers['Content-Length'] > $aCurl->limit){//Si le fichier est trop gros image n'est pas vide mais ne contient que le début d'ou le dernier test
@@ -140,6 +165,12 @@ if ($pmb_curl_available) {
 			}else{
 				imagecopyresampled($dest, $img, 0, 0, 0, 0, $largeur, $hauteur, $largeur, $hauteur);
 			}
+			
+			//Copyright Amazon
+			if ($need_copyright_amazon) {
+				imagestring($dest, 1, ($largeur/3), ($hauteur/1.1), "Copyright Amazon", $white);
+			}
+			
 			imagepng($dest);
 			imagedestroy($dest);
 			imagedestroy($img);
@@ -197,7 +228,7 @@ if ($pmb_curl_available) {
 					$largeur = imagesx($img);
 					$hauteur = imagesy($img);
 				}
-				
+
 				$dest = imagecreatetruecolor($largeur,$hauteur);
 				$white = imagecolorallocate($dest, 255, 255, 255);
 				imagefilledrectangle($dest, 0, 0, $largeur, $hauteur, $white);

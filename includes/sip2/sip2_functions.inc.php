@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sip2_functions.inc.php,v 1.17.2.2 2015-04-03 09:30:20 mbertin Exp $
+// $Id: sip2_functions.inc.php,v 1.20 2015-04-03 11:16:28 jpermanne Exp $
 
 require_once($class_path."/emprunteur.class.php");
 require_once("$class_path/mono_display.class.php");
@@ -40,12 +40,12 @@ function _acs_status_($values) {
 	$ret["PROTOCOL_VERSION"]="2.00";
 	//Champs variables
 	$requete="select location_libelle from docs_location where idlocation=".$deflt_docs_location;
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) $ret["INSTITUTION_ID"][0]=mysql_result($resultat,0,0); else $ret["INSTITUTION_ID"][0]=$deflt_docs_location;
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) $ret["INSTITUTION_ID"][0]=pmb_mysql_result($resultat,0,0); else $ret["INSTITUTION_ID"][0]=$deflt_docs_location;
 	$requete="select location_libelle from docs_location where idlocation=".$deflt_docs_location;
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	if ($resultat) {
-		$ret["LIBRARY_NAME"][0]=mysql_result($resultat,0,0);
+		$ret["LIBRARY_NAME"][0]=pmb_mysql_result($resultat,0,0);
 	}
 	$ret["SUPPORTED_MESSAGES"][0]="YYYYYYNYYNYYYYNN";
 	return $ret;
@@ -82,9 +82,9 @@ function _patron_information_response_($values) {
 	
 	$requete="select id_empr from empr where empr_cb='".addslashes($empr_cb)."'";
 	
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-		$id_empr=mysql_result($resultat,0,0);
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+		$id_empr=pmb_mysql_result($resultat,0,0);
 		$empr=new emprunteur($id_empr,'','',1);
 	
 		if (!$localisation) $localisation=$empr->empr_location_l;
@@ -94,9 +94,9 @@ function _patron_information_response_($values) {
 		$ret["CHARGED_ITEMS_COUNT"]=str_pad(count($empr->prets),4,"0",STR_PAD_LEFT); //str_pad($empr->nb_reservations,4,"0",STR_PAD_LEFT);
 		$ret["OVERDUE_ITEMS_COUNT"]=str_pad($empr->retard,4,"0",STR_PAD_LEFT);
 		$nb_total_resa=$empr->nb_reservations;
-		$rqt_resas=mysql_query("select count(id_resa) as nb from resa where resa_idempr=$id_empr and resa_confirmee=0 group by resa_confirmee");
-		if (mysql_num_rows($rqt_resas)) 
-			$nb_resa_non_confirmes=mysql_result($rqt_resas,0,0);
+		$rqt_resas=pmb_mysql_query("select count(id_resa) as nb from resa where resa_idempr=$id_empr and resa_confirmee=0 group by resa_confirmee");
+		if (pmb_mysql_num_rows($rqt_resas)) 
+			$nb_resa_non_confirmes=pmb_mysql_result($rqt_resas,0,0);
 		else $nb_resa_non_confirmes=0;
 		$ret["HOLD_ITEMS_COUNT"]=str_pad($nb_total_resa-$nb_resa_non_confirmes,4,"0",STR_PAD_LEFT);
 		if ($empr->nb_amendes) $ret["FINE_ITEMS_COUNT"]=str_pad($empr->nb_amendes,4,"0",STR_PAD_LEFT); else $ret["FINE_ITEMS_COUNT"]="    ";
@@ -122,10 +122,10 @@ function _patron_information_response_($values) {
 				case 0:
 					//Ouvrages réservés dispos
 					$rqt_resa="select resa_cb from resa where resa_idempr=$id_empr and resa_confirmee=1";
-					$res_resa=mysql_query($rqt_resa);
-					$nb_resa=mysql_num_rows($res_resa);
+					$res_resa=pmb_mysql_query($rqt_resa);
+					$nb_resa=pmb_mysql_num_rows($res_resa);
 					$resas=array();
-					while ($resa=mysql_fetch_object($res_resa)) {
+					while ($resa=pmb_mysql_fetch_object($res_resa)) {
 						$resas[]=$resa->resa_cb;
 					}
 					$n=0;
@@ -170,18 +170,18 @@ function _patron_information_response_($values) {
 				case 5:
 					//Ouvrages réservés non dispos
 					$rqt_resa="select resa_idnotice,resa_idbulletin from resa where resa_idempr=$id_empr and resa_confirmee=0";
-					$res_resa=mysql_query($rqt_resa);
-					$nb_resa=mysql_num_rows($res_resa);
+					$res_resa=pmb_mysql_query($rqt_resa);
+					$nb_resa=pmb_mysql_num_rows($res_resa);
 					$resas=array();
-					while ($resa=mysql_fetch_object($res_resa)) {
+					while ($resa=pmb_mysql_fetch_object($res_resa)) {
 						if ($resa->resa_idnotice) {
 							//Récupération d'un exemplaire au hasard de la notice
 							$rqt_expl="select expl_cb from exemplaires where expl_notice=".$resa->resa_idnotice." limit 1";
-							$resa_cb=mysql_result(mysql_query($rqt_expl),0,0);
+							$resa_cb=pmb_mysql_result(pmb_mysql_query($rqt_expl),0,0);
 						} else {
 							//Récupération d'un exemplaire au hasard d'un bulletin
 							$rqt_expl="select expl_cb from exemplaires where expl_bulletin=".$resa->resa_idbbulletin." limit 1";
-							$resa_cb=mysql_result(mysql_query($rqt_expl),0,0);
+							$resa_cb=pmb_mysql_result(pmb_mysql_query($rqt_expl),0,0);
 						}
 						$resas[]=$resa_cb;
 					}
@@ -253,9 +253,9 @@ function _patron_status_response_($values) {
 	$empr_pwd=$values["PATRON_PASSWORD"][0];
 	
 	$requete="select id_empr from empr where empr_cb='".addslashes($empr_cb)."'";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-		$id_empr=mysql_result($resultat,0,0);
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+		$id_empr=pmb_mysql_result($resultat,0,0);
 		$empr=new emprunteur($id_empr,'','',1);
 		if (!$localisation) $localisation=$empr->empr_location_l;
 		$pret=($empr->blocage_retard||$empr->blocage_amendes||$empr->blocage_abt||(!$empr->allow_loan)?"Y":" ");
@@ -293,9 +293,9 @@ function _end_session_response_($values) {
 	$empr_cb=$values["PATRON_IDENTIFIER"][0];
 
 	$requete="select id_empr from empr where empr_cb='".addslashes($empr_cb)."'";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-		$id_empr=mysql_result($resultat,0,0);
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+		$id_empr=pmb_mysql_result($resultat,0,0);
 		$empr=new emprunteur($id_empr,'','',1);
 		if (!$localisation) $localisation=$empr->empr_location_l;
 		$ret["PATRON_IDENTIFIER"][0]=$empr->cb;
@@ -331,10 +331,10 @@ function _item_information_response_($values) {
 	$requete .= " WHERE expl_cb='".addslashes($expl_cb)."' ";
 	$requete .= " order by location_libelle, section_libelle, expl_cote, expl_cb ";
 	
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
 		//Calcul du statut
-		$expl = mysql_fetch_object($resultat);
+		$expl = pmb_mysql_fetch_object($resultat);
 		if ($expl->pret_flag) {
 			if($expl->pret_retour) {
 				$statut="01";
@@ -342,8 +342,8 @@ function _item_information_response_($values) {
 				$error_message=$selfservice_pret_deja_prete_msg;
 			} else {
 				// tester si réservé
-				$result_resa = mysql_query("select 1 from resa where resa_cb='".addslashes($expl->expl_cb)."' ");
-				$reserve = @mysql_num_rows($result_resa);
+				$result_resa = pmb_mysql_query("select 1 from resa where resa_cb='".addslashes($expl->expl_cb)."' ");
+				$reserve = @pmb_mysql_num_rows($result_resa);
 				if ($reserve) {
 					$statut="08";
 					$error=true;
@@ -355,7 +355,7 @@ function _item_information_response_($values) {
 			$error=true;
 			$error_message=$selfservice_pret_non_pretable_msg;
 		}
-		$hold_queue=@mysql_num_rows($result_resa)*1;
+		$hold_queue=@pmb_mysql_num_rows($result_resa)*1;
 		$ret["CIRCULATION_STATUS"]=$statut;
 		$ret["SECURITY_MARKER"]="00";
 		$ret["FEE_TYPE"]="01";
@@ -422,20 +422,20 @@ function _checkout_response_($values) {
 	$requete .= " left join docs_type on exemplaires.expl_typdoc=docs_type.idtyp_doc  ";
 	$requete .= " WHERE expl_cb='".addslashes($expl_cb)."' ";
 	$requete .= " order by location_libelle, section_libelle, expl_cote, expl_cb ";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	
-	if (mysql_num_rows($resultat)) {
-		$expl = mysql_fetch_object($resultat);
+	if (pmb_mysql_num_rows($resultat)) {
+		$expl = pmb_mysql_fetch_object($resultat);
 		
 		//Recherche de l'emprunteur
 		$requete="select id_empr from empr where empr_cb='".addslashes($empr_cb)."'";
-		$resultat=mysql_query($requete);
-		if (!mysql_num_rows($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		if (!pmb_mysql_num_rows($resultat)) {
 			$error=true;
 			$error_message=$selfservice_pret_carte_invalide_msg;
 			$ok=0;
 		} else {
-			$id_empr=mysql_result($resultat,0,0);
+			$id_empr=pmb_mysql_result($resultat,0,0);
 			$empr=new emprunteur($id_empr,'','',1);
 			$pret=($empr->blocage_retard||$empr->blocage_amendes||$empr->blocage_abt||(!$empr->allow_loan)?false:true);
 			if (!$pret) {
@@ -457,8 +457,8 @@ function _checkout_response_($values) {
 						$ok=0;
 					} else {
 						// tester si réservé
-						$result_resa = mysql_query("select 1 from resa where resa_cb='".addslashes($expl->expl_cb)."' and resa_idempr!='".addslashes($id_empr)."'");
-						$reserve = @mysql_num_rows($result_resa);
+						$result_resa = pmb_mysql_query("select 1 from resa where resa_cb='".addslashes($expl->expl_cb)."' and resa_idempr!='".addslashes($id_empr)."'");
+						$reserve = @pmb_mysql_num_rows($result_resa);
 						if ($reserve) {
 							$error=true;
 							$error_message=$selfservice_pret_deja_reserve_msg;
@@ -472,10 +472,10 @@ function _checkout_response_($values) {
 								$pret->confirm_pret($id_empr, $expl->expl_id);
 								//Recherche de la date de retour
 								$requete="select date_format(pret_retour, '".$msg["format_date"]."') as retour from pret where pret_idexpl=".$expl->expl_id;
-								$resultat=mysql_query($requete);
+								$resultat=pmb_mysql_query($requete);
 								$error=true;
-								$error_message=$titre." / retour le : ".@mysql_result($resultat,0,0);
-								$due_date=@mysql_result($resultat,0,0);
+								$error_message=$titre." / retour le : ".@pmb_mysql_result($resultat,0,0);
+								$due_date=@pmb_mysql_result($resultat,0,0);
 							} else {
 								$ok=0;
 								$error=true;
@@ -532,13 +532,13 @@ function _checkin_response_($values) {
 	$titre=$expl_cb;
 	
 	$requete="select expl_id,expl_bulletin,expl_notice,type_antivol,empr_cb from exemplaires join pret on (expl_id=pret_idexpl) join empr on (pret_idempr=id_empr) where expl_cb='".addslashes($expl_cb)."'";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	if (!$resultat) {
 		$ok=0;
 		$error=true;
 		$ret["SCREEN_MESSAGE"][0]=$selfservice_pret_expl_inconnu_msg;	
 	} else {
-		$expl=mysql_fetch_object($resultat);
+		$expl=pmb_mysql_fetch_object($resultat);
 		$empr_cb=$expl->empr_cb;
 		if ($expl->expl_bulletin) {
 			$isbd = new bulletinage_display($expl->expl_bulletin);
@@ -572,7 +572,7 @@ function _checkin_response_($values) {
 		*/		
  		if($retour->message_loc || $retour->message_resa || $retour->message_retard || $retour->message_amende || $retour->message_blocage){
 			$ret["SCREEN_MESSAGE"][0]=$retour->message_loc." ".$retour->message_resa." ".$retour->message_retard." ".$retour->message_amende." ".$retour->message_blocage;
-			//$ok=0;
+ 			//$ok=0;
 			//Attention, pour les deux lignes suivantes, cela dépend d'un paramètre NEDAP ou IDENT
 			if($protocol_prolonge){
 				$ok=0;
@@ -619,18 +619,18 @@ function _renew_response_($values) {
 	if($opac_pret_prolongation){		
 		$prolongation = TRUE;
 		$requete="select expl_id,id_empr, expl_bulletin,expl_notice,type_antivol,empr_cb from exemplaires join pret on (expl_id=pret_idexpl) join empr on (pret_idempr=id_empr) where expl_cb='".addslashes($expl_cb)."'";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		if (!$resultat) {
 			$error_message="Le document n'existe pas ou n'est pas en prêt!";	
 		} else {	
-			$expl=mysql_fetch_object($resultat);
+			$expl=pmb_mysql_fetch_object($resultat);
 			$expl_id=$expl->expl_id;
 			$id_empr=$expl->id_empr;	
 			
 			//on recupere les informations du pret 
 			$query = "select cpt_prolongation, retour_initial, pret_date, pret_retour from pret where pret_idexpl=".$expl_id." limit 1";
-			$result = mysql_query($query, $dbh);
-			$data = mysql_fetch_array($result);
+			$result = pmb_mysql_query($query, $dbh);
+			$data = pmb_mysql_fetch_array($result);
 			$cpt_prolongation = $data['cpt_prolongation']; 
 			$retour_initial =  $data['retour_initial'];
 			$cpt_prolongation++;
@@ -672,8 +672,8 @@ function _renew_response_($values) {
 			}
 			// Recherche de la nouvelle date de retour
 			$req_date_calendrier = "select date_ouverture from ouvertures where ouvert=1 and num_location='".$data['expl_location']."' order by date_ouverture asc";
-			$res_date_calendrier = mysql_query($req_date_calendrier);
-			while(($date_calendrier = mysql_fetch_object($res_date_calendrier))){
+			$res_date_calendrier = pmb_mysql_query($req_date_calendrier);
+			while(($date_calendrier = pmb_mysql_fetch_object($res_date_calendrier))){
 				$ecart = sql_value("SELECT DATEDIFF('$date_calendrier->date_ouverture','$date_prolongation')");
 				if($ecart >= 0 ){
 					$date_prolongation = $date_calendrier->date_ouverture;
@@ -684,10 +684,10 @@ function _renew_response_($values) {
 			if($prolongation==TRUE)	{					
 				// Memorisation de la nouvelle date de prolongation	
 				$query = "update pret set cpt_prolongation='".$cpt_prolongation."', pret_retour='".$date_prolongation."' where pret_idexpl=".$expl_id;
-				$result = mysql_query($query, $dbh);
+				$result = pmb_mysql_query($query, $dbh);
 				$due_date=$date_prolongation;
 				$due_date=sql_value("select date_format('$date_prolongation', '".$msg["format_date"]."')");
-				//$due_date=@mysql_result($resultat,0,0);
+				//$due_date=@pmb_mysql_result($resultat,0,0);
 			} else {
 				$error_message="$selfservice_pret_prolonge_non_msg";						
 			}
@@ -718,8 +718,8 @@ function _renew_response_($values) {
 	return $ret;
 }
 function sql_value($rqt) {
-	if(($result=mysql_query($rqt))) {
-		if(($row = mysql_fetch_row($result)))	return $row[0];
+	if(($result=pmb_mysql_query($rqt))) {
+		if(($row = pmb_mysql_fetch_row($result)))	return $row[0];
 	}	
 	return '';
 }

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rapport.class.php,v 1.10 2010-03-04 15:35:21 kantin Exp $
+// $Id: rapport.class.php,v 1.11 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -193,9 +193,9 @@ class rapport_demandes extends rapport {
 			and id_note not in (select num_note from rapport_demandes where num_demande='".$this->id_demande."' )
 			order by num_action, date_note
 			";
-		$res = mysql_query($req,$dbh);		
+		$res = pmb_mysql_query($req,$dbh);		
 		$indice=0;
-		while(($note = mysql_fetch_object($res))){
+		while(($note = pmb_mysql_fetch_object($res))){
 			$this->export_elements[$indice]['id'] = $note->id_note;
 			$this->export_elements[$indice]['titre'] = $note->titre;
 			$this->export_elements[$indice]['contenu'] = nl2br($note->contenu);
@@ -220,9 +220,9 @@ class rapport_demandes extends rapport {
 		left join demandes_notes on num_note=id_note 
 		left join demandes_actions on num_action=id_action 
 		where r.num_demande='".$this->id_demande."' order by ordre";
-		$res = mysql_query($req,$dbh) or die(mysql_error()."<br/>".$req);
+		$res = pmb_mysql_query($req,$dbh) or die(pmb_mysql_error()."<br/>".$req);
 		$indice=0;
-		while(($item = mysql_fetch_object($res))){
+		while(($item = pmb_mysql_fetch_object($res))){
 			$this->rapport_elements[$indice]['id_item'] = $item->id_item;
 			$this->rapport_elements[$indice]['num_element'] = $item->num_note;
 			$this->rapport_elements[$indice]['num_object'] = $item->num_demande;
@@ -250,8 +250,8 @@ class rapport_demandes extends rapport {
 			left join demandes_users du on du.num_demande=id_demande
 			left join users on num_user=userid
 			where id_demande='".$this->id_demande."' group by id_demande ";
-		$res = mysql_query($req,$dbh) or die(mysql_error()."<br/>".$req);
-		while(($dmde = mysql_fetch_object($res))){
+		$res = pmb_mysql_query($req,$dbh) or die(pmb_mysql_error()."<br/>".$req);
+		while(($dmde = pmb_mysql_fetch_object($res))){
 			$this->intro .= "
 				<intro>
 					<title>".htmlspecialchars($dmde->titre_demande,ENT_QUOTES,$charset)."</title>

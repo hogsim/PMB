@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lender.inc.php,v 1.11 2008-01-07 13:56:47 dbellamy Exp $
+// $Id: lender.inc.php,v 1.12 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,13 +32,13 @@ function show_lender($dbh) {
 	// affichage du tableau des utilisateurs
 
 	$requete = "SELECT idlender,lender_libelle FROM lenders ORDER BY lender_libelle ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -75,18 +75,18 @@ switch($action) {
 	case 'update':
 		// vérification validité des données fournies.
 		$requete = " SELECT count(1) FROM lenders WHERE (lender_libelle='$form_libelle' AND idlender!='$id' )  LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 			error_form_message($form_libelle.$msg["docs_label_already_used"]);
 		} else {
 			// O.K.,  now if item already exists UPDATE else INSERT
 			if($id != 0) {
 				$requete = "UPDATE lenders SET lender_libelle='$form_libelle' WHERE idlender=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				$requete = "INSERT INTO lenders (idlender,lender_libelle) VALUES (0, '$form_libelle') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				}
 			}
 		show_lender($dbh);
@@ -101,9 +101,9 @@ switch($action) {
 	case 'modif':
 		if($id!=""){
 			$requete = "SELECT lender_libelle FROM lenders WHERE idlender=$id ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				lender_form($row->lender_libelle, $id);
 				} else {
 					show_lender($dbh);
@@ -115,16 +115,16 @@ switch($action) {
 	case 'del':
 		if($id!="") {
 			$total = 0;
-			$total = mysql_num_rows (mysql_query("select 1 from exemplaires where expl_owner='".$id."' limit 0,1", $dbh));
-			$total = $total + mysql_num_rows (mysql_query("select 1 from docs_codestat where statisdoc_owner='".$id."' limit 0,1", $dbh));
-			$total = $total + mysql_num_rows (mysql_query("select 1 from docs_location where locdoc_owner='".$id."' limit 0,1", $dbh));
-			$total = $total + mysql_num_rows (mysql_query("select 1 from docs_section where sdoc_owner ='".$id."' limit 0,1", $dbh));
-			$total = $total + mysql_num_rows (mysql_query("select 1 from docs_statut where statusdoc_owner ='".$id."' limit 0,1", $dbh));
-			$total = $total + mysql_num_rows (mysql_query("select 1 from docs_type where tdoc_owner ='".$id."' limit 0,1", $dbh));
+			$total = pmb_mysql_num_rows(pmb_mysql_query("select 1 from exemplaires where expl_owner='".$id."' limit 0,1", $dbh));
+			$total = $total + pmb_mysql_num_rows(pmb_mysql_query("select 1 from docs_codestat where statisdoc_owner='".$id."' limit 0,1", $dbh));
+			$total = $total + pmb_mysql_num_rows(pmb_mysql_query("select 1 from docs_location where locdoc_owner='".$id."' limit 0,1", $dbh));
+			$total = $total + pmb_mysql_num_rows(pmb_mysql_query("select 1 from docs_section where sdoc_owner ='".$id."' limit 0,1", $dbh));
+			$total = $total + pmb_mysql_num_rows(pmb_mysql_query("select 1 from docs_statut where statusdoc_owner ='".$id."' limit 0,1", $dbh));
+			$total = $total + pmb_mysql_num_rows(pmb_mysql_query("select 1 from docs_type where tdoc_owner ='".$id."' limit 0,1", $dbh));
 						
 			if ($total==0) {
 				$requete = "DELETE FROM lenders WHERE idlender=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_lender($dbh);
 				} else {
 					error_message(	$msg[294], $msg[1705], 1, 'admin.php?categ=docs&sub=lenders&action=');

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_main.inc.php,v 1.19.2.1 2015-10-14 08:56:11 jpermanne Exp $
+// $Id: ajax_main.inc.php,v 1.24 2015-04-30 14:36:46 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -50,7 +50,7 @@ switch($categ):
 		break;
 	case "auth":
 		require_once($class_path."/auth_popup.class.php");
-		//print $popup_header;
+		print $popup_header;
 		$auth_popup = new auth_popup();
 		$auth_popup->process();
 		break;
@@ -64,6 +64,21 @@ switch($categ):
 		break;
 	case 'sort' :
 		include('./ajax/sort.inc.php');
+		break;
+	case 'map' :
+		include('./ajax/misc/map.inc.php');
+		break;
+	case 'notice' :
+		include('./ajax/misc/notice.inc.php');
+		break;
+	case 'messages':
+		include('./ajax/misc/messages.inc.php');
+		break;
+	case 'storage' :
+		include('./ajax/storage.inc.php');
+		break;
+	case 'download_docnum':
+		include('./ajax/download_docnum.inc.php');
 		break;
 	default:
 	break;		

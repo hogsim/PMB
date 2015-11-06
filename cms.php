@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms.php,v 1.10 2014-01-13 08:07:15 arenou Exp $
+// $Id: cms.php,v 1.11 2015-04-03 11:16:23 jpermanne Exp $
 
 
 // définition du minimum nécessaire 
@@ -75,4 +75,4 @@ require_once("./cms/cms.inc.php");
 print $footer;
 
 // deconnection MYSql
-mysql_close($dbh);
+pmb_mysql_close($dbh);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_expl_supagro.inc.php,v 1.3 2011-07-08 12:48:12 mbertin Exp $
+// $Id: ajax_expl_supagro.inc.php,v 1.4 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -47,8 +47,8 @@ function calculer_cote_bartoli($text=""){
 	$array_result = array();
 	
 	$req_section = " select section_libelle from docs_section where idsection='".$$section."'";
-	$res_sect = mysql_query($req_section,$dbh);
-	$sec_libelle = mysql_result($res_sect,0,0);
+	$res_sect = pmb_mysql_query($req_section,$dbh);
+	$sec_libelle = pmb_mysql_result($res_sect,0,0);
 	
 	if($$section != 27) 
 		$array_sec = explode(' ',strip_empty_words($sec_libelle));
@@ -56,10 +56,10 @@ function calculer_cote_bartoli($text=""){
 	
 	$req_index = "select indexint_id as id, indexint_name as name from indexint where index_indexint REGEXP '(".implode('|',$array_sec).")'
 	  and indexint_name like '".addslashes($text)."%' and num_pclass in('2','3') order by indexint_name, num_pclass limit 20";
-	$res_index = mysql_query($req_index,$dbh);
+	$res_index = pmb_mysql_query($req_index,$dbh);
 	
-	if(mysql_num_rows($res_index) >= 1) {		
-		while(($cote = mysql_fetch_object($res_index))){
+	if(pmb_mysql_num_rows($res_index) >= 1) {		
+		while(($cote = pmb_mysql_fetch_object($res_index))){
 			$req_cote = "
 				select  if(isnull(expl_cote),concat(indexint_name,' ','1'),expl_cote) as cote, if(isnull(expl_cote),0,1) as exist
 				from exemplaires
@@ -73,10 +73,10 @@ function calculer_cote_bartoli($text=""){
 			}else{
 				$req_cote.="and expl_cote like '".addslashes($cote->name)." %'";
 			}
-			$res_cote = mysql_query($req_cote,$dbh);
-			if(mysql_num_rows($res_cote)){
+			$res_cote = pmb_mysql_query($req_cote,$dbh);
+			if(pmb_mysql_num_rows($res_cote)){
 				$liste_cotes=array();
-				while(($cotes = mysql_fetch_object($res_cote))){
+				while(($cotes = pmb_mysql_fetch_object($res_cote))){
 					$liste_cotes[] = $cotes->cote;											 											
 				} 
 				if($cote->name == "BR" || $cote->name == "S BR"){
@@ -95,8 +95,8 @@ function calculer_cote_bartoli($text=""){
 	} else {
 		$req_index = "select indexint_id as id, indexint_name as name from indexint where num_pclass in('2','3') 
 		  and indexint_name like '".addslashes($text)."%'  order by indexint_name, num_pclass limit 20";
-		$res_index = mysql_query($req_index,$dbh);
-		while(($cote = mysql_fetch_object($res_index))){
+		$res_index = pmb_mysql_query($req_index,$dbh);
+		while(($cote = pmb_mysql_fetch_object($res_index))){
 			$req_cote = "
 				select  if(isnull(expl_cote),concat(indexint_name,' ','1'),expl_cote) as cote, if(isnull(expl_cote),0,1) as exist
 				from exemplaires
@@ -110,10 +110,10 @@ function calculer_cote_bartoli($text=""){
 			}else{
 				$req_cote.="and expl_cote like '".addslashes($cote->name)." %'";
 			}
-			$res_cote = mysql_query($req_cote,$dbh);
-			if(mysql_num_rows($res_cote)){
+			$res_cote = pmb_mysql_query($req_cote,$dbh);
+			if(pmb_mysql_num_rows($res_cote)){
 				$liste_cote=array();
-				while(($cotes = mysql_fetch_object($res_cote))){
+				while(($cotes = pmb_mysql_fetch_object($res_cote))){
 					$liste_cote[] = $cotes->cote;			 											
 				}
 				if($cote->name == "BR" || $cote->name == "S BR"){
@@ -148,16 +148,16 @@ function calculer_cote_irc($text=""){
 	$array_result = array();
 	
 	$req_section = " select section_libelle from docs_section where idsection='".$$section."'";
-	$res_sect = mysql_query($req_section,$dbh);
-	$sec_libelle = mysql_result($res_sect,0,0);
+	$res_sect = pmb_mysql_query($req_section,$dbh);
+	$sec_libelle = pmb_mysql_result($res_sect,0,0);
 	
 	if($$section != 27) 
 		$array_sec = explode(' ',strip_empty_words($sec_libelle));
 	else $array_sec = array();
 		$req_index = "select indexint_id as id, indexint_name as name from indexint where num_pclass in('4','6')
 		 and indexint_name like '".addslashes($text)."%'  order by indexint_name, num_pclass limit 20";
-		$res_index = mysql_query($req_index,$dbh);
-		while(($cote = mysql_fetch_object($res_index))){
+		$res_index = pmb_mysql_query($req_index,$dbh);
+		while(($cote = pmb_mysql_fetch_object($res_index))){
 			$nom=""; 
 			if(strpos($cote->name,'-')!==false){ 
 				$nom = $cote->name;
@@ -172,10 +172,10 @@ function calculer_cote_irc($text=""){
 				join notices on expl_notice=notice_id
 				left join indexint on indexint=indexint_id 
 				where expl_location='".$f_ex_location."' ".$clause;	
-			$res_cote = mysql_query($req_cote,$dbh);
-			if(mysql_num_rows($res_cote)){
+			$res_cote = pmb_mysql_query($req_cote,$dbh);
+			if(pmb_mysql_num_rows($res_cote)){
 				$liste_cotes=array();
-				while(($cotes = mysql_fetch_object($res_cote))){
+				while(($cotes = pmb_mysql_fetch_object($res_cote))){
 					$liste_cotes[] = $cotes->cote;											 											
 				}
 				$array_result[] = clean_cote_bartoli($nom,$liste_cotes);
@@ -198,8 +198,8 @@ function calculer_cote_gaillarde($text){
 	$array_result = array();
 	
 	$req_section = " select section_libelle from docs_section where idsection='".$$section."'";
-	$res_sect = mysql_query($req_section,$dbh);
-	$sec_libelle = mysql_result($res_sect,0,0);
+	$res_sect = pmb_mysql_query($req_section,$dbh);
+	$sec_libelle = pmb_mysql_result($res_sect,0,0);
 	
 	$tab_section_auto = array("Congrès"=>"20","Accueil"=>"Accueil","ANL"=>"ANL","ECO"=>"ECO",
 		"ENV"=>"ENV","F"=>"F","GES"=>"GES","IAA"=>"IAA","Langues"=>"LANG","MAGASIN"=>"MAGASIN","MVV"=>"MVV",
@@ -213,10 +213,10 @@ function calculer_cote_gaillarde($text){
 			where expl_location='".$f_ex_location."' 
 			and expl_cote REGEXP '(".implode('/|',$tab_section_auto).")'
 		";
-		$res_max = mysql_query($req_max,$dbh);
+		$res_max = pmb_mysql_query($req_max,$dbh);
 		$regexp = $cotes = array();
 
-		while (($expl = mysql_fetch_object($res_max))){
+		while (($expl = pmb_mysql_fetch_object($res_max))){
 			if(preg_match("/([0-9]*)$/",$expl->expl_cote,$regexp))
 				$cotes [] = $regexp[1];
 		}
@@ -230,8 +230,8 @@ function calculer_cote_gaillarde($text){
 			and (indexint_name like '".addslashes($text)."%') 
 			and num_pclass ='1'
 			order by indexint_name, num_pclass limit 20";
-		$res_cote = mysql_query($req_cote,$dbh);
-		while(($cote = mysql_fetch_object($res_cote))){
+		$res_cote = pmb_mysql_query($req_cote,$dbh);
+		while(($cote = pmb_mysql_fetch_object($res_cote))){
 			$array_result[] = $cote->name." ".($max+1);
 		}
 	} else {
@@ -245,18 +245,18 @@ function calculer_cote_gaillarde($text){
 			order by indexint_name, num_pclass
 			limit 20
 			";
-		$res_index = mysql_query($req_index,$dbh);
-		if(mysql_num_rows($res_index) == 0){
+		$res_index = pmb_mysql_query($req_index,$dbh);
+		if(pmb_mysql_num_rows($res_index) == 0){
 			$req_index = "select indexint_id as id, indexint_name as name from indexint 
 				where index_indexint REGEXP '(".implode('|',$array_sec).")'  and num_pclass='1' 
 				and indexint_name like '".addslashes($text)."%'
 				order by indexint_name, num_pclass
 				limit 20
 				";
-			$res_index = mysql_query($req_index,$dbh);
+			$res_index = pmb_mysql_query($req_index,$dbh);
 		}
-		if(mysql_num_rows($res_index) >=1){
-			while(($cote = mysql_fetch_object($res_index))){			
+		if(pmb_mysql_num_rows($res_index) >=1){
+			while(($cote = pmb_mysql_fetch_object($res_index))){			
 				$array_result[] = $cote->name;
 			}
 		} else $array_result[] = $sec_libelle;

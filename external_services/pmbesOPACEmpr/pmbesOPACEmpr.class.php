@@ -2,12 +2,13 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesOPACEmpr.class.php,v 1.33.6.1 2015-04-01 12:14:21 mbertin Exp $
+// $Id: pmbesOPACEmpr.class.php,v 1.36 2015-06-02 13:48:57 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($class_path."/external_services.class.php");
 require_once($class_path."/external_services_caches.class.php");
+require_once($class_path."/password.class.php");
 
 define("LIST_LOAN_LATE",0);
 define("LIST_LOAN_CURRENT",1);
@@ -46,12 +47,12 @@ class pmbesOPACEmpr extends external_services_api_class{
 		$verif_query = "SELECT id_empr, empr_cb, empr_nom, empr_prenom, empr_password, empr_lang, empr_date_expiration<sysdate() as isexp, empr_login, empr_ldap,empr_location 
 						FROM empr 
 						WHERE empr_login='".addslashes($empr_login)."'";
-		$verif_result = mysql_query($verif_query);
+		$verif_result = pmb_mysql_query($verif_query);
 		if (!$verif_result)
 			return 0;
 		
 		// récupération des valeurs MySQL du lecteur et injection dans les variables
-		$verif_line = mysql_fetch_array($verif_result);
+		$verif_line = pmb_mysql_fetch_array($verif_result);
 		$verif_empr_cb = $verif_line['empr_cb'];
 		$verif_empr_login = $verif_line['empr_login'];
 		$verif_empr_ldap = $verif_line['empr_ldap'];
@@ -108,7 +109,8 @@ class pmbesOPACEmpr extends external_services_api_class{
 		}
 		else {
 			//Autentification standard
-			return (($verif_empr_password==$empr_password)&&($verif_empr_login!="")&&(!$verif_isexp));
+			$encrypted_password= password::gen_hash($empr_password,$verif_id_empr);
+			return (($verif_empr_password==$encrypted_password)&&($verif_empr_login!="")&&(!$verif_isexp));
 		}		
 	}
 	
@@ -130,12 +132,12 @@ class pmbesOPACEmpr extends external_services_api_class{
 		$verif_query = "SELECT id_empr, empr_cb, empr_nom, empr_prenom, empr_password, empr_lang, empr_date_expiration<sysdate() as isexp, empr_login, empr_ldap,empr_location 
 						FROM empr 
 						WHERE empr_login='".addslashes($empr_login)."'";
-		$verif_result = mysql_query($verif_query);
+		$verif_result = pmb_mysql_query($verif_query);
 		if (!$verif_result)
 			return 0;
 		
 		// récupération des valeurs MySQL du lecteur et injection dans les variables
-		$verif_line = mysql_fetch_array($verif_result);
+		$verif_line = pmb_mysql_fetch_array($verif_result);
 		$verif_empr_cb = $verif_line['empr_cb'];
 		$verif_empr_login = $verif_line['empr_login'];
 		$verif_empr_ldap = $verif_line['empr_ldap'];
@@ -286,9 +288,13 @@ class pmbesOPACEmpr extends external_services_api_class{
 			return true;
 
 		//Changement
+		emprunteur::hash_password(addslashes($empr->login),$new_password);
+		/*
 		$sql = "UPDATE empr SET empr_password = '".addslashes($new_password)."' WHERE id_empr = ".$empr_id;
-		mysql_query($sql, $dbh);
-		return mysql_error($dbh) == '';
+		pmb_mysql_query($sql, $dbh);
+		return pmb_mysql_error($dbh) == '';
+		*/
+		return true;
 	}
 	
 	function list_loans($session_id, $loan_type) {
@@ -341,8 +347,8 @@ class pmbesOPACEmpr extends external_services_api_class{
 				$sql.= "WHERE empr.id_empr = arc_id_empr and arc_id_empr='$empr_id' ";
 				$sql.= "group by arc_expl_notice, arc_expl_bulletin, tit, not_id ";
 				$sql.= "order by arc_debut desc";
-				$res = mysql_query($sql, $dbh);
-				while($row = mysql_fetch_assoc($res)) {
+				$res = pmb_mysql_query($sql, $dbh);
+				while($row = pmb_mysql_fetch_assoc($res)) {
 					$expl_object = new exemplaire('', $row["arc_expl_id"]);
 					$expl_libelle="";
 					if ($expl_object->id_bulletin) {
@@ -387,8 +393,8 @@ class pmbesOPACEmpr extends external_services_api_class{
 
 		$results = array();
 		$requete3 = "SELECT id_resa, resa_idempr, resa_idnotice, resa_idbulletin, resa_date, resa_date_fin, resa_cb, IF(resa_date_fin>=sysdate() or resa_date_fin='0000-00-00',0,1) as perimee, date_format(resa_date_fin, '".$msg["format_date"]."') as aff_date_fin, resa_loc_retrait, location_libelle FROM resa LEFT JOIN docs_location ON (idlocation = resa_loc_retrait) WHERE resa_idempr=".$empr_id;
-		$result3 = @mysql_query($requete3, $dbh);
-		while ($resa = mysql_fetch_array($result3)) {
+		$result3 = @pmb_mysql_query($requete3, $dbh);
+		while ($resa = pmb_mysql_fetch_array($result3)) {
 			$message_null_resa="";
 			$id_resa = $resa['id_resa'];
 			$resa_idempr = $resa['resa_idempr'];
@@ -439,26 +445,26 @@ class pmbesOPACEmpr extends external_services_api_class{
 		// *** Traitement de la suppression d'une résa affectée 
 		$recup_id_resa = "select id_resa, resa_cb FROM resa WHERE resa_idempr=".$empr_id;
 		$recup_id_resa .= " AND id_resa = $resa_id"; 
-		$resrecup_id_resa = mysql_query($recup_id_resa, $dbh);
-		$obj_recupidresa = mysql_fetch_object($resrecup_id_resa) ;
+		$resrecup_id_resa = pmb_mysql_query($recup_id_resa, $dbh);
+		$obj_recupidresa = pmb_mysql_fetch_object($resrecup_id_resa) ;
 		$suppr_id_resa = $obj_recupidresa->id_resa ;
 		
 		// récup éventuelle du cb
 		$cb_recup = $obj_recupidresa->resa_cb ;
 		// archivage resa
 		$rqt_arch = "UPDATE resa_archive, resa SET resarc_anulee = 1 WHERE id_resa = '".$suppr_id_resa."' AND resa_arc = resarc_id ";	
-		mysql_query($rqt_arch, $dbh);
+		pmb_mysql_query($rqt_arch, $dbh);
 		// suppression
 		$rqt = "delete from resa where id_resa='".$suppr_id_resa."' ";
-		$res = mysql_query ($rqt, $dbh) ;
-		$nb_resa_suppr = mysql_affected_rows() ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
+		$nb_resa_suppr = pmb_mysql_affected_rows() ;
 		
 		// réaffectation du doc éventuellement
 		if ($cb_recup) {
 			if (!affecte_cb ($cb_recup) && $cb_recup) {
 				// cb non réaffecté, il faut transférer les infos de la résa dans la table des docs à ranger
 				$rqt = "insert into resa_ranger (resa_cb) values ('".$cb_recup."') ";
-				$res = mysql_query ($rqt, $dbh) ;
+				$res = pmb_mysql_query($rqt, $dbh) ;
 			}
 		};
 		return TRUE;
@@ -477,14 +483,14 @@ class pmbesOPACEmpr extends external_services_api_class{
 		$sql = "select *, date_format(date_suggestion, '".$msg["format_date"]."') as aff_date, libelle_categ as sugg_category_caption, libelle_source as sugg_source_caption from suggestions_origine, suggestions LEFT JOIN suggestions_source ON suggestions_source.id_source = suggestions.sugg_source LEFT JOIN suggestions_categ ON suggestions_categ.id_categ = suggestions.num_categ where origine = '".$empr_id."' ";
 		$sql .= "and type_origine = '1' ";
 		$sql .= "and id_suggestion=num_suggestion order by date_suggestion ";
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		if (!$res)
 			return array();
 
 		$sug_map = new suggestions_map();
 
 		$results = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			$sugg_state = $sug_map->getTextComment($row["statut"]);
 			
 			$aresult = array(
@@ -542,7 +548,7 @@ class pmbesOPACEmpr extends external_services_api_class{
 		//Vérifions que la notice demandée existe
 		$notice_id+=0;
 		$sql = "SELECT COUNT(1) > 0 FROM notices WHERE notice_id = ".$notice_id;
-		$exists = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$exists = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		if (!$exists)
 			return 0;
 
@@ -556,7 +562,7 @@ class pmbesOPACEmpr extends external_services_api_class{
 		$masque="@<[\/\!]*?[^<>]*?>@si";
 		$commentaire = preg_replace($masque,'',$comment);
 		$sql="insert into avis (num_empr,num_notice,note,sujet,commentaire) values ('$empr_id','$notice_id','$note','".addslashes($subject)."','".addslashes($comment)."')";
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		return $res != false ? 1 : 0;
 
 		break;
@@ -589,7 +595,7 @@ class pmbesOPACEmpr extends external_services_api_class{
 		//Vérifions que la notice demandée existe
 		$notice_id+=0;
 		$sql = "SELECT COUNT(1) > 0 FROM notices WHERE notice_id = ".$notice_id;
-		$exists = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$exists = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		if (!$exists)
 			return 0;
 
@@ -599,13 +605,13 @@ class pmbesOPACEmpr extends external_services_api_class{
 
 		//Vérifions si le tag n'est pas déjà dans la notice
 		$sql="select * from notices where index_l like '%".addslashes($tag)."%' and notice_id=$notice_id";
-		$r = mysql_query($sql, $dbh);
-		if (mysql_numrows($r)>=1)
+		$r = pmb_mysql_query($sql, $dbh);
+		if (pmb_mysql_num_rows($r)>=1)
 			return 0;
 
 		//Si tout va bien, on y va
 		$sql="insert into tags (libelle, num_notice,user_code,dateajout) values ('".addslashes($tag)."',$notice_id,'". $empr_id ."',CURRENT_TIMESTAMP())";
-		return mysql_query($sql, $dbh) != false ? 1 : 0;
+		return pmb_mysql_query($sql, $dbh) != false ? 1 : 0;
 	}
 	
 	function list_suggestion_categories($session_id) {
@@ -642,9 +648,9 @@ class pmbesOPACEmpr extends external_services_api_class{
 			return array();
 
 		$req = "select * from suggestions_source order by libelle_source";
-		$res=mysql_query($req,$dbh);
+		$res=pmb_mysql_query($req,$dbh);
 		$results = array();
-		while ($row = mysql_fetch_object($res)){
+		while ($row = pmb_mysql_fetch_object($res)){
 			$results[] = array(
 				"source_id" => $row->id_source,
 				"source_caption" => utf8_normalize($row->libelle_source)
@@ -964,9 +970,9 @@ class pmbesOPACEmpr extends external_services_api_class{
 		} else {
 			$loc_req="SELECT idlocation, location_libelle FROM docs_location WHERE location_visible_opac=1 ORDER BY location_libelle";
 		}
-		$res = mysql_query($loc_req);
+		$res = pmb_mysql_query($loc_req);
 		//on parcours la liste des localisations
-		while ($value = mysql_fetch_array($res)) {
+		while ($value = pmb_mysql_fetch_array($res)) {
 			$results[] = array(
 				"location_id" => $value[0],
 				"location_caption" => utf8_normalize($value[1])
@@ -1034,8 +1040,8 @@ class pmbesOPACEmpr extends external_services_api_class{
 		foreach ($tableau_bannettes as $abanette) {
 			// Construction de l'affichage de l'info bulle de la requette			
 			$requete="select * from bannette_equation, equations where num_equation=id_equation and num_bannette=".$abanette["id_bannette"];	
-			$resultat=mysql_query($requete);
-			if (($r=mysql_fetch_object($resultat))) {				 
+			$resultat=pmb_mysql_query($requete);
+			if (($r=pmb_mysql_fetch_object($resultat))) {				 
 				$equ = new equation ($r->num_equation);
 				$search->unserialize_search($equ->requete);
 				$recherche = $search->make_human_query();
@@ -1068,9 +1074,9 @@ class pmbesOPACEmpr extends external_services_api_class{
 
 		$results = array();
 		$sql = "SELECT session FROM opac_sessions WHERE empr_id = ".$empr_id;
-		$res = mysql_query($sql, $dbh);
-		if (mysql_num_rows($res)) {
-			$row = mysql_fetch_assoc($res);
+		$res = pmb_mysql_query($sql, $dbh);
+		if (pmb_mysql_num_rows($res)) {
+			$row = pmb_mysql_fetch_assoc($res);
 			$empr_session = unserialize($row["session"]);
 			if (isset($empr_session["cart"])) {
 				foreach ($empr_session["cart"] as $anotice_id) {
@@ -1092,14 +1098,14 @@ class pmbesOPACEmpr extends external_services_api_class{
 
 		$results = array();
 		$sql = "SELECT session FROM opac_sessions WHERE empr_id = ".$empr_id;
-		$res = mysql_query($sql, $dbh);
-		if (mysql_num_rows($res)) {
-			$row = mysql_fetch_assoc($res);
+		$res = pmb_mysql_query($sql, $dbh);
+		if (pmb_mysql_num_rows($res)) {
+			$row = pmb_mysql_fetch_assoc($res);
 			$empr_session = unserialize($row["session"]);
 			$empr_session["cart"] = array();
 			$new_row_session = serialize($empr_session);
 			$sql_update = "UPDATE opac_sessions SET session ='".addslashes($new_row_session)."', date_rec = NOW() WHERE empr_id = ".$empr_id;
-			mysql_query($sql_update, $dbh);
+			pmb_mysql_query($sql_update, $dbh);
 		}
 		return $results;
 	}
@@ -1121,9 +1127,9 @@ class pmbesOPACEmpr extends external_services_api_class{
 			return 0;
 			
 		$sql = "SELECT session FROM opac_sessions WHERE empr_id = ".$empr_id;
-		$res = mysql_query($sql, $dbh);
-		if (mysql_num_rows($res)) {
-			$row = mysql_fetch_assoc($res);
+		$res = pmb_mysql_query($sql, $dbh);
+		if (pmb_mysql_num_rows($res)) {
+			$row = pmb_mysql_fetch_assoc($res);
 			$empr_session = unserialize($row["session"]);
 			if (!isset($empr_session["cart"]))
 				$empr_session["cart"] = array();
@@ -1143,7 +1149,7 @@ class pmbesOPACEmpr extends external_services_api_class{
 			
 			$new_row_session = serialize($empr_session);
 			$sql_update = "UPDATE opac_sessions SET session ='".addslashes($new_row_session)."', date_rec = NOW() WHERE empr_id = ".$empr_id;
-			mysql_query($sql_update, $dbh);
+			pmb_mysql_query($sql_update, $dbh);
 		}
 		return true;
 	}
@@ -1165,9 +1171,9 @@ class pmbesOPACEmpr extends external_services_api_class{
 			return 0;
 			
 		$sql = "SELECT session FROM opac_sessions WHERE empr_id = ".$empr_id;
-		$res = mysql_query($sql, $dbh);
-		if (mysql_num_rows($res)) {
-			$row = mysql_fetch_assoc($res);
+		$res = pmb_mysql_query($sql, $dbh);
+		if (pmb_mysql_num_rows($res)) {
+			$row = pmb_mysql_fetch_assoc($res);
 			$empr_session = unserialize($row["session"]);
 			if (!isset($empr_session["cart"]))
 				$empr_session["cart"] = array();
@@ -1175,7 +1181,7 @@ class pmbesOPACEmpr extends external_services_api_class{
 			$empr_session["cart"] = array_diff($empr_session["cart"], $notice_ids);
 			$new_row_session = serialize($empr_session);
 			$sql_update = "UPDATE opac_sessions SET session ='".addslashes($new_row_session)."', date_rec = NOW() WHERE empr_id = ".$empr_id;
-			mysql_query($sql_update, $dbh);
+			pmb_mysql_query($sql_update, $dbh);
 		}
 		return true;
 	}
@@ -1733,11 +1739,11 @@ class pmbesOPACEmpr extends external_services_api_class{
 			return array();
 		global $dbh;
 		$sql = "select * from opac_liste_lecture where num_empr='".$emprId."'";
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		$empr = new emprunteur($emprId);
 
 		$results = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			$aresult = array(
 				'reading_list_id' => $row['id_liste'],
 				'reading_list_name' => utf8_normalize($row['nom_liste']),
@@ -1763,10 +1769,10 @@ class pmbesOPACEmpr extends external_services_api_class{
 			return array();
 		global $dbh;
 		$sql = "select opac_liste_lecture.*, empr.empr_prenom, empr.empr_nom from opac_liste_lecture left join empr on empr.id_empr = opac_liste_lecture.num_empr where public=1";
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 
 		$results = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			$aresult = array(
 				'reading_list_id' => $row['id_liste'],
 				'reading_list_name' => utf8_normalize($row['nom_liste']),
@@ -1809,16 +1815,16 @@ class pmbesOPACEmpr extends external_services_api_class{
 			
 		//Vérifions que l'utilisateur a bien le droit de modifier la liste
 		$sql = "select * from opac_liste_lecture where id_liste = '".$list_id."' and num_empr='".$emprId."'";
-		$res = mysql_query($sql);
-		if (!mysql_num_rows($res))
+		$res = pmb_mysql_query($sql);
+		if (!pmb_mysql_num_rows($res))
 			return FALSE;
 			
-		$list = mysql_fetch_assoc($res);
+		$list = pmb_mysql_fetch_assoc($res);
 		$list_content = $list['notices_associees'] ? explode(',', $list['notices_associees']) : array();
 		$list_content = array_unique(array_merge($list_content, $notice_ids));
 		
 		$sql = "update opac_liste_lecture set notices_associees = '".addslashes(implode(',', $list_content))."' where id_liste = ".$list_id;
-		mysql_query($sql);
+		pmb_mysql_query($sql);
 		return TRUE;
 	}
 	
@@ -1840,16 +1846,16 @@ class pmbesOPACEmpr extends external_services_api_class{
 			
 		//Vérifions que l'utilisateur a bien le droit de modifier la liste
 		$sql = "select * from opac_liste_lecture where id_liste = '".$list_id."' and num_empr='".$emprId."'";
-		$res = mysql_query($sql);
-		if (!mysql_num_rows($res))
+		$res = pmb_mysql_query($sql);
+		if (!pmb_mysql_num_rows($res))
 			return FALSE;
 			
-		$list = mysql_fetch_assoc($res);
+		$list = pmb_mysql_fetch_assoc($res);
 		$list_content = explode(',', $list['notices_associees']);
 		$list_content = array_diff($list_content, $notice_ids);
 		
 		$sql = "update opac_liste_lecture set notices_associees = '".addslashes(implode(',', $list_content))."' where id_liste = ".$list_id;
-		mysql_query($sql);
+		pmb_mysql_query($sql);
 		return TRUE;
 	}
 
@@ -1868,13 +1874,13 @@ class pmbesOPACEmpr extends external_services_api_class{
 
 		//Vérifions que l'utilisateur a bien le droit de modifier la liste
 		$sql = "select * from opac_liste_lecture where id_liste = '".$list_id."' and num_empr='".$emprId."'";
-		$res = mysql_query($sql);
-		if (!mysql_num_rows($res))
+		$res = pmb_mysql_query($sql);
+		if (!pmb_mysql_num_rows($res))
 			return FALSE;
 		$list_content = array();
 		
 		$sql = "update opac_liste_lecture set notices_associees = '".addslashes(implode(',', $list_content))."' where id_liste = ".$list_id;
-		mysql_query($sql);
+		pmb_mysql_query($sql);
 		return TRUE;
 	}
 }

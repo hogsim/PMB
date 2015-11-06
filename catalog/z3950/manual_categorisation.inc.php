@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: manual_categorisation.inc.php,v 1.8 2012-06-14 17:11:27 dbellamy Exp $
+// $Id: manual_categorisation.inc.php,v 1.9 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,8 +14,8 @@ function get_category_automap_information($libelle) {
 	$sql = "SELECT num_thesaurus, num_noeud, libelle_thesaurus, libelle_categorie FROM categories LEFT JOIN thesaurus ON (categories.num_thesaurus = thesaurus.id_thesaurus) WHERE libelle_categorie = '".addslashes($libelle)."'";
 
 	$result = array();
-	$res = mysql_query($sql, $dbh);
-	while (($row = mysql_fetch_assoc($res))) {
+	$res = pmb_mysql_query($sql, $dbh);
+	while (($row = pmb_mysql_fetch_assoc($res))) {
 		$aresult = array();
 		$result[$row["num_thesaurus"]][] = $row;
 	}
@@ -28,8 +28,8 @@ function get_manual_categorisation_form($tableau_600="",$tableau_601="",$tableau
 
 	$thesaurus = array();
 	$thesaurus_sql = "SELECT id_thesaurus, libelle_thesaurus FROM thesaurus";
-	$res = mysql_query($thesaurus_sql, $dbh);
-	while (($row = mysql_fetch_assoc($res)))
+	$res = pmb_mysql_query($thesaurus_sql, $dbh);
+	while (($row = pmb_mysql_fetch_assoc($res)))
 		$thesaurus[] = $row;
 
 	$vedettes = array();

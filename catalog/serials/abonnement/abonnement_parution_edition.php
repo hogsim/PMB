@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abonnement_parution_edition.php,v 1.6 2009-05-16 11:12:03 dbellamy Exp $
+// $Id: abonnement_parution_edition.php,v 1.7 2015-04-03 11:16:28 jpermanne Exp $
 
 // définition du minimum nécéssaire
 $base_path="./../../..";
@@ -74,16 +74,16 @@ $type_doc=0;
 switch ($act) {
 	case 'update':	
 		$requete = "delete FROM abts_grille_abt WHERE num_abt='$abonnement_id' and date_parution ='$date_parution' and state='0' ";
-		mysql_query($requete, $dbh);	
+		pmb_mysql_query($requete, $dbh);	
 		$requete = "SELECT  distinct (modele_name) ,abts_grille_abt.modele_id from abts_modeles, abts_grille_abt where num_abt='$abonnement_id' and abts_grille_abt.modele_id = abts_modeles.modele_id ";
-		$resultat=mysql_query($requete);
-		while($r=mysql_fetch_object($resultat)){
+		$resultat=pmb_mysql_query($requete);
+		while($r=pmb_mysql_fetch_object($resultat)){
 			$modele_name=$r->modele_name;
 			$modele_id=$r->modele_id;
 			$nombre= $serie[$modele_id];
 			/*			if($nombre){
 				$requete = "INSERT INTO abts_grille_abt SET num_abt='$abonnement_id', date_parution ='$date_parution', modele_id = '$modele_id', type = '1', nombre='$nombre'";
-				mysql_query($requete, $dbh);
+				pmb_mysql_query($requete, $dbh);
 				$type_serie=1;
 			}*/
 			for($i=1;$i<=$nombre;$i++){
@@ -93,14 +93,14 @@ switch ($act) {
 							type = '1',
 							nombre='1', 
 							ordre='$i' ";
-				mysql_query($requete, $dbh);
+				pmb_mysql_query($requete, $dbh);
 				$type_serie=1;			
 				}
 
 			if (isset($check_hors_serie[$modele_id])){	
 				$numero= $numero[$modele_id];
 				$requete = "INSERT INTO abts_grille_abt SET num_abt='$abonnement_id', date_parution ='$date_parution', modele_id = '$modele_id', type = '2', numero='$numero', nombre='1', ordre='1' ";
-				mysql_query($requete, $dbh);
+				pmb_mysql_query($requete, $dbh);
 				$type_horsserie=2;					
 				}				
 			}		
@@ -116,23 +116,23 @@ switch ($act) {
 		$series="";
 		$hors_series="";
 		$requete = "SELECT  distinct (modele_name) ,abts_grille_abt.modele_id from abts_modeles, abts_grille_abt where num_abt='$abonnement_id' and abts_grille_abt.modele_id = abts_modeles.modele_id ";
-		$resultat=mysql_query($requete);
-		if(mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){
+		$resultat=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){
 				$modele_name=$r->modele_name;
 				$modele_id=$r->modele_id;
 				$nombre=0;
 				$requete = "SELECT COUNT(*) as nombre from abts_grille_abt where num_abt='$abonnement_id' and date_parution ='$date_parution' and modele_id = '$modele_id' and type='1' ";
-				$resultat_nb=mysql_query($requete);
-				if($r_nb=mysql_fetch_object($resultat_nb)){
+				$resultat_nb=pmb_mysql_query($requete);
+				if($r_nb=pmb_mysql_fetch_object($resultat_nb)){
 					$nombre=$r_nb->nombre;					
 					}
 				$series.=gen_serie($modele_id,$modele_name,$nombre);
 				$checked="";
 				$numero="";
 				$requete = "SELECT numero from abts_grille_abt where num_abt='$abonnement_id' and date_parution ='$date_parution' and modele_id = '$modele_id' and type='2' ";
-				$resultat_nb=mysql_query($requete);
-				if($r_nb=mysql_fetch_object($resultat_nb)){
+				$resultat_nb=pmb_mysql_query($requete);
+				if($r_nb=pmb_mysql_fetch_object($resultat_nb)){
 					$numero=$r_nb->numero;
 					$checked= "checked";
 					}		

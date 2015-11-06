@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: gen_code_exemplaire_new.php,v 1.3 2013-01-11 15:22:54 mbertin Exp $
+// $Id: gen_code_exemplaire_new.php,v 1.4 2015-04-03 11:16:26 jpermanne Exp $
 
 function init_gen_code_exemplaire($notice_id,$bull_id)
 {
@@ -10,9 +10,9 @@ function init_gen_code_exemplaire($notice_id,$bull_id)
 	$prefixe="GEN";
 	//$requete="select max(expl_cb)as cb from exemplaires WHERE expl_cb like 'GEN%'";
 	$requete="select MAX(SUBSTRING(expl_cb,(LENGTH('".$prefixe."')*1+1))*1) AS cb  from exemplaires WHERE expl_cb REGEXP '^".$prefixe."[0-9]*$'";
-	$query = mysql_query($requete, $dbh);
-	if(mysql_num_rows($query)) {	
-    	if(($cb = mysql_fetch_object($query))){
+	$query = pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($query)) {	
+    	if(($cb = pmb_mysql_fetch_object($query))){
     		if($cb->cb){
     			$code_exemplaire= $prefixe.$cb->cb;
     		}else{

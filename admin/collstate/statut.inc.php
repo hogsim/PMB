@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: statut.inc.php,v 1.3 2010-07-22 14:56:27 mbertin Exp $
+// $Id: statut.inc.php,v 1.4 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,12 +37,12 @@ function show_statut($dbh) {
 
 	// affichage du tableau des statuts
 	$requete = "SELECT * FROM arch_statut ORDER BY archstatut_gestion_libelle ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -115,10 +115,10 @@ switch($action) {
 			if ($id==1) $visu=", archstatut_visible_gestion=1, archstatut_visible_opac='$form_visible_opac', archstatut_visible_opac_abon='$form_visu_abon' ";
 				else $visu=", archstatut_visible_gestion='$form_visible_gestion', archstatut_visible_opac='$form_visible_opac', archstatut_visible_opac_abon='$form_visu_abon' "; 
 			$requete = "UPDATE arch_statut SET archstatut_gestion_libelle='$form_gestion_libelle', archstatut_opac_libelle='$form_opac_libelle', archstatut_class_html='$form_class_html' $visu WHERE archstatut_id='$id' ";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 		} else {
 			$requete = "INSERT INTO arch_statut SET archstatut_gestion_libelle='$form_gestion_libelle',archstatut_visible_gestion='$form_visible_gestion',archstatut_opac_libelle='$form_opac_libelle', archstatut_visible_opac='$form_visible_opac', archstatut_class_html='$form_class_html', archstatut_visible_opac_abon='$form_visu_abon' ";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 		}
 		show_statut($dbh);
 		break;
@@ -129,9 +129,9 @@ switch($action) {
 	case 'modif':
 		if ($id) {
 			$requete = "SELECT * FROM arch_statut WHERE archstatut_id='$id'";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				statut_form($row->archstatut_id, $row->archstatut_gestion_libelle, $row->archstatut_opac_libelle, $row->archstatut_visible_opac, $row->archstatut_visible_gestion, $row->archstatut_class_html, $row->archstatut_visible_opac_abon );
 			} else {
 				show_statut($dbh);
@@ -143,12 +143,12 @@ switch($action) {
 	case 'del':
 		if ($id) {
 			$total = 0;
-			$total = mysql_result(mysql_query("select count(1) from collections_state where collstate_statut ='".$id."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from collections_state where collstate_statut ='".$id."' ", $dbh), 0, 0);
 			if ($total==0) {
 				$requete = "DELETE FROM arch_statut WHERE archstatut_id='$id' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete = "OPTIMIZE TABLE arch_statut ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_statut($dbh);
 				} else {
 					error_message(	$msg[294], $msg["collstate_statut_used"], 1, 'admin.php?categ=collstate&sub=statut&action=');

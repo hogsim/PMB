@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: entite.inc.php,v 1.29.2.1 2014-04-03 15:37:26 dgoron Exp $
+// $Id: entite.inc.php,v 1.31 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -22,12 +22,12 @@ function show_list_coord() {
 	print "<table>";
 
 	$q = entites::list_biblio();
-	$res = mysql_query($q, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($q, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 		} else {
@@ -112,7 +112,7 @@ function show_coord_form($id= 0) {
 
 		$coord_form = str_replace('!!contact!!', $ptab[1], $coord_form);
 
-		$row = mysql_fetch_object(entites::get_coordonnees($biblio->id_entite,'1'));
+		$row = pmb_mysql_fetch_object(entites::get_coordonnees($biblio->id_entite,'1'));
 		$coord_form = str_replace('!!id1!!', $row->id_contact, $coord_form);
 		$coord_form = str_replace('!!lib_1!!', htmlentities($row->libelle,ENT_QUOTES,$charset), $coord_form);		
 		$coord_form = str_replace('!!cta_1!!', htmlentities($row->contact,ENT_QUOTES,$charset), $coord_form);		
@@ -128,7 +128,7 @@ function show_coord_form($id= 0) {
 		$coord_form = str_replace('!!ema_1!!', htmlentities($row->email,ENT_QUOTES,$charset), $coord_form);
 		$coord_form = str_replace('!!com_1!!', htmlentities($row->commentaires,ENT_QUOTES,$charset), $coord_form);
 
-		$row = mysql_fetch_object(entites::get_coordonnees($biblio->id_entite,'2'));
+		$row = pmb_mysql_fetch_object(entites::get_coordonnees($biblio->id_entite,'2'));
 		$coord_form = str_replace('!!id2!!', $row->id_contact, $coord_form);
 		$coord_form = str_replace('!!lib_2!!', htmlentities($row->libelle,ENT_QUOTES,$charset), $coord_form);		
 		$coord_form = str_replace('!!cta_2!!', htmlentities($row->contact,ENT_QUOTES,$charset), $coord_form);		
@@ -145,9 +145,9 @@ function show_coord_form($id= 0) {
 		$coord_form = str_replace('!!com_2!!', htmlentities($row->commentaires,ENT_QUOTES,$charset), $coord_form);
 		
 		$liste_coord = entites::get_coordonnees($biblio->id_entite,'0');
-		$coord_form = str_replace('!!max_coord!!', (mysql_num_rows($liste_coord)+2), $coord_form);
+		$coord_form = str_replace('!!max_coord!!', (pmb_mysql_num_rows($liste_coord)+2), $coord_form);
 		$i=3;
-		while ($row = mysql_fetch_object($liste_coord)) {
+		while ($row = pmb_mysql_fetch_object($liste_coord)) {
 			
 			$coord_form = str_replace('<!--coord_repetables-->', $ptab[2].'<!--coord_repetables-->', $coord_form);
 			$coord_form = str_replace('!!no_X!!', $i, $coord_form);
@@ -204,9 +204,9 @@ function autorisations($autorisations='') {
 	
 	//Récupération de la liste des utilisateurs
 	$q = "SELECT userid, username FROM users order by username ";
-	$r = mysql_query($q, $dbh);
+	$r = pmb_mysql_query($q, $dbh);
 
-	while ($row = mysql_fetch_object($r)) {
+	while ($row = pmb_mysql_fetch_object($r)) {
 			
 		$coord_form = str_replace('<!-- autorisations -->', $ptab[4].'<!-- autorisations -->', $coord_form);
 		

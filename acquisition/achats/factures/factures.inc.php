@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: factures.inc.php,v 1.31.6.1 2015-02-05 15:35:20 jpermanne Exp $
+// $Id: factures.inc.php,v 1.33 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -162,11 +162,11 @@ function show_list_fac($id_bibli) {
 	
 		//Affichage liste des factures
 		$fac_list="";	
-		$nbr = mysql_num_rows($res);
+		$nbr = pmb_mysql_num_rows($res);
 		
 		$parity=1;
 		for($i=0;$i<$nbr;$i++) {
-			$row=mysql_fetch_object($res);
+			$row=pmb_mysql_fetch_object($res);
 			
 			$st = ( ($row->statut) & ~(STA_ACT_ARC) );
 			switch ($st) {
@@ -424,7 +424,7 @@ function pay_fac_list() {
 				$id_cde = liens_actes::getParent($id_fac);
 				$tab_pay = liens_actes::getChilds($id_cde, TYP_ACT_FAC);
 				$paye= true;
-				while (($row_pay = mysql_fetch_object($tab_pay))) {
+				while (($row_pay = pmb_mysql_fetch_object($tab_pay))) {
 					if(($row_pay->statut & STA_ACT_PAY) != STA_ACT_PAY){
 						$paye = false;
 						break;

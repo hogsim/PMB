@@ -5,11 +5,12 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_datasource_section.xml,v 1.4 2014-02-20 17:03:43 dbellamy Exp $ -->
+$Id: cms_module_common_datasource_section.xml,v 1.5 2015-01-08 15:46:06 dgoron Exp $ -->
 
 <XMLlist>
 	<entry code="cms_module_common_selector_section">Sélecteur manuel d'une rubrique</entry>
 	<entry code="cms_module_common_selector_env_var">Sélecteur de rubrique depuis une variable d'environnement</entry>
+	<entry code="cms_module_common_selector_generic_parent_section">Sélecteur de rubrique parente</entry>
 	<entry code="cms_module_common_datasource_desc_id">Identifiant de la rubrique</entry>
 	<entry code="cms_module_common_datasource_desc_title">Titre</entry>
 	<entry code="cms_module_common_datasource_desc_num_parent">Identifiant de la rubrique parente</entry>

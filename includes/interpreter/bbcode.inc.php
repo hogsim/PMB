@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bbcode.inc.php,v 1.1.8.1 2015-09-22 10:37:26 jpermanne Exp $
+// $Id: bbcode.inc.php,v 1.1 2011-08-09 08:34:51 ngantier Exp $
 
 require_once ($include_path . "/misc.inc.php");
 	
@@ -74,12 +74,6 @@ function do_bbcode($text){
 	$replace[] = 'handle_url_tag(\'$1\', \'$2\')';
 	$replace[] = '<a href="mailto:$1">$1</a>';
 	$replace[] = '<a href="mailto:$1">$2</a>';
-	
-	$pattern[] = '#\[red\](.*?)\[/red\]#ms';
-	$pattern[] = '#\[li\](.*?)\[/li\]#ms';
-	
-	$replace[] = '<font color=\'#FF0000\'>$1</font>';
-	$replace[] = '<li style=\'list-style-type:disc;\'>$1</li>';
 
 	$text = preg_replace($pattern, $replace, $text);
 	

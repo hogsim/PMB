@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: getgif.php,v 1.4.6.1 2015-05-18 10:18:17 dgoron Exp $
+// $Id: getgif.php,v 1.6 2015-05-18 10:11:04 dgoron Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");

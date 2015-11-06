@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: classements.inc.php,v 1.4.18.1 2015-03-11 10:51:04 jpermanne Exp $
+// $Id: classements.inc.php,v 1.5 2015-03-11 10:51:47 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

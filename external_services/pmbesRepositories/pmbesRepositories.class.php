@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesRepositories.class.php,v 1.2.10.1 2015-05-07 15:40:22 arenou Exp $
+// $Id: pmbesRepositories.class.php,v 1.4 2015-05-07 15:39:21 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,9 +30,9 @@ class pmbesRepositories extends external_services_api_class {
 		$result = array();
 		
 		$sql = 'SELECT source_id, comment, name FROM connectors_sources WHERE id_connector = \'agnostic\'';
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			$result[] = array(
 				'id' => $row["source_id"],
 				'name' => utf8_normalize($row["name"]),
@@ -77,12 +77,12 @@ class pmbesRepositories extends external_services_api_class {
 
 		//Suppression d'un éventuel doublon
 		$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."'";
-		mysql_query($requete);		
+		pmb_mysql_query($requete);		
 		
 		//Récupération d'un ID
 		$requete="insert into external_count (recid, source_id) values('".addslashes("agnostic ".$source_id." ".$ref)."', ".$source_id.")";
-		$rid=mysql_query($requete);
-		if ($rid) $recid=mysql_insert_id();
+		$rid=pmb_mysql_query($requete);
+		if ($rid) $recid=pmb_mysql_insert_id();
 		
 		if (!$recid)
 			return false;
@@ -99,7 +99,7 @@ class pmbesRepositories extends external_services_api_class {
 			$requete="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid) values(
 			'".addslashes('agnostic')."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 			'".$hc."','',0,0,'".addslashes($code)."','',$recid)";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}		
 		
 		for ($i=0; $i<count($record["f"]); $i++) {
@@ -116,7 +116,7 @@ class pmbesRepositories extends external_services_api_class {
 					'".addslashes('agnostic')."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 					'".addslashes($ufield)."','".addslashes($field_ind)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 					' ".addslashes(strip_empty_words($value))." ',$recid)";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 			}
 		}
@@ -125,7 +125,7 @@ class pmbesRepositories extends external_services_api_class {
 	function add_unimarc_notice_to_repository($source_id, $notice) {
 		$source_id += 0;
 		$sql = 'SELECT 1 FROM connectors_sources WHERE source_id = '.$source_id.' AND id_connector = \'agnostic\'';
-		if(!mysql_num_rows(mysql_query($sql)))
+		if(!pmb_mysql_num_rows(pmb_mysql_query($sql)))
 			throw new Exception('Source not found.');
 		$this->rec_record($source_id, $notice);
 		return array("notice" => $notice);

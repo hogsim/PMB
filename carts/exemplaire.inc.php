@@ -2,15 +2,15 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: exemplaire.inc.php,v 1.13 2009-05-16 11:11:53 dbellamy Exp $
+// $Id: exemplaire.inc.php,v 1.14 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 if($item) {
 	$requete = "SELECT expl_notice, expl_bulletin FROM exemplaires WHERE expl_id='$item' ";
-	$result = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) {
-		$temp = mysql_fetch_object($result);
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		$temp = pmb_mysql_fetch_object($result);
 		$expl = get_expl_info($item,0);
 		$aff_reduit = $msg[376]."&nbsp;".$expl->expl_cb." ".$expl->aff_reduit ;
 		if  ($temp->expl_notice) {

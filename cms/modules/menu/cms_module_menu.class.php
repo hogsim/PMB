@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_menu.class.php,v 1.15.2.2 2014-11-17 08:46:26 dgoron Exp $
+// $Id: cms_module_menu.class.php,v 1.18 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -494,7 +494,7 @@ class cms_module_menu extends cms_module_common_module {
 				
 				$this->managed_datas['module']['menus'][$menu]['items'] = $tree[0]['items'];
 				$query = "replace into cms_managed_modules set managed_module_name = '".$this->class_name."', managed_module_box = '".$this->addslashes(serialize($this->managed_datas))."'";
-				mysql_query($query);
+				pmb_mysql_query($query);
 				$response['content'] = "OK";
 				$response['content-type'] = "application/json"; 
 				break;

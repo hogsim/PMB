@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: folow_import.php,v 1.11 2012-12-11 16:41:01 mbertin Exp $
+// $Id: folow_import.php,v 1.12 2015-06-19 07:35:06 vtouchard Exp $
 
 //Transmission ensuite du fichier converti
 $base_path = "../..";
@@ -25,6 +25,7 @@ $file_out = implode(".", $f).".".$suffix."~";
 
 //Téléchargement
 if (!file_exists("$base_path/temp/$file_out")) {
+	header("Content-type: text/html; charset=".$charset);
 		print $std_header;
 		print "<body>";
 		error_message_history($msg['admin_convert_erreur_destination'],$msg['admin_convert_fichier_existe'],0);

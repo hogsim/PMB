@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_view.class.php,v 1.1 2013-04-25 14:34:32 arenou Exp $
+// $Id: cms_module_common_selector_view.class.php,v 1.2 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");
@@ -38,11 +38,11 @@ class cms_module_common_selector_view extends cms_module_common_selector{
 	protected function gen_select(){
 		//pour le moment, on ne regarde pas le statut de publication
 		$query= "select opac_view_id, opac_view_name from opac_views order by opac_view_name asc";
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$select = "
 					<select name='".$this->get_form_value_name("opac_view_id")."[]' multiple='yes'>";
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$select.="
 						<option value='".$row->opac_view_id."' ".(in_array($row->opac_view_id,$this->parameters) ? "selected='selected'" : "").">".$this->format_text($row->opac_view_name)."</option>";
 			}

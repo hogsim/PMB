@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: logs.inc.php,v 1.3.12.1 2014-10-03 10:41:22 dgoron Exp $
+// $Id: logs.inc.php,v 1.5 2015-04-10 14:36:37 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once($base_path."/classes/record_log.class.php");
@@ -27,6 +27,10 @@ if($pmb_logs_activate){
 		if (in_array($_SERVER['REMOTE_ADDR'], $ip_adress)) {
 			$pmb_logs_activate = 0;
 		}
+	}
+	//Opposition à l'utilisation des cookies, aucun enregistrement de logs
+	if ($_COOKIE['PhpMyBibli-COOKIECONSENT'] == "false") {
+		$pmb_logs_activate = 0;
 	}
 	global $log;
 	$log = new record_log();	

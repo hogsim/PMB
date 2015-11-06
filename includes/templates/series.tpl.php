@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: series.tpl.php,v 1.20 2014-01-23 13:52:36 ngantier Exp $
+// $Id: series.tpl.php,v 1.21 2014-07-30 09:54:05 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -10,6 +10,7 @@ $selector_prop = "toolbar=no, dependent=yes, resizable=yes, scrollbars=yes";
 
 // $serie_form : form saisie titre de série
 $serie_form = jscript_unload_question()."
+<script src='javascript/ajax.js'></script>
 <script type='text/javascript'>
 <!--
 	function test_form(form)
@@ -41,6 +42,7 @@ function confirm_delete() {
 <div class='row'>
 	<input type='text' class='saisie-80em' name='serie_nom' value=\"!!serie_nom!!\" />
 	</div>
+!!concept_form!!
 <!-- aut_link -->	
 !!aut_pperso!!
 </div>
@@ -63,6 +65,7 @@ function confirm_delete() {
 </form>
 <script type='text/javascript'>
 	document.forms['saisie_serie'].elements['serie_nom'].focus();
+	ajax_parse_dom();
 </script>
 ";
 

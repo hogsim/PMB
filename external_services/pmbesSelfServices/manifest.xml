@@ -3,7 +3,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.5 2010-06-08 08:28:40 arenou Exp $ -->
+$Id: manifest.xml,v 1.7 2015-06-04 14:14:19 ngantier Exp $ -->
 
 <manifest>
 	<name>pmbesSelfServices</name>
@@ -21,8 +21,10 @@ $Id: manifest.xml,v 1.5 2010-06-08 08:28:40 arenou Exp $ -->
 		<method name="self_checkout" comment="msg:self_checkout_description" rights="" version="1.0" language_independant="false">
 			<inputs>
 				<description>msg:self_checkout_inputs_description</description>
-				<param name="session_id" type="scalar" dataType="string" description="msg:self_checkout_session_id"/>
 				<param name="expl_cb" type="scalar" dataType="string" description="msg:self_checkout_expl_cb"/>
+				<param name="id_empr" type="scalar" dataType="integer" description="msg:self_checkout_pmbUserId"/>
+				<param name="empr_cb" type="scalar" dataType="string" description="msg:self_checkout_empr_cb"/>
+				<param name="confirm" type="scalar" dataType="boolean" description="msg:self_checkout_confirm"/>
 				<param name="pmbUserId" type="scalar" dataType="integer" description="msg:self_checkout_pmbUserId"/>
 			</inputs>
 			<outputs>
@@ -33,6 +35,18 @@ $Id: manifest.xml,v 1.5 2010-06-08 08:28:40 arenou Exp $ -->
 				<result name="transaction_date" type="scalar" dataType="string" description="msg:self_checkout_transaction_date"/>
 				<result name="due_date" type="scalar" dataType="string" description="msg:self_checkout_due_date"/>
 				<result name="message_quota" type="scalar" dataType="string" description="msg:self_checkout_message_quota"/>		
+			</outputs>
+				<description>msg:self_checkin_input_description</description>
+				<param name="expl_cb" type="scalar" dataType="string" description="msg:self_checkin_expl_cb"/>
+		</method>
+		<method name="self_del_temp_pret" comment="msg:self_del_temp_pret" rights="" version="1.0" language_independant="false">	
+			<inputs>
+				<description>msg:self_del_temp_pret_input_description</description>
+				<param name="expl_cb" type="scalar" dataType="string" description="msg:self_del_temp_pret_expl_cb"/>
+			</inputs>
+			<outputs>	
+				<description>msg:self_del_temp_pret_outputs_description</description>		
+				<result name="status"  type="scalar" dataType="boolean" description="msg:self_del_temp_pret_status"/>		
 			</outputs>
 		</method>
 		<method name="self_checkin" comment="msg:self_checkin_description" rights="" version="1.0" language_independant="false">	

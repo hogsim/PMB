@@ -162,7 +162,7 @@
 	<extension>rgb</extension>
 	</mimeType>
 
-<mimeType name="image/jpeg" label="Image Jpeg" icon="jpg-dist.png" embeded="no" plugin="">
+<mimeType name="image/jpeg" label="Jpeg image" icon="jpg-dist.png" embeded="no" plugin="">
 	<extension>jpeg</extension>
 	<extension>jpg</extension>
 	<extension>jpe</extension>
@@ -388,19 +388,19 @@
 	<extension>epub</extension>
 	</mimeType>
 	
-<mimeType name="application/bnf+zip" label="Document BnF" icon="epub-dist.png" embeded="no" plugin="">
+<mimeType name="application/bnf+zip" label="BnF document" icon="epub-dist.png" embeded="no" plugin="">
 	<extension>bnf</extension>
 	</mimeType>
 	
-<mimeType name="video/mp4" label="Video MP4" icon="mpg-dist.png" embeded="no" plugin="">
+<mimeType name="video/mp4" label="MP4 video" icon="mpg-dist.png" embeded="no" plugin="">
 	<extension>mp4</extension>
 	</mimeType>
 	
-<mimeType name="video/webm" label="Video WebM" icon="mpg-dist.png" embeded="no" plugin="">
+<mimeType name="video/webm" label="WebM Video" icon="mpg-dist.png" embeded="no" plugin="">
 	<extension>webm</extension>
 	</mimeType>
 	
-<mimeType name="audio/ogg" label="Fichier ogg" icon="mp3-dist.png" embeded="yes" plugin="LiveAudio">
+<mimeType name="audio/ogg" label="Ogg file" icon="mp3-dist.png" embeded="yes" plugin="LiveAudio">
 	<extension>ogg</extension>
 	</mimeType>
 	

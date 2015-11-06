@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial_tree.tpl.php,v 1.5 2013-09-06 08:00:05 apetithomme Exp $
+// $Id: cms_editorial_tree.tpl.php,v 1.6 2015-05-28 15:18:51 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 global $base_path;
@@ -48,6 +48,7 @@ $cms_editorial_tree_content ="
 	
     	    	var cms_editorial_tree = new dijit.Tree({
 	    	        model: treeModel,
+					persist : true,
 	    	        openOnDblClick : true,
 	    	        betweenThreshold : '5',
 	    	        getIconClass : get_icon_class,

@@ -8,9 +8,9 @@ print "<br /><br /><h2 align='center'>".htmlentities($msg["cleaning_cache_amende
 
 $v_state .= "<br /><img src=../../images/d.gif hspace=3>".htmlentities($msg["cleaning_cache_amende"], ENT_QUOTES, $charset)." : ";
 $query = "truncate table cache_amendes";
-if(mysql_query($query)){
+if(pmb_mysql_query($query)){
 	$query = "optimize table cache_amendes";
-	if(mysql_query($query)){
+	if(pmb_mysql_query($query)){
 		$v_state.= "OK";
 	}else{
 		$v_state.= "OK";

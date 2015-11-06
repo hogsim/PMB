@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fiche_fantome.inc.php,v 1.1 2009-02-02 16:19:14 ngantier Exp $
+// $Id: fiche_fantome.inc.php,v 1.2 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,8 +32,8 @@ function add_line($titre,$contens,$size_titre=50,$interligne=10){
 
 // Emprunteur
 $requete = "SELECT empr_nom, empr_prenom FROM empr WHERE id_empr='$id_empr' ";
-$res = mysql_query($requete);
-$empr = mysql_fetch_object($res);
+$res = pmb_mysql_query($requete);
+$empr = pmb_mysql_fetch_object($res);
 $emprunteur=$empr->empr_nom.' '.$empr->empr_prenom;
 
 // recup titre	
@@ -43,8 +43,8 @@ $requete.= " date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_ret
 $requete.= " IF(pret_retour>sysdate(),0,1) as retard, notices_m.tparent_id, notices_m.tnvol " ; 
 $requete.= " FROM (((exemplaires LEFT JOIN notices AS notices_m ON expl_notice = notices_m.notice_id ) LEFT JOIN bulletins ON expl_bulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id), docs_type, docs_section, docs_location, pret ";
 $requete.= " WHERE expl_cb='".$cb_doc."' and expl_typdoc = idtyp_doc and expl_section = idsection and expl_location = idlocation and pret_idexpl = expl_id  ";
-$res = mysql_query($requete);
-$expl = mysql_fetch_object($res);
+$res = pmb_mysql_query($requete);
+$expl = pmb_mysql_fetch_object($res);
 
 $responsabilites = get_notice_authors(($expl->m_id+$expl->s_id)) ;
 $as = array_search ("0", $responsabilites["responsabilites"]) ;

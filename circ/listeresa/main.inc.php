@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.44.4.6 2015-05-18 08:27:17 jpermanne Exp $
+// $Id: main.inc.php,v 1.51 2015-05-18 08:24:08 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -51,7 +51,7 @@ switch($action) {
 						$res_transfert = resa_transfert($id_resa_validee,$form_cb_expl);
 						if ($res_transfert!=0) {
 							$rqt = "SELECT location_libelle FROM docs_location WHERE idlocation=".$res_transfert;
-							$lib_loc = mysql_result(mysql_query($rqt),0);			
+							$lib_loc = pmb_mysql_result(pmb_mysql_query($rqt),0);			
 						
 							//desaffecte_cb($form_cb_expl,$id_resa_validee);
 							$msg_a_pointer = "<br /><div class='erreur'>";
@@ -61,24 +61,24 @@ switch($action) {
 							//sinon on alerte l'emprunteur
 							alert_empr_resa($id_resa_validee) ;
 							$requete="SELECT empr_cb, empr_nom, empr_prenom, location_libelle FROM resa JOIN empr ON resa_idempr=id_empr JOIN docs_location ON resa_loc_retrait=idlocation  WHERE id_resa=".$id_resa_validee."";
-							$res=mysql_query($requete);
+							$res=pmb_mysql_query($requete);
 							$msg_a_pointer = "<div class='row'>";
 							$msg_a_pointer .="<div class='erreur'>".$msg["circ_retour_ranger_resa"]."</div>";
-							$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_resa_par"]." : </strong><a href='./circ.php?categ=pret&form_cb=".rawurlencode(mysql_result($res,0,0))."'>".htmlentities(mysql_result($res,0,1),ENT_QUOTES,$charset).", ".htmlentities(mysql_result($res,0,2),ENT_QUOTES,$charset)."</a></span><br/>";
+							$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_resa_par"]." : </strong><a href='./circ.php?categ=pret&form_cb=".rawurlencode(pmb_mysql_result($res,0,0))."'>".htmlentities(pmb_mysql_result($res,0,1),ENT_QUOTES,$charset).", ".htmlentities(pmb_mysql_result($res,0,2),ENT_QUOTES,$charset)."</a></span><br/>";
 							$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["376"]." : </strong><a href='./circ.php?categ=visu_ex&form_cb_expl=".rawurlencode($form_cb_expl)."'>".htmlentities($form_cb_expl,ENT_QUOTES,$charset)."</a></span><br/>";
-							$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_loc_retrait"]." : </strong>".htmlentities(mysql_result($res,0,3),ENT_QUOTES,$charset)."</span><br/>";
+							$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_loc_retrait"]." : </strong>".htmlentities(pmb_mysql_result($res,0,3),ENT_QUOTES,$charset)."</span><br/>";
 							$msg_a_pointer .= "</div>" ;
 						}	
 					}else{
 						//sinon on alerte l'emprunteur
 						alert_empr_resa($id_resa_validee) ;
 						$requete="SELECT empr_cb, empr_nom, empr_prenom, location_libelle FROM resa JOIN empr ON resa_idempr=id_empr JOIN docs_location ON resa_loc_retrait=idlocation  WHERE id_resa=".$id_resa_validee."";
-						$res=mysql_query($requete);
+						$res=pmb_mysql_query($requete);
 						$msg_a_pointer = "<div class='row'>";
 						$msg_a_pointer .="<div class='erreur'>".$msg["circ_retour_ranger_resa"]."</div>";
-						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_resa_par"]." : </strong><a href='./circ.php?categ=pret&form_cb=".rawurlencode(mysql_result($res,0,0))."'>".htmlentities(mysql_result($res,0,1),ENT_QUOTES,$charset).", ".htmlentities(mysql_result($res,0,2),ENT_QUOTES,$charset)."</a></span><br/>";
+						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_resa_par"]." : </strong><a href='./circ.php?categ=pret&form_cb=".rawurlencode(pmb_mysql_result($res,0,0))."'>".htmlentities(pmb_mysql_result($res,0,1),ENT_QUOTES,$charset).", ".htmlentities(pmb_mysql_result($res,0,2),ENT_QUOTES,$charset)."</a></span><br/>";
 						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["376"]." : </strong><a href='./circ.php?categ=visu_ex&form_cb_expl=".rawurlencode($form_cb_expl)."'>".htmlentities($form_cb_expl,ENT_QUOTES,$charset)."</a></span><br/>";
-						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_loc_retrait"]." : </strong>".htmlentities(mysql_result($res,0,3),ENT_QUOTES,$charset)."</span><br/>";
+						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_loc_retrait"]." : </strong>".htmlentities(pmb_mysql_result($res,0,3),ENT_QUOTES,$charset)."</span><br/>";
 						$msg_a_pointer .= "</div>" ;
 					}
 						
@@ -99,9 +99,9 @@ switch($action) {
 							"AND resa_cb='' ".
 							"AND resa_date_fin='0000-00-00' ";
 				print $rqt;
-				$res = mysql_query($rqt);
-				if (mysql_num_rows($res)) {
-					$id_resa = mysql_result($res,0);*/
+				$res = pmb_mysql_query($rqt);
+				if (pmb_mysql_num_rows($res)) {
+					$id_resa = pmb_mysql_result($res,0);*/
 					/*
 					si la loc de l'exemplaire sélectionné est identique à la loc du retrait => pas de transfert
 					sinon on génère le transfert entre la loc de l'exemplaire et celle du retrait				
@@ -111,7 +111,7 @@ switch($action) {
 					$loc_destination=resa_transfert($transfert_id_resa,$cb_trans);
 					if($loc_destination){
 						$rqt = "SELECT location_libelle FROM docs_location WHERE idlocation=".$loc_destination;
-						$lib_loc = mysql_result(mysql_query($rqt),0);			
+						$lib_loc = pmb_mysql_result(pmb_mysql_query($rqt),0);			
 				
 						$msg_a_pointer= "<br /><div class='erreur'>";
 						$msg_a_pointer.="<strong>" . $cb_trans . ": " . str_replace("!!site_dest!!", $lib_loc, $msg["transferts_circ_resa_validation_alerte"]) . "</strong><br />";
@@ -127,14 +127,14 @@ switch($action) {
 					$trans->transfert_pour_resa($cb_trans, $deflt_docs_location, $transfert_id_resa);					
 				
 					$rqt = "SELECT location_libelle FROM docs_location WHERE idlocation=".$deflt_docs_location;
-					$lib_loc = mysql_result(mysql_query($rqt),0);			
+					$lib_loc = pmb_mysql_result(pmb_mysql_query($rqt),0);			
 				
 					//desaffecte_cb($form_cb_expl,$id_resa_validee);
 					$msg_a_pointer = "<br /><div class='erreur'>";
 					$msg_a_pointer .=  "<strong>" . $cb_trans . ": " . str_replace("!!site_dest!!", $lib_loc, $msg["transferts_circ_resa_validation_alerte"]) . "</strong><br />";
 					$msg_a_pointer .= "</div>" ;
 					*/
-				//} //if (mysql_num_rows($res))
+				//} //if (pmb_mysql_num_rows($res))
 			} // if ($form_cb_expl) else
 		} //if ($sub == 'encours')
 		break;
@@ -153,18 +153,18 @@ switch($action) {
 				where
 				num_transfert=id_transfert and
 				etat_demande=0 and resa_trans='".$suppr_id_resa[$i]."' and etat_transfert=0";
-				$res = mysql_query ( $rqt );
-				if (mysql_num_rows($res)){
-					$obj = mysql_fetch_object($res);
+				$res = pmb_mysql_query( $rqt );
+				if (pmb_mysql_num_rows($res)){
+					$obj = pmb_mysql_fetch_object($res);
 					$idTrans=$obj->id_transfert;
 					//Récupération des informations d'origine
 					$rqt = "SELECT statut_origine, num_expl FROM transferts INNER JOIN transferts_demande ON id_transfert=num_transfert
 					WHERE id_transfert=".$idTrans." AND sens_transfert=0";
-					$res = mysql_query($rqt);
-					$obj_data = mysql_fetch_object($res);
+					$res = pmb_mysql_query($rqt);
+					$obj_data = pmb_mysql_fetch_object($res);
 					//on met à jour
 					$rqt = "UPDATE exemplaires SET expl_statut=".$obj_data->statut_origine." WHERE expl_id=".$obj_data->num_expl;
-					mysql_query ( $rqt );
+					pmb_mysql_query( $rqt );
 				}
 				*/	
 				// si demande de transfert on cloture
@@ -173,12 +173,12 @@ switch($action) {
 				where
 				num_transfert=id_transfert and etat_demande=0 and num_expl=expl_id and
 				resa_trans='".$suppr_id_resa[$i]."' ";
-				$res = mysql_query ( $req );
-				if (mysql_num_rows($res)){
-					$obj = mysql_fetch_object($res);
+				$res = pmb_mysql_query( $req );
+				if (pmb_mysql_num_rows($res)){
+					$obj = pmb_mysql_fetch_object($res);
 					// dans à traité pour effectuer le transfert  
 					$sql = "UPDATE exemplaires set expl_retloc='".$obj->expl_location."' where expl_cb='".$obj->expl_cb."' limit 1";
-					mysql_query($sql);
+					pmb_mysql_query($sql);
 				}
 				
 				$req=" update transferts,transferts_demande
@@ -188,14 +188,14 @@ switch($action) {
 				num_transfert=id_transfert and etat_demande=0 and 
 				resa_trans='".$suppr_id_resa[$i]."'
 				";
-				mysql_query($req, $dbh);
+				pmb_mysql_query($req, $dbh);
 			}
 			// archivage resa
 			$rqt_arch = "UPDATE resa_archive, resa SET resarc_anulee = 1 WHERE  id_resa = '".$suppr_id_resa[$i]."' AND resa_arc = resarc_id "; 
-			mysql_query ($rqt_arch, $dbh);
+			pmb_mysql_query($rqt_arch, $dbh);
 			// suppression
 			$rqt = "delete from resa where id_resa='".$suppr_id_resa[$i]."' ";
-			$res = mysql_query ($rqt, $dbh) ;			
+			$res = pmb_mysql_query($rqt, $dbh) ;			
 			// réaffectation du doc éventuellement
 			if($cb_recup){
 				if (!verif_cb_utilise ($cb_recup)) {
@@ -204,11 +204,11 @@ switch($action) {
 							$rqt = "SELECT id_transfert, sens_transfert, num_location_source, num_location_dest
 								FROM transferts, transferts_demande, exemplaires						
 								WHERE id_transfert=num_transfert and num_expl=expl_id  and expl_cb='".$cb_recup."' AND etat_transfert=0" ;
-							$res = mysql_query ( $rqt );
-							if (mysql_num_rows($res)){	
+							$res = pmb_mysql_query( $rqt );
+							if (pmb_mysql_num_rows($res)){	
 								// Document à traiter au lieu de à ranger, car transfert en cours?			
 								$sql = "UPDATE exemplaires set expl_retloc='".$deflt_docs_location."' where expl_cb='".$cb_recup."' limit 1";						
-								mysql_query($sql);
+								pmb_mysql_query($sql);
 								$pas_ranger=1;
 								$msg_a_pointer .= "<div class='row'>";
 								$msg_a_pointer .="<div class='erreur'>".$msg["circ_pret_piege_expl_todo"]."</div>";
@@ -217,22 +217,22 @@ switch($action) {
 						if(!$pas_ranger){
 							//on vérifie que l'exemplaire existe toujours...
 							$rqt = "SELECT expl_id FROM exemplaires WHERE expl_cb='".$cb_recup."' ";
-							$res = mysql_query ($rqt, $dbh) ;
-							if(mysql_num_rows($res)){
+							$res = pmb_mysql_query ($rqt, $dbh) ;
+							if(pmb_mysql_num_rows($res)){
 								// cb non réaffecté, il faut transférer les infos de la résa dans la table des docs à ranger
 								$rqt = "insert into resa_ranger (resa_cb) values ('".$cb_recup."') ";
-								$res = mysql_query ($rqt, $dbh) ;
+								$res = pmb_mysql_query($rqt, $dbh) ;
 							}
 						}	
 					} else {
 						alert_empr_resa($id_resa_validee) ;
 						$requete="SELECT empr_cb, empr_nom, empr_prenom, location_libelle FROM resa JOIN empr ON resa_idempr=id_empr JOIN docs_location ON resa_loc_retrait=idlocation  WHERE id_resa=".$id_resa_validee."";
-						$res=mysql_query($requete);
+						$res=pmb_mysql_query($requete);
 						$msg_a_pointer .= "<div class='row'>";
 						$msg_a_pointer .="<div class='erreur'>".$msg["circ_retour_ranger_resa"]."</div>";
-						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_resa_par"]." : </strong><a href='./circ.php?categ=pret&form_cb=".rawurlencode(mysql_result($res,0,0))."'>".htmlentities(mysql_result($res,0,1),ENT_QUOTES,$charset).", ".htmlentities(mysql_result($res,0,2),ENT_QUOTES,$charset)."</a></span><br/>";
+						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_resa_par"]." : </strong><a href='./circ.php?categ=pret&form_cb=".rawurlencode(pmb_mysql_result($res,0,0))."'>".htmlentities(pmb_mysql_result($res,0,1),ENT_QUOTES,$charset).", ".htmlentities(pmb_mysql_result($res,0,2),ENT_QUOTES,$charset)."</a></span><br/>";
 						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["376"]." : </strong><a href='./circ.php?categ=visu_ex&form_cb_expl=".rawurlencode($form_cb_expl)."'>".htmlentities($form_cb_expl,ENT_QUOTES,$charset)."</a></span><br/>";
-						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_loc_retrait"]." : </strong>".htmlentities(mysql_result($res,0,3),ENT_QUOTES,$charset)."</span><br/>";
+						$msg_a_pointer .= "<span style='margin-left:2em;'><strong>".$msg["circ_retour_loc_retrait"]." : </strong>".htmlentities(pmb_mysql_result($res,0,3),ENT_QUOTES,$charset)."</span><br/>";
 						$msg_a_pointer .= "</div>" ;						
 					}
 				}
@@ -246,7 +246,7 @@ switch($action) {
 		$tmp_in_resa = implode(",",$suppr_id_resa) ;
 		if ($tmp_in_resa) {
 			$rqt = "select id_resa, resa_idempr, resa_confirmee from resa where id_resa in (".$tmp_in_resa.") and resa_cb is not null and resa_cb!='' order by resa_idempr ";
-			$res = mysql_query ($rqt, $dbh) ;
+			$res = pmb_mysql_query($rqt, $dbh) ;
 			alert_empr_resa ($tmp_in_resa);		
 		} else 	print alert_jscript($msg['no_resa_selected']);
 		break;
@@ -256,12 +256,12 @@ switch($action) {
 		$aff_a_ranger .= "<hr />" ;
 		// récupérer l'exemplaire
 		$query = "select expl_id from exemplaires where expl_cb='$form_cb_expl'";
-		$result = mysql_query($query, $dbh);
-		if(!mysql_num_rows($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if(!pmb_mysql_num_rows($result)) {
 			// exemplaire inconnu
 			$aff_a_ranger .= "<strong>$form_cb_expl&nbsp;: ${msg[367]}</strong><br />";
 		} else {
-			$expl_lu = mysql_fetch_object($result) ;
+			$expl_lu = pmb_mysql_fetch_object($result) ;
 			if($stuff = get_expl_info($expl_lu->expl_id)) {
 				$stuff = check_pret($stuff);
 				$aff_a_ranger .=  print_info($stuff,1,0,0)."<br />";
@@ -270,8 +270,8 @@ switch($action) {
 			}
 		}
 		$rqt = "delete from resa_ranger where resa_cb='".$form_cb_expl."' ";
-		$res = mysql_query ($rqt, $dbh) ;
-		if (mysql_affected_rows()) $msg_a_ranger .= $msg[resa_docrange] ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
+		if (pmb_mysql_affected_rows()) $msg_a_ranger .= $msg[resa_docrange] ;
 			else $msg_a_ranger .= $msg[resa_docrange_non] ;
 		$msg_a_ranger = str_replace('!!cb!!', $form_cb_expl, $msg_a_ranger );
 		$msg_a_ranger .= "</div>" ;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_pmi_customfields.inc.php,v 1.4 2009-12-14 10:45:47 dbellamy Exp $
+// $Id: func_pmi_customfields.inc.php,v 1.5 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -30,40 +30,40 @@ function import_new_notice_suite() {
 	}
 	$mots_cles ? $index_matieres = strip_empty_words($mots_cles) : $index_matieres = '';
 	$rqt_maj = "update notices set index_l='".addslashes($mots_cles)."', index_matieres=' ".addslashes($index_matieres)." ' where notice_id='$notice_id' " ;
-	mysql_query($rqt_maj, $dbh);
+	pmb_mysql_query($rqt_maj, $dbh);
 	
 	for($i=0;$i<count($info_900);$i++){		
 		
 		$req = " select idchamp, type, datatype from notices_custom where name='".$info_900[$i]['n']."'";
-		$res = mysql_query($req,$dbh);
-		if(mysql_num_rows($res)){
-			$perso = mysql_fetch_object($res);
+		$res = pmb_mysql_query($req,$dbh);
+		if(pmb_mysql_num_rows($res)){
+			$perso = pmb_mysql_fetch_object($res);
 			if($perso->idchamp){
 				if($perso->type == 'list'){
 					$requete="select notices_custom_list_value from notices_custom_lists where notices_custom_list_lib='".addslashes($info_900[$i]['a'])."' and notices_custom_champ=$perso->idchamp";
-					$resultat=mysql_query($requete);
-					if (mysql_num_rows($resultat)) {
-						$value=mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($resultat)) {
+						$value=pmb_mysql_result($resultat,0,0);
 					} else {
 						$requete="select max(notices_custom_list_value*1) from notices_custom_lists where notices_custom_champ=$perso->idchamp";
-						$resultat=mysql_query($requete);
-						$max=@mysql_result($resultat,0,0);
+						$resultat=pmb_mysql_query($requete);
+						$max=@pmb_mysql_result($resultat,0,0);
 						$n=$max+1;
 						$requete="insert into notices_custom_lists (notices_custom_champ,notices_custom_list_value,notices_custom_list_lib) values($perso->idchamp,$n,'".addslashes($info_900[$i]['a'])."')";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 						$value=$n;
 					}
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_integer) values($perso->idchamp,$notice_id,$value)";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				} elseif($perso->type == 'date_box'){
 					$tmp_date='';
 					$tmp_date=str_replace('/','',$info_900[$i]['a']);
 					$tmp_date=substr($tmp_date,4,4).'-'.substr($tmp_date,0,2).'-'.substr($tmp_date,2,2);
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_date) values($perso->idchamp,$notice_id,'".addslashes($tmp_date)."')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				} else {
 					$requete="insert into notices_custom_values (notices_custom_champ,notices_custom_origine,notices_custom_".$perso->datatype.") values($perso->idchamp,$notice_id,'".addslashes($info_900[$i]['a'])."')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 			}	
 		}

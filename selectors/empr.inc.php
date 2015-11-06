@@ -2,12 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr.inc.php,v 1.11 2009-05-16 10:52:44 dbellamy Exp $
+// $Id: empr.inc.php,v 1.13 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 // la variable $caller, passée par l'URL, contient le nom du form appelant
-$base_url = "./select.php?what=emprunteur&caller=$caller&param1=$param1&param2=$param2&no_display=$no_display&bt_ajouter=$bt_ajouter&auto_submit=$auto_submit";
+$base_url = "./select.php?what=emprunteur&caller=$caller&param1=$param1&param2=$param2&no_display=$no_display&bt_ajouter=$bt_ajouter&auto_submit=$auto_submit&callback=$callback&infield=$infields";
 
 // contenu popup sélection emprunteur
 require('./selectors/templates/sel_empr.tpl.php');
@@ -31,6 +31,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $rech_regexp = 
 	global $base_url;
 	global $caller;
  	global $charset;
+ 	global $empr;
+ 	global $callback;
 
 	$user_input = str_replace("*", "%", $user_input) ;
 	$where = "empr_nom like '$user_input%' ";
@@ -42,8 +44,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $rech_regexp = 
 			$requete = "SELECT COUNT(1) FROM empr WHERE $where ";
 			}
 
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 
 	if(!$page) $page=1;
 	$debut =($page-1)*$nb_per_page;
@@ -58,17 +60,17 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $rech_regexp = 
 				$requete .= "ORDER BY empr_nom, empr_prenom LIMIT $debut,$nb_per_page ";
 				}
 
-		$res = @mysql_query($requete, $dbh);
-		while(($empr=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($empr=pmb_mysql_fetch_object($res))) {
             $empr_entry = $empr->empr_nom;
             if($empr->empr_prenom) $empr_entry .= ', '.$empr->empr_prenom;
             print pmb_bidi("
- 			<a href='#' onclick=\"set_parent('$caller', '$empr->id_empr', '".htmlentities(addslashes($empr_entry),ENT_QUOTES, $charset)." ($empr->empr_cb)')\">
+ 			<a href='#' onclick=\"set_parent('$caller', '$empr->id_empr', '".htmlentities(addslashes($empr_entry),ENT_QUOTES, $charset)." ($empr->empr_cb)','$callback')\">
 				$empr_entry</a>");
 			print pmb_bidi(' <i><small>'.$empr->lieu.'</small></i> ('.$empr->empr_cb.')');
 			print "<br />";
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 

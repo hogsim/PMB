@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: webdav.class.php,v 1.13.2.2 2015-05-11 12:21:53 jpermanne Exp $
+// $Id: webdav.class.php,v 1.17 2015-05-11 12:19:36 jpermanne Exp $
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 global $class_path, $include_path,$javascript_path;
@@ -21,7 +21,7 @@ require_once($class_path."/epubData.class.php");
 require_once("$base_path/admin/connecteurs/out/webdav/lib/Sabre/autoload.php");//On charge de façon automatique tous les fichiers dont on a besoin
 
 // on teste si des répertoires de stockages sont paramétrés
-if (mysql_num_rows(mysql_query("select * from upload_repertoire "))==0) {
+if (pmb_mysql_num_rows(pmb_mysql_query("select * from upload_repertoire "))==0) {
 	$pmb_docnum_in_directory_allow = 0;
 } else {
 	$pmb_docnum_in_directory_allow=1;
@@ -129,9 +129,9 @@ class webdav_source extends connecteur_out_source {
 		if(!$this->config['upload_rep']){
 			global $PMBuserid;
 			$query = "select deflt_upload_repertoire from users where userid = ".$PMBuserid;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$this->config['upload_rep'] = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$this->config['upload_rep'] = pmb_mysql_result($result,0,0);
 			}else{
 				$this->config['upload_rep'] = 0;
 			}
@@ -185,11 +185,11 @@ class webdav_source extends connecteur_out_source {
 				<div class='colonne2'>
 					<label for='restricted_write_permission'>".htmlentities($this->msg['webdav_restricted_user_write_permission'],ENT_QUOTES,$charset)."</label><br />";	
 		$query = "SELECT grp_id, grp_name FROM users_groups ORDER BY grp_name ";
-		$res = mysql_query($query);
-		if(mysql_num_rows($res)>0){
+		$res = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($res)>0){
 			$result .= "
 				<select id='restricted_user_write_permission' name='restricted_user_write_permission[]' multiple>";
-			while($obj = mysql_fetch_object($res)){
+			while($obj = pmb_mysql_fetch_object($res)){
 					$result.="
 					<option value='".$obj->grp_id."' ".(in_array($obj->grp_id,$this->config['restricted_user_write_permission']) ? "selected=selected" : "") .">".htmlentities($obj->grp_name,ENT_QUOTES,$charset)."</option>";
 			}
@@ -204,11 +204,11 @@ class webdav_source extends connecteur_out_source {
 					<label for='restricted_write_permission'>".htmlentities($this->msg['webdav_restricted_empr_write_permission'],ENT_QUOTES,$charset)."</label><br />";	
 		//catégories de lecteurs
 		$requete = "SELECT id_categ_empr, libelle FROM empr_categ ORDER BY libelle ";
-		$res = mysql_query($requete);
-		if(mysql_num_rows($res)>0){
+		$res = pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)>0){
 			$result .= "
 				<select id='restricted_empr_write_permission' name='restricted_empr_write_permission[]' multiple>";
-			while($obj = mysql_fetch_object($res)){
+			while($obj = pmb_mysql_fetch_object($res)){
 					$result.="
 					<option value='".$obj->id_categ_empr."' ".(in_array($obj->id_categ_empr,$this->config['restricted_empr_write_permission']) ? "selected=selected" : "") .">".htmlentities($obj->libelle,ENT_QUOTES,$charset)."</option>";
 			}
@@ -338,11 +338,11 @@ class webdav_source extends connecteur_out_source {
 			</div>
 			<div class='row'>";
 		$query = "select id_notice_statut, gestion_libelle from notice_statut order by gestion_libelle";
-		$res = mysql_query($query);
-		if(mysql_num_rows($res)){
+		$res = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($res)){
 			$result .="
 				<select name='default_statut'>";
-			while($row=mysql_fetch_object($res)){
+			while($row=pmb_mysql_fetch_object($res)){
 				$result.="
 					<option value='".$row->id_notice_statut."'".($row->id_notice_statut == $this->config['default_statut'] ? "selected='selected'" : "").">".htmlentities($row->gestion_libelle,ENT_QUOTES,$charset)."</option>";
 			}
@@ -357,6 +357,28 @@ class webdav_source extends connecteur_out_source {
 				//Intégration de la gestion de l'interface de l'upload
 
 		
+		//statut docunum
+		$result.="
+			<div class='row'>
+				<label for='default_docnum_statut'>".htmlentities($this->msg['webdav_default_docnum_statut'],ENT_QUOTES,$charset)."</label>
+			</div>
+			<div class='row'>";
+		$query = "select id_explnum_statut, gestion_libelle from explnum_statut order by gestion_libelle";
+		$res = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($res)){
+			$result .="
+				<select name='default_docnum_statut'>";
+			while($row = pmb_mysql_fetch_object($res)){
+				$result.="
+					<option value='".$row->id_explnum_statut."'".($row->id_explnum_statut == $this->config['default_docnum_statut'] ? "selected='selected'" : "").">".htmlentities($row->gestion_libelle,ENT_QUOTES,$charset)."</option>";
+			}
+			$result .="
+				</select>";
+		}
+		$result.="
+			</div>";		
+		
+		
 		global $pmb_docnum_in_database_allow,$pmb_docnum_in_directory_allow;
 
 				$result.= "<div class='row'>";
@@ -368,11 +390,11 @@ class webdav_source extends connecteur_out_source {
 		if ($pmb_docnum_in_directory_allow) {				
 			$result .= "<input type='radio' name='up_place' id='upload' value='1' !!check_up!! /> <label for='upload'>".$msg['upload_repertoire_server']."</label>";
 				$req="select repertoire_id, repertoire_nom from upload_repertoire order by repertoire_nom";
-				$res = mysql_query($req);
-				if(mysql_num_rows($res)){
+				$res = pmb_mysql_query($req);
+				if(pmb_mysql_num_rows($res)){
 					$result.=" 
 						<select name='id_rep'>";
-					while ($row = mysql_fetch_object($res)){
+					while ($row = pmb_mysql_fetch_object($res)){
 						$result.="
 							<option value='".$row->repertoire_id."' ".($row->repertoire_id == $this->config['upload_rep'] ? "selected='selected'" : "").">".htmlentities($row->repertoire_nom,ENT_QUOTES,$charset)."</option>";
 					}
@@ -408,6 +430,7 @@ class webdav_source extends connecteur_out_source {
 		global $id_rep;
 		global $up_place;
 		global $allow_web;
+		global $default_docnum_statut;
 
 		parent::update_config_from_form();
 		$this->config['included_sets'] = $included_sets;
@@ -423,6 +446,7 @@ class webdav_source extends connecteur_out_source {
 		$this->config['upload_rep'] = $id_rep;
 		$this->config['up_place'] = $up_place;
 		$this->config['allow_web'] = $allow_web;
+		$this->config['default_docnum_statut'] = $default_docnum_statut;
 		return;
 	}
 }

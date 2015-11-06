@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.9 2011-10-22 14:29:47 arenou Exp $
+// $Id: search.class.php,v 1.10 2014-12-31 10:06:10 vtouchard Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -167,6 +167,9 @@ class combine_search {
     					case 2:
     						searcher_publisher::convert_simple_multi($valeur[0]);	
     					break;
+    					case 11:
+    						searcher_map::convert_simple_multi($valeur[0]);	
+    						break;
     				}
     			} else {
     				$op_="EQ";

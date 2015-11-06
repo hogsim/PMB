@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: setcb.php,v 1.17 2012-11-12 10:26:47 dgoron Exp $
+// $Id: setcb.php,v 1.18 2015-04-03 11:16:21 jpermanne Exp $
 // popup de saisie d'un code barre
 
 require_once ("../includes/error_report.inc.php") ;
@@ -96,8 +96,8 @@ if ($suite) { // un CB a été soumis
 					else $and_clause = "" ;
 				$rqt_verif_code = "select count(1) from notices where code ='".$code_temp."'".$and_clause ;
 				}
-		$res_verif_code = mysql_query($rqt_verif_code, $dbh);
-		$nbr_verif_code = mysql_result($res_verif_code, 0, 0);
+		$res_verif_code = pmb_mysql_query($rqt_verif_code, $dbh);
+		$nbr_verif_code = pmb_mysql_result($res_verif_code, 0, 0);
 		if ($nbr_verif_code > 0) $alerte_code_double = 1 ;
 			else $alerte_code_double = 0 ;
 		}

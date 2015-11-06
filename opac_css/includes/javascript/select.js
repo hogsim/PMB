@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: select.js,v 1.2 2014-01-21 13:01:55 dgoron Exp $
+// $Id: select.js,v 1.5 2015-04-08 13:25:02 jpermanne Exp $
 
 function insertatcursor(myField, myValue) {
 	if (document.selection) {
@@ -68,10 +68,65 @@ function show_frame(url) {
 	h=notice_view.clientHeight;
 	posx=(getWindowWidth()/2-(w/2))<0?0:(getWindowWidth()/2-(w/2))
 	posy=(getWindowHeight()/2-(h/2))<0?0:(getWindowHeight()/2-(h/2));
+	posy+=getScrollTop();
 	notice_view.style.left=posx+"px";
 	notice_view.style.top=posy+"px";
 	notice_view.style.visibility="visible";
 	document.onmousedown=clic;
+}
+
+function open_popup(popup_view,html) {
+	
+	var att=document.getElementById('att');
+	att.appendChild(popup_view);
+	
+	//le html
+	popup_view.innerHTML=html;
+	//la croix de fermeture
+	var notice_view_close=document.createElement('div');
+	notice_view_close.setAttribute('class','popup_preview_close');
+	notice_view_close.setAttribute('onclick','close_popup("'+popup_view.getAttribute('id')+'")');
+	notice_view_close.innerHTML="X";
+	
+	//on ajoute la croix
+	popup_view.appendChild(notice_view_close);
+	
+	//les attributs
+	popup_view.setAttribute('class','popup_preview');
+	popup_view.setAttribute('style','visibility:hidden;display:block;');
+	
+	//la position
+	w=popup_view.clientWidth;
+	h=popup_view.clientHeight;
+	posx=(getWindowWidth()/2-(w/2))<0?0:(getWindowWidth()/2-(w/2));
+	posy=(getWindowHeight()/2-(h/2))<0?0:(getWindowHeight()/2-(h/2));
+	posy+=getScrollTop();
+	popup_view.style.left=posx+'px';
+	popup_view.style.top=posy+'px';
+	popup_view.style.visibility='visible';
+}
+
+function close_popup(popup_view_id){
+	var popup_view=document.getElementById(popup_view_id);
+	if(popup_view){
+		
+		popup_view.innerHTML='';
+		popup_view.style.visibility='hidden';
+	}
+}
+
+function getScrollTop(){
+    var scrollTop;
+    if(typeof(window.pageYOffset) == 'number'){
+        scrollTop = window.pageYOffset;
+    }else{
+        if(document.body && document.body.scrollTop){
+            scrollTop = document.body.scrollTop;
+        }else if(document.documentElement && document.documentElement.scrollTop){
+            scrollTop = document.documentElement.scrollTop;
+        }
+    }
+    return scrollTop;
 }
 
 function show_layer() {

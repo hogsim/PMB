@@ -5,11 +5,11 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: en_UK.xml,v 1.9.6.1 2015-03-09 12:59:28 jpermanne Exp $ -->
+$Id: en_UK.xml,v 1.13 2015-06-16 15:08:06 pmbs Exp $ -->
 
 <XMLlist>
 	<entry code="amazon_key">AWSAccessKeyID Key</entry>
-	<entry code="amazon_site">Site</entry>
+	<entry code="amazon_site">Website</entry>
 	<entry code="amazon_max_return">Maximum number of results</entry>
 	<entry code="amazon_search_in">Search in</entry>
 	<entry code="amazon_us">Amazon US</entry>
@@ -28,15 +28,17 @@ $Id: en_UK.xml,v 1.9.6.1 2015-03-09 12:59:28 jpermanne Exp $ -->
 	<entry code="amazon_foreignbooks">Foreign literature</entry>
 	<entry code="amazon_magazines">Magazines</entry>
 	<entry code="amazon_secret_key">Secret Key</entry>
-	<entry code="amazon_enrichment_source">(source Amazon)</entry>
-	<entry code="amazon_enrichment_no_similarities">Aucune information disponible.</entry>
-	<entry code="amazon_enrichment_listen_extract">Ecouter un extrait de %s sur Amazon</entry>
-	<entry code="amazon_enrichment_customers_reviews">Avis Amazon</entry>
-	<entry code="amazon_associate_tag">Tag Partenaire</entry>
-	<entry code="numberofitems">Nombre d'éléments</entry>
-	<entry code="numberofdiscs">Nombre de disques</entry>
-	<entry code="runningtime">Durée</entry>
-	<entry code="theatricaldate">Enregistré le</entry>
+	<entry code="amazon_enrichment_source">(enrichment from Amazon)</entry>
+	<entry code="amazon_enrichment_no_similarities">No information available.</entry>
+	<entry code="amazon_enrichment_listen_extract">Listen to an extract of %s on Amazon</entry>
+	<entry code="amazon_enrichment_customers_reviews">Customer reviews from Amazon</entry>
+	<entry code="amazon_associate_tag">Tag linked</entry>
+	<entry code="numberofitems">Number of items</entry>
+	<entry code="numberofdiscs">Number of discs</entry>
+	<entry code="runningtime">Duration</entry>
+	<entry code="theatricaldate">Saved</entry>
 	<entry code="format">Format</entry>
-	<entry code="disc">Disque</entry>
+	<entry code="disc">Disc</entry>
+	<entry code="amazon_review_height">Height of the customer reviews frame</entry>
+	<entry code="amazon_review_width">Width of the customer reviews frame</entry>
 </XMLlist>

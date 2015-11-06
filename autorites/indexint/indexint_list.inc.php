@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: indexint_list.inc.php,v 1.33.6.1 2014-04-23 14:47:49 gueluneau Exp $
+// $Id: indexint_list.inc.php,v 1.35 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -90,8 +90,8 @@ if(!$nbr_lignes) {
 			$requete="select count(distinct indexint_id) from indexint,pclassement where $pclass_req_and indexint_name like '".str_replace("*","%",$user_input)."' order by indexint_name";
 		}
 	}
-	$res = mysql_query($requete, $dbh) or die (mysql_error()."<br /><br />$requete");
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()."<br /><br />$requete");
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 } else {
 	if (!$exact) $aq=new analyse_query(stripslashes($user_input));	
 }
@@ -120,15 +120,15 @@ if($nbr_lignes) {
 			$requete="select *,".$members["select"]." as pert from indexint,pclassement where $pclass_req_and ".$members["where"]." group by indexint_id order by pert desc, index_indexint limit $debut,$nb_per_page";
 		} else $requete="select * from indexint,pclassement where $pclass_req_and indexint_name like '".str_replace("*","%",$user_input)."' group by indexint_id order by indexint_name,name_pclass limit $debut,$nb_per_page";
 	}
-	$res = @mysql_query($requete, $dbh);
+	$res = @pmb_mysql_query($requete, $dbh);
 	$parity=1;
 	$url_base = "./autorites.php?categ=indexint&sub=reach$pclass_url&user_input=".rawurlencode(stripslashes($user_input))."&exact=$exact" ;
-	while(($indexint=mysql_fetch_object($res))) {
+	while(($indexint=pmb_mysql_fetch_object($res))) {
 		if ($parity % 2) $pair_impair = "even"; else $pair_impair = "odd";
 		$parity += 1;
 		
 		$notice_count_sql = "SELECT count(*) FROM notices WHERE indexint = ".$indexint->indexint_id;
-		$notice_count = mysql_result(mysql_query($notice_count_sql), 0, 0);
+		$notice_count = pmb_mysql_result(pmb_mysql_query($notice_count_sql), 0, 0);
 		
         $tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\"  ";
         
@@ -149,7 +149,7 @@ if($nbr_lignes) {
 		else $indexint_list .= "<td>&nbsp;</td>";
 		$indexint_list .= "</tr>";	
 	}
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 	
 	if (!$last_param) $nav_bar = aff_pagination ($url_base, $nbr_lignes, $nb_per_page, $page, 10, false, true) ;
         else $nav_bar = "";

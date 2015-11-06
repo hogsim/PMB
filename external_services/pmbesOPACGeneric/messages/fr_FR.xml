@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.5 2013-02-20 16:09:28 mbertin Exp $ -->
+$Id: fr_FR.xml,v 1.7 2015-06-15 12:55:34 pmbs Exp $ -->
 
 <!DOCTYPE XMLlist SYSTEM "../../../includes/XMLlist.dtd" >
 <XMLlist>
@@ -15,7 +15,7 @@ $Id: fr_FR.xml,v 1.5 2013-02-20 16:09:28 mbertin Exp $ -->
   <entry code="list_shelves_description">Liste les différentes étagères visibles dans l'opac</entry>
   <entry code="list_shelves_input_description"></entry>
   <entry code="list_shelves_output_description"></entry>
-  <entry code="list_shelves_OPACUserId">l'id d'un emprunteur, pour vérifier les droits d'accès sur cette notice.
+  <entry code="list_shelves_OPACUserId">Id d'un emprunteur, pour vérifier les droits d'accès sur cette étagère.
     -1: Ne pas tenir compte
     0: emprunteur anonyme
     x: id de l'emprunteur</entry>
@@ -25,13 +25,13 @@ $Id: fr_FR.xml,v 1.5 2013-02-20 16:09:28 mbertin Exp $ -->
   -->
   <entry code="retrieve_shelf_content_description">Liste les différentes notices contenues dans une étagère</entry>
   <entry code="retrieve_shelf_content_input_description"></entry>
-  <entry code="retrieve_shelf_content_output_description">Cette fonction tient compte des différents droits d'accès appliquables à l'emprunteur</entry>
-  <entry code="retrieve_shelf_content_OPACUserId">l'id d'un emprunteur, pour vérifier les droits d'accès sur cette notice.
+  <entry code="retrieve_shelf_content_output_description">Cette fonction tient compte des différents droits d'accès applicables à l'emprunteur</entry>
+  <entry code="retrieve_shelf_content_OPACUserId">Id d'un emprunteur, pour vérifier les droits d'accès sur les notices.
     -1: Ne pas tenir compte
     0: emprunteur anonyme
     x: id de l'emprunteur</entry>
-  <entry code="retrieve_shelf_content_self_id">L'id de l'étagère</entry>
-  <entry code="retrieve_shelf_content_shelf_content">Les ids des notices</entry>
+  <entry code="retrieve_shelf_content_self_id">Id de l'étagère</entry>
+  <entry code="retrieve_shelf_content_shelf_content">Ids des notices</entry>
   
   <entry code="list_locations_description">Liste les différentes localisations de l'OPAC</entry>
   <entry code="list_locations_input_description"></entry>
@@ -94,11 +94,11 @@ list_sections
 	<!--
 	get_marc_table
 	-->
-	<entry code="get_marc_table_description">Récupère les informations contenues dans les fichiers xml de paramètrage de PMB. Permets d'avoir notamment les libellés corespondants à des codes utilisés dans PMP</entry>
+	<entry code="get_marc_table_description">Récupère les informations contenues dans les fichiers xml de paramètrage de PMB. Permet d'avoir notamment les libellés corespondants à des codes utilisés dans PMB</entry>
 	<entry code="get_marc_table_type">Type d'information souhaitée:
 country -&gt; Pays
-icondoc -&gt; Images associés aux notices
-icondoc_big -&gt; Images associés aux notices (grand format)
+icondoc -&gt; Images associées aux notices
+icondoc_big -&gt; Images associées aux notices (grand format)
 lang -&gt; Langues
 doctype -&gt; Types de documents
 recordtype -&gt; Type de notices
@@ -106,7 +106,7 @@ function -&gt; Fonctions d'auteurs
 section_995 -&gt; Section d'exemplaires
 typdoc_995 -&gt; Support d'exemplaires
 codstatdoc_995 -&gt; Code stat d'exemplaire
-diacritique -&gt; Caractères diacritique
+diacritique -&gt; Caractères diacritiques
 nivbiblio -&gt; Niveau bibliographique
 relationtypeup -&gt; Lien entre notice fille -> mère
 relationtypedown -&gt; Lien entre notice mère -> fille
@@ -115,6 +115,6 @@ relationtype_autup -&gt; Lien entre autorité fille -> mère
 relationtypeup_unimarc -&gt; Code unimarc du champ pour les liens fille -> mère
 relationtypedown_unimarc -&gt; Code unimarc du champ pour les liens mère -> fille
 	</entry>
-	<entry code="get_marc_table_result">Tabeau avec les associations [code] =&gt; Libellé/valeur</entry>
+	<entry code="get_marc_table_result">Tableau avec les associations [code] =&gt; Libellé/valeur</entry>
 	
 </XMLlist>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesCollections.class.php,v 1.7 2013-02-20 16:09:28 mbertin Exp $
+// $Id: pmbesCollections.class.php,v 1.8 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,9 +37,9 @@ class pmbesCollections extends external_services_api_class {
 
 		$requete  = "SELECT notice_id FROM notices WHERE (coll_id='$collection_id') "; 
 			
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		if ($res)
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = $row["notice_id"];
 			}
 	
@@ -60,9 +60,9 @@ class pmbesCollections extends external_services_api_class {
 			
 		$requete  = "SELECT notice_id FROM notices WHERE (subcoll_id='$subcollection_id') "; 
 			
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		if ($res)
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = $row["notice_id"];
 			}
 	
@@ -82,10 +82,10 @@ class pmbesCollections extends external_services_api_class {
 			throw new Exception("Missing parameter: collection_id");
 			
 		$sql = "SELECT * FROM collections WHERE collection_id = ".$collection_id;
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		if (!$res)
 			throw new Exception("Not found: collection_id = ".$collection_id);
-		$row = mysql_fetch_assoc($res);
+		$row = pmb_mysql_fetch_assoc($res);
 
 		$result = array(
 			"collection_id" => $row["collection_id"],
@@ -109,10 +109,10 @@ class pmbesCollections extends external_services_api_class {
 			throw new Exception("Missing parameter: sub_coll_id");
 			
 		$sql = "SELECT * FROM sub_collections WHERE sub_coll_id = ".$subcollection_id;
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		if (!$res)
 			throw new Exception("Not found: sub_coll_id = ".$subcollection_id);
-		$row = mysql_fetch_assoc($res);
+		$row = pmb_mysql_fetch_assoc($res);
 		
 		$result = array(
 			"sous_collection_id" => $row["sub_coll_id"],
@@ -150,9 +150,9 @@ class pmbesCollections extends external_services_api_class {
 			throw new Exception("Missing parameter: collection_id");
 			
 		$sql = "SELECT * FROM sub_collections WHERE sub_coll_parent = ".$collection_id;
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		if ($res)
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = pmb_mysql_fetch_assoc($res)) {
 				$aresult = array(
 					"sous_collection_id" => $row["sub_coll_id"],
 					"sous_collection_name" => utf8_normalize($row["sub_coll_name"]),

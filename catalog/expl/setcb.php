@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: setcb.php,v 1.12 2013-01-30 11:01:46 ngantier Exp $
+// $Id: setcb.php,v 1.13 2014-11-03 09:10:07 ngantier Exp $
 // popup de saisie d'un code barre
 
 // YPR 22/11/2004 : on lui passe en paramètre le DOM du champ à modifier en retour $returnDOM
@@ -25,6 +25,7 @@ $dbh = connection_mysql();
 include("$include_path/error_handler.inc.php");
 include("$include_path/sessions.inc.php");
 include("$include_path/misc.inc.php");
+include("$javascript_path/misc.inc.php");
 include("$class_path/XMLlist.class.php");
 
 if(!checkUser('PhpMyBibli')) {

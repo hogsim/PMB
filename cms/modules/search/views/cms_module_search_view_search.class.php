@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_search_view_search.class.php,v 1.11.2.1 2014-04-25 14:53:02 mbertin Exp $
+// $Id: cms_module_search_view_search.class.php,v 1.14 2015-02-04 15:22:58 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 require_once($include_path."/h2o/h2o.php");
@@ -43,6 +43,14 @@ class cms_module_search_view_search extends cms_module_common_view{
 					&nbsp;<input type='radio' name='cms_module_search_view_link_search_advanced' value='0' ".(!$this->parameters['link_search_advanced'] ? "checked='checked'" : "")."/>&nbsp;".$this->format_text($this->msg['cms_module_search_view_link_search_advanced_no'])."
 				</div>
 			</div>
+			<div class='row'>
+				<div class='colonne3'>
+					<label for='cms_module_search_view_input_placeholder'>".$this->format_text($this->msg['cms_module_search_view_input_placeholder'])."</label>
+				</div>
+				<div class='colonne-suite'>
+					<input type='text' name='cms_module_search_view_input_placeholder' value='".($this->parameters['input_placeholder'] ? htmlentities($this->parameters['input_placeholder'],ENT_QUOTES,$charset) : "")."'/>
+				</div>
+			</div>
 		</div>
 		".parent::get_form();
 		return $form;
@@ -52,10 +60,12 @@ class cms_module_search_view_search extends cms_module_common_view{
 		global $cms_module_search_view_help;
 		global $cms_module_search_view_title;
 		global $cms_module_search_view_link_search_advanced;
-
+		global $cms_module_search_view_input_placeholder;
+		
 		$this->parameters['help'] = $cms_module_search_view_help+0;
-		$this->parameters['title'] = $cms_module_search_view_title;
+		$this->parameters['title'] = stripslashes($cms_module_search_view_title);
 		$this->parameters['link_search_advanced'] = $cms_module_search_view_link_search_advanced+0;
+		$this->parameters['input_placeholder'] = stripslashes($cms_module_search_view_input_placeholder);
 		
 		return parent::save_form();
 	}
@@ -113,7 +123,7 @@ class cms_module_search_view_search extends cms_module_common_view{
 		if($opac_simple_search_suggestions){
 			$html.= "
 				<script type='text/javascript' src='$include_path/javascript/ajax.js'></script>
-				<input type='text' name='user_query' id='user_query_lib_2' value='".stripslashes(htmlentities($user_query,ENT_QUOTES,$charset))."' expand_mode='1' completion='suggestions' disableCompletion='false' word_only='no'/>
+				<input type='text' name='user_query' id='user_query_lib_2' value='".stripslashes(htmlentities($user_query,ENT_QUOTES,$charset))."' expand_mode='1' completion='suggestions' disableCompletion='false' word_only='no' placeholder='".stripslashes(htmlentities($this->parameters['input_placeholder'],ENT_QUOTES,$charset))."'/>
 				<script type='text/javascript'>
 					function toggleCompletion(destValue){
 						if(destValue!='0'){
@@ -126,7 +136,7 @@ class cms_module_search_view_search extends cms_module_common_view{
 				</script>";
 		}else{
 			$html.="
-				<input type='text' name='user_query' value='".stripslashes(htmlentities($user_query,ENT_QUOTES,$charset))."'/>";
+				<input type='text' name='user_query' value='".stripslashes(htmlentities($user_query,ENT_QUOTES,$charset))."' placeholder='".stripslashes(htmlentities($this->parameters['input_placeholder'],ENT_QUOTES,$charset))."'/>";
 		}
 		
 		$html.="
@@ -164,7 +174,7 @@ class cms_module_search_view_search extends cms_module_common_view{
 		return $html;
 	}
 	
-	public function get_headers(){
+	public function get_headers($datas=array()){
 		global $base_path;
 		$headers = array();
 		

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: videojs.class.php,v 1.4.2.2 2014-04-01 14:22:29 apetithomme Exp $
+// $Id: videojs.class.php,v 1.8 2015-04-17 08:10:27 apetithomme Exp $
 
 require_once($visionneuse_path."/classes/mimetypes/affichage.class.php");
 
@@ -17,6 +17,7 @@ class videojs extends affichage {
 			$this->doc = $doc;
 			$this->driver = $doc->driver;
 	    	$this->driver->cleanCache();
+	    	$this->getParamsPerso();
 	    	$this->allowedFunction = array(
 	    			"getEmbedVideo",
 	    	);
@@ -73,9 +74,9 @@ class videojs extends affichage {
 		$nom_fichier=basename($this->doc->path,".".$this->doc->extension).".vtt";
 		$requete="select e1.explnum_id from explnum as e1, explnum as e2 where e1.explnum_notice=e2.explnum_notice and e1.explnum_nomfichier='".addslashes($nom_fichier)."' and e2.explnum_id=".$this->doc->id;
 		
-		$res=mysql_query($requete);
-		if (mysql_num_rows($res)) {
-			$this->toDisplay["doc"].="			<track kind='subtitles' src='".$this->driver->getUrlBase()."doc_num.php?explnum_id=".mysql_result($res,0,0)."' srclang='fr' label='Français' default>\n";
+		$res=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($res)) {
+			$this->toDisplay["doc"].="			<track kind='subtitles' src='".$this->driver->getUrlBase()."doc_num.php?explnum_id=".pmb_mysql_result($res,0,0)."' srclang='fr' label='Français' default>\n";
 		}
 		$this->toDisplay["doc"].="
 				</video>
@@ -215,9 +216,9 @@ class videojs extends affichage {
 		global $dbh;
 		
 		$query = "select count(*) as nb from explnum_segments where explnum_segment_explnum_num = ".$this->doc->id;
-		$result = mysql_query($query, $dbh);
-		if ($result && mysql_num_rows($result)) {
-			$nb = mysql_fetch_object($result)->nb;
+		$result = pmb_mysql_query($query, $dbh);
+		if ($result && pmb_mysql_num_rows($result)) {
+			$nb = pmb_mysql_fetch_object($result)->nb;
 			if ($nb > 0) $this->isDiarized = true;
 		}
 	}
@@ -228,6 +229,11 @@ class videojs extends affichage {
 				"size_y"=>array("type"=>"text","name"=>"size_y","value"=>$this->parameters['size_y'],"desc"=>"Hauteur du lecteur")
 		);
 		return $this->tabParam;
+	}
+		
+	function getParamsPerso(){
+		$params = $this->driver->getClassParam('videojs');
+		$this->unserializeParams($params);
 	}
 	
 	function unserializeParams($paramsToUnserialized){

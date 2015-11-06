@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.tpl.php,v 1.40.2.2 2014-08-01 12:51:39 Alexandre Exp $
+// $Id: category.tpl.php,v 1.44 2014-10-31 13:13:07 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -29,6 +29,7 @@ $categ_browser = "
 $selector_prop = "dependent=yes, width=$selector_x_size, height=$selector_y_size, resizable=1, scrollbars=yes, resizable=yes";
 $select_categ_prop = "scrollbars=yes, location=no, toolbar=no, dependent=yes, resizable=yes";
 $category_form = jscript_unload_question()."
+<script src='javascript/ajax.js'></script>
 <script type='text/javascript'>
 <!--
 	function test_form(form)
@@ -118,6 +119,7 @@ function confirm_delete() {
 			<div class='row'>
 				<!-- numero_autorite -->
 			</div>
+			!!concept_form!!
 			<div class='row'>
 				<label class='etiquette' for='authority_import_denied'>".$msg['authority_import_denied']."</label> &nbsp;
 				<input type='checkbox' id='authority_import_denied' name='authority_import_denied' value='1' !!authority_import_denied!!/>
@@ -128,6 +130,7 @@ function confirm_delete() {
 		</div>
 	</div>
 	<!-- aut_link -->
+	<!-- map -->
 	<div class='row'>
 	</div>
 </div>
@@ -153,6 +156,7 @@ function confirm_delete() {
 </form>
 <script type='text/javascript'>
 	document.forms['categ_form'].elements['category_libelle!!lang_def_cle!!'].focus();
+	ajax_parse_dom();
 
 	function bascule_trad(item) {
 		var elt = document.getElementById(item);

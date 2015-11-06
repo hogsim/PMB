@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lettre.class.php,v 1.3 2013-04-17 08:37:34 mbertin Exp $
+// $Id: lettre.class.php,v 1.4 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -106,22 +106,22 @@ class lettre{
 		if(!$forcename){
 			//Recherche du groupe d'appartenance
 			$requete="select id_groupe,resp_groupe from groupe,empr_groupe where id_groupe=groupe_id and empr_id=$id_empr and resp_groupe and lettre_rappel limit 1";
-			$res=mysql_query($requete);
-			if(mysql_num_rows($res)) {
-				$temp_id_empr=mysql_result($res,0,1);
+			$res=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res)) {
+				$temp_id_empr=pmb_mysql_result($res,0,1);
 			} else  $temp_id_empr=$id_empr;
 			
 			//Si le responsable n'est pas l'emprunteur, on précise qui est relancé
 			if ($temp_id_empr!=$id_empr) {
 				$requete="select concat(empr_prenom,' ',empr_nom) from empr where id_empr=$id_empr"; //Idée de Quentin
-				$res=mysql_query($requete);
-				$concerne="\t\t<concerne>".htmlspecialchars(sprintf($msg["adresse_retard_concerne"],mysql_result($res,0,0)),ENT_QUOTES,$charset)."</concerne>\n";
+				$res=pmb_mysql_query($requete);
+				$concerne="\t\t<concerne>".htmlspecialchars(sprintf($msg["adresse_retard_concerne"],pmb_mysql_result($res,0,0)),ENT_QUOTES,$charset)."</concerne>\n";
 			} 
 		}	
 		
 		$requete = "SELECT id_empr, empr_cb, empr_nom, empr_prenom, empr_adr1, empr_adr2, empr_cp, empr_ville, empr_pays, empr_mail, empr_tel1, empr_tel2, empr_date_adhesion, empr_date_expiration, date_format(empr_date_adhesion, '".$msg["format_date"]."') as aff_empr_date_adhesion, date_format(empr_date_expiration, '".$msg["format_date"]."') as aff_empr_date_expiration FROM empr WHERE id_empr='$temp_id_empr' ";
-		$res = mysql_query($requete, $dbh);
-		$empr = mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh);
+		$empr = pmb_mysql_fetch_object($res);
 
 		$this->lecteur_info = "\t<patron>\n";
 		$this->lecteur_info .= "\t\t<id>".htmlspecialchars($id_empr,ENT_QUOTES,$charset)."</id>\n";
@@ -164,8 +164,8 @@ class lettre{
 		global $pmb_afficher_numero_lecteur_lettres;
 		
 		$requete = "SELECT libelle_groupe, resp_groupe  FROM groupe WHERE id_groupe='$id_groupe' ";
-		$res = mysql_query($requete, $dbh);
-		$groupe = mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh);
+		$groupe = pmb_mysql_fetch_object($res);
 		
 		$this->groupe_info = "\t<group>\n";
 		$this->groupe_info .= "\t\t<group_label>".htmlspecialchars($groupe->libelle_groupe,ENT_QUOTES,$charset)."</group_label>\n";
@@ -236,9 +236,9 @@ class lettre_relance extends lettre {
 		
 		if($niveau!=3) {
 			$rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_retour < curdate() and pret_idexpl=expl_id order by pret_date " ;
-			$req = mysql_query($rqt, $dbh) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 
+			$req = pmb_mysql_query($rqt, $dbh) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 
 	
-			while ($data = mysql_fetch_array($req)) {			
+			while ($data = pmb_mysql_fetch_array($req)) {			
 				$valeur += $this->expl_retard ($data['expl_cb']);
 			}		
 			$this->print_amendes($valeur,$frais_relance);
@@ -247,13 +247,13 @@ class lettre_relance extends lettre {
 		} else {
 			
 			$requete="select expl_cb from exemplaires, pret where pret_idempr=$id_empr and pret_idexpl=expl_id and niveau_relance=3";
-			$res_recouvre=mysql_query($requete);
-			while ($rrc=mysql_fetch_object($res_recouvre)) {
+			$res_recouvre=pmb_mysql_query($requete);
+			while ($rrc=pmb_mysql_fetch_object($res_recouvre)) {
 				$liste_r3[]=$rrc->expl_cb;
 			}	
 			$rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_retour < curdate() and pret_idexpl=expl_id order by pret_date " ;
-			$req = mysql_query($rqt, $dbh) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 		
-			while ($data = mysql_fetch_object($req)) {
+			$req = pmb_mysql_query($rqt, $dbh) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 		
+			while ($data = pmb_mysql_fetch_object($req)) {
 				// Pas répéter les retard si déjà en niveau 3
 				if(in_array($data->expl_cb,$liste_r3)===false){
 					$liste_r[] = $data->expl_cb;
@@ -297,8 +297,8 @@ class lettre_relance extends lettre {
 		$requete.= " FROM (((exemplaires LEFT JOIN notices AS notices_m ON expl_notice = notices_m.notice_id ) LEFT JOIN bulletins ON expl_bulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id), docs_type, docs_section, docs_location, pret ";
 		$requete.= " WHERE expl_cb='".$cb_doc."' and expl_typdoc = idtyp_doc and expl_section = idsection and expl_location = idlocation and pret_idexpl = expl_id  ";
 		
-		$res = mysql_query($requete, $dbh) or die (mysql_error()." $requete");
-		$expl = mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." $requete");
+		$expl = pmb_mysql_fetch_object($res);
 		
 		// récupération du titre de série
 		if ($expl->tparent_id && $expl->m_id) {
@@ -349,8 +349,8 @@ class lettre_relance extends lettre {
 		if($niveau) $this->expl_info .= "\t\t<expl_niveau>3</expl_niveau>\n";
 		if($id_empr){
 			$req_empr = "select empr_nom as nom, empr_prenom as prenom from empr where id_empr=$id_empr";
-			$res = mysql_query($req_empr,$dbh);
-			$empr = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req_empr,$dbh);
+			$empr = pmb_mysql_fetch_object($res);
 			$this->expl_info .= "<empr_surname>".htmlspecialchars($empr->nom,ENT_QUOTES,$charset)."</empr_surname>";
 			$this->expl_info .= "<empr_name>".htmlspecialchars($empr->prenom,ENT_QUOTES,$charset)."</empr_name>";
 		}
@@ -372,8 +372,8 @@ class lettre_relance extends lettre {
 			$lecteur_ids_text = "";
 			
 		$rqt = "select  empr_id, expl_cb from pret, exemplaires, empr_groupe, empr where groupe_id='".$id_groupe."' and pret_retour < curdate() and pret_idexpl=expl_id and empr_id=pret_idempr and empr_id=id_empr $lecteur_ids_text order by empr_nom, empr_prenom, pret_date " ;
-		$req = mysql_query($rqt, $dbh) or die ($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 
-		while ($data = mysql_fetch_array($req)) {
+		$req = pmb_mysql_query($rqt, $dbh) or die ($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 
+		while ($data = pmb_mysql_fetch_array($req)) {
 			$this->expl_retard($data['expl_cb'],0,$data['empr_id']);
 		}
 		$retards = "\t<retards>".$this->expl_info."</retards>";
@@ -396,13 +396,13 @@ class lettre_reservation extends lettre{
 		
 		if($type_lettre=='lettre_resa_planning'){
 			$rqt = "select resa_idempr from resa_planning where id_resa in ('".implode("','",$ids_resa)."')  ";
-			$res = mysql_query ($rqt, $dbh) ;
+			$res = pmb_mysql_query($rqt, $dbh) ;
 		} else {
 			$rqt = "select resa_idempr from resa where id_resa in ('".implode("','",$ids_resa)."') ";
-			$res = mysql_query ($rqt, $dbh) ;
+			$res = pmb_mysql_query($rqt, $dbh) ;
 		}	
 		
-		while (($resa_validee=mysql_fetch_object($res))){
+		while (($resa_validee=pmb_mysql_fetch_object($res))){
 			if(array_search($resa_validee->resa_idempr,$this->id_empr_tmp) === false){
 				$this->lettre($resa_validee->resa_idempr,$type_lettre);
 				$this->id_empr_tmp[]=$resa_validee->resa_idempr;	
@@ -435,16 +435,16 @@ class lettre_reservation extends lettre{
 		
 		if($type_lettre == 'lettre_resa_planning'){
 			$rqt = "select id_resa from resa_planning where resa_idempr='$id_empr' order by resa_date_debut " ;
-			$req = mysql_query($rqt, $dbh) or die('Erreur SQL !<br />'.$rqt.'<br />'.mysql_error()); 
+			$req = pmb_mysql_query($rqt, $dbh) or die('Erreur SQL !<br />'.$rqt.'<br />'.pmb_mysql_error()); 
 			
-			while($resa = mysql_fetch_object($req)){
+			while($resa = pmb_mysql_fetch_object($req)){
 				$this->notice_resa_planning($resa->id_resa);
 			}
 		} else {		
 			$rqt = "select id_resa from resa where resa_idempr='$id_empr' and resa_cb is not null and resa_cb!='' order by resa_date_debut " ;
-			$req = mysql_query($rqt, $dbh) or die('Erreur SQL !<br />'.$rqt.'<br />'.mysql_error()); 
+			$req = pmb_mysql_query($rqt, $dbh) or die('Erreur SQL !<br />'.$rqt.'<br />'.pmb_mysql_error()); 
 	
-			while($resa = mysql_fetch_object($req)){
+			while($resa = pmb_mysql_fetch_object($req)){
 				$this->notice_resa($resa->id_resa);
 			}
 		}		
@@ -464,8 +464,8 @@ class lettre_reservation extends lettre{
 		$requete.= "FROM (((resa LEFT JOIN notices AS notices_m ON resa_idnotice = notices_m.notice_id ) LEFT JOIN bulletins ON resa_idbulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id) ";
 		$requete.= "WHERE id_resa='".$id_resa_print."' ";
 		
-		$res = mysql_query($requete, $dbh) or die (mysql_error()." $requete");
-		$expl = mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." $requete");
+		$expl = pmb_mysql_fetch_object($res);
 		
 		$responsabilites = get_notice_authors(($expl->m_id+$expl->s_id)) ;
 		$as = array_search ("0", $responsabilites["responsabilites"]) ;
@@ -491,8 +491,8 @@ class lettre_reservation extends lettre{
 		left join exemplaires on expl_cb=resa_cb 
 		left join docs_location on idlocation=expl_location
 		where id_resa =$id_resa_print  and resa_cb is not null and resa_cb!='' ";
-		$res_detail = mysql_query ($rqt_detail) ;
-		$expl_detail = mysql_fetch_object($res_detail);
+		$res_detail = pmb_mysql_query($rqt_detail) ;
+		$expl_detail = pmb_mysql_fetch_object($res_detail);
 		
 		$this->notice_resa .= "\t\t<notice_resa>\n";
 		$this->notice_resa .= "\t<tit>".htmlspecialchars($expl->tit.$auteur,ENT_QUOTES,$charset)."</tit>\n";
@@ -504,21 +504,21 @@ class lettre_reservation extends lettre{
 		
 		if($pmb_transferts_actif && $transferts_choix_lieu_opac==3) {
 			$rqt = "select resa_confirmee, resa_cb,resa_loc_retrait from resa where id_resa =$id_resa_print  and resa_cb is not null and resa_cb!='' ";
-			$res = mysql_query ($rqt) ;
-			if(($resa_lue = mysql_fetch_object($res))) {
+			$res = pmb_mysql_query($rqt) ;
+			if(($resa_lue = pmb_mysql_fetch_object($res))) {
 				if ($resa_lue->resa_confirmee) {
 					if ($resa_lue->resa_loc_retrait) {
 						$loc_retait=$resa_lue->resa_loc_retrait;
 					} else {
 						$rqt = "select expl_location from exemplaires where expl_cb='".$resa_lue->resa_cb."' ";
-						$res = mysql_query ($rqt) ;
-						if(($res_expl = mysql_fetch_object($res))) {	
+						$res = pmb_mysql_query($rqt) ;
+						if(($res_expl = pmb_mysql_fetch_object($res))) {	
 							$loc_retait=$res_expl->expl_location;
 						}
 					}
 					$rqt = "select location_libelle from docs_location where idlocation=".$loc_retait;
-					$res = mysql_query ($rqt) ;
-					if(($res_expl = mysql_fetch_object($res))) {	
+					$res = pmb_mysql_query($rqt) ;
+					if(($res_expl = pmb_mysql_fetch_object($res))) {	
 						$lieu_retrait=str_replace("!!location!!",$res_expl->location_libelle,$msg["resa_lettre_lieu_retrait"]);						
 					}	
 					$this->notice_resa .= "\t\t<location>".htmlspecialchars($lieu_retrait,ENT_QUOTES,$charset)."</location>\n";	
@@ -544,8 +544,8 @@ class lettre_reservation extends lettre{
 		$requete.= "FROM resa_planning LEFT JOIN notices ON resa_idnotice = notice_id  ";
 		$requete.= "WHERE id_resa='".$id_resa_print."' ";
 		
-		$res = mysql_query($requete, $dbh) or die (mysql_error()." $requete");
-		$expl = mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." $requete");
+		$expl = pmb_mysql_fetch_object($res);
 		
 		$responsabilites = get_notice_authors($expl->notice_id) ;
 			

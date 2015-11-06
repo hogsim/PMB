@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_group.class.php,v 1.1 2011-11-22 14:30:47 arenou Exp $
+// $Id: serialcirc_group.class.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -19,10 +19,10 @@ class serialcirc_group {
 	
 	protected function _fetch_data(){
 		$query = "select * from serialcirc_group where num_serialcirc_group_diff = ".$this->num_serialcirc_diff." order by serialcirc_group_order asc";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
 			$this->members = array();
-			while($row = mysql_fetch_object($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->members[] = $row->num_serialcirc_group_empr;
 				if($row->serialcirc_group_responsable == 1){
 					$this->responsable = $row->num_serialcirc_group_empr;
@@ -79,9 +79,9 @@ class serialcirc_group {
 			if($this->members[$i] == $empr_id){
 				$found_empr=true;
 				$query = "select empr_nom, empr_prenom, empr_mail from empr where id_empr = ".$this->members[$i];
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					$row = mysql_fetch_object($result);
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					$row = pmb_mysql_fetch_object($result);
 					$mail['dest'] = array(
 						'name' => $row->empr_nom.($row->empr_prenom ? " ".$row->empr_prenom : ""),
 						'mail' => $row->empr_mail
@@ -91,9 +91,9 @@ class serialcirc_group {
 		}
 		if(!$found_empr){
 			$query = "select empr_nom, empr_prenom, empr_mail from empr where id_empr = ".$this->members[0];
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					$row = mysql_fetch_object($result);
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					$row = pmb_mysql_fetch_object($result);
 					$mail['dest'] = array(
 						'name' => $row->empr_nom.($row->empr_prenom ? " ".$row->empr_prenom : ""),
 						'mail' => $row->empr_mail
@@ -102,9 +102,9 @@ class serialcirc_group {
 		}
 		if($this->responsable){
 			$query = "select empr_mail from empr where id_empr = ".$this->responsable;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while ($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				while ($row = pmb_mysql_fetch_object($result)){
 					if($row->empr_mail != ""){
 						if($mail['cc']!= "") $mail['cc'].=";";
 						$mail['cc'] .= $row->empr_mail;

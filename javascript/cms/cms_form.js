@@ -1,7 +1,7 @@
 /* +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_form.js,v 1.3 2012-06-04 10:25:42 arenou Exp $ */
+// $Id: cms_form.js,v 1.4 2014-12-18 16:40:05 dgoron Exp $ */
 
 
 function cms_create_row(){
@@ -48,6 +48,12 @@ function cms_create_form_element(type,name,value,values){
 			}
 			elem.setAttribute("name",name);
 			elem.setAttribute("id",name.replace('[','').replace(']',''));
+			break;
+		case "textarea" :
+			var elem = document.createElement("textarea");
+			elem.setAttribute("id",name.replace('[','').replace(']',''));
+			elem.setAttribute("name",name);
+			elem.value = value;
 			break;
 		case "hidden" :
 		case "text" :

@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_selector_lvl.xml,v 1.6.2.2 2014-11-20 13:39:11 arenou Exp $ -->
+$Id: cms_module_common_selector_lvl.xml,v 1.9 2014-11-20 13:37:45 arenou Exp $ -->
 
 <XMLlist>
 	<entry code="cms_module_common_selector_lvl">Type de page de l'OPAC</entry>
@@ -41,6 +41,8 @@ $Id: cms_module_common_selector_lvl.xml,v 1.6.2.2 2014-11-20 13:39:11 arenou Exp
 	<entry code="cms_module_common_selector_lvl_term_search">Recherche par termes</entry>
 	<entry code="cms_module_common_selector_lvl_external_search">Recherche externe</entry>
 	<entry code="cms_module_common_selector_lvl_perio_a2z">Onglet A to Z</entry>
+	<entry code="cms_module_common_selector_lvl_bannette_see">Bannette</entry>
+	<entry code="cms_module_common_selector_lvl_faq">FAQ</entry>
 	<entry code="cms_module_common_selector_lvl_tags_search">Recherche par tags</entry>
 	<entry code="cms_module_common_selector_lvl_search_perso">Recherches prédéfinies</entry>
 	<entry code="cms_module_common_selector_lvl_empr">Mon Compte</entry>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial_searcher.class.php,v 1.4 2013-08-27 14:02:06 mbertin Exp $
+// $Id: cms_editorial_searcher.class.php,v 1.5 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,13 +30,13 @@ class cms_editorial_searcher extends searcher {
 		if(!$this->searched){
 			$query = $this->_get_search_query();
 			$this->notices_ids="";
-			$res = mysql_query($query);
-			if($res && mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){
+			$res = pmb_mysql_query($query);
+			if($res && pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){
 					if($this->notices_ids!="") $this->notices_ids.=",";
 					$this->notices_ids.=$row->num_obj;
 				}
-				mysql_free_result($res);
+				pmb_mysql_free_result($res);
 			}
 			$this->searched=true;
 		}
@@ -74,10 +74,10 @@ class cms_editorial_searcher extends searcher {
 		if($limit>0){
 			$query.= " limit ".$limit;
 		}
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$this->result = array();
-		if($result && mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		if($result && pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->result[] = $row->num_obj;	
 			}
 		}
@@ -174,8 +174,8 @@ class cms_editorial_searcher extends searcher {
 		}else{
 			$table = "search_result".md5(microtime(true));
 			$rqt = "create temporary table ".$table." $query";
-			$res = mysql_query($rqt)or die (mysql_error());
-			mysql_query("alter table ".$table." add index i_id(num_obj)");
+			$res = pmb_mysql_query($rqt)or die (pmb_mysql_error());
+			pmb_mysql_query("alter table ".$table." add index i_id(num_obj)");
 			return $table;
 		}
 	}

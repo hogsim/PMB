@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sync.inc.php,v 1.11 2014-01-30 16:28:16 dbellamy Exp $
+// $Id: sync.inc.php,v 1.12 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,11 +29,11 @@ $is_already_sync=false;
 $recover_env="";
 $recover=false;
 $requete="select * from source_sync where source_id=$source_id";
-$resultat=mysql_query($requete);
+$resultat=pmb_mysql_query($requete);
 $env = array();
 
-if (mysql_num_rows($resultat)) {
-	$rs_s=mysql_fetch_object($resultat);
+if (pmb_mysql_num_rows($resultat)) {
+	$rs_s=pmb_mysql_fetch_object($resultat);
 	if (!$rs_s->cancel) {
 		print "<div class='row' style='text-align:center'><div class='erreur'>".htmlentities($msg["connecteurs_sync_currentexists"],ENT_QUOTES,$charset)."</div>";
 		$is_already_sync=true;

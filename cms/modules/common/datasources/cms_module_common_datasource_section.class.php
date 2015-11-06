@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_section.class.php,v 1.7 2013-01-02 11:07:10 arenou Exp $
+// $Id: cms_module_common_datasource_section.class.php,v 1.8 2015-01-08 15:46:06 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -19,6 +19,7 @@ class cms_module_common_datasource_section extends cms_module_common_datasource{
 			"cms_module_common_selector_section",
 			"cms_module_common_selector_env_var",
 			"cms_module_common_selector_global_var",
+			"cms_module_common_selector_generic_parent_section",
 		);
 	}
 	

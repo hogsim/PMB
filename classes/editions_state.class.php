@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: editions_state.class.php,v 1.3.6.1 2014-10-28 17:44:26 mbertin Exp $
+// $Id: editions_state.class.php,v 1.5 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,9 +33,9 @@ class editions_state {
 			$this->used_datasource = "";			
 		}else{
 			$query = "select editions_state_name, editions_state_used_datasource, editions_state_comment, editions_state_num_classement,editions_state_fieldslist, editions_state_fieldsparams from editions_states where id_editions_state = ".$this->id;			
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->name = $row->editions_state_name;
 				$this->used_datasource = $row->editions_state_used_datasource;
 				$this->comment = $row->editions_state_comment;
@@ -69,9 +69,9 @@ class editions_state {
 			editions_state_comment = '".addslashes($this->comment)."',
 			editions_state_fieldslist = '".addslashes(serialize($this->state_fields_list))."',
 			editions_state_fieldsparams = '".addslashes(serialize($this->state_fields_params))."'";
-		mysql_query($query.$clause);
+		pmb_mysql_query($query.$clause);
 		if(!$this->id){
-			$this->id = mysql_insert_id();
+			$this->id = pmb_mysql_insert_id();
 		}
 	}
 	
@@ -81,14 +81,14 @@ class editions_state {
 			$query = "update editions_states ";
 			$query.=" set editions_state_fieldsparams = '".addslashes(serialize($this->state_fields_params))."'";
 			$clause= " where id_editions_state = ".$this->id;
-			mysql_query($query.$clause);
+			pmb_mysql_query($query.$clause);
 		}
 	}
 	
 	public function delete(){
 		if($this->id){
 			$query = "delete from editions_states where id_editions_state=".$this->id;
-			mysql_query($query);
+			pmb_mysql_query($query);
 		}
 	}
 	
@@ -327,7 +327,7 @@ class editions_state {
 			switch($tab){
 				case "fields" :
 					if($draggable){
-						$content.= "<div class='row' id='".$tab."_".$field."' draggable='yes' dragtype='editionsstate".$tab."list'  style='cursor: pointer;'>";
+						$content.= "<div class='row' id='".$tab."_".$field."' draggable='yes' dragtype='editionsstate".$tab."list' style='cursor: pointer;'>";
 					}else{
 						$content.= "<div class='row' id='".$tab."_".$field."'>";
 					}

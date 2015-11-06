@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: param_subst.class.php,v 1.2 2011-05-12 13:12:23 ngantier Exp $
+// $Id: param_subst.class.php,v 1.4 2015-04-03 11:16:19 jpermanne Exp $
 
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
@@ -30,15 +30,15 @@ class param_subst {
 		}
 		
 		$this->subst_param=array();	
-		$myQuery = mysql_query("SELECT * FROM param_subst where subst_type_param= '".$this->type."' and  subst_module_param= '".$this->module."' and subst_module_num= '".$this->module_num."' ", $dbh);		
-		if(mysql_num_rows($myQuery)){			
-			while(($r=mysql_fetch_assoc($myQuery))) {
+		$myQuery = pmb_mysql_query("SELECT * FROM param_subst where subst_type_param= '".$this->type."' and  subst_module_param= '".$this->module."' and subst_module_num= '".$this->module_num."' ", $dbh);		
+		if(pmb_mysql_num_rows($myQuery)){			
+			while(($r=pmb_mysql_fetch_assoc($myQuery))) {
 				$this->subst_param[]=$r;
 			}
 		}			
 		$this->no_subst_param=array();		
-		$myQuery = mysql_query("SELECT * FROM parametres where type_param= '".$this->type."' and gestion=0 order by section_param,sstype_param", $dbh);					
-		while(($r=mysql_fetch_assoc($myQuery))) {	
+		$myQuery = pmb_mysql_query("SELECT * FROM parametres where type_param= '".$this->type."' and gestion=0 order by section_param,sstype_param", $dbh);					
+		while(($r=pmb_mysql_fetch_assoc($myQuery))) {	
 			$found=0;
 			foreach($this->subst_param as $key => $subst_param){				
 				if($subst_param['subst_sstype_param']==$r['sstype_param']){
@@ -123,7 +123,7 @@ class param_subst {
 			return $this->save_param_form($link_modif_param);
 		}elseif($action_subst=="suppr"){
 			$req="DELETE from param_subst where subst_type_param='".$this->type."' and	subst_module_param='".$this->module."' and subst_module_num='".$this->module_num."' and	subst_sstype_param='".$param_subst."' limit 1";
-			$erreur=mysql_query($req, $dbh);	
+			$erreur=pmb_mysql_query($req, $dbh);	
 			$this->fetch_data();
 			return "";
 		}		
@@ -175,7 +175,7 @@ class param_subst {
 			subst_sstype_param='".$form_sstype_param."',
 			subst_valeur_param='".$form_valeur_param."',
 			subst_comment_param='".$comment_param."' ";
-			$erreur=mysql_query($req, $dbh);			
+			$erreur=pmb_mysql_query($req, $dbh);			
 			if(!$erreur) {
 				error_message($msg["opac_view_form_edit"], $msg["opac_view_form_add_error"],1);
 				exit;
@@ -185,7 +185,7 @@ class param_subst {
 			subst_valeur_param='".$form_valeur_param."',
 			subst_comment_param='".$comment_param."' 
 			where subst_type_param='".$this->type."' and subst_module_param='".$this->module."' and subst_module_num='".$this->module_num."' and subst_sstype_param='".$form_sstype_param."' limit 1";
-			$erreur=mysql_query($req, $dbh);
+			$erreur=pmb_mysql_query($req, $dbh);
 			if(!$erreur) {
 				error_message($msg["opac_view_form_edit"], $msg["opac_view_form_add_error"],1);
 				exit;
@@ -195,6 +195,50 @@ class param_subst {
 		return "";	
 	}
 	
+	
+	function save_param($sstype_param,$valeur_param,$comment_param="") {
+		global $msg, $dbh;
+		
+		$found_subst=0;
+		foreach($this->subst_param as $param_data){
+			if($param_data['subst_sstype_param']==$form_sstype_param){
+				$found_subst=1;
+				break;
+			}
+		}
+		if(!$found_subst){
+			$req="INSERT INTO param_subst SET
+			subst_type_param='".$this->type."',
+			subst_module_param='".$this->module."',
+			subst_module_num='".$this->module_num."',
+			subst_sstype_param='".$sstype_param."',
+			subst_valeur_param='".$valeur_param."',
+			subst_comment_param='".$comment_param."' ";
+			$erreur=pmb_mysql_query($req, $dbh);
+			if(!$erreur) {
+				error_message($msg["opac_view_form_edit"], $msg["opac_view_form_add_error"],1);
+				exit;
+			}
+		} else {
+			$req="UPDATE param_subst SET
+			subst_valeur_param='".$valeur_param."',
+			subst_comment_param='".$comment_param."'
+			where subst_type_param='".$this->type."' and subst_module_param='".$this->module."' and subst_module_num='".$this->module_num."' 
+			and subst_sstype_param='".$sstype_param."' limit 1";
+			$erreur=pmb_mysql_query($req, $dbh);
+			if(!$erreur) {
+				error_message($msg["opac_view_form_edit"], $msg["opac_view_form_add_error"],1);
+				exit;
+			}
+		}
+		return "";
+	}
+	
+	function delete_param_value($sstype_param,$valeur_param) {
+		global $msg, $dbh;
+		$req="DELETE from param_subst where subst_type_param='".$this->type."' and	subst_module_param='".$this->module."' and subst_sstype_param='$sstype_param' and	subst_valeur_param='".$valeur_param."' ";
+		$erreur=pmb_mysql_query($req, $dbh);
+	}
 }
 
 function _section_($param) {

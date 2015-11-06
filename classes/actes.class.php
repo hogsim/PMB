@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: actes.class.php,v 1.36 2013-05-21 10:13:10 mbertin Exp $
+// $Id: actes.class.php,v 1.38 2015-07-16 12:16:52 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 global $pmb_indexation_lang;
@@ -54,6 +54,7 @@ class actes{
 	var $commentaires_i = '';					//Lignes de commentaires imprimés sur la commande
 	var $devise = '';							//Devise de la commande
 	var $date_ech = '0000-00-00';				//Echeance acte
+	var $date_valid = '0000-00-00';				//Date de validation
 	
 	 
 	//Constructeur.	 
@@ -73,8 +74,8 @@ class actes{
 		global $dbh;
 		
 		$q = "select * from actes where id_acte = '".$this->id_acte."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->date_acte = $obj->date_acte;
 		$this->numero = $obj->numero;
 		$this->nom_acte = $obj->nom_acte;
@@ -93,6 +94,7 @@ class actes{
 		$this->commentaires_i = $obj->commentaires_i;
 		$this->devise = $obj->devise;
 		$this->date_ech = $obj->date_ech;
+		$this->date_valid = $obj->date_valid;
 
 	}
 
@@ -106,9 +108,9 @@ class actes{
 		
 		//récupération du libelle fournisseur
 		$q = "select raison_sociale from entites where id_entite = '".$this->num_fournisseur."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 
-		$fou = mysql_result($r, 0, 0);
+		$fou = pmb_mysql_result($r, 0, 0);
 		
 		if($this->type_acte == TYP_ACT_CDE)
 			$num = trim($num_cde);
@@ -136,9 +138,10 @@ class actes{
 			$q.= "commentaires_i = '".$this->commentaires_i."', ";
 			$q.= "devise = '".$this->devise."', ";
 			$q.= "date_ech = '".$this->date_ech."', ";
+			$q.= "date_valid = '".$this->date_valid."', ";
 			$q.= "index_acte = ' ".$this->numero." ".strip_empty_words($fou)." ".strip_empty_words($this->commentaires)." ".strip_empty_words($this->reference)." ' "; 
 			$q.= "where id_acte = '".$this->id_acte."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			audit::insert_modif(AUDIT_ACQUIS, $this->id_acte);
 		
 		} else {
@@ -165,9 +168,10 @@ class actes{
 			$q.= "commentaires_i = '".$this->commentaires_i."', ";
 			$q.= "devise = '".$this->devise."', ";
 			$q.= "date_ech = '".$this->date_ech."', ";
+			$q.= "date_valid = '".$this->date_valid."', ";
 			$q.= "index_acte = ' ".strip_empty_words($this->numero)." ".strip_empty_words($fou)." ".strip_empty_words($this->commentaires)." ".strip_empty_words($this->reference)." ' "; 
-			$r = mysql_query($q, $dbh);
-			$this->id_acte = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_acte = pmb_mysql_insert_id($dbh);
 			audit::insert_creation(AUDIT_ACQUIS, $this->id_acte);		
 		}
 	}
@@ -183,7 +187,7 @@ class actes{
 		actes::deleteLignes($id_acte);
 		liens_actes::delete($id_acte);
 		$q = "delete from actes where id_acte = '".$id_acte."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		audit::delete_audit(AUDIT_ACQUIS, $id_acte);
 
 	}
@@ -195,7 +199,7 @@ class actes{
 		global $dbh;	
 
 		$q = "delete from lignes_actes where num_acte = '".$id_acte."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 	}
 
 
@@ -209,7 +213,7 @@ class actes{
 
 		$list_lig=implode("','", $tab_lig);
 		$q = "delete from lignes_actes where num_acte='".$id_acte."' and id_ligne not in ('".$list_lig."')";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 				
 	}
 	
@@ -220,9 +224,9 @@ class actes{
 		
 		global $dbh;
 		$q = "select min((date_format(date_ech, '%Y%m%d'))) from lignes_actes where num_acte = '".$id_acte."' and (('2' & statut) = '0') ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			$res = mysql_result($r,0,0);
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			$res = pmb_mysql_result($r,0,0);
 			$res = substr($res,0,4).'-'.substr($res,4,2).'-'.substr($res,6,2);
 		} else $res = '0';
 		return $res;
@@ -246,7 +250,7 @@ class actes{
 		//if(!$id_acte) $id_acte = $this->id_acte;
 		$q = "select * from lignes_actes where num_acte = '".$id_acte."' ";
 		if($param) $q.="and ".$param." ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r; 
 
 	}
@@ -259,7 +263,7 @@ class actes{
 		global $dbh;
 		
 		$q = "select id_acte from actes where num_exercice = '".$num_exercice."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r; 
 	}
 
@@ -313,7 +317,7 @@ class actes{
 		
 		if(!$id_acte) $id_acte = $this->id_acte;
 		$q = "update actes set statut='".$this->statut."' where id_acte='".$id_acte."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 	}
 	
 
@@ -322,7 +326,7 @@ class actes{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE actes', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE actes', $dbh);
 		return $opt;
 				
 	}

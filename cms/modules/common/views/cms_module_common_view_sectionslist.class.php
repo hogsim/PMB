@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_sectionslist.class.php,v 1.2.6.2 2015-02-25 16:11:05 mbertin Exp $
+// $Id: cms_module_common_view_sectionslist.class.php,v 1.5 2015-02-25 16:18:09 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -88,6 +88,7 @@ class cms_module_common_view_sectionslist extends cms_module_common_view_django{
 			'desc'=> $this->msg['cms_module_common_view_section_link_desc']
 		);
 		$format[] = $sections;
+		$format = array_merge($format,parent::get_format_data_structure());
 		return $format;
 	}
 }

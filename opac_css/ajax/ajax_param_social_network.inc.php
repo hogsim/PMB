@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_param_social_network.inc.php,v 1.1.6.1 2014-03-25 08:42:00 mbertin Exp $
+// $Id: ajax_param_social_network.inc.php,v 1.2 2014-03-25 08:44:41 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

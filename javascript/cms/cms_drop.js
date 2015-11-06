@@ -1,7 +1,7 @@
 /* +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_drop.js,v 1.4.2.1 2014-11-14 15:45:56 ngantier Exp $ */
+// $Id: cms_drop.js,v 1.6 2014-11-19 08:17:09 ngantier Exp $ */
 
 var cms_memo_opacdrop =new Array();
 
@@ -77,11 +77,11 @@ function opacdrop_moved(target,x,y,xorig,yorig) {
 
 function cms_block_highlight(obj) {
 	obj.style.background="#DDD";
-	//obj.style.outline="3px dashed red";
-	obj.style.outline="2px solid red";
+	obj.className='cms_drag'; 
 }
 function cms_block_downlight(obj) {
 	parent.frames['opac_frame'].document.getElementById("cadre_depos").style.visibility="hidden";
+	obj.className=''; 
 	obj.style.background="";
 	obj.style.outline="";
 }

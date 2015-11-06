@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bul_form.inc.php,v 1.12 2011-11-29 13:19:09 dgoron Exp $
+// $Id: bul_form.inc.php,v 1.13 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -17,9 +17,9 @@ if ($gestion_acces_active==1 && $gestion_acces_user_notice==1) {
 	} else {
 		$acces_j = $dom_1->getJoin($PMBuserid,8,'bulletin_notice');
 		$q= "select count(1) from bulletins $acces_j where bulletin_id=".$bul_id;
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		if ($r) {
-			if(mysql_result($r,0,0)==0) {
+			if(pmb_mysql_result($r,0,0)==0) {
 				$acces_m=0;
 			}
 		} else {

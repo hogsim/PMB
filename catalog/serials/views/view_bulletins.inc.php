@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: view_bulletins.inc.php,v 1.15 2012-01-26 15:15:28 dgoron Exp $
+// $Id: view_bulletins.inc.php,v 1.16 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -21,11 +21,11 @@ $bulletins .= "<tr>
 
 // ici : affichage par page des bulletinages associés
 // on lance la vraie requette
-$myQuery = mysql_query("SELECT distinct bulletin_id FROM bulletins ".($location?",exemplaires ":"")." WHERE ".($location?"(expl_bulletin=bulletin_id and expl_location='$location') and ":"")." bulletin_notice='$serial_id'  $clause ORDER BY date_date DESC, bulletin_numero*1 DESC, bulletin_id DESC LIMIT $debut,$nb_per_page_a_search", $dbh);
+$myQuery = pmb_mysql_query("SELECT distinct bulletin_id FROM bulletins ".($location?",exemplaires ":"")." WHERE ".($location?"(expl_bulletin=bulletin_id and expl_location='$location') and ":"")." bulletin_notice='$serial_id'  $clause ORDER BY date_date DESC, bulletin_numero*1 DESC, bulletin_id DESC LIMIT $debut,$nb_per_page_a_search", $dbh);
 
-if((mysql_num_rows($myQuery))) {
+if((pmb_mysql_num_rows($myQuery))) {
 	$parity=1;
-	while(($bul = mysql_fetch_object($myQuery))) {
+	while(($bul = pmb_mysql_fetch_object($myQuery))) {
 		$bulletin = new bulletinage($bul->bulletin_id,0,'',$location,false);
 		if ($parity % 2) $pair_impair = "even";
 		else $pair_impair = "odd";

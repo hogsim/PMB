@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: printer.class.php,v 1.2.2.1 2014-05-12 15:24:21 dbellamy Exp $
+// $Id: printer.class.php,v 1.4 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -66,14 +66,14 @@ class printer {
 		global $dbh;
 		$this->printer_data->get_data_empr($id_empr);
 		$query = "select expl_cb from pret,exemplaires  where pret_idempr=$id_empr and expl_id=pret_idexpl ";		
-		$result = mysql_query($query, $dbh);		
-		while (($r= mysql_fetch_object($result))) {	
+		$result = pmb_mysql_query($query, $dbh);		
+		while (($r= pmb_mysql_fetch_object($result))) {	
 			$this->printer_data->get_data_expl($r->expl_cb,$tpl_perso);		
 		}
 		
 		$query = "select * from resa where resa.resa_idempr=$id_empr ";
-		$result = mysql_query($query, $dbh);
-		while($resa = mysql_fetch_object($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		while($resa = pmb_mysql_fetch_object($result)) {
 			$this->printer_data->get_data_resa($resa->id_resa);	
 		}
 		$r = $this->gen_print($this->printer_data->data,$tpl_perso);

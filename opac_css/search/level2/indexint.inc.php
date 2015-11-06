@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: indexint.inc.php,v 1.20 2011-05-19 10:39:21 arenou Exp $
+// $Id: indexint.inc.php,v 1.22 2015-04-16 16:09:56 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,17 +35,17 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 	print activation_surlignage();
 	print "</h3></span>\n<ul>";
 	
-	$found = mysql_query("select *,".$pert." from indexint $clause group by indexint_id $tri $limiter", $dbh);
+	$found = pmb_mysql_query("select *,".$pert." from indexint $clause group by indexint_id $tri $limiter", $dbh);
 	
 	if(!$opac_allow_affiliate_search) print "
 			</div>";
 	print "
 			<div id=\"resultatrech_liste\">
 			<ul>";
-	while($mesCategories = mysql_fetch_object($found)) {
+	while($mesCategories = pmb_mysql_fetch_object($found)) {
 		print "<li>";
 		$categ_lien = $mesCategories->indexint_id ;
-		print pmb_bidi("<a href=./index.php?lvl=indexint_see&id=".$categ_lien."><img src='./images/folder.gif' border='0'/> ".$mesCategories->indexint_name." ".$mesCategories->indexint_comment."</a>");
+		print pmb_bidi("<a href=./index.php?lvl=indexint_see&id=".$categ_lien."&from=search><img src='./images/folder.gif' border='0'/> ".$mesCategories->indexint_name." ".$mesCategories->indexint_comment."</a>");
 		print "</li>";
 		}
 	print "</ul>";

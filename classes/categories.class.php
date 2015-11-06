@@ -2,16 +2,15 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categories.class.php,v 1.29.2.3 2015-02-17 11:12:05 jpermanne Exp $
+// $Id: categories.class.php,v 1.36 2015-06-05 13:04:00 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($class_path."/noeuds.class.php");
 require_once($class_path."/thesaurus.class.php");
 require_once($class_path."/notice.class.php");
-
-require_once("$class_path/stemming.class.php");
-require_once("$class_path/double_metaphone.class.php");
+require_once($class_path."/indexation.class.php");
+require_once($class_path."/vedette/vedette_composee.class.php");
 
 class categories{
 	
@@ -32,21 +31,21 @@ class categories{
 		$this->num_noeud = $num_noeud;				
 		$this->langue = $langue;
 		$q = "select count(1) from categories where num_noeud = '".$this->num_noeud."' and langue = '".$this->langue."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) != 0) {
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) != 0) {
 			$this->load();
 		} else {
 			$defaultLibelle="-";
 			$q = "SELECT libelle_categorie FROM categories JOIN thesaurus ON id_thesaurus = num_thesaurus AND langue_defaut=langue AND num_noeud='".$this->num_noeud."'";
-			$r = mysql_query($q, $dbh);
-			if(mysql_num_rows($r)){
-				$row=mysql_fetch_object($r);
+			$r = pmb_mysql_query($q, $dbh);
+			if(pmb_mysql_num_rows($r)){
+				$row=pmb_mysql_fetch_object($r);
 				$defaultLibelle = $row->libelle_categorie;
 			}
 			$q = "insert into categories set num_noeud = '".$this->num_noeud."', langue = '".$langue."', ";
 			$q.= "libelle_categorie = '".addslashes($defaultLibelle)."', note_application = '', comment_public = '', ";
 			$q.= "comment_voir = '', index_categorie = '' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			//pour les appels en enregistrement de notice, la méthode save n'est pas appelée, donc on force
 			$this->libelle_categorie = $defaultLibelle;
 			$this->save();
@@ -60,8 +59,8 @@ class categories{
 		global $dbh;
 
 		$q = "select * from categories where num_noeud = '".$this->num_noeud."' and langue = '".$this->langue."' limit 1";
-		$r = mysql_query($q, $dbh);
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		$obj = pmb_mysql_fetch_object($r);
 		$this->libelle_categorie = $obj->libelle_categorie;				
 		$this->note_application = $obj->note_application;				
 		$this->comment_public = $obj->comment_public;				
@@ -98,9 +97,12 @@ class categories{
 			$q.= "comment_voir = '".addslashes($this->comment_voir)."', ";
 			$q.= "index_categorie = ' ".addslashes(strip_empty_words($this->libelle_categorie,$this->langue))." ' ";
 			$q.= "where num_noeud = '".$this->num_noeud."' and langue = '".$this->langue."' "; 
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			categories::update_index($this->num_noeud);
 			$this->update_index_path_word();
+
+			// Mise à jour des vedettes composées contenant cette autorité
+			vedette_composee::update_vedettes_built_with_element($this->num_noeud, "category");
 		//}
 	}
 	
@@ -129,8 +131,8 @@ class categories{
 				if($limit != '*') array_splice($liste_num_noeud,0,count($liste_num_noeud)-$limit-1);
 				$select_num_noeud=implode(',',$liste_num_noeud);
 				$q = "select libelle_categorie from categories where num_noeud in( $select_num_noeud ) and langue = '".$this->langue."' and num_thesaurus=$num_thesaurus";
-				$r = mysql_query($q, $dbh);
-				while ($row = mysql_fetch_object($r))	{
+				$r = pmb_mysql_query($q, $dbh);
+				while ($row = pmb_mysql_fetch_object($r))	{
 					$lib_list[]= $row->libelle_categorie; 
 				}
 			}
@@ -152,8 +154,8 @@ class categories{
 				if($liste_fils)	{
 					$q = "select libelle_categorie from categories,noeuds where id_noeud=num_noeud
 					and $liste_fils and langue = '".$this->langue."' and categories.num_thesaurus=$num_thesaurus and noeuds.num_thesaurus=$num_thesaurus";
-					$r = mysql_query($q, $dbh);
-					while ($row = mysql_fetch_object($r))	{
+					$r = pmb_mysql_query($q, $dbh);
+					while ($row = pmb_mysql_fetch_object($r))	{
 						$lib_list[]= $row->libelle_categorie; 
 					}
 				}			
@@ -170,7 +172,7 @@ class categories{
 		$q.= "path_word_categ = ' ".trim(addslashes($index))." ', ";		
 		$q.= "index_path_word_categ = ' ".trim(addslashes($clean_index))." ' ";
 		$q.= "where num_noeud = '".$this->num_noeud."' and langue = '".$this->langue."' and num_thesaurus=$num_thesaurus"; 
-		$r = mysql_query($q, $dbh);		
+		$r = pmb_mysql_query($q, $dbh);		
 	}
 	
 	//verifie si une categorie existe dans la langue concernée
@@ -179,8 +181,8 @@ class categories{
 		global $dbh;
 		
 		$q = "select count(1) from categories where num_noeud = '".$num_noeud."' and langue = '".$langue."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) == 0) return FALSE;
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) == 0) return FALSE;
 			else return TRUE;		
 	}
 	
@@ -190,7 +192,7 @@ class categories{
 		global $dbh;
 		
 		$q = "delete from categories where num_noeud = '".$num_noeud."' and langue = '".$langue."' ";
-		$r = @mysql_query($q, $dbh);
+		$r = @pmb_mysql_query($q, $dbh);
 	}		
 
 
@@ -214,9 +216,9 @@ class categories{
 			else $lg=$thes->langue_defaut; 
 			$q = "select libelle_categorie from categories where num_noeud = '".$id."' ";
 			$q.= "and langue = '".$lg."' limit 1";
-			$r = mysql_query($q, $dbh);
-			if (mysql_num_rows($r))	{
-				$lib_list.= mysql_result($r, 0, 0); 
+			$r = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_num_rows($r))	{
+				$lib_list.= pmb_mysql_result($r, 0, 0); 
 				if ($id != $num_noeud) $lib_list.= ':';
 			}
 		}
@@ -248,9 +250,9 @@ class categories{
 			$q.= "and categories.langue = '".$lg."' ";
 			$q.= "and categories.num_noeud = noeuds.id_noeud ";
 			$q.= "limit 1";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
-			while ($row = mysql_fetch_object($r))	{
+			while ($row = pmb_mysql_fetch_object($r))	{
 				$anc_list[$id]['num_noeud'] = $row->num_noeud;
 				$anc_list[$id]['num_parent'] = $row->num_parent;
 				$anc_list[$id]['num_renvoi_voir'] = $row->num_renvoi_voir;
@@ -295,7 +297,7 @@ class categories{
 		$q.= "noeuds.num_parent = '".$num_noeud."' ";
 		if (!$keep_tilde) $q.= "and catdef.libelle_categorie not like '~%' ";
 		if ($ordered !== 0) $q.= "order by ".$ordered." ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 
 		return $r;
 	}
@@ -306,7 +308,7 @@ class categories{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE categories', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE categories', $dbh);
 		return $opt;
 		
 	}			
@@ -330,8 +332,8 @@ class categories{
 		$q.= "and categories.libelle_categorie = '".$libelle."' ";
 		$q.= "and noeuds.id_noeud = categories.num_noeud ";
 		$q.= "limit 1";
-		$r = mysql_query($q, $dbh); 
-		if (mysql_num_rows($r)) return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		if (pmb_mysql_num_rows($r)) return pmb_mysql_result($r, 0, 0);
 			else return 0;
 		
 	}
@@ -341,16 +343,16 @@ class categories{
 	// update_index($id) : maj des n-uplets la table notice_global_index 
 	// en rapport avec cette catégorie	
 	//---------------------------------------------------------------
-	function update_index($id) {
+	static function update_index($id) {
 		global $dbh;
 		
 		//ajout des mots des termes dans la table words pour l autoindexation
 		$q = "select trim(index_categorie) as index_categorie, langue from categories where num_noeud=".$id;
-		$r = mysql_query($q,$dbh);
+		$r = pmb_mysql_query($q,$dbh);
 		$i=0;
 		$t_words=array();
-		if(mysql_num_rows($r)) {
-			while ($row =mysql_fetch_object($r)) {
+		if(pmb_mysql_num_rows($r)) {
+			while ($row =pmb_mysql_fetch_object($r)) {
 				$t_row = explode(' ',$row->index_categorie);
 				if( is_array($t_row) && count($t_row) ) {
 					$t_row = array_unique($t_row);
@@ -368,8 +370,8 @@ class categories{
 			//calcul de stem et double_metaphone
 			foreach ($t_words as $i=>$w) {
 				$q1 = "select id_word from words where word='".addslashes($w['word'])."' and lang='".addslashes($w['lang'])."' limit 1";
-				$r1 = mysql_query($q1, $dbh);
-				if(mysql_num_rows($r1)) {
+				$r1 = pmb_mysql_query($q1, $dbh);
+				if(pmb_mysql_num_rows($r1)) {
 					//le mot existe
 					$t_words[$i]['allready_exists']=1;
 				} else {
@@ -389,20 +391,30 @@ class categories{
 			foreach($t_words as $i=>$w) {
 				if (!$w['allready_exists']) {
 					$q2 = "insert ignore into words (word, lang, double_metaphone, stem) values ('".$w['word']."', '".$w['lang']."', '".$w['double_metaphone']."', '".$w['stem']."') ";
-					mysql_query($q2,$dbh);
+					pmb_mysql_query($q2,$dbh);
 				}	
 			}
 		}
 		
 		// On cherche tous les n-uplet de la table notice correspondant à cette catégorie.
-		$found = mysql_query("select distinct notcateg_notice from notices_categories where num_noeud='".$id ."' ",$dbh);
+		$found = pmb_mysql_query("select distinct notcateg_notice from notices_categories where num_noeud='".$id ."' ",$dbh);
 		// Pour chaque n-uplet trouvés on met a jour la table notice_global_index avec l'auteur modifié :
-		$num = mysql_num_rows($found);
+		$num = pmb_mysql_num_rows($found);
 	   	for($j=0;$j < $num; $j++) {
-	   		$mesNotices = mysql_fetch_object($found);
+	   		$mesNotices = pmb_mysql_fetch_object($found);
 	   		$notice_id = $mesNotices->notcateg_notice;
 			notice::majNoticesGlobalIndex($notice_id);
 			notice::majNoticesMotsGlobalIndex($notice_id,'subject');
+	   	}
+	   	//on cherche les questions correspondantes...
+	   	$query = "select num_faq_question from faq_questions_categories where num_categ = ".$id;
+	   	$result = pmb_mysql_query($query);
+	   	if(pmb_mysql_num_rows($result)){
+	   		global $include_path;
+	   		$index = new indexation($include_path."/indexation/faq/question.xml", "faq_questions");
+	   		while($row = pmb_mysql_fetch_object($result)){
+	   			$index->maj($row->num_faq_question,"categories");
+	   		}
 	   	}
 	}
 	
@@ -418,9 +430,9 @@ class categories{
 		else $lg=$thes->langue_defaut; 
 		$q = "select libelle_categorie from categories where num_noeud = '".$num_noeud."' ";
 		$q.= "and langue = '".$lg."' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r))	{
-			$lib= mysql_result($r, 0, 0); 
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r))	{
+			$lib= pmb_mysql_result($r, 0, 0); 
 		}
 		
 		return $lib;
@@ -430,8 +442,8 @@ class categories{
 	global $dbh;
 			
 	$q = "select * from categories ";
-	$r = mysql_query($q, $dbh);
-	while ($obj = mysql_fetch_object($r)) {	
+	$r = pmb_mysql_query($q, $dbh);
+	while ($obj = pmb_mysql_fetch_object($r)) {	
 		$thes = new categories($obj->num_noeud,$obj->langue);
 		$thes->update_index_path_word();		
 	}	

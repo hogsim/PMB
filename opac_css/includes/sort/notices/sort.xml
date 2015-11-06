@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Id: sort.xml,v 1.22 2013-03-13 11:24:53 dgoron Exp $ -->
+<!-- $Id: sort.xml,v 1.23 2015-03-11 14:39:41 dgoron Exp $ -->
 <sort reference="notices" referencekey="notice_id">
 	
 	<field name="title" type="text" typefield="select" id="1">
@@ -384,5 +384,51 @@
 				<externalfield>bulletin_notice</externalfield>
 			</link>
 		</table> 
+	</field>
+	
+	<!--Géoréférencement -->
+	<field name="map_echelle" type="text" typefield="select" id="29">
+		<var name="opac_map_activate" visibility="yes">
+			<value visibility="no">0</value>
+		</var>
+		<table name="map_echelles">
+			<tablefield>map_echelle_name</tablefield>
+			<tablekey>map_echelle_id</tablekey>
+			<link type="1n">
+				<referencefield>map_echelle_num</referencefield>
+			</link>
+		</table>
+	</field>
+	<field name="map_projection" type="text" typefield="select" id="30">
+		<var name="opac_map_activate" visibility="yes">
+			<value visibility="no">0</value>
+		</var>
+		<table name="map_projections">
+			<tablefield>map_projection_name</tablefield>
+			<tablekey>map_projection_id</tablekey>
+			<link type="1n">
+				<referencefield>map_projection_num</referencefield>
+			</link>
+		</table>
+	</field>
+	<field name="map_ref" type="text" typefield="select" id="31">
+		<var name="opac_map_activate" visibility="yes">
+			<value visibility="no">0</value>
+		</var>
+		<table name="map_refs">
+			<tablefield>map_ref_name</tablefield>
+			<tablekey>map_ref_id</tablekey>
+			<link type="1n">
+				<referencefield>map_ref_num</referencefield>
+			</link>
+		</table>
+	</field>
+	<field name="map_equinoxe" type="text" typefield="select" id="32">
+		<var name="opac_map_activate" visibility="yes">
+			<value visibility="no">0</value>
+		</var>
+		<table>
+			<tablefield>map_equinoxe</tablefield>
+		</table>
 	</field>
 </sort>

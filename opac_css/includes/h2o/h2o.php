@@ -259,5 +259,4 @@ function h2o($name, $options = array()) {
     $instance = new H2o($name, $options);
     return $instance;
 }
-
 ?>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: translation.class.php,v 1.2 2009-03-27 15:46:32 ngantier Exp $
+// $Id: translation.class.php,v 1.3 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");
@@ -43,9 +43,9 @@ function fetch_data() {
 	$this->text=array();
 	
 	$req="SELECT * FROM translation WHERE trans_table='".$this->table."' and trans_field='$this->field' and trans_num='".$this->num."' ";
-	$myQuery = mysql_query($req, $dbh);
-	if(mysql_num_rows($myQuery)){		
-		while(($myreq=mysql_fetch_object($myQuery))) {	
+	$myQuery = pmb_mysql_query($req, $dbh);
+	if(pmb_mysql_num_rows($myQuery)){		
+		while(($myreq=pmb_mysql_fetch_object($myQuery))) {	
 			$langue=$myreq->trans_lang;
 			$this->num=$myreq->trans_num;
 			$this->text["$langue"]=$myreq->trans_text;
@@ -67,7 +67,7 @@ function set_text($lang="") {
 function delete() {
 	global $dbh;
 	$req="delete from translation WHERE trans_table='".$this->table."' and trans_field='$this->field' and trans_num='$this->num' ";
-	mysql_query($req, $dbh);
+	pmb_mysql_query($req, $dbh);
 }
 function get_form($label,$field_id,$field_name,$field_value,$class_saisie,$style_form="display: none;") {
 	global $msg,$charset;
@@ -116,7 +116,7 @@ function update($input_field) {
 		$text=$$field;
 		if($text) {
 			$req="INSERT into translation Set trans_table='".$this->table."' , trans_field='$this->field' ,trans_lang='$langue', trans_num='".$this->num."'  ,trans_text='$text' ";	
-			mysql_query($req, $dbh);
+			pmb_mysql_query($req, $dbh);
 		}
 		
 	}

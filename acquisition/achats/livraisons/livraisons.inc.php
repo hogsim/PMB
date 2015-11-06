@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: livraisons.inc.php,v 1.31 2012-07-17 08:35:49 dgoron Exp $
+// $Id: livraisons.inc.php,v 1.32 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -147,11 +147,11 @@ function show_list_liv($id_bibli) {
 	
 		//Affichage liste des livraisons
 		$liv_list="";
-		$nbr = mysql_num_rows($res);
+		$nbr = pmb_mysql_num_rows($res);
 		
 		$parity=1;
 		for($i=0;$i<$nbr;$i++) {
-			$row=mysql_fetch_object($res);
+			$row=pmb_mysql_fetch_object($res);
 			$fourn = new entites($row->num_fournisseur);
 			$id_cde = liens_actes::getParent($row->id_acte);
 			$cde = new actes($id_cde);

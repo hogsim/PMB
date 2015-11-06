@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_liste_lecture.inc.php,v 1.6 2010-10-10 05:32:03 touraine37 Exp $
+// $Id: ajax_liste_lecture.inc.php,v 1.7 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -34,8 +34,8 @@ function show_form($id){
 	global $dbh, $msg, $charset; 
 	
 	$req = "select id_empr from empr where empr_login='".$_SESSION['user_code']."'";
-	$res=mysql_query($req,$dbh);
-	$idempr = mysql_result($res,0,0);
+	$res=pmb_mysql_query($req,$dbh);
+	$idempr = pmb_mysql_result($res,0,0);
 	
 	$display .= "<div class='row'>
 					<font style='color:red'><label class='etiquette'>".htmlentities($msg[list_lecture_mail_inscription],ENT_QUOTES,$charset)."</label></font>
@@ -82,12 +82,12 @@ function send_demande($id_liste){
 	global $dbh, $com, $id_empr, $empr_nom, $empr_prenom,$empr_mail, $msg, $opac_url_base, $opac_connexion_phrase;
 	
 	$requete = "replace into  abo_liste_lecture (num_empr,num_liste,commentaire,etat) values ('".$id_empr."','".$id_liste."','".$com."','1')";
-	mysql_query($requete,$dbh);
+	pmb_mysql_query($requete,$dbh);
 	
 	//Coordonnées du diffuseur de la liste
 	$req = "select empr_login, empr_mail, concat(empr_prenom,' ',empr_nom) as nom, nom_liste from opac_liste_lecture, empr where num_empr=id_empr and id_liste='".$id_liste."'";
-	$res = mysql_query($req,$dbh);
-	$diffuseur = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req,$dbh);
+	$diffuseur = pmb_mysql_fetch_object($res);
 	
 	$objet = sprintf($msg['list_lecture_objet_mail'],$diffuseur->nom_liste);
 	$date = time();
@@ -111,8 +111,8 @@ function delete_empr($id_liste,$id_empr){
 	from abo_liste_lecture abo, opac_liste_lecture, empr 
 	where abo.num_empr=id_empr and id_liste=num_liste
 	and num_liste='".$id_liste."' and abo.num_empr='".$id_empr."'";
-	$res = mysql_query($req,$dbh);
-	$inscrit = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req,$dbh);
+	$inscrit = pmb_mysql_fetch_object($res);
 	
 	$objet = sprintf($msg['list_lecture_objet_unsubscribe_mail'],$inscrit->nom_liste);
 	$date = time();
@@ -126,7 +126,7 @@ function delete_empr($id_liste,$id_empr){
 	
 	//désinscripiton
 	$requete = "delete from abo_liste_lecture where num_liste='".$id_liste."' and num_empr='".$id_empr."'"; 
-	mysql_query($requete,$dbh);
+	pmb_mysql_query($requete,$dbh);
 	
 	//réaffichage de la liste
 	$req = "select id_empr, trim(concat(empr_prenom,' ',empr_nom)) as nom, confidential 
@@ -134,14 +134,14 @@ function delete_empr($id_liste,$id_empr){
 	where abo.num_empr=e.id_empr and oll.id_liste=abo.num_liste 
 	and etat=2 and num_liste='".$id_liste."'
 	order by nom";
-	$res=mysql_query($req,$dbh);
-	if(!mysql_num_rows($res)){
+	$res=pmb_mysql_query($req,$dbh);
+	if(!pmb_mysql_num_rows($res)){
 		$display = $msg[list_lecture_no_user_inscrit];
 		print $display;
 		return;
 	}
 	$display="";
-	while(($empr=mysql_fetch_object($res))){
+	while(($empr=pmb_mysql_fetch_object($res))){
 		if($empr->confidential) $display .= "<img border=0 align='top' src='".$opac_url_base."images/cross.png'  onclick=\"delete_from_liste('".$id_liste."','".$empr->id_empr."');\">";
 		$display .= $empr->nom."<br />";
 	}

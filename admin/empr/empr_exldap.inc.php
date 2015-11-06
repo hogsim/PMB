@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ? 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_exldap.inc.php,v 1.5.10.1 2015-04-01 12:14:21 mbertin Exp $
+// $Id: empr_exldap.inc.php,v 1.7 2015-04-03 11:16:21 jpermanne Exp $
 
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
@@ -21,12 +21,12 @@ function find_exldap_users(){
 	$clause = "WHERE empr_ldap = 1" ;
 
 	$req = "SELECT COUNT(1) FROM empr $clause ";
-	$res = mysql_query($req, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($req, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	if ($nbr_lignes > 0) {
 		$req = "SELECT * FROM empr $clause ORDER BY empr_cb, empr_prenom, empr_nom ";
-		$res = @mysql_query($req, $dbh);
-		while(($empr=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($req, $dbh);
+		while(($empr=pmb_mysql_fetch_object($res))) {
 			$filter = "(uid=$empr->empr_cb)";
 			//Gestion encodage
 			if(($ldap_encoding_utf8) && ($charset != "utf-8")){
@@ -46,8 +46,8 @@ function find_exldap_users(){
 			if (!$uid){
 				# cherche prêts
 				$req = "SELECT COUNT(1) FROM pret,empr WHERE pret.pret_idempr = ".$empr->id_empr;
-				$rpr = mysql_query($req, $dbh);
-				$npr = mysql_result($rpr, 0, 0);
+				$rpr = pmb_mysql_query($req, $dbh);
+				$npr = pmb_mysql_result($rpr, 0, 0);
 				# s'il n'y a pas des prêts...
 				if (!$npr){
 					$ret .= $empr->id_empr.'|'.$empr->empr_cb.'|'.$empr->empr_nom.'|'.$empr->empr_prenom.';' ;
@@ -200,7 +200,7 @@ switch($action)
 					$u="/$x"."[^;]+;/";
 					$uu=preg_replace($u,'',$uu,1);
 					$req = "UPDATE empr SET empr_ldap=0 WHERE id_empr=$x";
-					$res = mysql_query($req, $dbh);
+					$res = pmb_mysql_query($req, $dbh);
 				}
 				show_exldap_users($uu,$pag,$npp);
 				break;		

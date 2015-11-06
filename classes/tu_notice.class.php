@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tu_notice.class.php,v 1.9.2.1 2014-06-15 13:26:58 Alexandre Exp $
+// $Id: tu_notice.class.php,v 1.15 2015-06-22 13:34:19 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -43,10 +43,10 @@ class tu_notice {
 		if($this->id) {				
 			$requete = "SELECT * FROM notices_titres_uniformes WHERE ntu_num_notice=$this->id order by ntu_ordre";
 		
-			$result = mysql_query($requete, $dbh);
+			$result = pmb_mysql_query($requete, $dbh);
 			$nb_result=0;
-			if(mysql_num_rows($result)) {
-				while(($res_tu = mysql_fetch_object($result))) {
+			if(pmb_mysql_num_rows($result)) {
+				while(($res_tu = pmb_mysql_fetch_object($result))) {
 					$this->ntu_data[$nb_result] = new stdClass();
 					$this->ntu_data[$nb_result]->num_tu=	$res_tu->ntu_num_tu;
 					$this->ntu_data[$nb_result]->titre=	$res_tu->ntu_titre;
@@ -81,9 +81,12 @@ class tu_notice {
 			default:
 				if(!$this->ntu_data) return'';
 				$display="<b>".$msg["catal_onglet_titre_uniforme"]."</b>&nbsp;:";
+				$flag_first=0;
 				foreach ($this->ntu_data as $tu) {
+					if($flag_first)$display.="<br />";
+					$flag_first=1;
 					$link="<a href='./autorites.php?categ=titres_uniformes&sub=titre_uniforme_form&id=".$tu->num_tu."' class='lien_gestion'>
-					".$tu->tu->name."
+					".$tu->tu->display."
 					</a>";
 					$biblio_fields=array(); 
 					if($tu->titre)$biblio_fields[]=$tu->titre;	
@@ -94,7 +97,7 @@ class tu_notice {
 					if($tu->mention)$biblio_fields[]=$tu->mention;			
 					$biblio_print=implode("; ",$biblio_fields);		
 					if($biblio_print)	$biblio_print=": ".$biblio_print;
-					$display.=" ".$link.$biblio_print."<br />";
+					$display.=" ".$link.$biblio_print;
 				}
 			break;	
 		}
@@ -108,7 +111,7 @@ class tu_notice {
 		$i=0;
 		do {	
 			$values[$i]["id"]= $this->ntu_data[$i]->num_tu;
-			$values[$i]["label"]= $this->ntu_data[$i]->tu->name;
+			$values[$i]["label"]= $this->ntu_data[$i]->tu->display;
 			$j=0;
 			$values[$i]["objets"][$j]["label"]=$msg["catal_titre_uniforme_titre_section"];
 			$values[$i]["objets"][$j]["name"]="ntu_titre";
@@ -144,7 +147,7 @@ class tu_notice {
 		return $this->ntu_form;
 	}
 		
-	function get_form_import($form_name,$ntu_data) {
+	static function get_form_import($form_name,$ntu_data) {
 		global $msg;
 
 		$i=0;
@@ -196,13 +199,21 @@ class tu_notice {
 		$script_js="
 		<script>
 		var memo_id='';
+				
+		function tu_add_callback(field,tu_id){
+			if(typeof(tu_callback_perso) != 'undefined'){
+				var tu_id = document.getElementById(document.getElementById(field).getAttribute('autfield')).value;
+				tu_callback_perso(tu_id);
+			}
+		}		
+				
 		function fonction_selecteur_".$item."() {
 			var nom='f_".$item."';
 			if(memo_id) name=memo_id.substring(4);  
 			else name=this.getAttribute('id').substring(4);
 			memo_id='';	    
 			name_id = name.substr(0,nom.length)+'_code'+name.substr(nom.length);
-			openPopUp('./select.php?what=$what_sel&caller=$form_name&param1='+name_id+'&param2='+name, '$what_sel', 400, 400, -2, -2, '$select_prop');	        
+			openPopUp('./select.php?what=$what_sel&caller=$form_name&param1='+name_id+'&param2='+name+'&callback=tu_add_callback', '$what_sel', 400, 400, -2, -2, '$select_prop');	        
 	    }
 	    function fonction_raz_".$item."() {
 	        name=this.getAttribute('id').substring(4);
@@ -234,6 +245,7 @@ class tu_notice {
 	        f_".$item.".setAttribute('type','text');
 	        f_".$item.".className='$class';
 	        f_".$item.".setAttribute('value','');
+	        f_".$item.".setAttribute('callback','tu_add_callback');
 			f_".$item.".setAttribute('completion','".$item."');
 			f_".$item.".setAttribute('autfield','f_".$item."_code'+suffixe);
 	        
@@ -311,7 +323,7 @@ class tu_notice {
 		$aff="
 		<div style='display: block;' id='tu!!num!!Parent' class='parent'>
 			<img src='./images/plus.gif' class='img_plus' name='imEx' id='tu!!num!!Img' title='Zone des notes' onclick=\"expandBase('tu!!num!!', true); return false;\" border='0'>
-			<input type='text' class='$class' id='f_".$item."!!num!!' name='f_".$item."!!num!!' value='!!label_element!!' autfield='f_".$item."_code!!num!!' completion=\"".$item."\" />
+			<input type='text' class='$class' id='f_".$item."!!num!!' name='f_".$item."!!num!!' value='!!label_element!!' autfield='f_".$item."_code!!num!!' completion=\"".$item."\" callback=\"tu_add_callback\"/>
 			<input type='hidden' id='f_".$item."_code!!num!!' name='f_".$item."_code!!num!!' value='!!id_element!!'>
 			!!bouton_parcourir!!
 			<input type='button' class='bouton' value='".$msg["raz"]."' onclick=\"this.form.f_".$item."!!num!!.value='';this.form.f_".$item."_code!!num!!.value='';\" />
@@ -464,7 +476,7 @@ class tu_notice {
 		
 		if(!$this->id) return false;
 		$requete = "DELETE FROM notices_titres_uniformes WHERE ntu_num_notice='$this->id' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		$this->id=0;
 		$this->ntu_data=array();
 	}
@@ -499,7 +511,7 @@ class tu_notice {
 
 		if(!$this->id) return false;
 		$requete = "DELETE FROM notices_titres_uniformes WHERE ntu_num_notice=".$this->id;
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		// nettoyage des chaînes en entrée		
 		$ordre=0;
 		foreach($values as $value) {			
@@ -515,7 +527,7 @@ class tu_notice {
 				ntu_mention='".clean_string($value['ntu_mention'])."',
 				ntu_ordre=$ordre 				
 				";
-				mysql_query($requete, $dbh);
+				pmb_mysql_query($requete, $dbh);
 			}
 			$ordre++;
 		}
@@ -551,12 +563,12 @@ class tu_notice {
 	//---------------------------------------------------------------
 	// update_index($id) : maj des n-uplets la table notice_global_index en rapport avec cet author	
 	//---------------------------------------------------------------
-	function update_index($id) {
+	static function update_index($id) {
 		global $dbh;
 		// On cherche tous les n-uplet de la table notice correspondant à ce titre_uniforme.
-		$found = mysql_query("select ntu_num_notice from notices_titres_uniformes where ntu_num_tu = ".$id,$dbh);
+		$found = pmb_mysql_query("select ntu_num_notice from notices_titres_uniformes where ntu_num_tu = ".$id,$dbh);
 		// Pour chaque n-uplet trouvés on met a jour la table notice_global_index avec l'auteur modifié :
-		while(($mesNotices = mysql_fetch_object($found))) {
+		while(($mesNotices = pmb_mysql_fetch_object($found))) {
 			$notice_id = $mesNotices->ntu_num_notice;
 			notice::majNoticesGlobalIndex($notice_id);
 			notice::majNoticesMotsGlobalIndex($notice_id);

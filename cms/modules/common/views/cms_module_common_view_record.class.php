@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_record.class.php,v 1.3 2012-11-15 09:47:39 arenou Exp $
+// $Id: cms_module_common_view_record.class.php,v 1.4 2014-11-17 17:00:52 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -79,7 +79,7 @@ class cms_module_common_view_record extends cms_module_common_view_django{
 	}
 	
 	public function get_format_data_structure(){
-		return array(
+		return array_merge(array(
 			array(
 				'var' => "record",
 				'desc'=> "",
@@ -98,6 +98,6 @@ class cms_module_common_view_record extends cms_module_common_view_django{
 					)
 				)
 			)
-		);
+		),parent::get_format_data_structure());
 	}
 }

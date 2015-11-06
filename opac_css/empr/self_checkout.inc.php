@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: self_checkout.inc.php,v 1.3 2010-08-19 13:54:00 ngantier Exp $
+// $Id: self_checkout.inc.php,v 1.4 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -50,9 +50,9 @@ if($cb_expl){
 	print $aff;
 	
 	$requete="select expl_notice, expl_bulletin from exemplaires where expl_cb ='$cb_expl'";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	$prix=0;
-	if($r=mysql_fetch_object($resultat)) {
+	if($r=pmb_mysql_fetch_object($resultat)) {
 		$current = new notice_affichage($r->expl_notice+$r->expl_bulletin,0,1);
 		$current->do_header();
 		$current->do_isbd();

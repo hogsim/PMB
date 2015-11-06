@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: searcher.class.php,v 1.47.2.7 2015-03-05 09:21:51 mbertin Exp $
+// $Id: searcher.class.php,v 1.70 2015-06-22 08:29:09 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -10,9 +10,11 @@ require_once($class_path."/analyse_query.class.php");
 require_once($class_path."/search.class.php");
 require_once($class_path."/filter_results.class.php");
 require_once($class_path."/sort.class.php");
-if($opac_search_other_function){
-	require_once($include_path."/".$opac_search_other_function);
-}
+//il vaut mieux inclure les recherches perso dans index_includes.inc.php, quand les parametres des vues sont chargés
+//if($opac_search_other_function){
+//	require_once($include_path."/".$opac_search_other_function);
+//}
+require_once($class_path."/map/map_search_controler.class.php");
 
 //classe devant piloter les recherches (quelle idée...)
 class searcher {
@@ -28,10 +30,12 @@ class searcher {
 	public $nb_explnum=0;		// nombre de documents numériques associés à la recherche...
 	public $explnums=array();	// tableau contenant les documents numériques associés à la recherche
 	public $table_tempo;		// table temporaire contenant les résultats filtrés triés..;
+	public $map_emprises_query;	// recherche map emprises
 
-	public function __construct($user_query){
+	public function __construct($user_query,$map_emprises=array()){
 		$this->searched=false;
 		$this->user_query = $user_query;
+		$this->map_emprises_query = $map_emprises;
 		$this->_analyse();
 		$this->_delete_old_objects();
 	}
@@ -74,18 +78,19 @@ class searcher {
 	}
 
 	protected function _get_notices_ids(){
+		global $dbh;
 		if(!$this->searched){
 			$query = $this->_get_search_query();
 			$this->notices_ids="";
-			$res = mysql_query($query);
+			$res = pmb_mysql_query($query,$dbh);
 			if($res){
-				if(mysql_num_rows($res)){
-					while ($row = mysql_fetch_object($res)){
+				if(pmb_mysql_num_rows($res)){
+					while ($row = pmb_mysql_fetch_object($res)){
 						if($this->notices_ids!="") $this->notices_ids.=",";
 						$this->notices_ids.=$row->id_notice;
 					}
 				}
-				mysql_free_result($res);
+				pmb_mysql_free_result($res);
 			}
 			$this->searched=true;
 		}
@@ -93,8 +98,9 @@ class searcher {
 	}
 
 	protected function _delete_old_objects(){
+		global $dbh;
 		$delete= "delete from search_cache where delete_on_date < NOW()";
-		mysql_query($delete);
+		pmb_mysql_query($delete,$dbh);
 	}
 
 	protected function _get_user_query(){
@@ -115,9 +121,11 @@ class searcher {
 		$str_to_hash.= "&lang=".$lang;
 		$str_to_hash.= "&type_search=".$this->_get_search_type();
 		$str_to_hash.= "&user_query=".$this->_get_user_query();
+		$str_to_hash.= "&map_emprises_query=".serialize($this->map_emprises_query);
 		$str_to_hash.= "&typdoc=".$typdoc;
 		$str_to_hash.= "&dont_check_opac_indexation_docnum_allfields=".$dont_check_opac_indexation_docnum_allfields;
 		$str_to_hash.= "&mutli_crit_indexation_docnum_allfields=".$mutli_crit_indexation_docnum_allfields;
+		
 		if($opac_search_other_function){
 			$str_to_hash.= "&perso=".search_other_function_get_values();
 		}
@@ -129,10 +137,11 @@ class searcher {
 	}
 
 	protected function _get_in_cache($sorted=false){
+		global $dbh;
 		$read = "select value from search_cache where object_id='".$this->_get_sign($sorted)."'";
-		$res = mysql_query($read);
-		if(mysql_num_rows($res)>0){
-			$row = mysql_fetch_object($res);
+		$res = pmb_mysql_query($read,$dbh);
+		if(pmb_mysql_num_rows($res)>0){
+			$row = pmb_mysql_fetch_object($res);
 			if(!$sorted){
 				$cache = $row->value;
 			}else{
@@ -145,14 +154,14 @@ class searcher {
 	}
 
 	protected function _set_in_cache($sorted=false){
-		global $opac_search_cache_duration;
+		global $dbh, $opac_search_cache_duration;
 		if($sorted == false){
 			$str_to_cache = $this->notices_ids;
 		}else{
 			$str_to_cache = serialize($this->result);
 		}
 		$insert = "insert into search_cache set object_id ='".addslashes($this->_get_sign($sorted))."', value ='".addslashes($str_to_cache)."', delete_on_date = now() + interval ".$opac_search_cache_duration." second";
-		mysql_query($insert);
+		pmb_mysql_query($insert,$dbh);
 	}
 
 	public function get_nb_results(){
@@ -165,14 +174,15 @@ class searcher {
 	}
 
 	protected function _sort($start,$number){
+		global $dbh;
 		if($this->table_tempo != ""){
 			$sort = new sort("notices","session");
 			
 			$query = $sort->appliquer_tri_from_tmp_table($this->tri,$this->table_tempo,"notice_id",$start,$number);
-			$res = mysql_query($query);
-			if($res && mysql_num_rows($res)){
+			$res = pmb_mysql_query($query,$dbh);
+			if($res && pmb_mysql_num_rows($res)){
 				$this->result=array();
-				while($row = mysql_fetch_object($res)){
+				while($row = pmb_mysql_fetch_object($res)){
 					$this->result[] = $row->notice_id;
 				}
 			}
@@ -180,8 +190,9 @@ class searcher {
 	}
 
 	public function get_result(){
-		global $opac_search_noise_limit_type;
-
+		global $opac_search_noise_limit_type;		
+		global $dbh;	
+		
 		$this->tri = $tri;
 		$cache_result = $this->_get_in_cache();
 		if($cache_result===false){
@@ -210,29 +221,70 @@ class searcher {
 						$query = "select (max(pert)*".$ratio.") as seuil from ".$this->table_tempo;
 						break;				
 				}
-				$result = mysql_query($query) or die(mysql_error());
-				if(mysql_num_rows($result)){
-					$limit = mysql_result($result,0,0);
+				$result = pmb_mysql_query($query,$dbh) or die(pmb_mysql_error());
+				if(pmb_mysql_num_rows($result)){
+					$limit = pmb_mysql_result($result,0,0);
 				}
 				if($limit){
 					$query = "delete from ".$this->table_tempo." where pert < ".$limit;
-					mysql_query($query);
+					pmb_mysql_query($query,$dbh);
 					$query ="select distinct notice_id from ".$this->table_tempo;
-					$result = mysql_query($query) or die(mysql_error());
+					$result = pmb_mysql_query($query,$dbh) or die(pmb_mysql_error());
 					
-					if(mysql_num_rows($result)){
+					if(pmb_mysql_num_rows($result)){
 						$this->notices_ids = "";
-						while($row = mysql_fetch_object($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							if($this->notices_ids) $this->notices_ids.=",";
 							$this->notices_ids.=$row->notice_id;
 						}
 					}
 				}
+			}			
+			if($this->map_emprises_query){
+				$restriction_emprise.= "and (notices.notice_id IN (select distinct map_emprise_obj_num FROM map_emprises where map_emprise_type=11) or (notices.notice_id IN (select distinct notcateg_notice from notices_categories join map_emprises on map_emprises.map_emprise_obj_num = notices_categories.num_noeud where map_emprises.map_emprise_type=2)))";
+			
+				foreach($this->map_emprises_query as $map_emprise_query){
+					//récupération des emprise de notices correspondantes
+					$query_notice="select map_emprise_obj_num as notice_id from map_emprises where map_emprise_type=11 and contains(geomfromtext('$map_emprise_query'),map_emprise_data) = 1  ";
+					//récupération des emprise d'autorité correspondantes
+					$query_categories = "select notcateg_notice as notice_id from notices_categories join map_emprises on num_noeud = map_emprises.map_emprise_obj_num where map_emprise_type = 2 and contains(geomfromtext('$map_emprise_query'),map_emprise_data) = 1";
+					//récupérations des notices indexés avec une categorie
+					//$query = "select notcateg_notice as notice_id, 100 as pert from notices_categories join map_emprises on num_noeud = map_emprises.map_emprise_obj_num where map_emprise_type = 2 and contains(geomfromtext('$map_emprise_query'),map_emprise_data) = 1 union select map_emprise_obj_num as notice_id, 100 as pert from map_emprises where map_emprise_type=11 and contains(geomfromtext('$map_emprise_query'),map_emprise_data) = 1";
+					$queries[] = "select * from (".$query_notice." union ".$query_categories.") as uni";//TODO-> faire le mapage et mettre le tout dans $queries...
+				}
+				$from = "";
+				$select_pert = "";
+				for($i=0 ; $i<count($queries) ; $i++){
+					if($i==0){
+						$from = "(".$queries[$i].") as t".$i;
+					}else {
+						$from.= " inner join (".$queries[$i].") as t".$i." on t".$i.".notice_id = t".($i-1).".notice_id";
+					}
+				}
+				if($this->user_query!="" && $this->user_query!="*" ){
+					$restriction_query ="and notices.notice_id in (".$this->notices_ids.")";
+				}
+				$text_query = "select t0.notice_id from ".$from." join notices on t0.notice_id = notices.notice_id ".$restriction_emprise." $restriction_query group by t0.notice_id  order by notices.index_sew ";
+				$result = pmb_mysql_query($text_query,$dbh);
+				$nbresults = pmb_mysql_num_rows($result);
+			
+				$this->notices_ids="";
+				if($result){
+					if(pmb_mysql_num_rows($result)){
+						while ($row = pmb_mysql_fetch_object($result)){
+							if($this->notices_ids!="") $this->notices_ids.=",";
+							$this->notices_ids.=$row->notice_id;
+						}
+					}
+					pmb_mysql_free_result($res);
+				}
 			}
+			
 			$this->_set_in_cache();
 		}else{
 			$this->notices_ids = $cache_result;
 		}
+		
 		return $this->notices_ids;
 	}
 
@@ -257,6 +309,7 @@ class searcher {
 	}
 
 	public function get_typdocs(){
+		global $dbh;
 		if(!$this->typdocs){
 			if(!$this->notices_ids){
 				$this->get_result();
@@ -264,9 +317,9 @@ class searcher {
 			$this->typdocs = array();
 			if($this->notices_ids != ""){
 				$query = "select distinct typdoc from notices where notice_id in (".$this->notices_ids.")";
-				$res = mysql_query($query);
-				if(mysql_num_rows($res)){
-					while ($row = mysql_fetch_object($res)){
+				$res = pmb_mysql_query($query,$dbh);
+				if(pmb_mysql_num_rows($res)){
+					while ($row = pmb_mysql_fetch_object($res)){
 						$this->typdocs[] = $row->typdoc;
 					}
 				}
@@ -276,8 +329,11 @@ class searcher {
 	}
 
 	public function get_nb_explnums(){
+		global $dbh;
 		global $gestion_acces_active;
 		global $gestion_acces_empr_notice;
+		global $gestion_acces_empr_docnum;
+		global $opac_show_links_invisible_docnums;
 		global $opac_photo_filtre_mimetype;
 
 		if(!$this->notices_ids){
@@ -286,21 +342,33 @@ class searcher {
 		$this->nb_explnum = 0;
 		if($this->notices_ids != ""){
 			$acces_j='';
-			if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1){
-				$ac= new acces();
-				$dom_2= $ac->setDomain(2);
-				$join = $dom_2->getJoin($_SESSION['id_empr_session'],16,'notice_id');
+			
+			if(!$opac_show_links_invisible_docnums){
+				if ($gestion_acces_active==1 && ($gestion_acces_empr_docnum || $gestion_acces_empr_notice)){
+					$ac= new acces();
+					if ($gestion_acces_empr_notice==1) {
+						$dom_2= $ac->setDomain(2);
+						$join = $dom_2->getJoin($_SESSION['id_empr_session'],16,'notice_id');
+					}
+					if ($gestion_acces_empr_docnum==1) {
+						$dom_3= $ac->setDomain(3);
+						$join_explnum = $dom_3->getJoin($_SESSION['id_empr_session'],16,'explnum_id');
+					}
+				}
+				if(!$join){
+					$join_noti = "join notices on notice_id = explnum_notice join notice_statut on statut=id_notice_statut and ((notice_statut.explnum_visible_opac=1 and notice_statut.explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_statut.explnum_visible_opac_abon=1 and notice_statut.explnum_visible_opac=1)":"").")";
+					$join_issue ="join notice_statut on notices.statut=id_notice_statut and ((notice_statut.explnum_visible_opac=1 and notice_statut.explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_statut.explnum_visible_opac_abon=1 and notice_statut.explnum_visible_opac=1)":"").")";
+				}
+				if(!$join_explnum){
+					$join_explnum ="join explnum_statut on explnum_docnum_statut=id_explnum_statut and ((explnum_statut.explnum_visible_opac=1 and explnum_statut.explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_statut.explnum_visible_opac_abon=1 and explnum_statut.explnum_visible_opac=1)":"").")";
+				}
 			}
-			if(!$join){
-				$join_noti = "join notices on notice_id = explnum_notice join notice_statut on statut=id_notice_statut and ((explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
-				$join_issue ="join notice_statut on notices.statut=id_notice_statut and ((explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
-			}
-			$query_noti = "select explnum_id from explnum $join_noti where explnum_notice in (".$this->notices_ids.") and explnum_mimetype in ($opac_photo_filtre_mimetype)";
-			$query_issue = "select explnum_id from explnum join bulletins on explnum_bulletin!= 0 and explnum_bulletin = bulletin_id join notices on notice_id = num_notice and num_notice!=0 $join_issue where notice_id in (".$this->notices_ids.") and explnum_mimetype in ($opac_photo_filtre_mimetype)";
+			$query_noti = "select explnum_id from explnum $join_noti $join_explnum where explnum_notice in (".$this->notices_ids.") and explnum_mimetype in ($opac_photo_filtre_mimetype)";
+			$query_issue = "select explnum_id from explnum join bulletins on explnum_bulletin!= 0 and explnum_bulletin = bulletin_id join notices on notice_id = num_notice and num_notice!=0 $join_issue $join_explnum where notice_id in (".$this->notices_ids.") and explnum_mimetype in ($opac_photo_filtre_mimetype)";
 			$query = "select explnum_id from(".$query_noti ." union ".$query_issue.") as uni";
-			$res = mysql_query($query);
-			if($res && mysql_num_rows($res)){
-				$this->nb_explnum =mysql_num_rows($res);
+			$res = pmb_mysql_query($query,$dbh);
+			if($res && pmb_mysql_num_rows($res)){
+				$this->nb_explnum =pmb_mysql_num_rows($res);
 			}else{
 				$this->nb_explnum =0;
 			}
@@ -360,8 +428,11 @@ class searcher {
 	}
 
 	public function get_explnums($tri){ 
+		global $dbh;
 		global $gestion_acces_active;
 		global $gestion_acces_empr_notice;
+		global $gestion_acces_empr_docnum;
+		global $opac_show_links_invisible_docnums;
 		$this->explnums = array();
 		$this->get_result();
 		//$table = $this->_get_pert();
@@ -373,31 +444,42 @@ class searcher {
 			$query = $sort->appliquer_tri_from_tmp_table($tri,$this->table_tempo,"notice_id",0,0);
 			//vérification de la visibilité des documents numériques
 			$acces_j='';
-			if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1){
-				$ac= new acces();
-				$dom_2= $ac->setDomain(2);
-				$join = $dom_2->getJoin($_SESSION['id_empr_session'],16,'notice_id');
+			if(!$opac_show_links_invisible_docnums){
+				if ($gestion_acces_active==1 && ($gestion_acces_empr_docnum || $gestion_acces_empr_notice)){
+					$ac= new acces();
+					if ($gestion_acces_empr_notice==1){
+						$dom_2= $ac->setDomain(2);
+						$join = $dom_2->getJoin($_SESSION['id_empr_session'],16,'notice_id');
+					}
+					if ($gestion_acces_empr_docnum==1){
+						$dom_3= $ac->setDomain(3);
+						$join_explnum = $dom_3->getJoin($_SESSION['id_empr_session'],16,'explnum_id');
+					}
+				}
+				if(!$join){
+					$join ="join notices on ".$sort->table_tri_tempo.".notice_id = notices.notice_id join notice_statut on notices.statut=id_notice_statut and ((notice_statut.explnum_visible_opac=1 and notice_statut.explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_statut.explnum_visible_opac_abon=1 and notice_statut.explnum_visible_opac=1)":"").")";
+				}
+				if(!$join_explnum){
+					$join_explnum ="join explnum_statut on explnum_docnum_statut=id_explnum_statut and ((explnum_statut.explnum_visible_opac=1 and explnum_statut.explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_statut.explnum_visible_opac_abon=1 and explnum_statut.explnum_visible_opac=1)":"").")";
+				}
 			}
-			if(!$join){
-				$join ="join notices on ".$sort->table_tri_tempo.".notice_id = notices.notice_id join notice_statut on notices.statut=id_notice_statut and ((explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
-			}
-			$explnum_noti = "select explnum_id,".$sort->table_tri_tempo.".* from explnum join ".$sort->table_tri_tempo." on explnum_notice!=0 and explnum_notice = ".$sort->table_tri_tempo.".notice_id $join";
+			$explnum_noti = "select explnum_id,".$sort->table_tri_tempo.".* from explnum join ".$sort->table_tri_tempo." on explnum_notice!=0 and explnum_notice = ".$sort->table_tri_tempo.".notice_id $join $join_explnum";
 			$rqt = "create temporary table explnum_list $explnum_noti";
-			mysql_query($rqt);
-			$explnum_issue = "select explnum_id,".$sort->table_tri_tempo.".* from explnum join bulletins on explnum_bulletin!=0 and bulletin_id = explnum_bulletin join ".$sort->table_tri_tempo." on num_notice != 0 and num_notice = ".$sort->table_tri_tempo.".notice_id $join";
+			pmb_mysql_query($rqt,$dbh);
+			$explnum_issue = "select explnum_id,".$sort->table_tri_tempo.".* from explnum join bulletins on explnum_bulletin!=0 and bulletin_id = explnum_bulletin join ".$sort->table_tri_tempo." on num_notice != 0 and num_notice = ".$sort->table_tri_tempo.".notice_id $join $join_explnum";
 			$rqt = "insert ignore into explnum_list $explnum_issue";
-			mysql_query($rqt);
-			mysql_query("alter table explnum_list order by ".$sort->get_order_by($tri));
+			pmb_mysql_query($rqt,$dbh);
+			pmb_mysql_query("alter table explnum_list order by ".$sort->get_order_by($tri));
 			$rqt = "select explnum_id from explnum_list order by ".$sort->get_order_by($tri);
-			$res = mysql_query($rqt);
+			$res = pmb_mysql_query($rqt,$dbh);
 			//si get_order_by renvoit une valeur nulle, on ne s'occupe pas du tri. 
 			if (!$res) {
 				$rqt = "select explnum_id from explnum_list";
-				$res = mysql_query($rqt);
+				$res = pmb_mysql_query($rqt,$dbh);
 			}
 			if ($res) {
-				if(mysql_num_rows($res)){
-					while($row = mysql_fetch_object($res)){
+				if(pmb_mysql_num_rows($res)){
+					while($row = pmb_mysql_fetch_object($res)){
 						$this->explnums[] = $row->explnum_id;
 					}
 				}
@@ -405,6 +487,53 @@ class searcher {
 		}
 		return $this->explnums;
 	}
+	
+	
+	function get_current_search_map($mode_search=0){
+		global $opac_map_activate;
+		$map = "";
+		if($opac_map_activate){
+			$map = "<div id='map_container'><div id='map_search' ></div></div>";			
+		}
+		return $map;
+	}
+	
+   function check_emprises(){
+		global $opac_map_activate;
+		global $opac_map_max_holds;
+		global $opac_map_size_search_result;
+		$map = "";
+		$size=explode("*",$opac_map_size_search_result);
+		if(count($size)!=2)$map_size="width:800px; height:480px;";
+		$map_size= "width:".$size[0]."px; height:".$size[1]."px;";
+		$current_search = $_SESSION['nb_queries'];
+		$map_search_controler = new map_search_controler(null, $current_search, $opac_map_max_holds,false);
+		$json = $map_search_controler->get_json_informations();
+		//Obligatoire pour supprimer les {}
+		$json = substr($json, 1, strlen($json)-2);
+		if($map_search_controler->have_results()){
+			$map.= "<script type='text/javascript'>
+						require(['dojo/ready', 'dojo/dom-attr', 'dojo/parser', 'dojo/dom'], function(ready, domAttr, parser, dom){
+							ready(function(){
+								domAttr.set('map_search', 'data-dojo-type', 'apps/map/map_controler');
+								domAttr.set('map_search', 'data-dojo-props','searchId: ".$current_search.", mode:\"search_result\", ".$json."');
+								domAttr.set('map_search', 'style', '$map_size');
+								parser.parse('map_container');
+							});
+						});
+			</script>";
+		}else{
+			$map.= "<script type='text/javascript'>
+						require(['dojo/ready', 'dojo/dom-construct'], function(ready, domConstruct){
+							ready(function(){
+								domConstruct.destroy('map_container');
+							});
+						});
+			</script>";			
+		}
+		print $map;
+	}
+	
 }
 
 class searcher_all_fields extends searcher{
@@ -412,11 +541,12 @@ class searcher_all_fields extends searcher{
 	protected $members_explnum_bull;	// éléments de la requete sur les docnums de bulletins
 	protected $aq_wew;					// modelisation de la recherche en conservant les mots vides
 
-	public function __construct($user_query){
+	public function __construct($user_query,$map_emprises=array()){
 		global $opac_stemming_active;
 		global $opac_search_all_keep_empty_words;
 		
-		parent::__construct($user_query);
+		parent::__construct($user_query,$map_emprises);
+		
 		if($this->user_query && $opac_search_all_keep_empty_words){
 			$this->aq_wew= new analyse_query($this->user_query,0,0,1,1,$opac_stemming_active);
 		}
@@ -436,7 +566,7 @@ class searcher_all_fields extends searcher{
 
 	public function get_full_query(){
 		$this->get_result();
-		return $this->_get_pert(true);
+		return $this->_get_pert(false,true);
 	}
 
 	// spécialement pour la recherche tous les champs (histoire de mots vides et d'autorités...)
@@ -482,11 +612,11 @@ class searcher_all_fields extends searcher{
 		return $query;
 	}
 
-	protected function _get_pert($get_query=false){
+	protected function _get_pert($with_explnum=false, $get_query=false){
+		global $dbh;
 		global $opac_indexation_docnum_allfields,$dont_check_opac_indexation_docnum_allfields,$mutli_crit_indexation_docnum_allfields;
 		global $opac_search_all_keep_empty_words ;
 		
-		$with_explnum = false;
 		if($mutli_crit_indexation_docnum_allfields){//On est dans le cas de la recherche mutli-critères
 			if($mutli_crit_indexation_docnum_allfields > 0){
 				$with_explnum=true;
@@ -502,8 +632,8 @@ class searcher_all_fields extends searcher{
 				return $query;
 			}else{
 				$this->table_tempo = "seach_result".md5(microtime(true));
-				$res = mysql_query("create temporary table ".$this->table_tempo." ".$query);
-				mysql_query("alter table ".$this->table_tempo." add index i_id(notice_id)");
+				$res = pmb_mysql_query("create temporary table ".$this->table_tempo." ".$query, $dbh);
+				pmb_mysql_query("alter table ".$this->table_tempo." add index i_id(notice_id)", $dbh);
 			}
 		}else{
 			if($get_query){
@@ -516,6 +646,7 @@ class searcher_all_fields extends searcher{
 	// la surcharge de la fonction
 	protected function _get_search_query(){
 		global $opac_indexation_docnum_allfields,$dont_check_opac_indexation_docnum_allfields,$mutli_crit_indexation_docnum_allfields;
+		
 		$this->_calc_query_env();
 		if($this->user_query !== "*"){
 		    //$opac_indexation_docnum_allfields -> Paramétre Opac pour savoir si en recherche simple on cherche ou non dans les documents numériques
@@ -534,8 +665,8 @@ class searcher_all_fields extends searcher{
 				//si la recherche dans les documents numériques est incluse dans la recherche tous les champs, on doit le prendre en compte
 				$this->_get_explnum_members();
 				$query_noti = $this->_get_all_fields_search_query();
-				$query_explnum_noti="select distinct explnum_notice as id_notice from explnum ".$this->_get_explnum_filter("notice","explnum_notice")." ".$this->_get_explnum_where()." and explnum_notice !=0 and explnum_bulletin=0 ";//.$this->_get_explnum_end("notice");
-				$query_explnum_bull="select distinct num_notice as id_notice from explnum join bulletins on num_notice!= 0 and explnum_bulletin = bulletin_id ".$this->_get_explnum_filter("bulletin","num_notice")." ".$this->_get_explnum_where()." and explnum_bulletin !=0 and explnum_notice=0 ";//.$this->_get_explnum_end();
+				$query_explnum_noti="select distinct explnum_notice as id_notice from explnum ".$this->_get_explnum_filter("notice","explnum_notice")." ".$this->_get_explnum_docnum_filter("docnum","explnum_id")." ".$this->_get_explnum_where()." and explnum_notice !=0 and explnum_bulletin=0 ";//.$this->_get_explnum_end("notice");
+				$query_explnum_bull="select distinct num_notice as id_notice from explnum join bulletins on num_notice!= 0 and explnum_bulletin = bulletin_id ".$this->_get_explnum_filter("bulletin","num_notice")." ".$this->_get_explnum_docnum_filter("docnum","explnum_id")." ".$this->_get_explnum_where()." and explnum_bulletin !=0 and explnum_notice=0 ";//.$this->_get_explnum_end();
 				if($this->_get_typdoc_filter()!=""){
 					$query_explnum_noti= "select distinct id_notice from ($query_explnum_noti) as q2 ".$this->_get_typdoc_filter();
 					$query_explnum_bull= "select distinct id_notice from ($query_explnum_bull) as q3 ". $this->_get_typdoc_filter();
@@ -551,6 +682,7 @@ class searcher_all_fields extends searcher{
 			}
 		}
 		$this->_get_filter_by_custom_search($query);
+		
 		return $query;
 	}
 
@@ -588,10 +720,28 @@ class searcher_all_fields extends searcher{
 		if(!$join){
 			switch($type){
 				case "notice" :
-					$join="join notices on explnum_notice = notice_id join notice_statut on notices.statut= id_notice_statut and (explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"");
+					$join="join notices on explnum_notice = notice_id join notice_statut on notices.statut= id_notice_statut and (notice_statut.explnum_visible_opac=1 and notice_statut.explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_statut.explnum_visible_opac_abon=1 and notice_statut.explnum_visible_opac=1)":"");
 					break;
 				case "bulletin" :
-					$join="join notices on explnum_notice = bulletins.num_notice join notice_statut on notices.statut= id_notice_statut and (explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"");
+					$join="join notices on explnum_notice = bulletins.num_notice join notice_statut on notices.statut= id_notice_statut and (notice_statut.explnum_visible_opac=1 and notice_statut.explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_statut.explnum_visible_opac_abon=1 and notice_statut.explnum_visible_opac=1)":"");
+					break;
+			}
+		}
+		return $join;
+	}
+	
+	protected function _get_explnum_docnum_filter($type="docnum",$field){
+		global $gestion_acces_active;
+		global $gestion_acces_empr_docnum;
+		if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+			$ac= new acces();
+			$dom_3= $ac->setDomain(3);
+			$join = $dom_3->getJoin($_SESSION['id_empr_session'],16,$field);
+		}
+		if(!$join){
+			switch($type){
+				case "docnum" :
+ 					$join="join explnum_statut on explnum_docnum_statut= id_explnum_statut and (explnum_statut.explnum_visible_opac=1 and explnum_statut.explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_statut.explnum_visible_opac_abon=1 and explnum_statut.explnum_visible_opac=1)":"");
 					break;
 			}
 		}
@@ -632,6 +782,29 @@ class searcher_keywords extends searcher{
 
 	protected function _get_search_type(){
 		return "keywords";
+	}
+}
+
+class searcher_tags extends searcher{
+
+	public function __construct($user_query){
+		parent::__construct($user_query);
+	}
+	
+	protected function _get_search_type(){
+		return "tags";
+	}
+
+	protected function _get_search_query(){
+		global $pmb_keyword_sep;
+		
+		$query = "SELECT notice_id AS id_notice 
+				FROM notices 
+				WHERE index_l like '".$this->user_query."' 
+				OR index_l like '".$this->user_query.$pmb_keyword_sep."%' 
+				OR index_l like '%".$pmb_keyword_sep.$this->user_query.$pmb_keyword_sep."%' 
+				OR index_l like '%".$pmb_keyword_sep.$this->user_query."'";
+		return $query;
 	}
 }
 
@@ -760,29 +933,30 @@ class searcher_extended extends searcher{
 	   			}
 	   		}
     	}
-    	//$es->remove_forbidden_fields();
+		//$es->remove_forbidden_fields();
     	$this->with_make_search=true;
     	$this->table = $es->make_search();
 		return "select notice_id as id_notice, pert from ".$this->table;
 	}
-	
+
 	protected function _get_pert($with_explnum=false, $query=false){
+		global $dbh;
 		if(!$this->notices_ids) return;
 		if($this->with_make_search){
 			$this->table_tempo = "search_result".md5(microtime(true));
 			$rqt = "create temporary table ".$this->table_tempo." select * from ".$this->table." where notice_id in(".$this->notices_ids.")";
-			$res = mysql_query($rqt);
-			mysql_query("alter table ".$this->table_tempo." add index i_id(notice_id)");
+			$res = pmb_mysql_query($rqt,$dbh);
+			pmb_mysql_query("alter table ".$this->table_tempo." add index i_id(notice_id)",$dbh);
 		}else{
 			$this->table_tempo = "search_result".md5(microtime(true));
 			$rqt = "create temporary table ".$this->table_tempo." select notice_id,100 as pert from notices where notice_id in(".$this->notices_ids.")";
-			$res = mysql_query($rqt);
-			mysql_query("alter table ".$this->table_tempo." add index i_id(notice_id)");
+			$res = pmb_mysql_query($rqt,$dbh);
+			pmb_mysql_query("alter table ".$this->table_tempo." add index i_id(notice_id)",$dbh);
 		}
-		
 	}
 	
 	public function get_result(){
+		global $dbh;
 		$this->tri = $tri;
 		$cache_result = $this->_get_in_cache();
 		if($cache_result===false){
@@ -793,11 +967,12 @@ class searcher_extended extends searcher{
 			$this->notices_ids = $cache_result;
 			$this->table = "search_result".md5(microtime(true));
 			$rqt = "create temporary table ".$this->table." engine=memory select notice_id from notices where notice_id in(".$this->notices_ids.")";
-			$res = mysql_query($rqt);
-			mysql_query("alter table ".$this->table." add index i_id(notice_id)");			
+			$res = pmb_mysql_query($rqt,$dbh);
+			pmb_mysql_query("alter table ".$this->table." add index i_id(notice_id)",$dbh);			
 		}
 		return $this->notices_ids;
 	}
+	
 }
 
 class searcher_authors extends searcher{
@@ -1079,5 +1254,51 @@ class searcher_generic extends searcher{
 
 	protected function _get_search_type(){
 		return "generic_".$this->fields_list_gen;
+	}
+}
+
+class searcher_authperso extends searcher{
+
+	public function __construct($user_query,$id=0){
+		$this->field_restrict=array();
+		$sub=array();
+		if($id>0){
+			$sub[]=array(
+					'sub_field' => "code_ss_champ",
+					'values' => $id,
+					'op' => "and",
+					'not' => false
+			);
+		}
+		$this->field_restrict[]= array(
+				'field' => "code_champ",
+				'values' => 100,
+				'op' => "and",
+				'not' => false,
+				'sub'=> $sub
+		);
+			
+		parent::__construct($user_query);
+	}
+
+	protected function _get_search_type(){
+		return "authperso";
+	}
+}
+
+class searcher_concept extends searcher {
+
+	public function __construct($user_query){
+		parent::__construct($user_query);
+		$this->field_restrict[]= array(
+				'field' => "code_champ",
+				'values' => array(36),
+				'op' => "and",
+				'not' => false
+		);
+	}
+
+	protected function _get_search_type(){
+		return "concept";
 	}
 }

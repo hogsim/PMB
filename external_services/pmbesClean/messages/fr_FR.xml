@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.2.6.1 2014-04-03 07:54:34 jpermanne Exp $ -->
+$Id: fr_FR.xml,v 1.5 2015-07-17 15:02:23 dgoron Exp $ -->
 
 <!DOCTYPE XMLlist SYSTEM "../../../includes/XMLlist.dtd" >
 <XMLlist>
@@ -131,11 +131,41 @@ indexDocnum
 -->
   <entry code="indexDocnum_description">Réindexer les documents numériques</entry>
   <entry code="indexDocnum_output_description"></entry>
-  <entry code="indexDocnum_result">Résultat de la réindexation des documents numériques</entry>   
+  <entry code="indexDocnum_result">Résultat de la réindexation des documents numériques</entry>
+<!--
+rdfStore
+-->
+  <entry code="cleanRdfStore_description">Réindexer le magasin RDF</entry>
+  <entry code="cleanRdfStore_output_description"></entry>
+  <entry code="cleanRdfStore_result">Résultat de la réindexation du magasin RDF</entry>   
 <!--
 synchroRdfStore
 -->
   <entry code="cleanSynchroRdfStore_description">Réindexer la synchronisation rdf</entry>
   <entry code="cleanSynchroRdfStore_output_description"></entry>
-  <entry code="cleanSynchroRdfStore_result">Résultat de la réindexation de la synchronisation rdf</entry>   
+  <entry code="cleanSynchroRdfStore_result">Résultat de la réindexation de la synchronisation rdf</entry>
+<!--
+FAQ
+-->
+  <entry code="cleanFAQ_description">Réindexer la FAQ</entry>
+  <entry code="cleanFAQ_output_description"></entry>
+  <entry code="cleanFAQ_result">Résultat de la réindexation de la FAQ</entry>
+  <!--
+CMS
+-->
+  <entry code="cleanCMS_description">Réindexer le contenu éditorial</entry>
+  <entry code="cleanCMS_output_description"></entry>
+  <entry code="cleanCMS_result">Résultat de la réindexation du contenu éditorial</entry>
+  <!--
+concept
+-->
+  <entry code="cleanConcept_description">Réindexer les concepts</entry>
+  <entry code="cleanConcept_output_description"></entry>
+  <entry code="cleanConcept_result">Résultat de la réindexation des concepts</entry>
+  <!--
+hashEmprPassword
+-->
+  <entry code="hashEmprPassword_description">Encoder les mots de passe lecteurs pour la connexion à l'Opac</entry>
+  <entry code="hashEmprPassword_output_description"></entry>
+  <entry code="hashEmprPassword_result">Résultat du réencodage des mots de passe</entry>   
 </XMLlist>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liens_actes.class.php,v 1.10 2013-04-16 08:16:41 mbertin Exp $
+// $Id: liens_actes.class.php,v 1.11 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,10 +30,10 @@ class liens_actes{
 		if (!$num_acte || !$num_acte_lie) die ("Erreur de création liens_actes");
 
 		$q = "select count(1) from liens_actes where num_acte = '".$num_acte."' and num_acte_lie = '".$num_acte_lie."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) == 0) {
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) == 0) {
 			$q = "insert into liens_actes set num_acte = '".$num_acte."', num_acte_lie = '".$num_acte_lie."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 		}
 
 	}	
@@ -45,7 +45,7 @@ class liens_actes{
 		global $dbh;
 
 		$q = "delete from liens_actes where num_acte = '".$num_acte."' or num_acte_lie = '".$num_acte."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -56,8 +56,8 @@ class liens_actes{
 		global $dbh;
 
 		$q = "select num_acte from liens_actes where num_acte_lie = '".$num_acte_lie."' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) return mysql_result($r, 0, 0); else return '0';  
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) return pmb_mysql_result($r, 0, 0); else return '0';  
 	}
 
 
@@ -67,8 +67,8 @@ class liens_actes{
 		
 		global $dbh;
 		$q = "select num_acte from liens_actes join actes on num_acte=id_acte and type_acte = '".TYP_ACT_DEV."' where num_acte_lie = '".$num_acte_lie."' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) return mysql_result($r, 0, 0); else return '0';  
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) return pmb_mysql_result($r, 0, 0); else return '0';  
 	}
 	
 	
@@ -77,8 +77,8 @@ class liens_actes{
 		
 		global $dbh;
 		$q = "select num_acte from liens_actes join actes on num_acte=id_acte and type_acte = '".TYP_ACT_CDE."' where num_acte_lie = '".$num_acte_lie."' limit 1";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) return mysql_result($r, 0, 0); else return '0';  
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) return pmb_mysql_result($r, 0, 0); else return '0';  
 	}
 	
 	
@@ -90,7 +90,7 @@ class liens_actes{
 		$q = "select num_acte_lie, numero, type_acte, statut from liens_actes, actes where num_acte = '".$num_acte."' and id_acte = num_acte_lie ";
 		if ($type_acte != TYP_ACT_ALL) $q.= "and type_acte = '".$type_acte."' ";
 		$q.= "order by type_acte, numero";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r;
 	}	
 
@@ -108,9 +108,9 @@ class liens_actes{
 			"and date_acte = '".$with_date."' ";
 		}
 		$q.= "order by numero desc";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			while($row=mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			while($row=pmb_mysql_fetch_object($r)) {
 				$t[]=$row->num_acte_lie;
 			}
 		}
@@ -122,7 +122,7 @@ class liens_actes{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE liens_actes', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE liens_actes', $dbh);
 		return $opt;
 				
 	}

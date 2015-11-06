@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: wmo.inc.php,v 1.2.4.1 2015-03-31 10:13:41 mbertin Exp $
+// $Id: wmo.inc.php,v 1.4 2015-04-03 11:16:16 jpermanne Exp $
 
 function search_other_function_filters() {
 	global $annee_parution,$dbh,$doc_num,$free, $code_langue_restrict,$lang,$nocoll,$tdnocoll;
@@ -13,8 +13,8 @@ function search_other_function_filters() {
 	$r.="<select name='topics' class='search_label'>";
 	$r.="<option value=''>".$msg['all_topics']."</option>";
 	$requete="select libelle_categorie from categories where num_noeud is not null and (num_noeud='10066' OR num_noeud='10013' OR num_noeud='10270' OR num_noeud='10372' OR num_noeud='10010' OR num_noeud='10096' OR num_noeud='10077' OR num_noeud='10044' OR num_noeud='10061' OR num_noeud='10036' OR num_noeud='10075' OR num_noeud='10012' OR num_noeud='10057') and langue like '%$lang%' order by 1";
-	$resultat=mysql_query($requete);
-	while (($res=mysql_fetch_object($resultat))) {
+	$resultat=pmb_mysql_query($requete);
+	while (($res=pmb_mysql_fetch_object($resultat))) {
 		$r.="<option value='".htmlentities($res->libelle_categorie,ENT_QUOTES,$charset)."' ";
 		if ($res->libelle_categorie==$topics) $r.="selected='selected'";
 		$r.=">".$res->libelle_categorie;
@@ -41,10 +41,10 @@ function search_other_function_filters() {
 	$r.="<span class='tabulation2'></span><select name='code_langue_restrict' class='search_label'>";
 	$r.="<option value=''>".$msg['all_languages']."</option>";
 	$requete="select distinct code_langue from notices_langues where code_langue is not null and (code_langue='eng' OR code_langue='fre' OR code_langue='spa' OR code_langue='rus' OR code_langue='chi' OR code_langue='ara') order by 1";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	// on met les balises <option> dans un tableau, indexé par le nom traduit de la langue
     $t=array();
-    while ($res=mysql_fetch_object($resultat)) {
+    while ($res=pmb_mysql_fetch_object($resultat)) {
         if ($marc_liste_langues->table[$res->code_langue]) {
             $s="<option value='".htmlentities($res->code_langue,ENT_QUOTES,$charset)."' ";
             if ($res->code_langue==$code_langue_restrict) $s.="selected";

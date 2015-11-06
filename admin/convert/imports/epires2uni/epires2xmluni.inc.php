@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: epires2xmluni.inc.php,v 1.9.6.1 2015-09-22 13:22:27 mbertin Exp $
+// $Id: epires2xmluni.inc.php,v 1.9 2013-04-24 15:29:29 mbertin Exp $
 
 require_once("$class_path/marc_table.class.php");
 
@@ -66,8 +66,7 @@ function convert_epires($notice, $s, $islast, $isfirst, $param_path) {
 			11=>"novembre",
 			12=>"decembre"
 		);
-		if($charset !="utf-8"){
-			$mois_enrichis=array(
+		$mois_enrichis=array(
 			0=>"",
 			1=>"janvier",
 			2=>"février",
@@ -82,23 +81,6 @@ function convert_epires($notice, $s, $islast, $isfirst, $param_path) {
 			11=>"novembre",
 			12=>"décembre"
 		);
-		}else{
-		      $mois_enrichis=array(
-			0=>"",
-			1=>"janvier",
-			2=>utf8_encode("février"),
-			3=>"mars",
-			4=>"avril",
-			5=>"mai",
-			6=>"juin",
-			7=>"juillet",
-			8=>"aout",
-			9=>"septembre",
-			10=>"octobre",
-			11=>"novembre",
-			12=>utf8_encode("décembre")
-		);
-		}
 	}
 	
 	//if (!$cols) {

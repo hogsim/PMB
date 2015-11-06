@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titre_uniforme.inc.php,v 1.6 2012-07-30 12:25:15 ngantier Exp $
+// $Id: titre_uniforme.inc.php,v 1.8 2015-04-16 16:09:56 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,10 +37,10 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 			<div id=\"resultatrech_liste\">
 			<ul>";
 
-	$found = mysql_query("select tu_id, ".$pert.",tu_name from  titres_uniformes $clause group by tu_id $tri $limiter", $dbh);
+	$found = pmb_mysql_query("select tu_id, ".$pert.",tu_name from  titres_uniformes $clause group by tu_id $tri $limiter", $dbh);
 
-	while(($mesTu = mysql_fetch_object($found))) {
-		print pmb_bidi("<li class='categ_colonne'><font class='notice_fort'><a href='index.php?lvl=titre_uniforme_see&id=".$mesTu->tu_id."'>".$mesTu->tu_name."</a></font></li>\n");
+	while(($mesTu = pmb_mysql_fetch_object($found))) {
+		print pmb_bidi("<li class='categ_colonne'><font class='notice_fort'><a href='index.php?lvl=titre_uniforme_see&id=".$mesTu->tu_id."&from=search'>".$mesTu->tu_name."</a></font></li>\n");
 	}
 	print "</ul>";
 	print "

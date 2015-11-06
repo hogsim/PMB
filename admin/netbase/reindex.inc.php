@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reindex.inc.php,v 1.31 2013-11-06 08:00:43 dbellamy Exp $
+// $Id: reindex.inc.php,v 1.32 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,14 +29,14 @@ switch ($index_quoi) {
 	case 'NOTICES':
 	
 		if (!$count) {
-			$notices = mysql_query("SELECT count(1) FROM notices", $dbh);
-			$count = mysql_result($notices, 0, 0);
+			$notices = pmb_mysql_query("SELECT count(1) FROM notices", $dbh);
+			$count = pmb_mysql_result($notices, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_notices"], ENT_QUOTES, $charset)."</h2>";
 		
-		$query = mysql_query("SELECT notice_id FROM notices LIMIT $start, $lot");
-		if(mysql_num_rows($query)) {
+		$query = pmb_mysql_query("SELECT notice_id FROM notices LIMIT $start, $lot");
+		if(pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -51,11 +51,11 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while(($row = mysql_fetch_object($query))) {
+			while(($row = pmb_mysql_fetch_object($query))) {
 				// constitution des pseudo-indexes
 				notice::majNotices($row->notice_id);
 			}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -93,14 +93,14 @@ switch ($index_quoi) {
 	
 	case 'AUTEURS':
 		if (!$count) {
-			$elts = mysql_query("SELECT count(1) FROM authors", $dbh);
-			$count = mysql_result($elts, 0, 0);
+			$elts = pmb_mysql_query("SELECT count(1) FROM authors", $dbh);
+			$count = pmb_mysql_result($elts, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_authors"], ENT_QUOTES, $charset)."</h2>";
 		
-		$query = mysql_query("SELECT author_id as id,concat(author_name,' ',author_rejete,' ', author_lieu, ' ',author_ville,' ',author_pays,' ',author_numero,' ',author_subdivision) as auteur from authors LIMIT $start, $lot", $dbh);
-		if (mysql_num_rows($query)) {
+		$query = pmb_mysql_query("SELECT author_id as id,concat(author_name,' ',author_rejete,' ', author_lieu, ' ',author_ville,' ',author_pays,' ',author_numero,' ',author_subdivision) as auteur from authors LIMIT $start, $lot", $dbh);
+		if (pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -115,15 +115,15 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while(($row = mysql_fetch_object($query))) {
+			while(($row = pmb_mysql_fetch_object($query))) {
 				// constitution des pseudo-indexes
 				$ind_elt = strip_empty_chars($row->auteur); 
 				$req_update = "UPDATE authors ";
 				$req_update .= " SET index_author=' ${ind_elt} '";
 				$req_update .= " WHERE author_id=$row->id ";
-				$update = mysql_query($req_update, $dbh);
+				$update = pmb_mysql_query($req_update, $dbh);
 				}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -160,14 +160,14 @@ switch ($index_quoi) {
 	
 	case 'EDITEURS':
 		if (!$count) {
-			$elts = mysql_query("SELECT count(1) FROM publishers", $dbh);
-			$count = mysql_result($elts, 0, 0);
+			$elts = pmb_mysql_query("SELECT count(1) FROM publishers", $dbh);
+			$count = pmb_mysql_result($elts, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_publishers"], ENT_QUOTES, $charset)."</h2>";
 		
-		$query = mysql_query("SELECT ed_id as id, ed_name as publisher, ed_ville, ed_pays from publishers LIMIT $start, $lot");
-		if (mysql_num_rows($query)) {
+		$query = pmb_mysql_query("SELECT ed_id as id, ed_name as publisher, ed_ville, ed_pays from publishers LIMIT $start, $lot");
+		if (pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -182,15 +182,15 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while(($row = mysql_fetch_object($query))) {
+			while(($row = pmb_mysql_fetch_object($query))) {
 				// constitution des pseudo-indexes
 				$ind_elt = strip_empty_chars($row->publisher." ".$row->ed_ville." ".$row->ed_pays); 
 				$req_update = "UPDATE publishers ";
 				$req_update .= " SET index_publisher=' ${ind_elt} '";
 				$req_update .= " WHERE ed_id=$row->id ";
-				$update = mysql_query($req_update);
+				$update = pmb_mysql_query($req_update);
 				}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -227,16 +227,16 @@ switch ($index_quoi) {
 	
 	case 'CATEGORIES':
 		if (!$count) {
-			$elts = mysql_query("SELECT count(1) FROM categories", $dbh);
-			$count = mysql_result($elts, 0, 0);
+			$elts = pmb_mysql_query("SELECT count(1) FROM categories", $dbh);
+			$count = pmb_mysql_result($elts, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_categories"], ENT_QUOTES, $charset)."</h2>";
 		
 		$req = "select num_noeud, langue, libelle_categorie from categories limit $start, $lot ";
-		$query = mysql_query($req, $dbh);
+		$query = pmb_mysql_query($req, $dbh);
 		 
-		if (mysql_num_rows($query)) {
+		if (pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -251,14 +251,14 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while($row = mysql_fetch_object($query)) {
+			while($row = pmb_mysql_fetch_object($query)) {
 				// constitution des pseudo-indexes
 				$ind_elt = strip_empty_words($row->libelle_categorie, $row->langue); 
 				
 				$req_update = "UPDATE categories ";
 				$req_update.= "SET index_categorie=' ${ind_elt} '";
 				$req_update.= "WHERE num_noeud='".$row->num_noeud."' and langue='".$row->langue."' ";
-				$update = mysql_query($req_update);
+				$update = pmb_mysql_query($req_update);
 				
 				
 				//ajout des mots des termes dans la table words pour l autoindexation
@@ -279,8 +279,8 @@ switch ($index_quoi) {
 					//calcul de stem et double_metaphone
 					foreach ($t_words as $i=>$w) {
 						$q1 = "select id_word from words where word='".addslashes($w['word'])."' and lang='".addslashes($w['lang'])."' limit 1";
-						$r1 = mysql_query($q1, $dbh);
-						if(mysql_num_rows($r1)) {
+						$r1 = pmb_mysql_query($q1, $dbh);
+						if(pmb_mysql_num_rows($r1)) {
 							//le mot existe
 							$t_words[$i]['allready_exists']=1;
 						} else {
@@ -300,14 +300,14 @@ switch ($index_quoi) {
 					foreach($t_words as $i=>$w) {
 						if (!$w['allready_exists']) {
 							$q2 = "insert ignore into words (word, lang, double_metaphone, stem) values ('".$w['word']."', '".$w['lang']."', '".$w['double_metaphone']."', '".$w['stem']."') ";
-							mysql_query($q2,$dbh);
+							pmb_mysql_query($q2,$dbh);
 						}
 					}
 				}
 				
 				
 			}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -344,14 +344,14 @@ switch ($index_quoi) {
 	
 	case 'COLLECTIONS':
 		if (!$count) {
-			$elts = mysql_query("SELECT count(1) FROM collections", $dbh);
-			$count = mysql_result($elts, 0, 0);
+			$elts = pmb_mysql_query("SELECT count(1) FROM collections", $dbh);
+			$count = pmb_mysql_result($elts, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_collections"], ENT_QUOTES, $charset)."</h2>";
 		
-		$query = mysql_query("SELECT collection_id as id, collection_name as collection, collection_issn from collections LIMIT $start, $lot");
-		if (mysql_num_rows($query)) {
+		$query = pmb_mysql_query("SELECT collection_id as id, collection_name as collection, collection_issn from collections LIMIT $start, $lot");
+		if (pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -366,7 +366,7 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while(($row = mysql_fetch_object($query))) {
+			while(($row = pmb_mysql_fetch_object($query))) {
 				// constitution des pseudo-indexes
 				$ind_elt = strip_empty_words($row->collection); 
 				if($tmp = $row->collection_issn){
@@ -376,9 +376,9 @@ switch ($index_quoi) {
 				$req_update = "UPDATE collections ";
 				$req_update .= " SET index_coll=' ${ind_elt} '";
 				$req_update .= " WHERE collection_id=$row->id ";
-				$update = mysql_query($req_update);
+				$update = pmb_mysql_query($req_update);
 			}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -415,14 +415,14 @@ switch ($index_quoi) {
 	
 	case 'SOUSCOLLECTIONS':
 		if (!$count) {
-			$elts = mysql_query("SELECT count(1) FROM sub_collections", $dbh);
-			$count = mysql_result($elts, 0, 0);
+			$elts = pmb_mysql_query("SELECT count(1) FROM sub_collections", $dbh);
+			$count = pmb_mysql_result($elts, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_sub_collections"], ENT_QUOTES, $charset)."</h2>";
 		
-		$query = mysql_query("SELECT sub_coll_id as id, sub_coll_name as sub_collection, sub_coll_issn from sub_collections LIMIT $start, $lot");
-		if (mysql_num_rows($query)) {
+		$query = pmb_mysql_query("SELECT sub_coll_id as id, sub_coll_name as sub_collection, sub_coll_issn from sub_collections LIMIT $start, $lot");
+		if (pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -437,7 +437,7 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while(($row = mysql_fetch_object($query))) {
+			while(($row = pmb_mysql_fetch_object($query))) {
 				// constitution des pseudo-indexes
 				$ind_elt = strip_empty_words($row->sub_collection); 
 				if($tmp = $row->sub_coll_issn){
@@ -446,9 +446,9 @@ switch ($index_quoi) {
 				$req_update = "UPDATE sub_collections ";
 				$req_update .= " SET index_sub_coll=' ${ind_elt} '";
 				$req_update .= " WHERE sub_coll_id=$row->id ";
-				$update = mysql_query($req_update);
+				$update = pmb_mysql_query($req_update);
 			}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -485,14 +485,14 @@ switch ($index_quoi) {
 	
 	case 'SERIES':
 		if (!$count) {
-			$elts = mysql_query("SELECT count(1) FROM series", $dbh);
-			$count = mysql_result($elts, 0, 0);
+			$elts = pmb_mysql_query("SELECT count(1) FROM series", $dbh);
+			$count = pmb_mysql_result($elts, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_series"], ENT_QUOTES, $charset)."</h2>";
 		
-		$query = mysql_query("SELECT serie_id as id, serie_name from series LIMIT $start, $lot");
-		if (mysql_num_rows($query)) {
+		$query = pmb_mysql_query("SELECT serie_id as id, serie_name from series LIMIT $start, $lot");
+		if (pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -507,16 +507,16 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while(($row = mysql_fetch_object($query))) {
+			while(($row = pmb_mysql_fetch_object($query))) {
 				// constitution des pseudo-indexes
 				$ind_elt = strip_empty_words($row->serie_name); 
 				
 				$req_update = "UPDATE series ";
 				$req_update .= " SET serie_index=' ${ind_elt} '";
 				$req_update .= " WHERE serie_id=$row->id ";
-				$update = mysql_query($req_update);
+				$update = pmb_mysql_query($req_update);
 			}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -553,14 +553,14 @@ switch ($index_quoi) {
 	
 	case 'DEWEY':
 		if (!$count) {
-			$elts = mysql_query("SELECT count(1) FROM indexint", $dbh);
-			$count = mysql_result($elts, 0, 0);
+			$elts = pmb_mysql_query("SELECT count(1) FROM indexint", $dbh);
+			$count = pmb_mysql_result($elts, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_indexint"], ENT_QUOTES, $charset)."</h2>";
 		
-		$query = mysql_query("SELECT indexint_id as id, concat(indexint_name,' ',indexint_comment) as index_indexint from indexint LIMIT $start, $lot");
-		if (mysql_num_rows($query)) {
+		$query = pmb_mysql_query("SELECT indexint_id as id, concat(indexint_name,' ',indexint_comment) as index_indexint from indexint LIMIT $start, $lot");
+		if (pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -575,16 +575,16 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while(($row = mysql_fetch_object($query))) {
+			while(($row = pmb_mysql_fetch_object($query))) {
 				// constitution des pseudo-indexes
 				$ind_elt = strip_empty_words($row->index_indexint); 
 				
 				$req_update = "UPDATE indexint ";
 				$req_update .= " SET index_indexint=' ${ind_elt} '";
 				$req_update .= " WHERE indexint_id=$row->id ";
-				$update = mysql_query($req_update);
+				$update = pmb_mysql_query($req_update);
 			}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -621,14 +621,14 @@ switch ($index_quoi) {
 	
 	case 'FRAIS_ANNEXES':
 		if (!$count) {
-			$elts = mysql_query("SELECT count(1) FROM frais", $dbh);
-			$count = mysql_result($elts, 0, 0);
+			$elts = pmb_mysql_query("SELECT count(1) FROM frais", $dbh);
+			$count = pmb_mysql_result($elts, 0, 0);
 		}
 		
 		print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_frais_annexes"], ENT_QUOTES, $charset)."</h2>";
 		
-		$query = mysql_query("SELECT id_frais as id, libelle from frais LIMIT $start, $lot");
-		if (mysql_num_rows($query)) {
+		$query = pmb_mysql_query("SELECT id_frais as id, libelle from frais LIMIT $start, $lot");
+		if (pmb_mysql_num_rows($query)) {
 		
 			// définition de l'état de la jauge
 			$state = floor($start / ($count / $jauge_size));
@@ -643,16 +643,16 @@ switch ($index_quoi) {
 			// affichage du % d'avancement et de l'état
 			print "<div align='center'>$percent%</div>";
 			
-			while(($row = mysql_fetch_object($query))) {
+			while(($row = pmb_mysql_fetch_object($query))) {
 				// constitution des pseudo-indexes
 				$ind_elt = strip_empty_words($row->libelle); 
 				
 				$req_update = "UPDATE frais ";
 				$req_update .= " SET index_libelle=' ${ind_elt} '";
 				$req_update .= " WHERE id_frais=$row->id ";
-				$update = mysql_query($req_update);
+				$update = pmb_mysql_query($req_update);
 			}
-			mysql_free_result($query);
+			pmb_mysql_free_result($query);
 			$next = $start + $lot;
 			print "
 				<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>

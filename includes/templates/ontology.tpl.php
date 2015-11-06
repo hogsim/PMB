@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ontology.tpl.php,v 1.2.2.1 2014-08-01 14:02:02 Alexandre Exp $
+// $Id: ontology.tpl.php,v 1.3 2014-08-01 14:04:49 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

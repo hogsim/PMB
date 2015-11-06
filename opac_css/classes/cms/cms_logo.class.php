@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_logo.class.php,v 1.5.2.2 2015-04-29 13:02:48 dbellamy Exp $
+// $Id: cms_logo.class.php,v 1.11 2015-06-04 09:34:20 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -40,9 +40,9 @@ class cms_logo {
 		$table=$this->get_sql_table();
 		if(!$table) return false;
 		$rqt = "select ".$this->type."_logo from ".$table." where id_".$this->type." = '".$this->id."'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$this->data = mysql_result($res,0,0);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$this->data = pmb_mysql_result($res,0,0);
 		}
 	}
 
@@ -95,7 +95,9 @@ class cms_logo {
 		$field = str_replace("!!js!!",$js,$field);
 		return $field;
 	}
-
+	public function clean_cache($id = 0){
+		//TODO
+	}
 	public function save(){
 		global $msg;
 		//on commence par regarder ce qu'on nous a donné...
@@ -114,8 +116,9 @@ class cms_logo {
 		$table=$this->get_sql_table();
 		if(!$table) return $msg['cms_editorial_form_logo_cant_save'];
 		$rqt = "update ".$table." set ".$this->type."_logo=\"".addslashes($data)."\" where id_".$this->type." = '".$this->id."'";
-		$res= mysql_query($rqt);
+		$res= pmb_mysql_query($rqt);
 		if($res){
+			$this->clean_cache($this->id);
 			return true;
 		}else{
 			return $msg['cms_editorial_form_logo_cant_save'];
@@ -155,22 +158,59 @@ class cms_logo {
 	}
 
 	public function show_picture($mode=""){
+  		global $cms_active_image_cache,$base_path;
   		header("Content-Type: image/png");
-
-		switch($mode){
-			case "small_vign" :
-				$this->get_small_vign();
-				break;
-			case "vign" :
-				$this->get_vign();
-				break;
-			case "large" :
-			default :
-				$this->get_large();
-				break;
+  		if($cms_active_image_cache && file_exists($base_path."/temp/cms_vign/".$mode."/".$this->type.$this->id.".png")){
+  			print file_get_contents($base_path."/temp/cms_vign/".$mode."/".$this->type.$this->id.".png");
+  		}else{
+  			if(strpos($mode,"custom_") !== false){
+  				$elems = explode("_",$mode);
+  				$size = $elems[1]*1;
+  				if($size>0){
+	  				$dst_img=$this->resize($size,$size);
+  				}else{
+	  				$dst_img=$this->resize(500,500);
+  				}	
+  			}else{
+				switch($mode){
+					case "small_vign" :
+						$dst_img=$this->resize(16,16);
+					break;
+					case "vign" :
+						$dst_img=$this->resize(100,100);
+						break;
+					case "small" :
+						$dst_img=$this->resize(140,140);
+						break;
+					case "medium" :
+						$dst_img=$this->resize(300,300);
+					break;
+					case "big" :
+						$dst_img=$this->resize(600,600);
+						break;
+					case "large" :
+					default :
+						$dst_img=$this->resize(0,0);
+					break;
+				}
+			}
+  			if($cms_active_image_cache && $dst_img){
+	  			$this->init_cache_path($mode);
+	  			imagepng($dst_img,$base_path."/temp/cms_vign/".$mode."/".$this->type.$this->id.".png");
+	  		}
+  		}
+	}
+	
+	private function init_cache_path($mode){
+		global $base_path;
+		if(!file_exists($base_path."/temp/cms_vign")){
+			mkdir($base_path."/temp/cms_vign");
+		}
+		if(!file_exists($base_path."/temp/cms_vign/".$mode)){
+			mkdir($base_path."/temp/cms_vign/".$mode);
 		}
 	}
-
+	
 	public function get_vign(){
 	   $this->resize(100,100);
 	}
@@ -193,6 +233,7 @@ class cms_logo {
 				ImageSaveAlpha($src_img, true);
 				ImageAlphaBlending($src_img, false);
 				imagepng($src_img);
+				return $src_img;
 			}else if ($src_img) {
 				$rs=$maxX/$maxY;
 				$taillex=imagesx($src_img);
@@ -238,6 +279,7 @@ class cms_logo {
 				imagefilledrectangle($dst_img,0,0,$maxX,$maxY,imagecolorallocatealpha($dst_img, 0, 0, 0, 127));
 				imagecopyresized($dst_img,$src_img,0,0,0,0,$new_w,$new_h,ImageSX($src_img),ImageSY($src_img));
 				imagepng($dst_img);
+				return $dst_img;
 			}
 		}else{
 			print file_get_contents("./images/vide.png");
@@ -247,5 +289,57 @@ class cms_logo {
 	public function get_vign_url($mode=""){
 		global $opac_url_base;
 		return $opac_url_base."cms_vign.php?type=".$this->type."&id=".$this->id."&mode=".$mode;
+	}
+
+	public function format_datas(){
+		return array(
+			'small_vign' => $this->get_vign_url("small_vign"),
+			'vign' =>		$this->get_vign_url("vign"),
+			'small' =>		$this->get_vign_url("small"),
+			'medium' =>		$this->get_vign_url("medium"),
+			'big' =>		$this->get_vign_url("big"),
+			'large' =>		$this->get_vign_url("large"),
+			'custom' =>		$this->get_vign_url("custom_"),
+			'exists' =>		($this->data ? true : false)
+		);
+	}
+
+
+	public static function get_format_data_structure(){
+		global $msg;
+		return array(
+			array(
+				'var' => "small_vign",
+				'desc' => $msg['cms_module_common_datasource_desc_small_vign']
+			),
+			array(
+				'var' => "vign",
+				'desc' => $msg['cms_module_common_datasource_desc_vign']
+			),
+			array(
+				'var' => "small",
+				'desc' => $msg['cms_module_common_datasource_desc_small']
+			),
+			array(
+				'var' => "medium",
+				'desc' => $msg['cms_module_common_datasource_desc_medium']
+			),
+			array(
+				'var' => "big",
+				'desc' => $msg['cms_module_common_datasource_desc_big']
+			),
+			array(
+				'var' => "large",
+				'desc' => $msg['cms_module_common_datasource_desc_large']
+			),
+			array(
+				'var' => "custom",
+				'desc' => $msg['cms_module_common_datasource_desc_custom']
+			),
+			array(
+				'var' => "exists",
+				'desc' => $msg['cms_module_common_datasource_desc_logo_exists']
+			)
+		);
 	}
 }

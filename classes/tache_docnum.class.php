@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tache_docnum.class.php,v 1.2 2011-08-16 09:59:22 dgoron Exp $
+// $Id: tache_docnum.class.php,v 1.3 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,9 +37,9 @@ class tache_docnum{
 			$this->num_tache = '';
 		} else {
 			$req = "select * from taches_docnum where id_tache_docnum='".$this->id_tache_docnum."'";
-			$res=mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$tdn = mysql_fetch_object($res);
+			$res=pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$tdn = pmb_mysql_fetch_object($res);
 				$this->tache_docnum_nomfichier = $tdn->tache_docnum_nomfichier;
 	 			$this->tache_docnum_data = $tdn->tache_docnum_data;
 	 			$this->tache_docnum_mimetype = $tdn->tache_docnum_mimetype;
@@ -66,7 +66,7 @@ class tache_docnum{
 		global $dbh;
 
 		$req = "delete from taches_docnum where id_tache_docnum='".$this->id_tache_docnum."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		
 	}
 	
@@ -87,8 +87,8 @@ class tache_docnum{
 					 tache_docnum_path='".addslashes($this->tache_docnum_path)."',
 					 num_tache='".addslashes($this->num_tache)."'
 					 ";
-			mysql_query($req,$dbh);
-			$this->id_tache_docnum = mysql_insert_id();
+			pmb_mysql_query($req,$dbh);
+			$this->id_tache_docnum = pmb_mysql_insert_id();
 		} else{
 			//Modification
 			$req = "update taches_docnum set  
@@ -100,7 +100,7 @@ class tache_docnum{
 					 tache_docnum_path='".addslashes($this->tache_docnum_path)."',
 					 num_tache='".addslashes($this->num_tache)."'
 					 where id_tache_docnum='".$this->id_tache_docnum."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 	

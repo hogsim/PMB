@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: loan.class.php,v 1.2 2012-07-31 10:12:16 dgoron Exp $
+// $Id: loan.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -139,7 +139,7 @@ class loan extends tache {
 				left join taches t on t.num_planificateur = p.id_planificateur
 				left join tache_docnum tdn on tdn.tache_docnum_repertoire=p.rep_upload
 				where t.id_tache=".$id_tache;
-			$res_query = mysql_query($rqt, $dbh);
+			$res_query = pmb_mysql_query($rqt, $dbh);
 		
 			$parameters = $this->unserialize_task_params();
 

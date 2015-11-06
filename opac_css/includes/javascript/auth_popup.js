@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: auth_popup.js,v 1.1.6.1 2014-04-11 12:58:37 dgoron Exp $
+// $Id: auth_popup.js,v 1.3 2015-04-07 15:08:20 jpermanne Exp $
 
 function auth_popup(url){
 	if(url==''){
@@ -12,7 +12,7 @@ function auth_popup(url){
 	div.setAttribute("style","z-index:9001;position:absolute;background:white;top:30%;left:40%;");
 	var iframe = document.createElement("iframe");
 	iframe.setAttribute('src',url);
-	iframe.setAttribute("style","height:150px;width:250px;");
+	iframe.setAttribute("id","frame_auth_popup");
 	var close = document.createElement('div');
 	var img = document.createElement('img');
 	img.setAttribute('src','./images/cross.png');

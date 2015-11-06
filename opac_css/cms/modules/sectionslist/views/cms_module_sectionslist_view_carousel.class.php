@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_sectionslist_view_carousel.class.php,v 1.3 2012-11-15 09:47:40 arenou Exp $
+// $Id: cms_module_sectionslist_view_carousel.class.php,v 1.5 2015-06-08 09:12:09 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -36,7 +36,7 @@ class cms_module_sectionslist_view_carousel extends cms_module_carousel_view_car
 	public function render($ids){
 		$datas = array();
 		for($i=0 ; $i<count($ids) ; $i++){
-			$section = new cms_section($ids[$i]);
+			$section = cms_provider::get_instance("section",$ids[$i]);
 			$infos = $section->format_datas(false,false);
 			$infos['link']=$this->get_constructed_link("section",$infos['id']);
 			$datas[]= $infos;
@@ -62,6 +62,7 @@ class cms_module_sectionslist_view_carousel extends cms_module_carousel_view_car
 				'children' => $this->prefix_var_tree($datas,"records[i]")
 			)
 		);
+		$format_datas = array_merge($format_datas,parent::get_format_data_structure());
 		return $format_datas;
 	}
 }

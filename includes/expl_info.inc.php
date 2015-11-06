@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: expl_info.inc.php,v 1.54.2.1 2015-05-07 10:23:20 jpermanne Exp $
+// $Id: expl_info.inc.php,v 1.56 2015-05-07 10:21:31 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -93,8 +93,8 @@ function print_info ($expl, $mode_affichage = 0, $affichage_emprunteurs = 1, $af
 	$__local.= "$msg[297]:&nbsp;".$expl->statut_libelle;
 	// tester si réservé
 	$sql="SELECT resa_cb from resa_ranger where resa_cb='".addslashes($expl->expl_cb)."'";
-	$execute_query=mysql_query($sql);
-	if(mysql_num_rows($execute_query))$situation = $msg['resa_menu_a_ranger'];  // exemplaire à ranger
+	$execute_query=pmb_mysql_query($sql);
+	if(pmb_mysql_num_rows($execute_query))$situation = $msg['resa_menu_a_ranger'];  // exemplaire à ranger
 	elseif($expl->expl_retloc)$situation = $msg['resa_menu_a_traiter'];  // exemplaire à traiter
 	elseif(verif_cb_utilise($expl->expl_cb)) $situation = $msg['expl_reserve']; // exemplaire réservé
 	elseif ($expl->pret_flag && !$expl->pret_idempr) $situation = "${msg[359]}"; // exemplaire disponible
@@ -181,9 +181,9 @@ function get_expl_info($id, $lien_notice=1) {
 	$query .= " and statut.idstatut=expl.expl_statut";
 	$query .= " and dtype.idtyp_doc=expl.expl_typdoc";
 	$query .= " and codestat.idcode=expl.expl_codestat";
-	$result = mysql_query($query, $dbh);
-	if(mysql_num_rows($result)) {
-		$expl = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		$expl = pmb_mysql_fetch_object($result);
 		if($expl->expl_notice) {
 			if ((SESSrights & CATALOGAGE_AUTH) && $lien_notice) $notice = new mono_display($expl->expl_notice, 1, "./catalog.php?categ=isbd&id=".$expl->expl_notice, 0);
 			else $notice = new mono_display($expl->expl_notice, 1, "", 0);
@@ -230,9 +230,9 @@ function check_resa_liste($expl) {
 	$requete .= " and empr.id_empr=resa.resa_idempr";
 	$requete .= " and (resa.resa_cb = '".$expl->expl_cb."' or resa.resa_cb='')";
 	$requete .= " order by resa.resa_date";
-	$query = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($query)) {
-		while($resa = mysql_fetch_object($query)) {
+	$query = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($query)) {
+		while($resa = pmb_mysql_fetch_object($query)) {
 			$link = "<a href=\"./circ.php?categ=pret&form_cb=".rawurlencode($resa->empr_cb)."\">";
 			$resa_list .= $link.$resa->empr_prenom.'&nbsp;'.$resa->empr_nom;
 			$resa_list .= "&nbsp;(".$resa->empr_cb.')</a>';
@@ -262,12 +262,12 @@ function check_resa($expl) {
 	if (!$expl->expl_bulletin) $expl->expl_bulletin=0 ;
 	$rqt = "select *, IF(resa_date_fin>sysdate(),0,1) as perimee, date_format(resa_date_fin, '".$msg["format_date"]."') as aff_resa_date_fin, date_format(resa_date, '".$msg["format_date"]."') as aff_resa_date from resa where resa_idnotice='".$expl->expl_notice."' and resa_idbulletin='".$expl->expl_bulletin."' order by resa_date limit 1 ";
 	
-	$result = mysql_query($rqt, $dbh) or die (mysql_error()) ;
-	if(mysql_num_rows($result)) {
+	$result = pmb_mysql_query($rqt, $dbh) or die (pmb_mysql_error()) ;
+	if(pmb_mysql_num_rows($result)) {
 
 		// des réservations ont été trouvées ->
 		// récupération des infos résa
-		$resa = mysql_fetch_object($result);
+		$resa = pmb_mysql_fetch_object($result);
 		$expl->id_resa = $resa->id_resa;
 		$expl->resa_idempr = $resa->resa_idempr;
 		$expl->resa_idnotice = $resa->resa_idnotice;
@@ -280,10 +280,10 @@ function check_resa($expl) {
 		
 		// récupération des infos sur le réservataire
 		$query = "select empr_nom, empr_prenom, empr_cb, id_empr from empr where id_empr=".$resa->resa_idempr." limit 1";
-		$result = mysql_query($query, $dbh);
-		if(mysql_num_rows($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_num_rows($result)) {
 			// stockage des infos sur le réservataire
-			$empr = mysql_fetch_object($result);
+			$empr = pmb_mysql_fetch_object($result);
 			$expl->cb_reservataire = $empr->empr_cb;
 			$expl->nom_reservataire = $empr->empr_nom;
 			$expl->prenom_reservataire = $empr->empr_prenom;
@@ -307,9 +307,9 @@ function check_resa_planning_liste($expl) {
 	$requete .= " where resa_planning.resa_idnotice=".$expl->expl_notice;
 	$requete .= " and empr.id_empr=resa_planning.resa_idempr";
 	$requete .= " order by resa_planning.resa_date";
-	$query = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($query)) {
-		while($resa_planning = mysql_fetch_object($query)) {
+	$query = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($query)) {
+		while($resa_planning = pmb_mysql_fetch_object($query)) {
 			$link = "<a href=\"./circ.php?categ=pret&form_cb=".rawurlencode($resa_planning->empr_cb)."\">";
 			$resa__planning_list .= $link.$resa_planning->empr_prenom.'&nbsp;'.$resa_planning->empr_nom;
 			$resa__planning_list .= "&nbsp;(".$resa_planning->empr_cb.')</a>';
@@ -337,12 +337,12 @@ function check_resa_planning($expl) {
 	if (!$expl->expl_notice) $expl->expl_notice=0;
 	$rqt = "select *, IF(resa_date_fin>sysdate(),0,1) as perimee, date_format(resa_date_fin, '".$msg["format_date"]."') as aff_resa_date_fin, date_format(resa_date, '".$msg["format_date"]."') as aff_resa_date from resa_planning where resa_idnotice='".$expl->expl_notice."' order by resa_date limit 1 ";
 	
-	$result = mysql_query($rqt, $dbh) or die (mysql_error()) ;
-	if(mysql_num_rows($result)) {
+	$result = pmb_mysql_query($rqt, $dbh) or die (pmb_mysql_error()) ;
+	if(pmb_mysql_num_rows($result)) {
 
 		// des réservations prévisionnelles ont été trouvées ->
 		// récupération des infos résa
-		$resa_planning = mysql_fetch_object($result);
+		$resa_planning = pmb_mysql_fetch_object($result);
 		$expl->id_resa = $resa_planning->id_resa;
 		$expl->resa_idempr = $resa_planning->resa_idempr;
 		$expl->resa_idnotice = $resa_planning->resa_idnotice;
@@ -354,10 +354,10 @@ function check_resa_planning($expl) {
 		
 		// récupération des infos sur le réservataire
 		$query = "select empr_nom, empr_prenom, empr_cb, id_empr from empr where id_empr=".$resa_planning->resa_idempr." limit 1";
-		$result = mysql_query($query, $dbh);
-		if(mysql_num_rows($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_num_rows($result)) {
 			// stockage des infos sur le réservataire
-			$empr = mysql_fetch_object($result);
+			$empr = pmb_mysql_fetch_object($result);
 			$expl->cb_reservataire = $empr->empr_cb;
 			$expl->nom_reservataire = $empr->empr_nom;
 			$expl->prenom_reservataire = $empr->empr_prenom;
@@ -379,10 +379,10 @@ function check_pret($expl) {
 
 	// récupération des infos du prêt
 	$query = "select *, date_format(pret_date, '".$msg["format_date"]."') as aff_pret_date, date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour, IF(pret_retour>sysdate(),0,1) as retard from pret where pret_idexpl=".$expl->expl_id." limit 1";
-	$result = mysql_query($query, $dbh);
+	$result = pmb_mysql_query($query, $dbh);
 
-	if(mysql_num_rows($result)) {
-		$pret = mysql_fetch_object($result);
+	if(pmb_mysql_num_rows($result)) {
+		$pret = pmb_mysql_fetch_object($result);
 
 		// le document était bien en prêt ->
 		// récupération des infos du prêt
@@ -400,11 +400,11 @@ function check_pret($expl) {
 		$expl->short_loan_flag = $pret->short_loan_flag;
 		// récupération des infos emprunteur
 		$query = "select * from empr where id_empr=".$pret->pret_idempr." limit 1";
-		$result = mysql_query($query, $dbh);
-		if(mysql_num_rows($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_num_rows($result)) {
 
 			// stockage des infos sur l'emprunteur
-			$empr = mysql_fetch_object($result);
+			$empr = pmb_mysql_fetch_object($result);
 			$expl->empr_cb = $empr->empr_cb;
 			$expl->id_empr = $empr->id_empr;
 			$expl->empr_nom = $empr->empr_nom;
@@ -423,8 +423,8 @@ function check_pret($expl) {
 			$expl->type_abt = $empr->type_abt;
 			$expl->empr_msg = $empr->empr_msg;
 			$query_groupe = "select libelle_groupe from groupe, empr_groupe where empr_id='".$pret->pret_idempr."' and groupe_id=id_groupe";
-			$result_g = mysql_query($query_groupe, $dbh);
-			while ($groupes=mysql_fetch_object($result_g)) $groupesarray[]=$groupes->libelle_groupe ;
+			$result_g = pmb_mysql_query($query_groupe, $dbh);
+			while ($groupes=pmb_mysql_fetch_object($result_g)) $groupesarray[]=$groupes->libelle_groupe ;
 			$expl->groupes = @implode("/",$groupesarray);
 		}
 	}
@@ -435,15 +435,15 @@ function check_pret($expl) {
 function verif_cb_utilise_en_pret ($cb) {
 	global $dbh ;
 	$rqt = "select count(1) from pret, exemplaires where expl_cb='".$cb."' and pret_idexpl=expl_id";
-	$res = mysql_query ($rqt, $dbh) ;
-	return mysql_result($res, 0, 0) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
+	return pmb_mysql_result($res, 0, 0) ;
 }
 	
 // permet de savoir si un CB expl existe simplement
 function verif_cb_expl ($cb) {
 	global $dbh ;
 	$rqt = "select count(1) from exemplaires where expl_cb='".$cb."' ";
-	$res = mysql_query ($rqt, $dbh) ;
-	return mysql_result($res, 0, 0) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
+	return pmb_mysql_result($res, 0, 0) ;
 }
 	

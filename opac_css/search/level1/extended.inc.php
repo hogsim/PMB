@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: extended.inc.php,v 1.26.2.1 2014-07-02 13:16:23 mbertin Exp $
+// $Id: extended.inc.php,v 1.27 2014-07-02 13:24:57 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once($class_path."/searcher.class.php");

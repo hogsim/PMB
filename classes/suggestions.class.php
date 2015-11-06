@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions.class.php,v 1.37.6.1 2014-08-19 13:14:47 dgoron Exp $
+// $Id: suggestions.class.php,v 1.39 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -54,8 +54,8 @@ class suggestions{
 		global $dbh;
 		
 		$q = "select * from suggestions left join explnum_doc_sugg on num_suggestion=id_suggestion where id_suggestion = '".$this->id_suggestion."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->titre = $obj->titre;
 		$this->editeur = $obj->editeur;
 		$this->auteur = $obj->auteur;
@@ -105,7 +105,7 @@ class suggestions{
 			$q.= "date_publication = '".$this->date_publi."', ";
 			$q.= "sugg_source = '".$this->sugg_src."' ";
 			$q.= "where id_suggestion = '".$this->id_suggestion."' ";
-			mysql_query($q, $dbh);
+			pmb_mysql_query($q, $dbh);
 			
 		} else {
 			$q = "insert into suggestions set titre = '".addslashes($this->titre)."', editeur = '".addslashes($this->editeur)."', ";
@@ -119,8 +119,8 @@ class suggestions{
 			$q.= "sugg_location = '".$this->sugg_location."', ";
 			$q.= "date_publication = '".$this->date_publi."', ";
 			$q.= "sugg_source = '".$this->sugg_src."' "; 			
-			mysql_query($q, $dbh);
-			$this->id_suggestion = mysql_insert_id($dbh);
+			pmb_mysql_query($q, $dbh);
+			$this->id_suggestion = pmb_mysql_insert_id($dbh);
 		
 		}
 		
@@ -129,7 +129,7 @@ class suggestions{
 			$req = "insert into explnum_doc_sugg set 
 				num_explnum_doc='".$explnum_doc->explnum_doc_id."',
 				num_suggestion='".$this->id_suggestion."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 
@@ -141,8 +141,8 @@ class suggestions{
 		
 		$q = "select count(1) from suggestions_origine, suggestions where origine = '".$origine."' and titre = '".$titre."' and id_suggestion = num_suggestion and auteur='".$auteur."' and editeur = '".$editeur."' and code = '".$isbn."' ";
 		$q.= "and statut in (1,2,8) ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 
 	}
 
@@ -155,10 +155,10 @@ class suggestions{
 		if(!$id_suggestion) $id_suggestion = $this->id_suggestion; 	
 
 		$q = "delete from suggestions where id_suggestion = '".$id_suggestion."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 		$q = "delete ed,eds from explnum_doc ed join explnum_doc_sugg eds on ed.id_explnum_doc=eds.num_explnum_doc where eds.num_suggestion=$id_suggestion";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 	}
 
@@ -275,8 +275,8 @@ class suggestions{
 			}
 		}
 
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0); 
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0); 
 	}
 	
 	
@@ -430,10 +430,10 @@ class suggestions{
 		$tab_orig=array();
 		if (!$id_suggestion) $id_suggestion = $this->id_suggestion;
 		$q = "select * from suggestions_origine where num_suggestion=$id_suggestion order by date_suggestion, type_origine ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 			
-		for($i=0;$i<mysql_num_rows($r);$i++) {
-			$tab_orig[] = mysql_fetch_array($r,MYSQL_ASSOC); 
+		for($i=0;$i<pmb_mysql_num_rows($r);$i++) {
+			$tab_orig[] = pmb_mysql_fetch_array($r,MYSQL_ASSOC); 
 		}
 		return $tab_orig;
 	}
@@ -444,7 +444,7 @@ class suggestions{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE suggestions', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE suggestions', $dbh);
 		return $opt;
 				
 	}
@@ -454,9 +454,9 @@ class suggestions{
 		global $dbh;
 		
 		$req = "select * from explnum_doc join explnum_doc_sugg on num_explnum_doc=id_explnum_doc where num_suggestion='".$this->id_suggestion."'";
-		$res= mysql_query($req,$dbh);
-		if(mysql_num_rows($res)){
-			$tab = mysql_fetch_array($res);
+		$res= pmb_mysql_query($req,$dbh);
+		if(pmb_mysql_num_rows($res)){
+			$tab = pmb_mysql_fetch_array($res);
 			switch($champ){				
 				case 'id':
 					return $tab['id_explnum_doc'];
@@ -487,7 +487,7 @@ class suggestions{
 			$ret=$z->insert_in_database();
 			//On attache la notice à la suggestion
 			$req = " update suggestions set num_notice='".$ret[1]."' where id_suggestion='".$this->id_suggestion."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 		
 	}

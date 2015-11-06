@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: launch_search.inc.php,v 1.6 2014-03-12 12:51:28 dbellamy Exp $
+// $Id: launch_search.inc.php,v 1.7 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -10,7 +10,7 @@ if ($_SESSION["ext_type"]=="simple") {
 	//Deblocage des sources si demande
 	for ($i=0; $i<count($source); $i++) {
 		$debloque="debloque_source_".$source[$i];
-		if ($$debloque) mysql_query("delete from source_sync where source_id=".$source[$i]);
+		if ($$debloque) pmb_mysql_query("delete from source_sync where source_id=".$source[$i]);
 	}
 	
 	//Recherche du champ source, s'il n'est pas present, on decale tout et on l'ajoute

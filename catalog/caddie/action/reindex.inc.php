@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reindex.inc.php,v 1.2 2013-07-01 14:16:04 mbertin Exp $
+// $Id: reindex.inc.php,v 1.3 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -43,12 +43,12 @@ if($idcaddie) {
 				}elseif($myCart->type=='BULL'){
 					while(list($cle, $object) = each($liste)) {
 						$requete="SELECT bulletin_titre, num_notice FROM bulletins WHERE bulletin_id='".$object."'";
-						$res=mysql_query($requete);
-						if(mysql_num_rows($res)){
-							$element=mysql_fetch_object($res);
+						$res=pmb_mysql_query($requete);
+						if(pmb_mysql_num_rows($res)){
+							$element=pmb_mysql_fetch_object($res);
 							if(trim($element->bulletin_titre)){
 								$requete="UPDATE bulletins SET index_titre=' ".addslashes(strip_empty_words($element->bulletin_titre))." ' WHERE bulletin_id='".$object."'";
-								mysql_query($requete);
+								pmb_mysql_query($requete);
 							}
 							if($element->num_notice){
 								notice::majNoticesTotal($element->num_notice);
@@ -60,19 +60,19 @@ if($idcaddie) {
 				}elseif($myCart->type=='EXPL'){
 					while(list($cle, $object) = each($liste)) {
 						$requete="SELECT expl_notice, expl_bulletin FROM exemplaires WHERE expl_id='".$object."' ";
-						$res=mysql_query($requete);
-						if(mysql_num_rows($res)){
-							$row=mysql_fetch_object($res);
+						$res=pmb_mysql_query($requete);
+						if(pmb_mysql_num_rows($res)){
+							$row=pmb_mysql_fetch_object($res);
 							if($row->expl_notice){
 								notice::majNoticesTotal($row->expl_notice);
 							}else{
 								$requete="SELECT bulletin_titre, num_notice FROM bulletins WHERE bulletin_id='".$row->expl_bulletin."'";
-								$res2=mysql_query($requete);
-								if(mysql_num_rows($res2)){
-									$element=mysql_fetch_object($res2);
+								$res2=pmb_mysql_query($requete);
+								if(pmb_mysql_num_rows($res2)){
+									$element=pmb_mysql_fetch_object($res2);
 									if(trim($element->bulletin_titre)){
 										$requete="UPDATE bulletins SET index_titre=' ".addslashes(strip_empty_words($element->bulletin_titre))." ' WHERE bulletin_id='".$row->expl_bulletin."'";
-										mysql_query($requete);
+										pmb_mysql_query($requete);
 									}
 									if($element->num_notice){
 										notice::majNoticesTotal($element->num_notice);

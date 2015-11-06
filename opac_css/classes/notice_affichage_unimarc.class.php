@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage_unimarc.class.php,v 1.46.2.3 2014-12-01 17:24:40 mbertin Exp $
+// $Id: notice_affichage_unimarc.class.php,v 1.55 2015-06-04 09:04:35 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -15,7 +15,9 @@ require_once($include_path."/isbn.inc.php");
 require_once($include_path."/rss_func.inc.php") ;
 require_once($class_path."/resa_planning.class.php") ;
 include_once($include_path."/templates/expl_list.tpl.php");
-require_once($include_path."/resa_func.inc.php"); 
+require_once($include_path."/resa_func.inc.php");
+require_once($class_path."/skos/skos_concepts_list.class.php");
+require_once($class_path."/skos/skos_view_concepts.class.php");
 
 function cmpexpl($a, $b)
 {
@@ -24,7 +26,7 @@ function cmpexpl($a, $b)
 	if ($c1 == $c2) {
 		$c1 = isset($a["content"]["v"]) ? $a["content"]["v"] : "";
 		$c2 = isset($b["content"]["v"]) ? $b["content"]["v"] : "";
-		return strcmp($c1, $c2);		
+		return strcmp($c1, $c2);
 	}
 	return $c2-$c1;
 }
@@ -36,7 +38,7 @@ if (!count($fonction_auteur)) {
 }
 if (!count($langue_doc)) {
 	$langue_doc = new marc_list('lang');
-	$langue_doc = $langue_doc->table;	
+	$langue_doc = $langue_doc->table;
 }
 if (!count($icon_doc)) {
 	$icon_doc = new marc_list('icondoc');
@@ -58,7 +60,7 @@ class notice_affichage_unimarc {
 	var $notice_exemplaires	= "" ;		// Affichage des exemplaires, peut etre ajoute a $notice_isbd ou a $notice_public afin d'avoir l'affichage complet PMB
 	var $notice_explnum	= "" ;		// Affichage des exemplaires numeriques, peut etre ajoute a $notice_isbd ou a $notice_public afin d'avoir l'affichage complet PMB
 	var $notice_notes	= "" ;		// Affichage des notes de contenu et resume, peut etre ajoute a $notice_isbd ou a $notice_public afin d'avoir l'affichage complet PMB
-	var $notice;				// objet notice tel que fetche dans la table notices, 
+	var $notice;				// objet notice tel que fetche dans la table notices,
 						//		augmente de $this->notice->serie_name si serie il y a
 						//		augmente de n_gen, n_contenu, n_resume si on est alle les chercher car non ISBD standard
 	var $responsabilites 	= array("responsabilites" => array(),"auteurs" => array());  // les auteurs avec tout ce qu'il faut
@@ -79,10 +81,10 @@ class notice_affichage_unimarc {
   	var $lien_rech_perio 		;
   	var $lien_rech_bulletin 	;
  	var $liens = array();
- 	
+
  	var $langues = array();
 	var $languesorg = array();
-  	
+
   	var $action		= '';	// URL à associer au header
 	var $header		= '';	// chaine accueillant le chapeau de notice (peut-être cliquable)
 	var $tit_serie		= '';	// titre de série si applicable
@@ -97,7 +99,7 @@ class notice_affichage_unimarc {
 	var $avis_allowed = 0;
 	var $tag_allowed = 0;
 	var $to_print = 0;
-	var $affichage_resa_expl = "" ; // lien réservation, exemplaires et exemplaires numériques, en tableau comme il faut  
+	var $affichage_resa_expl = "" ; // lien réservation, exemplaires et exemplaires numériques, en tableau comme il faut
 	var $affichage_expl = "" ;  // la même chose mais sans le lien réservation
 
 	var $statut = 1 ;  			// Statut (id) de la notice
@@ -108,7 +110,7 @@ class notice_affichage_unimarc {
 	var $visu_expl_abon = 0 ;  	// Visibilité des exemplaires de la notice aux abonnés uniquement
 	var $visu_explnum = 1 ;  	// Visibilité des exemplaires numériques de la notice à tout le monde
 	var $visu_explnum_abon = 0 ;// Visibilité des exemplaires numériques de la notice aux abonnés uniquement
-	
+
 	var $childs = array() ; // filles de la notice
 	var $notice_childs = "" ; // l'équivalent à afficher
 	var $anti_loop="";
@@ -116,17 +118,17 @@ class notice_affichage_unimarc {
 	var $premier = "PUBLIC" ;
 	var $double_ou_simple = 2 ;
 	var $avis_moyenne ; // Moyenne des  avis
-	var $avis_qte; // Quantité d'un avis 
-	
+	var $avis_qte; // Quantité d'un avis
+
 	var $antiloop=array();
-	
+
 	var $unimarc=array();
 	var $source_id;
 	var $source_name;
 	var $entrepots_localisations=array();
-	
+
 	var $notice_expired = false;
-	
+
 // constructeur------------------------------------------------------------
 function notice_affichage_unimarc($id, $liens, $cart=0, $to_print=0, $entrepots_localisations=array()) {
   	// $id = id de la notice à afficher
@@ -138,21 +140,21 @@ function notice_affichage_unimarc($id, $liens, $cart=0, $to_print=0, $entrepots_
 	global $opac_allow_add_tag;
 
  	if (!$liens) $liens=array();
-	$this->lien_rech_notice 		=       $liens['lien_rech_notice']; 
-	$this->lien_rech_auteur 		=       $liens['lien_rech_auteur'];       
-	$this->lien_rech_editeur 		=       $liens['lien_rech_editeur'];      
-	$this->lien_rech_serie 			=       $liens['lien_rech_serie'];      
-	$this->lien_rech_collection 	=       $liens['lien_rech_collection'];   
+	$this->lien_rech_notice 		=       $liens['lien_rech_notice'];
+	$this->lien_rech_auteur 		=       $liens['lien_rech_auteur'];
+	$this->lien_rech_editeur 		=       $liens['lien_rech_editeur'];
+	$this->lien_rech_serie 			=       $liens['lien_rech_serie'];
+	$this->lien_rech_collection 	=       $liens['lien_rech_collection'];
 	$this->lien_rech_subcollection 	=       $liens['lien_rech_subcollection'];
-	$this->lien_rech_indexint 		=       $liens['lien_rech_indexint'];     
-	$this->lien_rech_motcle 		=       $liens['lien_rech_motcle'];       
-	$this->lien_rech_categ 			=       $liens['lien_rech_categ'];        
-	$this->lien_rech_perio 			=       $liens['lien_rech_perio'];        
-	$this->lien_rech_bulletin 		=       $liens['lien_rech_bulletin']; 
-	$this->liens = $liens;    
+	$this->lien_rech_indexint 		=       $liens['lien_rech_indexint'];
+	$this->lien_rech_motcle 		=       $liens['lien_rech_motcle'];
+	$this->lien_rech_categ 			=       $liens['lien_rech_categ'];
+	$this->lien_rech_perio 			=       $liens['lien_rech_perio'];
+	$this->lien_rech_bulletin 		=       $liens['lien_rech_bulletin'];
+	$this->liens = $liens;
 	$this->cart_allowed = $cart;
 	$this->entrepots_localisations = $entrepots_localisations;
-	
+
 	if ($to_print) {
 		$this->avis_allowed = 0;
 		$this->tag_allowed = 0;
@@ -160,9 +162,9 @@ function notice_affichage_unimarc($id, $liens, $cart=0, $to_print=0, $entrepots_
 		$this->avis_allowed = $opac_avis_allow;
 		$this->tag_allowed = $opac_allow_add_tag;
 	}
-		
+
 	$this->to_print = $to_print;
-	
+
   	// $seule : si 1 la notice est affichée seule et dans ce cas les notices childs sont en mode dépliable
   	global $seule ;
   	$this->seule = $seule ;
@@ -174,7 +176,7 @@ function notice_affichage_unimarc($id, $liens, $cart=0, $to_print=0, $entrepots_
 		$this->notice_id = $id;
 		$this->fetch_data();
 	}
-	
+
 	//$this->p_perso=new parametres_perso("notices");
 }
 
@@ -183,29 +185,29 @@ function fetch_data() {
 	global $dbh;
 
 	$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-	$myQuery = mysql_query($requete, $dbh);
-	$source_id = mysql_result($myQuery, 0, 0);
+	$myQuery = pmb_mysql_query($requete, $dbh);
+	$source_id = pmb_mysql_result($myQuery, 0, 0);
 
 	$requete="select * from entrepot_source_".$source_id." where recid='".addslashes($this->notice_id)."' group by field_order,ufield,usubfield,subfield_order,value";
-	$myQuery = mysql_query($requete, $dbh);
-	
+	$myQuery = pmb_mysql_query($requete, $dbh);
+
 	$notice= new stdClass();
 	$lpfo="";
 	$n_ed=-1;
-	
+
 	$exemplaires = array();
 	$doc_nums = array();
 	$cpt_notice_pperso=0;
 	$notice->notice_pperso= array();
-	
-	if(mysql_num_rows($myQuery)) {
+
+	if(pmb_mysql_num_rows($myQuery)) {
 		$is_article = false;
-		while ($l=mysql_fetch_object($myQuery)) {
+		while ($l=pmb_mysql_fetch_object($myQuery)) {
 			if (!$this->source_id) {
 				$this->source_id=$l->source_id;
 				$requete="select name from connectors_sources where source_id=".$l->source_id;
-				$rsname=mysql_query($requete);
-				if (mysql_num_rows($rsname)) $this->source_name=mysql_result($rsname,0,0);
+				$rsname=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($rsname)) $this->source_name=pmb_mysql_result($rsname,0,0);
 			}
 			$this->unimarc[$l->ufield][$l->field_order][$l->usubfield][$l->subfield_order];
 			switch ($l->ufield) {
@@ -216,9 +218,9 @@ function fetch_data() {
 				case "bl":
 					if($l->value == 'a'){
 						$notice->niveau_biblio=$l->value;
-					} else $notice->niveau_biblio='m'; //On force le document au type monographie 					
+					} else $notice->niveau_biblio='m'; //On force le document au type monographie
 					break;
-				case "hl":					
+				case "hl":
 					if($l->value == '2'){
 						$notice->niveau_hierar=$l->value;
 					} else $notice->niveau_hierar='0'; //On force le niveau à zéro
@@ -310,7 +312,7 @@ function fetch_data() {
 					$notice->n_resume[]=$l->value;
 					break;
 				//Serie ou Pério
-				case "461":		
+				case "461":
 					switch($l->usubfield){
 						case 'x':
 							$this->perio_issn = $l->value;
@@ -322,13 +324,13 @@ function fetch_data() {
 						case '9':
 							$is_article = true;
 					    break;
-					}	
+					}
 					if($is_article)
-						$notice->serie_name = "";	
+						$notice->serie_name = "";
 					else {
 						$this->parent_title = "";
 						$this->perio_issn = "";
-					}				
+					}
 					break;
 				//Bulletins
 				case "463" :
@@ -354,7 +356,7 @@ function fetch_data() {
 							$this->titres_uniformes[]=$l->value;
 							break;
 					}
-					break;				
+					break;
 				//Mots cles
 				case "610":
 					switch ($l->usubfield) {
@@ -371,8 +373,8 @@ function fetch_data() {
 							$notice->indexint[] = $l->value;
 							break;
 					}
-					break;					
-					
+					break;
+
 				//URL
 				case "856":
 					switch ($l->usubfield) {
@@ -408,7 +410,7 @@ function fetch_data() {
 					}
 					break;
 				case "996":
-					$exemplaires[$l->field_order][$l->usubfield] = $l->value; 
+					$exemplaires[$l->field_order][$l->usubfield] = $l->value;
 					break;
 				//Thumbnail
 				case "896":
@@ -426,35 +428,35 @@ function fetch_data() {
 	}
 	$this->exemplaires = $exemplaires;
 	$this->docnums = $doc_nums;
-	
+
 	$this->notice=$notice;
 	if (!$this->notice->typdoc) $this->notice->typdoc='a';
-	
+
 	// serials : si article
-	//if($this->notice->niveau_biblio == 'a' && $this->notice->niveau_hierar == 2) 
-	//$this->get_bul_info();	
-	
+	//if($this->notice->niveau_biblio == 'a' && $this->notice->niveau_hierar == 2)
+	//$this->get_bul_info();
+
 	$this->fetch_categories() ;
 
 	$this->fetch_auteurs() ;
-	
+
 	//$this->fetch_visibilite() ;
 	$this->fetch_langues(0) ;
 	$this->fetch_langues(1) ;
 	//$this->fetch_avis();
-	
+
 	//$this->childs=array();
-	
-	return mysql_num_rows($myQuery);
+
+	return pmb_mysql_num_rows($myQuery);
 	} // fin fetch_data
 
 //function fetch_visibilite() {
 //	global $dbh;
 //	global $hide_explnum;
 //	$requete = "SELECT opac_libelle, notice_visible_opac, expl_visible_opac, notice_visible_opac_abon, expl_visible_opac_abon, explnum_visible_opac, explnum_visible_opac_abon FROM notice_statut WHERE id_notice_statut='".$this->notice->statut."' ";
-//	$myQuery = mysql_query($requete, $dbh);
-//	if(mysql_num_rows($myQuery)) {
-//		$statut_temp = mysql_fetch_object($myQuery);
+//	$myQuery = pmb_mysql_query($requete, $dbh);
+//	if(pmb_mysql_num_rows($myQuery)) {
+//		$statut_temp = pmb_mysql_fetch_object($myQuery);
 //		$this->statut_notice =        $statut_temp->opac_libelle  ;
 //		$this->visu_notice =          $statut_temp->notice_visible_opac  ;
 //		$this->visu_notice_abon =     $statut_temp->notice_visible_opac_abon  ;
@@ -468,7 +470,7 @@ function fetch_data() {
 //			$this->visu_explnum_abon=0;
 //		}
 //	}
-//	
+//
 //}
 
 // recuperation des auteurs ---------------------------------------------------------------------
@@ -484,22 +486,22 @@ function fetch_auteurs() {
 
 	$this->responsabilites  = array() ;
 	$auteurs = array() ;
-	
+
 	$res["responsabilites"] = array() ;
 	$res["auteurs"] = array() ;
-	
+
 	if(!$this->source_id){
 		$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-		$myQuery = mysql_query($requete, $dbh);
-		$this->source_id = mysql_result($myQuery, 0, 0);	
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		$this->source_id = pmb_mysql_result($myQuery, 0, 0);
 	}
-	
+
 	$rqt = "select ufield,field_order,usubfield,subfield_order,value from entrepot_source_".$this->source_id." where recid='".addslashes($this->notice_id)."' and ufield like '7%' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-	$res_sql=mysql_query($rqt);
-	
+	$res_sql=pmb_mysql_query($rqt);
+
 	$id_aut="";
 	$n_aut=-1;
-	while ($l=mysql_fetch_object($res_sql)) {
+	while ($l=pmb_mysql_fetch_object($res_sql)) {
 		if ($l->field_order!=$id_aut) {
 			$n_aut++;
 			switch ($l->ufield) {
@@ -562,7 +564,7 @@ function fetch_auteurs() {
 				break;
 		}
 	}
-	
+
 	foreach($auteurs as $n_aut=>$auteur) {
 		$auteurs[$n_aut]['auteur_titre']=$auteurs[$n_aut]['rejete'].($auteurs[$n_aut]['rejete']?' ':'').$auteurs[$n_aut]['name'];
 		if ($auteur['type']==2 && ($auteurs[$n_aut]['subdivision'] || $auteurs[$n_aut]['numero'] || $auteurs[$n_aut]['date'] || $auteurs[$n_aut]['lieu'])) {
@@ -575,14 +577,14 @@ function fetch_auteurs() {
 		}
 		$auteurs[$n_aut]['auteur_isbd']=$auteurs[$n_aut]['auteur_titre'].($auteurs[$n_aut]['fonction_aff']?' ,':'').$auteurs[$n_aut]['fonction_aff'];
 	}
-	
+
 	if (!$responsabilites) $responsabilites = array();
 	if (!$auteurs) $auteurs = array();
 	$res["responsabilites"] = $responsabilites ;
 	$res["auteurs"] = $auteurs ;
 	$this->responsabilites = $res;
-	
-	// $this->auteurs_principaux 
+
+	// $this->auteurs_principaux
 	// on ne prend que le auteur_titre = "Prenom NOM"
 	$as = array_search ("0", $this->responsabilites["responsabilites"]) ;
 	if ($as!== FALSE && $as!== NULL) {
@@ -599,7 +601,7 @@ function fetch_auteurs() {
 			$auteurs_liste = implode ("; ",$aut1_libelle) ;
 			if ($auteurs_liste) $this->auteurs_principaux = $auteurs_liste ;
 			}
-	
+
 	// $this->auteurs_tous
 	$mention_resp = array() ;
 	$as = array_search ("0", $this->responsabilites["responsabilites"]) ;
@@ -608,7 +610,7 @@ function fetch_auteurs() {
 		$mention_resp_lib = $auteur_0["auteur_isbd"];
 		$mention_resp[] = $mention_resp_lib ;
 		}
-	
+
 	$as = array_keys ($this->responsabilites["responsabilites"], "1" ) ;
 	for ($i = 0 ; $i < count($as) ; $i++) {
 		$indice = $as[$i] ;
@@ -616,7 +618,7 @@ function fetch_auteurs() {
 		$mention_resp_lib = $auteur_1["auteur_isbd"];
 		$mention_resp[] = $mention_resp_lib ;
 		}
-	
+
 	$as = array_keys ($this->responsabilites["responsabilites"], "2" ) ;
 	for ($i = 0 ; $i < count($as) ; $i++) {
 		$indice = $as[$i] ;
@@ -624,7 +626,7 @@ function fetch_auteurs() {
 		$mention_resp_lib = $auteur_2["auteur_isbd"];
 		$mention_resp[] = $mention_resp_lib ;
 		}
-	
+
 	$libelle_mention_resp = implode ("; ",$mention_resp) ;
 	if ($libelle_mention_resp) $this->auteurs_tous = $libelle_mention_resp ;
 		else $this->auteurs_tous ="" ;
@@ -637,17 +639,17 @@ function fetch_categories() {
 	$this->categories_toutes="";
 	if(!$this->source_id){
 		$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-		$myQuery = mysql_query($requete, $dbh);
-		$this->source_id = mysql_result($myQuery, 0, 0);	
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		$this->source_id = pmb_mysql_result($myQuery, 0, 0);
 	}
 
 	$rqt = "select ufield,field_order,usubfield,subfield_order,value from entrepot_source_".$this->source_id." where recid='".addslashes($this->notice_id)."' and ufield like '60%' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-	$res_sql=mysql_query($rqt);
+	$res_sql=pmb_mysql_query($rqt);
 
 	$id_categ="";
 	$n_categ=-1;
 	$categ_l=array();
-	while ($l=mysql_fetch_object($res_sql)) {
+	while ($l=pmb_mysql_fetch_object($res_sql)) {
 		if ($l->field_order!=$id_categ) {
 			if ($n_categ!=-1) {
 				$categ_libelle=$categ_l["a"].($categ_l["x"]?" - ".implode(" - ",$categ_l["x"]):"").($categ_l["y"]?" - ".implode(" - ",$categ_l["y"]):"").($categ_l["z"]?" - ".implode(" - ",$categ_l["z"]):"");
@@ -673,28 +675,28 @@ function fetch_langues($quelle_langues=0) {
 
 	if(!$this->source_id){
 		$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-		$myQuery = mysql_query($requete, $dbh);
-		$this->source_id = mysql_result($myQuery, 0, 0);	
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		$this->source_id = pmb_mysql_result($myQuery, 0, 0);
 	}
 
 	$rqt = "select ufield,field_order,usubfield,subfield_order,value from entrepot_source_".$this->source_id." where recid='".addslashes($this->notice_id)."' and ufield like '101' group by ufield,usubfield,field_order,subfield_order,value order by recid,field_order,subfield_order";
-	$res_sql=mysql_query($rqt);
+	$res_sql=pmb_mysql_query($rqt);
 
 	$langues = array() ;
 
 	$subfield=array("0"=>"a","1"=>"c");
 
-	while ($l=mysql_fetch_object($res_sql)) {
+	while ($l=pmb_mysql_fetch_object($res_sql)) {
 		if ($l->usubfield==$subfield[$quelle_langues]) {
-			if ($marc_liste_langues->table[$l->value]) { 
-				$langues[] = array( 
+			if ($marc_liste_langues->table[$l->value]) {
+				$langues[] = array(
 					'lang_code' => $l->value,
 					'langue' => $marc_liste_langues->table[$l->value]
 				) ;
 			}
 		}
 	}
-	
+
 	if (!$quelle_langues) $this->langues = $langues;
 		else $this->languesorg = $langues;
 }
@@ -702,17 +704,17 @@ function fetch_langues($quelle_langues=0) {
 function fetch_avis()
 {
 	global $dbh;
-	
+
 	$sql="select avg(note) as m from avis where valide=1 and num_notice='$this->notice_id' group by num_notice";
-	$r = mysql_query($sql, $dbh);
-	
+	$r = pmb_mysql_query($sql, $dbh);
+
 	$sql_nb = "select * from avis where valide=1 and num_notice='$this->notice_id'";
-	$r_nb = mysql_query($sql_nb, $dbh);	
-	
-	$qte_avis = mysql_num_rows($r_nb);
-	$loc = mysql_fetch_object($r);
+	$r_nb = pmb_mysql_query($sql_nb, $dbh);
+
+	$qte_avis = pmb_mysql_num_rows($r_nb);
+	$loc = pmb_mysql_fetch_object($r);
 	if($loc->m > 0) $moyenne=number_format($loc->m,1, ',', '');
-	
+
 	$this->avis_moyenne = $moyenne;
 	$this->avis_qte = $qte_avis;
 }
@@ -720,24 +722,24 @@ function fetch_avis()
 //function affichage_etat_collections() {
 //	global $msg;
 //	global $pmb_etat_collections_localise;
-//	
+//
 //	//etat des collections
 //	$affichage="";
 //	if ($pmb_etat_collections_localise) {
-//		$restrict_location=" and idlocation=location_id";	
+//		$restrict_location=" and idlocation=location_id";
 //		$table_location=",docs_location";
 //		$select_location=",location_libelle";
 //	} else $restrict_location=" group by id_serial";
 //	$rqt="select state_collections$select_location from collections_state$table_location where id_serial=".$this->notice_id.$restrict_location;
-//	$execute_query=mysql_query($rqt);
+//	$execute_query=pmb_mysql_query($rqt);
 //	if ($execute_query) {
-//		if (mysql_num_rows($execute_query)) {
+//		if (pmb_mysql_num_rows($execute_query)) {
 //			$affichage = "<br /><strong>".$msg["perio_etat_coll"]."</strong><br />";
 //			$bool=false;
-//			while ($r=mysql_fetch_object($execute_query)) {
+//			while ($r=pmb_mysql_fetch_object($execute_query)) {
 //				if ($r->state_collections) {
 //					if ($r->location_libelle) $affichage .= "<strong>".$r->location_libelle."</strong> : ";
-//					$affichage .= $r->state_collections."<br />\n";	
+//					$affichage .= $r->state_collections."<br />\n";
 //					$bool=true;
 //				}
 //			}
@@ -761,21 +763,21 @@ function construit_liste_langues($tableau) {
 function affichage_avis($notice_id) {
 	global $dbh;
 	global $msg;
-	
+
 	$nombre_avis = "";
-	
+
 	//Affichage des Etoiles et nombre d'avis
 		if ($this->avis_qte > 0) {
 			$nombre_avis = "<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$this->avis_qte."&nbsp;".$msg['notice_bt_avis']."</a>";
-			$etoiles_moyenne = $this->stars($this->avis_moyenne);		
+			$etoiles_moyenne = $this->stars($this->avis_moyenne);
 		} else {
 			$nombre_avis = "<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$msg['avis_aucun']."</a>";
 			$cpt_star = -1;
 		}
-		
+
 		// Affichage du nombre d'avis ainsi que la note moyenne et les etoiles associees
-		$img_tag .= $nombre_avis."<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$etoiles_moyenne."</a>";	
-		
+		$img_tag .= $nombre_avis."<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$etoiles_moyenne."</a>";
+
 		return $img_tag;
 }
 
@@ -783,19 +785,19 @@ function affichage_avis($notice_id) {
 function stars() {
 	$etoiles_moyenne="";
 	$cpt_star = 4;
-	
+
 	for ($i = 1; $i <= $this->avis_moyenne; $i++) {
 		$etoiles_moyenne.="<img border=0 src='images/star.png' align='absmiddle'>";
 	}
-				
+
 	if(substr($this->avis_moyenne,2) > 1) {
 		$etoiles_moyenne .= "<img border=0 src='images/star-semibright.png' align='absmiddle'>";
 		$cpt_star = 3;
 	}
-			
+
 	for ( $j = round($this->avis_moyenne);$j <= $cpt_star ; $j++) {
 		$etoiles_moyenne .= "<img border=0 src='images/star_unlight.png' align='absmiddle'>";
-	}	
+	}
 	return $etoiles_moyenne;
 }
 
@@ -809,40 +811,45 @@ function genere_double($depliable=1, $premier='ISBD') {
 	global $dbh;
 	global $icon_doc, $tdoc, $biblio_doc;
 	global $allow_tag ; // l'utilisateur a-t-il le droit d'ajouter un tag
-	
+
 	$this->premier = $premier ;
 	$this->double_ou_simple = 2 ;
 	$this->notice_childs = $this->genere_notice_childs();
-	if ($this->cart_allowed) 
-		$basket="<a href=\"cart_info.php?id=es".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\"><img src=\"".$opac_url_base."images/basket_small_20x20.gif\" border=\"0\" title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\"></a>"; 
-	else 
+	if ($this->cart_allowed) {
+		if(isset($_SESSION["cart"]) && in_array("es".$this->notice_id, $_SESSION["cart"])) {
+			$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" border=\"0\" title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+		} else {
+			$basket="<a href=\"cart_info.php?id=es".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\"><img src=\"".$opac_url_base."images/basket_small_20x20.gif\" border=\"0\" title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\"></a>";
+		}
+	} else {
 		$basket="";
+	}
 	
 	//add tags
 	//if ( ($this->tag_allowed==1) || ( ($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag) ) )
-	//	$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" ></a>";	
-	
+	//	$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" ></a>";
+
 	 //Avis
 	 //if ($this->avis_allowed) {
 	//	$img_tag .= $this->affichage_avis($this->notice_id);
 	 //}
-			
+
 	// preparation de la case a cocher pour traitement panier
 	if ($cart_aff_case_traitement) $case_a_cocher = "<input type='checkbox' value='!!id!!' name='notice[]'/>&nbsp;";
 		else $case_a_cocher = "" ;
 
 	$icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
-	
+
 	if($depliable == 1){
 		$template="
 			<div id=\"el!!id!!Parent\" class=\"notice-parent\">
-			$case_a_cocher";		
+			$case_a_cocher";
 		if(!$this->notice_expired)
 			$template.="
     			<img class='img_plus' src=\"./getgif.php?nomgif=plus\" name=\"imEx\" id=\"el!!id!!Img\" title=\"".$msg['expandable_notice']."\" border=\"0\" onClick=\"expandBase('el!!id!!', true); return false;\" hspace=\"3\" />";
 		if ($icon) $template.="
 					<img src=\"".$opac_url_base."images/$icon\" alt='".$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc]."' title='".$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc]."'/>";
-		$template.="		
+		$template.="
 			<span class=\"notice-heada\" draggable=\"yes\" dragtype=\"notice\" id=\"drag_noti_!!id!!\">!!heada!!</span>
     		<br />
 			</div>
@@ -850,13 +857,13 @@ function genere_double($depliable=1, $premier='ISBD') {
 	}elseif($depliable == 2){
 		$template="
 			<div id=\"el!!id!!Parent\" class=\"notice-parent\">
-			$case_a_cocher<span class=\"notices_depliables\" onClick=\"expandBase('el!!id!!', true); return false;\">";		
+			$case_a_cocher<span class=\"notices_depliables\" onClick=\"expandBase('el!!id!!', true); return false;\">";
 		if(!$this->notice_expired)
 			$template.="
     			<img class='img_plus' src=\"./getgif.php?nomgif=plus&optionnel=1\" name=\"imEx\" id=\"el!!id!!Img\" title=\"".$msg['expandable_notice']."\" border=\"0\" hspace=\"3\" />";
 		if ($icon) $template.="
 					<img src=\"".$opac_url_base."images/$icon\" alt='".$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc]."' title='".$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc]."'/>";
-		$template.="		
+		$template.="
 			<span class=\"notice-heada\" draggable=\"no\" dragtype=\"notice\" id=\"drag_noti_!!id!!\">!!heada!!</span></span>
     		<br />
 			</div>
@@ -889,18 +896,18 @@ function genere_double($depliable=1, $premier='ISBD') {
 			<div class='row'></div>
 			<div id='div_public!!id!!' style='display:block;'>!!PUBLIC!!</div>
   			<div id='div_isbd!!id!!' style='display:none;'>!!ISBD!!</div>";
-	
+
 	// Serials : différence avec les monographies on affiche [périodique] et [article] devant l'ISBD
 	if ($this->notice->niveau_biblio =='s') {
 		$lien_bull = "";//(count($this->get_bulletins()) ? "&nbsp;<a href='index.php?lvl=notice_display&id=".$this->notice_id."'><i>".$msg["see_bull"]."</i></a>" : "");
 		$template_in = str_replace('!!ISBD!!', "<span class='fond-mere'>[".$msg['isbd_type_perio']."]</span>$lien_bull&nbsp;!!ISBD!!", $template_in);
 		$template_in = str_replace('!!PUBLIC!!', "<span class='fond-mere'>[".$msg['isbd_type_perio']."]</span>$lien_bull&nbsp;!!PUBLIC!!", $template_in);
-	} elseif ($this->notice->niveau_biblio =='a') { 
+	} elseif ($this->notice->niveau_biblio =='a') {
 		$template_in = str_replace('!!ISBD!!', "<span class='fond-article'>[".$msg['isbd_type_art']."]</span>&nbsp;!!ISBD!!", $template_in);
 		$template_in = str_replace('!!PUBLIC!!', "<span class='fond-article'>[".$msg['isbd_type_art']."]</span>&nbsp;!!PUBLIC!!", $template_in);
 	}
-	
-	
+
+
 	$template_in = str_replace('!!ISBD!!', $this->notice_isbd, $template_in);
 	$template_in = str_replace('!!PUBLIC!!', $this->notice_public, $template_in);
 	$template_in = str_replace('!!id!!', "es". $this->notice_id, $template_in);
@@ -909,14 +916,14 @@ function genere_double($depliable=1, $premier='ISBD') {
 	$this->result = str_replace('!!id!!', "es". $this->notice_id, $template);
 	$this->result = str_replace('!!heada!!', $this->notice_header, $this->result);
 	$this->result = str_replace('!!CONTENU!!', $template_in, $this->result);
-	if ($this->affichage_resa_expl || $this->notice_childs) $this->result = str_replace('!!SUITE!!', $this->notice_childs.$this->affichage_resa_expl, $this->result); 		
+	if ($this->affichage_resa_expl || $this->notice_childs) $this->result = str_replace('!!SUITE!!', $this->notice_childs.$this->affichage_resa_expl, $this->result);
 	$this->result = str_replace('!!SUITE!!', "", $this->result);
 	}
 
 // generation de l'affichage simple sans onglet ----------------------------------------------
 //	si $depliable=1 alors inclusion du parent / child
 function genere_simple($depliable=1, $what='ISBD') {
-	global $msg; 
+	global $msg;
 	global $opac_cart_allow;
 	global $css;
 	global $cart_aff_case_traitement;
@@ -925,24 +932,29 @@ function genere_simple($depliable=1, $what='ISBD') {
 	global $icon_doc, $tdoc, $biblio_doc;
 	global $allow_tag ; // l'utilisateur a-t-il le droit d'ajouter un tag
 	$cpt_star = 4;
-	
+
 	$this->double_ou_simple = 1 ;
 	$this->notice_childs = $this->genere_notice_childs();
 	// preparation de la case a cocher pour traitement panier
-	if ($cart_aff_case_traitement) 
+	if ($cart_aff_case_traitement)
 		$case_a_cocher = "<input type='checkbox' value='!!id!!' name='notice[]'/>&nbsp;";
-	else 
+	else
 		$case_a_cocher = "" ;
-	
-	if ($this->cart_allowed) 
-		$basket="<a href=\"cart_info.php?id=es".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\"></a>"; 
-	else 
+
+	if ($this->cart_allowed) {
+		if(isset($_SESSION["cart"]) && in_array("es".$this->notice_id, $_SESSION["cart"])) {
+			$basket="<a href='#' class=\"img_basket_exist\"><img src=\"".$opac_url_base."images/basket_exist.gif\" align='absmiddle' border='0' title=\"".$msg['notice_title_basket_exist']."\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
+		} else {
+			$basket="<a href=\"cart_info.php?id=es".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' title=\"".$msg['notice_title_basket']."\" alt=\"".$msg['notice_title_basket']."\"></a>";
+		}
+	} else {
 		$basket="";
+	}
 	
 	//add tags
 	if (($this->tag_allowed==1)||(($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag)))
 		$img_tag.="&nbsp;&nbsp;<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\"></a>&nbsp;&nbsp;";
-	
+
 	 //Avis
 	 if ($this->avis_allowed) {
 		$img_tag .= $this->affichage_avis($this->notice_id);
@@ -951,8 +963,8 @@ function genere_simple($depliable=1, $what='ISBD') {
 	if ($basket) $basket="<div>".$basket.$img_tag."</div>";
 
 	$icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
-	
-	if($depliable == 1){ 
+
+	if($depliable == 1){
 		$template="
 		<div id=\"el!!id!!Parent\" class=\"notice-parent\">
 			$case_a_cocher
@@ -961,11 +973,11 @@ function genere_simple($depliable=1, $what='ISBD') {
 				<img src=\"".$opac_url_base."images/$icon\" alt='".$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc]."' title='".$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc]."'/>";
 		$template.="
     		<span class=\"notice-heada\">!!heada!!</span><br />
-    		</div>			
+    		</div>
 		<div id=\"el!!id!!Child\" class=\"notice-child\" style=\"margin-bottom:6px;display:none;\">".$basket."!!ISBD!!\n
 			!!SUITE!!
 			</div>";
-	}elseif($depliable == 2){ 
+	}elseif($depliable == 2){
 		$template="
 		<div id=\"el!!id!!Parent\" class=\"notice-parent\">
 			$case_a_cocher<span class=\"notices_depliables\" onClick=\"expandBase('el!!id!!', true); return false;\">
@@ -974,7 +986,7 @@ function genere_simple($depliable=1, $what='ISBD') {
 				<img src=\"".$opac_url_base."images/$icon\" alt='".$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc]."' title='".$biblio_doc[$this->notice->niveau_biblio]." : ".$tdoc->table[$this->notice->typdoc]."'/>";
 		$template.="
     		<span class=\"notice-heada\">!!heada!!</span></span><br />
-    		</div>			
+    		</div>
 		<div id=\"el!!id!!Child\" class=\"notice-child\" style=\"margin-bottom:6px;display:none;\">".$basket."!!ISBD!!\n
 			!!SUITE!!
 			</div>";
@@ -986,38 +998,38 @@ function genere_simple($depliable=1, $what='ISBD') {
 				<img src=\"".$opac_url_base."images/$icon\" />";
 			$template.="
     				<span class=\"heada\">!!heada!!</span><br />
-	    			</div>			
+	    			</div>
 			\n<div id='el!!id!!Child' class='child' >".$basket."
 			!!ISBD!!
 			!!SUITE!!
 			</div>";
 	}
-		
-	
+
+
 	// Serials : difference avec les monographies on affiche [periodique] et [article] devant l'ISBD
 	if ($this->notice->niveau_biblio =='s') {
 		$lien_bull = "";//(count($this->get_bulletins())  ? "&nbsp;<a href='index.php?lvl=notice_display&id=".$this->notice_id."'><i>".$msg["see_bull"]."</i></a>" : "");
 		$template = str_replace('!!ISBD!!', "<span class='fond-mere'>[".$msg['isbd_type_perio']."]</span>$lien_bull&nbsp;!!ISBD!!", $template);
-	} elseif ($this->notice->niveau_biblio =='a') { 
+	} elseif ($this->notice->niveau_biblio =='a') {
 		$template = str_replace('!!ISBD!!', "<span class='fond-article'>[".$msg['isbd_type_art']."]</span>&nbsp;!!ISBD!!", $template);
 		}
-	
+
 	$this->result = str_replace('!!id!!', "es". $this->notice_id, $template);
 	$this->result = str_replace('!!heada!!', $this->notice_header, $this->result);
-	
+
 	if ($what=='ISBD') {
 		$this->do_image($this->notice_isbd,$depliable);
 		$this->result = str_replace('!!ISBD!!', $this->notice_isbd, $this->result);
 	} else {
 		$this->do_image($this->notice_public,$depliable);
 		$this->result = str_replace('!!ISBD!!', $this->notice_public, $this->result);
-	} 
-	
+	}
+
 	$this->affichage_bulletinnage=$this->genere_bulletinage();
-	
+
 	if ($this->affichage_resa_expl || $this->notice_childs || $this->affichage_bulletinnage) $this->result = str_replace('!!SUITE!!', $this->notice_childs.$this->affichage_resa_expl.$this->affichage_bulletinnage, $this->result);
 		else $this->result = str_replace('!!SUITE!!', '', $this->result);
-			
+
 	}
 
 // generation de l'isbd----------------------------------------------------
@@ -1027,13 +1039,13 @@ function do_isbd($short=0,$ex=1) {
 	global $tdoc;
 	global $charset;
 	global $opac_notice_affichage_class;
-	
+
 	$this->notice_isbd="";
-	
-	if($this->notice_expired ){		
+
+	if($this->notice_expired ){
 		return $this->notice_isbd;
 	}
-	
+
 	// constitution de la mention de titre
 	if($this->notice->serie_name) {
 		$serie_temp .= inslink($this->notice->serie_name,  str_replace("!!id!!","es". $this->notice->tparent_id, $this->lien_rech_serie));
@@ -1047,31 +1059,31 @@ function do_isbd($short=0,$ex=1) {
 	if ($this->notice->tit3) $this->notice_isbd .= "&nbsp;= ".$this->notice->tit3 ;
 	if ($this->notice->tit4) $this->notice_isbd .= "&nbsp;: ".$this->notice->tit4 ;
 	if ($this->notice->tit2) $this->notice_isbd .= "&nbsp;; ".$this->notice->tit2 ;
-	
+
 	if ($this->auteurs_tous) $this->notice_isbd .= " / ".$this->auteurs_tous;
-	
+
 	// mention d'edition
 	if($this->notice->mention_edition) $this->notice_isbd .= " &nbsp;. -&nbsp; ".$this->notice->mention_edition;
-	
+
 	if($this->notice->coll){
 		$collections = $this->notice->coll->titre.($this->notice->coll->num ? ", ".$this->notice->coll->num :"");
 	}
-	
+
 	if (is_array($this->publishers)) {
 		for ($i=0; $i<count($this->publishers) ;$i++) {
 			$editeur[$i]=$this->publishers[$i]["name"].($this->publishers[$i]["city"]?" (".$this->publishers[$i]["city"].")":"");
 		}
 		$editeurs=implode("&nbsp;: ",$editeur);
 	}
-	
-	if($this->notice->year) 
+
+	if($this->notice->year)
 		$editeurs ? $editeurs .= ', '.$this->notice->year : $editeurs = $this->notice->year;
-		else if ($this->notice->niveau_biblio == 'm' && $this->notice->niveau_hierar == 0) 
+		else if ($this->notice->niveau_biblio == 'm' && $this->notice->niveau_hierar == 0)
 			$editeurs ? $editeurs .= ', [s.d.]' : $editeurs = "[s.d.]";
 
 	if($editeurs) $this->notice_isbd .= "&nbsp;.&nbsp;-&nbsp;$editeurs";
-	
-	
+
+
 	// zone de la collation
 	if($this->notice->npages)
 		$collation = $this->notice->npages;
@@ -1081,14 +1093,14 @@ function do_isbd($short=0,$ex=1) {
 		$collation .= '&nbsp;; '.$this->notice->size;
 	if($this->notice->accomp)
 		$collation .= '&nbsp;+ '.$this->notice->accomp;
-		
+
 	if($collation)
 		$this->notice_isbd .= "&nbsp;.&nbsp;-&nbsp;$collation";
-	
+
 	if($collections) $this->notice_isbd .= ".&nbsp;-&nbsp;($collections)".' ';
 
 	$this->notice_isbd .= '.';
-		
+
 	// ISBN ou NO. commercial
 	if($this->notice->code) {
 		if(isISBN($this->notice->code)) $zoneISBN = '<b>ISBN</b>&nbsp;: ';
@@ -1097,17 +1109,17 @@ function do_isbd($short=0,$ex=1) {
 		}
 	if($this->notice->prix) {
 		if($this->notice->code) $zoneISBN .= '&nbsp;: '.$this->notice->prix;
-			else { 
+			else {
 				if ($zoneISBN) $zoneISBN .= '&nbsp; '.$this->notice->prix;
 					else $zoneISBN = $this->notice->prix;
 				}
 		}
 	if($zoneISBN) $this->notice_isbd .= "<br />".$zoneISBN;
-	
+
 	// note generale
 	if($this->notice->n_gen) $zoneNote = nl2br(htmlentities(implode("\n",$this->notice->n_gen),ENT_QUOTES, $charset));
 	if($zoneNote) $this->notice_isbd .= "<br />".$zoneNote;
-			
+
 
 	// langues
 	if(count($this->langues)) {
@@ -1117,10 +1129,10 @@ function do_isbd($short=0,$ex=1) {
 		$langues .= " <span class='etiq_champ'>${msg[711]}</span>&nbsp;: ".$this->construit_liste_langues($this->languesorg);
 		}
 	if ($langues) $this->notice_isbd .= "<br />".$langues ;
-	
+
 	if(count($this->notice->notice_pperso)){
 		foreach($this->notice->notice_pperso as $pperso){
-			// est-ce bien de type pmb				
+			// est-ce bien de type pmb
 			if($pperso['value'] && $pperso['libelle'] && $pperso['name'] ){
 				switch($pperso['type']){
 					case 'url':
@@ -1131,10 +1143,10 @@ function do_isbd($short=0,$ex=1) {
 					break;
 				}
 			}
-		}		
+		}
 	}
 	if($html_pprerso)$this->notice_isbd .= "<br />".$html_pprerso ;
-	
+
 	if (!$short) {
 		$this->notice_isbd .="<table>";
 		$this->notice_isbd .= $this->aff_suite() ;
@@ -1143,7 +1155,7 @@ function do_isbd($short=0,$ex=1) {
 		$this->notice_isbd.=$this->genere_in_perio();
 	}
 
-}	
+}
 
 // generation de l'affichage public----------------------------------------
 function do_public($short=0,$ex=1) {
@@ -1151,7 +1163,7 @@ function do_public($short=0,$ex=1) {
 	global $msg;
 	global $tdoc;
 	global $charset;
-	
+
 	$this->notice_public="";
 	if($this->notice_expired){
 		return $this->notice_public;
@@ -1167,24 +1179,24 @@ function do_public($short=0,$ex=1) {
 			$this->notice_public .= ',&nbsp;'.$this->notice->tnvol;
 		$this->notice_public .="</td></tr>";
 		}
-	
+
 	$this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['title']." :</span></td>";
 	$this->notice_public .= "<td>".$this->notice->tit1 ;
-	
+
 	if ($this->notice->tit4) $this->notice_public .= ": ".$this->notice->tit4 ;
 	$this->notice_public.="</td></tr>";
-	
+
 	if ($this->notice->tit2) $this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['other_title_t2']." :</span></td><td>".$this->notice->tit2."</td></tr>" ;
 	if ($this->notice->tit3) $this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['other_title_t3']." :</span></td><td>".$this->notice->tit3."</td></tr>" ;
-	
+
 	if ($tdoc->table[$this->notice->typdoc]) $this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['typdocdisplay_start']."</span></td><td>".$tdoc->table[$this->notice->typdoc]."</td></tr>";
-	
+
 	if ($this->auteurs_tous) $this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['auteur_start']."</span></td><td>".$this->auteurs_tous."</td></tr>";
-	
+
 	// mention d'edition
 	if ($this->notice->mention_edition) $this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['mention_edition_start']."</span></td><td>".$this->notice->mention_edition."</td></tr>";
-	
-	// zone de l'editeur 
+
+	// zone de l'editeur
 	if ($this->year)
 		$annee = "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['year_start']."</span></td><td>".$this->year."</td></tr>" ;
 
@@ -1198,13 +1210,13 @@ function do_public($short=0,$ex=1) {
 	if ($annee) {
 		$this->notice_public .= $annee ;
 		$annee = "" ;
-	}  
+	}
 	//titres uniformes
 	if(count($this->titres_uniformes)){
 		$this->notice_public.= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['titre_uniforme_aff_public']."</span></td><td>";
 		for ($i=0; $i<count($this->titres_uniformes) ;$i++) {
 			$this->notice_public.= htmlentities($this->titres_uniformes[$i],ENT_QUOTES,$charset)."<br />";
-		}		
+		}
 		$this->notice_public."</td></tr>";
 	}
 	if($this->notice->coll){
@@ -1214,10 +1226,10 @@ function do_public($short=0,$ex=1) {
 	if($this->notice->subcoll){
 		$subcollection = $this->notice->subcoll->titre.($this->notice->coll->num ? ". ".$this->notice->coll->num :"");
 		$this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['subcoll_start']."</span></td><td>$subcollection</td></tr>" ;
-	}	
+	}
 	// ajout $annee si pas vide. Est vide si deja ajoute plus haut
 	$this->notice_public .= $annee ;
-	
+
 	// zone de la collation
 	if($this->notice->npages)
 		if ($this->notice->niveau_biblio<>"a") $this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['npages_start']."</span></td><td>".$this->notice->npages."</td></tr>";
@@ -1229,12 +1241,12 @@ function do_public($short=0,$ex=1) {
 		$this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['size_start']."</span></td><td>".$this->notice->size."</td></tr>";
 	if ($this->notice->accomp)
 		$this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['accomp_start']."</span></td><td>".$this->notice->accomp."</td></tr>";
-		
+
 	// ISBN ou NO. commercial
 	if ($this->notice->code)
 		$this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['code_start']."</span></td><td>".$this->notice->code."</td></tr>";
 
-	if ($this->notice->prix) 
+	if ($this->notice->prix)
 		$this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['price_start']."</span></td><td>".$this->notice->prix."</td></tr>";
 
 	// note generale
@@ -1246,14 +1258,14 @@ function do_public($short=0,$ex=1) {
 		$this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['537']." :</span></td><td>".$this->construit_liste_langues($this->langues);
 		if (count($this->languesorg)) $this->notice_public .= " <span class='etiq_champ'>".$msg['711']." :</span> ".$this->construit_liste_langues($this->languesorg);
 		$this->notice_public.="</td></tr>";
-		} else 
-			if (count($this->languesorg)) $this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['711']." :</span></td><td>".$this->construit_liste_langues($this->languesorg)."</td></tr>"; 
+		} else
+			if (count($this->languesorg)) $this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['711']." :</span></td><td>".$this->construit_liste_langues($this->languesorg)."</td></tr>";
 
 	if(count($this->notice->notice_pperso)){
 		foreach($this->notice->notice_pperso as $pperso){
 			// est-ce bien de type pmb
 			if($pperso['value'] && $pperso['libelle'] && $pperso['name'] ){
-				
+
 				switch($pperso['type']){
 					case 'url':
 						$html_pprerso .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$pperso['libelle']." :</span></td><td><a href='".$pperso['value']."' >".$pperso['value']."</a></td></tr>";
@@ -1266,7 +1278,7 @@ function do_public($short=0,$ex=1) {
 		}
 	}
 	if($html_pprerso)$this->notice_public .= $html_pprerso ;
-	
+
 	//Documents numériques
 	if ($this->docnums) {
 		$this->notice_public .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['entrepot_notice_docnum']."</span></td><td>";
@@ -1277,13 +1289,13 @@ function do_public($short=0,$ex=1) {
 			$this->notice_public .= "<li>";
 			if ($docnum["b"])
 				$this->notice_public .= $docnum["b"].": ";
-			$this->notice_public .= "<i><a href=\"".htmlentities($docnum["a"],ENT_QUOTES,$charset)."\">".$docnum["a"]."</a></i>";			
+			$this->notice_public .= "<i><a href=\"".htmlentities($docnum["a"],ENT_QUOTES,$charset)."\">".$docnum["a"]."</a></i>";
 			$this->notice_public .= "</li>";
-		}		
+		}
 		$this->notice_public .= "</ul>";
 		$this->notice_public .= "</td></tr>";
 	}
-			
+
 	if (!$short) $this->notice_public .= $this->aff_suite() ; else $this->notice_public.=$this->genere_in_perio();
 	$this->notice_public.="</table>\n";
 
@@ -1291,7 +1303,7 @@ function do_public($short=0,$ex=1) {
 	//if ($ex) $this->affichage_resa_expl = $this->aff_resa_expl() ;
 
 	return;
-	}	
+	}
 
 // generation du header----------------------------------------------------
 function do_header() {
@@ -1299,7 +1311,7 @@ function do_header() {
 	global $charset;
 	global $opac_notice_reduit_format ;
 	global $opac_url_base ;
-	
+
 	$type_reduit = substr($opac_notice_reduit_format,0,1);
 	if ($type_reduit=="E" || $type_reduit=="P" ) {
 		// peut-etre veut-on des personnalises ?
@@ -1307,19 +1319,19 @@ function do_header() {
 		if ($perso_voulus_temp!="")
 			$perso_voulus = explode(",",$perso_voulus_temp);
 		}
-	
+
 	if ($type_reduit=="E") {
-		// zone de l'editeur 
+		// zone de l'editeur
 		if (is_array($this->publishers[0])) {
 			$editeur_reduit = $this->publishers[0]["name"].($this->publishers[0]["city"]?" (".$this->publishers[0]["city"].")":"") ;
 			if ($this->publishers[0]["year"]) {
 				$editeur_reduit .= " - ".$this->publishers[0]["city"]." ";
-				}  
+				}
 			} elseif ($this->notice->year) { // annee mais pas d'editeur
 				$editeur_reduit = $this->notice->year." ";
 				}
 		} else $editeur_reduit = "" ;
-	
+
 	//Si c'est un periodique, ajout du titre et bulletin
 	if($this->notice->niveau_biblio == 'a' && $this->notice->niveau_hierar == 2)  {
 		 $aff_perio_title="<i>in ".$this->parent_title;
@@ -1350,14 +1362,14 @@ function do_header() {
 	if ($aff_perio_title) $this->notice_header .= " ".$aff_perio_title;
 }
 
-  
+
 // Construction des mots cle----------------------------------------------------
 function do_mots_cle() {
 	global $pmb_keyword_sep ;
 	if (!$pmb_keyword_sep) $pmb_keyword_sep=" ";
-	
+
 	if (!trim($this->notice->index_l)) return "";
-	
+
 	$tableau_mots = explode ($pmb_keyword_sep,trim($this->notice->index_l)) ;
 
 	if (!sizeof($tableau_mots)) return "";
@@ -1366,7 +1378,7 @@ function do_mots_cle() {
 		$tableau_mots[$i] = inslink($mots, str_replace("!!mot!!", urlencode($mots), $this->lien_rech_motcle)) ;
 		}
 	$mots_cles = implode("&nbsp; ", $tableau_mots);
-	return $mots_cles ; 
+	return $mots_cles ;
 	}
 
 //// recuperation des info de bulletinage (si applicable)
@@ -1374,15 +1386,15 @@ function do_mots_cle() {
 //	global $dbh;
 //	global $msg;
 //	// recuperation des donnees du bulletin et de la notice apparentee
-//	$requete = "SELECT b.tit1,b.notice_id,a.*,c.*, date_format(date_date, '".$msg["format_date"]."') as aff_date_date "; 
+//	$requete = "SELECT b.tit1,b.notice_id,a.*,c.*, date_format(date_date, '".$msg["format_date"]."') as aff_date_date ";
 //	$requete .= "from analysis a, notices b, bulletins c";
 //	$requete .= " WHERE a.analysis_notice=".$this->notice_id;
 //	$requete .= " AND c.bulletin_id=a.analysis_bulletin";
 //	$requete .= " AND c.bulletin_notice=b.notice_id";
 //	$requete .= " LIMIT 1";
-//	$myQuery = mysql_query($requete, $dbh);
-//	if (mysql_num_rows($myQuery)) {
-//		$parent = mysql_fetch_object($myQuery);
+//	$myQuery = pmb_mysql_query($requete, $dbh);
+//	if (pmb_mysql_num_rows($myQuery)) {
+//		$parent = pmb_mysql_fetch_object($myQuery);
 //		$this->parent_title = $parent->tit1;
 //		$this->parent_id = $parent->notice_id;
 //		$this->bul_id = $parent->bulletin_id;
@@ -1397,10 +1409,10 @@ function do_mots_cle() {
 function genere_in_perio () {
 	global $charset ;
 	// serials : si article
-	if($this->notice->niveau_biblio == 'a' && $this->notice->niveau_hierar == 2) {	
+	if($this->notice->niveau_biblio == 'a' && $this->notice->niveau_hierar == 2) {
 		$bulletin = $this->parent_title;
 		$notice_mere = inslink($this->parent_title, str_replace("!!id!!","es". $this->parent_id, $this->lien_rech_perio));
-		if($this->parent_numero) 
+		if($this->parent_numero)
 			$numero = $this->parent_numero." " ;
 		// affichage de la mention de date utile : mention_date si existe, sinon date_date
 		if ($this->parent_date)
@@ -1428,19 +1440,19 @@ function genere_in_perio () {
 //	global $opac_resa_popup ; // la resa se fait-elle par popup ?
 //	global $opac_resa_planning; // la resa est elle planifiee
 //	global $allow_book;
-//	
+//
 //	// afin d'eviter de recalculer un truc deja calcule...
 //	if ($this->affichage_resa_expl) return $this->affichage_resa_expl ;
-//	
+//
 //	if ($opac_show_exemplaires && $this->visu_expl && (!$this->visu_expl_abon || ($this->visu_expl_abon && $_SESSION["user_code"]))) {
 //
 //		if (!$opac_resa_planning) {
 //			$resa_check=check_statut($this->notice_id,0) ;
 //			// verification si exemplaire reservable
 //			if ($resa_check) {
-//				// deplace dans le IF, si pas visible : pas de bouton resa 
+//				// deplace dans le IF, si pas visible : pas de bouton resa
 //				$requete_resa = "SELECT count(1) FROM resa WHERE resa_idnotice='$this->notice_id'";
-//				$nb_resa_encours = mysql_result(mysql_query($requete_resa,$dbh), 0, 0) ;
+//				$nb_resa_encours = pmb_mysql_result(pmb_mysql_query($requete_resa,$dbh), 0, 0) ;
 //				if ($nb_resa_encours) $message_nbresa = str_replace("!!nbresa!!", $nb_resa_encours, $msg["resa_nb_deja_resa"]) ;
 //				if (($this->notice->niveau_biblio=="m") && ($_SESSION["user_code"] && $allow_book) && $opac_resa && !$popup_resa) {
 //					$ret .= "<h3>".$msg["bulletin_display_resa"]."</h3>";
@@ -1448,7 +1460,7 @@ function genere_in_perio () {
 //						if ($opac_resa_popup) $ret .= "<a href='#' onClick=\"w=window.open('./do_resa.php?lvl=resa&id_notice=".$this->notice_id."&oresa=popup','doresa','scrollbars=yes,width=500,height=600,menubar=0,resizable=yes'); w.focus(); return false;\" id=\"bt_resa\">".$msg["bulletin_display_place_resa"]."</a>" ;
 //							else $ret .= "<a href='./do_resa.php?lvl=resa&id_notice=".$this->notice_id."&oresa=popup' id='bt_resa'>".$msg["bulletin_display_place_resa"]."</a>" ;
 //						$ret .= $message_nbresa ;
-//						} else $ret .= str_replace("!!nb_max_resa!!", $opac_max_resa, $msg["resa_nb_max_resa"]) ; 
+//						} else $ret .= str_replace("!!nb_max_resa!!", $opac_max_resa, $msg["resa_nb_max_resa"]) ;
 //					$ret.= "<br />";
 //					} elseif ( ($this->notice->niveau_biblio=="m") && !($_SESSION["user_code"]) && $opac_resa && !$popup_resa) {
 //						// utilisateur pas connecte
@@ -1462,11 +1474,11 @@ function genere_in_perio () {
 //				} // fin if resa_check
 //			$temp = $this->expl_list($this->notice->niveau_biblio,$this->notice->notice_id);
 //			$ret .= $temp ;
-//			$this->affichage_expl = $temp ; 
-//		
+//			$this->affichage_expl = $temp ;
+//
 //		} else {
 //			// planning de reservations
-//			$nb_resa_encours = resa_planning::countResa($this->notice_id);
+//			$nb_resa_encours = resa_planning::count_resa($this->notice_id);
 //			if ($nb_resa_encours) $message_nbresa = str_replace("!!nbresa!!", $nb_resa_encours, $msg["resa_nb_deja_resa"]) ;
 //			if (($this->notice->niveau_biblio=="m") && ($_SESSION["user_code"] && $allow_book) && $opac_resa && !$popup_resa) {
 //				$ret .= "<h3>".$msg["bulletin_display_resa"]."</h3>";
@@ -1474,7 +1486,7 @@ function genere_in_perio () {
 //					if ($opac_resa_popup) $ret .= "<a href='#' onClick=\"w=window.open('./do_resa.php?lvl=resa_planning&id_notice=".$this->notice_id."&oresa=popup','doresa','scrollbars=yes,width=500,height=600,menubar=0,resizable=yes'); w.focus(); return false;\" id=\"bt_resa\">".$msg["bulletin_display_place_resa"]."</a>" ;
 //						else $ret .= "<a href='./do_resa.php?lvl=resa_planning&id_notice=".$this->notice_id."&oresa=popup' id='bt_resa'>".$msg["bulletin_display_place_resa"]."</a>" ;
 //					$ret .= $message_nbresa ;
-//				} else $ret .= str_replace("!!nb_max_resa!!", $opac_max_resa, $msg["resa_nb_max_resa"]) ; 
+//				} else $ret .= str_replace("!!nb_max_resa!!", $opac_max_resa, $msg["resa_nb_max_resa"]) ;
 //				$ret.= "<br />";
 //			} elseif ( ($this->notice->niveau_biblio=="m") && !($_SESSION["user_code"]) && $opac_resa && !$popup_resa) {
 //				// utilisateur pas connecte
@@ -1485,14 +1497,14 @@ function genere_in_perio () {
 //				$ret .= $message_nbresa ;
 //				$ret .= "<br />";
 //			}
-//	
+//
 //			$temp = $this->expl_list($this->notice->niveau_biblio,$this->notice->notice_id);
 //			$ret .= $temp ;
-//			$this->affichage_expl = $temp ; 
+//			$this->affichage_expl = $temp ;
 //		}
 //	}
-//	
-//	if ($this->visu_explnum && (!$this->visu_explnum_abon || ($this->visu_explnum_abon && $_SESSION["user_code"]))) 	
+//
+//	if ($this->visu_explnum && (!$this->visu_explnum_abon || ($this->visu_explnum_abon && $_SESSION["user_code"])))
 //		if ($explnum = show_explnum_per_notice($this->notice_id, 0, '')) {
 //			$ret .= "<h3>$msg[explnum]</h3>".$explnum;
 //			$this->affichage_expl .= "<h3>$msg[explnum]</h3>".$explnum;
@@ -1502,7 +1514,7 @@ function genere_in_perio () {
 //	}
 //	$this->affichage_resa_expl = $ret ;
 //	return $ret ;
-//} 
+//}
 
 
 // fonction d'affichage de la suite ISBD ou PUBLIC : partie commune, pour eviter la redondance de calcul
@@ -1511,16 +1523,16 @@ function aff_suite() {
 	global $charset;
 	global $mode;
 	global $opac_allow_tags_search;
-	
+
 	// afin d'eviter de recalculer un truc deja calcule...
 	if ($this->affichage_suite) return $this->affichage_suite ;
-	
+
 	// serials : si article
 	$ret .= $this->genere_in_perio () ;
-	
+
 	//Espace
 	$ret.="<tr class='tr_spacer'><td colspan='2' class='td_spacer'>&nbsp;</td></tr>";
-	
+
 	// resume
 	if($this->notice->n_resume)
  		$ret .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['n_resume_start']."</span></td><td>".nl2br(htmlentities(strip_tags(implode("\n",$this->notice->n_resume)),ENT_QUOTES, $charset))."</td></tr>";
@@ -1530,22 +1542,28 @@ function aff_suite() {
  		$ret .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['n_contenu_start']."</span></td><td>".nl2br(htmlentities(strip_tags(implode("\n",$this->notice->n_contenu)),ENT_QUOTES, $charset))."</td></tr>";
 
 	// Categories
-	if($this->categories_toutes) 
+	if($this->categories_toutes)
 		$ret .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['categories_start']."</span></td><td>".$this->categories_toutes."</td></tr>";
-			
-			
-	// Affectation du libelle mots cles ou tags en fonction de la recherche precedente	
-	
+
+	// Concepts
+	$concepts_list = new skos_concepts_list();
+	if ($concepts_list->set_concepts_from_object(TYPE_NOTICE, $this->notice_id)) {
+		$ret .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$msg['concepts_start']."</span></td><td>".skos_view_concepts::get_list_in_notice($concepts_list)."</td></tr>";
+	}
+
+
+	// Affectation du libelle mots cles ou tags en fonction de la recherche precedente
+
 	if($opac_allow_tags_search == 1)
 		$libelle_key = $msg['tags'];
 	else
 		$libelle_key = 	$msg['motscle_start'];
-			
+
 	// indexation libre
 	$mots_cles = $this->do_mots_cle() ;
 	if($mots_cles)
 		$ret .= "<tr><td align='right' class='bg-grey'><span class='etiq_champ'>".$libelle_key."</span></td><td>".$mots_cles."</td></tr>";
-		
+
 
 	if(is_array($this->notice->indexint) && count($this->notice->indexint)) {
 		$indexint = implode("<br>",$this->notice->indexint);
@@ -1563,25 +1581,25 @@ function aff_suite() {
 		$ret.="</td></tr>";
 		if ($this->notice->eformat && substr($this->notice->eformat,0,3)!='RSS') $ret.="<tr><td align='right' class='bg-grey'><b>".$msg["eformat_start"]."</b></td><td>".htmlentities($this->notice->eformat,ENT_QUOTES,$charset)."</td></tr>";
 	}
-	
+
 	$this->affichage_suite = $ret ;
 	return $ret ;
-	} 
+	}
 
 
 // fonction de generation du tableau des exemplaires
-function expl_list() {	
+function expl_list() {
 	global $dbh;
 	global $msg, $charset;
 	global $expl_list_header, $expl_list_footer;
 	$expl_liste = "sdfsdfsdf";
-	
+
 	if (!$this->exemplaires)
 		return;
-	
+
 	$expl_output = $expl_list_header;
 	$count = 1;
-	
+
 	$expl996 = array(
 		"f" => $msg["extexpl_codebar"],
 		"k" => $msg["extexpl_cote"],
@@ -1592,7 +1610,7 @@ function expl_list() {
 		"e" => $msg["extexpl_doctype"],
 		"u" => $msg["extexpl_note"]
 	);
-	
+
 	$final_location = array();
 	foreach ($this->exemplaires as $expl) {
 		$alocation = array();
@@ -1609,30 +1627,30 @@ function expl_list() {
 		}
 		if (!isset($alocation["priority"]))
 			$alocation["priority"] = 1;
-		$alocation["content"] = $expl;			
+		$alocation["content"] = $expl;
 		$final_location[] = $alocation;
 	}
 
 	if (!$final_location)
 		return;
-		
+
 	//trions
-	usort($final_location, "cmpexpl");		
-	
+	usort($final_location, "cmpexpl");
+
 	$expl_output .= "<tr>";
 	foreach ($expl996 as $caption996) {
 		$expl_output .= "<th>".$caption996."</th>";
 	}
 	$expl_output .= "</tr>";
-	
+
 	foreach ($final_location as $expl) {
 		$axepl_output = "<tr>";
 		foreach ($expl996 as $key996 => $caption996) {
 			if (isset($expl["content"][$key996])) {
-				$axepl_output .= "<td>".$expl["content"][$key996]."</td>";				
+				$axepl_output .= "<td>".$expl["content"][$key996]."</td>";
 			}
 			else {
-				$axepl_output .= "<td></td>";				
+				$axepl_output .= "<td></td>";
 			}
 		}
 		$axepl_output .= "</tr>";
@@ -1640,13 +1658,13 @@ function expl_list() {
 		$count++;
 	}
 	$expl_output .= $expl_list_footer;
-	
+
 	return $expl_output;
-	
+
 	global $expl_list_header, $expl_list_footer;
 	// les depouillements n'ont pas d'exemplaire
 	if ($type=="a") return "" ;
-	
+
 	// les exemplaires des monographies
 	if ($type=="m") {
 		$requete = "SELECT exemplaires.*, pret.*, docs_location.*, docs_section.*, docs_statut.*, docs_type.*";
@@ -1658,11 +1676,11 @@ function expl_list() {
 		$requete .= " AND exemplaires.expl_statut=docs_statut.idstatut ";
 		$requete .= " AND exemplaires.expl_typdoc=docs_type. idtyp_doc ";
 		// recuperation du nombre d'exemplaires
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		$expl_liste="";
 		$requete_resa = "SELECT count(1) from resa where resa_idnotice='$id' ";
-		$nb_resa = mysql_result(mysql_query($requete_resa, $dbh),0,0);
-		while($expl = mysql_fetch_object($res)) {
+		$nb_resa = pmb_mysql_result(pmb_mysql_query($requete_resa, $dbh),0,0);
+		while($expl = pmb_mysql_fetch_object($res)) {
 			$compteur = $compteur+1;
 			$expl_liste .= "<tr><td>";
 			$expl_liste .= $expl->expl_cb."&nbsp;";
@@ -1674,11 +1692,11 @@ function expl_list() {
 			$expl_liste .= $expl->location_libelle."&nbsp;";
 			$expl_liste .= "</td><td>";
 			$expl_liste .= $expl->section_libelle."&nbsp;";
-			
+
 			$requete_resa = "SELECT count(1) from resa where resa_cb='$expl->expl_cb' ";
-			$flag_resa = mysql_result(mysql_query($requete_resa, $dbh),0,0);
+			$flag_resa = pmb_mysql_result(pmb_mysql_query($requete_resa, $dbh),0,0);
 			$requete_resa = "SELECT count(1) from resa_ranger where resa_cb='$expl->expl_cb' ";
-			$flag_resa = $flag_resa + mysql_result(mysql_query($requete_resa, $dbh),0,0);
+			$flag_resa = $flag_resa + pmb_mysql_result(pmb_mysql_query($requete_resa, $dbh),0,0);
 			$situation = "";
 			if ($expl->statut_libelle_opac !="") $situation .= $expl->statut_libelle_opac."<br />";
 			if ($flag_resa) {
@@ -1690,10 +1708,10 @@ function expl_list() {
 						global $opac_show_empr ;
 						if ((($opac_show_empr==1) && ($_SESSION["user_code"])) || ($opac_show_empr==2)) {
 							$rqt_empr = "SELECT empr_nom, empr_prenom, id_empr, empr_cb FROM empr WHERE id_empr='$expl->pret_idempr' ";
-							$res_empr = mysql_query ($rqt_empr, $dbh) ;
-							$res_empr_obj = mysql_fetch_object ($res_empr) ;
+							$res_empr = pmb_mysql_query($rqt_empr, $dbh) ;
+							$res_empr_obj = pmb_mysql_fetch_object($res_empr) ;
 							$situation .= $msg[entete_show_empr].htmlentities(" $res_empr_obj->empr_prenom $res_empr_obj->empr_nom",ENT_QUOTES, $charset)."<br />";
-						} 
+						}
 						$situation .= "<strong>$msg[out_until] ".formatdate($expl->pret_retour).'</strong>';
 					// ****** Affichage de l'emprunteur
 					} else { // pas sorti
@@ -1703,17 +1721,17 @@ function expl_list() {
 					// exemplaire pas pretable
 					$situation .= "<strong>".$msg['exclu']."</strong>";
 				}
-			} // fin if else $flag_resa 
+			} // fin if else $flag_resa
 			$expl_liste .= "</td><td>$situation </td>";
-			$expl_liste .="</tr>";	
+			$expl_liste .="</tr>";
 		} // fin while
-		
+
 		// affichage de la liste d'exemplaires calculee ci-dessus
 		if (!$expl_liste) $expl_liste = $expl_list_header."<tr class=even><td colspan=6>".$msg["no_expl"]."</td></tr>".$expl_list_footer;
 			else $expl_liste = $expl_list_header.$expl_liste.$expl_list_footer;
 		return $expl_liste;
 		}
-	
+
 	// le resume des articles, bulletins et exemplaires des notices meres
 	if ($type=="s") {
 		return "";
@@ -1728,7 +1746,7 @@ function expl_list() {
 //	global $opac_autres_lectures_nb_maxi;
 //	global $opac_autres_lectures_nb_jours_maxi;
 //	global $opac_autres_lectures;
-//	
+//
 //	if (!$opac_autres_lectures || (!$notice_id && !$bulletin_id)) return "";
 //
 //	if (!$opac_autres_lectures_nb_maxi) $opac_autres_lectures_nb_maxi = 999999 ;
@@ -1737,29 +1755,29 @@ function expl_list() {
 //	if ($bulletin_id) $pas_bulletin = " oal.arc_expl_bulletin!=$bulletin_id AND ";
 //	// Ajout ici de la liste des notices lues par les lecteurs de cette notice
 //	$rqt_autres_lectures = "SELECT oal.arc_expl_notice, oal.arc_expl_bulletin, count(*) AS total_prets,
-//				trim(concat(ifnull(notices_m.tit1,''),ifnull(notices_s.tit1,''),' ',ifnull(bulletin_numero,''), if(mention_date, concat(' (',mention_date,')') ,if (date_date, concat(' (',date_format(date_date, '%d/%m/%Y'),')') ,'')))) as tit, if(notices_m.notice_id, notices_m.notice_id, notices_s.notice_id) as not_id 
+//				trim(concat(ifnull(notices_m.tit1,''),ifnull(notices_s.tit1,''),' ',ifnull(bulletin_numero,''), if(mention_date, concat(' (',mention_date,')') ,if (date_date, concat(' (',date_format(date_date, '%d/%m/%Y'),')') ,'')))) as tit, if(notices_m.notice_id, notices_m.notice_id, notices_s.notice_id) as not_id
 //			FROM ((((pret_archive AS oal JOIN
 //				(SELECT distinct arc_id_empr FROM pret_archive nbec where (nbec.arc_expl_notice='".$notice_id."' AND nbec.arc_expl_bulletin='".$bulletin_id."') AND nbec.arc_id_empr !=0) as nbec
 //				ON (oal.arc_id_empr=nbec.arc_id_empr and oal.arc_id_empr!=0 and nbec.arc_id_empr!=0))
 //				LEFT JOIN notices AS notices_m ON arc_expl_notice = notices_m.notice_id )
-//				LEFT JOIN bulletins ON arc_expl_bulletin = bulletins.bulletin_id) 
+//				LEFT JOIN bulletins ON arc_expl_bulletin = bulletins.bulletin_id)
 //				LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id)
 //			WHERE $restrict_date $pas_notice $pas_bulletin oal.arc_id_empr !=0
 //			GROUP BY oal.arc_expl_notice, oal.arc_expl_bulletin
-//			HAVING total_prets>=$opac_autres_lectures_nb_mini_emprunts 
-//			ORDER BY $opac_autres_lectures_tri 
-//			"; 
+//			HAVING total_prets>=$opac_autres_lectures_nb_mini_emprunts
+//			ORDER BY $opac_autres_lectures_tri
+//			";
 //
-//	$res_autres_lectures = mysql_query($rqt_autres_lectures) or die ("<br />".mysql_error()."<br />".$rqt_autres_lectures."<br />");
-//	if (mysql_num_rows($res_autres_lectures)) {
+//	$res_autres_lectures = pmb_mysql_query($rqt_autres_lectures) or die ("<br />".pmb_mysql_error()."<br />".$rqt_autres_lectures."<br />");
+//	if (pmb_mysql_num_rows($res_autres_lectures)) {
 //		$odd_even=1;
 //		$inotvisible=0;
 //		$ret="";
-//		while ($data=mysql_fetch_array($res_autres_lectures)) { // $inotvisible<=$opac_autres_lectures_nb_maxi
+//		while ($data=pmb_mysql_fetch_array($res_autres_lectures)) { // $inotvisible<=$opac_autres_lectures_nb_maxi
 //			$requete = "SELECT  1  ";
 //			$requete .= " FROM notices, notice_statut  WHERE notice_id='".$data[not_id]."' and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")";
-//			$myQuery = mysql_query($requete, $dbh);
-//			if (mysql_num_rows($myQuery) && $inotvisible<=$opac_autres_lectures_nb_maxi) { // mysql_num_rows($myQuery)
+//			$myQuery = pmb_mysql_query($requete, $dbh);
+//			if (pmb_mysql_num_rows($myQuery) && $inotvisible<=$opac_autres_lectures_nb_maxi) { // pmb_mysql_num_rows($myQuery)
 //				$inotvisible++;
 //				$titre = $data['tit'];
 //				// **********
@@ -1781,8 +1799,8 @@ function expl_list() {
 //					$mention_resp = implode (", ",$aut1_libelle) ;
 //				}
 //				$mention_resp ? $auteur = $mention_resp : $auteur="";
-//			
-//				// on affiche les resultats 
+//
+//				// on affiche les resultats
 //				if ($odd_even==0) {
 //					$pair_impair="odd";
 //					$odd_even=1;
@@ -1793,14 +1811,14 @@ function expl_list() {
 //				if ($data['arc_expl_notice']) $tr_javascript=" class='$pair_impair' onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./index.php?lvl=notice_display&id=".$data['not_id']."&seule=1';\" style='cursor: pointer' ";
 //					else $tr_javascript=" class='$pair_impair' onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./index.php?lvl=bulletin_display&id=".$data['arc_expl_bulletin']."';\" style='cursor: pointer' ";
 //				$ret .= "<tr $tr_javascript>";
-//				$ret .= "<td>".$titre."</td>";    
-//				$ret .= "<td>".$auteur."</td>";    		
+//				$ret .= "<td>".$titre."</td>";
+//				$ret .= "<td>".$auteur."</td>";
 //				$ret .= "</tr>\n";
 //			}
 //		}
 //		if ($ret) $ret = "<h3 class='autres_lectures'>".$msg['autres_lectures']."</h3><table style='width:100%;'>".$ret."</table>";
 //	} else $ret="";
-//	
+//
 //	return $ret;
 //	}
 
@@ -1827,7 +1845,7 @@ function do_image(&$entree,$depliable) {
 			} else {
 				$entree = "<table width='100%'><tr><td>$entree</td></tr></table>" ;
 				}
-			
+
 		} else {
 			$entree = "<table width='100%'><tr><td>$entree</td></tr></table>" ;
 			}
@@ -1890,29 +1908,29 @@ function genere_notice_childs(){
 
 	function genere_bulletinage(){
 		global $msg,$charset;
-		
+
 		$html="";
 		if($this->notice->niveau_biblio == "s" && $this->notice->niveau_hierar == "1"){
-			$query ="select 
+			$query ="select
 				serial.recid as bulletin_id,
 				bulletin_num.value as bulletin_num,
 				bulletin_date.value as bulletin_date,
 				bulletin_date_date.value as bulletin_date_date,
 				group_concat(distinct analysis.recid) as analysis
-			from entrepot_source_".$this->source_id." as serial 
+			from entrepot_source_".$this->source_id." as serial
 			join entrepot_source_".$this->source_id." as bulletin_num on serial.recid = bulletin_num.recid and bulletin_num.ufield='463' and bulletin_num.usubfield = 'v'
 			left join entrepot_source_".$this->source_id." as bulletin_title on serial.recid = bulletin_title.recid and bulletin_title.ufield='463' and bulletin_title.usubfield = 't'
 			left join entrepot_source_".$this->source_id." as bulletin_date on serial.recid = bulletin_date.recid and bulletin_date.ufield='463' and bulletin_date.usubfield = 'd'
 			left join entrepot_source_".$this->source_id." as bulletin_date_date on serial.recid = bulletin_date_date.recid and bulletin_date_date.ufield='463' and bulletin_date_date.usubfield = 'e'
-			left join entrepot_source_".$this->source_id." as analysis on serial.recid = analysis.recid 
+			left join entrepot_source_".$this->source_id." as analysis on serial.recid = analysis.recid
 			where serial.ufield='461' and serial.usubfield='t' and serial.value = '".addslashes($this->notice->tit1)."'
 			group by bulletin_num.value,bulletin_date.value,bulletin_date_date.value order by bulletin_date.value desc,bulletin_num.value desc";
-			
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
+
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
 				$html="
 				<h3><span id='titre_exemplaires'>".$msg['see_bull']."</span></h3>";
-				while($row = mysql_fetch_object($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 // 					highlight_string(print_r($row,true));
 					$html.=$this->genere_bulletin($row);
 				}
@@ -1920,7 +1938,7 @@ function genere_notice_childs(){
 		}
 		return $html;
 	}
-	
+
 	function genere_bulletin($bulletin_infos){
 		global $opac_notices_depliable;
 		$html.="<div id='es_bull_".$bulletin_infos->bulletin_id."' class='notice-parent'></div>";
@@ -1933,7 +1951,7 @@ function genere_notice_childs(){
 		}
 		$contenu = "";
 		$analysis = explode(",",$bulletin_infos->analysis);
-		
+
 		$opac_notices_depliable=1;
 		foreach($analysis as $article){
 			$contenu.=aff_notice_unimarc($article);
@@ -1944,18 +1962,18 @@ function genere_notice_childs(){
 
 //	function get_bulletins(){
 //		global $dbh;
-//		
+//
 //		if($this->notice->opac_visible_bulletinage){
 //			$requete = "SELECT * FROM bulletins where bulletin_id in(
 //				SELECT bulletin_id FROM bulletins WHERE bulletin_notice='".$this->notice_id."' and num_notice=0
 //				) or bulletin_id in(
 //				SELECT bulletin_id FROM bulletins,notice_statut, notices WHERE bulletin_notice='".$this->notice_id."'
 //				and notice_id=num_notice
-//				and statut=id_notice_statut 
+//				and statut=id_notice_statut
 //				and((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")) ";
-//			$res = mysql_query($requete,$dbh);print $requete; exit();
-//			if(mysql_num_rows($res)){
-//				return mysql_fetch_array($res);
+//			$res = pmb_mysql_query($requete,$dbh);print $requete; exit();
+//			if(pmb_mysql_num_rows($res)){
+//				return pmb_mysql_fetch_array($res);
 //			}
 //		} else return 0;
 //	}

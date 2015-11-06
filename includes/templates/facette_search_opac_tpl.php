@@ -1,11 +1,18 @@
 <?php
 // +-------------------------------------------------+
-// Â© 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
+// © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
 // $Id: 
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
+$tpl_form_facette_opac_view = "
+<div class='row'>
+	<label for='opac_views'>".htmlentities($msg['admin_opac_facette_opac_views'],ENT_QUOTES,$charset)."</label></br>
+</div>
+<div class='row'>	
+	!!list_opac_views!!
+</div>";
 
 $tpl_form_facette=
 "
@@ -74,7 +81,9 @@ $tpl_form_facette=
 			<div class='row'>
 				<label for=visible>".htmlentities($msg['check_visible'],ENT_QUOTES,$charset)."</label>
 				<input type='checkbox' id=visible name='visible' value='1' !!defaut_check!!>
-			</div></br>
+			</div>
+			".($pmb_opac_view_activate ? $tpl_form_facette_opac_view : "" )."
+			</br />
 			
 			<input name='hidden_form' type='hidden' value='!!valHidden!!'/>
 	</div>

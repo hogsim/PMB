@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_empr_infos.class.php,v 1.1 2013-04-10 16:55:06 arenou Exp $
+// $Id: cms_module_common_selector_empr_infos.class.php,v 1.2 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -53,8 +53,8 @@ class cms_module_common_selector_empr_infos extends cms_module_common_selector{
 						break;
 				}
 				if($query){
-					$result = mysql_query($query);
-					$this->value = mysql_result($result,0,0);
+					$result = pmb_mysql_query($query);
+					$this->value = pmb_mysql_result($result,0,0);
 				}
 			}
 		}

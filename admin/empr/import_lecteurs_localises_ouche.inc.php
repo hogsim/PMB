@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: import_lecteurs_localises_ouche.inc.php,v 1.8 2012-10-09 12:16:55 mbertin Exp $
+// $Id: import_lecteurs_localises_ouche.inc.php,v 1.10 2015-06-02 13:24:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -52,8 +52,8 @@ print "
 
 /* ajout GM : liste des localisations */
 $requete_localisation="SELECT idlocation, location_libelle FROM docs_location ORDER BY location_libelle";
-$select_requete_localisation = mysql_query($requete_localisation,$dbh);
-while (($liste_localisation = mysql_fetch_array($select_requete_localisation))) {
+$select_requete_localisation = pmb_mysql_query($requete_localisation,$dbh);
+while (($liste_localisation = pmb_mysql_fetch_array($select_requete_localisation))) {
 	print "<option value='".$liste_localisation["idlocation"]."' >".$liste_localisation["location_libelle"]."</option>";
 }
 
@@ -93,8 +93,8 @@ function cre_login($nom, $prenom, $dbh) {
     $num_login=1 ;
     while ($pb==1) {
         $requete = "SELECT empr_login FROM empr WHERE empr_login='$empr_login' AND empr_nom <> '$nom' AND empr_prenom <> '$prenom' LIMIT 1 ";
-        $res = mysql_query($requete, $dbh);
-        $nbr_lignes = mysql_num_rows($res);
+        $res = pmb_mysql_query($requete, $dbh);
+        $nbr_lignes = pmb_mysql_num_rows($res);
         if ($nbr_lignes) {
             $empr_login .= $num_login ;
             $num_login++;
@@ -128,17 +128,17 @@ function import_eleves($separateur, $dbh, $type_import,$commune){
         if ($type_import == 'maj_complete') {
             //Vide la table empr_groupe des élèves qui n'ont pas de prêts en cours et qui sont localisé à la commune sélectionnée et de categorie collectivité eleves
 			$req_select_verif_pret = "SELECT id_empr FROM empr left join pret on id_empr=pret_idempr WHERE pret_idempr is null and empr_location= '$commune' and empr_categ = '$code_categorie' ";
-            $select_verif_pret = mysql_query($req_select_verif_pret,$dbh);
-            while (($verif_pret = mysql_fetch_array($select_verif_pret))) {
+            $select_verif_pret = pmb_mysql_query($req_select_verif_pret,$dbh);
+            while (($verif_pret = pmb_mysql_fetch_array($select_verif_pret))) {
             	//pour tous les emprunteurs qui n'ont pas de pret en cours
                 $req_delete = "DELETE FROM empr_groupe WHERE empr_id = '".$verif_pret["id_empr"]."'";
-                mysql_query($req_delete);
+                pmb_mysql_query($req_delete);
             }
-            //$delete_empr_groupe = mysql_query("DELETE FROM empr_groupe",$dbh);
+            //$delete_empr_groupe = pmb_mysql_query("DELETE FROM empr_groupe",$dbh);
             //Supprime les élèves qui n'ont pas de prêts en cours et qui sont localisé à la commune sélectionnée et de categorie collectivité eleves
             $req_select_verif_pret = "SELECT id_empr FROM empr left join pret on id_empr=pret_idempr WHERE pret_idempr is null and empr_location= '$commune' and empr_categ = '$code_categorie' ";
-            $select_verif_pret = mysql_query($req_select_verif_pret,$dbh);
-            while (($verif_pret = mysql_fetch_array($select_verif_pret))) {
+            $select_verif_pret = pmb_mysql_query($req_select_verif_pret,$dbh);
+            while (($verif_pret = pmb_mysql_fetch_array($select_verif_pret))) {
             	//pour tous les emprunteurs qui n'ont pas de pret en cours
                 emprunteur::del_empr($verif_pret["id_empr"]);
             }
@@ -146,7 +146,7 @@ function import_eleves($separateur, $dbh, $type_import,$commune){
         
         while (!feof($fichier)) {
             $buffer = fgets($fichier, 4096);
-            $buffer = mysql_escape_string($buffer);
+            $buffer = pmb_mysql_escape_string($buffer);
             $tab = explode($separateur, $buffer);
 
             //Gestion du sexe
@@ -163,8 +163,8 @@ function import_eleves($separateur, $dbh, $type_import,$commune){
             }
 
             // Traitement de l'élève
-            $select = mysql_query("SELECT id_empr FROM empr WHERE empr_cb = '".$tab[0]."'",$dbh);
-            $nb_enreg = mysql_num_rows($select);
+            $select = pmb_mysql_query("SELECT id_empr FROM empr WHERE empr_cb = '".$tab[0]."'",$dbh);
+            $nb_enreg = pmb_mysql_num_rows($select);
             
             //Test si un numéro id est fourni
             if (!$tab[0] || $tab[0] == "") {
@@ -189,19 +189,21 @@ function import_eleves($separateur, $dbh, $type_import,$commune){
 		    //Vérifier dans la table empr_codestat si idcode 2 = école    Sinon, changer les valeurs
                     $req_insert .= "'$tab[6]', '$tab[7]', '$tab[8]', $code_categorie , '3', '$date_auj', '$sexe', ";
                     $req_insert .= "'$login', '$tab[8]', '$date_auj', '$date_an_proch' , '$commune' )";
-                    $insert = mysql_query($req_insert,$dbh);
+                    $insert = pmb_mysql_query($req_insert,$dbh);
                     if (!$insert) {
-                        print("<b>Echec de la création de l'élève suivant (Erreur : ".mysql_error().") : </b><br />");
-print($code_categorie); 
-print("3"); 
-print( "$location"); 
-print( "$user"); 
+                        print("<b>Echec de la création de l'élève suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
+						print($code_categorie); 
+						print("3"); 
+						print( "$location"); 
+						print( "$user"); 
                         for ($i=0;$i<3;$i++) {
                             print($eleve_abrege[$i]." : ".$tab[$i].", ");
                         }
                         print("<br />");
                     }
                     else {
+                    	emprunteur::update_digest($login,$tab[8]);
+                    	emprunteur::hash_password($login,$tab[8]);
                         $cpt_insert ++;
                     }
                     gestion_groupe($tab[9], $tab[0], $dbh);
@@ -217,20 +219,22 @@ print( "$user");
                     $req_update .= "empr_login = '$login', empr_password= '$tab[8]', ";
                     $req_update .= "empr_date_adhesion = '$date_auj', empr_date_expiration = '$date_an_proch', empr_location = '$commune'";
                     $req_update .= "WHERE empr_cb = '$tab[0]'";
-                    $update = mysql_query($req_update, $dbh);
+                    $update = pmb_mysql_query($req_update, $dbh);
                     if (!$update) {
-                        print("<b>Echec de la modification de l'élève suivant (Erreur : ".mysql_error().") : </b><br />");
+                        print("<b>Echec de la modification de l'élève suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
 						print( $path);
-print('$code_categorie'); 
-print("3"); 
-print( "$location"); 
-print( "$user"); 
+						print('$code_categorie'); 
+						print("3"); 
+						print( "$location"); 
+						print( "$user"); 
                         for ($i=0;$i<3;$i++) {
                             print($eleve_abrege[$i]." : ".$tab[$i].", ");
                         }
                         print("<br />");
                     }
                     else {
+                    	emprunteur::update_digest($login,$tab[8]);
+                    	emprunteur::hash_password($login,$tab[8]);
                         $cpt_maj ++;
                     }
                     gestion_groupe($tab[9], $tab[0], $dbh);
@@ -244,7 +248,7 @@ print($code_categorie);
 print(3); 
 print( $location); 
 echo $user; 
-                    print("<b>Echec pour l'élève suivant (Erreur : ".mysql_error().") : </b><br />");
+                    print("<b>Echec pour l'élève suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
                     for ($i=0;$i<3;$i++) {
                         print($eleve_abrege[$i]." : ".$tab[$i].", ");
                     }
@@ -264,22 +268,22 @@ echo $user;
 
 function gestion_groupe($lib_groupe, $empr_cb, $dbh) {
     
-    $sel = mysql_query("SELECT id_groupe from groupe WHERE libelle_groupe = \"".$lib_groupe."\"",$dbh);
-    $nb_enreg_grpe = mysql_num_rows($sel);
+    $sel = pmb_mysql_query("SELECT id_groupe from groupe WHERE libelle_groupe = \"".$lib_groupe."\"",$dbh);
+    $nb_enreg_grpe = pmb_mysql_num_rows($sel);
     
     if (!$nb_enreg_grpe) {
 		//insertion dans la table groupe
-		mysql_query("INSERT INTO groupe(libelle_groupe) VALUES(\"".$lib_groupe."\")");
-		$groupe=mysql_insert_id();
+		pmb_mysql_query("INSERT INTO groupe(libelle_groupe) VALUES(\"".$lib_groupe."\")");
+		$groupe=pmb_mysql_insert_id();
     } else {
-   		$grpobj = mysql_fetch_object ($sel) ;
+   		$grpobj = pmb_mysql_fetch_object($sel) ;
    		$groupe = $grpobj->id_groupe ; 
     }
 
 	//insertion dans la table empr_groupe
-    $sel_empr = mysql_query("SELECT id_empr FROM empr WHERE empr_cb = \"".$empr_cb."\"",$dbh);
-    $empr = mysql_fetch_array($sel_empr);
-    @mysql_query("INSERT INTO empr_groupe(empr_id, groupe_id) VALUES ('$empr[id_empr]','$groupe')");
+    $sel_empr = pmb_mysql_query("SELECT id_empr FROM empr WHERE empr_cb = \"".$empr_cb."\"",$dbh);
+    $empr = pmb_mysql_fetch_array($sel_empr);
+    @pmb_mysql_query("INSERT INTO empr_groupe(empr_id, groupe_id) VALUES ('$empr[id_empr]','$groupe')");
 }
 
 

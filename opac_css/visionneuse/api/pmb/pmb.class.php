@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmb.class.php,v 1.34.4.1 2015-03-05 09:41:37 mbertin Exp $
+// $Id: pmb.class.php,v 1.39 2015-04-14 08:35:40 arenou Exp $
 require_once("$include_path/notice_affichage.inc.php");
 require_once("$include_path/bulletin_affichage.inc.php");
 require_once("$class_path/upload_folder.class.php");
@@ -99,18 +99,21 @@ class pmb extends base_params implements params {
 			case "abstract" :
 				$searcher = new searcher_abstract(stripslashes($this->params['user_query']));
 				break;
+			case "authperso_see" :
+				$requete_noti = "SELECT notice_id FROM notices_authperso, notices ".$acces_j." ".$statut_j." where notice_authperso_authority_num= ".$this->params["idautorite"]." and notice_authperso_notice_num = notice_id ".$statut_r." ";
+				break;	
 			//autorités , pas optimal, faudra y revenir...
 			case "author_see":
 				//recup des auteurs associés...
 				$rqt_auteurs = "select author_id as aut from authors where author_see='".$this->params["idautorite"]."' and author_id!=0 ";
 				$rqt_auteurs .= "union select author_see as aut from authors where author_id='".$this->params["idautorite"]."' and author_see!=0 " ;
-				$res_auteurs = mysql_query($rqt_auteurs, $dbh);
+				$res_auteurs = pmb_mysql_query($rqt_auteurs, $dbh);
 				$clause_auteurs = "responsability_author in('".$this->params["idautorite"]."' ";
-				while(($id_aut=mysql_fetch_object($res_auteurs))) {
+				while(($id_aut=pmb_mysql_fetch_object($res_auteurs))) {
 					$clause_auteurs .= ", '".$id_aut->aut."' ";
 					$rqt_auteursuite = "select author_id as aut from authors where author_see='$id_aut->aut' and author_id!=0 ";
-					$res_auteursuite = mysql_query($rqt_auteursuite, $dbh);
-					while(($id_autsuite=mysql_fetch_object($res_auteursuite))) $clause_auteurs .= ", '".$id_autsuite->aut."' "; 
+					$res_auteursuite = pmb_mysql_query($rqt_auteursuite, $dbh);
+					while(($id_autsuite=pmb_mysql_fetch_object($res_auteursuite))) $clause_auteurs .= ", '".$id_autsuite->aut."' "; 
 				} 
 				$clause_auteurs .= ")";					
 					
@@ -123,13 +126,13 @@ class pmb extends base_params implements params {
 				//on récup les auteurs associés
 				$rqt_auteurs = "select author_id as aut from authors where author_see='".$this->params["idautorite"]."' and author_id!=0 ";
 				$rqt_auteurs .= "union select author_see as aut from authors where author_id='".$this->params["idautorite"]."' and author_see!=0 " ;
-				$res_auteurs = mysql_query($rqt_auteurs, $dbh);
+				$res_auteurs = pmb_mysql_query($rqt_auteurs, $dbh);
 				$clause_auteurs = "responsability_author in('".$this->params["idautorite"]."' ";
-				while(($id_aut=mysql_fetch_object($res_auteurs))) {
+				while(($id_aut=pmb_mysql_fetch_object($res_auteurs))) {
 					$clause_auteurs .= ", '".$id_aut->aut."' ";
 					$rqt_auteursuite = "select author_id as aut from authors where author_see='$id_aut->aut' and author_id!=0 ";
-					$res_auteursuite = mysql_query($rqt_auteursuite, $dbh);
-					while(($id_autsuite=mysql_fetch_object($res_auteursuite))) $clause_auteurs .= ", '".$id_autsuite->aut."' "; 
+					$res_auteursuite = pmb_mysql_query($rqt_auteursuite, $dbh);
+					while(($id_autsuite=pmb_mysql_fetch_object($res_auteursuite))) $clause_auteurs .= ", '".$id_autsuite->aut."' "; 
 				} 
 				$clause_auteurs .= ")" ;
 				
@@ -149,8 +152,8 @@ class pmb extends base_params implements params {
 				$nb_level_montant=$opac_auto_postage_nb_montant;
 
 				$q = "select path from noeuds where id_noeud = '".$this->params["idautorite"]."' ";
-				$r = mysql_query($q, $dbh);
-				$path=mysql_result($r, 0, 0);
+				$r = pmb_mysql_query($q, $dbh);
+				$path=pmb_mysql_result($r, 0, 0);
 				$nb_pere=substr_count($path,'/');
 				
 				// Si un path est renseigné et le paramètrage activé			
@@ -213,7 +216,8 @@ class pmb extends base_params implements params {
 				//TODO : droits sur les bulletins et dépouillements
 				$requete_bull = "SELECT bulletin_id FROM bulletins WHERE bulletin_notice='".$this->params["idperio"]."'";
 				//on récupère aussi les articles associés aux bulletins
-				$requete_noti ="select analysis_notice as notice_id from analysis join bulletins on analysis_bulletin = bulletin_id AND bulletin_notice='".$this->params["idperio"]."'";
+				//commit JP 04/03/2015 : ben non... le lien dit "Voir les documents numériques associés aux bulletins", pas aux articles
+				//$requete_noti ="select analysis_notice as notice_id from analysis join bulletins on analysis_bulletin = bulletin_id AND bulletin_notice='".$this->params["idperio"]."'";
 				break;
 			case "docnum":
 				//cas assez particulier, on va pas rechercher toutes les notices et bulletins pour retrouver les explnum le tout en partant des explnums....
@@ -241,9 +245,9 @@ class pmb extends base_params implements params {
 			if(count($explnums)){
 				for ($i=0 ; $i<count($explnums) ; $i++){
 					$rqt = " select explnum_id,explnum_notice,explnum_bulletin,explnum_nom,explnum_mimetype,explnum_url,explnum_extfichier,explnum_nomfichier,explnum_repertoire,explnum_path from explnum where explnum_id =".$explnums[$i]." and explnum_mimetype in (".$opac_photo_filtre_mimetype.")";
-					$res = mysql_query($rqt);
-					if(mysql_num_rows($res)){
-						while($row = mysql_fetch_object($res)){
+					$res = pmb_mysql_query($rqt);
+					if(pmb_mysql_num_rows($res)){
+						while($row = pmb_mysql_fetch_object($res)){
 							$this->listeDocs[] = $row;
 						}
 					}
@@ -252,9 +256,9 @@ class pmb extends base_params implements params {
 			$this->checkCurrentExplnumId();
 		}else{
 			if ($requete_explnum != ""){
-				$res_explnum = mysql_query($requete_explnum,$dbh);
+				$res_explnum = pmb_mysql_query($requete_explnum,$dbh);
 				$allowed_mimetype = explode(",",str_replace("'","",$opac_photo_filtre_mimetype));
-				while(($expl = mysql_fetch_object($res_explnum))){
+				while(($expl = pmb_mysql_fetch_object($res_explnum))){
 					if($expl->explnum_mimetype && (in_array($expl->explnum_mimetype,$allowed_mimetype))){//Si le mimetype du document n'est pas connu il ne peut pas être affiché dans la visionneuse.
 						$this->listeDocs[] = $expl;
 					}
@@ -263,16 +267,16 @@ class pmb extends base_params implements params {
 				$this->checkCurrentExplnumId();		
 			}else{
 				if($requete_noti){
-					$res_notice = mysql_query($requete_noti,$dbh);
-					if(mysql_num_rows($res_notice)){
-						while(($not_ids = mysql_fetch_object($res_notice))){
+					$res_notice = pmb_mysql_query($requete_noti,$dbh);
+					if(pmb_mysql_num_rows($res_notice)){
+						while(($not_ids = pmb_mysql_fetch_object($res_notice))){
 							//cas d'une notice de bulletin, le docnum peut etre rattaché au bulletin
 							//donc on va le chercher et le rajoute à la liste...
 							if($not_ids->niveau_biblio == "b" && $not_ids->niveau_hierar == "2"){
 								$req = "select bulletin_id from bulletins where num_notice = ".$not_ids->notice_id." LIMIT 1";
-								$res_notibull = mysql_query($req);
-								if(mysql_num_rows($res_notibull))
-									$this->listeBulls[] = mysql_result($res_notibull,0,0);
+								$res_notibull = pmb_mysql_query($req);
+								if(pmb_mysql_num_rows($res_notibull))
+									$this->listeBulls[] = pmb_mysql_result($res_notibull,0,0);
 							}else{
 								$this->listeNotices[] = $not_ids->notice_id;
 							}
@@ -281,9 +285,9 @@ class pmb extends base_params implements params {
 				}
 			
 				if($requete_bull){
-					$res_bull = mysql_query($requete_bull,$dbh);
-					if(mysql_num_rows($res_bull)){
-						while(($bull_ids = mysql_fetch_object($res_bull))){
+					$res_bull = pmb_mysql_query($requete_bull,$dbh);
+					if(pmb_mysql_num_rows($res_bull)){
+						while(($bull_ids = pmb_mysql_fetch_object($res_bull))){
 							$this->listeBulls[]= $bull_ids->bulletin_id;
 						}
 					}
@@ -308,9 +312,9 @@ class pmb extends base_params implements params {
 				$requete .= "where explnum_id = $id";
 				//if($opac_photo_filtre_mimetype) //Si on est ici c'est que la visionneuse est activé alors on filtre les mimetypes (si il y en a pas on ne doit rien afficher)
 					$requete .= " and explnum_mimetype in ($opac_photo_filtre_mimetype)";
-				$res = mysql_query($requete,$dbh);
-				if($res && mysql_num_rows($res)){
-					$this->listeDocs[] = mysql_fetch_object($res);
+				$res = pmb_mysql_query($requete,$dbh);
+				if($res && pmb_mysql_num_rows($res)){
+					$this->listeDocs[] = pmb_mysql_fetch_object($res);
 				}
 				$this->current = 0;
 			}else {
@@ -323,9 +327,9 @@ class pmb extends base_params implements params {
 				}
 				//if($opac_photo_filtre_mimetype) //Si on est ici c'est que la visionneuse est activé alors on filtre les mimetypes (si il y en a pas on ne doit rien afficher)
 					$requete .= " and explnum_mimetype in ($opac_photo_filtre_mimetype)";
-				$res = mysql_query($requete,$dbh);
-				if($res && mysql_num_rows($res)){
-					while(($expl = mysql_fetch_object($res))){
+				$res = pmb_mysql_query($requete,$dbh);
+				if($res && pmb_mysql_num_rows($res)){
+					while(($expl = pmb_mysql_fetch_object($res))){
 						$this->listeDocs[] = $expl;
 					}
 				}
@@ -362,8 +366,8 @@ class pmb extends base_params implements params {
 		}
 		if( $search != "") $req_expl .= $search;
 		if(sizeof($terms>0)) $req_expl.=")";
-		$searchInExplnum = mysql_query($req_expl);
-		if(mysql_num_rows($searchInExplnum)==0){
+		$searchInExplnum = pmb_mysql_query($req_expl);
+		if(pmb_mysql_num_rows($searchInExplnum)==0){
 			$this->currentDoc["searchterms"]  ="";
 		}else{
 			$this->currentDoc["searchterms"]  =$this->params["user_query"];
@@ -425,14 +429,14 @@ class pmb extends base_params implements params {
 		$current = $this->listeDocs[$this->current]->explnum_id;
 		if(!isset($this->biblioInfos[$current])){
 			$query = "select explnum_notice,explnum_bulletin from explnum where explnum_id = ".$current;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				if($row->explnum_notice){
 					$query = "select notice_id, tit1, year from notices where notice_id = ".$row->explnum_notice;
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						$row = mysql_fetch_object($result);
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						$row = pmb_mysql_fetch_object($result);
 						$this->biblioInfos[$current]['title']['value'] = $row->tit1;
 						$this->biblioInfos[$current]['date']['value'] = $row->year;
 						$this->biblioInfos[$current]['permalink']['value'] = "./index.php?lvl=notice_display&id=".$row->notice_id;
@@ -440,9 +444,9 @@ class pmb extends base_params implements params {
 					}
 				}else{
 					$query = "select bulletin_id, bulletin_titre,mention_date,date_date,notices.tit1,perio.tit1 as perio_title, notices.notice_id, perio.notice_id as serial_id from bulletins join notices as perio on bulletin_notice = perio.notice_id left join notices on num_notice = notices.notice_id where bulletin_id = ".$row->explnum_bulletin;					
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						$row = mysql_fetch_object($result);
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						$row = pmb_mysql_fetch_object($result);
 						$titre = $row->tit1;
 						if(!$titre) $titre = $row->bulletin_titre;
 						$this->biblioInfos[$current]['title']['value'] = $row->perio_title.", ".$titre;
@@ -451,9 +455,9 @@ class pmb extends base_params implements params {
 						$aut_query = "select responsability_author from responsability where responsability_notice = ".($row->notice_id ? $row->notice_id:$row->serial_id)." order by responsability_type asc, responsability_ordre asc limit 1";
 					}
 				}
-				$result = mysql_query($aut_query);
-				if(mysql_num_rows($result)){
-					$author_id = mysql_result($result,0,0);
+				$result = pmb_mysql_query($aut_query);
+				if(pmb_mysql_num_rows($result)){
+					$author_id = pmb_mysql_result($result,0,0);
 					$author= new auteur($author_id);
 					$this->biblioInfos[$current]['author']['value'] =$author->isbd_entry;
 				}
@@ -489,9 +493,9 @@ class pmb extends base_params implements params {
 			$document = file_get_contents($filepath);	
 		}else{
 			$requete ="SELECT explnum_data FROM explnum WHERE explnum_id = ".$this->listeDocs[$this->current]->explnum_id;
-			$res = mysql_query($requete,$dbh);
-			if(mysql_num_rows($res))
-				$document = mysql_result($res,0,0);			
+			$res = pmb_mysql_query($requete,$dbh);
+			if(pmb_mysql_num_rows($res))
+				$document = pmb_mysql_result($res,0,0);			
 		}
 		//on renvoie le contenu du document
 		return $document;
@@ -520,9 +524,9 @@ class pmb extends base_params implements params {
 		$params = array();
 		if($class != ""){
 			$req="SELECT visionneuse_params_parameters FROM visionneuse_params WHERE visionneuse_params_class LIKE '$class'";
-			if($res=mysql_query($req)){
-				if(mysql_num_rows($res)){
-					$result = mysql_fetch_object($res);
+			if($res=pmb_mysql_query($req)){
+				if(pmb_mysql_num_rows($res)){
+					$result = pmb_mysql_fetch_object($res);
 					$params = htmlspecialchars_decode($result->visionneuse_params_parameters);
 				}
 			}
@@ -532,19 +536,19 @@ class pmb extends base_params implements params {
 	
 	function is_allowed($explnum_id){
 		$docnum_visible = true;
-		global $gestion_acces_active,$gestion_acces_empr_notice;
+		global $gestion_acces_active,$gestion_acces_empr_notice,$gestion_acces_empr_docnum;
 		
 		$query = "select explnum_notice,explnum_bulletin from explnum where explnum_id = ".$explnum_id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$infos = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$infos = pmb_mysql_fetch_object($result);
 			if($infos->explnum_notice != 0){
 				$id_for_right = $infos->explnum_notice;
 			}else {
 				$query = "select num_notice,bulletin_notice from bulletins where bulletin_id = ".$infos->explnum_bulletin;
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					$infos = mysql_fetch_object($result);
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					$infos = pmb_mysql_fetch_object($result);
 					if($infos->num_notice){
 						$id_for_right = $infos->num_notice;
 					}else{
@@ -561,9 +565,9 @@ class pmb extends base_params implements params {
 			$docnum_visible = $dom_2->getRights($_SESSION['id_empr_session'],$id_for_right,16);
 		} else {
 			$requete = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM notices, notice_statut WHERE notice_id ='".$id_for_right."' and id_notice_statut=statut ";
-			$myQuery = mysql_query($requete);
-			if(mysql_num_rows($myQuery)) {
-				$statut_temp = mysql_fetch_object($myQuery);
+			$myQuery = pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($myQuery)) {
+				$statut_temp = pmb_mysql_fetch_object($myQuery);
 				if(!$statut_temp->explnum_visible_opac){
 					$docnum_visible=false;
 				}
@@ -572,6 +576,21 @@ class pmb extends base_params implements params {
 				}
 			} else {
 				$docnum_visible=false;
+			}
+		}
+		
+		//la notice autorise l'accès au document, on vérifie que le document lui-même est accessible
+		if($docnum_visible){
+			if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+				$ac= new acces();
+				$dom_3= $ac->setDomain(3);
+				$docnum_visible = $dom_3->getRights($_SESSION['id_empr_session'],$explnum_id,4);
+			}else{
+				$query ="select explnum_id from explnum join explnum_statut on id_explnum_statut = explnum_docnum_statut where explnum_id = ".$explnum_id." and explnum_consult_opac=1 ".(!$_SESSION['id_empr_session'] ? " and explnum_consult_opac_abon = 0":"");
+				$result = pmb_mysql_query($query);
+				if(!pmb_mysql_num_rows($result)){
+					$docnum_visible=false;
+				}
 			}
 		}
 		return $docnum_visible;
@@ -624,6 +643,68 @@ class pmb extends base_params implements params {
 	function getDocumentUrl($id){
 		global $opac_url_base;
 		return $opac_url_base."doc_num_data.php?explnum_id=".$id;
+	}
+	
+	function is_downloadable($explnum_id){
+		$docnum_downloadable = true;
+		global $gestion_acces_active,$gestion_acces_empr_notice,$gestion_acces_empr_docnum;
+		
+		$query = "select explnum_notice,explnum_bulletin from explnum where explnum_id = ".$explnum_id;
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$infos = pmb_mysql_fetch_object($result);
+			if($infos->explnum_notice != 0){
+				$id_for_right = $infos->explnum_notice;
+			}else {
+				$query = "select num_notice,bulletin_notice from bulletins where bulletin_id = ".$infos->explnum_bulletin;
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					$infos = pmb_mysql_fetch_object($result);
+					if($infos->num_notice){
+						$id_for_right = $infos->num_notice;
+					}else{
+						$id_for_right = $infos->bulletin_notice;
+					}
+				}
+			}
+				
+		}
+		
+		if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1) {
+			$ac= new acces();
+			$dom_2= $ac->setDomain(2);
+			$docnum_downloadable = $dom_2->getRights($_SESSION['id_empr_session'],$id_for_right,16);
+		} else {
+			$requete = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM notices, notice_statut WHERE notice_id ='".$id_for_right."' and id_notice_statut=statut ";
+			$myQuery = pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($myQuery)) {
+				$statut_temp = pmb_mysql_fetch_object($myQuery);
+				if(!$statut_temp->explnum_visible_opac){
+					$docnum_downloadable=false;
+				}
+				if($statut_temp->explnum_visible_opac_abon && !$_SESSION['id_empr_session']){
+					$docnum_downloadable=false;
+				}
+			} else {
+				$docnum_downloadable=false;
+			}
+		}
+		
+		//la notice autorise l'accès au document, on vérifie que le document lui-même est accessible
+		if($docnum_downloadable){
+			if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+				$ac= new acces();
+				$dom_3= $ac->setDomain(3);
+				$docnum_downloadable = $dom_3->getRights($_SESSION['id_empr_session'],$explnum_id,8);
+			}else{
+				$query ="select explnum_id from explnum join explnum_statut on id_explnum_statut = explnum_docnum_statut where explnum_id = ".$explnum_id." and explnum_download_opac=1 ".(!$_SESSION['id_empr_session'] ? " and explnum_download_opac_abon = 0":"");
+				$result = pmb_mysql_query($query);
+				if(!pmb_mysql_num_rows($result)){
+					$docnum_downloadable=false;
+				}
+			}
+		}
+		return $docnum_downloadable;		
 	}
 }
 ?>

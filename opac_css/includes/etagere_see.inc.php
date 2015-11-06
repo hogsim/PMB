@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: etagere_see.inc.php,v 1.37.2.2 2015-05-19 12:01:10 jpermanne Exp $
+// $Id: etagere_see.inc.php,v 1.43 2015-07-09 10:21:31 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,8 +14,8 @@ if ($id) {
 	//Récupération des infos de l'étagère
 	$id+=0;
 	$requete="select idetagere,name,comment,id_tri from etagere where idetagere=$id";
-	$resultat=mysql_query($requete);
-	$r=mysql_fetch_object($resultat);
+	$resultat=pmb_mysql_query($requete);
+	$r=pmb_mysql_fetch_object($resultat);
 	
 	print pmb_bidi("<h3><span>".$r->name."</span></h3>\n");
 	print "<div id='aut_details_container'>\n";
@@ -51,24 +51,32 @@ if ($id) {
 	//$requete.= " and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")";
 	$requete = "select count(distinct object_id) from caddie_content, etagere_caddie, notices $acces_j $statut_j ";
 	$requete.= "where etagere_id=$id and caddie_content.caddie_id=etagere_caddie.caddie_id and notice_id=object_id $statut_r ";
-	$resultat=mysql_query($requete);
-	$nbr_lignes=mysql_result($resultat,0,0);
+	$resultat=pmb_mysql_query($requete);
+	$nbr_lignes=pmb_mysql_result($resultat,0,0);
 	
 	//Recherche des types doc
 	//$requete="select distinct notices.typdoc FROM caddie_content, etagere_caddie, notices, notice_statut where etagere_id=$id and caddie_content.caddie_id=etagere_caddie.caddie_id and notice_id=object_id ";
 	//$requete .= " and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")";
 	$requete = "select distinct typdoc FROM caddie_content, etagere_caddie, notices $acces_j $statut_j ";
 	$requete.= "where etagere_id=$id and caddie_content.caddie_id=etagere_caddie.caddie_id and notice_id=object_id $statut_r ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
 	
 	$t_typdoc=array();
 	if ($res) {
-		while ($tpd=mysql_fetch_object($res)) {
+		while ($tpd=pmb_mysql_fetch_object($res)) {
 			$t_typdoc[]=$tpd->typdoc;
 		}
 	}
 	$l_typdoc=implode(",",$t_typdoc);
+
+	// pour la DSI
+	if ($nbr_lignes && $opac_allow_bannette_priv && $allow_dsi_priv && ($_SESSION['abon_cree_bannette_priv']==1 || $opac_allow_bannette_priv==2)) {
+		print "<input type='button' class='bouton' name='dsi_priv' value=\"$msg[dsi_bt_bannette_priv]\" onClick=\"document.mc_values.action='./empr.php?lvl=bannette_creer'; document.mc_values.submit();\"><span class=\"espaceResultSearch\">&nbsp;</span>";
+	}
+
+	// Ouverture du div resultatrech_liste
+	print "<div id='resultatrech_liste'>";
 	
 	if(!$page) $page=1;
 	$debut =($page-1)*$opac_nb_aut_rec_per_page;
@@ -87,7 +95,7 @@ if ($id) {
 		}
 		if ($nbr_lignes>$opac_nb_max_tri) {
 			$_SESSION["last_sortnotices"]="";
-			print "&nbsp;";
+			print "<span class=\"espaceResultSearch\">&nbsp;</span>";
 		} else {
 			$pos=strpos($_SERVER['REQUEST_URI'],"?");
 			$pos1=strpos($_SERVER['REQUEST_URI'],"get");
@@ -100,7 +108,7 @@ if ($id) {
 			print $affich_tris_result_liste;
 			if ($_SESSION["last_sortnotices"]!="") {
 				if(!$sort_class || !is_object($sort_class)) $sort_class = new sort('notices','session');
-				print " ".$msg['tri_par']." ".$sort_class->descriptionTriParId($_SESSION["last_sortnotices"])."&nbsp;"; 
+				print " ".$msg['tri_par']." ".$sort_class->descriptionTriParId($_SESSION["last_sortnotices"])."<span class=\"espaceResultSearch\">&nbsp;</span>"; 
 			} 
 		}
 		//fin gestion du tri
@@ -112,9 +120,13 @@ if ($id) {
 		$_SESSION["last_module_search"]["search_mod"]="etagere_see";
 		$_SESSION["last_module_search"]["search_id"]=$id;
 		$_SESSION["last_module_search"]["search_page"]=$page;
+		
+		// Gestion des alertes à partir de la recherche simple
+ 		include_once($include_path."/alert_see.inc.php");
+ 		print $alert_see_mc_values;
 			
 		//affichage
-		print "&nbsp;&nbsp;<span class=\"affiner_recherche\"><a href='$base_path/index.php?search_type_asked=extended_search&mode_aff=aff_module'>".$msg["affiner_recherche"]."</a></span>";	
+		print "<span class=\"espaceResultSearch\">&nbsp;&nbsp;</span><span class=\"affiner_recherche\"><a href='$base_path/index.php?search_type_asked=extended_search&mode_aff=aff_module' title='".$msg["affiner_recherche"]."'>".$msg["affiner_recherche"]."</a></span>";	
 		//fin affinage
 		
 		print "<blockquote>\n";
@@ -135,20 +147,21 @@ if ($id) {
 		}
 		//fin gestion du tri
 		
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		$nb=0;
 		$recherche_ajax_mode=0;
-		while(($obj=mysql_fetch_object($res))) {
+		while(($obj=pmb_mysql_fetch_object($res))) {
 			if($nb>4)$recherche_ajax_mode=1;
 			$nb++;
 			print pmb_bidi(aff_notice($obj->notice_id, 0, 1, 0, "", "", 0, 1, $recherche_ajax_mode));
 		}
 		print aff_notice(-2);
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 		// constitution des liens pur affichage de la barre de navigation
 		$nbepages = ceil($nbr_lignes/$opac_nb_aut_rec_per_page);
-		print "	</blockquote>\n
-				</div><!-- fermeture #aut_details_liste -->\n";
+		print "	</blockquote>\n";
+		print "</div>"; // Fermeture du div resultatrech_liste
+		print "</div><!-- fermeture #aut_details_liste -->\n";
 		print "<div id='navbar'><hr /><center>".printnavbar($page, $nbepages, "./index.php?lvl=etagere_see&id=$id&page=!!page!!&nbr_lignes=$nbr_lignes")."</center></div>\n";
 	} else {
 			print $msg[no_document_found];

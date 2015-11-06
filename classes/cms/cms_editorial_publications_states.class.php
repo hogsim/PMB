@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial_publications_states.class.php,v 1.6 2014-02-19 14:57:37 abacarisse Exp $
+// $Id: cms_editorial_publications_states.class.php,v 1.7 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,9 +33,9 @@ class cms_editorial_publications_states {
 
 	protected function fetch_data(){
 		$rqt = "select * from cms_editorial_publications_states order by editorial_publication_state_label asc";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){
 				$this->publications_states[] =array(
 					'id' => $row->id_publication_state,
 					'label' => $row->editorial_publication_state_label,
@@ -142,7 +142,7 @@ class cms_editorial_publications_states {
 			editorial_publication_state_opac_show = ".($cms_editorial_publication_state_visible ? 1 : 0).",
 			editorial_publication_state_auth_opac_show = ".($cms_editorial_publication_state_visible_abo ? 1 : 0);
 		$query.= " ".$clause;
-		mysql_query($query);
+		pmb_mysql_query($query);
 	}
 	
 	public function delete($id){
@@ -151,14 +151,14 @@ class cms_editorial_publications_states {
 		if($id){
 			//on regarde si le statut est utilisé dans les rubriques
 			$query = "select id_section from cms_sections where section_publication_state = ".$id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
 				$error = $msg['publication_state_used_in_section'];
 			}else{
 				//on regarde si le statut est utilisé dans les articles
 				$query = "select id_article from cms_articles where article_publication_state = ".$id;
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
 					$error = $msg['publication_state_used_in_article'];
 				}
 			}
@@ -170,7 +170,7 @@ class cms_editorial_publications_states {
 			</script>";
 		}else{
 			$query = "delete from cms_editorial_publications_states where id_publication_state = ".$id;
-			mysql_query($query);
+			pmb_mysql_query($query);
 		}
 	}
 }

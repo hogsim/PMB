@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: includes_rss.inc.php,v 1.20 2014-03-12 15:00:17 dgoron Exp $
+// $Id: includes_rss.inc.php,v 1.21 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -45,8 +45,8 @@ function genere_link_rss() {
 	global $opac_view_filter_class;
 	
 	$rqt = "select id_rss_flux, nom_rss_flux, descr_rss_flux from rss_flux order by 2 ";
-	$res = mysql_query($rqt,$dbh);
-	while ($obj=mysql_fetch_object($res)) {
+	$res = pmb_mysql_query($rqt,$dbh);
+	while ($obj=pmb_mysql_fetch_object($res)) {
 		if($opac_view_filter_class){
 			if(!$opac_view_filter_class->is_selected("flux_rss", $obj->id_rss_flux))  continue; 
 		}
@@ -62,8 +62,8 @@ function genere_page_rss($id=0) {
 	
 	if ($id) $clause = " where id_rss_flux='$id' ";  
 	$rqt = "select id_rss_flux, nom_rss_flux, img_url_rss_flux from rss_flux $clause order by 2 ";
-	$res = mysql_query($rqt,$dbh);
-	while ($obj=mysql_fetch_object($res)) {
+	$res = pmb_mysql_query($rqt,$dbh);
+	while ($obj=pmb_mysql_fetch_object($res)) {
 		if($opac_view_filter_class){
 			if(!$opac_view_filter_class->is_selected("flux_rss", $obj->id_rss_flux))  continue; 
 		}		

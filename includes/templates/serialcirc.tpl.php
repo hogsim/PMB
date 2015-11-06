@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc.tpl.php,v 1.20 2013-11-12 09:46:47 ngantier Exp $
+// $Id: serialcirc.tpl.php,v 1.21 2015-07-16 09:37:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -403,8 +403,8 @@ $serialcirc_circ_liste_circulation_rotative_tr="
 			</div>			
 		</td>
 		<td>
-			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_call_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_call_expl('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
-			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_go_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_do_trans('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
+			!!bt_rappel_perio!!
+			!!bt_exige_transmission!!
 			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_annuler_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_delete_circ('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
 			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_comeback_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_comeback_expl('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
 			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_imprimer_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_print_list_circ('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
@@ -443,8 +443,8 @@ $serialcirc_circ_liste_circulation_star_tr="
 			</div>				
 		</td>
 		<td>
-			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_call_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_call_expl('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
-			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_go_return_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_callinsist_expl('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
+			!!bt_rappel_perio!!
+			!!bt_exige_transmission!!
 			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_annuler_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_delete_circ('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
 			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_comeback_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_comeback_expl('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;
 			<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_imprimer_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_print_list_circ('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;

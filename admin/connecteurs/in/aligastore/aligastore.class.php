@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: aligastore.class.php,v 1.13 2013-04-17 08:49:15 mbertin Exp $
+// $Id: aligastore.class.php,v 1.14 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -302,13 +302,13 @@ class aligastore extends connector {
 				//Si conservation des anciennes notices, on regarde si elle existe
 				if (!$this->del_old) {
 					$requete="select count(*) from entrepot_source_".$source_id." where ref='".addslashes($ref)."'";
-					$rref=mysql_query($requete);
-					if ($rref) $ref_exists=mysql_result($rref,0,0);
+					$rref=pmb_mysql_query($requete);
+					if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 				}
 				//Si pas de conservation des anciennes notices, on supprime
 				if ($this->del_old) {
 					$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."'";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				$ref_exists = false;
 				//Si pas de conservation ou refï¿½rence inexistante
@@ -323,14 +323,14 @@ class aligastore extends connector {
 					
 					//Rï¿½cupï¿½ration d'un ID
 					$requete="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$source_id." ".$ref)."', ".$source_id.")";
-					$rid=mysql_query($requete);
-					if ($rid) $recid=mysql_insert_id();
+					$rid=pmb_mysql_query($requete);
+					if ($rid) $recid=pmb_mysql_insert_id();
 					
 					foreach($n_header as $hc=>$code) {
 						$requete="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid, search_id) values(
 						'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 						'".$hc."','',-1,0,'".addslashes($code)."','',$recid, '$search_id')";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}
 					if ($fs)
 					for ($i=0; $i<count($fs); $i++) {
@@ -346,7 +346,7 @@ class aligastore extends connector {
 								'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 								'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 								' ".addslashes(strip_empty_words($value))." ',$recid, '$search_id')";
-								mysql_query($requete);
+								pmb_mysql_query($requete);
 							}
 						} else {
 							$value=$rec_uni_dom->get_datas($fs[$i]);
@@ -354,7 +354,7 @@ class aligastore extends connector {
 							'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 							'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 							' ".addslashes(strip_empty_words($value))." ',$recid, '$search_id')";
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 						}
 					}
 				}
@@ -672,8 +672,8 @@ class aligastore extends connector {
 		foreach($quoi_synchro as $quoi_synchru) {
 			if ($quoi_synchru == "synchro_base") {
 				$sql_local = "SELECT code, notice_id FROM notices WHERE code != '' AND notice_id > ".addslashes($start_notice_id)." ORDER BY notice_id";
-				$res = mysql_query($sql_local);
-				while($row = mysql_fetch_row($res)) {
+				$res = pmb_mysql_query($sql_local);
+				while($row = pmb_mysql_fetch_row($res)) {
 					if (isISBN($row[0])) {
 						$isbns[] = array("isbn" => $row[0], "notice_id" => $row[1]);
 					}
@@ -683,8 +683,8 @@ class aligastore extends connector {
 			else if (substr($quoi_synchru, 0, 21) == "synchro_noticecaddie_") { 
 				$caddie_id = substr($quoi_synchru, 21);
 				$caddie_content_sql = "SELECT notices.code, notices.notice_id FROM caddie_content LEFT JOIN notices ON (caddie_content.object_id = notices.notice_id) WHERE caddie_content.caddie_id = ".addslashes($caddie_id).' AND notices.code != \'\'';
-				$res = mysql_query($caddie_content_sql, $dbh);
-				while ($row=mysql_fetch_row($res)) {
+				$res = pmb_mysql_query($caddie_content_sql, $dbh);
+				while ($row=pmb_mysql_fetch_row($res)) {
 					if (isISBN($row[0])) {
 						$isbns[] = array("isbn" => $row[0], "notice_id" => $row[1]);
 					}
@@ -694,8 +694,8 @@ class aligastore extends connector {
 			else if (substr($quoi_synchru, 0, 19) == "synchro_explcaddie_") { 
 				$caddie_id = substr($quoi_synchru, 19);
 				$caddie_content_sql = "SELECT notices.code, notices.notice_id FROM caddie_content, exemplaires, notices  WHERE caddie_content.object_id = exemplaires.expl_id AND exemplaires.expl_notice = notices.notice_id AND caddie_content.caddie_id = ".addslashes($caddie_id).' AND notices.code != \'\'';
-				$res = mysql_query($caddie_content_sql, $dbh);
-				while ($row=mysql_fetch_row($res)) {
+				$res = pmb_mysql_query($caddie_content_sql, $dbh);
+				while ($row=pmb_mysql_fetch_row($res)) {
 					if (isISBN($row[0])) {
 						$isbns[] = array("isbn" => $row[0], "notice_id" => $row[1]);
 					}
@@ -727,7 +727,7 @@ class aligastore extends connector {
 				$envt["current_notice_id"]=$isbn["notice_id"];
 				$envt["already_read_count"]=$count_lu;
 				$requete="update source_sync set env='".addslashes(serialize($envt))."' where source_id=".$source_id;
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 						
 				//Inform
 				call_user_func($callback_progress,$count_lu/$count_total,$count_lu,$count_total);
@@ -874,9 +874,9 @@ class aligastore extends connector {
 		$this->initSource($source_id);
 		$return = array();
 		$rqt = "select code from notices where notice_id = '".$notice_id."'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$code = mysql_result($res,0,0);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$code = pmb_mysql_result($res,0,0);
 			$code = preg_replace('/-|\.| /', '', $code);
 			if($code != ""){
 				$parameters = array(

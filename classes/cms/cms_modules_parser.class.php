@@ -2,13 +2,13 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_modules_parser.class.php,v 1.8.2.1 2014-06-11 14:03:38 ngantier Exp $
+// $Id: cms_modules_parser.class.php,v 1.12 2015-06-15 15:52:15 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 class cms_modules_parser {
 	private $path;
-	private $modules_list = array();
+	static private $modules_list = array();
 	private $folders_list = array();
 	private $cadres_list = array();
 	public $cadres_classement_list = array();
@@ -40,7 +40,7 @@ class cms_modules_parser {
 
 	public function get_modules_list(){
 		$tri=array();
-		if(count($this->modules_list) == 0){
+		if(count(self::$modules_list) == 0){
 			$this->get_folders_list();
 			foreach ($this->folders_list as $module_name){
 				$module_class_name = "cms_module_".$module_name;
@@ -49,23 +49,23 @@ class cms_modules_parser {
 					$hash_var = $module_class_name."_hash";
 					global $$hash_var;
 					$size = count($$hash_var);
-					$this->modules_list[$module_name] = $module_class_name::get_informations();
+					self::$modules_list[$module_name] = $module_class_name::get_informations();
 					//c'est la même histoire...
 					if($size!= count($$hash_var)){
 						array_unshift($$hash_var,$module->get_hash());
 					}
-					$tri[$module_name]=$this->modules_list[$module_name]['name'];
+					$tri[$module_name]=self::$modules_list[$module_name]['name'];
 				}
 			}
 			// tri par nom
 			asort($tri);
-			$memo_modules_list=$this->modules_list;
-			$this->modules_list=array();
+			$memo_modules_list=self::$modules_list;
+			self::$modules_list=array();
 			foreach($tri as $module_name => $name){
-				$this->modules_list[$module_name]=$memo_modules_list[$module_name];
+				self::$modules_list[$module_name]=$memo_modules_list[$module_name];
 			}
 		}
-		return $this->modules_list;
+		return self::$modules_list;
 	}
 
 	public function get_module_class($class){
@@ -80,15 +80,15 @@ class cms_modules_parser {
 	}
 
 	public function get_cadres_list(){
-		
+		global $dbh;
 		if(count($this->cadres_list) == 0){
 			$this->cadres_list= array();
 			$this->cadres_classement_list= array();
 			$query = "select * from cms_cadres order by cadre_classement, cadre_name";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
-					$this->cadres_list[] = $row;						
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
+					$this->cadres_list[] = $row;
 					if($row->cadre_classement)$this->cadres_classement_list[$row->cadre_classement]=1;
 				}
 			}
@@ -96,12 +96,13 @@ class cms_modules_parser {
 		return $this->cadres_list;
 	}
 
-	public function get_module_class_by_id($id){
+	public static function get_module_class_by_id($id){
+		global $dbh;
 		$id+=0;
 		$query = "select * from cms_cadres where id_cadre = ".$id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			return new $row->cadre_object($row->id_cadre);
 		}
 	}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: carte-lecteur.inc.php,v 1.9 2007-03-10 09:03:17 touraine37 Exp $
+// $Id: carte-lecteur.inc.php,v 1.10 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -73,8 +73,8 @@ $ourPDF->addPage();
 $ourPDF->SetPageMargins(CBG_TOP_MARGIN, CBG_BOTTOM_MARGIN, CBG_LEFT_MARGIN, CBG_RIGHT_MARGIN);
 
 $requete = "SELECT id_empr, empr_cb, empr_nom, empr_prenom, empr_date_adhesion, empr_date_expiration, date_format(empr_date_adhesion, '".$msg["format_date"]."') as aff_empr_date_adhesion, date_format(empr_date_expiration, '".$msg["format_date"]."') as aff_empr_date_expiration FROM empr WHERE id_empr='$id_empr' LIMIT 1 ";
-$res = mysql_query($requete, $dbh);
-$empr = mysql_fetch_object($res);
+$res = pmb_mysql_query($requete, $dbh);
+$empr = pmb_mysql_fetch_object($res);
 
 $xpos_top = 12;
 $ypos_left = 0;

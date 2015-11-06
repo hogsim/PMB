@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: import_form.tpl.php,v 1.8.6.1 2014-03-20 16:59:34 dgoron Exp $
+// $Id: import_form.tpl.php,v 1.9 2014-03-20 16:39:12 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

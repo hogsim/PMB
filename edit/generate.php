@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: generate.php,v 1.16 2010-05-05 15:06:04 mbertin Exp $
+// $Id: generate.php,v 1.17 2015-04-03 11:16:21 jpermanne Exp $
 
 //modifié 12/2007 François CEROVETTI pour affichage code en clair avec police vectorielle.
 // lire exemple de valeurs adaptées à 65 etiquettes AVERY A4 plus bas:
@@ -45,7 +45,7 @@ $mep_etiq_cb[CBG_CB_TEXT_SIZE]         =   $CBG_CB_TEXT_SIZE ;
 $mep_etiq_cb[CBG_CB_RES]               =   $CBG_CB_RES ;
 
 $querry = "update parametres set valeur_param='".serialize($mep_etiq_cb)."' where type_param = 'pmb' and sstype_param='param_etiq_codes_barres' ";
-$res = mysql_query($querry, $dbh);*/
+$res = pmb_mysql_query($querry, $dbh);*/
 
 
 // exemple de valeurs fonctionnelles pour AVERY 65 étiquettes par page OISEAULIRE Cerovetti

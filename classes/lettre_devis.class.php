@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lettre_devis.class.php,v 1.4 2013-04-16 08:16:41 mbertin Exp $
+// $Id: lettre_devis.class.php,v 1.5 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -232,7 +232,7 @@ class lettreDevis_PDF {
 		
 		$fou = new entites($dev->num_fournisseur);
 		$coord_fou = entites::get_coordonnees($dev->num_fournisseur, '1');
-		$coord_fou = mysql_fetch_object($coord_fou);
+		$coord_fou = pmb_mysql_fetch_object($coord_fou);
 		
 		$this->PDF->AddPage();
 		$this->PDF->setFont($pmb_pdf_font);
@@ -346,7 +346,7 @@ class lettreDevis_PDF {
 	
 		$this->doEntete();
 		
-		while (($row = mysql_fetch_object($lignes))) { 
+		while (($row = pmb_mysql_fetch_object($lignes))) { 
 	
 			$typ = new types_produits($row->num_type);
 			$col1 = $typ->libelle."\n".$row->code;

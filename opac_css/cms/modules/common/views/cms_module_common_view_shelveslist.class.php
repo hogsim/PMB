@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_shelveslist.class.php,v 1.6.2.1 2015-05-12 10:49:38 dgoron Exp $
+// $Id: cms_module_common_view_shelveslist.class.php,v 1.9 2015-05-12 10:47:04 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -88,22 +88,40 @@ class cms_module_common_view_shelveslist extends cms_module_common_view_django{
 		return parent::render($datas);
 	}
 	
-	public function get_format_data_structure(){		
-		$format = array();
-// 		$format[] = array(
-// 			'var' => "title",
-// 			'desc' => $this->msg['cms_module_common_view_title']
-// 		);
-// 		$sections = array(
-// 			'var' => "articles",
-// 			'desc' => $this->msg['cms_module_common_view_articles_desc'],
-// 			'children' => $this->prefix_var_tree(cms_article::get_format_data_structure(),"articles[i]")
-// 		);
-// 		$sections['children'][] = array(
-// 			'var' => "articles[i].link",
-// 			'desc'=> $this->msg['cms_module_common_view_article_link_desc']
-// 		);
-// 		$format[] = $sections;
-		return $format;
+	public function get_format_data_structure(){	
+		$format_datas= array(
+			array(
+				'var' => "shelves",
+				'desc' => $this->msg['cms_modulecommon_view_shelveslist_desc'],
+				'children' => array(
+					array(
+						'var' => "shelves[i].id",
+						'desc'=> $this->msg['cms_modulecommon_view_shelveslist_id_desc']
+					),
+					array(
+						'var' => "shelves[i].name",
+						'desc'=> $this->msg['cms_modulecommon_view_shelveslist_name_desc']
+					),
+					array(
+							'var' => "shelves[i].link",
+							'desc'=> $this->msg['cms_modulecommon_view_shelveslist_link_desc']
+					),
+					array(
+						'var' => "shelves[i].link_rss",
+						'desc'=> $this->msg['cms_modulecommon_view_shelveslist_link_rss_desc']
+					),
+					array(
+						'var' => "shelves[i].comment",
+						'desc'=> $this->msg['cms_modulecommon_view_shelveslist_comment_desc']
+					),
+					array(
+						'var' => "shelves[i].records",
+						'desc'=> $this->msg['cms_modulecommon_view_shelveslist_records_desc']
+					)	
+				)
+			)
+		);
+		$format_datas = array_merge($format_datas,parent::get_format_data_structure());
+		return $format_datas;
 	}
 }

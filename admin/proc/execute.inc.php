@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: execute.inc.php,v 1.11 2013-04-18 10:29:59 mbertin Exp $
+// $Id: execute.inc.php,v 1.12 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,9 +14,9 @@ if ($is_external) {
 }
 else {
 	$requete = "SELECT * FROM procs WHERE idproc=$id ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	
-	$nbr_lignes = mysql_num_rows($res);
+	$nbr_lignes = pmb_mysql_num_rows($res);
 	$urlbase = "./admin.php?categ=proc&sub=proc&action=final&id=$id";
 }
 
@@ -30,7 +30,7 @@ if($nbr_lignes) {
 		$commentaire = $execute_external_procedure->comment;
 	}
 	else {
-		$row = mysql_fetch_row($res);
+		$row = pmb_mysql_fetch_row($res);
 		$idp = $row[0];
 		$name = $row[1];
 		if (!$code)
@@ -102,22 +102,22 @@ if($nbr_lignes) {
 
 			print "<strong>".$msg["procs_ligne"]." $cle </strong>:&nbsp;$valeur<br /><br />";
 			if (($pmb_procs_force_execution && $force_exec) || (($PMBuserid == 1) && $force_exec) || explain_requete($valeur)) {
-				$res = @mysql_query($valeur, $dbh);
-				echo mysql_error();
-				$nbr_lignes = @mysql_num_rows($res);
-				$nbr_champs = @mysql_num_fields($res);
+				$res = @pmb_mysql_query($valeur, $dbh);
+				echo pmb_mysql_error();
+				$nbr_lignes = @pmb_mysql_num_rows($res);
+				$nbr_champs = @pmb_mysql_num_fields($res);
 				if($nbr_lignes) {
 					echo "<table >";
 					for($i=0; $i < $nbr_champs; $i++) {
 						// ajout de liens pour trier les pages
-						$fieldname = mysql_field_name($res, $i);
+						$fieldname = pmb_mysql_field_name($res, $i);
 						$sortasc = "<a href='${urlbase}&sortfield=".($i+1)."&desc=0'>asc</a>";
 						$sortdesc = "<a href='${urlbase}&sortfield=".($i+1)."&desc=1'>desc</a>";
 						print("<th>${fieldname}</th>");
 					}
 
 					for($i=0; $i < $nbr_lignes; $i++) {
-						$row = mysql_fetch_row($res);
+						$row = pmb_mysql_fetch_row($res);
 						echo "<tr>";
 						foreach($row as $dummykey=>$col) {
 							if(trim($col)=='') $col = '&nbsp;';
@@ -127,9 +127,9 @@ if($nbr_lignes) {
 					}
 					echo "</table><hr />";
 				} else {
-					$ligne_affected=mysql_affected_rows($dbh);
+					$ligne_affected=pmb_mysql_affected_rows($dbh);
 					print "<br /><font color='#ff0000'>".$msg['admin_misc_lignes']." ".$ligne_affected;
-					$err = mysql_error($dbh);
+					$err = pmb_mysql_error($dbh);
 					if ($err){
 						print "<br />$err";
 					}else{

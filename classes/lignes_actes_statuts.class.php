@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lignes_actes_statuts.class.php,v 1.4 2013-11-28 14:18:52 dgoron Exp $
+// $Id: lignes_actes_statuts.class.php,v 1.5 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,8 +30,8 @@ class lgstat{
 		global $dbh;
 		
 		$q = "select * from lignes_actes_statuts where id_statut = '".$this->id_statut."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->libelle = $obj->libelle;
 		$this->relance = $obj->relance;
 
@@ -51,15 +51,15 @@ class lgstat{
 					libelle = '".$this->libelle."',
 					relance = '".$this->relance."'
 					where id_statut = '".$this->id_statut."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
 		} else {
 			
 			$q = "insert into lignes_actes_statuts set 
 					libelle = '".$this->libelle."',
 					relance = '".$this->relance."' ";
-			$r = mysql_query($q, $dbh);
-			$this->id_statut = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_statut = pmb_mysql_insert_id($dbh);
 		
 		}
 	}
@@ -78,17 +78,17 @@ class lgstat{
 				$res=$q;
 				break;
 			case 'ARRAY_VALUES' :
-				$r = mysql_query($q, $dbh);
+				$r = pmb_mysql_query($q, $dbh);
 				$res = array();
-				while ($row = mysql_fetch_object($r)){
+				while ($row = pmb_mysql_fetch_object($r)){
 					$res[] = $row->id_statut;
 				}
 				break;
 			case 'ARRAY_ALL':
 			default :
-				$r = mysql_query($q, $dbh);
+				$r = pmb_mysql_query($q, $dbh);
 				$res = array();
-				while ($row = mysql_fetch_object($r)){
+				while ($row = pmb_mysql_fetch_object($r)){
 					$res[$row->id_statut] = array();
 					$res[$row->id_statut][0] = $row->libelle;
 					$res[$row->id_statut][1] = $row->relance;
@@ -105,13 +105,13 @@ class lgstat{
 
 		$sel='';
 		$q = "select id_statut,libelle from lignes_actes_statuts order by libelle ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$res = array();
 		if ($sel_all) {
 			$res[0]=htmlentities($sel_all,ENT_QUOTES,$charset);
 		}
 		
-		while ($row = mysql_fetch_object($r)){
+		while ($row = pmb_mysql_fetch_object($r)){
 			$res[$row->id_statut] = $row->libelle;
 		}
 		
@@ -145,8 +145,8 @@ class lgstat{
 		
 		global $dbh;
 		$q = "select count(1) from lignes_actes_statuts where id_statut = '".$id_statut."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 	
@@ -157,8 +157,8 @@ class lgstat{
 		global $dbh;
 		$q = "select count(1) from lignes_actes_statuts where libelle = '".$libelle."' ";
 		if ($id_statut) $q.= "and id_statut != '".$id_statut."' ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 
 	}
 
@@ -171,7 +171,7 @@ class lgstat{
 		if (!$id_statut) return;
 
 		$q = "delete from lignes_actes_statuts where id_statut = '".$id_statut."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -183,15 +183,15 @@ class lgstat{
 		if (!$id_statut) return 0;
 		$total=0;
 		$q = "select count(1) from lignes_actes where num_statut = '".$id_statut."' ";
-		$r = mysql_query($q, $dbh); 
-		$total+=mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		$total+=pmb_mysql_result($r, 0, 0);
 		$q = "select count(1) from lignes_actes_relances where num_statut = '".$id_statut."' ";
-		$r = mysql_query($q, $dbh); 
-		$total+=mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		$total+=pmb_mysql_result($r, 0, 0);
 		$q = "select count(1) from users where deflt3lgstatdev='".$id_statut."' or deflt3lgstatcde='".$id_statut." '";
-		$r = mysql_query($q, $dbh);
-		mysql_result($r, 0, 0);
-		$total+=mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		pmb_mysql_result($r, 0, 0);
+		$total+=pmb_mysql_result($r, 0, 0);
 		return $total;
 	}
 
@@ -201,7 +201,7 @@ class lgstat{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE lignes_actes_statuts', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE lignes_actes_statuts', $dbh);
 		return $opt;
 				
 	}

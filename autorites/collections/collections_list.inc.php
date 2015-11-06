@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collections_list.inc.php,v 1.30.2.1 2014-04-23 14:47:49 gueluneau Exp $
+// $Id: collections_list.inc.php,v 1.32 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -67,8 +67,8 @@ if(!$nbr_lignes) {
 		}
 		$requete = $aq->get_query_count("collections","collection_name","index_coll","collection_id");
 	}
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 } else $aq=new analyse_query(stripslashes($user_input));
 
 if(!$page) $page=1;
@@ -86,8 +86,8 @@ if($nbr_lignes) {
 	
 	$num_auth_present=false;
 	$req="SELECT id_authority_source FROM authorities_sources WHERE authority_type='collection' AND TRIM(authority_number) !='' LIMIT 1";
-	$res_aut=mysql_query($req,$dbh);
-	if($res_aut && mysql_num_rows($res_aut)){
+	$res_aut=pmb_mysql_query($req,$dbh);
+	if($res_aut && pmb_mysql_num_rows($res_aut)){
 		$collection_list=str_replace("<!--!!col_num_autorite!!-->","<th>".$msg["authorities_number"]."</th>",$collection_list);
 		$num_auth_present=true;
 	}
@@ -101,10 +101,10 @@ if($nbr_lignes) {
 		$members=$aq->get_query_members("collections","collection_name","index_coll","collection_id");
 		$requete="select collections.*, publishers.*, ".$members["select"]." as pert from collections left join publishers on ed_id=collection_parent where ".$members["where"]." group by collection_id order by pert desc,index_coll,index_publisher limit $debut,$nb_per_page";
 	}
-	$res = @mysql_query($requete, $dbh);
+	$res = @pmb_mysql_query($requete, $dbh);
 	$parity=1;
 	$url_base = "./autorites.php?categ=collections&sub=reach&user_input=".rawurlencode(stripslashes($user_input)) ;
-	while(($coll=mysql_fetch_object($res))) {
+	while(($coll=pmb_mysql_fetch_object($res))) {
 		if ($parity % 2) {
 			$pair_impair = "even";
 		} else {
@@ -113,7 +113,7 @@ if($nbr_lignes) {
 		$parity += 1;
 
 		$notice_count_sql = "SELECT count(*) FROM notices WHERE coll_id = ".$coll->collection_id;
-		$notice_count = mysql_result(mysql_query($notice_count_sql), 0, 0);
+		$notice_count = pmb_mysql_result(pmb_mysql_query($notice_count_sql), 0, 0);
 		
         $tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\"  ";
                 $collection_list.= "<tr class='$pair_impair' $tr_javascript style='cursor: pointer'>
@@ -127,11 +127,11 @@ if($nbr_lignes) {
 		//Numéros d'autorite
 		if($num_auth_present){
 			$requete="SELECT authority_number,origin_authorities_name, origin_authorities_country FROM authorities_sources JOIN origin_authorities ON num_origin_authority=id_origin_authorities WHERE authority_type='collection' AND num_authority='".$coll->collection_id."' AND TRIM(authority_number) !='' GROUP BY authority_number,origin_authorities_name,origin_authorities_country ORDER BY authority_favorite DESC, origin_authorities_name";
-			$res_aut=mysql_query($requete,$dbh);
-			if($res_aut && mysql_num_rows($res_aut)){
+			$res_aut=pmb_mysql_query($requete,$dbh);
+			if($res_aut && pmb_mysql_num_rows($res_aut)){
 				$collection_list .= "<td>";
 				$first=true;
-				while ($aut = mysql_fetch_object($res_aut)) {
+				while ($aut = pmb_mysql_fetch_object($res_aut)) {
 					if(!$first)$collection_list .=", ";
 					$collection_list .=htmlentities($aut->authority_number,ENT_QUOTES,$charset);
 					if($tmp=trim($aut->origin_authorities_name)){
@@ -150,7 +150,7 @@ if($nbr_lignes) {
 		else $collection_list .= "<td>&nbsp;</td>";
 		$collection_list .=  "</tr>";
 	} // fin while
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 	
 	if (!$last_param) $nav_bar = aff_pagination ($url_base, $nbr_lignes, $nb_per_page, $page, 10, false, true) ;
 		else $nav_bar="";   

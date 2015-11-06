@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: params.inc.php,v 1.7.16.1 2015-04-03 16:37:27 Alexandre Exp $
+// $Id: params.inc.php,v 1.9 2015-06-02 13:24:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,4 +15,5 @@ define('SERIE_PAQUET_SIZE', $pmb_clean_nb_elements);
 define('AUTHOR_PAQUET_SIZE', $pmb_clean_nb_elements);
 define('CATEGORY_PAQUET_SIZE', $pmb_clean_nb_elements);
 define('ACQUISITION_PAQUET_SIZE', $pmb_clean_nb_elements);
+define('EMPR_PAQUET_SIZE', $pmb_clean_nb_elements);
 define('GAUGE_SIZE', 560);

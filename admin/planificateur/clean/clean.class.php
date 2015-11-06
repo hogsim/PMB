@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: clean.class.php,v 1.4.6.2 2015-05-05 15:23:55 dgoron Exp $
+// $Id: clean.class.php,v 1.9 2015-07-17 15:02:23 dgoron Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -31,7 +31,12 @@ define('CLEAN_CACHE_AMENDE'				, 262144);
 define('CLEAN_TITRES_UNIFORMES'			, 524288);
 define('CLEAN_INDEXINT'					, 1048576);
 define('GEN_PHONETIQUE'					, 2097152);
+define('INDEX_RDFSTORE'					, 4194304);
 define('INDEX_SYNCHRORDFSTORE'			, 8388608);
+define('INDEX_FAQ'						, 16777216);
+define('INDEX_CMS'						, 33554432);
+define('INDEX_CONCEPT'					, 67108864);
+define('HASH_EMPR_PASSWORD'				, 134217728);
 		
 class clean extends tache {
 	
@@ -48,7 +53,9 @@ class clean extends tache {
 		global $msg, $charset, $acquisition_active, $pmb_indexation_docnum;
 		global $pmb_gestion_financiere, $pmb_gestion_amende;
 		global $pmb_synchro_rdf;
-
+		global $faq_active, $cms_active;
+		global $thesaurus_concepts_active;
+		
 		if ($param["clean"]) {
 			foreach ($param["clean"] as $name=>$value) {
 				$$name = $value;
@@ -139,13 +146,39 @@ class clean extends tache {
 						<input type='checkbox' value='262144' id='clean_cache_amende' name='clean_cache_amende' ".($clean_cache_amende == "262144" ? "checked" :"").">&nbsp;<label for='clean_cache_amende'>".htmlentities($msg["clean_cache_amende"], ENT_QUOTES, $charset)."</label>
 					</div>";
 			}
+			$form_task .= "
+					<div class='row'>
+						<input type='checkbox' value='4194304' id='index_rdfstore' name='index_rdfstore' ".($index_rdfstore == "4194304" ? "checked" :"").">&nbsp;<label for='index_rdfstore'>".htmlentities($msg["nettoyage_rdfstore_reindex"], ENT_QUOTES, $charset)."</label>
+					</div>";
 			if($pmb_synchro_rdf){
 				$form_task .= "
 					<div class='row'>
 						<input type='checkbox' value='8388608' id='index_synchrordfstore' name='index_synchrordfstore' ".($index_synchrordfstore == "8388608" ? "checked" :"").">&nbsp;<label for='index_synchrordfstore'>".htmlentities($msg["nettoyage_synchrordfstore_reindex"], ENT_QUOTES, $charset)."</label>
 					</div>";
 			}
-			$form_task .= "</div>
+			if($faq_active){
+				$form_task .= "
+					<div class='row'>
+						<input type='checkbox' value='16777216' id='index_faq' name='index_faq' ".($index_faq == "16777216" ? "checked" :"").">&nbsp;<label for='index_faq'>".htmlentities($msg["nettoyage_faq_reindex"], ENT_QUOTES, $charset)."</label>
+					</div>";
+			}
+			if($cms_active){
+				$form_task .= "
+					<div class='row'>
+						<input type='checkbox' value='33554432' id='index_cms' name='index_cms' ".($index_cms == "33554432" ? "checked" :"").">&nbsp;<label for='index_cms'>".htmlentities($msg["nettoyage_cms_reindex"], ENT_QUOTES, $charset)."</label>
+					</div>";
+			}
+			if($thesaurus_concepts_active==1){
+				$form_task .= "
+					<div class='row'>
+						<input type='checkbox' value='67108864' id='index_concept' name='index_concept' ".($index_concept == "67108864" ? "checked" :"").">&nbsp;<label for='index_concept'>".htmlentities($msg["nettoyage_concept_reindex"], ENT_QUOTES, $charset)."</label>
+					</div>";
+			}
+			$form_task .= "
+					<div class='row'>
+						<input type='checkbox' value='134217728' id='hash_empr_password' name='hash_empr_password' ".($hash_empr_password == "134217728" ? "checked" :"").">&nbsp;<label for='hash_empr_password'>".htmlentities($msg["hash_empr_password"], ENT_QUOTES, $charset)."</label>
+					</div>
+				</div>
 			</div>";	
 								
 		return $form_task;
@@ -421,9 +454,9 @@ class clean extends tache {
 							$result .= "<tr><th>".htmlentities($msg["cleaning_opac_search_cache"], ENT_QUOTES, $charset)."</th></tr>";
 							$result .= "<tr><td>";
 							$query = "truncate table search_cache";
-							if(mysql_query($query)){
+							if(pmb_mysql_query($query,$dbh)){
 								$query = "optimize table search_cache";
-								if(mysql_query($query)){
+								if(pmb_mysql_query($query,$dbh)){
 									$result.= "OK";
 								}else{
 									$result.= "OK";
@@ -439,9 +472,9 @@ class clean extends tache {
 							$result .= "<tr><th>".htmlentities($msg["cleaning_cache_amende"], ENT_QUOTES, $charset)."</th></tr>";
 							$result .= "<tr><td>";
 							$query = "truncate table cache_amendes";
-							if(mysql_query($query)){
+							if(pmb_mysql_query($query,$dbh)){
 								$query = "optimize table cache_amendes";
-								if(mysql_query($query)){
+								if(pmb_mysql_query($query,$dbh)){
 									$result.= "OK";
 								}else{
 									$result.= "OK";
@@ -450,6 +483,18 @@ class clean extends tache {
 								$this->update_progression($percent);
 							}else{
 								$result.= "KO";
+							}
+							$result .= "</td></tr>";
+							break;
+						case INDEX_RDFSTORE:
+							$result .= "<tr><th>".htmlentities($msg["nettoyage_rdfstore_reindexation"], ENT_QUOTES, $charset)."</th></tr>";
+							$result .= "<tr><td>";
+							if (method_exists($this->proxy, 'pmbesClean_cleanRdfStore')) {
+								$result .= $this->proxy->pmbesClean_cleanRdfStore();
+								$percent += $p_value;
+								$this->update_progression($percent);
+							} else {
+								$result .= "<p>".sprintf($msg["planificateur_function_rights"],"cleanRdfStore","pmbesClean",$PMBusername)."</p>";
 							}
 							$result .= "</td></tr>";
 							break;
@@ -462,6 +507,54 @@ class clean extends tache {
 								$this->update_progression($percent);
 							} else {
 								$result .= "<p>".sprintf($msg["planificateur_function_rights"],"cleanSynchroRdfStore","pmbesClean",$PMBusername)."</p>";
+							}
+							$result .= "</td></tr>";
+							break;
+						case INDEX_FAQ:
+							$result .= "<tr><th>".htmlentities($msg["nettoyage_reindex_faq"], ENT_QUOTES, $charset)."</th></tr>";
+							$result .= "<tr><td>";
+							if (method_exists($this->proxy, 'pmbesClean_cleanFAQ')) {
+								$result .= $this->proxy->pmbesClean_cleanFAQ();
+								$percent += $p_value;
+								$this->update_progression($percent);
+							} else {
+								$result .= "<p>".sprintf($msg["planificateur_function_rights"],"cleanFAQ","pmbesClean",$PMBusername)."</p>";
+							}
+							$result .= "</td></tr>";
+							break;
+						case INDEX_CMS:
+							$result .= "<tr><th>".htmlentities($msg["nettoyage_reindex_cms"], ENT_QUOTES, $charset)."</th></tr>";
+							$result .= "<tr><td>";
+							if (method_exists($this->proxy, 'pmbesClean_cleanCMS')) {
+								$result .= $this->proxy->pmbesClean_cleanCMS();
+								$percent += $p_value;
+								$this->update_progression($percent);
+							} else {
+								$result .= "<p>".sprintf($msg["planificateur_function_rights"],"cleanCMS","pmbesClean",$PMBusername)."</p>";
+							}
+							$result .= "</td></tr>";
+							break;
+						case INDEX_CONCEPT:
+							$result .= "<tr><th>".htmlentities($msg["nettoyage_reindex_concept"], ENT_QUOTES, $charset)."</th></tr>";
+							$result .= "<tr><td>";
+							if (method_exists($this->proxy, 'pmbesClean_cleanConcept')) {
+								$result .= $this->proxy->pmbesClean_cleanConcept();
+								$percent += $p_value;
+								$this->update_progression($percent);
+							} else {
+								$result .= "<p>".sprintf($msg["planificateur_function_rights"],"cleanConcept","pmbesClean",$PMBusername)."</p>";
+							}
+							$result .= "</td></tr>";
+							break;
+						case HASH_EMPR_PASSWORD:
+							$result .= "<tr><th>".htmlentities($msg["hash_empr_password"], ENT_QUOTES, $charset)."</th></tr>";
+							$result .= "<tr><td>";
+							if (method_exists($this->proxy, 'pmbesClean_hashEmprPassword')) {
+								$result .= $this->proxy->pmbesClean_hashEmprPassword();
+								$percent += $p_value;
+								$this->update_progression($percent);
+							} else {
+								$result .= "<p>".sprintf($msg["planificateur_function_rights"],"hashEmprPassword","pmbesClean",$PMBusername)."</p>";
 							}
 							$result .= "</td></tr>";
 							break;
@@ -503,7 +596,8 @@ class clean extends tache {
     	global $gen_signature_notice, $gen_phonetique, $nettoyage_clean_tags, $clean_categories_path;
     	global $gen_date_publication_article, $gen_date_tri, $reindex_docnum;
     	global $clean_opac_search_cache, $clean_cache_amende;
-    	global $index_synchrordfstore;
+    	global $index_rdfstore, $index_synchrordfstore;
+    	global $index_faq, $index_cms, $index_concept, $hash_empr_password;
 
 		$t = parent::make_serialized_task_params();
 		
@@ -531,8 +625,13 @@ class clean extends tache {
 		if($reindex_docnum) $t_clean["reindex_docnum"] = $reindex_docnum;
 		if($clean_opac_search_cache) $t_clean["clean_opac_search_cache"] = $clean_opac_search_cache;
 		if($clean_cache_amende) $t_clean["clean_cache_amende"] = $clean_cache_amende;
+		if($index_rdfstore) $t_clean["index_rdfstore"] = $index_rdfstore;
 		if($index_synchrordfstore) $t_clean["index_synchrordfstore"] = $index_synchrordfstore;
-    	
+		if($index_faq) $t_clean["index_faq"] = $index_faq;
+		if($index_cms) $t_clean["index_cms"] = $index_cms;
+		if($index_concept) $t_clean["index_concept"] = $index_concept;
+		if($hash_empr_password) $t_clean["hash_empr_password"] = $hash_empr_password;
+		
 		$t["clean"] = $t_clean;
 
     	return serialize($t);

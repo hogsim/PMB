@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: parametres_perso.class.php,v 1.57.2.5 2015-09-28 09:20:29 mbertin Exp $
+// $Id: parametres_perso.class.php,v 1.62 2015-07-15 07:46:47 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -57,11 +57,11 @@ class parametres_perso {
 		$this->t_fields=array();
 		$requete="select idchamp, name, titre, type, datatype, obligatoire, options, multiple, search, export, exclusion_obligatoire, pond, opac_sort from ".$this->prefix."_custom order by ordre";
 
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)==0)
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)==0)
 			$this->no_special_fields=1;
 		else {
-			while ($r=mysql_fetch_object($resultat)) {
+			while ($r=pmb_mysql_fetch_object($resultat)) {
 				$this->t_fields[$r->idchamp]["DATATYPE"]=$r->datatype;
 				$this->t_fields[$r->idchamp]["NAME"]=$r->name;
 				$this->t_fields[$r->idchamp]["TITRE"]=$r->titre;
@@ -87,13 +87,13 @@ class parametres_perso {
 	
 		$res="";		
 		$requete="select idchamp, name, titre, type, datatype, multiple, obligatoire, ordre ,search, export,exclusion_obligatoire, opac_sort from ".$this->prefix."_custom order by ordre";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		/*if(!$resultat)
 		{
-			echo "ya pas de res : ".mysql_num_rows($resultat)."<br />";
+			echo "ya pas de res : ".pmb_mysql_num_rows($resultat)."<br />";
 		}
-		echo "nombre : ".mysql_num_rows($resultat)."<br />";*/
-		if (mysql_num_rows($resultat)==0) {
+		echo "nombre : ".pmb_mysql_num_rows($resultat)."<br />";*/
+		if (pmb_mysql_num_rows($resultat)==0) {
 			$res="<br /><br />".$msg["parperso_no_field"]."<br />";
 			$form_list=str_replace("!!liste_champs_perso!!",$res,$form_list);
 			$form_list=str_replace("!!base_url!!",$this->base_url,$form_list);
@@ -110,7 +110,7 @@ class parametres_perso {
 			else $res .= "</tr>\n";
 			$parity=1;
 			$n=0;
-			while ($r=mysql_fetch_object($resultat)) {
+			while ($r=pmb_mysql_fetch_object($resultat)) {
 				if ($parity % 2) {
 					$pair_impair = "even";
 				} else {
@@ -183,8 +183,8 @@ class parametres_perso {
 				
 		if ($idchamp!=0 and $idchamp!="") {
 			$requete="select idchamp, name, titre, type, datatype, options, multiple, obligatoire, ordre, search, export, exclusion_obligatoire, pond, opac_sort from ".$this->prefix."_custom where idchamp=$idchamp";
-			$resultat=mysql_query($requete) or die(mysql_error());
-			$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete) or die(pmb_mysql_error());
+			$r=pmb_mysql_fetch_object($resultat);
 			
 			$name=$r->name;
 			$titre=htmlentities($r->titre,ENT_QUOTES,$charset);
@@ -296,8 +296,8 @@ class parametres_perso {
 		//On vérifie que le champ name ne soit pas déjà existant
 		if ($action == "update") $requete="select idchamp from ".$this->prefix."_custom where name='$name' and idchamp<>$idchamp";
 		else $requete="select idchamp from ".$this->prefix."_custom where name='$name'";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat) > 0) $this->make_error(sprintf($msg["parperso_check_field_name_already_used"],$name));
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat) > 0) $this->make_error(sprintf($msg["parperso_check_field_name_already_used"],$name));
 		if ($titre=="") $titre=$name;
 		if ($_for!=$type) $this->make_error($msg["parperso_check_type"]);
 		if ($multiple=="") $multiple=0;
@@ -431,7 +431,7 @@ class parametres_perso {
 	function rec_fields_perso($id) {
 		//Enregistrement des champs personalisés
 		$requete="delete from ".$this->prefix."_custom_values where ".$this->prefix."_custom_origine=$id";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		reset($this->t_fields);
 		while (list($key,$val)=each($this->t_fields)) {
 			$name=$val["NAME"];
@@ -440,7 +440,7 @@ class parametres_perso {
 			for ($i=0; $i<count($value); $i++) {
 				if ($value[$i]!=="") {
 					$requete="insert into ".$this->prefix."_custom_values (".$this->prefix."_custom_champ,".$this->prefix."_custom_origine,".$this->prefix."_custom_".$val["DATATYPE"].") values($key,$id,'".$value[$i]."')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 			}
 		}
@@ -510,8 +510,8 @@ class parametres_perso {
 			$this->values=$this->list_values=array();
 			
 			$requete="select ".$this->prefix."_custom_champ,".$this->prefix."_custom_origine,".$this->prefix."_custom_small_text, ".$this->prefix."_custom_text, ".$this->prefix."_custom_integer, ".$this->prefix."_custom_date, ".$this->prefix."_custom_float from ".$this->prefix."_custom_values where ".$this->prefix."_custom_origine=".$id;
-			$resultat=mysql_query($requete);
-			while ($r=mysql_fetch_array($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			while ($r=pmb_mysql_fetch_array($resultat)) {
 				$this->values[$r[$this->prefix."_custom_champ"]][]=$r[$this->prefix."_custom_".$this->t_fields[$r[$this->prefix."_custom_champ"]]["DATATYPE"]];
 				$this->list_values[]=$r[$this->prefix."_custom_".$this->t_fields[$r[$this->prefix."_custom_champ"]]["DATATYPE"]];
 			}
@@ -595,8 +595,8 @@ class parametres_perso {
 				
 				if (is_array($aff) && $aff[ishtml] == true)$t["AFF"] = $aff["value"];
 				else $t["AFF"]=htmlentities($aff,ENT_QUOTES,$charset);
-				$t["NAME"]=static::$fields[$this->prefix][$key]["NAME"];
-				$t["ID"]=static::$fields[$this->prefix][$key]["ID"];
+				$t["NAME"]=$field["NAME"];
+				$t["ID"]=$field["ID"];
 				$perso["FIELDS"][]=$t;
 			}
 		}
@@ -627,7 +627,7 @@ class parametres_perso {
 	//Suppression de la base des valeurs d'un emprunteur ou autre...
 	function delete_values($id) {
 		$requete = "DELETE FROM ".$this->prefix."_custom_values where ".$this->prefix."_custom_origine=$id";
-		$res = mysql_query($requete);
+		$res = pmb_mysql_query($requete);
 	}
 	
 	//Gestion des actions en administration
@@ -645,65 +645,65 @@ class parametres_perso {
 			case "create":
 				$this->check_form();
 				$requete="select max(ordre) from ".$this->prefix."_custom";
-				$resultat=mysql_query($requete);
-				if (mysql_num_rows($resultat)!=0)
-					$ordre=mysql_result($resultat,0,0)+1;
+				$resultat=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat)!=0)
+					$ordre=pmb_mysql_result($resultat,0,0)+1;
 				else
 					$ordre=1;
 	
 				$requete="insert into ".$this->prefix."_custom set name='$name', titre='$titre', type='$type', datatype='$datatype', options='$_options', multiple=$multiple, obligatoire=$obligatoire, ordre=$ordre, search=$search, export=$export, exclusion_obligatoire=$exclusion, opac_sort=$opac_sort ";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				echo $this->show_field_list();
 				break;
 			case "update":
 				$this->check_form();
 				$requete="update ".$this->prefix."_custom set name='$name', titre='$titre', type='$type', datatype='$datatype', options='$_options', multiple=$multiple, obligatoire=$obligatoire, ordre=$ordre, search=$search, export=$export, exclusion_obligatoire=$exclusion, pond=$pond, opac_sort=$opac_sort where idchamp=$idchamp";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				echo $this->show_field_list();
 				break;
 			case "up":
 				$requete="select ordre from ".$this->prefix."_custom where idchamp=$id";
-				$resultat=mysql_query($requete);
-				$ordre=mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$ordre=pmb_mysql_result($resultat,0,0);
 				$requete="select max(ordre) as ordre from ".$this->prefix."_custom where ordre<$ordre";
-				$resultat=mysql_query($requete);
-				$ordre_max=@mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$ordre_max=@pmb_mysql_result($resultat,0,0);
 				if ($ordre_max) {
 					$requete="select idchamp from ".$this->prefix."_custom where ordre=$ordre_max limit 1";
-					$resultat=mysql_query($requete);
-					$idchamp_max=mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					$idchamp_max=pmb_mysql_result($resultat,0,0);
 					$requete="update ".$this->prefix."_custom set ordre='".$ordre_max."' where idchamp=$id";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 					$requete="update ".$this->prefix."_custom set ordre='".$ordre."' where idchamp=".$idchamp_max;
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				echo $this->show_field_list();
 				break;
 			case "down":
 				$requete="select ordre from ".$this->prefix."_custom where idchamp=$id";
-				$resultat=mysql_query($requete);
-				$ordre=mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$ordre=pmb_mysql_result($resultat,0,0);
 				$requete="select min(ordre) as ordre from ".$this->prefix."_custom where ordre>$ordre";
-				$resultat=mysql_query($requete);
-				$ordre_min=@mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$ordre_min=@pmb_mysql_result($resultat,0,0);
 				if ($ordre_min) {
 					$requete="select idchamp from ".$this->prefix."_custom where ordre=$ordre_min limit 1";
-					$resultat=mysql_query($requete);
-					$idchamp_min=mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					$idchamp_min=pmb_mysql_result($resultat,0,0);
 					$requete="update ".$this->prefix."_custom set ordre='".$ordre_min."' where idchamp=$id";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 					$requete="update ".$this->prefix."_custom set ordre='".$ordre."' where idchamp=".$idchamp_min;
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				echo $this->show_field_list();
 				break;
 			case "delete":
 				$requete="delete from ".$this->prefix."_custom where idchamp=$idchamp";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$requete="delete from ".$this->prefix."_custom_values where ".$this->prefix."_custom_champ=$idchamp";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$requete="delete from ".$this->prefix."_custom_lists where ".$this->prefix."_custom_champ=$idchamp";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				echo $this->show_field_list();
 				break;
 			default:
@@ -725,9 +725,9 @@ class parametres_perso {
 				switch ($val['TYPE']) {
 					case 'list' :
 						$q="select ".$this->prefix."_custom_list_value, ".$this->prefix."_custom_list_lib from ".$this->prefix."_custom_lists where ".$this->prefix."_custom_champ=".$key." order by ordre";
-						$r=mysql_query($q,$dbh);	
-						if(mysql_num_rows($r)) {
-							while ($row=mysql_fetch_row($r)) {
+						$r=pmb_mysql_query($q,$dbh);	
+						if(pmb_mysql_num_rows($r)) {
+							while ($row=pmb_mysql_fetch_row($r)) {
 								$values[$row[0]]=$row[1];
 							}
 						}
@@ -735,9 +735,9 @@ class parametres_perso {
 					case 'query_list' :
 						$field['OPTIONS'][0]=_parser_text_no_function_("<?xml version='1.0' encoding='".$charset."'?>\n".$val['OPTIONS'], 'OPTIONS');
 						$q=$field['OPTIONS'][0]['QUERY'][0]['value'];
-						$r = mysql_query($q,$dbh);
-						if(mysql_num_rows($r)) {
-							while ($row=mysql_fetch_row($r)) {
+						$r = pmb_mysql_query($q,$dbh);
+						if(pmb_mysql_num_rows($r)) {
+							while ($row=pmb_mysql_fetch_row($r)) {
 								$values[$row[0]]=$row[1];
 							}
 						}
@@ -795,10 +795,10 @@ class parametres_perso {
 		
 		//on trouve l'id, le type de champ et le type des données
 		$query='SELECT idchamp,type,datatype FROM '.$prefix.'_custom WHERE name="'.addslashes($fieldName).'" LIMIT 1';
-		$result=mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+		$result=pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 		
-		if(mysql_num_rows($result)){
-			while($line=mysql_fetch_array($result,MYSQL_ASSOC)){
+		if(pmb_mysql_num_rows($result)){
+			while($line=pmb_mysql_fetch_array($result,MYSQL_ASSOC)){
 				$idchamp=$line['idchamp'];
 				$type=$line['type'];
 				$datatype=$line['datatype'];
@@ -811,10 +811,10 @@ class parametres_perso {
 			case 'list':
 				//Selection des valeurs si list
 				$query = 'SELECT * FROM '.$prefix.'_custom_lists WHERE '.$prefix.'_custom_champ='.$idchamp;
-				$result=mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+				$result=pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 				
-				if(mysql_num_rows($result)){
-					while($line=mysql_fetch_array($result,MYSQL_ASSOC)){
+				if(pmb_mysql_num_rows($result)){
+					while($line=pmb_mysql_fetch_array($result,MYSQL_ASSOC)){
 						$tab[$line[$prefix.'_custom_list_lib']] = $line[$prefix.'_custom_list_value'];
 					}
 				}
@@ -840,7 +840,7 @@ class parametres_perso {
 						}
 						
 						$query = 'INSERT INTO '.$prefix.'_custom_lists ('.$prefix.'_custom_champ,'.$prefix.'_custom_list_value,'.$prefix.'_custom_list_lib) VALUES ('.$idchamp.',"'.addslashes(trim($val)).'","'.addslashes(trim($value)).'")';
-						mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+						pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 							
 						$tab[$value] = $val;
 					}
@@ -884,10 +884,10 @@ class parametres_perso {
 		
  		//Ajout dans _custom_values
 		$query='DELETE FROM '.$prefix.'_custom_values WHERE '.$prefix.'_custom_champ='.$idchamp.' AND '.$prefix.'_custom_origine='.$id.' AND '.$prefix.'_custom_'.$datatype.'="'.trim(addslashes($tab[$value])).'"';
-		mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+		pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 		
 		$query = 'INSERT INTO '.$prefix.'_custom_values ('.$prefix.'_custom_champ,'.$prefix.'_custom_origine,'.$prefix.'_custom_'.$datatype.') VALUES ('.$idchamp.','.$id.',"'.trim(addslashes($tab[$value])).'")';
-		mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.mysql_error());
+		pmb_mysql_query($query) or die('Echec d\'execution de la requete '.$query.'  : '.pmb_mysql_error());
 
 		return true;
 	}

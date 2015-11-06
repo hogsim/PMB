@@ -2,10 +2,16 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.163.2.6 2015-06-23 08:05:05 jpermanne Exp $
+// $Id: search.class.php,v 1.192 2015-06-23 08:07:39 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //Classe de gestion des recherches avancees
+
+if(!is_object($autoloader)){
+	require_once($class_path."/autoloader.class.php");
+	$autoloader = new autoloader();
+	
+}
 
 require_once($include_path."/parser.inc.php");
 require_once($class_path."/parametres_perso.class.php");
@@ -25,6 +31,12 @@ require_once("$class_path/subcollection.class.php");
 require_once("$class_path/serie.class.php");
 require_once("$class_path/titre_uniforme.class.php");
 require_once("$class_path/indexint.class.php");
+require_once("$class_path/authperso.class.php");
+require_once($class_path."/map/map_search_controler.class.php");
+
+if($pmb_map_activate){
+	require_once($class_path."/map/map_search_controler.class.php");
+}
 
 if ($pmb_allow_external_search && (SESSrights & ADMINISTRATION_AUTH) && $id_connector_set)
 	require_once($class_path."/connecteurs_out_sets.class.php");			
@@ -84,6 +96,8 @@ class search {
 	var $isfichier = false;
 	var $memory_engine_allowed = false;
 	var $current_engine = 'MyISAM';
+	var $authpersos = array();
+	
 	
 	
     function search($rec_history=false,$fichier_xml="",$full_path='') {
@@ -94,6 +108,9 @@ class search {
     	foreach ( $this->dynamicfields as $key => $value ) {
        		$this->pp[$key]=new parametres_perso($value["TYPE"]);
 		}
+		$authpersos=new authpersos();
+		$this->authpersos=$authpersos->get_data();
+		
 		$this->rec_history=$rec_history;
 		$this->full_path = $full_path;		
 		$this->fichier_xml=$fichier_xml;
@@ -143,6 +160,7 @@ class search {
     	global $msg;
     	global $include_path;
     	global $thesaurus_classement_mode_pmb;
+    	global $pmb_map_size_search_edition; 
     	
     	$r="";
     	$s=explode("_",$search);
@@ -184,7 +202,7 @@ class search {
     			case "authoritie_external":
     				$r="";
     				$op = "op_".$i."_".$search;
-					global $$op;
+    				global $$op;
 					global $lang;
 					$libelle = "";
     				if ($$op == "AUTHORITY"){
@@ -232,9 +250,9 @@ class search {
 									break;
 								case "notice" :
 										$requete = "select if(serie_name is not null,if(tnvol is not null,concat(serie_name,', ',tnvol,'. ',tit1),concat(serie_name,'. ',tit1)),tit1) AS tit from notices left join series on serie_id=tparent_id where notice_id='".$v[0]."' ";
-										$res=mysql_query($requete);
-										if($res && mysql_num_rows($res)){
-											$libelle = mysql_result($res,0,0);
+										$res=pmb_mysql_query($requete);
+										if($res && pmb_mysql_num_rows($res)){
+											$libelle = pmb_mysql_result($res,0,0);
 										}else{
 											$libelle = $v[0];
 										}
@@ -361,9 +379,9 @@ class search {
     						$requete = str_replace("!!".$var_global."!!", $$var_global, $requete);
     					}
     				}
-    				$resultat=mysql_query($requete);
+    				$resultat=pmb_mysql_query($requete);
     				$r="<select name='field_".$n."_".$search."[]' multiple size='5' style='width:40em;'>";
-    				while ($opt=mysql_fetch_row($resultat)) {
+    				while ($opt=pmb_mysql_fetch_row($resultat)) {
     					$r.="<option value='".htmlentities($opt[0],ENT_QUOTES,$charset)."' ";
     					$as=array_search($opt[0],$v);
     					if (($as!==null)&&($as!==false)) $r.=" selected";
@@ -402,8 +420,8 @@ class search {
 
   		  			// gestion restriction par code utilise.
   		  			if ($ff["INPUT_OPTIONS"]["RESTRICTQUERY"][0]["value"]) {
-  		  				$restrictquery=mysql_query($ff["INPUT_OPTIONS"]["RESTRICTQUERY"][0]["value"]);
-				  		if ($restrictqueryrow=@mysql_fetch_row($restrictquery)) {
+  		  				$restrictquery=pmb_mysql_query($ff["INPUT_OPTIONS"]["RESTRICTQUERY"][0]["value"]);
+				  		if ($restrictqueryrow=@pmb_mysql_fetch_row($restrictquery)) {
 				  			if ($restrictqueryrow[0]) {
 				  				$restrictqueryarray=explode(",",$restrictqueryrow[0]);
 				  				$existrestrict=true;
@@ -439,6 +457,34 @@ class search {
     				$r="<input type='hidden' name='field_".$n."_".$search."_date' value='".str_replace('-','', $v[0])."' />
     					<input type='text' name='field_".$n."_".$search."[]' value='".htmlentities($date_formatee,ENT_QUOTES,$charset)."' ".($input_placeholder?"placeholder='".htmlentities($input_placeholder,ENT_QUOTES,$charset)."'":"")."/>
     					<input class='bouton_small' type='button' name='field_".$n."_".$search."_date_lib_bouton' value='".$msg["bouton_calendrier"]."' ".$date_clic." />";
+    				break;
+    			case "map" :
+    				global $pmb_map_base_layer_type;
+    				global $pmb_map_base_layer_params;
+    				global $dbh;
+    				
+    				$layer_params = json_decode($pmb_map_base_layer_params,true);
+    				$baselayer =  "baseLayerType: dojox.geo.openlayers.BaseLayerType.".$pmb_map_base_layer_type;
+    				if(count($layer_params)){
+    					if($layer_params['name']) $baselayer.=",baseLayerName:\"".$layer_params['name']."\"";
+    					if($layer_params['url']) $baselayer.=",baseLayerUrl:\"".$layer_params['url']."\"";
+    					if($layer_params['options']) $baselayer.=",baseLayerOptions:".json_encode($layer_params['options']);
+    				}
+    				
+    				$size=explode("*",$pmb_map_size_search_edition);
+    				if(count($size)!=2)$map_size="width:800px; height:480px;";
+    				$map_size= "width:".$size[0]."px; height:".$size[1]."px;";
+    				$map_holds=array();
+    				foreach($v as $map_hold){
+    					$map_holds[] = array(
+    						"wkt" => $map_hold,
+    						"type"=> "search",
+    						"color"=> null,
+    						"objects"=> array()
+    					);
+    				}
+    				$r="<div id='map_search_".$n."_".$search."' data-dojo-type='apps/map/map_controler' style='$map_size' data-dojo-props='".$baselayer.",mode:\"search_criteria\",hiddenField:\"field_".$n."_".$search."\",searchHolds:".json_encode($map_holds,true)."'></div>";
+    				
     				break;
     		}
     		//Traitement des variables d'entree
@@ -481,9 +527,9 @@ class search {
 			  		  		case "query_list":
 			  		  			if ((!$fieldvar[$varname])&&($default)) $fieldvar[$varname][0]=$default;
 			  		  			$r.="&nbsp;<select id=\"fieldvar_".$n."_".$search."[".$varname."][]\" name=\"fieldvar_".$n."_".$search."[".$varname."][]\">\n";
-			  		  			$query_list_result=@mysql_query($input["QUERY"][0]["value"]);
+			  		  			$query_list_result=@pmb_mysql_query($input["QUERY"][0]["value"]);
 			  		  			$var_tmp=$concat="";
-			  		  			while ($line=mysql_fetch_array($query_list_result)) {
+			  		  			while ($line=pmb_mysql_fetch_array($query_list_result)) {
 			  		  				if($concat)$concat.=",";
 			  		  				$concat.=$line[0];
 			  		  				$var_tmp.="<option value=\"".htmlentities($line[0],ENT_QUOTES,$charset)."\"";
@@ -533,7 +579,10 @@ class search {
 			$field[VALUES]=$v;
 			$field[PREFIX]=$this->pp[$s[0]]->prefix;
 			eval("\$r=".$aff_list_empr_search[$this->pp[$s[0]]->t_fields[$s[1]][TYPE]]."(\$field,\$check_scripts,\"field_".$n."_".$search."\");");
-   	 	} elseif ($s[0]=="s") {
+   	 	} elseif ($s[0]=="authperso") {
+ 			$r="<span class='search_value'><input type='text' name='field_".$n."_".$search."[]' value='".htmlentities($v[0],ENT_QUOTES,$charset)."' class='ext_search_txt'/></span>";
+    				
+    	}elseif ($s[0]=="s") {
     		//appel de la fonction get_input_box de la classe du champ special
     		$type=$this->specialfields[$s[1]]["TYPE"];
     		for ($is=0; $is<count($this->tableau_speciaux["TYPE"]); $is++) {
@@ -558,6 +607,7 @@ class search {
     	global $msg;
     	global $include_path;
     	global $pmb_multi_search_operator;
+    	global $pmb_search_stemming_active;
     	 	
     	$this->error_message="";
 	   	$last_table="";
@@ -618,8 +668,8 @@ class search {
 				 					while (list($var_name,$var_value)=@each($var_table)) {
 				 						$query_calc=str_replace("!!".$var_name."!!",$var_value,$query_calc);
 				 					}
-				 					$r_calc=mysql_query($query_calc);
-				 					$var_table[$ff["VAR"][$j]["NAME"]]=@mysql_result($r_calc,0,0);
+				 					$r_calc=pmb_mysql_query($query_calc);
+				 					$var_table[$ff["VAR"][$j]["NAME"]]=@pmb_mysql_result($r_calc,0,0);
 				 					break;
 				 			}
 				 			break;
@@ -659,12 +709,12 @@ class search {
 					$field = array();
 					$field[0] = "";
 				}
-				
 				//Pour chaque valeur du champ
 				for ($j=0; $j<count($field); $j++) {
 					//Pour chaque requete
 					$field_origine=$field[$j];
 					for ($z=0; $z<count($q)-1; $z++) {
+						//Pour chaque valeur du cha
 	   					//Si le nettoyage de la saisie est demande
 	   					if($q[$z]["KEEP_EMPTYWORD"])	$field[$j]=strip_empty_chars($field_origine);
 						elseif ($q[$z]["REGDIACRIT"]) $field[$j]=strip_empty_words($field_origine);
@@ -714,8 +764,13 @@ class search {
 							$final_term=implode(" ".$q[$z]["MULTIPLE_OPERATOR"]." ",$multiple_terms);
 							$main=str_replace("!!multiple_term!!",$final_term,$main);
 						} else if ($q[$z]["BOOLEAN"]) {
-							$aq=new analyse_query($field[$j]);
-							$aq1=new analyse_query($field[$j],0,0,1,1);
+							if($q[$z]['STEMMING']){
+								$stemming = $pmb_search_stemming_active;
+							}else{
+								$stemming = 0;
+							}
+    						$aq=new analyse_query($field[$j],0,0,1,0,$stemming);
+							$aq1=new analyse_query($field[$j],0,0,1,1,$stemming);
 							if ($q[$z]["KEEP_EMPTY_WORDS_FOR_CHECK"]) $err=$aq1->error; else $err=$aq->error;
 							if (!$err) {
 								if (is_array($q[$z]["TABLE"])) {
@@ -741,6 +796,24 @@ class search {
 								$main="select notice_id from notices where notice_id=0";
 								$this->error_message=sprintf($msg["searcher_syntax_error_desc"],$aq->current_car,$aq->input_html,$aq->error_message);
 							}
+    					}else if ($q[$z]["WORD"]){
+    						if(($q[$z]['CLASS'] == "searcher_all_fields")){//Pour savoir si la recherche tous champs inclut les docnum ou pas
+    							global $mutli_crit_indexation_docnum_allfields;
+    							if($var_table["is_num"]){
+    								$mutli_crit_indexation_docnum_allfields=1;
+    							}else{
+    								$mutli_crit_indexation_docnum_allfields=-1;
+    							}
+    						}
+    						//recherche par terme...
+    						if($q[$z]["FIELDS"]){
+    							$searcher = new $q[$z]['CLASS']($field[$j],$q[$z]["FIELDS"]);
+    						}else{
+    							$searcher = new $q[$z]['CLASS']($field[$j]);
+    						}
+    						$main = $searcher->get_full_query();
+    						
+//   							print "<br><br>".$main;
 						} else $main=str_replace("!!p!!",addslashes($field[$j]),$main);
 						//Y-a-t-il une close repeat ?
 						if ($q[$z]["REPEAT"]) {
@@ -755,7 +828,7 @@ class search {
 							$main=implode(" ".$q[$z]["REPEAT"]["OPERATOR"]." ",$mains);
 							$main="select * from (".$main.") as sbquery".($q[$z]["REPEAT"]["ORDERTERM"]?" order by ".$q[$z]["REPEAT"]["ORDERTERM"]:"");
 						}
-						if ($z<(count($q)-2)) mysql_query($main);
+						if ($z<(count($q)-2)) pmb_mysql_query($main);
 					}		
 					
 					if($q["DEFAULT_OPERATOR"]){
@@ -769,18 +842,18 @@ class search {
 							//Ou logique si plusieurs valeurs
 							if ($prefixe) {
 								$requete="create temporary table ".$prefixe."mf_".$j." ENGINE=".$this->current_engine." ".$main;	
-								@mysql_query($requete,$dbh);
+								@pmb_mysql_query($requete,$dbh);
 								$requete="alter table ".$prefixe."mf_".$j." add idiot int(1)";
-								@mysql_query($requete);
+								@pmb_mysql_query($requete);
 								$requete="alter table ".$prefixe."mf_".$j." add unique($field_keyName)";
-								@mysql_query($requete);
+								@pmb_mysql_query($requete);
 							} else {
 								$requete="create temporary table mf_".$j." ENGINE=".$this->current_engine." ".$main;
-								@mysql_query($requete,$dbh);
+								@pmb_mysql_query($requete,$dbh);
 								$requete="alter table mf_".$j." add idiot int(1)";
-								@mysql_query($requete);
+								@pmb_mysql_query($requete);
 								$requete="alter table mf_".$j." add unique($field_keyName)";
-								@mysql_query($requete);
+								@pmb_mysql_query($requete);
 							}
 		
 							if ($last_main_table) {
@@ -789,10 +862,10 @@ class search {
 								} else {
 									$requete="insert ignore into mf_".$j." select ".$last_main_table.".* from ".$last_main_table;
 								}
-	 							mysql_query($requete,$dbh);
-								//mysql_query("drop table mf_".$j,$dbh);
-								mysql_query("drop table ".$last_main_table,$dbh);
-							} //else mysql_query("drop table mf_".$j,$dbh);
+	 							pmb_mysql_query($requete,$dbh);
+								//pmb_mysql_query("drop table mf_".$j,$dbh);
+								pmb_mysql_query("drop table ".$last_main_table,$dbh);
+							} //else pmb_mysql_query("drop table mf_".$j,$dbh);
 							if ($prefixe) {
 								$last_main_table=$prefixe."mf_".$j;
 							} else {
@@ -802,18 +875,18 @@ class search {
 							//ET logique si plusieurs valeurs
 							if ($prefixe) {
 								$requete="create temporary table ".$prefixe."mf_".$j." ENGINE=".$this->current_engine." ".$main;	
-								@mysql_query($requete,$dbh);
+								@pmb_mysql_query($requete,$dbh);
 								$requete="alter table ".$prefixe."mf_".$j." add idiot int(1)";
-								@mysql_query($requete);
+								@pmb_mysql_query($requete);
 								$requete="alter table ".$prefixe."mf_".$j." add unique($field_keyName)";
-								@mysql_query($requete);
+								@pmb_mysql_query($requete);
 							} else {
 								$requete="create temporary table mf_".$j." ENGINE=".$this->current_engine." ".$main;
-								@mysql_query($requete,$dbh);
+								@pmb_mysql_query($requete,$dbh);
 								$requete="alter table mf_".$j." add idiot int(1)";
-								@mysql_query($requete);
+								@pmb_mysql_query($requete);
 								$requete="alter table mf_".$j." add unique($field_keyName)";
-								@mysql_query($requete);
+								@pmb_mysql_query($requete);
 							}
 							
 							if ($last_main_table) {
@@ -822,8 +895,8 @@ class search {
 								} else {
 									$requete="create temporary table and_result_".$j." ENGINE=".$this->current_engine." select ".$last_tables.".* from ".$last_tables." where exists ( select mf_".$j.".* from mf_".$j." where ".$last_tables.".notice_id=mf_".$j.".notice_id)";
 								}
-	 							mysql_query($requete,$dbh);
-								mysql_query("drop table ".$last_tables,$dbh);
+	 							pmb_mysql_query($requete,$dbh);
+								pmb_mysql_query("drop table ".$last_tables,$dbh);
 								
 							} 
 							if ($prefixe) {
@@ -879,6 +952,12 @@ class search {
 					}
 					$main=str_replace("!!field!!",$s[1],$main);
 					
+					if ($q["WORD"]){
+						//recherche par terme...
+						$searcher = new $q['CLASS']($field[$j],$s[1]);
+						$main = $searcher->get_full_query();
+					}
+					
 					//Choix de l'operateur dans la liste
 					if($q["DEFAULT_OPERATOR"]){
 						$operator =$q["DEFAULT_OPERATOR"];
@@ -890,18 +969,18 @@ class search {
 								//Ou logique si plusieurs valeurs
 								if ($prefixe) {
 									$requete="create temporary table ".$prefixe."mf_".$j." ENGINE=".$this->current_engine." ".$main;	
-									@mysql_query($requete,$dbh);
+									@pmb_mysql_query($requete,$dbh);
 									$requete="alter table ".$prefixe."mf_".$j." add idiot int(1)";
-									@mysql_query($requete);
+									@pmb_mysql_query($requete);
 									$requete="alter table ".$prefixe."mf_".$j." add unique($field_keyName)";
-									@mysql_query($requete);
+									@pmb_mysql_query($requete);
 								} else {
 									$requete="create temporary table mf_".$j." ENGINE=".$this->current_engine." ".$main;
-									@mysql_query($requete,$dbh);
+									@pmb_mysql_query($requete,$dbh);
 									$requete="alter table mf_".$j." add idiot int(1)";
-									@mysql_query($requete);
+									@pmb_mysql_query($requete);
 									$requete="alter table mf_".$j." add unique($field_keyName)";
-									@mysql_query($requete);
+									@pmb_mysql_query($requete);
 								}
 			
 								if ($last_main_table) {
@@ -910,10 +989,10 @@ class search {
 									} else {
 										$requete="insert ignore into mf_".$j." select ".$last_main_table.".* from ".$last_main_table;
 									}
-		 							mysql_query($requete,$dbh);
-									//mysql_query("drop table mf_".$j,$dbh);
-									mysql_query("drop table ".$last_main_table,$dbh);
-								} //else mysql_query("drop table mf_".$j,$dbh);
+		 							pmb_mysql_query($requete,$dbh);
+									//pmb_mysql_query("drop table mf_".$j,$dbh);
+									pmb_mysql_query("drop table ".$last_main_table,$dbh);
+								} //else pmb_mysql_query("drop table mf_".$j,$dbh);
 								if ($prefixe) {
 									$last_main_table=$prefixe."mf_".$j;
 								} else {
@@ -924,18 +1003,18 @@ class search {
 								//ET logique si plusieurs valeurs
 								if ($prefixe) {
 									$requete="create temporary table ".$prefixe."mf_".$j." ENGINE=".$this->current_engine." ".$main;	
-									@mysql_query($requete,$dbh);
+									@pmb_mysql_query($requete,$dbh);
 									$requete="alter table ".$prefixe."mf_".$j." add idiot int(1)";
-									@mysql_query($requete);
+									@pmb_mysql_query($requete);
 									$requete="alter table ".$prefixe."mf_".$j." add unique($field_keyName)";
-									@mysql_query($requete);
+									@pmb_mysql_query($requete);
 								} else {
 									$requete="create temporary table mf_".$j." ENGINE=".$this->current_engine." ".$main;
-									@mysql_query($requete,$dbh);
+									@pmb_mysql_query($requete,$dbh);
 									$requete="alter table mf_".$j." add idiot int(1)";
-									@mysql_query($requete);
+									@pmb_mysql_query($requete);
 									$requete="alter table mf_".$j." add unique($field_keyName)";
-									@mysql_query($requete);
+									@pmb_mysql_query($requete);
 								}
 								
 								if ($last_main_table) {
@@ -944,8 +1023,8 @@ class search {
 									} else {
 										$requete="create temporary table and_result_".$j." ENGINE=".$this->current_engine." select ".$last_tables.".* from ".$last_tables." where exists ( select mf_".$j.".* from mf_".$j." where ".$last_tables.".notice_id=mf_".$j.".notice_id)";
 									}
-		 							mysql_query($requete,$dbh);
-									mysql_query("drop table ".$last_tables,$dbh);
+		 							pmb_mysql_query($requete,$dbh);
+									pmb_mysql_query("drop table ".$last_tables,$dbh);
 									
 								} 
 								if ($prefixe) {
@@ -978,27 +1057,34 @@ class search {
     			}
     			if ($last_main_table)
     				$main="select * from ".$last_main_table;
-    		}
+    		}elseif ($s[0]=="authperso") {
+				$aq=new analyse_query($field[0],0,0,1,1,$opac_stemming_active);
+				$members=$aq->get_query_members("authperso_authorities","authperso_infos_global","authperso_index_infos_global","id_authperso_authority");
+				$clause= "where ".$members["where"] ." and notice_id=notice_authperso_notice_num and notice_authperso_authority_num=id_authperso_authority and authperso_authority_authperso_num=".$s[1];
+				$main="select distinct notice_id FROM notices,notices_authperso,authperso_authorities $clause ";
+    			if ($last_main_table)
+    				$main="select * from ".$last_main_table;
+	   		}
     		if ($prefixe) {
     			$table=$prefixe."t_".$i."_".$search[$i];
     			$requete="create temporary table ".$prefixe."t_".$i."_".$search[$i]." ENGINE=".$this->current_engine." ".$main;
-    			mysql_query($requete,$dbh);
+    			pmb_mysql_query($requete,$dbh);
 				$requete="alter table ".$prefixe."t_".$i."_".$search[$i]." add idiot int(1)";
-				@mysql_query($requete);
+				@pmb_mysql_query($requete);
 				$requete="alter table ".$prefixe."t_".$i."_".$search[$i]." add unique($field_keyName)";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
     		} else {
     			$table="t_".$i."_".$search[$i];
  				$requete="create temporary table t_".$i."_".$search[$i]." ENGINE=".$this->current_engine." ".$main;
-    			mysql_query($requete,$dbh);
+    			pmb_mysql_query($requete,$dbh);
 				$requete="alter table t_".$i."_".$search[$i]." add idiot int(1)";
-				@mysql_query($requete);
+				@pmb_mysql_query($requete);
 				$requete="alter table t_".$i."_".$search[$i]." add unique($field_keyName)";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
     		}
 			if ($last_main_table) { 
 				$requete="drop table ".$last_main_table;
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 			}
 			if ($prefixe) {
 				$requete="create temporary table ".$prefixe."t".$i." ENGINE=".$this->current_engine." ";
@@ -1009,26 +1095,26 @@ class search {
 			switch ($$inter) {
 				case "and":
 					$requete.="select ".$table.".* from $last_table,$table where ".$table.".$field_keyName=".$last_table.".$field_keyName and $table.idiot is null and $last_table.idiot is null";
-					@mysql_query($requete,$dbh);
+					@pmb_mysql_query($requete,$dbh);
 					break;
 				case "or":
 					//Si la table précédente est vide, c'est comme au premier jour !
 					$requete_c="select count(*) from ".$last_table;
-					if (!@mysql_result(mysql_query($requete_c),0,0)) {
+					if (!@pmb_mysql_result(pmb_mysql_query($requete_c),0,0)) {
 						$isfirst_criteria=true;
 					} else {
 						$requete.="select * from ".$table;
-						@mysql_query($requete,$dbh);
+						@pmb_mysql_query($requete,$dbh);
 						if ($prefixe) {
 							$requete="alter table ".$prefixe."t".$i." add idiot int(1)";
-							@mysql_query($requete);
+							@pmb_mysql_query($requete);
 							$requete="alter table ".$prefixe."t".$i." add unique($field_keyName)";
-							@mysql_query($requete);
+							@pmb_mysql_query($requete);
 						} else {
 							$requete="alter table t".$i." add idiot int(1)";
-							@mysql_query($requete);
+							@pmb_mysql_query($requete);
 							$requete="alter table t".$i." add unique($field_keyName)";
-							@mysql_query($requete);
+							@pmb_mysql_query($requete);
 						}
 						if ($prefixe) {
 							$requete="insert into ".$prefixe."t".$i." ($field_keyName,idiot) select distinct ".$last_table.".".$field_keyName.",".$last_table.".idiot from ".$last_table." left join ".$table." on ".$last_table.".$field_keyName=".$table.".$field_keyName where ".$table.".$field_keyName is null";
@@ -1036,49 +1122,49 @@ class search {
 							$requete="insert into t".$i." ($field_keyName,idiot) select distinct ".$last_table.".".$field_keyName.",".$last_table.".idiot from ".$last_table." left join ".$table." on ".$last_table.".$field_keyName=".$table.".$field_keyName where ".$table.".$field_keyName is null";
 							//print $requete;
 						}
-						@mysql_query($requete,$dbh);
+						@pmb_mysql_query($requete,$dbh);
 					}
 					break;
 				case "ex":
 					//$requete_not="create temporary table ".$table."_b select notices.notice_id from notices left join ".$table." on notices.notice_id=".$table.".notice_id where ".$table.".notice_id is null";
-					//@mysql_query($requete_not);
+					//@pmb_mysql_query($requete_not);
 					//$requete_not="alter table ".$table."_b add idiot int(1), add unique(notice_id)";
-					//@mysql_query($requete_not);
+					//@pmb_mysql_query($requete_not);
 					$requete.="select ".$last_table.".* from $last_table left join ".$table." on ".$table.".$field_keyName=".$last_table.".$field_keyName where ".$table.".$field_keyName is null";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 					//$requete="drop table ".$table."_b";
-					//@mysql_query($requete);
+					//@pmb_mysql_query($requete);
 					if ($prefixe) {
 						$requete="alter table ".$prefixe."t".$i." add idiot int(1)";
-						@mysql_query($requete);
+						@pmb_mysql_query($requete);
 						$requete="alter table ".$prefixe."t".$i." add unique($field_keyName)";
-						@mysql_query($requete);
+						@pmb_mysql_query($requete);
 					} else {
 						$requete="alter table t".$i." add idiot int(1)";
-						@mysql_query($requete);
+						@pmb_mysql_query($requete);
 						$requete="alter table t".$i." add unique($field_keyName)";
-						@mysql_query($requete);
+						@pmb_mysql_query($requete);
 					}
 					break;
 				default:
 					$isfirst_criteria=true;
-					@mysql_query($requete,$dbh);
+					@pmb_mysql_query($requete,$dbh);
 					$requete="alter table $table add idiot int(1)";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 					$requete="alter table $table add unique($field_keyName)";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 					break;
 			}
 			if (!$isfirst_criteria) {
-				mysql_query("drop table if exists $last_table",$dbh);
-				mysql_query("drop table if exists $table",$dbh);
+				pmb_mysql_query("drop table if exists $last_table",$dbh);
+				pmb_mysql_query("drop table if exists $table",$dbh);
 				if ($prefixe) {
 					$last_table=$prefixe."t".$i;
 				} else {
 					$last_table="t".$i;	
 				}
 			} else {
-				mysql_query("drop table if exists $last_table",$dbh);
+				pmb_mysql_query("drop table if exists $last_table",$dbh);
 				$last_table=$table;
 			}
     	}
@@ -1157,6 +1243,8 @@ class search {
     			$title=$this->pp[$s[0]]->t_fields[$s[1]]["TITRE"];
     		} elseif ($s[0]=="s") {
     			$title=$this->specialfields[$s[1]]["TITLE"];
+    		}elseif ($s[0]=="authperso") {
+    			$title=$this->authpersos[$s[1]]['name'];
     		}
     		$op="op_".$i."_".$search[$i];
     		global $$op;
@@ -1221,9 +1309,9 @@ class search {
     							$requete = str_replace("!!".$var_global."!!", $$var_global, $requete);
     						}
     					}
-    					$resultat=mysql_query($requete);
+    					$resultat=pmb_mysql_query($requete);
     					$opt=array();
-    					while ($r_=@mysql_fetch_row($resultat)) {
+    					while ($r_=@pmb_mysql_fetch_row($resultat)) {
     						$opt[$r_[0]]=$r_[1];
     					}
     					for ($j=0; $j<count($field); $j++) {
@@ -1285,9 +1373,9 @@ class search {
 										break;
 									case "notice" :
 										$requete = "select if(serie_name is not null,if(tnvol is not null,concat(serie_name,', ',tnvol,'. ',tit1),concat(serie_name,'. ',tit1)),tit1) AS tit from notices left join series on serie_id=tparent_id where notice_id='".$field[$j]."' ";
-										$res=mysql_query($requete);
-										if($res && mysql_num_rows($res)){
-											$field[$j] = mysql_result($res,0,0);
+										$res=pmb_mysql_query($requete);
+										if($res && pmb_mysql_num_rows($res)){
+											$field[$j] = pmb_mysql_result($res,0,0);
 										}
 										break;	
 								}
@@ -1333,8 +1421,8 @@ class search {
     							switch ($vvar[$j]["OPTIONS"]["INPUT"][0]["TYPE"]) {
     								case "query_list":
     									$query_list=$vvar[$j]["OPTIONS"]["INPUT"][0]["QUERY"][0]["value"];
-       									$r_list=mysql_query($query_list);
-    									while ($line=mysql_fetch_array($r_list)) {
+       									$r_list=pmb_mysql_query($query_list);
+    									while ($line=pmb_mysql_fetch_array($r_list)) {
     										$as=array_search($line[0],$var_value);
     										if (($as!==false)&&($as!==NULL)) {
     											$var_list_aff[]=$line[1];
@@ -1379,7 +1467,9 @@ class search {
 						break;
 					}
     			}
-    		}
+    		}elseif ($s[0]=="authperso") {    			
+	 			$field_aff[0]=$field[0];
+	    	}
     		
 	   		switch ($operator_multi) {
     			case "and":
@@ -1392,7 +1482,9 @@ class search {
     				$op_list=$msg["search_or"];
     				break;
     		}
-    		$texte=implode(" ".$op_list." ",$field_aff);
+    		if(is_array($field_aff)){
+    			$texte=implode(" ".$op_list." ",$field_aff);
+    		}
     		if (count($fieldvar_aff)) $texte.=" [".implode(" ; ",$fieldvar_aff)."]";
     		
     		$inter="inter_".$i."_".$search[$i];
@@ -1495,9 +1587,9 @@ class search {
     							$requete = str_replace("!!".$var_global."!!", $$var_global, $requete);
     						}
     					}
-    					$resultat=mysql_query($requete);
+    					$resultat=pmb_mysql_query($requete);
     					$opt=array();
-    					while ($r_=@mysql_fetch_row($resultat)) {
+    					while ($r_=@pmb_mysql_fetch_row($resultat)) {
     						$opt[$r_[0]]=$r_[1];
     					}
     					for ($j=0; $j<count($field); $j++) {
@@ -1550,8 +1642,8 @@ class search {
     							switch ($vvar[$j]["OPTIONS"]["INPUT"][0]["TYPE"]) {
     								case "query_list":
     									$query_list=$vvar[$j]["OPTIONS"]["INPUT"][0]["QUERY"][0]["value"];
-       									$r_list=mysql_query($query_list);
-    									while ($line=mysql_fetch_array($r_list)) {
+       									$r_list=pmb_mysql_query($query_list);
+    									while ($line=pmb_mysql_fetch_array($r_list)) {
     										$as=array_search($line[0],$var_value);
     										if (($as!==false)&&($as!==NULL)) {
     											$var_list_aff[]=$line[1];
@@ -1656,7 +1748,53 @@ class search {
     	return $table;
  
     }
-        
+    
+    function get_current_search_map(){
+    	global $pmb_map_activate;
+    	$map = "";
+    	if($pmb_map_activate){
+			$map = "<div id='map_container'><div id='map_search' ></div></div>";
+    	}
+    	return $map;
+    }
+    
+    function check_emprises(){
+    	global $pmb_map_activate;
+    	global $pmb_map_max_holds;
+    	global $pmb_map_size_search_result;
+    	$current_search = $_SESSION['CURRENT'];
+    	$map = "";
+    	$size=explode("*",$pmb_map_size_search_result);
+    	if(count($size)!=2)$map_size="width:800px; height:480px;";
+    	$map_size= "width:".$size[0]."px; height:".$size[1]."px;";
+    	
+    	$map_search_controler = new map_search_controler(null, $current_search, $pmb_map_max_holds,false);
+    	$json = $map_search_controler->get_json_informations();
+    	//Obligatoire pour supprimer les {}
+    	$json = substr($json, 1, strlen($json)-2);
+    	if($map_search_controler->have_results()){
+    		$map.= "<script type='text/javascript'>
+						require(['dojo/ready', 'dojo/dom-attr', 'dojo/parser', 'dojo/dom'], function(ready, domAttr, parser, dom){
+							ready(function(){
+								domAttr.set('map_search', 'data-dojo-type', 'apps/map/map_controler');
+								domAttr.set('map_search', 'data-dojo-props','searchId: ".$current_search.", mode:\"search_result\", ".$json."');
+    									domAttr.set('map_search', 'style', '$map_size');
+    									parser.parse('map_container');
+    	});
+    	});
+    	</script>";
+    	}else{
+    		$map.= "<script type='text/javascript'>
+						require(['dojo/ready', 'dojo/dom-construct'], function(ready, domConstruct){
+							ready(function(){
+								domConstruct.destroy('map_container');
+							});
+						});
+			</script>";
+    	}
+    	print $map;
+    }
+         
     function show_results($url,$url_to_search_form,$hidden_form=true,$search_target="", $acces=false) {
     	global $dbh;
     	global $begin_result_liste;
@@ -1731,8 +1869,8 @@ class search {
 		}
     	
 		$requete="select count(1) from $table";
-		if($res=mysql_query($requete)){
-			$nb_results=mysql_result($res,0,0); 
+		if($res=pmb_mysql_query($requete)){
+			$nb_results=pmb_mysql_result($res,0,0); 
 		}else{
 			array_pop($_SESSION["session_history"]);
     		error_message_history("",$msg["search_impossible"], 1);
@@ -1766,7 +1904,7 @@ class search {
     		$requete .= " order by index_serie, tnvol, index_sew";
     	$requete .= " limit ".$start_page.",".$nb_per_page_search;
     	
-    	$resultat=mysql_query($requete,$dbh);
+    	$resultat=pmb_mysql_query($requete,$dbh);
     	
     	$human_requete = $this->make_human_query();
     	print "<strong>".$msg["search_search_extended"]."</strong> : ".$human_requete ;
@@ -1780,13 +1918,14 @@ class search {
 				if ($current!==false) {
 					$tri_id_info = $_SESSION["tri"] ? "&sort_id=".$_SESSION["tri"] : "";
 					print "&nbsp;<a href='#' onClick=\"openPopUp('./print_cart.php?current_print=$current&action=print_prepare$tri_id_info','print',600,700,-2,-2,'scrollbars=yes,menubar=0,resizable=yes'); return false;\"><img src='./images/basket_small_20x20.gif' border='0' align='center' alt=\"".$msg["histo_add_to_cart"]."\" title=\"".$msg["histo_add_to_cart"]."\"></a>&nbsp;<a href='#' onClick=\"openPopUp('./print.php?current_print=$current&action_print=print_prepare$tri_id_info','print',500,600,-2,-2,'scrollbars=yes,menubar=0'); w.focus(); return false;\"><img src='./images/print.gif' border='0' align='center' alt=\"".$msg["histo_print"]."\" title=\"".$msg["histo_print"]."\"/></a>";
+					print "&nbsp;<a href='#' onClick=\"openPopUp('./download.php?current_download=$current&action_download=download_prepare".$tri_id_info."','download',500,600,-2,-2,'scrollbars=yes,menubar=0'); return false;\"><img src='./images/upload.gif' border='0' align='center' alt=\"".$msg["docnum_download"]."\" title=\"".$msg["docnum_download"]."\"/></a>";
 					if ($pmb_allow_external_search){
 						if($recherche_externe){
 							$tag_a="href='catalog.php?categ=search&mode=7&from_mode=6&external_type=multi'";
 						}else{
 							$tag_a="onClick=\"alert('".$msg["search_interdite_externe"]."')\"";
 						}
-						print "&nbsp;<a ".$tag_a." ><img src='./images/external_search.png' border='0' align='center' alt=\"".$msg["connecteurs_external_search_sources"]."\" title=\"".$msg["connecteurs_external_search_sources"]."\"/></a>";
+						print "&nbsp;<a ".$tag_a."  title='".$msg["connecteurs_external_search_sources"]."'><img src='./images/external_search.png' border='0' align='center' alt=\"".$msg["connecteurs_external_search_sources"]."\"/></a>";
 					}
 					if ($nb_results<=$pmb_nb_max_tri) {
 						print $affich_tris_result_liste;
@@ -1864,7 +2003,9 @@ class search {
 			}
 		}
 		
-    	while ($r=mysql_fetch_object($resultat)) {
+		print $this->get_current_search_map();
+		
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
     		if($nb++>5)	$recherche_ajax_mode=1;
     		switch($r->niveau_biblio) {
 				case 'm' :
@@ -1884,7 +2025,7 @@ class search {
 				case 'b' :
 					// on a affaire a un bulletin
 					$rqt_bull_info = "SELECT s.notice_id as id_notice_mere, bulletin_id as id_du_bulletin, b.notice_id as id_notice_bulletin FROM notices as s, notices as b, bulletins WHERE b.notice_id=$r->notice_id and s.notice_id=bulletin_notice and num_notice=b.notice_id";
-					$bull_ids=@mysql_fetch_object(mysql_query($rqt_bull_info));
+					$bull_ids=@pmb_mysql_fetch_object(pmb_mysql_query($rqt_bull_info));
 					if(!$link_bulletin){
 						$link_bulletin = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id='.$bull_ids->id_du_bulletin;
 					} else {
@@ -2005,8 +2146,8 @@ class search {
     	global $inter_1_f_1;
     	$table=$this->make_search();
     	$requete="select count(1) from $table";
-    	if($res=mysql_query($requete)){
-			$nb_results=mysql_result($res,0,0); 
+    	if($res=pmb_mysql_query($requete)){
+			$nb_results=pmb_mysql_result($res,0,0); 
 		}else{
     		error_message_history("",$msg["search_impossible"], 1);
     		exit();
@@ -2023,9 +2164,9 @@ class search {
 				$requete=$sort->appliquer_tri();
 				if (substr($requete,0,1)=="(") $creer_table_tempo="CREATE TEMPORARY TABLE tri_tempo ENGINE=MyISAM ".$requete."";
 					else $creer_table_tempo="CREATE TEMPORARY TABLE tri_tempo ENGINE=MyISAM (".$requete.")";
-				@mysql_query ($creer_table_tempo);
+				@pmb_mysql_query($creer_table_tempo);
 				$modif_primaire="ALTER TABLE tri_tempo PRIMARY KEY notice_id";
-				@mysql_query ($modif_primaire);
+				@pmb_mysql_query($modif_primaire);
 				$table="tri_tempo";
 			}
     	} 
@@ -2043,12 +2184,12 @@ class search {
     	
     	//$requete="select $table.* from $table left join entrepots on recid=notice_id and (ufield='200' and usubfield='a') or (recid is null) order by i_value"; 
     	//$requete .= " limit ".$start_page.",".$nb_per_page_search;
-    	//$resultat=mysql_query($requete,$dbh);
+    	//$resultat=pmb_mysql_query($requete,$dbh);
 		
 		$requete = "select * from $table";
 		$requete .= " limit ".$start_page.",".$nb_per_page_search;
 		
-		$resultat=mysql_query($requete,$dbh);
+		$resultat=pmb_mysql_query($requete,$dbh);
 		
     	$human_requete = $this->make_human_query();
     	print "<strong>".$msg["search_search_extended"]."</strong> : ".$human_requete ;
@@ -2113,8 +2254,8 @@ class search {
 		flush();
 		$entrepots_localisations = array();
 		$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-		$res = mysql_query($entrepots_localisations_sql);
-		while ($row = mysql_fetch_array($res)) {
+		$res = pmb_mysql_query($entrepots_localisations_sql);
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 		}
 		
@@ -2185,7 +2326,7 @@ class search {
 		<form name='integer_notices' action='./catalog.php?categ=search&mode=7&sub=integre_notices' method='post'>
 			<input type=hidden name='serialized_search' value='".htmlentities($this->serialize_search(),ENT_QUOTES,$charset)."' />
 			<input type='hidden' name='page' value='".htmlentities($page,ENT_QUOTES,$charset)."'/>	";
-    	while ($r=mysql_fetch_object($resultat)) {
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
     		/*if($r->niveau_biblio != 's' && $r->niveau_biblio != 'a') {
 				// notice de monographie
 				$nt = new mono_display($r->notice_id, 6, $this->link, 1, $this->link_expl, '', $this->link_explnum,1, 0, 1, 1, "", 1);
@@ -2254,7 +2395,7 @@ class search {
 			$requete.= "where ";
 			$requete.= "$table.notice_id = res_num and usr_prf_num=".$usr_prf." ";
 			$requete.= "and (((res_rights ^ res_mask) & 4)=0) ";
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
     	}
     }
     
@@ -2377,7 +2518,22 @@ class search {
 	    			$r.="</optgroup>\n";
 	    		}
 			}
-    	}
+    	}    	
+  
+    	//Champs autorités perso
+    	if ($open_optgroup) $r.="</optgroup>\n";
+    	$r_authperso="";
+    	foreach($this->authpersos as $authperso){
+    		if(!$authperso['gestion_multi_search'])continue;
+    		$r_authperso.="<optgroup label='".$msg["authperso_multi_search_by_field_title"]." : ".$authperso['name']."' class='erreur'>\n";
+    		$r_authperso.="<option value='authperso_".$authperso['id']."' style='color:#000000'>".$msg["authperso_multi_search_tous_champs_title"]."</option>\n";
+    		foreach($authperso['fields'] as $field){
+    			$r_authperso.="<option value='a_".$field['id']."' style='color:#000000'>".htmlentities($field['label'],ENT_QUOTES,$charset)."</option>\n";
+    		}
+    		$r_authperso.="</optgroup>\n";
+    	}    	
+    	$r.=$r_authperso;
+    	
     	//Champs speciaux
     	if (!$this->specials_not_visible && $this->specialfields) {
    		 	while (list($id,$sf)=each($this->specialfields)) {
@@ -2451,6 +2607,8 @@ class search {
     				$r.=htmlentities($this->specialfields[$f[1]]["TITLE"],ENT_QUOTES,$charset);
     			} elseif (array_key_exists($f[0],$this->pp)) {
     				$r.=htmlentities($this->pp[$f[0]]->t_fields[$f[1]]["TITRE"],ENT_QUOTES,$charset);
+    			}elseif ($f[0]=="authperso") {
+    				$r.=htmlentities($this->authpersos[$f[1]]['name'],ENT_QUOTES,$charset);					
     			}
     			$r.="</td>";
     			//Recherche des operateurs possibles
@@ -2513,6 +2671,11 @@ class search {
 							break;
 						}
     				}
+    			}elseif ($f[0]=="authperso") {
+					$r.="<span class='search_sous_critere'>
+					<select name='op_".$n."_".$search[$i]."' >
+						<option  value='BOOLEAN' selected>".htmlentities($this->operators["BOOLEAN"],ENT_QUOTES,$charset)."</option>\n					
+					</span>";
     			}
     			$r.="</td>";
     			
@@ -2878,6 +3041,20 @@ class search {
 							}
 						}
 					} else $q[0]["BOOLEAN"]=false;
+					//prise en compte ou non du paramétrage du stemming
+					if($ff["QUERY"][$j]['STEMMING']=="no"){
+						$q[0]["STEMMING"]= false;
+					}else{
+						$q[0]["STEMMING"]= true;
+					}
+					//modif arnaud pour notices_mots_global_index..
+					if ($ff["QUERY"][$j]['WORDSEARCH']=="yes"){
+						$q[0]["WORD"]=true;
+						$q[0]['CLASS'] = $ff["QUERY"][$j]['CLASS'][0]['value'];
+						$q[0]['FOLDER'] = $ff["QUERY"][$j]['CLASS'][0]['FOLDER'];
+						$q[0]['FIELDS'] = $ff["QUERY"][$j]['CLASS'][0]['FIELDS'];
+					}else $q[0]["WORD"]=false;
+					//fin modif arnaud
 					if ($ff["QUERY"][$j]["ISBNSEARCH"]=="yes") {
 						$q[0]["ISBN"]=true;
 					} else $q[0]["ISBN"]=false;
@@ -2958,6 +3135,15 @@ class search {
 						$naf_=explode(",",$naf);
 						$q["NOT_ALLOWED_FOR"]=$naf_;
 					}
+					//modif arnaud pour notices_mots_global_index..
+					if($ff["QUERY"][$j]['WORDSEARCH']=="yes"){
+						$q["WORD"]=true;
+						$q['CLASS'] = $ff["QUERY"][$j]['CLASS'][0]['value'];
+					}else $q["WORD"]=false;
+					if ($ff["QUERY"][$j]['SEARCHABLEONLY']=="yes"){
+						$q["SEARCHABLEONLY"]=true;
+					}else $q["SEARCHABLEONLY"]=false;
+					//fin modif arnaud
 					
 					$q["MAIN"]=$ff["QUERY"][$j]["MAIN"][0]["value"];
 					$q["MULTIPLE_TERM"]=$ff["QUERY"][$j]["MULTIPLETERM"][0]["value"];
@@ -2969,7 +3155,6 @@ class search {
 			}
 			$this->dynamicfields[$ft["PREFIX"]]=$champType;
 		}
-		
 		//Lecture des champs speciaux
 		if ($param["SPECIALFIELDS"][0]["VISIBLE"]=="no") $this->specials_not_visible=true;
 		for ($i=0; $i<count($param["SPECIALFIELDS"][0]["FIELD"]); $i++) {
@@ -3054,6 +3239,7 @@ class search {
     	//global $search;
     	global $msg;
     	global $charset;
+    	global $include_path;
     	
     	$to_unserialize=unserialize($serialized);
     	$search=$to_unserialize["SEARCH"];
@@ -3062,6 +3248,18 @@ class search {
     		$field_="field_".$i."_".$search[$i];
     		$inter="inter_".$i."_".$search[$i];
     		$fieldvar="fieldvar_".$i."_".$search[$i];
+    		if(!isset($GLOBALS[$$op])){
+    			global $$op;
+    		}
+    		if(!isset($GLOBALS[$$field_])){
+    			global $$field_;
+    		}
+    		if(!isset($GLOBALS[$$inter])){
+    			global $$inter;
+    		}
+    		if(!isset($GLOBALS[$$fieldvar])){
+    			global $$fieldvar;
+    		}
     		$$op=$to_unserialize[$i]["OP"];
     		$$field_=$to_unserialize[$i]["FIELD"];
      		$$inter=$to_unserialize[$i]["INTER"];
@@ -3069,7 +3267,7 @@ class search {
     	}
     	
     	$r="";
-   	 	for ($i=0; $i<count($search); $i++) {
+    	for ($i=0; $i<count($search); $i++) {
     		$s=explode("_",$search[$i]);
     		if ($s[0]=="f") {
     			$title=$this->fixedfields[$s[1]]["TITLE"]; 
@@ -3134,9 +3332,9 @@ class search {
     							$requete = str_replace("!!".$var_global."!!", $$var_global, $requete);
     						}
     					}
-    					$resultat=mysql_query($requete);
+    					$resultat=pmb_mysql_query($requete);
     					$opt=array();
-    					while ($r_=@mysql_fetch_row($resultat)) {
+    					while ($r_=@pmb_mysql_fetch_row($resultat)) {
     						$opt[$r_[0]]=$r_[1];
     					}
     					for ($j=0; $j<count($field); $j++) {
@@ -3198,9 +3396,9 @@ class search {
     									break;
     								case "notice" :
     									$requete = "select if(serie_name is not null,if(tnvol is not null,concat(serie_name,', ',tnvol,'. ',tit1),concat(serie_name,'. ',tit1)),tit1) AS tit from notices left join series on serie_id=tparent_id where notice_id='".$field[$j]."' ";
-    									$res=mysql_query($requete);
-    									if($res && mysql_num_rows($res)){
-    										$field[$j] = mysql_result($res,0,0);
+    									$res=pmb_mysql_query($requete);
+    									if($res && pmb_mysql_num_rows($res)){
+    										$field[$j] = pmb_mysql_result($res,0,0);
     									}
     									break;
     							}
@@ -3211,6 +3409,20 @@ class search {
     				default:
     					$field_aff=$field;
     					break;		
+    			}
+    		} elseif ($s[0]=="s") {
+    			//appel de la fonction make_human_query de la classe du champ special
+    			//Recherche du type
+    			$type=$this->specialfields[$s[1]]["TYPE"];
+    			for ($is=0; $is<count($this->tableau_speciaux["TYPE"]); $is++) {
+					if ($this->tableau_speciaux["TYPE"][$is]["NAME"]==$type) {
+						$sf=$this->specialfields[$s[1]];
+						require_once($include_path."/search_queries/specials/".$this->tableau_speciaux["TYPE"][$is]["PATH"]."/search.class.php");
+						$specialclass= new $this->tableau_speciaux["TYPE"][$is]["CLASS"]($s[1],$i,$sf,$this);
+						$field_aff=$specialclass->make_human_query();
+						$field_aff[0]=html_entity_decode(strip_tags($field_aff[0]),ENT_QUOTES,$charset);
+						break;
+					}
     			}
     		}
     		
@@ -3247,8 +3459,8 @@ class search {
     						switch ($vvar[$j]["OPTIONS"]["INPUT"][0]["TYPE"]) {
     							case "query_list":
     								$query_list=$vvar[$j]["OPTIONS"]["INPUT"][0]["QUERY"][0]["value"];
-       								$r_list=mysql_query($query_list);
-    								while ($line=mysql_fetch_array($r_list)) {
+       								$r_list=pmb_mysql_query($query_list);
+    								while ($line=pmb_mysql_fetch_array($r_list)) {
     									$as=array_search($line[0],$var_value);
     									if (($as!==false)&&($as!==NULL)) {
     										$var_list_aff[]=$line[1];
@@ -3430,7 +3642,7 @@ class search {
 		}
     	
 		$requete="select count(1) from $table";
-		$nb_results=mysql_result(mysql_query($requete),0,0);
+		$nb_results=pmb_mysql_result(pmb_mysql_query($requete),0,0);
     	
 		
     	//Y-a-t-il une erreur lors de la recherche ?
@@ -3461,12 +3673,12 @@ class search {
 			$requete .= " limit ".$start_page.",".$nb_per_page_search;
 		}
 		
-    	$resultat=mysql_query($requete,$dbh);
+    	$resultat=pmb_mysql_query($requete,$dbh);
     	
-    	if(mysql_num_rows($resultat)){
+    	if(pmb_mysql_num_rows($resultat)){
 	    	$result_fic=array();
 			$fic = new fiche();
-	    	while ($r=mysql_fetch_object($resultat)) {
+	    	while ($r=pmb_mysql_fetch_object($resultat)) {
 	    		$result_fic[$r->id_fiche] = $fic->get_values($r->id_fiche,1);
 	    	}
 	    	if($result_fic){
@@ -3548,7 +3760,7 @@ function destroy_global_env(){
     		unset($GLOBALS[$inter]);
     		unset($GLOBALS[$fieldvar]);
     	}
-    	 unset($search);
+    	 $search = array();
 	}
 	
 	function reduct_search() {
@@ -3671,6 +3883,83 @@ function destroy_global_env(){
     		$r .= "<b>".$msg["histo_empty"]."</b>";
    		}
     	return $r;
+    }
+    
+    //suppression des champs de recherche marqués FORBIDDEN pour recherche externe
+    function remove_forbidden_fields() {
+    	global $search;
+    	$old_search=array();
+    	$old_search['search']=$search;
+    	for ($i=0; $i<count($search); $i++) {
+    
+    		$inter="inter_".$i."_".$search[$i];
+    		global $$inter;
+    		$old_search[$inter]=$$inter;
+    
+    		$op="op_".$i."_".$search[$i];
+    		global $$op;
+    		$old_search[$op]=$$op;
+    
+    		$field_="field_".$i."_".$search[$i];
+    		global $$field_;
+    		$old_search[$field]=$$field;
+    
+    		$fieldvar="fieldvar_".$i."_".$search[$i];
+    		global $$fieldvar;
+    		$old_search[$fieldvar]=$$fieldvar;
+    
+    	}
+    	$saved_search=array();
+		if(count($search)){
+	    	foreach($search as $k=>$s) {
+	    		if ($s[0]=="f") {
+	    			if ($this->fixedfields[substr($s,2)] && ($this->fixedfields[substr($s,2)]['UNIMARCFIELD']!='FORBIDDEN')) {
+	    				$saved_search[$k]=$s;
+	    			}
+	    		} elseif(array_key_exists($s[0],$this->pp)){
+	    			//Pas de recherche affiliée dans des champs personnalisés.
+	    		} elseif ($s[0]=="s") {
+	    			if ($this->specialfields[substr($s,2)] && ($this->specialfields[substr($s,2)]['UNIMARCFIELD']!='FORBIDDEN')) {
+	    				$saved_search[$k]=$s;
+	    			}
+	    		}elseif (substr($s,0,9)=="authperso") {
+	    			$saved_search[$k]=$s;
+	    		}
+	    	}
+		}
+    
+    	$new_search=array();
+    	$i=0;
+    	foreach($saved_search as $k=>$v) {
+    		$new_search['search'][$i]=$v;
+    
+    		$old_inter="inter_".$k."_".$v;
+    		$new_inter="inter_".$i."_".$v;
+    		global $$old_inter;
+    		$new_search[$new_inter]=$$old_inter;
+    
+    		$old_op="op_".$k."_".$v;
+    		$new_op="op_".$i."_".$v;
+    		global $$old_op;
+    		$new_search[$new_op]=$$old_op;
+    
+    		$old_field="field_".$k."_".$v;
+    		$new_field="field_".$i."_".$v;
+    		global $$old_field;
+    		$new_search[$new_field]=$$old_field;
+    
+    		$old_fieldvar="fieldvar_".$k."_".$v;
+    		$new_fieldvar="fieldvar_".$i."_".$v;
+    		global $$old_fieldvar;
+    		$new_search[$new_fieldvar]=$$old_fieldvar;
+    
+    		$i++;
+    	}
+    	$this->destroy_global_env();
+    	foreach($new_search as $k=>$va) {
+    		global $$k;
+    		$$k=$va;
+    	}
     }
 }
 ?>

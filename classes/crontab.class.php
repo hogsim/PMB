@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: crontab.class.php,v 1.1 2011-07-29 12:32:10 dgoron Exp $
+// $Id: crontab.class.php,v 1.2 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -18,9 +18,9 @@ class crontab {
 			from planificateur 
 			where statut='1' 
 			and id_planificateur= '".$id."'";
-		$res = mysql_query($requete,$dbh);
+		$res = pmb_mysql_query($requete,$dbh);
 		
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = pmb_mysql_fetch_array($res)) {
 			$oldCrontab = Array();				/* récupère les informations de l'ancien crontab */
 			$newCrontab = Array();				/* ajoute le nouveau crontab */
 							

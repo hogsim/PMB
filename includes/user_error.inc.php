@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: user_error.inc.php,v 1.15 2013-07-30 10:00:40 dgoron Exp $
+// $Id: user_error.inc.php,v 1.16 2015-06-10 07:14:04 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -366,7 +366,7 @@ function box_confirm_message($error_title, $error_message, $ret_adr='', $cancel_
 	//affichage
 
 	//affichage
-	print "<br /><div class='erreur'>$msg[540]</div>
+	print "<br /><div class='erreur'>$error_title</div>
 	<div class='row'>
 	<div class='colonne10'>
 	<img src='./images/error.gif' align='left'>

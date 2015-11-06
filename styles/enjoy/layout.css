@@ -1,7 +1,7 @@
 /* +--------------------------------------------------------------------------+
 // 2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +--------------------------------------------------------------------------+
-// $Id: layout.css,v 1.40.2.6 2015-01-17 12:52:25 Alexandre Exp $ */
+// $Id: layout.css,v 1.48 2015-04-07 09:19:05 wlair Exp $ */
 
 
 /* ---------------------------------------------------------------------------*/
@@ -1717,6 +1717,20 @@ body.admin .saisie-contenu, body.admin .astuce, .admin .saisie-contenu, .admin .
 .hmenu span a:hover {
 	background-image: url("images/hmenu_hover.jpg");
 	background-color: #d5d0ca;
+}
+#menu>h3.setpref{
+	position:relative;
+}
+#menu>h3.setpref:before{
+	content:" ";
+	display:block;
+	position:absolute;
+	background-image: url("./images/h3_menu_setpref");
+	height:100%;
+	top:0px;
+	left:0px;
+	width:100%;
+	opacity: 0.5;	
 }
 
 

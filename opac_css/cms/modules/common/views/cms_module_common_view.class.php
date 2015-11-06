@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view.class.php,v 1.7.6.1 2015-03-12 11:02:50 mbertin Exp $
+// $Id: cms_module_common_view.class.php,v 1.12 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -18,12 +18,13 @@ class cms_module_common_view extends cms_module_root{
 	}
 	
 	protected function fetch_datas(){
+		global $dbh;
 		if($this->id){
 		//on commence par aller chercher ses infos
 			$query = " select id_cadre_content, cadre_content_hash, cadre_content_num_cadre, cadre_content_data from cms_cadre_content where id_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->id = $row->id_cadre_content+0;
 				$this->hash = $row->cadre_content_hash;
 				$this->cadre_parent = $row->cadre_content_num_cadre+0;
@@ -33,6 +34,7 @@ class cms_module_common_view extends cms_module_root{
 	}
 	
 	public function save_form(){
+		global $dbh;
 		$this->get_hash();
 		if($this->id){
 			$query = "update cms_cadre_content set";
@@ -48,14 +50,14 @@ class cms_module_common_view extends cms_module_root{
 			($this->cadre_parent ? "cadre_content_num_cadre = ".$this->cadre_parent."," : "")."		
 			cadre_content_data = '".addslashes($this->serialize())."'
 			".$clause;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query,$dbh);
 		if($result){
 			if(!$this->id){
-				$this->id = mysql_insert_id();
+				$this->id = pmb_mysql_insert_id();
 			}
 			//on supprime les anciennes vues...
 			$query = "delete from cms_cadre_content where id_cadre_content != ".$this->id." and cadre_content_type='view' and cadre_content_num_cadre = ".$this->cadre_parent;
-			mysql_query($query);
+			pmb_mysql_query($query,$dbh);
 			
 			return true; 
 		}
@@ -70,12 +72,13 @@ class cms_module_common_view extends cms_module_root{
 	 * Méthode de suppression
 	 */
 	public function delete(){
+		global $dbh;
 		if($this->id){
 			//on commence par éliminer les sous-éléments associé (sait-on jamais...)
 			$query = "select id_cadre_content,cadre_content_object from cms_cadre_content where cadre_content_num_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$sub_elem = new $row->cadre_content_object($row->id_cadre_content);
 					$success = $sub_elem->delete();
 					if(!$success){
@@ -86,7 +89,7 @@ class cms_module_common_view extends cms_module_root{
 			}
 			//on est tout seul, éliminons-nous !
 			$query = "delete from cms_cadre_content where id_cadre_content = ".$this->id;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query,$dbh);
 			if($result){
 				$this->delete_hash();
 				return true;
@@ -104,21 +107,21 @@ class cms_module_common_view extends cms_module_root{
 		return "";		
 	}
 	
-	public function get_headers(){
+	public function get_headers($datas=array()){
 		global $lang;
 		$headers = array();
 		if($this->use_jquery){
 			$headers[] = "<!-- Inclusion JQuery pour le portail-->";
-			$headers[] = "<script type='text/javascript' src='./cms/modules/common/includes/javascript/jquery-1.4.4.min.js"."'></script>";
+			$headers[] = "<script type='text/javascript' src='./cms/modules/common/includes/javascript/jquery-2.1.1.min.js"."'></script>";
 		}
 		if($this->use_dojo){
-			$headers[] = "<link rel='stylesheet' type='text/css' href='https://ajax.googleapis.com/ajax/libs/dojo/1.7.2/dijit/themes/".$this->dojo_theme."/".$this->dojo_theme.".css' />";
+			$headers[] = "<link rel='stylesheet' type='text/css' href='./includes/javascript/dojo/dijit/themes/".$this->dojo_theme."/".$this->dojo_theme.".css' />";
 			$headers[]= "
 			<script type='text/javascript'>
 				dojoConfig = {
 					has: {
-			            'dojo-firebug': true,
-			            'dojo-debug-messages': true
+			            'dojo-firebug': false,
+			            'dojo-debug-messages': false
         			},
 					parseOnLoad : true,
 					locale : '".substr($lang,0,2)."',
@@ -126,7 +129,7 @@ class cms_module_common_view extends cms_module_root{
 				}
 			</script>
 			";
-			$headers[]= "<script src='https://ajax.googleapis.com/ajax/libs/dojo/1.7.2/dojo/dojo.js'/>";
+			$headers[]= "<script src='./includes/javascript/dojo/dojo/dojo.js'/>";
 			$headers[]= "
 			<script type='text/javascript'>
 				dojo.addOnLoad(function (){
@@ -145,8 +148,8 @@ class cms_module_common_view extends cms_module_root{
 		$this->fetch_managed_datas();
 	}
 	
-	protected function fetch_managed_datas(){
-		parent::fetch_managed_datas("views");
+	protected function fetch_managed_datas($type="views"){
+		parent::fetch_managed_datas($type);
 	}
 	
 	protected function get_exported_datas(){

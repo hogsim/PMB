@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categories.inc.php,v 1.34 2012-08-23 14:58:11 mbertin Exp $
+// $Id: categories.inc.php,v 1.35 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -61,9 +61,9 @@ if(($lang==$thes->langue_defaut) || (in_array($lang, thesaurus::getTranslationsL
 		$requete.= "and if (catlg.num_noeud is null, catdef.libelle_categorie not like '~%', catlg.libelle_categorie not like '~%') ";
 }
 $requete.= "order by libelle_categorie limit ".$opac_categories_max_display;
-$result = mysql_query($requete, $dbh);
+$result = pmb_mysql_query($requete, $dbh);
 
-while ($level0 = mysql_fetch_object($result)) {
+while ($level0 = pmb_mysql_fetch_object($result)) {
 	// mise en forme de la catégorie chapeau
 	if(!$level0->num_renvoi_voir) {
 		$id = $level0->num_noeud;
@@ -98,11 +98,11 @@ while ($level0 = mysql_fetch_object($result)) {
 			$requete.= "and if (catlg.num_noeud is null, catdef.libelle_categorie not like '~%', catlg.libelle_categorie not like '~%') ";
 	}
 	$requete.= "order by ".$opac_categories_sub_mode." limit ".$opac_categories_sub_display;
-	$result_bis = mysql_query($requete, $dbh);
+	$result_bis = pmb_mysql_query($requete, $dbh);
 
 
 	$child = array();
-	while($sub_categ = mysql_fetch_object($result_bis)) {
+	while($sub_categ = pmb_mysql_fetch_object($result_bis)) {
 		if(!$sub_categ->num_renvoi_voir) {
 			$id = $sub_categ->num_noeud;
 			$link = $sub_categ->libelle_categorie;

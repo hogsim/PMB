@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: upload_folder.class.php,v 1.2 2011-02-17 14:31:30 arenou Exp $
+// $Id: upload_folder.class.php,v 1.3 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -28,9 +28,9 @@ class upload_folder {
 		if($this->repertoire_id){
 			//Modification
 			$req="select repertoire_nom, repertoire_url, repertoire_path, repertoire_navigation, repertoire_hachage, repertoire_subfolder, repertoire_utf8 from upload_repertoire where repertoire_id='".$this->repertoire_id."'";
-			$res=mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$item = mysql_fetch_object($res);
+			$res=pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$item = pmb_mysql_fetch_object($res);
 				$this->repertoire_nom=$item->repertoire_nom;
 				$this->repertoire_url=$item->repertoire_url;
 				$this->repertoire_path=$item->repertoire_path;

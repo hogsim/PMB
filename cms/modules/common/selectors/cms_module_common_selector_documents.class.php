@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_documents.class.php,v 1.1.4.2 2014-11-18 10:53:44 arenou Exp $
+// $Id: cms_module_common_selector_documents.class.php,v 1.4 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -32,13 +32,13 @@ class cms_module_common_selector_documents extends cms_module_common_selector{
 					$id_article = $type_selector->get_value();
 					$id_article+=0;
 					$query = "select document_link_num_document from cms_documents_links where document_link_type_object = 'article' and document_link_num_object = '".$id_article."'";
-					$result = mysql_query($query);
+					$result = pmb_mysql_query($query);
 					
 					$this->value['type_object'] = 'article';
 					$this->value['num_object'] = $id_article;
 					
-					if(mysql_num_rows($result)){
-						while($row = mysql_fetch_object($result)){
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							$this->value['ids'][] = $row->document_link_num_document+0;
 						}
 					}
@@ -48,13 +48,13 @@ class cms_module_common_selector_documents extends cms_module_common_selector{
 					$id_section = $type_selector->get_value();
 					$id_section+=0;
 					$query = "select document_link_num_document from cms_documents_links where document_link_type_object = 'section' and document_link_num_object = '".$id_section."'";
-					$result = mysql_query($query);
+					$result = pmb_mysql_query($query);
 						
 					$this->value['type_object'] = 'section';
 					$this->value['num_object'] = $id_section;
 						
-					if(mysql_num_rows($result)){
-						while($row = mysql_fetch_object($result)){
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							$this->value['ids'][] = $row->document_link_num_document+0;
 						}
 					}
@@ -64,13 +64,13 @@ class cms_module_common_selector_documents extends cms_module_common_selector{
 					$id_collection = $type_selector->get_value();
 					$id_collection+=0;
 					$query = "select id_document from cms_documents where document_type_object = 'collection' and document_num_object = ".$id_collection;
-					$result = mysql_query($query);
+					$result = pmb_mysql_query($query);
 						
 					$this->value['type_object'] = 'collection';
 					$this->value['num_object'] = $id_collection;
 						
-					if(mysql_num_rows($result)){
-						while($row = mysql_fetch_object($result)){
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							$this->value['ids'][] = $row->id_document+0;
 						}
 					}

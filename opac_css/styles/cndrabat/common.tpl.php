@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: common.tpl.php,v 1.2 2009-05-16 10:52:56 dbellamy Exp $
+// $Id: common.tpl.php,v 1.6 2015-06-22 08:29:09 jpermanne Exp $
 
 // template for PMB OPAC
 
@@ -326,10 +326,13 @@ $liens_opac['lien_rech_serie'] 			= "./index.php?css=$css&lvl=serie_see&id=!!id!
 $liens_opac['lien_rech_collection'] 	= "./index.php?css=$css&lvl=coll_see&id=!!id!!";
 $liens_opac['lien_rech_subcollection'] 	= "./index.php?css=$css&lvl=subcoll_see&id=!!id!!";
 $liens_opac['lien_rech_indexint'] 		= "./index.php?css=$css&lvl=indexint_see&id=!!id!!";
-$liens_opac['lien_rech_motcle'] 		= "./index.php?css=$css&lvl=more_results&mode=keyword&user_query=!!mot!!";
+//$liens_opac['lien_rech_motcle'] 		= "./index.php?css=$css&lvl=more_results&mode=keyword&user_query=!!mot!!";
+$liens_opac['lien_rech_motcle'] 		= "./index.php?lvl=more_results&mode=keyword&user_query=!!mot!!&tags=ok";
 $liens_opac['lien_rech_categ'] 			= "./index.php?css=$css&lvl=categ_see&id=!!id!!";
 $liens_opac['lien_rech_perio'] 			= "./index.php?css=$css&lvl=notice_display&id=!!id!!";
 $liens_opac['lien_rech_bulletin'] 		= "./index.php?css=$css&lvl=bulletin_display&id=!!id!!";
+$liens_opac['lien_rech_concept'] 		= "./index.php?css=$css&lvl=concept_see&id=!!id!!";
+$liens_opac['lien_rech_authperso'] 		= "./index.php?css=$css&lvl=authperso_see&id=!!id!!";
 
 $begin_result_liste = "<a href='javascript:expandAll()'><img src='./images/expand_all.gif' border='0' id='expandall'></a>&nbsp;<a href='javascript:collapseAll()'><img src='./images/collapse_all.gif' border='0' id='collapseall'></a><br />" ;
 
@@ -341,6 +344,7 @@ define( 'AFF_ETA_NOTICES_BOTH_ISBD_FIRST', 5 );
 define( 'AFF_ETA_NOTICES_REDUIT', 8 );
 define( 'AFF_ETA_NOTICES_DEPLIABLES_NON', 0 );
 define( 'AFF_ETA_NOTICES_DEPLIABLES_OUI', 1 );
+define( 'AFF_ETA_NOTICES_TEMPLATE_DJANGO', 9 );
 
 define( 'AFF_BAN_NOTICES_NON', 0 );
 define( 'AFF_BAN_NOTICES_ISBD', 1 );

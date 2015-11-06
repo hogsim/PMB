@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rubriques.class.php,v 1.23 2013-11-28 14:18:52 dgoron Exp $
+// $Id: rubriques.class.php,v 1.24 2015-04-03 11:16:20 jpermanne Exp $
 
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
@@ -39,8 +39,8 @@ class rubriques{
 		global $dbh;
 		
 		$q = "select * from rubriques where id_rubrique = '".$this->id_rubrique."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->num_budget = $obj->num_budget;
 		$this->num_parent = $obj->num_parent;
 		$this->libelle = $obj->libelle;
@@ -64,14 +64,14 @@ class rubriques{
 			$q = "update rubriques set num_budget = '".$this->num_budget."', num_parent = '".$this->num_parent."', libelle = '".$this->libelle."', ";
 			$q.= "commentaires = '".$this->commentaires."', montant = '".$this->montant."', num_cp_compta = '".$this->num_cp_compta."', autorisations = '".$this->autorisations."' ";
 			$q.= "where id_rubrique = '".$this->id_rubrique."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
 		} else {
 			
 			$q = "insert into rubriques set num_budget = '".$this->num_budget."', num_parent = '".$this->num_parent."', libelle = '".$this->libelle."', ";
 			$q.= "commentaires = '".$this->commentaires."', montant = '".$this->montant."', num_cp_compta = '".$this->num_cp_compta."', autorisations = '".$this->autorisations."' ";
-			$r = mysql_query($q, $dbh);
-			$this->id_rubrique = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_rubrique = pmb_mysql_insert_id($dbh);
 			
 		}
 
@@ -86,7 +86,7 @@ class rubriques{
 		if(!$id_rubrique) return; 	
 
 		$q = "delete from rubriques where id_rubrique = '".$id_rubrique."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -108,10 +108,10 @@ class rubriques{
 		$q1.= "and actes.type_acte = '".TYP_ACT_CDE."' ";
 		$q1.= "and actes.statut > '".STA_ACT_AVA."' and ( (actes.statut & ".STA_ACT_FAC.") != ".STA_ACT_FAC.") ";
 		$q1.= "and actes.id_acte = lignes_actes.num_acte ";
-		$r1 = mysql_query($q1, $dbh);
+		$r1 = pmb_mysql_query($q1, $dbh);
 
 		$tab_cde = array();
-		while($row1 = mysql_fetch_object($r1)) {
+		while($row1 = pmb_mysql_fetch_object($r1)) {
 			
 			$tab_cde[$row1->id_ligne]['nb']=$row1->nb;
 			$tab_cde[$row1->id_ligne]['prix']=$row1->prix;				
@@ -128,9 +128,9 @@ class rubriques{
 		$q2.= "and actes.type_acte = '".TYP_ACT_FAC."' ";
 		$q2.= "and actes.id_acte = lignes_actes.num_acte ";
 		$q2.= "group by lignes_actes.lig_ref ";
-		$r2 = mysql_query($q2, $dbh);	
+		$r2 = pmb_mysql_query($q2, $dbh);	
 
-		while($row2 = mysql_fetch_object($r2)) {
+		while($row2 = pmb_mysql_fetch_object($r2)) {
 			if(array_key_exists($row2->lig_ref,$tab_cde)) {
 				$tab_cde[$row2->lig_ref]['nb'] = $tab_cde[$row2->lig_ref]['nb'] - $row2->nb; 
 			}
@@ -143,10 +143,10 @@ class rubriques{
 		$q3.= "lignes_actes.num_rubrique = '".$id_rubrique."' ";
 		$q3.= "and actes.type_acte = '".TYP_ACT_FAC."' ";
 		$q3.= "and actes.id_acte = lignes_actes.num_acte ";
-		$r3 = mysql_query($q3, $dbh);
+		$r3 = pmb_mysql_query($q3, $dbh);
 
 		$tab_fac = array();
-		while($row3 = mysql_fetch_object($r3)) {
+		while($row3 = pmb_mysql_fetch_object($r3)) {
 			
 			$tab_fac[$row3->id_ligne]['nb']=$row3->nb;
 			$tab_fac[$row3->id_ligne]['prix']=$row3->prix;				
@@ -194,10 +194,10 @@ class rubriques{
 		$q1.= "and actes.type_acte = '".TYP_ACT_CDE."' ";
 		$q1.= "and actes.statut > '".STA_ACT_AVA."' and ( (actes.statut & ".STA_ACT_FAC.") != ".STA_ACT_FAC.") ";
 		$q1.= "and actes.id_acte = lignes_actes.num_acte ";
-		$r1 = mysql_query($q1, $dbh);
+		$r1 = pmb_mysql_query($q1, $dbh);
 
 		$tab_cde = array();
-		while($row1 = mysql_fetch_object($r1)) {
+		while($row1 = pmb_mysql_fetch_object($r1)) {
 			
 			$tab_cde[$row1->id_ligne]['q']=$row1->nb;
 			$tab_cde[$row1->id_ligne]['p']=$row1->prix;
@@ -215,9 +215,9 @@ class rubriques{
 		$q2.= "and actes.type_acte = '".TYP_ACT_FAC."' ";
 		$q2.= "and actes.id_acte = lignes_actes.num_acte ";
 		$q2.= "group by lignes_actes.lig_ref ";
-		$r2 = mysql_query($q2, $dbh);	
+		$r2 = pmb_mysql_query($q2, $dbh);	
 
-		while($row2 = mysql_fetch_object($r2)) {
+		while($row2 = pmb_mysql_fetch_object($r2)) {
 			if(array_key_exists($row2->lig_ref,$tab_cde)) {
 				$tab_cde[$row2->lig_ref]['q'] = $tab_cde[$row2->lig_ref]['q'] - $row2->nb; 
 			}
@@ -231,10 +231,10 @@ class rubriques{
 		$q3.= "lignes_actes.num_rubrique in('".$id_rubrique."') ";
 		$q3.= "and actes.type_acte = '".TYP_ACT_FAC."' ";
 		$q3.= "and actes.id_acte = lignes_actes.num_acte ";
-		$r3 = mysql_query($q3, $dbh);
+		$r3 = pmb_mysql_query($q3, $dbh);
 
 		$tab_fac = array();
-		while($row3 = mysql_fetch_object($r3)) {
+		while($row3 = pmb_mysql_fetch_object($r3)) {
 			
 			$tab_fac[$row3->id_ligne]['q']=$row3->nb;
 			$tab_fac[$row3->id_ligne]['p']=$row3->prix;				
@@ -280,10 +280,10 @@ class rubriques{
 		$q.= "and ((actes.statut & '".STA_ACT_AVA."')= '".STA_ACT_AVA."') ";
 		$q.= "and lignes_actes.num_rubrique in('".$id_rubrique."') ";
 		$q.= "and actes.id_acte = lignes_actes.num_acte ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$i=0;
 		$lg=array();
-		while($row = mysql_fetch_object($r)) {
+		while($row = pmb_mysql_fetch_object($r)) {
 			$lg[$i]['q']=$row->nb;
 			$lg[$i]['p']=$row->prix;				
 			$lg[$i]['t']=$row->tva;
@@ -326,10 +326,10 @@ class rubriques{
 		$q.= "and actes.type_acte = '".TYP_ACT_FAC."' ";
 		$q.= "and lignes_actes.num_rubrique in('".$id_rubrique."') ";
 		$q.= "and actes.id_acte = lignes_actes.num_acte ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$i=0;
 		$lg=array();
-		while($row = mysql_fetch_object($r)) {
+		while($row = pmb_mysql_fetch_object($r)) {
 			$lg[$i]['q']=$row->nb;
 			$lg[$i]['p']=$row->prix;				
 			$lg[$i]['t']=$row->tva;
@@ -373,10 +373,10 @@ class rubriques{
 		$q.= "and ((actes.statut & '".STA_ACT_PAY."') = '".STA_ACT_PAY."') ";
 		$q.= "and lignes_actes.num_rubrique in('".$id_rubrique."') ";
 		$q.= "and actes.id_acte = lignes_actes.num_acte ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$i=0;
 		$lg=array();
-		while($row = mysql_fetch_object($r)) {
+		while($row = pmb_mysql_fetch_object($r)) {
 			$lg[$i]['q']=$row->nb;
 			$lg[$i]['p']=$row->prix;				
 			$lg[$i]['t']=$row->tva;
@@ -395,8 +395,8 @@ class rubriques{
 		global $dbh;
 		
 		$q = "select count(1) from rubriques where num_parent ='".$id_rubrique."' ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 	}		
 
 	
@@ -412,8 +412,8 @@ class rubriques{
 		$tab_childs=array();
 		
 		$q="select id_rubrique from rubriques where num_parent='".$id_rubrique."' ";
-		$r=mysql_query($q, $dbh);
-		while($row=mysql_fetch_object($r)){
+		$r=pmb_mysql_query($q, $dbh);
+		while($row=pmb_mysql_fetch_object($r)){
 			if (!array_key_exists($row->id_rubrique, $tab_childs)) {
 				$tab_childs=$tab_childs + rubriques::getChilds($row->id_rubrique);
 			}
@@ -432,8 +432,8 @@ class rubriques{
 		global $dbh;
 		
 		$q = "select id_rubrique, libelle, num_parent from rubriques where id_rubrique = '".$id_rub."' limit 1";
-		$r = mysql_query($q, $dbh);
-		$row = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		$row = pmb_mysql_fetch_object($r);
 		$rub_list = array();
 
 		$i=0;
@@ -445,8 +445,8 @@ class rubriques{
 		}
 		while ($row->num_parent){
 			$q = "select id_rubrique, libelle, num_parent from rubriques where id_rubrique = '".$row->num_parent."' limit 1";
-			$r = mysql_query($q, $dbh);
-			$row = mysql_fetch_object($r);
+			$r = pmb_mysql_query($q, $dbh);
+			$row = pmb_mysql_fetch_object($r);
 			$rub_list[$i][0] = $row->id_rubrique;
 			$rub_list[$i][1] = $row->libelle;
 			$rub_list[$i][2] = $row->num_parent;
@@ -465,8 +465,8 @@ class rubriques{
 		if (!$id_rubrique) return 0;
 
 		$q = "select count(1) from lignes_actes where num_rubrique = '".$id_rubrique."' ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 		
 	}	
 
@@ -480,8 +480,8 @@ class rubriques{
 
 			if($num_parent) {
 				$q = "select sum(montant) from rubriques where num_parent = '".$num_parent."' ";
-				$r = mysql_query($q, $dbh);
-				$total = mysql_result($r,0,0);
+				$r = pmb_mysql_query($q, $dbh);
+				$total = pmb_mysql_result($r,0,0);
 			
 				$parent = new rubriques($num_parent);	
 				$parent->montant = $total;
@@ -512,8 +512,8 @@ class rubriques{
 		global $dbh;
 		
 		$q = "select count(1) from rubriques where id_rubrique = '".$id_rubrique."' and autorisations like('% ".$id_user." %') ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 	
@@ -522,7 +522,7 @@ class rubriques{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE rubriques', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE rubriques', $dbh);
 		return $opt;
 				
 	}
@@ -544,8 +544,8 @@ class rubriques{
 			if($id_exer) $q.= " and num_exercice='".$id_exer."' ";
 			if($userid) $q.= " and autorisations like '% ".$userid." %' ";
 			$q.= "and id_rubrique in ('".implode("','", $tab)."') ";
-			$r = mysql_query($q,$dbh);
-			while($row=mysql_fetch_object($r)) {
+			$r = pmb_mysql_query($q,$dbh);
+			while($row=pmb_mysql_fetch_object($r)) {
 				$res[$row->id_rubrique]=$row->libelle;
 			}
 		}

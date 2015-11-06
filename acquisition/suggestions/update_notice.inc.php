@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: update_notice.inc.php,v 1.26.4.2 2015-02-03 09:42:55 jpermanne Exp $
+// $Id: update_notice.inc.php,v 1.29 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -42,6 +42,9 @@ if ($acces_m==0) {
 		$synchro_rdf = new synchro_rdf();
 	}
 	
+	// Pour l'indexation des concepts
+	require_once($class_path."/index_concept.class.php");
+	
 	$sign = new notice_doublon();
 	$signature = $sign->gen_signature();
 	if ($forcage == 1) {
@@ -73,8 +76,8 @@ if ($acces_m==0) {
 			$requete="select signature, niveau_biblio ,notice_id from notices where signature='$signature' and niveau_biblio='$b_level' ";
 			if($id)	$requete.= " and notice_id != '$id' ";
 
-			$result=mysql_query($requete, $dbh);	
-			if ($dbls=mysql_num_rows($result)) {
+			$result=pmb_mysql_query($requete, $dbh);	
+			if ($dbls=pmb_mysql_num_rows($result)) {
 				//affichage de l'erreur, en passant tous les param postes (serialise) pour l'eventuel forcage 	
 				$tab=new stdClass();
 				$tab->POST = $_POST;
@@ -113,7 +116,7 @@ if ($acces_m==0) {
 				}
 				$enCours=1;
 				while($enCours<=$maxAffiche){
-					$r=mysql_fetch_object($result);
+					$r=pmb_mysql_fetch_object($result);
 					$nt = new mono_display($r->notice_id);
 					
 					echo "
@@ -351,12 +354,12 @@ if ($acces_m==0) {
 		$requete .= ", indexation_lang='${t_notice['indexation_lang']}'";
 		$requete .= $postrequete;
 	
-		$result = mysql_query($requete, $dbh);
+		$result = pmb_mysql_query($requete, $dbh);
 		
 		//traitement audit
 		if (!$id) {
 			$sav_id=0;
-			$id=mysql_insert_id($dbh);
+			$id=pmb_mysql_insert_id($dbh);
 			audit::insert_creation (AUDIT_NOTICE, $id) ;
 		} else {
 			$sav_id=$id;
@@ -383,7 +386,7 @@ if ($acces_m==0) {
 			
 		//Traitement des liens
 		$requete="delete from notices_relations where num_notice=".$id;
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		for ($i=0; $i<$max_rel; $i++) {
 			$f_rel_id="f_rel_id_".$i;
 			$f_rel_type="f_rel_type_".$i;
@@ -391,31 +394,31 @@ if ($acces_m==0) {
 			if ($$f_rel_id) {
 				if(!$sav_id){
 					$requete_rank = "select count(rank) as rank_max from notices_relations where linked_notice='".$$f_rel_id."' and relation_type='".$$f_rel_type."'";
-					$res = mysql_query($requete_rank);
-					if(mysql_num_rows($res))
-						$rang_max = mysql_result($res,0,0);
+					$res = pmb_mysql_query($requete_rank);
+					if(pmb_mysql_num_rows($res))
+						$rang_max = pmb_mysql_result($res,0,0);
 					else $rang_max = 0;	
 					$requete="insert into notices_relations values($id,".$$f_rel_id.",'".$$f_rel_type."',".($rang_max ? $rang_max :$i).")";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 				} else {
 					$req_exist = "select 1 from notices_relations where linked_notice='".$$f_rel_id."' and relation_type='".$$f_rel_type."' and rank='".$$f_rel_rank."'";
-					$res_exist = mysql_query($req_exist);
-					if(mysql_num_rows($res_exist)){
+					$res_exist = pmb_mysql_query($req_exist);
+					if(pmb_mysql_num_rows($res_exist)){
 						$requete_rank = "select count(rank) as rank_max from notices_relations where linked_notice='".$$f_rel_id."' and relation_type='".$$f_rel_type."'";
-						$res = mysql_query($requete_rank);
-						if(mysql_num_rows($res))
-							$rang_max = mysql_result($res,0,0);
+						$res = pmb_mysql_query($requete_rank);
+						if(pmb_mysql_num_rows($res))
+							$rang_max = pmb_mysql_result($res,0,0);
 						else $rang_max = $$f_rel_rank;	
 					} else $rang_max = $$f_rel_rank;				
 					$requete="insert into notices_relations values($id,".$$f_rel_id.",'".$$f_rel_type."',".$rang_max.")";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 				}
 			}
 		}
 		
 		// traitement des auteurs
 		$rqt_del = "delete from responsability where responsability_notice='$id' ";
-		$res_del = mysql_query($rqt_del);
+		$res_del = pmb_mysql_query($rqt_del);
 		$rqt_ins = "insert into responsability (responsability_author, responsability_notice, responsability_fonction, responsability_type, responsability_ordre) VALUES ";
 		$i=0;
 		while ($i<=count ($f_aut)-1) {
@@ -425,14 +428,14 @@ if ($acces_m==0) {
 				$type_aut = $f_aut[$i]['type'];
 				$ordre_aut = $f_aut[$i]['ordre'];
 				$rqt = $rqt_ins . " ('$id_aut','$id','$fonc_aut','$type_aut', $ordre_aut) " ; 
-				$res_ins = @mysql_query($rqt);
+				$res_ins = @pmb_mysql_query($rqt);
 			}
 			$i++;
 		}
 			
 		// traitement des categories
 		$rqt_del = "DELETE FROM notices_categories WHERE notcateg_notice='$id' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "INSERT INTO notices_categories (notcateg_notice, num_noeud, ordre_categorie) VALUES ";
 		if(!isset($f_categ)) $f_categ = array();
 		while (list ($key, $val) = each ($f_categ)) {
@@ -440,10 +443,15 @@ if ($acces_m==0) {
 			if ($id_categ) {
 				$ordre_categ = $val['ordre'];
 				$rqt = $rqt_ins . " ('$id','$id_categ',$ordre_categ) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
+		// traitement des concepts
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($id, TYPE_NOTICE);
+			$index_concept->save();
+		}
 		// traitement des langues
 		// langues
 		$f_lang_form = array();
@@ -460,14 +468,14 @@ if ($acces_m==0) {
 		}
 	
 		$rqt_del = "delete from notices_langues where num_notice='$id' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "insert into notices_langues (num_notice, type_langue, code_langue, ordre_langue) VALUES ";
 		while (list ($key, $val) = each ($f_lang_form)) {
 			$tmpcode_langue=$val['code'];
 			if ($tmpcode_langue) {
 				$tmpordre_langue = $val['ordre'];
 				$rqt = $rqt_ins . " ('$id',0, '$tmpcode_langue', $tmpordre_langue) " ; 
-				$res_ins = mysql_query($rqt, $dbh);
+				$res_ins = pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
@@ -478,7 +486,7 @@ if ($acces_m==0) {
 			if ($tmpcode_langue) {
 				$tmpordre_langue = $val['ordre'];
 				$rqt = $rqt_ins . " ('$id',1, '$tmpcode_langue', $tmpordre_langue) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: import_aix.inc.php,v 1.2 2009-06-10 09:09:06 dbellamy Exp $
+// $Id: import_aix.inc.php,v 1.3 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -120,11 +120,11 @@ function import_lecteurs($type_import){
         	Print "Suppression des groupes et lecteurs sans prêts.<br /><br />";
         	
         	//Vide la table empr_groupe
-            mysql_query("DELETE FROM empr_groupe",$dbh);
+            pmb_mysql_query("DELETE FROM empr_groupe",$dbh);
             //Supprime les lecteurs qui n'ont pas de prêts en cours
             $req_select_verif_pret = "SELECT id_empr FROM empr left join pret on id_empr=pret_idempr WHERE pret_idempr is null ";
-            $select_verif_pret = mysql_query($req_select_verif_pret,$dbh);
-            while (($verif_pret = mysql_fetch_array($select_verif_pret))) {
+            $select_verif_pret = pmb_mysql_query($req_select_verif_pret,$dbh);
+            while (($verif_pret = pmb_mysql_fetch_array($select_verif_pret))) {
             	//pour tous les lecteurs qui n'ont pas de pret en cours
                 emprunteur::del_empr($verif_pret["id_empr"]);
             }
@@ -213,8 +213,8 @@ function import_lecteurs($type_import){
 							$e_data['cb'] = trim($t_xml[$i]['INM:NUMERO-EMPRUNTEUR'][0]);
 						} else { 
 							$q="select (count(*)+1) from empr";
-							$r=mysql_query($q,$dbh);
-							$x=mysql_result($r,0,0);
+							$r=pmb_mysql_query($q,$dbh);
+							$x=pmb_mysql_result($r,0,0);
 							$e_data['cb'] = 'PMB_'.$x;
 						}
 						
@@ -282,16 +282,16 @@ function import_lecteurs($type_import){
 						
 						//date fin adhesion
 						$qda="select duree_adhesion from empr_categ where id_categ_empr='".$e_data['categ']."' ";
-						$rda=mysql_query($qda,$dbh);
-						if(mysql_num_rows($rda)) {
-							$da=mysql_result($rda,0,0);
+						$rda=pmb_mysql_query($qda,$dbh);
+						if(pmb_mysql_num_rows($rda)) {
+							$da=pmb_mysql_result($rda,0,0);
 						}else {
 							$da=365;
 						}
 						$qd="select date_add('".$e_data['date_adhesion']."', INTERVAL ".$da." DAY) ";
-						$rd=mysql_query($qd,$dbh);
-						if(mysql_num_rows($rd)) {
-							$de=mysql_result($rd,0,0);
+						$rd=pmb_mysql_query($qd,$dbh);
+						if(pmb_mysql_num_rows($rd)) {
+							$de=pmb_mysql_result($rd,0,0);
 						}
 						$e_data['date_expiration']=$de;
 						
@@ -313,38 +313,38 @@ function import_lecteurs($type_import){
 	
 								//groupe
 								$qg="select groupe_id from groupe where libelle_groupe='".addslashes($t_xml[$i]['INM:SERVICE'][0])."' limit 1 ";
-								$rg=mysql_query($qg,$dbh);
-								if(mysql_num_rows($rg)) {
-									$g_id=mysql_result($rg,0,0);
+								$rg=pmb_mysql_query($qg,$dbh);
+								if(pmb_mysql_num_rows($rg)) {
+									$g_id=pmb_mysql_result($rg,0,0);
 								} else {
 									$qg="insert into groupe set libelle_groupe='".addslashes($t_xml[$i]['INM:SERVICE'][0])."' ";
-									mysql_query($qg,$dbh);
-									$g_id=mysql_insert_id($dbh);
+									pmb_mysql_query($qg,$dbh);
+									$g_id=pmb_mysql_insert_id($dbh);
 								}
 								$qeg = "insert into empr_groupe (empr_id,groupe_id) values ($e_id,$g_id) ";
-								mysql_query($qeg,$dbh);
+								pmb_mysql_query($qeg,$dbh);
 								
 								//champ perso service
 								$qn="select idchamp from empr_custom where name='service' ";
-								$rn=mysql_query($qn,$dbh);
-								if (mysql_num_rows($rn)) {
-									$idc=mysql_result($rn,0,0);
+								$rn=pmb_mysql_query($qn,$dbh);
+								if (pmb_mysql_num_rows($rn)) {
+									$idc=pmb_mysql_result($rn,0,0);
 									$requete="select max(empr_custom_list_value*1) from empr_custom_lists where empr_custom_champ=$idc ";
-									$resultat=mysql_query($requete,$dbh);
-									$max=@mysql_result($resultat,0,0);
+									$resultat=pmb_mysql_query($requete,$dbh);
+									$max=@pmb_mysql_result($resultat,0,0);
 									$n=$max+1;
 									$requete="select empr_custom_list_value from empr_custom_lists where empr_custom_list_lib='".addslashes($t_xml[$i]['INM:SERVICE'][0])."' and empr_custom_champ=$idc ";
-									$resultat=mysql_query($requete,$dbh);
-									if (mysql_num_rows($resultat)) {
-										$value=mysql_result($resultat,0,0);
+									$resultat=pmb_mysql_query($requete,$dbh);
+									if (pmb_mysql_num_rows($resultat)) {
+										$value=pmb_mysql_result($resultat,0,0);
 									} else {
 										$requete="insert into empr_custom_lists (empr_custom_champ,empr_custom_list_value,empr_custom_list_lib) values($idc,$n,'".addslashes($t_xml[$i]['INM:SERVICE'][0])."')";
-										mysql_query($requete,$dbh);
+										pmb_mysql_query($requete,$dbh);
 										$value=$n;
 										$n++;
 									}
 									$requete="insert into empr_custom_values (empr_custom_champ,empr_custom_origine,empr_custom_integer) values($idc,$e_id,$value)";
-									mysql_query($requete,$dbh);
+									pmb_mysql_query($requete,$dbh);
 								}
 							}
 						} else {
@@ -503,9 +503,9 @@ function import_prets() {
 						//id exemplaire
 						$expl_id=0;
 						$q="select expl_id from exemplaires where expl_cb='".$t_xml[$i]['INM:CODE-BARRE-OBJET'][0]."' ";
-						$r=mysql_query($q,$dbh);
-						if(mysql_num_rows($r)) {
-							$expl_id=mysql_result($r,0,0);
+						$r=pmb_mysql_query($q,$dbh);
+						if(pmb_mysql_num_rows($r)) {
+							$expl_id=pmb_mysql_result($r,0,0);
 						} else {
 							$tab_err[]=$t_xml[$i]['INM:NUMERO-DE-PRET'][0];
 							continue;
@@ -514,9 +514,9 @@ function import_prets() {
 						//id lecteur
 						$empr_id=0;
 						$q="select id_empr from empr where empr_cb='".$t_xml[$i]['INM:CODE-EMPRUNTEUR'][0]."' ";
-						$r=mysql_query($q,$dbh);
-						if(mysql_num_rows($r)) {
-							$empr_id=mysql_result($r,0,0);
+						$r=pmb_mysql_query($q,$dbh);
+						if(pmb_mysql_num_rows($r)) {
+							$empr_id=pmb_mysql_result($r,0,0);
 						} else {
 							$tab_err[]=$t_xml[$i]['INM:NUMERO-DE-PRET'][0];
 							continue;
@@ -531,7 +531,7 @@ function import_prets() {
 						// insert pret 
 						$q = "INSERT INTO pret SET pret_idempr = '".$empr_id."', pret_idexpl = '".$expl_id."', pret_date   = '".$date_pret."', ";
 						$q.= "pret_retour = '".$date_retour."', retour_initial = '".$date_retour."' ";
-						mysql_query($q,$dbh);
+						pmb_mysql_query($q,$dbh);
 											
 					} else {
 						$tab_err[]=$t_xml[$i]['INM:NUMERO-DE-PRET'][0];

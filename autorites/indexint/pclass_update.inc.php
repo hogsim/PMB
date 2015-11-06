@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pclass_update.inc.php,v 1.3 2007-07-31 09:23:03 ngantier Exp $
+// $Id: pclass_update.inc.php,v 1.4 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -24,6 +24,6 @@ $requete = "";
 if($id_pclass) $requete = "UPDATE pclassement SET name_pclass='".$libelle."', typedoc='".$typedoc."'  WHERE id_pclass =".$id_pclass;
 	else $requete = "INSERT INTO pclassement SET name_pclass='".$libelle."', typedoc='".$typedoc."' "; 
 
-mysql_query($requete, $dbh);	
+pmb_mysql_query($requete, $dbh);	
 
 include('./autorites/indexint/pclass.inc.php');

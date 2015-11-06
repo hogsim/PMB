@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sel_word.inc.php,v 1.3 2009-05-16 10:52:44 dbellamy Exp $letter $mot
+// $Id: sel_word.inc.php,v 1.4 2015-04-03 11:16:20 jpermanne Exp $letter $mot
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");		
 
@@ -23,9 +23,9 @@ case 'modif':
 		//vérification de l'existence
 		$rqt="select id_mot, mot from mots left join linked_mots on (num_mot=id_mot) where mot='".$f_word_add."' and id_mot not in (select num_mot from linked_mots where linked_mots.num_linked_mot=0) group by id_mot";
 		//$rqt="select id_mot from mots where mot='".$f_word_add."'";
-		$execute_query=mysql_query($rqt);
-		if (!$execute_query||!mysql_num_rows($execute_query)) {	
-				@mysql_query("INSERT INTO mots (mot) values ('".addslashes($f_word_add)."')");
+		$execute_query=pmb_mysql_query($rqt);
+		if (!$execute_query||!pmb_mysql_num_rows($execute_query)) {	
+				@pmb_mysql_query("INSERT INTO mots (mot) values ('".addslashes($f_word_add)."')");
 				$deb_rech=$f_word_add;
 				$letter=convert_diacrit(pmb_strtolower(pmb_substr($deb_rech,0,1)));
 		} else print "<script> alert('".$msg["word_exist"]."'); document.location='".$baseurl."&action=add';</script>"; 
@@ -52,8 +52,8 @@ default :
 	$words_for_syn1=array();
 	//recherche des mots
 	$rqt="select id_mot, mot from mots left join linked_mots on (num_mot=id_mot) where id_mot not in (select num_mot from linked_mots where linked_mots.num_linked_mot=0) group by id_mot order by mot";
-	$execute_query=mysql_query($rqt);
-	while ($r=mysql_fetch_object($execute_query)) {
+	$execute_query=pmb_mysql_query($rqt);
+	while ($r=pmb_mysql_fetch_object($execute_query)) {
 		$words_for_syn[$r->id_mot]=stripslashes($r->mot);
 		$words_for_syn1[$r->id_mot]=convert_diacrit(pmb_strtolower($r->mot));
 	}

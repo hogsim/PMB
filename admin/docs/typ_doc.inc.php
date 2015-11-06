@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: typ_doc.inc.php,v 1.21 2013-11-29 13:55:10 dgoron Exp $
+// $Id: typ_doc.inc.php,v 1.22 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -36,13 +36,13 @@ function show_typdoc_list() {
 		</tr>';
 
 	$q = 'SELECT idtyp_doc, tdoc_libelle, duree_pret, duree_resa, tdoc_owner, tdoc_codage_import, lender_libelle, tarif_pret, short_loan_duration FROM docs_type left join lenders on tdoc_owner=idlender ORDER BY tdoc_libelle, idtyp_doc';
-	$res = mysql_query($q, $dbh);
+	$res = pmb_mysql_query($q, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		$pair_impair = (($parity % 2)?'even':'odd');
 		$parity += 1;
 		$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./admin.php?categ=docs&sub=typdoc&action=modif&id=$row->idtyp_doc';\" ";
@@ -160,8 +160,8 @@ switch($action) {
 		$form_short_loan_duration+=0;
 		$form_tarif_pret+=0;
 		$q = "SELECT count(1) FROM docs_type WHERE (tdoc_libelle='$form_libelle' AND idtyp_doc!='$id' )  LIMIT 1 ";
-		$res = mysql_query($q, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($q, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 			error_form_message($form_libelle.$msg['docs_label_already_used']);
 		} else {
@@ -173,7 +173,7 @@ switch($action) {
 			$q.= (($pmb_gestion_financiere && $pmb_gestion_tarif_prets==1)?"tarif_pret='$form_tarif_pret', ":'');
 			$q.= "tdoc_codage_import='$form_tdoc_codage_import', tdoc_owner='$form_tdoc_owner' ";
 			$q.= (($id)?"where idtyp_doc=$id ":'');
-			$res = mysql_query($q, $dbh);
+			$res = pmb_mysql_query($q, $dbh);
 		}
 		show_typdoc_list();
 		break;
@@ -187,9 +187,9 @@ switch($action) {
 		$id+=0;
 		if($id){
 			$q = "SELECT tdoc_libelle,duree_pret,short_loan_duration,duree_resa,tdoc_codage_import,tdoc_owner,tarif_pret FROM docs_type WHERE idtyp_doc='$id' LIMIT 1 ";
-			$res = mysql_query($q, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($q, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				show_typdoc_form($row->tdoc_libelle, $row->duree_pret, $row->short_loan_duration, $row->duree_resa, $row->tdoc_codage_import, $row->tdoc_owner, $id, $row->tarif_pret);
 			} else {
 				show_typdoc_list();
@@ -204,10 +204,10 @@ switch($action) {
 		if($id) {
 			// requête sur 'exemplaires' pour voir si ce typdoc est encore utilisé
 			$total = 0;
-			$total = mysql_result(mysql_query("select count(1) from exemplaires where expl_typdoc ='".$id."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from exemplaires where expl_typdoc ='".$id."' ", $dbh), 0, 0);
 			if ($total==0) {
 				$q = "DELETE FROM docs_type WHERE idtyp_doc=$id ";
-				$res = mysql_query($q, $dbh);
+				$res = pmb_mysql_query($q, $dbh);
 				show_typdoc_list();
 			} else {
 				$msg_suppr_err = $admin_liste_jscript;

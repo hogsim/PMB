@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: filter_results.class.php,v 1.4.2.1 2015-03-05 09:21:51 mbertin Exp $
+// $Id: filter_results.class.php,v 1.7 2015-04-16 12:23:23 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -13,23 +13,24 @@ class filter_results {
 	private $notice_ids = '';
 	
 	
-	function __construct($notice_ids) {
-		
+	function __construct($notice_ids,$filter_by_view=1) {
+		if(is_array($notice_ids))$notice_ids=implode(',', $notice_ids);		
 		$this->notice_ids = $notice_ids;
 
 		if($this->notice_ids!=''){
 			//filtrage sur statut ou droits d'accès..
 			$query = $this->_get_filter_query();
-			$res = mysql_query($query);
+			$res = pmb_mysql_query($query);
 			$this->notice_ids="";
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_assoc($res)){
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_assoc($res)){
 					if($this->notice_ids != "") $this->notice_ids.=",";
 					$this->notice_ids.=$row['id_notice'];
 				}
 			}
 			//filtrage par vue...
-			$this->_filter_by_view();
+			
+			if($filter_by_view) $this->_filter_by_view();
 		}
 	}
 	
@@ -38,16 +39,19 @@ class filter_results {
 		return $this->notice_ids;
 	} 
 	
+	public function get_array_results(){
+		return explode(",", $this->notice_ids);
+	}
 	
 	protected function _filter_by_view(){
 		global $opac_opac_view_activate;
 		
 		if($opac_opac_view_activate && $_SESSION["opac_view"] && $_SESSION["opac_view_query"] ){
 			$query = "select opac_view_num_notice as id_notice from opac_view_notices_".$_SESSION["opac_view"]." where opac_view_num_notice in (".$this->notice_ids.")";
-			$res = mysql_query($query);
+			$res = pmb_mysql_query($query);
 			$this->notice_ids = "";
-			if($res && mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){
+			if($res && pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){
 					if ($this->notice_ids != "") $this->notice_ids.= ",";
 					$this->notice_ids.= $row->id_notice;
 				}

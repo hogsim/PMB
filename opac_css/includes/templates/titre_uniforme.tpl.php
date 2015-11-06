@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titre_uniforme.tpl.php,v 1.2 2014-03-05 08:47:18 mhoestlandt Exp $
+// $Id: titre_uniforme.tpl.php,v 1.3 2015-06-19 07:31:05 vtouchard Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -18,6 +18,7 @@ $titre_uniforme_level2_display = "
 <h3>".sprintf($msg["titre_uniforme_detail"],"!!name!!")."</h3>		
 !!auteur!!
 !!forme!!
+!!forme_list!!		
 !!date!!
 !!lieu!!
 !!sujet!!
@@ -28,6 +29,7 @@ $titre_uniforme_level2_display = "
 !!distribution!!
 !!reference!!
 !!tonalite!!
+!!tonalite_list!!
 !!coordonnees!!
 !!equinoxe!!
 !!subdivision!!

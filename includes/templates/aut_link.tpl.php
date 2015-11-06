@@ -2,12 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: aut_link.tpl.php,v 1.3 2010-12-30 08:51:36 dbellamy Exp $
+// $Id: aut_link.tpl.php,v 1.4 2014-10-03 11:49:25 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
 // templates pour la gestion des lien entre autorités
-$add_aut_link="
+$add_aut_link=" 
 <script>
 	!!js_aut_link_table_list!!
 	

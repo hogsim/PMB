@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: expl.class.php,v 1.68.2.7 2015-04-16 11:42:47 jpermanne Exp $
+// $Id: expl.class.php,v 1.77 2015-04-16 11:39:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -11,6 +11,7 @@ require_once($class_path."/parametres_perso.class.php");
 require_once($class_path."/audit.class.php");
 require_once($class_path."/sur_location.class.php");
 require_once($class_path."/serialcirc.class.php");
+require_once($class_path."/index_concept.class.php");
 
 if ($pmb_numero_exemplaire_auto) {
 	if (file_exists($include_path."/$pmb_numero_exemplaire_auto_script")) {
@@ -79,10 +80,10 @@ class exemplaire {
 			$requete = "SELECT *, section_libelle, location_libelle";
 			$requete .= " FROM exemplaires LEFT JOIN docs_section ON (idsection = expl_section) LEFT JOIN docs_location ON (idlocation = expl_location)";
 			$requete .= $clause_where ;
-			$result = @mysql_query($requete, $dbh);
+			$result = @pmb_mysql_query($requete, $dbh);
 	
-			if(mysql_num_rows($result)) {
-				$item = mysql_fetch_object($result);
+			if(pmb_mysql_num_rows($result)) {
+				$item = pmb_mysql_fetch_object($result);
 				$this->expl_id		= $item->expl_id;
 				$this->cb			= $item->expl_cb;
 				$this->id_notice	= $item->expl_notice;
@@ -173,9 +174,9 @@ class exemplaire {
 		}
 		if ($this->id_bulletin) {
   			$qb="select bulletin_notice from bulletins where bulletin_id='".$this->id_bulletin."' ";
-   			$rb=@mysql_query($qb, $dbh);
-   			if (mysql_num_rows($rb)) {
-   				$this->id_bulletin_notice=mysql_result($rb,0,0);
+   			$rb=@pmb_mysql_query($qb, $dbh);
+   			if (pmb_mysql_num_rows($rb)) {
+   				$this->id_bulletin_notice=pmb_mysql_result($rb,0,0);
    			}
 		}
 	}	
@@ -213,8 +214,8 @@ class exemplaire {
 			
 			if($this->expl_id){
 				$rqt = "SELECT id_transfert FROM transferts, transferts_demande WHERE num_transfert=id_transfert and etat_transfert=0 AND num_expl='".$this->expl_id."' " ;
-				$res = mysql_query ( $rqt );
-				if (!mysql_num_rows($res)){
+				$res = pmb_mysql_query( $rqt );
+				if (!pmb_mysql_num_rows($res)){
 					// pas de transfert en cours, on met à jour transfert_location_origine
 					$transfert_origine= ", transfert_location_origine='".$this->location_id."', transfert_statut_origine='".$this->statut_id."', transfert_section_origine='".$this->section_id."' ";
 				}
@@ -248,9 +249,9 @@ class exemplaire {
 			if ($this->expl_id) {
 				$q.= "where expl_id='".$this->expl_id."' ";
 			}
-			$r = mysql_query($q, $dbh); 
+			$r = pmb_mysql_query($q, $dbh); 
 			if ($r) {
-				if(!$this->expl_id) $this->expl_id = mysql_insert_id($dbh);
+				if(!$this->expl_id) $this->expl_id = pmb_mysql_insert_id($dbh);
 				else{					
 					$audit->get_new_infos("SELECT expl_statut, expl_location, transfert_location_origine, transfert_statut_origine, transfert_section_origine, expl_owner FROM exemplaires WHERE expl_cb='".$this->cb."' ");
 					$audit->save_info_modif(AUDIT_EXPL, $this->expl_id ,"expl.class.php");
@@ -272,25 +273,26 @@ class exemplaire {
 		global $option_num_auto;
 		global $dbh;
 		global $pmb_expl_show_dates;
-	
+		global $thesaurus_concepts_active;
+		
 		if (isset($option_num_auto)) {
 	  		$requete="DELETE from exemplaires_temp where sess not in (select SESSID from sessions)";
-	   		mysql_query($requete,$dbh);
+	   		pmb_mysql_query($requete,$dbh);
 	  	
 	    	//Appel à la fonction de génération automatique de cb
 	    	$code_exemplaire =init_gen_code_exemplaire($this->id_notice,$this->id_bulletin);
 	    	do {
 	    		$code_exemplaire = gen_code_exemplaire($this->id_notice,$this->id_bulletin,$code_exemplaire);
 	    		$requete="select expl_cb from exemplaires WHERE expl_cb='$code_exemplaire'";
-	    		$res0 = mysql_query($requete,$dbh);
+	    		$res0 = pmb_mysql_query($requete,$dbh);
 	    		$requete="select cb from exemplaires_temp WHERE cb='$code_exemplaire' AND sess <>'".SESSid."'";
-	    		$res1 = mysql_query($requete,$dbh);
-	    	} while((mysql_num_rows($res0)||mysql_num_rows($res1)));
+	    		$res1 = pmb_mysql_query($requete,$dbh);
+	    	} while((pmb_mysql_num_rows($res0)||pmb_mysql_num_rows($res1)));
 	    		
 	   		//Memorise dans temps le cb et la session pour le cas de multi utilisateur session
 	   		$this->cb = $code_exemplaire;
 	   		$requete="INSERT INTO exemplaires_temp (cb ,sess) VALUES ('$this->cb','".SESSid."')";
-	   		mysql_query($requete,$dbh);
+	   		pmb_mysql_query($requete,$dbh);
 		}
 	
 		$form = str_replace('!!action!!', $action, $form);
@@ -383,6 +385,12 @@ class exemplaire {
 			$form = str_replace('<!-- exp_return_date -->',format_date($this->date_retour),$form);
 		}
 		
+		// Indexation concept
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($this->expl_id, TYPE_EXPL);
+			$form = str_replace('<!-- index_concept_form -->', $index_concept->get_form("expl"), $form);
+		}
+		
 		$p_perso=new parametres_perso("expl");
 		if (!$p_perso->no_special_fields) {
 			$c=0;
@@ -464,16 +472,16 @@ class exemplaire {
 		if (!$this->location_id) $this->location_id=$deflt_docs_location;
 	
 		$rqtloc = "SELECT idlocation FROM docs_location order by location_libelle";
-		$resloc = mysql_query($rqtloc, $dbh);
-		while (($loc=mysql_fetch_object($resloc))) {
+		$resloc = pmb_mysql_query($rqtloc, $dbh);
+		while (($loc=pmb_mysql_fetch_object($resloc))) {
 			$requete = "SELECT idsection, section_libelle FROM docs_section, docsloc_section where idsection=num_section and num_location='$loc->idlocation' order by section_libelle";
-			$result = mysql_query($requete, $dbh);
-			$nbr_lignes = mysql_num_rows($result);
+			$result = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = pmb_mysql_num_rows($result);
 			if ($nbr_lignes) {			
 				if ($loc->idlocation==$this->location_id) $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:block\">\r\n";
 					else $selector .= "<div id=\"docloc_section".$loc->idlocation."\" style=\"display:none\">\r\n";
 				$selector .= "<select name='f_ex_section".$loc->idlocation."' id='f_ex_section".$loc->idlocation."'>\r\n";
-				while (($line = mysql_fetch_row($result))) {
+				while (($line = pmb_mysql_fetch_row($result))) {
 					$selector .= "<option value='$line[0]'";
 					$line[0] == $this->section_id ? $selector .= ' SELECTED>' : $selector .= '>';
 		 			$selector .= htmlentities($line[1],ENT_QUOTES, $charset).'</option>\r\n';
@@ -517,69 +525,69 @@ class exemplaire {
 		// check sur le type de  la variable passée en paramètre
 		if(!sizeof($data) || !is_array($data)) {  
 			// si ce n'est pas un tableau ou un tableau vide, on retourne 0
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[544]."') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[544]."') ") ;
 			return 0;                         
 			}                                 
 	                                                  
 		if ($data['quoi_faire']=="") $data['quoi_faire']="2" ;
 		if ((string)$data['quoi_faire']=="0") {
 			$sql_del = "delete from exemplaires where expl_cb='".addslashes($data['cb'])."' " ;
-			mysql_query($sql_del) ;
+			pmb_mysql_query($sql_del) ;
 			return -1 ;
 			}
 			                                  		                                  
 		// check sur les éléments du tableau (cb, cote, notice, typdoc, section, statut, location, codestat, owner sont requis).
-		$long_maxi = mysql_field_len(mysql_query("SELECT expl_cb FROM exemplaires limit 1"),0);
+		$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT expl_cb FROM exemplaires limit 1"),0);
 		$data['cb'] = rtrim(substr(trim($data['cb']),0,$long_maxi));
-		$long_maxi = mysql_field_len(mysql_query("SELECT expl_cote FROM exemplaires limit 1"),0);
+		$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT expl_cote FROM exemplaires limit 1"),0);
 		$data['cote'] = rtrim(substr(trim($data['cote']),0,$long_maxi));
-		$long_maxi = mysql_field_len(mysql_query("SELECT expl_prix FROM exemplaires limit 1"),0);
+		$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT expl_prix FROM exemplaires limit 1"),0);
 		$data['prix'] = rtrim(substr(trim($data['prix']),0,$long_maxi));
 	                                                  
 		if ($data['expl_owner']=="") {
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', 'No lender given') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', 'No lender given') ") ;
 			return 0;                         
 			}                                 
 		
 		if($data['cb']=="") {                     
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[545]."') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[545]."') ") ;
 			return 0;                         
 			}                                 
 		
 		if ($data['cote']=="") {                  
 			if ($data['cote_mandatory']==1) { 
-				$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[546]."') ") ;
+				$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[546]."') ") ;
 				return 0;                 
 				} else {                  
-					$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[567]."') ") ;
+					$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[567]."') ") ;
 					}                 
 			}                                 
 		
 		if($data['notice']==0) {
 			if ($data['bulletin']==0) {                  
-				$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[547]."') ") ;
+				$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[547]."') ") ;
 				return 0;                         
 			}                                 
 		}
 		
 		if($data['typdoc']==0) {                  
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[548]."') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[548]."') ") ;
 			return 0;                         
 			}                                 
 		if($data['section']==0) {                 
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[549]."') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[549]."') ") ;
 			return 0;             
 			}                                 
 		if($data['statut']==0) {                  
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[550]."') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[550]."') ") ;
 			return 0;                         
 			}                                 
 		if($data['location']==0) {                
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[551]."') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[551]."') ") ;
 			return 0;                         
 			}                                 
 		if($data['codestat']==0) {                
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[552]."') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[552]."') ") ;
 			return 0;                         
 			}                                 
 		if($data['type_antivol']=="") {                
@@ -592,16 +600,16 @@ class exemplaire {
 		/* vérification que l'exemplaire existe ou pas */
 		$exe = new stdClass();
 		$query = "SELECT expl_id FROM exemplaires WHERE expl_cb='${key0}' LIMIT 1 ";
-		$result = @mysql_query($query, $dbh);     
+		$result = @pmb_mysql_query($query, $dbh);     
 		if(!$result) die("can't SELECT exemplaires ".$query);
-		if(mysql_num_rows($result)) $exe  = mysql_fetch_object($result);
+		if(pmb_mysql_num_rows($result)) $exe  = pmb_mysql_fetch_object($result);
 	                                                  
 	    if (!$data['date_depot']) $data['date_depot']="sysdate()" ; else $data['date_depot']="'".$data['date_depot']."'" ;                   
 		if (!$data['date_retour']) $data['date_retour']="sysdate()" ; else $data['date_retour']="'".$data['date_retour']."'" ;                   
 	                                                  
 		// l'exemplaire existe et on ne pouvait que l'ajouter, on retourne l'ID 
 		if ($exe->expl_id!="" && $data['quoi_faire']=="2") {
-			$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[553].$data['cb']."') ") ;
+			$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('expl_".addslashes(SESSid).".class', '".$msg[553].$data['cb']."') ") ;
 			return $exe->expl_id;
 			}                                 
 		
@@ -645,15 +653,15 @@ class exemplaire {
 		} 
 	  
 		$query .= $sql_a_faire_suite ;    
-		$result = @mysql_query($query, $dbh);     
+		$result = @pmb_mysql_query($query, $dbh);     
 		if(!$result) die("can't INSERT into exemplaires ".$query);
 	                                                  
 		if ($exe->expl_id="") {
-			audit::insert_creation(AUDIT_EXPL,mysql_insert_id($dbh));
-			return mysql_insert_id($dbh);
+			audit::insert_creation(AUDIT_EXPL,pmb_mysql_insert_id($dbh));
+			return pmb_mysql_insert_id($dbh);
 		} else {
-			$sql_id = mysql_query("select expl_id from exemplaires where expl_cb='".addslashes($data['cb'])."' ") ;
-			$exe  = mysql_fetch_object($sql_id);  
+			$sql_id = pmb_mysql_query("select expl_id from exemplaires where expl_cb='".addslashes($data['cb'])."' ") ;
+			$exe  = pmb_mysql_fetch_object($sql_id);  
 			audit::insert_modif(AUDIT_EXPL,$exe->expl_id); 
 			return $exe->expl_id;
 		}       
@@ -666,25 +674,25 @@ class exemplaire {
 		global $dbh;
 		global $explr_invisible, $explr_visible_unmod, $explr_visible_mod, $pmb_droits_explr_localises;
 			
-		$sql_pret = mysql_query("select 1 from pret where pret_idexpl ='$id' ") ;
-		if (mysql_num_rows($sql_pret)) return 0 ;
+		$sql_pret = pmb_mysql_query("select 1 from pret where pret_idexpl ='$id' ") ;
+		if (pmb_mysql_num_rows($sql_pret)) return 0 ;
 		
 		// visibilite de l'exemplaire
 		if ($pmb_droits_explr_localises) {
 			$query = "select expl_location from exemplaires where expl_id='".$id."'";
-			$result = mysql_query($query,$dbh);
-			$location_id = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query,$dbh);
+			$location_id = pmb_mysql_result($result,0,0);
 			$tab_mod=explode(",",$explr_visible_mod);
 			$as_modif = array_search($location_id,$tab_mod);
 			if ($as_modif===false) return 0 ;
 		}
 		
 		$requete = "select idcaddie FROM caddie where type='EXPL' ";
-		$result = mysql_query($requete, $dbh);
-		for($i=0;$i<mysql_num_rows($result);$i++) {
-			$temp=mysql_fetch_object($result);
+		$result = pmb_mysql_query($requete, $dbh);
+		for($i=0;$i<pmb_mysql_num_rows($result);$i++) {
+			$temp=pmb_mysql_fetch_object($result);
 			$requete_suppr = "delete from caddie_content where caddie_id='".$temp->idcaddie."' and object_id='".$id."' ";
-			$result_suppr = mysql_query($requete_suppr, $dbh);
+			$result_suppr = pmb_mysql_query($requete_suppr, $dbh);
 			}
 		audit::delete_audit (AUDIT_EXPL, $id) ;
 		$p_perso=new parametres_perso("expl");
@@ -692,16 +700,20 @@ class exemplaire {
 		
 		// nettoyage transfert
 		$requete_suppr = "delete from transferts_demande where num_expl='$id'";
-		$result_suppr = mysql_query($requete_suppr);
+		$result_suppr = pmb_mysql_query($requete_suppr);
 		
 		// nettoyage circulation des périodiques
 		serialcirc::delete_expl($id);
 		
 		// nettoyage doc. à ranger
 		$requete_suppr = "delete from resa_ranger where resa_cb in (select expl_cb from exemplaires where expl_id='".$id."') ";
-		$result_suppr = mysql_query ($requete_suppr, $dbh);
+		$result_suppr = pmb_mysql_query($requete_suppr, $dbh);
 		
-		$sql_del = mysql_query("delete from exemplaires where expl_id='$id' ") ;
+		// nettoyage indexation concepts
+		$index_concept = new index_concept($id, TYPE_EXPL);
+		$index_concept->delete();
+		
+		$sql_del = pmb_mysql_query("delete from exemplaires where expl_id='$id' ") ;
 		
 		return 1 ;	
 		}
@@ -728,9 +740,9 @@ class exemplaire {
 				$bulletin_ids=array();
 				$perio_ids=array();
 				$q='select expl_notice,expl_bulletin,bulletin_notice from exemplaires left join bulletins on expl_bulletin=bulletin_id and expl_bulletin!=0 where expl_id in ('.implode(',',$expl_ids).')';
-				$r=mysql_query($q,$dbh);
-				if (mysql_num_rows($r)) {
-					while($row=mysql_fetch_object($r)){
+				$r=pmb_mysql_query($q,$dbh);
+				if (pmb_mysql_num_rows($r)) {
+					while($row=pmb_mysql_fetch_object($r)){
 						if($row->expl_notice) $notice_ids[]=$row->expl_notice;
 						if($row->expl_bulletin) $bulletin_ids[]=$row->expl_bulletin;
 						if($row->bulletin_notice) $perio_ids[]=$row->bulletin_notice;

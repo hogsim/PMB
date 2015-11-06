@@ -159,6 +159,7 @@ yellowgreen: "yellow green"
 ,
 "zh": true,
 "zh-tw": true,
+"uk": true,
 "tr": true,
 "th": true,
 "sv": true,
@@ -175,6 +176,7 @@ yellowgreen: "yellow green"
 "kk": true,
 "ja": true,
 "it": true,
+"id": true,
 "hu": true,
 "hr": true,
 "he": true,
@@ -186,6 +188,7 @@ yellowgreen: "yellow green"
 "da": true,
 "cs": true,
 "ca": true,
+"bg": true,
 "az": true,
 "ar": true
 });

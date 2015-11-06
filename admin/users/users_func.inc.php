@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: users_func.inc.php,v 1.34.2.1 2015-01-23 09:23:33 jpermanne Exp $
+// $Id: users_func.inc.php,v 1.36 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -141,11 +141,11 @@ function show_users($dbh) {
 	
 	// affichage du tableau des utilisateurs
 	$requete = "SELECT * FROM users ORDER BY username";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
-	while(($row=mysql_fetch_object($res))) {
+	while(($row=pmb_mysql_fetch_object($res))) {
 
 		// réinitialisation des chaînes
 		$dummy = $admin_user_list;
@@ -282,8 +282,8 @@ function get_coordonnees_etab($user_id='0', $field_values, $current_field, $form
 	
 	//Affichage de la liste des bibliothèques auxquelles a accès l'utilisateur
 	$q = entites::list_biblio($user_id);
-	$res = mysql_query($q, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($q, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 	
 	if ($nbr == '0') return;
 
@@ -296,7 +296,7 @@ function get_coordonnees_etab($user_id='0', $field_values, $current_field, $form
 		$tab_adr[$tab2[0]]['id_adr_liv']=$tab2[2];
 	}
 
-	while($row=mysql_fetch_object($res)){
+	while($row=pmb_mysql_fetch_object($res)){
 		
 		$acquisition_user_param.= "<div class='row'>";
 		$acquisition_user_param.= "<label class='etiquette'>".htmlentities($row->raison_sociale, ENT_QUOTES, $charset)."</label>";
@@ -376,8 +376,8 @@ function getUserName($tab=array()) {
 	$res=array();
 	if(is_array($tab) && count($tab)) {
 		$q ="select userid, concat(nom,' ',prenom) as lib from users where userid in ('".implode("','", $tab)."') ";
-		$r = mysql_query($q,$dbh);
-		while($row=mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($q,$dbh);
+		while($row=pmb_mysql_fetch_object($r)) {
 			$res[$row->userid]=$row->lib;
 		}
 	}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lettre-relance-adhesion.inc.php,v 1.18 2012-07-02 15:07:57 dgoron Exp $
+// $Id: lettre-relance-adhesion.inc.php,v 1.19 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -70,9 +70,9 @@ if ($action=="print_all") {
 	if ($empr_relance_adhesion==1) $requete.=" and empr_mail=''";
 	$requete .= " ORDER BY empr_nom, empr_prenom ";
 	
-	$res = @mysql_query($requete, $dbh);
+	$res = @pmb_mysql_query($requete, $dbh);
 
-	while(($empr=mysql_fetch_object($res))) {
+	while(($empr=pmb_mysql_fetch_object($res))) {
 		$ourPDF->addPage();
 		$ourPDF->SetMargins($marge_page_gauche,$marge_page_gauche);
 
@@ -95,7 +95,7 @@ if ($action=="print_all") {
 		//
 		$ourPDF->multiCell(($largeur_page - $marge_page_droite - $marge_page_gauche), 8, $fdp, 0, 'R', 0);
 	}
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 } else {
 	$ourPDF->addPage();
 	$ourPDF->SetMargins($marge_page_gauche,$marge_page_gauche);
@@ -104,8 +104,8 @@ if ($action=="print_all") {
 	lecteur_adresse($id_empr, ($marge_page_gauche+90), 45, $dbh, !$pmb_afficher_numero_lecteur_lettres);
 
 	$rqt="select empr_nom, empr_prenom from empr where id_empr='".$id_empr."'";							
-	$req=mysql_query($rqt) or die('Erreur SQL !<br />'.$rqt.'<br />'.mysql_error()); ;
-	$r = mysql_fetch_object($req); 
+	$req=pmb_mysql_query($rqt) or die('Erreur SQL !<br />'.$rqt.'<br />'.pmb_mysql_error()); ;
+	$r = pmb_mysql_fetch_object($req); 
 	$texte_madame_monsieur=str_replace("!!empr_name!!", $r->empr_nom,$madame_monsieur); 
 	$texte_madame_monsieur=str_replace("!!empr_first_name!!", $r->empr_prenom,$texte_madame_monsieur); 
 	

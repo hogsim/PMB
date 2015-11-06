@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: Auth.php,v 1.4 2013-04-25 16:02:17 mbertin Exp $
+// $Id: Auth.php,v 1.6 2015-06-02 13:48:57 dgoron Exp $
 namespace Sabre\PMB;
 
 use Sabre\DAV;
@@ -21,10 +21,10 @@ use Sabre\DAV;
 //			case "gestion" :
 //				if($username && $password){
 //					$query = "SELECT userid, username FROM users WHERE username='$username' AND pwd=password('$password') ";
-//					$result = mysql_query($query);
-//					if(mysql_num_rows($result) && mysql_result($result,0,0)>0){
-//						$webdav_current_user_id= mysql_result($result,0,0);
-//						$webdav_current_user_name = mysql_result($result,0,1);
+//					$result = pmb_mysql_query($query);
+//					if(pmb_mysql_num_rows($result) && pmb_mysql_result($result,0,0)>0){
+//						$webdav_current_user_id= pmb_mysql_result($result,0,0);
+//						$webdav_current_user_name = pmb_mysql_result($result,0,1);
 //						return true;
 //					}
 //				}	
@@ -33,10 +33,10 @@ use Sabre\DAV;
 //				//TODO vérification abonnement...
 //				if($username && $password){
 //					$query ="select id_empr, concat(empr_nom,' ',empr_prenom) from empr where empr_login='".$username."' and empr_password='".$password."'";
-//					$result = mysql_query($query);
-//					if(mysql_num_rows($result) && mysql_result($result,0,0)>0){
-//						$webdav_current_user_id= mysql_result($result,0,0);
-//						$webdav_current_user_name = mysql_result($result,0,1);
+//					$result = pmb_mysql_query($query);
+//					if(pmb_mysql_num_rows($result) && pmb_mysql_result($result,0,0)>0){
+//						$webdav_current_user_id= pmb_mysql_result($result,0,0);
+//						$webdav_current_user_name = pmb_mysql_result($result,0,1);
 //						return true;
 //					}
 //				}	
@@ -61,20 +61,20 @@ class Auth extends DAV\Auth\Backend\AbstractDigest {
 			
 			case "gestion" :
 				$query = "SELECT user_digest, userid, username FROM users WHERE username='$username'";
-				$result = mysql_query($query,$dbh);
-				if(mysql_num_rows($result)){
-					$webdav_current_user_id= mysql_result($result,0,1);
-					$webdav_current_user_name = mysql_result($result,0,2);
-					return mysql_result($result,0,0);
+				$result = pmb_mysql_query($query,$dbh);
+				if(pmb_mysql_num_rows($result)){
+					$webdav_current_user_id= pmb_mysql_result($result,0,1);
+					$webdav_current_user_name = pmb_mysql_result($result,0,2);
+					return pmb_mysql_result($result,0,0);
 				}
 				break;
 			case "opac" :
 				$ext_auth=false;				
 				if(file_exists($base_path.'/opac_css/includes/ext_auth.inc.php')) {
 					$q ="select empr_digest, id_empr, concat(empr_nom,' ',empr_prenom) as empr_name from empr where empr_login='".$username."'";
-					$r = mysql_query($q,$dbh);
-					if(mysql_num_rows($r)){
-						$row = mysql_fetch_object($r);
+					$r = pmb_mysql_query($q,$dbh);
+					if(pmb_mysql_num_rows($r)){
+						$row = pmb_mysql_fetch_object($r);
 						if ($row->empr_digest) {
 							$ext_auth=true;
 							$webdav_current_user_id= $row->id_empr;
@@ -84,13 +84,15 @@ class Auth extends DAV\Auth\Backend\AbstractDigest {
 					}								
 				} 
 				if ($ext_auth==false) {
-					$q ="select empr_password, id_empr, concat(empr_nom,' ',empr_prenom) as empr_name from empr where empr_login='".$username."'";
-					$r = mysql_query($q,$dbh);
-					if(mysql_num_rows($r)){
-						$row = mysql_fetch_object($r);
-						$webdav_current_user_id= $row->id_empr;
-						$webdav_current_user_name = $row->empr_name;
-						return md5($username.":".$realm.":".$row->empr_password);
+					$q ="select empr_digest, id_empr, concat(empr_nom,' ',empr_prenom) as empr_name from empr where empr_login='".$username."'";
+					$r = pmb_mysql_query($q,$dbh);
+					if(pmb_mysql_num_rows($r)){
+						$row = pmb_mysql_fetch_object($r);
+						if ($row->empr_digest) {
+							$webdav_current_user_id= $row->id_empr;
+							$webdav_current_user_name = $row->empr_name;
+							return $row->empr_digest;
+						}
 					}
 				}
 				break;

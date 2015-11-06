@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesOPACStats.class.php,v 1.1 2011-07-29 12:32:15 dgoron Exp $
+// $Id: pmbesOPACStats.class.php,v 1.2 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -32,9 +32,9 @@ class pmbesOPACStats extends external_services_api_class {
 			$result = array();
 			
 			$requete = "SELECT id_vue, date_consolidation, nom_vue, comment FROM statopac_vues";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 		
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = array(
 					"id_vue" => $row["id_vue"],
 					"date_consolidation" => $row["date_consolidation"],
@@ -60,9 +60,9 @@ class pmbesOPACStats extends external_services_api_class {
 		
 		if (SESSrights & ADMINISTRATION_AUTH) {
 			$requete = "SELECT id_vue, date_consolidation, nom_vue, comment FROM statopac_vues where id_vue=".$id_view;
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 		
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = array(
 					"id_vue" => $row["id_vue"],
 					"date_consolidation" => $row["date_consolidation"],
@@ -83,9 +83,9 @@ class pmbesOPACStats extends external_services_api_class {
 			$result = array();
 			
 			$query = "select * from statopac_vue_".$id_view;
-			$res = mysql_query($query, $dbh);
+			$res = pmb_mysql_query($query, $dbh);
 			if ($res) {
-				while ($row = mysql_fetch_assoc($res)) {
+				while ($row = pmb_mysql_fetch_assoc($res)) {
 					$result[] = $row;
 				}	
 			}

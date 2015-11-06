@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_localisation_mpba.inc.php,v 1.5 2013-12-19 09:25:20 dgoron Exp $
+// $Id: search_localisation_mpba.inc.php,v 1.6 2015-04-03 11:16:17 jpermanne Exp $
 
 /*
  * 
@@ -24,9 +24,9 @@ function search_other_function_filters() {
 	$r.="<select name='cnl_bibli'>";
 	$r.="<option value=''>".htmlentities($msg["search_loc_all_site"],ENT_QUOTES,$charset)."</option>";
 	$requete="select location_libelle,idlocation from docs_location where location_visible_opac=1";
-	$result = mysql_query($requete, $dbh);
-	if (mysql_numrows($result)){
-		while ($loc = mysql_fetch_object($result)) {
+	$result = pmb_mysql_query($requete, $dbh);
+	if (pmb_mysql_num_rows($result)){
+		while ($loc = pmb_mysql_fetch_object($result)) {
 			$selected="";
 			if ($cnl_bibli==$loc->idlocation) {$selected="selected='selected'";}
 			$r.= "<option value='$loc->idlocation' $selected>$loc->location_libelle</option>";
@@ -87,8 +87,8 @@ function search_other_function_human_query($n) {
 	if ($cnl_bibli) {
 		$r=htmlentities($msg["search_loc_mpba_bib"],ENT_QUOTES,$charset)." : ";
 		$requete="select location_libelle from docs_location where idlocation='".$cnl_bibli."' limit 1";
-		$res=mysql_query($requete);
-		$r.=@mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete);
+		$r.=@pmb_mysql_result($res,0,0);
 	}
 	return $r;
 }

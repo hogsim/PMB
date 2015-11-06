@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_history.inc.php,v 1.18 2011-07-21 13:55:50 trenon Exp $
+// $Id: search_history.inc.php,v 1.19 2015-04-16 16:09:56 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -69,11 +69,9 @@ print "<form name='cases_a_cocher' method='post' action='./index.php?lvl=search_
 
 if ($_SESSION["nb_queries"]!=0) {
 	for ($i=$_SESSION["nb_queries"]; $i>=1; $i--) {
-		print "<input type=checkbox name='cases_suppr[]' value='$i'><b>$i)</b> ";
 		if ($_SESSION["search_type".$i]!="module") {
+			print "<input type=checkbox name='cases_suppr[]' value='$i'><b>$i)</b> ";
 			print "<a href=\"./index.php?lvl=search_result&get_query=$i\">".get_human_query($i)."</a><br /><br />";
-		} else {
-			print get_human_query($i)."<br /><br />";	
 		}
 	}
 } else {

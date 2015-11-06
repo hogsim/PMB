@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_collections.class.php,v 1.2 2014-02-17 14:16:36 abacarisse Exp $
+// $Id: cms_collections.class.php,v 1.3 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -22,9 +22,9 @@ class cms_collections extends cms_root{
 	protected function fetch_datas(){
 		$this->collections=array();
 		$query = "select id_collection from cms_collections order by collection_title asc";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->collections[] = new cms_collection($row->id_collection);
 			}
 		}	
@@ -147,9 +147,9 @@ class cms_collection extends cms_root{
 	
 	public function fetch_datas(){
 		$query = "select id_collection,collection_title, collection_description, collection_num_parent, collection_num_storage, count(id_document) as nb_doc from cms_collections left join cms_documents on document_type_object='collection' and document_num_object = id_collection where id_collection = ".$this->id." group by id_collection";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			$this->id = $row->id_collection;
 			$this->title = $row->collection_title;
 			$this->description = $row->collection_description;
@@ -221,9 +221,9 @@ class cms_collection extends cms_root{
 			collection_num_parent = '".addslashes($this->num_parent)."',
 			collection_num_storage = '".addslashes($this->num_storage)."'";
 		
-		$result = mysql_query($query.$clause);
+		$result = pmb_mysql_query($query.$clause);
 		if(!$this->id &&$result){
-			$this->id = mysql_insert_id();
+			$this->id = pmb_mysql_insert_id();
 		}
 // 		$storages = new storages();
 // 		$storages->save_form("collection",$this->id);
@@ -233,7 +233,7 @@ class cms_collection extends cms_root{
 		//TODO vérification des documents
 		
 		$query = "delete from cms_collections where id_collection = ".$this->id;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		if($result) {
 			return true;
 		}
@@ -244,9 +244,9 @@ class cms_collection extends cms_root{
 	public function get_documents(){
 		$this->documents =array();
 		$query = "select id_document from cms_documents where document_type_object = 'collection' and document_num_object='".$this->id."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->documents[] = new cms_document($row->id_document);
 			}
 		}
@@ -347,9 +347,9 @@ class cms_collection extends cms_root{
 			document_type_object = 'collection',
 			document_num_object = ".$this->id."	
 		";
-		if(mysql_query($query)){
+		if(pmb_mysql_query($query)){
 			if($get_item_render){
-				$document = new cms_document(mysql_insert_id());
+				$document = new cms_document(pmb_mysql_insert_id());
 				$result = $document->get_item_render();
 			}else{
 				$result = true;

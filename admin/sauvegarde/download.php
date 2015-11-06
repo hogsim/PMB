@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: download.php,v 1.6 2008-01-11 09:56:10 gueluneau Exp $
+// $Id: download.php,v 1.7 2015-04-03 11:16:20 jpermanne Exp $
 
 $base_path="../..";
 $base_auth="ADMINISTRATION_AUTH";
@@ -13,8 +13,8 @@ $base_nosession=1;
 require($base_path."/includes/init.inc.php");
 
 $requete="select sauv_log_file from sauv_log where sauv_log_id=$logid";
-$resultat=mysql_query($requete) or die(mysql_error());
-$log_file_1=mysql_result($resultat,0,0);
+$resultat=pmb_mysql_query($requete) or die(pmb_mysql_error());
+$log_file_1=pmb_mysql_result($resultat,0,0);
 $log_file="../backup/backups/".$log_file_1;
 $f=@fopen($log_file,"r");
 

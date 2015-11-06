@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum.inc.php,v 1.37 2014-01-10 15:46:42 apetithomme Exp $
+// $Id: explnum.inc.php,v 1.45 2015-04-17 14:22:24 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once($class_path."/auth_popup.class.php");
@@ -110,7 +110,7 @@ function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='') {
 	global $opac_photo_filtre_mimetype;
 	global $opac_explnum_order;
 	global $opac_show_links_invisible_docnums;
-	global $gestion_acces_active,$gestion_acces_empr_notice;
+	global $gestion_acces_active,$gestion_acces_empr_notice,$gestion_acces_empr_docnum;
 	
 	if (!$no_notice && !$no_bulletin) return "";
 	
@@ -118,22 +118,22 @@ function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='') {
 	create_tableau_mimetype() ;
 	
 	// récupération du nombre d'exemplaires
-	$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier FROM explnum WHERE ";
+	$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier, explnum_docnum_statut FROM explnum WHERE ";
 	if ($no_notice && !$no_bulletin) $requete .= "explnum_notice='$no_notice' ";
 	elseif (!$no_notice && $no_bulletin) $requete .= "explnum_bulletin='$no_bulletin' ";
 	elseif ($no_notice && $no_bulletin) $requete .= "explnum_bulletin='$no_bulletin' or explnum_notice='$no_notice' ";
 	if ($opac_explnum_order) $requete .= " order by ".$opac_explnum_order;
 	else $requete .= " order by explnum_mimetype, explnum_nom, explnum_id ";
-	$res = mysql_query($requete, $dbh);
-	$nb_ex = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nb_ex = pmb_mysql_num_rows($res);
 	
 	$docnum_visible = true;
 	$id_for_right = $no_notice;
 	if($no_bulletin){
 		$query = "select num_notice,bulletin_notice from bulletins where bulletin_id = ".$no_bulletin;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$infos = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$infos = pmb_mysql_fetch_object($result);
 			if($infos->num_notice){
 				$id_for_right = $infos->num_notice;
 			}else{
@@ -147,117 +147,157 @@ function show_explnum_per_notice($no_notice, $no_bulletin, $link_expl='') {
 		$docnum_visible = $dom_2->getRights($_SESSION['id_empr_session'],$id_for_right,16);
 	} else {
 		$requete = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM notices, notice_statut WHERE notice_id ='".$id_for_right."' and id_notice_statut=statut ";
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)) {
-			$statut_temp = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)) {
+			$statut_temp = pmb_mysql_fetch_object($myQuery);
 			if(!$statut_temp->explnum_visible_opac)	$docnum_visible=false;
 			if($statut_temp->explnum_visible_opac_abon && !$_SESSION['id_empr_session'])	$docnum_visible=false;
 		} else 	$docnum_visible=false;
-	}
-	
-	
-	
-	
-	//on peut appeller cette méthode sans avoir le droit de voir les documents...
-	if(!$docnum_visible && $opac_show_links_invisible_docnums){
-		$auth_popup = new auth_popup();
 	}
 
 	if ($nb_ex) {
 		// on récupère les données des exemplaires
 		$i = 1 ;
 		global $search_terms;
-		
-		while (($expl = mysql_fetch_object($res))) {
-			if ($i==1) $ligne="<tr><td class='docnum' width='33%'>!!1!!</td><td class='docnum' width='33%'>!!2!!</td><td class='docnum' width='33%'>!!3!!</td></tr>" ;
-			if ($link_expl) {
-				$tlink = str_replace("!!explnum_id!!", $expl->explnum_id, $link_expl);
-				$tlink = str_replace("!!notice_id!!", $expl->explnum_notice, $tlink);					
-				$tlink = str_replace("!!bulletin_id!!", $expl->explnum_bulletin, $tlink);					
-				} 
-			$alt = htmlentities($expl->explnum_nom." - ".$expl->explnum_mimetype,ENT_QUOTES, $charset) ;
+		$docnums_exists_flag = false;
+		while (($expl = pmb_mysql_fetch_object($res))) {
 			
-			if ($expl->explnum_vignette) $obj="<img src='".$opac_url_base."vig_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' border='0'>";
-				else // trouver l'icone correspondant au mime_type
-					$obj="<img src='".$opac_url_base."images/mimetype/".icone_mimetype($expl->explnum_mimetype, $expl->explnum_extfichier)."' alt='$alt' title='$alt' border='0'>";		
-			$expl_liste_obj = "<center>";
-			
-			$words_to_find="";
-			if (($expl->explnum_mimetype=='application/pdf') ||($expl->explnum_mimetype=='URL' && (strpos($expl->explnum_nom,'.pdf')!==false))){
-				if (is_array($search_terms)) {
-					$words_to_find = "#search=\"".trim(str_replace('*','',implode(' ',$search_terms)))."\"";
-				} 
+			// couleur de l'img en fonction du statut
+			if ($expl->explnum_docnum_statut) {
+				$rqt_st = "SELECT * FROM explnum_statut WHERE  id_explnum_statut='".$expl->explnum_docnum_statut."' ";
+				$Query_statut = pmb_mysql_query($rqt_st, $dbh)or die ($rqt_st. " ".pmb_mysql_error()) ;
+				$r_statut = pmb_mysql_fetch_object($Query_statut);
+				$class_img = " class='docnum_".$r_statut->class_html."' ";
+				if ($expl->explnum_docnum_statut>1) {
+					$txt = $r_statut->opac_libelle;
+				}else $txt="";
+				$statut_libelle_div="
+					<div id='zoom_statut_docnum".$expl->explnum_id."' style='border: 2px solid rgb(85, 85, 85); background-color: rgb(255, 255, 255); position: absolute; z-index: 2000; display: none;'>
+						<b>$txt</b>
+					</div>
+				";			
+			} else {
+				$class_img = " class='docnum_statutnot1' " ;
+				$txt = "" ;
 			}
-			//si l'affichage du lien vers les documents numériques est forcé et qu'on est pas connecté, on propose l'invite de connexion!
-			if(!$docnum_visible && !$_SESSION['user_code'] && $opac_show_links_invisible_docnums){
-				if ($opac_visionneuse_allow)
-					$allowed_mimetype = explode(",",str_replace("'","",$opac_photo_filtre_mimetype));
-				if ($allowed_mimetype && in_array($expl->explnum_mimetype,$allowed_mimetype)){
-					$link="
-						<script type='text/javascript'>
-							if(typeof(sendToVisionneuse) == 'undefined'){
-								var sendToVisionneuse = function (explnum_id){
-									document.getElementById('visionneuseIframe').src = 'visionneuse.php?'+(typeof(explnum_id) != 'undefined' ? 'explnum_id='+explnum_id+\"\" : '\'');
-								}
-							}
-							function sendToVisionneuse_".$expl->explnum_id."(){
-								open_visionneuse(sendToVisionneuse,".$expl->explnum_id.");
-							}
-						</script>
-						<a href='#' onclick=\"auth_popup('./ajax.php?module=ajax&categ=auth&callback_func=sendToVisionneuse_".$expl->explnum_id."');\" alt='$alt' title='$alt'>".$obj."</a><br />";
-					$expl_liste_obj .=$link;
-				}else{
-				$link="
-						<a href='#' onclick=\"auth_popup('./ajax.php?module=ajax&categ=auth&new_tab=1&callback_url=".rawurlencode($opac_url_base."doc_num.php?explnum_id=".$expl->explnum_id)."')\" alt='$alt' title='$alt'>".$obj."</a><br />";
-					$expl_liste_obj .=$link;
-				}
-			}else{
-				if ($opac_visionneuse_allow)
-					$allowed_mimetype = explode(",",str_replace("'","",$opac_photo_filtre_mimetype));
-				if ($allowed_mimetype && in_array($expl->explnum_mimetype,$allowed_mimetype)){
-					$link="
-						<script type='text/javascript'>
-							if(typeof(sendToVisionneuse) == 'undefined'){
-								var sendToVisionneuse = function (explnum_id){
-									document.getElementById('visionneuseIframe').src = 'visionneuse.php?'+(typeof(explnum_id) != 'undefined' ? 'explnum_id='+explnum_id+\"\" : '\'');
-								}
-							}
-						</script>
-						<a href='#' onclick=\"open_visionneuse(sendToVisionneuse,".$expl->explnum_id.");return false;\" alt='$alt' title='$alt'>".$obj."</a><br />";
-					$expl_liste_obj .=$link;
+
+			$explnum_docnum_visible = true;
+			if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+				$ac= new acces();
+				$dom_3= $ac->setDomain(3);
+				$explnum_docnum_visible = $dom_3->getRights($_SESSION['id_empr_session'],$expl->explnum_id,16);
+			} else {
+				$requete = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM explnum, explnum_statut WHERE explnum_id ='".$expl->explnum_id."' and id_explnum_statut=explnum_docnum_statut ";
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($myQuery)) {
+					$statut_temp = pmb_mysql_fetch_object($myQuery);
+					if(!$statut_temp->explnum_visible_opac)	{
+						$explnum_docnum_visible=false;
+					}
+					if($statut_temp->explnum_visible_opac_abon && !$_SESSION['id_empr_session'])	$explnum_docnum_visible=false;
 				} else {
-					$suite_url_explnum ="doc_num.php?explnum_id=$expl->explnum_id";
-					$expl_liste_obj .= "<a href='".$opac_url_base.$suite_url_explnum."' alt='$alt' title='$alt' target='_blank'>".$obj."</a><br />" ;
+					$explnum_docnum_visible=false;
 				}
-
 			}
-
-			if ($_mimetypes_byext_[$expl->explnum_extfichier]["label"]) $explmime_nom = $_mimetypes_byext_[$expl->explnum_extfichier]["label"] ;
-			elseif ($_mimetypes_bymimetype_[$expl->explnum_mimetype]["label"]) $explmime_nom = $_mimetypes_bymimetype_[$expl->explnum_mimetype]["label"] ;
-			else $explmime_nom = $expl->explnum_mimetype ;
-			
-			
-			if ($tlink) {
-				$expl_liste_obj .= "<a href='$tlink'>";
-				$expl_liste_obj .= htmlentities($expl->explnum_nom,ENT_QUOTES, $charset)."</a><div class='explnum_type'>".htmlentities($explmime_nom,ENT_QUOTES, $charset)."</div>";
+			if ($explnum_docnum_visible ||  $opac_show_links_invisible_docnums) {
+				$docnums_exists_flag = true;
+				if ($i==1) $ligne="<tr><td class='docnum' width='33%'>!!1!!</td><td class='docnum' width='33%'>!!2!!</td><td class='docnum' width='33%'>!!3!!</td></tr>" ;
+				if ($link_expl) {
+					$tlink = str_replace("!!explnum_id!!", $expl->explnum_id, $link_expl);
+					$tlink = str_replace("!!notice_id!!", $expl->explnum_notice, $tlink);					
+					$tlink = str_replace("!!bulletin_id!!", $expl->explnum_bulletin, $tlink);					
+				} 
+				$alt = htmlentities($expl->explnum_nom." - ".$expl->explnum_mimetype,ENT_QUOTES, $charset) ;
+				
+				if ($expl->explnum_vignette) $obj="<img src='".$opac_url_base."vig_num.php?explnum_id=$expl->explnum_id' alt='$alt' title='$alt' border='0'>";
+					else // trouver l'icone correspondant au mime_type
+						$obj="<img src='".$opac_url_base."images/mimetype/".icone_mimetype($expl->explnum_mimetype, $expl->explnum_extfichier)."' alt='$alt' title='$alt' border='0'>";		
+				$expl_liste_obj = "<center>";
+				
+				$obj_suite="$statut_libelle_div
+				<a  href='#' onmouseout=\"z=document.getElementById('zoom_statut_docnum".$expl->explnum_id."'); z.style.display='none'; \" onmouseover=\"z=document.getElementById('zoom_statut_docnum".$expl->explnum_id."'); z.style.display=''; \">
+					<div class='vignette_doc_num' ><img $class_img width='10' height='10' src='./images/spacer.gif'></div>
+				</a>
+				";
+				
+				$words_to_find="";
+				if (($expl->explnum_mimetype=='application/pdf') ||($expl->explnum_mimetype=='URL' && (strpos($expl->explnum_nom,'.pdf')!==false))){
+					if (is_array($search_terms)) {
+						$words_to_find = "#search=\"".trim(str_replace('*','',implode(' ',$search_terms)))."\"";
+					} 
+				}
+				//si l'affichage du lien vers les documents numériques est forcé et qu'on est pas connecté, on propose l'invite de connexion!
+				if(!$explnum_docnum_visible && $opac_show_links_invisible_docnums && !$_SESSION['id_empr_session']){
+					if ($opac_visionneuse_allow)
+						$allowed_mimetype = explode(",",str_replace("'","",$opac_photo_filtre_mimetype));
+					if ($allowed_mimetype && in_array($expl->explnum_mimetype,$allowed_mimetype)){
+						$link="
+							<script type='text/javascript'>
+								if(typeof(sendToVisionneuse) == 'undefined'){
+									var sendToVisionneuse = function (explnum_id){
+										document.getElementById('visionneuseIframe').src = 'visionneuse.php?'+(typeof(explnum_id) != 'undefined' ? 'explnum_id='+explnum_id+\"\" : '\'');
+									}
+								}
+								function sendToVisionneuse_".$expl->explnum_id."(){
+									open_visionneuse(sendToVisionneuse,".$expl->explnum_id.");
+								}
+							</script>
+							<a href='#' onclick=\"auth_popup('./ajax.php?module=ajax&categ=auth&callback_func=sendToVisionneuse_".$expl->explnum_id."');\" alt='$alt' title='$alt'>".$obj."</a>$obj_suite<br />";
+						$expl_liste_obj .=$link;
+					}else{
+						$link="
+							<a href='#' onclick=\"auth_popup('./ajax.php?module=ajax&categ=auth&new_tab=1&callback_url=".rawurlencode($opac_url_base."doc_num.php?explnum_id=".$expl->explnum_id)."')\" alt='$alt' title='$alt'>".$obj."</a>$obj_suite<br />";
+						$expl_liste_obj .=$link;
+					}
+				}else{
+					if ($opac_visionneuse_allow)
+						$allowed_mimetype = explode(",",str_replace("'","",$opac_photo_filtre_mimetype));
+					if ($allowed_mimetype && in_array($expl->explnum_mimetype,$allowed_mimetype)){
+						$link="
+							<script type='text/javascript'>
+								if(typeof(sendToVisionneuse) == 'undefined'){
+									var sendToVisionneuse = function (explnum_id){
+										document.getElementById('visionneuseIframe').src = 'visionneuse.php?'+(typeof(explnum_id) != 'undefined' ? 'explnum_id='+explnum_id+\"\" : '\'');
+									}
+								}
+							</script>
+							<a href='#' onclick=\"open_visionneuse(sendToVisionneuse,".$expl->explnum_id.");return false;\" alt='$alt' title='$alt'>".$obj."</a>$obj_suite<br />";
+						$expl_liste_obj .=$link;
+					} else {
+						$suite_url_explnum ="doc_num.php?explnum_id=$expl->explnum_id";
+						$expl_liste_obj .= "<a href='".$opac_url_base.$suite_url_explnum."' alt='$alt' title='$alt' target='_blank'>".$obj."</a>$obj_suite<br />" ;
+					}
+				}
+	
+				if ($_mimetypes_byext_[$expl->explnum_extfichier]["label"]) $explmime_nom = $_mimetypes_byext_[$expl->explnum_extfichier]["label"] ;
+				elseif ($_mimetypes_bymimetype_[$expl->explnum_mimetype]["label"]) $explmime_nom = $_mimetypes_bymimetype_[$expl->explnum_mimetype]["label"] ;
+				else $explmime_nom = $expl->explnum_mimetype ;
+				
+				
+				if ($tlink) {
+					$expl_liste_obj .= "<a href='$tlink'>";
+					$expl_liste_obj .= htmlentities($expl->explnum_nom,ENT_QUOTES, $charset)."</a><div class='explnum_type'>".htmlentities($explmime_nom,ENT_QUOTES, $charset)."</div>";
 				} else {
 					$expl_liste_obj .= htmlentities($expl->explnum_nom,ENT_QUOTES, $charset)."<div class='explnum_type'>".htmlentities($explmime_nom,ENT_QUOTES, $charset)."</div>";
-					}
-			$expl_liste_obj .= "</center>";
-			$ligne = str_replace("!!$i!!", $expl_liste_obj, $ligne);
-			$i++;
-			if ($i==4) {
-				$ligne_finale .= $ligne ;
-				$i=1;
+				}
+				$expl_liste_obj .= "</center>";
+				$ligne = str_replace("!!$i!!", $expl_liste_obj, $ligne);
+				$i++;
+				if ($i==4) {
+					$ligne_finale .= $ligne ;
+					$i=1;
 				}
 			}
+		}
 		if (!$ligne_finale) $ligne_finale = $ligne ;
 		elseif ($i!=1) $ligne_finale .= $ligne ;
 		$ligne_finale = str_replace('!!2!!', "&nbsp;", $ligne_finale);
 		$ligne_finale = str_replace('!!3!!', "&nbsp;", $ligne_finale);
 		
 		} else return "";
-	$entry .= "<table class='docnum'>$ligne_finale</table>";
+		if($docnums_exists_flag){
+			$entry .= "<table class='docnum'>$ligne_finale</table>";
+		}
 	return $entry;
 
 }
@@ -277,7 +317,7 @@ function show_explnum_per_id($explnum_id, $link_explnum = "") {
 	global $opac_photo_filtre_mimetype;
 	global $opac_explnum_order;
 	global $opac_show_links_invisible_docnums;
-	global $gestion_acces_active,$gestion_acces_empr_notice;
+	global $gestion_acces_active,$gestion_acces_empr_notice,$gestion_acces_empr_docnum;
 	global $search_terms;
 	
 	if (!$explnum_id) return "";
@@ -286,10 +326,10 @@ function show_explnum_per_id($explnum_id, $link_explnum = "") {
 	create_tableau_mimetype() ;
 	
 	// récupération des infos du document
-	$query = "select explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier FROM explnum WHERE explnum_id = ".$explnum_id;
-	$result = mysql_query($query, $dbh);
-	if ($result && mysql_num_rows($result)) {
-		if ($explnum = mysql_fetch_object($result)) {
+	$query = "select explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_vignette, explnum_nomfichier, explnum_extfichier , explnum_docnum_statut FROM explnum WHERE explnum_id = ".$explnum_id;
+	$result = pmb_mysql_query($query, $dbh);
+	if ($result && pmb_mysql_num_rows($result)) {
+		if ($explnum = pmb_mysql_fetch_object($result)) {
 			$docnum_visible = true;
 			$id_for_right = $explnum->explnum_notice;
 			if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1) {
@@ -298,17 +338,27 @@ function show_explnum_per_id($explnum_id, $link_explnum = "") {
 				$docnum_visible = $dom_2->getRights($_SESSION['id_empr_session'],$id_for_right,16);
 			} else {
 				$requete = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM notices, notice_statut WHERE notice_id ='".$id_for_right."' and id_notice_statut=statut ";
-				$myQuery = mysql_query($requete, $dbh);
-				if(mysql_num_rows($myQuery)) {
-					$statut_temp = mysql_fetch_object($myQuery);
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($myQuery)) {
+					$statut_temp = pmb_mysql_fetch_object($myQuery);
 					if(!$statut_temp->explnum_visible_opac)	$docnum_visible=false;
 					if($statut_temp->explnum_visible_opac_abon && !$_SESSION['id_empr_session'])	$docnum_visible=false;
 				} else 	$docnum_visible=false;
 			}
-			
-			//on peut appeller cette méthode sans avoir le droit de voir les documents...
-			if(!$docnum_visible && $opac_show_links_invisible_docnums){
-				$auth_popup = new auth_popup();
+			if ($docnum_visible) {
+				if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+					$ac= new acces();
+					$dom_3= $ac->setDomain(3);
+					$docnum_visible = $dom_3->getRights($_SESSION['id_empr_session'],$explnum->explnum_id,16);
+				} else {
+					$requete = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM explnum, explnum_statut WHERE explnum_id ='".$explnum->explnum_id."' and id_explnum_statut=explnum_docnum_statut ";
+					$myQuery = pmb_mysql_query($requete, $dbh);
+					if(pmb_mysql_num_rows($myQuery)) {
+						$statut_temp = pmb_mysql_fetch_object($myQuery);
+						if(!$statut_temp->explnum_visible_opac)	$docnum_visible=false;
+						if($statut_temp->explnum_visible_opac_abon && !$_SESSION['id_empr_session'])	$docnum_visible=false;
+					} else $docnum_visible=false;
+				}
 			}
 			
 			if ($link_explnum) {
@@ -319,10 +369,35 @@ function show_explnum_per_id($explnum_id, $link_explnum = "") {
 			
 			$alt = htmlentities($explnum->explnum_nom." - ".$explnum->explnum_mimetype,ENT_QUOTES, $charset) ;
 			
+			// couleur de l'img en fonction du statut
+			if ($expl->explnum_docnum_statut) {
+				$rqt_st = "SELECT * FROM explnum_statut WHERE  id_explnum_statut='".$expl->explnum_docnum_statut."' ";
+				$Query_statut = pmb_mysql_query($rqt_st, $dbh)or die ($rqt_st. " ".pmb_mysql_error()) ;
+				$r_statut = pmb_mysql_fetch_object($Query_statut);
+				$class_img = " class='docnum_".$r_statut->class_html."' ";
+				if ($expl->explnum_docnum_statut>1) {
+					$txt = $r_statut->opac_libelle;
+				}else $txt="";			
+				$statut_libelle_div="
+					<div id='zoom_statut_docnum".$expl->explnum_id."' style='border: 2px solid rgb(85, 85, 85); background-color: rgb(255, 255, 255); position: absolute; z-index: 2000; display: none;'>
+						<b>$txt</b>
+					</div>
+				";			
+			} else {
+				$class_img = " class='docnum_statutnot1' " ;
+				$txt = "" ;
+			}
+							
 			if ($explnum->explnum_vignette) $obj="<img src='".$opac_url_base."vig_num.php?explnum_id=$explnum->explnum_id' alt='$alt' title='$alt' border='0'>";
 				else // trouver l'icone correspondant au mime_type
 					$obj="<img src='".$opac_url_base."images/mimetype/".icone_mimetype($explnum->explnum_mimetype, $explnum->explnum_extfichier)."' alt='$alt' title='$alt' border='0'>";		
 			$explnum_liste_obj = "<center>";
+			
+			$obj.="$statut_libelle_div
+				<a  href='#' onmouseout=\"z=document.getElementById('zoom_statut_docnum".$expl->explnum_id."'); z.style.display='none'; \" onmouseover=\"z=document.getElementById('zoom_statut_docnum".$expl->explnum_id."'); z.style.display=''; \">
+					<div class='vignette_doc_num' ><img $class_img width='10' height='10' src='./images/spacer.gif'></div>
+				</a>
+			";
 			
 			$words_to_find="";
 			if (($explnum->explnum_mimetype=='application/pdf') ||($explnum->explnum_mimetype=='URL' && (strpos($explnum->explnum_nom,'.pdf')!==false))){
@@ -370,7 +445,12 @@ function show_explnum_per_id($explnum_id, $link_explnum = "") {
 					$explnum_liste_obj .=$link;
 				} else {
 					$suite_url_explnum ="doc_num.php?explnum_id=$explnum->explnum_id";
-					$explnum_liste_obj .= "<a href='".$opac_url_base.$suite_url_explnum."' alt='$alt' title='$alt' target='_blank'>".$obj."</a><br />" ;
+					
+					if(!$r_statut->explnum_download_opac){
+						$explnum_liste_obj .= $obj."<br />" ;
+					}else{
+						$explnum_liste_obj .= "<a href='".$opac_url_base.$suite_url_explnum."' alt='$alt' title='$alt' target='_blank'>".$obj."</a><br />" ;
+					}
 				}
 			}
 

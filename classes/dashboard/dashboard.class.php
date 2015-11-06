@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dashboard.class.php,v 1.1.2.1 2015-01-21 11:10:59 mbertin Exp $
+// $Id: dashboard.class.php,v 1.2 2015-01-21 11:16:13 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

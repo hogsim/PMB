@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ? 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: expl.tpl.php,v 1.71.4.2 2015-05-07 08:47:21 jpermanne Exp $
+// $Id: expl.tpl.php,v 1.76 2015-05-18 07:20:11 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -141,6 +141,7 @@ if ($pmb_rfid_activate==1 && $pmb_rfid_serveur_url ) {
 				if(!flag_cb_rfid && flag_rfid_active) {
 				    var confirmed = confirm(\"".addslashes($msg['rfid_programmation_confirmation'])."\");
 				    if (confirmed) {
+				    	program_rfid_ask();
 						return false;
 				    } 
 				}
@@ -362,6 +363,7 @@ $rfid_script_catalog
 		<div class='colonne2'><!-- exp_return_date --></div>
 	</div>
 </div>
+<!-- index_concept_form -->
 
 <div class='row'></div>
 !!champs_perso!!

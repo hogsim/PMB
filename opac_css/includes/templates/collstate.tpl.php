@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collstate.tpl.php,v 1.5.6.1 2014-08-29 10:24:35 dgoron Exp $
+// $Id: collstate.tpl.php,v 1.6 2014-08-29 10:23:00 dgoron Exp $
 
 // templates pour gestion des autorités collections
 

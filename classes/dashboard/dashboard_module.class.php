@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dashboard_module.class.php,v 1.1.2.2 2015-01-21 11:10:59 mbertin Exp $
+// $Id: dashboard_module.class.php,v 1.5 2015-06-10 07:50:18 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -65,11 +65,34 @@ class dashboard_module {
 					}else{
 						$this->infos[$name] = call_user_func_array($method, $parameters);
 					}
-				}else{	
-					$result = mysql_query($query,$dbh);
+				}else{
+					$vars = array();
+					$variables = $elements->item($i)->getElementsByTagName('variables');
+					if($variables->length){
+						for ($j=0 ; $j<$variables->length ; $j++){
+							$var = $variables->item($j)->getElementsByTagName('var');
+							for ($k=0 ; $k<$var->length ; $k++){
+								$vars[] = array(
+										"type" => $var->item($k)->getAttribute("type"),
+										"name" => $var->item($k)->getAttribute("name")
+								);
+							}
+						}
+					}
+					if (count($vars)) {
+						$list = array();
+						foreach ($vars as $var) {
+							if ($var["type"] == "global") {
+								$var_name = $var["name"];
+								global $$var_name;
+								$query = str_replace("!!".$var_name."!!", $$var_name, $query);
+							}
+						}
+					}
+					$result = pmb_mysql_query($query,$dbh);
 					$this->infos[$name]=array();
-					if(mysql_num_rows($result)){
-						while($row = mysql_fetch_assoc($result)){
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_assoc($result)){
 							$this->infos[$name][] = $row;
 						}
 					}
@@ -179,16 +202,16 @@ class dashboard_module {
 					if ($pmb_droits_explr_localises && $usr->explr_visible_mod) $where_clause_explr = "where idlocation in (".$usr->explr_visible_mod.")";
 					else $where_clause_explr = "";
 					$rqtloc = "SELECT idlocation FROM docs_location $where_clause_explr order by location_libelle";
-					$resloc = mysql_query($rqtloc, $dbh);
-					while ($loc=mysql_fetch_object($resloc)) {
+					$resloc = pmb_mysql_query($rqtloc, $dbh);
+					while ($loc=pmb_mysql_fetch_object($resloc)) {
 						$requete = "SELECT idsection, section_libelle FROM docs_section, docsloc_section where idsection=num_section and num_location='$loc->idlocation' order by section_libelle";
-						$result = mysql_query($requete, $dbh);
-						$nbr_lignes = mysql_num_rows($result);
+						$result = pmb_mysql_query($requete, $dbh);
+						$nbr_lignes = pmb_mysql_num_rows($result);
 						if ($nbr_lignes) {
 							if ($loc->idlocation==$location_user_section ) $selector .= "<div id=\"dashboard_docloc_section".$loc->idlocation."\" style=\"display:block\">\r\n";
 							else $selector .= "<div id=\"dashboard_docloc_section".$loc->idlocation."\" style=\"display:none\">\r\n";
 							$selector .= "<select name='f_ex_section".$loc->idlocation."' id='f_ex_section".$loc->idlocation."'>\r\n";
-							while($line = mysql_fetch_row($result)) {
+							while($line = pmb_mysql_fetch_row($result)) {
 								$selector .= "<option value='$line[0]' ";
 								$selector .= (($line[0] == $$field) ? "selected='selected' >" : '>');
 					 			$selector .= htmlentities($line[1],ENT_QUOTES, $charset).'</option>\r\n';
@@ -206,11 +229,11 @@ class dashboard_module {
 				} elseif ($field=="deflt_upload_repertoire") {
 					$selector = "";
 						$requpload = "select repertoire_id, repertoire_nom from upload_repertoire";
-						$resupload = mysql_query($requpload, $dbh);
+						$resupload = pmb_mysql_query($requpload, $dbh);
 						$selector .=  "<div id='upload_section'>";
 						$selector .= "<select name='form_deflt_upload_repertoire'>";
 						$selector .= "<option value='0'>".$msg[upload_repertoire_sql]."</option>";
-						while(($repupload = mysql_fetch_object($resupload))){
+						while(($repupload = pmb_mysql_fetch_object($resupload))){
 							$selector .= "<option value='".$repupload->repertoire_id."' ";
 							if ($$field == $repupload->repertoire_id ) {
 								$selector .= "selected='selected' ";
@@ -228,8 +251,8 @@ class dashboard_module {
 							</div>";
 				} elseif($field=="deflt_import_thesaurus"){
 					$requete="select * from thesaurus order by 2";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$html.="" ;
 					} else {
@@ -241,7 +264,7 @@ class dashboard_module {
 									<select class='saisie-30em' name=\"form_".$field."\">";
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_row ( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 							$html.="<option value=\"".$liste_values[0]."\" " ;
 							if ($$field==$liste_values[0]) {
 								$html.="selected='selected' " ;
@@ -262,8 +285,8 @@ class dashboard_module {
 						$html.=" value='1' name='form_$field'></div></div>\n" ;
 				} elseif ($field=="deflt_cashdesk"){
 					$requete="select * from cashdesk order by cashdesk_name";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$html.="" ;
 					} else {
@@ -282,7 +305,7 @@ class dashboard_module {
 									<select class='saisie-30em' name=\"form_".$field."\">";
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_object( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_object( $resultat_liste );
 							$html.="<option value=\"".$liste_values->cashdesk_id."\" " ;
 							if ($$field==$liste_values->cashdesk_id) {
 								$html.="selected" ;
@@ -312,8 +335,8 @@ class dashboard_module {
 							break;
 					}
 	
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$html.="" ;
 					} else {
@@ -325,7 +348,7 @@ class dashboard_module {
 									<select class='saisie-30em' name=\"form_".$field."\">";
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_row ( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 							$html.="<option value=\"".$liste_values[0]."\" " ;
 							if ($$field==$liste_values[0]) {
 								$html.="selected='selected' " ;
@@ -455,8 +478,8 @@ class dashboard_module {
 					// localisation des lecteurs
 					$deflt_table = substr($field,6);
 					$requete="select * from ".$deflt_table." order by 2";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_num_rows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$html.="" ;
 					} else {
@@ -469,7 +492,7 @@ class dashboard_module {
 	
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_row ( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 							$html.="<option value=\"".$liste_values[0]."\" " ;
 							if ($$field==$liste_values[0]) {
 								$html.="selected='selected' " ;
@@ -482,8 +505,8 @@ class dashboard_module {
 				} else {
 					$deflt_table = substr($field,6);
 					$requete="select * from ".$deflt_table." order by 2 ";
-					$resultat_liste=mysql_query($requete,$dbh);
-					$nb_liste=mysql_numrows($resultat_liste);
+					$resultat_liste=pmb_mysql_query($requete,$dbh);
+					$nb_liste=pmb_mysql_num_rows($resultat_liste);
 					if ($nb_liste==0) {
 						$html.="" ;
 					} else {
@@ -495,7 +518,7 @@ class dashboard_module {
 									<select class='saisie-30em' name=\"form_".$field."\">";
 						$j=0;
 						while ($j<$nb_liste) {
-							$liste_values = mysql_fetch_row ( $resultat_liste );
+							$liste_values = pmb_mysql_fetch_row( $resultat_liste );
 							$html.="<option value=\"".$liste_values[0]."\" " ;
 							if ($$field==$liste_values[0]) {
 								$html.="selected='selected' " ;
@@ -607,9 +630,9 @@ class dashboard_module {
 						break;
 				}
 				if($q) {
-					$r=mysql_query($q, $dbh);
-					$nb=mysql_num_rows($r);
-					while($row=mysql_fetch_row($r)) {
+					$r=pmb_mysql_query($q, $dbh);
+					$nb=pmb_mysql_num_rows($r);
+					while($row=pmb_mysql_fetch_row($r)) {
 						$t[$row[0]]=$row[1];
 					}
 				}

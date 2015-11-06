@@ -5,8 +5,8 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_datasource_article.xml,v 1.4 2012-11-15 09:47:39 arenou Exp $ -->
+$Id: cms_module_common_datasource_article.xml,v 1.5 2014-12-30 11:20:26 dgoron Exp $ -->
 
 <XMLlist>
-	<entry code="cms_module_common_selector_article">Sélecteur manuelle d'un article</entry>
+	<entry code="cms_module_common_selector_article">Sélecteur manuel d'un article</entry>
 </XMLlist>

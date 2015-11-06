@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.5 2013-04-15 12:33:28 mbertin Exp $
+// $Id: search.class.php,v 1.6 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -217,10 +217,10 @@ class serials_list{
 		    		$query = $queries[0]. "order by date,num,val";
 		    	}
    				if($query){
-		    		$result = mysql_query($query);
+		    		$result = pmb_mysql_query($query);
 					$list=array();
-					if(mysql_num_rows($result)){
-						while($row = mysql_fetch_object($result)){
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							if($charset!="utf-8"){
 								$list[] = array(
 									'value' => utf8_encode($row->num."|||".$row->date),
@@ -249,10 +249,10 @@ class serials_list{
 		    		$query = $queries[0]. "order by val";
 		    	} 
 		    	if($query){
-		    		$result = mysql_query($query);
+		    		$result = pmb_mysql_query($query);
 					$list=array();
-					if(mysql_num_rows($result)){
-						while($row = mysql_fetch_object($result)){
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							if($charset!="utf-8"){
 								$list[] = utf8_encode($row->val);
 							}else $list[] = $row->val;
@@ -309,7 +309,7 @@ class serials_list{
 				}  
 				$t_table= "table_".$this->n_ligne."_s_".$this->id;
 				$query = "create temporary table ".$t_table." select * from(".implode(" union ",$queries).") as uni";
-				mysql_query($query);
+				pmb_mysql_query($query);
 				return $t_table;
 	    	}
     	}
@@ -353,7 +353,7 @@ class serials_list{
 				}  
 				$t_table= "table_".$this->n_ligne."_s_".$this->id;
 				$query = "create temporary table ".$t_table." select * from(".implode(" union ",$queries).") as uni";
-				mysql_query($query);
+				pmb_mysql_query($query);
 				return $t_table;
 	    	}
     	}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: receptions.inc.php,v 1.9.6.1 2015-04-13 13:31:05 jpermanne Exp $
+// $Id: receptions.inc.php,v 1.11 2015-04-13 13:29:38 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -410,11 +410,11 @@ function do_relances() {
 	$q = lignes_actes::getLines($tab_lig, true);
 	if ($q) {
 
-		$r=mysql_query($q, $dbh);
+		$r=pmb_mysql_query($q, $dbh);
 		
-		if (mysql_num_rows($r)) {
+		if (pmb_mysql_num_rows($r)) {
 
-			while($row=mysql_fetch_object($r)) {
+			while($row=pmb_mysql_fetch_object($r)) {
 
 				if (!array_key_exists($row->num_fournisseur,$tab_fou)) {
 					$tab_fou[$row->num_fournisseur]=array();
@@ -428,7 +428,7 @@ function do_relances() {
 	}
 
 	$bib = new entites($id_bibli);
-	$bib_coord = mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
+	$bib_coord = pmb_mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
 	
 	$tab_no_mail=array();
 	if ( !($acquisition_pdfrel_by_mail && strpos($bib_coord->email,'@')) ) {
@@ -439,7 +439,7 @@ function do_relances() {
 			foreach($tab_fou as $id_fou=>$tab_act) {
 				
 				$fou = new entites($id_fou);
-				$fou_coord = mysql_fetch_object(entites::get_coordonnees($id_fou,1));
+				$fou_coord = pmb_mysql_fetch_object(entites::get_coordonnees($id_fou,1));
 				
 				//Si on peut relancer par mail
 				if (strpos($fou_coord->email,'@')) {

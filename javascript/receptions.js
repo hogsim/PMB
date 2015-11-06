@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: receptions.js,v 1.3.6.1 2014-08-01 15:04:45 Alexandre Exp $
+// $Id: receptions.js,v 1.4 2014-08-01 15:06:54 Alexandre Exp $
 
 /*
  * nécessite :	ajax.js

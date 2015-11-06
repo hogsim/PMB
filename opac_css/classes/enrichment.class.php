@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: enrichment.class.php,v 1.9 2012-06-28 12:00:46 arenou Exp $
+// $Id: enrichment.class.php,v 1.11 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -17,6 +17,8 @@ class enrichment {
 	var $typdoc = "";
 	var $catalog;
 	var $enrichmentsTabHeaders = array();
+
+	protected $params = array();
 
     function enrichment($typnotice="",$typdoc="") {
     	global $base_path;
@@ -61,10 +63,11 @@ class enrichment {
     	if($this->typnotice && $this->typdoc){
     		$rqt.= " where (source_enrichment_typnotice like '".$this->typnotice."' and source_enrichment_typdoc like '') or (source_enrichment_typnotice like '".$this->typnotice."' and source_enrichment_typdoc like '".$this->typdoc."')";
     	}  
-    	$res = mysql_query($rqt);
-    	if(mysql_num_rows($res)){
-    		while($r= mysql_fetch_object($res)){
+    	$res = pmb_mysql_query($rqt);
+    	if(pmb_mysql_num_rows($res)){
+    		while($r= pmb_mysql_fetch_object($res)){
     			$this->active[$r->source_enrichment_typnotice.$r->source_enrichment_typdoc][] = $r->source_enrichment_num;
+    			$this->params[$r->source_enrichment_typnotice.$r->source_enrichment_typdoc][$r->source_enrichment_num] = unserialize($r->source_enrichment_params);
     		}
     	}
     }
@@ -142,6 +145,10 @@ class enrichment {
 									$info['type'][$i]['label'] = $msg[substr($this->type[$info['type'][$i]],4)];
 								}	
 								if(in_array($info['type'][$i]['code'],$s['TYPE_ENRICHMENT_ALLOWED'])){
+									// Récupération des infos d'affichage par défaut et d'ordre
+									if (isset($this->params[$type][$source_id][$info['type'][$i]['code']]['default_display'])) $info['type'][$i]['default_display'] = $this->params[$type][$source_id][$info['type'][$i]['code']]['default_display'];
+									if (isset($this->params[$type][$source_id][$info['type'][$i]['code']]['order'])) $info['type'][$i]['order'] = $this->params[$type][$source_id][$info['type'][$i]['code']]['order'];
+									
 									$types['type'][]= $info['type'][$i];
 								}		
 							}

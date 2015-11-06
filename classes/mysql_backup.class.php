@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mysql_backup.class.php,v 1.8 2008-11-22 06:50:04 touraine37 Exp $
+// $Id: mysql_backup.class.php,v 1.9 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -61,7 +61,7 @@ class mysql_backup {
 				$SQL = preg_split('/;\s*\n|;\n/m', bzdecompress($this->buffer));
 				for($i=0; $i < sizeof($SQL); $i++) {
 					if($SQL[$i])
-						$result = mysql_query($SQL[$i], $dbh);
+						$result = pmb_mysql_query($SQL[$i], $dbh);
 				}
 			} else {
 				die("can't open file to restore");
@@ -81,27 +81,27 @@ class mysql_backup {
 
 		//enumerate tables
 
-		$res=mysql_list_tables(DATA_BASE);
+		$res=pmb_mysql_list_tables(DATA_BASE);
 		$i = 0;
 
-		while($i < mysql_num_rows($res)) {
+		while($i < pmb_mysql_num_rows($res)) {
 			$update_a_faire=0; /* permet de gérer les id auto_increment qui auraient pour valeur 0 */
-			$table_name = mysql_tablename($res, $i);
+			$table_name = pmb_mysql_tablename($res, $i);
 			bzwrite ($this->fptr, "delete from $table_name;\n");
 			$this->dump.="delete from $table_name;\n";
 			//parse the field info first
-			$res2=mysql_query("select * from ${table_name} order by 1 ",$dbh);
-			$nf=mysql_num_fields($res2);
-			$nr=mysql_num_rows($res2);
+			$res2=pmb_mysql_query("select * from ${table_name} order by 1 ",$dbh);
+			$nf=pmb_mysql_num_fields($res2);
+			$nr=pmb_mysql_num_rows($res2);
 
 			$fields = '';
 			$values = '';
 			for ($b=0;$b<$nf;$b++) {
 
-				$fn=mysql_field_name($res2,$b);
-				$ft=mysql_fieldtype($res2,$b);
-				$fs=mysql_field_len($res2,$b);
-				$ff=mysql_field_flags($res2,$b);
+				$fn=pmb_mysql_field_name($res2,$b);
+				$ft=pmb_mysql_field_type($res2,$b);
+				$fs=pmb_mysql_field_len($res2,$b);
+				$ff=pmb_mysql_field_flags($res2,$b);
 
 				$is_numeric=false;
 
@@ -173,20 +173,20 @@ class mysql_backup {
 			//parse out the table's data and generate the SQL INSERT statements in order to replicate the data itself...
 
 			for ($c=0;$c<$nr;$c++) {
-				$row=mysql_fetch_row($res2);
+				$row=pmb_mysql_fetch_row($res2);
 				$values = '';
 				for ($d=0;$d<$nf;$d++) {
 					$data=strval($row[$d]);
 					if (($d==0) && (strval($row[$d])==0)) {
 						/* traiter ici l'insertion avec valeur 1 pour id autoincrement et update à suivre */
 						$values ? $values.= ', '.'1' : $values.= '1';
-						$cle_update=mysql_field_name($res2, 0);
+						$cle_update=pmb_mysql_field_name($res2, 0);
 						$update_a_faire=1;
 						} else {
 							if ($ina[$d]==true)
 								$values ? $values.= ', '.intval($data) : $values.= intval($data);
 								else
-									$values ? $values.=", \"".mysql_escape_string($data)."\"" : $values.="\"".mysql_escape_string($data)."\"";
+									$values ? $values.=", \"".pmb_mysql_escape_string($data)."\"" : $values.="\"".pmb_mysql_escape_string($data)."\"";
 							}
 
 				}
@@ -199,7 +199,7 @@ class mysql_backup {
 					}
 			}
 
-			mysql_free_result($res2);
+			pmb_mysql_free_result($res2);
 			$i++;
 		}
 

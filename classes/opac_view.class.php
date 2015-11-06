@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: opac_view.class.php,v 1.8.2.2 2015-06-05 09:25:51 dbellamy Exp $
+// $Id: opac_view.class.php,v 1.11 2015-06-05 09:27:04 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -42,8 +42,8 @@ function opac_view($id=0,$id_empr=0) {
 function fetch_data() {
 	global $dbh;
 	if($this->id){
-		$myQuery = mysql_query("SELECT * FROM opac_views WHERE opac_view_id='".$this->id."' LIMIT 1", $dbh);
-		$myreq= mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("SELECT * FROM opac_views WHERE opac_view_id='".$this->id."' LIMIT 1", $dbh);
+		$myreq= pmb_mysql_fetch_object($myQuery);
 		$this->name=$myreq->opac_view_name;
 		$this->requete=$myreq->opac_view_query;
 		if ($this->requete) {
@@ -65,9 +65,9 @@ function fetch_data() {
 	$this->view_list_empr_default=0;
 	if($this->id_empr){
 		// vues selectionnées pour empr
-		$myQuery = mysql_query("SELECT * FROM opac_views_empr WHERE emprview_empr_num='".$this->id_empr."' ", $dbh);
-		if(mysql_num_rows($myQuery)){
-			while(($r=mysql_fetch_object($myQuery))) {
+		$myQuery = pmb_mysql_query("SELECT * FROM opac_views_empr WHERE emprview_empr_num='".$this->id_empr."' ", $dbh);
+		if(pmb_mysql_num_rows($myQuery)){
+			while(($r=pmb_mysql_fetch_object($myQuery))) {
 				if($r->emprview_default) $this->view_list_empr_default=$r->emprview_view_num;
 				$this->view_list_empr[]=$r->emprview_view_num;
 			}
@@ -78,13 +78,13 @@ function fetch_data() {
 
 function get_list($name='', $value_selected=0) {
 	global $dbh,$charset;
-	$myQuery = mysql_query("SELECT * FROM opac_views order by opac_view_name ", $dbh);
+	$myQuery = pmb_mysql_query("SELECT * FROM opac_views order by opac_view_name ", $dbh);
 	$this->opac_views_list=array();
 
 	$selector = "<select name='$name' id='$name'>";
-	if(mysql_num_rows($myQuery)){
+	if(pmb_mysql_num_rows($myQuery)){
 		$i=0;
-		while(($r=mysql_fetch_object($myQuery))) {
+		while(($r=pmb_mysql_fetch_object($myQuery))) {
 			$this->opac_views_list[$i]=new stdClass();
 			$this->opac_views_list[$i]->id=$r->opac_view_id;
 			$this->opac_views_list[$i]->name=$r->opac_view_name;
@@ -113,15 +113,15 @@ function update($value) {
 
 	if($this->id) {
 		// modif
-		$erreur=mysql_query("UPDATE opac_views SET $fields WHERE opac_view_id=".$this->id, $dbh);
+		$erreur=pmb_mysql_query("UPDATE opac_views SET $fields WHERE opac_view_id=".$this->id, $dbh);
 		if(!$erreur) {
 			error_message($msg["opac_view_form_edit"], $msg["opac_view_form_add_error"],1);
 			exit;
 		}
 	} else {
 		// create
-		$erreur=mysql_query("INSERT INTO opac_views SET $fields ", $dbh);
-		$this->id = mysql_insert_id($dbh);
+		$erreur=pmb_mysql_query("INSERT INTO opac_views SET $fields ", $dbh);
+		$this->id = pmb_mysql_insert_id($dbh);
 		if(!$erreur) {
 			error_message($msg["opac_view_form_edit"], $msg["opac_view_form_add_error"],1);
 			exit;
@@ -131,13 +131,13 @@ function update($value) {
 	// Création/suppression table associée si besoin
 	if ($this->opac_view_wo_query) {
 		$q = "drop table if exists opac_view_notices_".$this->id;
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 	} else {
 		$req_create="create table if not exists opac_view_notices_".$this->id." (
 		opac_view_num_notice int(20) not null default 0,
 		PRIMARY KEY (opac_view_num_notice)
 		)";
-		mysql_query($req_create,$dbh);
+		pmb_mysql_query($req_create,$dbh);
 	}
 
 
@@ -181,17 +181,17 @@ function gen() {
 	global $dbh,$msg;
 	for($i=0;$i<count($this->opac_views_list);$i++) {
 		$req="TRUNCATE TABLE opac_view_notices_".$this->opac_views_list[$i]->id;
-		@mysql_query($req, $dbh);
+		@pmb_mysql_query($req, $dbh);
 		if($this->opac_views_list[$i]->query) {
 			$this->search_class->unserialize_search($this->opac_views_list[$i]->query);
 			$table=$this->search_class->make_search() ;
 			$req="INSERT ignore INTO opac_view_notices_".$this->opac_views_list[$i]->id." ( opac_view_num_notice) select notice_id from $table ";
-			mysql_query($req, $dbh);
-			mysql_query("drop table $table");
+			pmb_mysql_query($req, $dbh);
+			pmb_mysql_query("drop table $table");
 		}
 	}
 	$req="update opac_views set opac_view_last_gen=now()";
-	mysql_query($req, $dbh);
+	pmb_mysql_query($req, $dbh);
 }
 
 // fonction générant le form de saisie
@@ -453,7 +453,7 @@ function update_sel_list() {
 	global $form_empr_opac_view; // issu du formulaire
 	global $form_empr_opac_view_default; // issu du formulaire
 
-	if($this->id_empr) mysql_query("DELETE from opac_views_empr WHERE emprview_empr_num=".$this->id_empr, $dbh);
+	if($this->id_empr) pmb_mysql_query("DELETE from opac_views_empr WHERE emprview_empr_num=".$this->id_empr, $dbh);
 
 	if(is_array($form_empr_opac_view) && $this->id_empr){
 		foreach($form_empr_opac_view as $view_num){
@@ -464,7 +464,7 @@ function update_sel_list() {
 			if($found || $view_num == 0){
 				if($view_num==$form_empr_opac_view_default)$default=1; else $default=0;
 				$req="INSERT INTO opac_views_empr SET emprview_view_num=$view_num, emprview_empr_num=".$this->id_empr.", emprview_default=$default ";
-				mysql_query($req, $dbh);
+				pmb_mysql_query($req, $dbh);
 			}
 		}
 	}
@@ -475,12 +475,12 @@ function delete() {
 
 	if($this->id) {
 		// relation vues / empr
-		mysql_query("DELETE from opac_views_empr WHERE emprview_view_num=".$this->id, $dbh);
+		pmb_mysql_query("DELETE from opac_views_empr WHERE emprview_view_num=".$this->id, $dbh);
 		// table de la liste des notices de la vue
 		$req="DROP TABLE opac_view_notices_".$this->id;
-		mysql_query($req);
+		pmb_mysql_query($req);
 		// la vue
-		mysql_query("DELETE from opac_views WHERE opac_view_id='".$this->id."' ", $dbh);
+		pmb_mysql_query("DELETE from opac_views WHERE opac_view_id='".$this->id."' ", $dbh);
 		$this->id=0;
 	}
 	$this->fetch_data();

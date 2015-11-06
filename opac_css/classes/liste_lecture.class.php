@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liste_lecture.class.php,v 1.22 2013-10-04 08:22:50 mbertin Exp $
+// $Id: liste_lecture.class.php,v 1.23 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -35,9 +35,9 @@ class liste_lecture {
 		$this->id_liste = $id_liste;
 		if($this->id_liste){
 			$req = "select * from opac_liste_lecture where id_liste='".$this->id_liste."'";
-			$res = mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$liste = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$liste = pmb_mysql_fetch_object($res);
 				$this->nom_liste = $liste->nom_liste;
 				$this->description=$liste->description;
 				$this->public=$liste->public;
@@ -120,11 +120,11 @@ class liste_lecture {
 		if($list_ck){
 			for($i=0;$i<sizeof($list_ck);$i++){
 				$rqt = "insert into abo_liste_lecture (num_empr,num_liste, etat) values ('".$this->num_empr."', '".$list_ck[$i]."','2')";
-				@mysql_query($rqt,$dbh);
+				@pmb_mysql_query($rqt,$dbh);
 			}
 		} elseif($id_liste){
 			$rqt = "insert into abo_liste_lecture (num_empr,num_liste, etat) values ('".$this->num_empr."', '".$id_liste."','2')";
-			@mysql_query($rqt,$dbh);
+			@pmb_mysql_query($rqt,$dbh);
 		}
 	}
 	
@@ -138,11 +138,11 @@ class liste_lecture {
 		if($list_ck){
 			for($i=0;$i<sizeof($list_ck);$i++){
 				$rqt = "delete from abo_liste_lecture where num_empr='".$this->num_empr."' and num_liste='".$list_ck[$i]."'";
-				mysql_query($rqt,$dbh);
+				pmb_mysql_query($rqt,$dbh);
 			}
 		} elseif($id_liste){
 			$rqt = "delete from abo_liste_lecture where num_empr='".$this->num_empr."' and num_liste='".$id_liste."'";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 		}
 	}
 	
@@ -155,14 +155,14 @@ class liste_lecture {
 		for($i=0;$i<sizeof($cb_demande);$i++){
 			$info = explode('-',$cb_demande[$i]);
 			$req = " update abo_liste_lecture set etat=2 where num_empr='".$info[1]."' and num_liste='".$info[0]."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 			
 			$req ="select concat(empr_prenom,' ',empr_nom) as nom, empr_mail, empr_login from empr where id_empr='".$info[1]."'";
-			$res = mysql_query($req,$dbh);
-			$destinataire = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			$destinataire = pmb_mysql_fetch_object($res);
 			$req ="select concat(empr_prenom,' ',empr_nom) as nom, empr_mail, nom_liste from empr e, opac_liste_lecture oll where oll.num_empr=e.id_empr and id_liste='".$info[0]."'";
-			$res = mysql_query($req,$dbh);
-			$sender= mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			$sender= pmb_mysql_fetch_object($res);
 			
 			$date = time();
 			$login = $destinataire->empr_login;
@@ -184,13 +184,13 @@ class liste_lecture {
 		for($i=0;$i<sizeof($cb_demande);$i++){
 			$info = explode('-',$cb_demande[$i]);
 			$req = " update abo_liste_lecture set etat=0 where num_empr='".$info[1]."' and num_liste='".$info[0]."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 			$req ="select concat(empr_prenom,' ',empr_nom) as nom, empr_mail, empr_login from empr where id_empr='".$info[1]."'";
-			$res = mysql_query($req,$dbh);
-			$destinataire = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			$destinataire = pmb_mysql_fetch_object($res);
 			$req ="select concat(empr_prenom,' ',empr_nom) as nom, empr_mail, nom_liste from empr e, opac_liste_lecture oll where oll.num_empr=e.id_empr and id_liste='".$info[0]."'";
-			$res = mysql_query($req,$dbh);
-			$sender= mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			$sender= pmb_mysql_fetch_object($res);
 			
 			$date = time();
 			$login = $destinataire->empr_login;
@@ -213,15 +213,15 @@ class liste_lecture {
 		if($list_ck){
 			for($i=0;$i<sizeof($list_ck);$i++){
 				$rqt = "delete from opac_liste_lecture where id_liste='".$list_ck[$i]."'";
-				mysql_query($rqt,$dbh);
+				pmb_mysql_query($rqt,$dbh);
 				$rqt = "delete from abo_liste_lecture where num_liste='".$list_ck[$i]."'";
-				mysql_query($rqt,$dbh);
+				pmb_mysql_query($rqt,$dbh);
 			}
 		} elseif($id_liste) {
 			$rqt = "delete from opac_liste_lecture where id_liste='".$id_liste."'";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 			$rqt = "delete from abo_liste_lecture where num_liste='".$id_liste."'";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 		}
 	}
 	
@@ -242,7 +242,7 @@ class liste_lecture {
 			}
 		}
 		$rqt = "update opac_liste_lecture set notices_associees='".implode(',',$this->notices)."' where id_liste='".$id_liste."'"; 
-		mysql_query($rqt,$dbh);
+		pmb_mysql_query($rqt,$dbh);
 
 	}
 	
@@ -255,7 +255,7 @@ class liste_lecture {
 		
 		for($i=0;$i<sizeof($list_ck);$i++){
 			$rqt = "update opac_liste_lecture set public=1 where num_empr='".$this->num_empr."' and id_liste='".$list_ck[$i]."' ";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 		}
 	}
 	
@@ -268,7 +268,7 @@ class liste_lecture {
 		
 		for($i=0;$i<sizeof($list_ck);$i++){
 			$rqt = "update opac_liste_lecture set public=0 where num_empr='".$this->num_empr."' and id_liste='".$list_ck[$i]."'";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 		}
 	}
 	
@@ -279,8 +279,8 @@ class liste_lecture {
 	function get_num_empr($login){
 		if($login){
 			$rqt = "select id_empr from empr where empr_login='".addslashes($login)."'";
-			$res = mysql_query($rqt);
-			return mysql_result($res,0,0);
+			$res = pmb_mysql_query($rqt);
+			return pmb_mysql_result($res,0,0);
 		}
 		
 		return 0;		
@@ -295,11 +295,11 @@ class liste_lecture {
 		if(!$id_liste){
 			$rqt="insert into opac_liste_lecture (notices_associees,description, public, num_empr, nom_liste, read_only, confidential) 
 				values ('".$notice_filtre."', '".$list_comment."','".($cb_share ? 1 : 0)."', '".$this->num_empr."', '".$list_name."', '".($cb_readonly ? 1 : 0)."', '".($cb_confidential ? 1 : 0)."')";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 		} elseif($id_liste) {
 			$rqt="update opac_liste_lecture set notices_associees='".$notice_filtre."', description='".$list_comment."', public='".($cb_share ? 1 : 0)."', 
 				nom_liste='".$list_name."', read_only='".($cb_readonly ? 1 : 0)."', confidential='".($cb_confidential ? 1 : 0)."' where id_liste='".$id_liste."'";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 		}
 	}
 	
@@ -318,7 +318,7 @@ class liste_lecture {
 		$notice_liste = array_merge($notices,$cart);
 		
 		$rqt = "update opac_liste_lecture set notices_associees='".implode(',',$notice_liste)."' where id_liste='".$id_liste."'";
-		mysql_query($rqt);
+		pmb_mysql_query($rqt);
 		
 		$this->notices = $notice_liste;
 	}
@@ -355,14 +355,14 @@ class liste_lecture {
 		
 		if ($this->num_empr){
 			$rqt="select id_liste, nom_liste, description, public, read_only, confidential from opac_liste_lecture where num_empr='".$this->num_empr."' order by nom_liste";
-			$res = mysql_query($rqt);
+			$res = pmb_mysql_query($rqt);
 			$affichage_liste = "
 			<form name='my_list' method='post' action='empr.php' >	
 				<input type='hidden' id='lvl' name='lvl' />
 				<input type='hidden' id='act' name='act' />
 				<div id='list_cadre' style='border: 1px solid rgb(204, 204, 204); overflow: auto; height: 200px;padding:2px;'>";
 			
-			if(mysql_num_rows($res) == 0){
+			if(pmb_mysql_num_rows($res) == 0){
 				//si l'on a aucune liste de lecture crée
 				$affichage_liste .= "
 					<div class='row'>
@@ -376,7 +376,7 @@ class liste_lecture {
 				$this->display=$liste_lecture_prive;
 				return;
 			}
-			while(($liste=mysql_fetch_object($res))){
+			while(($liste=pmb_mysql_fetch_object($res))){
 				$div_description = "";
 				$div_action = "";
 				if($liste->description){
@@ -438,14 +438,14 @@ class liste_lecture {
 				and abo.num_empr='".$this->num_empr."' 
 				and abo.etat=2
 				order by nom_liste";
-		$res = mysql_query($rqt) ;
+		$res = pmb_mysql_query($rqt) ;
 		$affichage_liste .= "<form name='myshared_list' method='post' action='empr.php' >	
 				<input type='hidden' id='lvl' name='lvl' />
 				<input type='hidden' id='sub' name='sub' value='shared_list' />
 				<input type='hidden' id='act' name='act' />
 				<div id='list_cadre' style='border: 1px solid rgb(204, 204, 204); overflow: auto; height: 200px;padding:2px;'>";
 		
-		if(mysql_num_rows($res) == 0){
+		if(pmb_mysql_num_rows($res) == 0){
 			//Si l'on a aucune liste partagée dispo
 			$affichage_liste .= "<div class='row'><label>".$msg['list_lecture_no_myshared']."</label></div></div></form>";
 			$liste_lecture_prive = str_replace('!!current_shared!!','current',$liste_lecture_prive);
@@ -454,7 +454,7 @@ class liste_lecture {
 			$this->display = $liste_lecture_prive;
 			return;
 		}
-		while(($liste=mysql_fetch_object($res))){
+		while(($liste=pmb_mysql_fetch_object($res))){
 			$div_description = "";
 			$div_action = "";
 			if($liste->description){
@@ -497,8 +497,8 @@ class liste_lecture {
 				where public=1 
 				and op.num_empr !='".$this->num_empr."' 
 				order by nom_liste";
-		$res = mysql_query($rqt) ;
-		if(mysql_num_rows($res) == 0){
+		$res = pmb_mysql_query($rqt) ;
+		if(pmb_mysql_num_rows($res) == 0){
 			//Si on a aucune liste partagée dispo
 			$affichage_liste .= "<div class='row'><label>".$msg['list_lecture_no_publiclist']."</label></div>";		
 			$liste_lecture_public = str_replace('!!inscrire_btn!!','',$liste_lecture_public);
@@ -509,7 +509,7 @@ class liste_lecture {
 		}
 		$affichage_liste .= "<script src='./includes/javascript/liste_lecture.js' type='text/javascript'></script>
 				<script src='./includes/javascript/http_request.js' type='text/javascript'></script>";
-		while(($liste=mysql_fetch_object($res))){
+		while(($liste=pmb_mysql_fetch_object($res))){
 			$font='';
 			$font_end='';
 			$check='';
@@ -588,8 +588,8 @@ class liste_lecture {
 		and oll.confidential=1
 		and etat=1
 		order by nom_liste";
-		$res=mysql_query($req,$dbh);
-		if(!mysql_num_rows($res)){		
+		$res=pmb_mysql_query($req,$dbh);
+		if(!pmb_mysql_num_rows($res)){		
 			$affichage_liste .= "<div class='row'><label>".$msg['list_lecture_no_demande']."</label></div>";	
 			$liste_demande =  str_replace("!!accepter_btn!!",'',$liste_demande);
 			$liste_demande =  str_replace("!!refuser_btn!!",'',$liste_demande);
@@ -602,7 +602,7 @@ class liste_lecture {
 		$aff_liste = "<script src='./includes/javascript/liste_lecture.js' type='text/javascript'></script>
 				<script src='./includes/javascript/http_request.js' type='text/javascript'></script>";
 		$aff_liste .= "<ul>";
-		while(($liste = mysql_fetch_object($res))){			
+		while(($liste = pmb_mysql_fetch_object($res))){			
 			if(!$noms_listes[$liste->nom_liste]) {
 				$aff_liste .= "<li><u>".$liste->nom_liste."</u></li>";
 				$noms_listes[$liste->nom_liste] = $liste->nom_liste;
@@ -713,13 +713,13 @@ class liste_lecture {
 				where abo.num_empr=e.id_empr and oll.id_liste=abo.num_liste 
 				and etat=2 and num_liste='".$this->id_liste."'
 				order by nom";
-				$res=mysql_query($req,$dbh);
-				if(!mysql_num_rows($res)){
+				$res=pmb_mysql_query($req,$dbh);
+				if(!pmb_mysql_num_rows($res)){
 					$aff_empr = $msg[list_lecture_no_user_inscrit];
 				}
 				$aff_empr .= "<script src='./includes/javascript/liste_lecture.js' type='text/javascript'></script>
 				<script src='./includes/javascript/http_request.js' type='text/javascript'></script>";
-				while(($empr=mysql_fetch_object($res))){
+				while(($empr=pmb_mysql_fetch_object($res))){
 					if($empr->confidential) $aff_empr .= "<img border=0 align='top' src='".$opac_url_base."images/cross.png'  onclick=\"delete_from_liste('".$this->id_liste."','".$empr->id_empr."');\">";
 					$aff_empr .= $empr->nom."<br />";
 				}
@@ -744,9 +744,9 @@ class liste_lecture {
             left join abo_liste_lecture abo on (num_liste=id_liste and abo.num_empr='".$this->num_empr."')
 		 	where id_liste='".$this->id_liste."'
 		 	";
-		$res = mysql_query($rqt,$dbh);
+		$res = pmb_mysql_query($rqt,$dbh);
 		$liste_noti = array();
-		while(($liste = mysql_fetch_object($res))){
+		while(($liste = pmb_mysql_fetch_object($res))){
 			$liste_lecture_consultation = str_replace('!!nom_liste!!',sprintf($msg['list_lecture_view'],htmlentities($liste->nom_liste,ENT_QUOTES,$charset)),$liste_lecture_consultation);
 			$liste_lecture_consultation = str_replace('!!liste_comment!!',htmlentities($liste->description,ENT_QUOTES,$charset),$liste_lecture_consultation);
 			$liste_lecture_consultation = str_replace('!!id_liste!!',$this->id_liste,$liste_lecture_consultation);

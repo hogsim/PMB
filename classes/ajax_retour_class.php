@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_retour_class.php,v 1.18 2013-02-14 16:35:45 dgoron Exp $
+// $Id: ajax_retour_class.php,v 1.19 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -132,8 +132,8 @@ class retour {
 		global $msg;	
 		
 		$query = "select * from exemplaires where expl_cb='$cb' ";
-		$result = mysql_query($query, $dbh);
-		$expl = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query, $dbh);
+		$expl = pmb_mysql_fetch_object($result);
 		if(!$expl->expl_id) {
 			// exemplaire inconnu
 			$this->error_message=$msg[367];
@@ -162,9 +162,9 @@ class retour {
 			if ($expl->expl_lastempr) {
 				// récupération des infos emprunteur
 				$query_last_empr = "select empr_cb, empr_nom, empr_prenom from empr where id_empr='".$expl->expl_lastempr."' ";
-				$result_last_empr = mysql_query($query_last_empr, $dbh);
-				if(mysql_num_rows($result_last_empr)) {
-					$last_empr = mysql_fetch_object($result_last_empr);
+				$result_last_empr = pmb_mysql_query($query_last_empr, $dbh);
+				if(pmb_mysql_num_rows($result_last_empr)) {
+					$last_empr = pmb_mysql_fetch_object($result_last_empr);
 					$this->lastempr_cb = $last_empr->empr_cb;
 					$this->lastempr_nom = $last_empr->empr_nom;
 					$this->lastempr_prenom = $last_empr->empr_prenom;
@@ -212,12 +212,12 @@ class retour {
 						
 		$query .= " where arc_id='".$this->pret_arc_id."' ";
 		
-		$res = mysql_query($query, $dbh);
+		$res = pmb_mysql_query($query, $dbh);
 		// purge des vieux trucs
 		if ($empr_archivage_prets_purge) {
 			//on ne purge qu'une fois par session et par jour
 			if (!isset($_SESSION["last_empr_archivage_prets_purge_day"]) || ($_SESSION["last_empr_archivage_prets_purge_day"] != date("m.d.y"))) {
-				mysql_query("update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()") or die(mysql_error()."<br />"."update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()");
+				pmb_mysql_query("update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()") or die(pmb_mysql_error()."<br />"."update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()");
 				$_SESSION["last_empr_archivage_prets_purge_day"] = date("m.d.y");
 			}
 		}		
@@ -231,11 +231,11 @@ class retour {
 			
 		// récupération des infos du prêt
 		$query = "select *, date_format(pret_date, '".$msg["format_date"]."') as aff_pret_date, date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour, IF(pret_retour>sysdate(),0,1) as retard from pret where pret_idexpl=".$this->expl_id." limit 1";
-		$result = mysql_query($query, $dbh);
+		$result = pmb_mysql_query($query, $dbh);
 	
-		if(mysql_num_rows($result)) 
+		if(pmb_mysql_num_rows($result)) 
 		{
-			$pret = mysql_fetch_object($result);	
+			$pret = pmb_mysql_fetch_object($result);	
 			// le document était bien en prêt -> récupération des infos du prêt
 			$this->pret_idempr = $pret->pret_idempr;
 			$this->pret_idexpl = $pret->pret_idexpl;
@@ -252,11 +252,11 @@ class retour {
 			// récupération des infos emprunteur
 			$query = "select * , date_format(empr_date_adhesion, '".$msg["format_date"]."') as aff_empr_date_adhesion,
 			date_format(empr_date_expiration, '".$msg["format_date"]."') as aff_empr_date_expiration from empr where id_empr=".$pret->pret_idempr." limit 1";
-			$result = mysql_query($query, $dbh);
-			if(mysql_num_rows($result)) {
+			$result = pmb_mysql_query($query, $dbh);
+			if(pmb_mysql_num_rows($result)) {
 	
 				// stockage des infos sur l'emprunteur
-				$empr = mysql_fetch_object($result);
+				$empr = pmb_mysql_fetch_object($result);
 				$this->empr_cb = $empr->empr_cb;
 				$this->id_empr = $empr->id_empr;
 				$this->empr_nom = $empr->empr_nom;
@@ -277,8 +277,8 @@ class retour {
 				$this->empr_date_expiration = $empr->aff_empr_date_expiration;				
 				
 				$query_groupe = "select libelle_groupe from groupe, empr_groupe where empr_id='".$pret->pret_idempr."' and groupe_id=id_groupe";
-				$result_g = mysql_query($query_groupe, $dbh);
-				while ($groupes=mysql_fetch_object($result_g)) $groupesarray[]=$groupes->libelle_groupe ;
+				$result_g = pmb_mysql_query($query_groupe, $dbh);
+				while ($groupes=pmb_mysql_fetch_object($result_g)) $groupesarray[]=$groupes->libelle_groupe ;
 				$this->groupes = @implode("/",$groupesarray);
 			}
 		}
@@ -294,10 +294,10 @@ class retour {
 		if (!$this->expl_bulletin) $this->expl_bulletin=0 ;
 		$rqt = "select *, IF(resa_date_fin>sysdate(),0,1) as perimee, date_format(resa_date_fin, '".$msg["format_date"]."') as aff_resa_date_fin, date_format(resa_date, '".$msg["format_date"]."') as aff_resa_date from resa where resa_idnotice='".$this->expl_notice."' and resa_idbulletin='".$this->expl_bulletin."' order by resa_date limit 1 ";
 		
-		$result = mysql_query($rqt, $dbh) or die (mysql_error()) ;
-		if(mysql_num_rows($result)) {
+		$result = pmb_mysql_query($rqt, $dbh) or die (pmb_mysql_error()) ;
+		if(pmb_mysql_num_rows($result)) {
 			// des réservations ont été trouvées -> récupération des infos résa
-			$resa = mysql_fetch_object($result);
+			$resa = pmb_mysql_fetch_object($result);
 			$this->id_resa = $resa->id_resa;
 			$this->resa_idempr = $resa->resa_idempr;
 			$this->resa_idnotice = $resa->resa_idnotice;
@@ -310,10 +310,10 @@ class retour {
 			
 			// récupération des infos sur le réservataire
 			$query = "select empr_nom, empr_prenom, empr_cb, id_empr from empr where id_empr=".$resa->resa_idempr." limit 1";
-			$result = mysql_query($query, $dbh);
-			if(mysql_num_rows($result)) {
+			$result = pmb_mysql_query($query, $dbh);
+			if(pmb_mysql_num_rows($result)) {
 				// stockage des infos sur le réservataire
-				$empr = mysql_fetch_object($result);
+				$empr = pmb_mysql_fetch_object($result);
 				$this->cb_reservataire = $empr->empr_cb;
 				$this->nom_reservataire = $empr->empr_nom;
 				$this->prenom_reservataire = $empr->empr_prenom;
@@ -343,8 +343,8 @@ class retour {
 		$query .= " and s.idsection=".$this->expl_section;
 		$query .= " limit 1";
 	
-		$result = mysql_query($query, $dbh);
-		$info_doc = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query, $dbh);
+		$info_doc = pmb_mysql_fetch_object($result);
 		
 		$this->type_doc=$info_doc->type_doc;
 		if($this->nbparts>1)
@@ -358,8 +358,8 @@ class retour {
 		if ($this->pret_idempr) {	
 			// calcul du retard éventuel
 			$rqt_date = "select ((TO_DAYS(CURDATE()) - TO_DAYS('$this->pret_retour'))) as retard ";
-			$resultatdate=mysql_query($rqt_date);
-			$resdate=mysql_fetch_object($resultatdate);
+			$resultatdate=pmb_mysql_query($rqt_date);
+			$resdate=pmb_mysql_fetch_object($resultatdate);
 			$retard = $resdate->retard;
 			if($retard > 0) {
 				//Calcul du vrai nombre de jours
@@ -383,12 +383,12 @@ class retour {
 				} else $ndays=0;
 				if ($ndays>0) {
 					//Le lecteur est-il déjà bloqué ?
-					$date_fin_blocage_empr = mysql_result(mysql_query("select date_fin_blocage from empr where id_empr='".$this->pret_idempr."'"),0,0);
+					$date_fin_blocage_empr = pmb_mysql_result(pmb_mysql_query("select date_fin_blocage from empr where id_empr='".$this->pret_idempr."'"),0,0);
 					//Calcul de la date de fin
 					$date_fin=calendar::add_days(date("d"),date("m"),date("Y"),$ndays);
 					if ($date_fin > $date_fin_blocage_empr) {
 						//Mise à jour
-						mysql_query("update empr set date_fin_blocage='".$date_fin."' where id_empr='".$this->pret_idempr."'");
+						pmb_mysql_query("update empr set date_fin_blocage='".$date_fin."' where id_empr='".$this->pret_idempr."'");
 						$this->error_message=sprintf($msg["blocage_retard_pret"],formatdate($date_fin));
 					} else {
 						$this->error_message=sprintf($msg["blocage_already_retard_pret"],formatdate($date_fin_blocage_empr));
@@ -414,7 +414,7 @@ class retour {
 			}
 			// Suppression prêt et la mise en table de stat	
 			$query = "delete from pret where pret_idexpl = '" . $this->pret_idexpl . "' ";
-			$result = mysql_query($query, $dbh);
+			$result = pmb_mysql_query($query, $dbh);
 			
 			if($result) {
 				$this->retour_message=$msg["retour_ok"];

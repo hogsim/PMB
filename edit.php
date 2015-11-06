@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: edit.php,v 1.54.2.1 2014-07-24 12:39:21 dgoron Exp $
+// $Id: edit.php,v 1.59 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -11,7 +11,10 @@ $base_title = "\$msg[6]";
 $base_noheader=1;
 $base_nosession=1;
 $base_use_dojo = true;
+
 if ((isset($_GET["dest"])) && ($_GET["dest"]=="TABLEAUCSV" || $_GET["dest"]=="EXPORT_NOTI")) {
+	
+
 	$base_nocheck = 1 ;
 	$include_path = $base_path."/includes" ;
 	require_once("$include_path/db_param.inc.php");
@@ -19,8 +22,8 @@ if ((isset($_GET["dest"])) && ($_GET["dest"]=="TABLEAUCSV" || $_GET["dest"]=="EX
 	$dbh = connection_mysql();
 	// on checke si l'utilisateur existe et si le mot de passe est OK
 	$query = "SELECT count(1) FROM users WHERE username='".$_GET["user"]."' AND pwd=password('".$_GET["password"]."') ";
-	$result = mysql_query($query, $dbh);
-	$valid_user = mysql_result($result, 0, 0);
+	$result = pmb_mysql_query($query, $dbh);
+	$valid_user = pmb_mysql_result($result, 0, 0);
 	if (!$valid_user) exit;
 }
 require_once ("$base_path/includes/init.inc.php");
@@ -34,7 +37,7 @@ require_once("$include_path/resa_func.inc.php");
 require_once("$include_path/resa_planning_func.inc.php");
 
 require_once("$include_path/explnum.inc.php");
-
+require_once("$class_path/serialcirc_diff.class.php");
 // modules propres à edit.php ou à ses sous-modules
 require("$include_path/templates/edit.tpl.php");
 
@@ -90,7 +93,58 @@ switch($categ) {
 				include("./edit/notices.inc.php");
 				break;
 			}
-		break;
+		break;	
+	case "serialcirc_diff":
+		switch($sub) {
+			case "export_empr" :
+			default :
+				$serialcirc_diff=new serialcirc_diff($id_serialcirc,$num_abt);
+				$fname = tempnam("./temp", "$fichier_temp_nom.xls");
+				$workbook = new writeexcel_workbook($fname);
+				$worksheet = &$workbook->addworksheet();
+				$worksheet->write(0,0,$titre_page);
+				$i=0;
+				$j=0;
+				$worksheet->write(0,0,$serialcirc_diff->serial_info['serial_name']);
+				$worksheet->write(0,1,$serialcirc_diff->serial_info['abt_name']);
+				
+				$worksheet->write(2,0,$msg["serialcirc_print_empr_name"]);
+				$worksheet->write(2,1,$msg["relance_export_empr_surname"]);
+				$worksheet->write(2,2,$msg["relance_export_empr_mail"]);
+				$worksheet->write(2,3,$msg["serialcirc_print_empr_cb"]);
+				foreach($serialcirc_diff->diffusion as $diff){
+					if($diff['empr_type']==SERIALCIRC_EMPR_TYPE_empr){		
+						$worksheet->write(($i+3),$j,$serialcirc_diff->empr_info[ $diff['empr']['id_empr']]['nom']);	
+						$worksheet->write(($i+3),$j+1,$serialcirc_diff->empr_info[ $diff['empr']['id_empr']]['prenom']);	
+						$worksheet->write(($i+3),$j+2,$serialcirc_diff->empr_info[ $diff['empr']['id_empr']]['mail']);	
+						$worksheet->write(($i+3),$j+3,$serialcirc_diff->empr_info[ $diff['empr']['id_empr']]['cb']);			
+						$i++;
+					}else{
+						$group_name= $diff['empr_name'];
+						if(count($diff['group'])){
+							foreach($diff['group'] as $empr){
+								$resp="";
+								if($empr['responsable']){
+									$resp=$msg["serialcirc_group_responsable"];
+								}	
+								$worksheet->write(($i+3),$j,$empr['empr']['nom']);	
+								$worksheet->write(($i+3),$j+1,$empr['empr']['prenom']);	
+								$worksheet->write(($i+3),$j+2,$empr['empr']['mail']);	
+								$worksheet->write(($i+3),$j+3,$empr['empr']['cb']);	
+								$worksheet->write(($i+3),$j+4,$group_name);				
+								$worksheet->write(($i+3),$j+5,$resp);			
+								$i++;
+							}
+						}
+					}
+				}		
+				$workbook->close();
+				$fh=fopen($fname, "rb");
+				fpassthru($fh);
+				unlink($fname);		
+			break;
+		}
+	break;
 	// EDITIONS LIEES AUX EMPRUNTEURS
 	case "empr":
 		$restrict="";
@@ -121,7 +175,7 @@ switch($categ) {
 							// on modifie la catégorie du lecteur si demandé
 							if($id_empr){
 								$requete="update empr set empr_categ=$act where id_empr=$id_empr";
-								mysql_query($requete);
+								pmb_mysql_query($requete);
 							}
 						}
 					}
@@ -199,10 +253,18 @@ switch($categ) {
 	// Edition Template de notices
 	case "tpl" :
 		switch($sub) {
+			case "serialcirc" :
+				echo "<h1>".$msg["edit_tpl_menu"]."&nbsp;:&nbsp;".$msg["edit_serialcirc_tpl_menu"]."</h1>";
+				include("./edit/serialcirc_tpl.inc.php");
+				break;
 			case "notice" :
 			default :
 				echo "<h1>".$msg["edit_tpl_menu"]."&nbsp;:&nbsp;".$msg["edit_notice_tpl_menu"]."</h1>";
 				include("./edit/notice_tpl.inc.php");
+			break;
+			case "bannette" :
+				echo "<h1>".$msg["edit_tpl_menu"]."&nbsp;:&nbsp;".$msg["edit_bannette_tpl_menu"]."</h1>";
+				include("./edit/bannette_tpl.inc.php");
 			break;
 		}
 	break;
@@ -279,4 +341,4 @@ switch($categ) {
 			break;
 	}
 	
-mysql_close($dbh);
+pmb_mysql_close($dbh);

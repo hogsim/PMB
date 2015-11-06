@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: resa.inc.php,v 1.39.6.3 2015-04-13 12:22:55 jpermanne Exp $
+// $Id: resa.inc.php,v 1.43 2015-04-13 12:21:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,7 +37,7 @@ function alert_empr_resa($id_resa=0, $id_empr_concerne=0, $print_mode=0) {
 	$query .= "where id_resa in (".$id_resa.") and resa_idempr=id_empr";
 	if ($id_empr_concerne) $query .= " and id_empr=$id_empr_concerne ";
 
-	$result = mysql_query($query, $dbh);
+	$result = pmb_mysql_query($query, $dbh);
 	$headers  = "MIME-Version: 1.0\n";
 	$headers .= "Content-type: text/html; charset=".$charset."\n";
 
@@ -57,11 +57,11 @@ function alert_empr_resa($id_resa=0, $id_empr_concerne=0, $print_mode=0) {
 	eval ("\$pdflettreresa_madame_monsieur=\"".$$var."\";");
 	
 	$tab_resa = array();
-	while ($empr=mysql_fetch_object($result)) {
+	while ($empr=pmb_mysql_fetch_object($result)) {
 		$id_empr = $empr->id_empr ;				
 		$rqt_maj = "update resa set resa_confirmee=1 where id_resa in (".$id_resa.") AND resa_cb is not null and resa_cb!=''" ;
 		if ($id_empr_concerne) $rqt_maj .= " and resa_idempr=$id_empr_concerne ";
-		mysql_query($rqt_maj, $dbh);
+		pmb_mysql_query($rqt_maj, $dbh);
 		if (($pdflettreresa_priorite_email==1 || $pdflettreresa_priorite_email==2) && $empr->empr_mail) {
 			$to = $empr->empr_prenom." ".$empr->empr_nom." <".$empr->empr_mail.">";
 			$output_final = "<html><body>" ;
@@ -80,8 +80,8 @@ function alert_empr_resa($id_resa=0, $id_empr_concerne=0, $print_mode=0) {
 			left join exemplaires on expl_cb=resa_cb
 			left join docs_location on idlocation=expl_location
 			where id_resa =$empr->id_resa  and resa_cb is not null and resa_cb!='' ";
-			$res_detail = mysql_query ($rqt_detail) ;
-			$expl_detail = mysql_fetch_object($res_detail);
+			$res_detail = pmb_mysql_query($rqt_detail) ;
+			$expl_detail = pmb_mysql_fetch_object($res_detail);
 			
 			$output_final .= "<br />";
 			$output_final .= strip_tags($msg[291]." : ".$expl_detail->resa_cb." $msg[296] : ".$expl_detail->expl_cote);
@@ -90,21 +90,21 @@ function alert_empr_resa($id_resa=0, $id_empr_concerne=0, $print_mode=0) {
 			$lieu_retrait="";
 			if($pmb_transferts_actif && $transferts_choix_lieu_opac==3) {
 				$rqt = "select resa_confirmee, resa_cb,resa_loc_retrait from resa where id_resa in (".$empr->id_resa.")  and resa_cb is not null and resa_cb!='' ";
-				$res = mysql_query ($rqt, $dbh) ;
-				if(($resa_lue = mysql_fetch_object($res))) {
+				$res = pmb_mysql_query($rqt, $dbh) ;
+				if(($resa_lue = pmb_mysql_fetch_object($res))) {
 					if ($resa_lue->resa_confirmee) {
 						if ($resa_lue->resa_loc_retrait) {
 							$loc_retait=$resa_lue->resa_loc_retrait;
 						} else {
 							$rqt = "select expl_location from exemplaires where expl_cb='".$resa_lue->resa_cb."' ";
-							$res = mysql_query ($rqt, $dbh) ;
-							if(($res_expl = mysql_fetch_object($res))) {	
+							$res = pmb_mysql_query($rqt, $dbh) ;
+							if(($res_expl = pmb_mysql_fetch_object($res))) {	
 								$loc_retait=$res_expl->expl_location;						
 							}
 						}
 						$rqt = "select location_libelle from docs_location where idlocation=".$loc_retait;
-						$res = mysql_query ($rqt, $dbh) ;
-						if(($res_expl = mysql_fetch_object($res))) {	
+						$res = pmb_mysql_query($rqt, $dbh) ;
+						if(($res_expl = pmb_mysql_fetch_object($res))) {	
 							$lieu_retrait=str_replace("!!location!!",$res_expl->location_libelle,$msg["resa_lettre_lieu_retrait"]);						
 						}		
 					}
@@ -136,9 +136,9 @@ function alert_empr_resa($id_resa=0, $id_empr_concerne=0, $print_mode=0) {
 function is_resa_confirme($id_resa=0){
 	global $dbh;
 	$rqt = "select * from resa where id_resa=$id_resa and resa_cb is not null and resa_cb!='' order by resa_idempr ";
-	$res = mysql_query ($rqt, $dbh) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
 	
-	while ($resa_lue = mysql_fetch_object($res)) {
+	while ($resa_lue = pmb_mysql_fetch_object($res)) {
 		if ($resa_lue->resa_confirmee) {
 			// archivage 
 			$rqt_arch = "UPDATE resa_archive, resa, exemplaires SET
@@ -155,7 +155,7 @@ function is_resa_confirme($id_resa=0){
 			resarc_expl_owner = expl_owner,
 			resarc_expl_section = expl_section			
 			WHERE id_resa = $id_resa AND resa_arc = resarc_id AND  resa_cb = expl_cb "; 
-			mysql_query($rqt_arch, $dbh);
+			pmb_mysql_query($rqt_arch, $dbh);
 			
 			return true;
 		}

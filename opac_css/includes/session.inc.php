@@ -2,15 +2,17 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: session.inc.php,v 1.29.2.1 2015-05-19 14:29:28 apetithomme Exp $
+// $Id: session.inc.php,v 1.32 2015-06-04 09:34:20 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once($include_path."/sessions.inc.php");
 
-header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
-header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
-header("Cache-Control: post-check=0, pre-check=0",false);
+if(basename($_SERVER['SCRIPT_FILENAME']) !== "cms_vign.php"){
+	header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
+	header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
+	header("Cache-Control: post-check=0, pre-check=0",false);
+}
 session_set_cookie_params("");
 session_cache_limiter('must-revalidate');
 
@@ -28,7 +30,7 @@ if (!isset($logout)) $logout=0;
 //Sauvegarde de l'environnement
 if ($_SESSION["user_code"]) {
 	$requete="replace into opac_sessions (empr_id,session) values(".$_SESSION["id_empr_session"].",'".addslashes(serialize($_SESSION))."')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 }
 
 //Si logout = 1, destruction de la session
@@ -43,7 +45,7 @@ if ($logout) {
 		        $params["path"], $params["domain"],
 		        $params["secure"], $params["httponly"]
 		    );
-		}			
+		}
 		sessionDelete("PmbOpac");
 	}
 	$_SESSION["cms_build_activate"]=$cms_build_activate;
@@ -56,11 +58,11 @@ if ($_SESSION["user_code"]) {
 	
 	if($_SESSION["user_expired"] ){
 		$req_param = "select valeur_param from parametres where sstype_param='adhesion_expired_status' and type_param='opac'";
-		$res_param = mysql_query($req_param,$dbh);
-		if($res_param && mysql_result($res_param,0,0)){
-			$req = "select * from empr_statut where idstatut='".mysql_result($res_param,0,0)."'";
-			$res = mysql_query($req,$dbh);
-			$data_expired = mysql_fetch_array($res);
+		$res_param = pmb_mysql_query($req_param,$dbh);
+		if($res_param && pmb_mysql_result($res_param,0,0)){
+			$req = "select * from empr_statut where idstatut='".pmb_mysql_result($res_param,0,0)."'";
+			$res = pmb_mysql_query($req,$dbh);
+			$data_expired = pmb_mysql_fetch_array($res);
 			$droit_loan= $data_expired['allow_loan'];
 			$droit_loan_hist= $data_expired['allow_loan_hist'];
 			$droit_book= $data_expired['allow_book'];
@@ -106,8 +108,8 @@ if ($_SESSION["user_code"]) {
 	}
 	//Préférences utilisateur
 	$query0 = "select * from empr, empr_statut where empr_login='".$_SESSION['user_code']."' and idstatut=empr_statut limit 1";
-	$req0 = mysql_query($query0,$dbh);
-	$data = mysql_fetch_array($req0);
+	$req0 = pmb_mysql_query($query0,$dbh);
+	$data = pmb_mysql_fetch_array($req0);
 	$id_empr = $data['id_empr'];
 	$empr_cb = $data['empr_cb'];
 	$empr_nom = $data['empr_nom'];

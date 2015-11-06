@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: parametres_perso.class.php,v 1.24 2012-12-18 09:28:12 arenou Exp $
+// $Id: parametres_perso.class.php,v 1.25 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -31,11 +31,11 @@ class parametres_perso {
 		$this->no_special_fields=0;
 		$this->t_fields=array();
 		$requete="select idchamp, name, titre, type, datatype, obligatoire, options, multiple, export, search, opac_sort from ".$this->prefix."_custom order by ordre";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)==0)
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)==0)
 			$this->no_special_fields=1;
 		else {
-			while ($r=mysql_fetch_object($resultat)) {
+			while ($r=pmb_mysql_fetch_object($resultat)) {
 				$this->t_fields[$r->idchamp]["DATATYPE"]=$r->datatype;
 				$this->t_fields[$r->idchamp]["NAME"]=$r->name;
 				$this->t_fields[$r->idchamp]["TITRE"]=$r->titre;
@@ -56,8 +56,8 @@ class parametres_perso {
 		if ((!$this->no_special_fields)&&($id)) {
 			$this->values = array() ;
 			$requete="select ".$this->prefix."_custom_champ,".$this->prefix."_custom_origine,".$this->prefix."_custom_small_text, ".$this->prefix."_custom_text, ".$this->prefix."_custom_integer, ".$this->prefix."_custom_date, ".$this->prefix."_custom_float from ".$this->prefix."_custom_values where ".$this->prefix."_custom_origine=".$id;
-			$resultat=mysql_query($requete);
-			while ($r=mysql_fetch_array($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			while ($r=pmb_mysql_fetch_array($resultat)) {
 				$this->values[$r[$this->prefix."_custom_champ"]][]=$r[$this->prefix."_custom_".$this->t_fields[$r[$this->prefix."_custom_champ"]]["DATATYPE"]];
 			}
 		} else $this->values=array();
@@ -195,9 +195,9 @@ class parametres_perso {
 				switch ($val['TYPE']) {
 					case 'list' :
 						$q="select ".$this->prefix."_custom_list_value, ".$this->prefix."_custom_list_lib from ".$this->prefix."_custom_lists where ".$this->prefix."_custom_champ=".$key." order by ordre";
-						$r=mysql_query($q,$dbh);	
-						if(mysql_num_rows($r)) {
-							while ($row=mysql_fetch_row($r)) {
+						$r=pmb_mysql_query($q,$dbh);	
+						if(pmb_mysql_num_rows($r)) {
+							while ($row=pmb_mysql_fetch_row($r)) {
 								$values[$row[0]]=$row[1];
 							}
 						}
@@ -205,9 +205,9 @@ class parametres_perso {
 					case 'query_list' :
 						$field['OPTIONS'][0]=_parser_text_no_function_("<?xml version='1.0' encoding='".$charset."'?>\n".$val['OPTIONS'], 'OPTIONS');
 						$q=$field['OPTIONS'][0]['QUERY'][0]['value'];
-						$r = mysql_query($q,$dbh);
-						if(mysql_num_rows($r)) {
-							while ($row=mysql_fetch_row($r)) {
+						$r = pmb_mysql_query($q,$dbh);
+						if(pmb_mysql_num_rows($r)) {
+							while ($row=pmb_mysql_fetch_row($r)) {
 								$values[$row[0]]=$row[1];
 							}
 						}

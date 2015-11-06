@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // � 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serial_affichage_unimarc.class.php,v 1.1 2014-03-14 17:31:02 arenou Exp $
+// $Id: serial_affichage_unimarc.class.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,11 +23,11 @@ class serial_affichage_unimarc extends notice_affichage_unimarc {
 		global $dbh;
 	
 		$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->notice_id);
-		$myQuery = mysql_query($requete, $dbh);
-		$source_id = mysql_result($myQuery, 0, 0);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		$source_id = pmb_mysql_result($myQuery, 0, 0);
 	
 		$requete="select * from entrepot_source_".$source_id." where recid='".addslashes($this->notice_id)."' group by field_order,ufield,usubfield,subfield_order,value";
-		$myQuery = mysql_query($requete, $dbh);
+		$myQuery = pmb_mysql_query($requete, $dbh);
 		
 		$notice= new stdClass();
 		$lpfo="";
@@ -38,14 +38,14 @@ class serial_affichage_unimarc extends notice_affichage_unimarc {
 		$cpt_notice_pperso=0;
 		$notice->notice_pperso= array();
 		
-		if(mysql_num_rows($myQuery)) {
+		if(pmb_mysql_num_rows($myQuery)) {
 			$is_article = false;
-			while ($l=mysql_fetch_object($myQuery)) {
+			while ($l=pmb_mysql_fetch_object($myQuery)) {
 				if (!$this->source_id) {
 					$this->source_id=$l->source_id;
 					$requete="select name from connectors_sources where source_id=".$l->source_id;
-					$rsname=mysql_query($requete);
-					if (mysql_num_rows($rsname)) $this->source_name=mysql_result($rsname,0,0);
+					$rsname=pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($rsname)) $this->source_name=pmb_mysql_result($rsname,0,0);
 				}
 				$this->unimarc[$l->ufield][$l->field_order][$l->usubfield][$l->subfield_order];
 				switch ($l->ufield) {
@@ -278,7 +278,7 @@ class serial_affichage_unimarc extends notice_affichage_unimarc {
 				break;
 			
 		}
-		return mysql_num_rows($myQuery);
+		return pmb_mysql_num_rows($myQuery);
 	} // fin fetch_data
 
 }

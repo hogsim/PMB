@@ -4,7 +4,7 @@
 // © 2006 mental works / www.mental-works.com contact@mental-works.com
 // 	complètement repris et corrigé par PMB Services 
 // +-------------------------------------------------+
-// $Id: tags.inc.php,v 1.13 2009-05-16 11:11:54 dbellamy Exp $
+// $Id: tags.inc.php,v 1.14 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,16 +29,16 @@ switch ($quoifaire) {
 			$acces_m=1;
 			if ($acces_jm) {
 				$q = "select count(1) from tags $acces_jm where id_tag=".$valid_id_tags[$i];
-				$r = mysql_query($q, $dbh);
-				if(mysql_result($r,0,0)==0) {
+				$r = pmb_mysql_query($q, $dbh);
+				if(pmb_mysql_result($r,0,0)==0) {
 					$acces_m=0;
 				}
 			}
 			if ($acces_m!=0) {
 				$requete="select libelle, num_notice, index_l from tags left join notices on notice_id=num_notice where id_tag=".$valid_id_tags[$i];
-				$r=mysql_query($requete, $dbh) or die(mysql_error()." <br />".$requete);
-				if (mysql_numrows($r)) {
-					$loc = mysql_fetch_object($r);
+				$r=pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error()." <br />".$requete);
+				if (pmb_mysql_num_rows($r)) {
+					$loc = pmb_mysql_fetch_object($r);
 					$tab_index_l=array();
 					$tab_index_l = explode($pmb_keyword_sep,trim($loc->index_l));
 					$tab_index_l[]=stripslashes($loc->libelle);
@@ -51,13 +51,13 @@ switch ($quoifaire) {
 					$index_matieres=" ".strip_empty_words($index_l)." ";
 					
 					$requete="update notices set index_l='".$index_l."',index_matieres='$index_matieres' where notice_id='".$loc->num_notice."'";
-					mysql_query($requete, $dbh) or die(mysql_error()." <br />".$requete);
+					pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error()." <br />".$requete);
 					
 					notice::majNoticesGlobalIndex($loc->num_notice);
 					notice::majNoticesMotsGlobalIndex($loc->num_notice);
 					
 					$requete="delete from tags where id_tag='".$valid_id_tags[$i]."'";
-					mysql_query($requete, $dbh) or die(mysql_error()." <br />".$requete);
+					pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error()." <br />".$requete);
 				}
 			}
 		}	
@@ -67,14 +67,14 @@ switch ($quoifaire) {
 			$acces_m=1;
 			if ($acces_jm) {
 				$q = "select count(1) from tags $acces_jm where id_tag=".$valid_id_tags[$i];
-				$r = mysql_query($q, $dbh);
-				if(mysql_result($r,0,0)==0) {
+				$r = pmb_mysql_query($q, $dbh);
+				if(pmb_mysql_result($r,0,0)==0) {
 					$acces_m=0;
 				}
 			}
 			if ($acces_m!=0) {
 				$rqt = "delete from tags where id_tag='".$valid_id_tags[$i]."' ";
-				mysql_query ($rqt, $dbh) ;
+				pmb_mysql_query($rqt, $dbh) ;
 			}
 		}	
 		break;
@@ -93,8 +93,8 @@ $url_base = "./catalog.php?categ=tags";
 
 //requete d'affichage des notices et des tags
 $requete="select 1 from tags ";
-$r = mysql_query($requete, $dbh) or die (mysql_error()." <br /><br />".$requete);
-$nbr_lignes = mysql_num_rows($r);
+$r = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." <br /><br />".$requete);
+$nbr_lignes = pmb_mysql_num_rows($r);
 
 $requete="select id_tag,libelle,num_notice,user_code,dateajout,index_l,DATE_FORMAT(dateajout,'".$msg[format_date]."') as ladate, 
 			empr_login, empr_nom, empr_prenom,
@@ -104,15 +104,15 @@ $requete="select id_tag,libelle,num_notice,user_code,dateajout,index_l,DATE_FORM
 		  order by index_serie, tnvol, index_sew ,dateAjout desc 
 		  limit $debut,$nb_per_page  ";
 
-$r = mysql_query($requete, $dbh) or die (mysql_error()." <br /><br />".$requete);
+$r = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." <br /><br />".$requete);
 
-if (mysql_numrows($r)) {
+if (pmb_mysql_num_rows($r)) {
 
 	//affichage des notices
 	print $begin_result_liste;
 	$res_final = "";
 	$notice_id=0;
-	while (($loc = mysql_fetch_object($r))) {
+	while (($loc = pmb_mysql_fetch_object($r))) {
 		if ($notice_id!=$loc->notice_id) {
 			if ($notice_id!=0) $res_final .=  "</ul><br />" ;
 			$notice_id=$loc->notice_id;

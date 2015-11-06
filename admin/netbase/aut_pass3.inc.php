@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: aut_pass3.inc.php,v 1.9 2013-03-20 18:21:23 mbertin Exp $
+// $Id: aut_pass3.inc.php,v 1.10 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,8 +19,8 @@ $v_state=urldecode($v_state);
 
 print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_responsabilites"], ENT_QUOTES, $charset)." : 1</h2>";
 
-$query = mysql_query("delete responsability from responsability left join notices on responsability_notice=notice_id where notice_id is null ");
-$affected = mysql_affected_rows();
+$query = pmb_mysql_query("delete responsability from responsability left join notices on responsability_notice=notice_id where notice_id is null ");
+$affected = pmb_mysql_affected_rows();
 
 // mise à jour de l'affichage de la jauge
 print "<table border='0' align='center' width='$table_size' cellpadding='0'><tr><td class='jauge'>

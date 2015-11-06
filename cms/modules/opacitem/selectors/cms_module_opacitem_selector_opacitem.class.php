@@ -284,9 +284,9 @@ class cms_module_opacitem_selector_opacitem extends cms_module_common_selector{
 		}
 		
 		$query='SELECT type_param,sstype_param,comment_param FROM parametres WHERE CONCAT(type_param,"_",sstype_param) IN ("'.implode('","', array_keys($globals_list)).'")';
-		$result=mysql_query($query);
-		if(!mysql_error() && mysql_num_rows($result)){
-			while($param=mysql_fetch_array($result,MYSQL_ASSOC)){
+		$result=pmb_mysql_query($query);
+		if(!pmb_mysql_error() && pmb_mysql_num_rows($result)){
+			while($param=pmb_mysql_fetch_array($result,MYSQL_ASSOC)){
 				if(sizeof($globals_list[$param['type_param'].'_'.$param['sstype_param']])){
 					$globals_list[$param['type_param'].'_'.$param['sstype_param']]+=$param;
 				}

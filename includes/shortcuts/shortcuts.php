@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: shortcuts.php,v 1.9.14.1 2014-05-07 09:27:45 Alexandre Exp $
+// $Id: shortcuts.php,v 1.10 2014-05-07 09:30:08 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "shortcuts.php")) die("no access");
 

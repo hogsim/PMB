@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: print_thesaurus.php,v 1.16.4.1 2014-04-03 07:55:41 jpermanne Exp $
+// $Id: print_thesaurus.php,v 1.19 2015-04-03 11:16:23 jpermanne Exp $
 
 $base_path = ".";
 $base_auth = "AUTORITES_AUTH";
@@ -101,8 +101,8 @@ if ($action!="print") {
 	}
 
 $rqlang = "select langue_defaut from thesaurus where id_thesaurus=".$aff_num_thesaurus ;
-$reslang = mysql_query($rqlang) or die("<br />Query 'langue_defaut' failed ".mysql_error()."<br />".$rqlang);
-$objlang = mysql_fetch_object($reslang);
+$reslang = pmb_mysql_query($rqlang) or die("<br />Query 'langue_defaut' failed ".pmb_mysql_error()."<br />".$rqlang);
+$objlang = pmb_mysql_fetch_object($reslang);
 if ($objlang->langue_defaut) $aff_langue = $objlang->langue_defaut;
 else $aff_langue ="fr_FR";
 
@@ -137,8 +137,8 @@ if ($action=="print") {
 				creer_noeud_xml($dom,$noeudthes,"LIB_THES",$thes->libelle_thesaurus);
 				
 				$res=categories::listChilds($id_noeud_debut, $aff_langue,1, "libelle_categorie");
-			    if($res && mysql_num_rows($res)){
-			    	while ($categ=mysql_fetch_object($res)) {
+			    if($res && pmb_mysql_num_rows($res)){
+			    	while ($categ=pmb_mysql_fetch_object($res)) {
 						if(trim($categ->libelle_categorie)){
 							creer_categ_xml($dom,$noeudthes,0,$categ->num_noeud,$categ->libelle_categorie,$categ->note_application,$categ->comment_public,$categ->num_parent);
 						}
@@ -163,9 +163,9 @@ if ($action=="print") {
 		    	
 		    	//hasTopConcept
 		    	$requete="SELECT id_noeud FROM noeuds WHERE num_parent='".$id_noeud_debut."' AND  num_renvoi_voir='0' AND autorite != 'ORPHELINS' AND num_thesaurus='".$aff_num_thesaurus."'";
-				$res_hasTopConcept=mysql_query($requete);
-				if($res_hasTopConcept && mysql_num_rows($res_hasTopConcept)){
-					while ($hasTopConcept=mysql_fetch_object($res_hasTopConcept)) {
+				$res_hasTopConcept=pmb_mysql_query($requete);
+				if($res_hasTopConcept && pmb_mysql_num_rows($res_hasTopConcept)){
+					while ($hasTopConcept=pmb_mysql_fetch_object($res_hasTopConcept)) {
 						creer_noeud_xml($dom,$conceptScheme,"skos:hasTopConcept","",array("rdf:resource"=>$uri_noeud_skos.$hasTopConcept->id_noeud));
 					}
 				}
@@ -180,8 +180,8 @@ if ($action=="print") {
 		    	//on fait le ménage dans le store
 		    	$synchro_rdf->deleteTriple("<".$uri_thes_skos.">",'?p','?o');
 		    	$requete="SELECT id_noeud FROM noeuds WHERE num_thesaurus='".$aff_num_thesaurus."'";
-		    	$res=mysql_query($requete);
-		    	while ($row=mysql_fetch_object($res)) {
+		    	$res=pmb_mysql_query($requete);
+		    	while ($row=pmb_mysql_fetch_object($res)) {
 		    		$synchro_rdf->deleteTriple("<".$uri_noeud_skos.$row->id_noeud.">",'?p','?o');
 		    	}
 		    	//on charge le xml
@@ -211,8 +211,8 @@ if ($action=="print") {
 					$id_noeud_top = $id_noeud_origine ;
 				} else {
 					$rqt_id_noeud_top = "select id_noeud from noeuds where autorite='TOP' and num_thesaurus=".$aff_num_thesaurus ;
-					$result_rqt_id_noeud_top = mysql_query($rqt_id_noeud_top) or die("Query 'TOP' failed");
-					$obj_id_noeud_top = mysql_fetch_object($result_rqt_id_noeud_top);
+					$result_rqt_id_noeud_top = pmb_mysql_query($rqt_id_noeud_top) or die("Query 'TOP' failed");
+					$obj_id_noeud_top = pmb_mysql_fetch_object($result_rqt_id_noeud_top);
 					$id_noeud_top = $obj_id_noeud_top->id_noeud;
 				}
 				
@@ -230,8 +230,8 @@ if ($action=="print") {
 				break;
 			case "alph":
 				$rqt = "select id_noeud from noeuds n, categories c where c.num_thesaurus=$aff_num_thesaurus and n.num_thesaurus=$aff_num_thesaurus and id_noeud=num_noeud and langue='$aff_langue' and autorite!='TOP' and autorite!='ORPHELINS' and autorite!='NONCLASSES' order by libelle_categorie ";
-				$result = mysql_query($rqt) or die("Query alpha failed");
-				while ($obj_id_noeud = mysql_fetch_object($result)){
+				$result = pmb_mysql_query($rqt) or die("Query alpha failed");
+				while ($obj_id_noeud = pmb_mysql_fetch_object($result)){
 					echo infos_categorie($obj_id_noeud->id_noeud);
 				}
 				break;
@@ -242,8 +242,8 @@ if ($action=="print") {
 					include("$include_path/marc_tables/$aff_langue/empty_words_thesaurus");
 				} else $mots_vides_thesaurus=false;  
 				$rqt = "select id_noeud, libelle_categorie, index_categorie from noeuds n, categories c where c.num_thesaurus=$aff_num_thesaurus and n.num_thesaurus=$aff_num_thesaurus and id_noeud=num_noeud and langue='$aff_langue' and autorite!='TOP' and autorite!='ORPHELINS' and autorite!='NONCLASSES' order by libelle_categorie ";
-				$result = mysql_query($rqt) or die("Query rota failed");
-				while ($obj = mysql_fetch_object($result)) {
+				$result = pmb_mysql_query($rqt) or die("Query rota failed");
+				while ($obj = pmb_mysql_fetch_object($result)) {
 					// récupération de l'index du libellé, nettoyage
 					$icat=$obj->index_categorie ;
 					// si mots vides supplémentaires
@@ -278,8 +278,8 @@ if ($action=="print") {
 				foreach ($mots as $mot=>$idiz) {
 					// on parcourt tous les mots trouvés
 					$rqt="select libelle_categorie, num_noeud from categories where num_noeud in(".implode(",",$idiz).") and langue='".$aff_langue."' order by index_categorie";
-					$ressql = mysql_query($rqt) or die ($rqt."<br /><br />".mysql_error());
-					while ($data=mysql_fetch_object($ressql)) {
+					$ressql = pmb_mysql_query($rqt) or die ($rqt."<br /><br />".pmb_mysql_error());
+					while ($data=pmb_mysql_fetch_object($ressql)) {
 						// on parcourt toutes les catégories utilisant ce mot pour chercher la position d'utilisation du mot
 						$catnette = " ".str_replace(" - ","   ",strtolower(strip_empty_chars_thesaurus($data->libelle_categorie)))." ";
 						$catnette = str_replace(" -","  ",$catnette);
@@ -304,7 +304,7 @@ if ($action=="print") {
 	
 }
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 function infos_noeud($idnoeud, $niveau, $profondeurmax) {
 
@@ -315,8 +315,8 @@ function infos_noeud($idnoeud, $niveau, $profondeurmax) {
 	
 	// récupération info du noeud
 	$rqt = "select num_noeud, libelle_categorie, num_parent, note_application, comment_public, case when langue='$aff_langue' then '' else langue end as trad, langue from categories,noeuds where num_noeud = id_noeud and num_noeud='$idnoeud' order by trad ";
-	$ressql = mysql_query($rqt) or die ($rqt."<br /><br />".mysql_error());
-	while ($data=mysql_fetch_object($ressql)) {
+	$ressql = pmb_mysql_query($rqt) or die ($rqt."<br /><br />".pmb_mysql_error());
+	while ($data=pmb_mysql_fetch_object($ressql)) {
 		$res.= "\n<tr>";
 		$niv=$niveau-1;
 		switch($niv) {
@@ -363,29 +363,29 @@ function infos_noeud($idnoeud, $niveau, $profondeurmax) {
 		//TERME GÉNÉRAL DANS LE CAS DE L'IMPRESSION D'UNE BRANCHE
 		if ($printingBranche){
 			$rqttg = "select libelle_categorie from categories where num_noeud = '".$data->num_parent."'";
-			$restg = mysql_query($rqttg) or die ($rqttg."<br /><br />".mysql_error());
-			if (mysql_num_rows($restg)) {
-				$datatg=mysql_fetch_object($restg);
+			$restg = pmb_mysql_query($rqttg) or die ($rqttg."<br /><br />".pmb_mysql_error());
+			if (pmb_mysql_num_rows($restg)) {
+				$datatg=pmb_mysql_fetch_object($restg);
 				$res.= "<br /><font color='blue'>TG ".affiche_text($datatg->libelle_categorie)."</font>";
 			}		
 		} 
 			
 		if ($aff_voir_aussi) {
 			$rqtva = "select libelle_categorie from categories, voir_aussi where num_noeud_orig=$idnoeud and num_noeud=num_noeud_dest and categories.langue='".$data->langue."' and voir_aussi.langue='".$data->langue."' order by libelle_categorie " ;
-			$resva = mysql_query($rqtva) or die ($rqtva."<br /><br />".mysql_error());
-			if (mysql_num_rows($resva)) {
+			$resva = pmb_mysql_query($rqtva) or die ($rqtva."<br /><br />".pmb_mysql_error());
+			if (pmb_mysql_num_rows($resva)) {
 				$res.= "\n<font color='green'>";
-				while ($datava=mysql_fetch_object($resva)) $res.= "<br />TA ".affiche_text($datava->libelle_categorie);
+				while ($datava=pmb_mysql_fetch_object($resva)) $res.= "<br />TA ".affiche_text($datava->libelle_categorie);
 				$res.= "</font>";
 			}
 			
 		}
 		if ($aff_voir) {
 			$rqtva = "select libelle_categorie from categories, noeuds where num_renvoi_voir=$idnoeud and num_noeud=id_noeud and categories.langue='".$data->langue."' order by libelle_categorie " ;
-			$resva = mysql_query($rqtva) or die ($rqtva."<br /><br />".mysql_error());
-			if (mysql_num_rows($resva)) {
+			$resva = pmb_mysql_query($rqtva) or die ($rqtva."<br /><br />".pmb_mysql_error());
+			if (pmb_mysql_num_rows($resva)) {
 				$res.= "\n<font size=-1>";
-				while ($datava=mysql_fetch_object($resva)) $res.= "<br />EP <i>".affiche_text($datava->libelle_categorie)."</i>";
+				while ($datava=pmb_mysql_fetch_object($resva)) $res.= "<br />EP <i>".affiche_text($datava->libelle_categorie)."</i>";
 				$res.= "</font>";
 			}
 		}
@@ -404,8 +404,8 @@ function infos_categorie($idnoeud, $printcategnoeud=true, $forcer_em=false) {
 	
 	// récupération info du noeud
 	$rqt = "select num_noeud, num_parent, libelle_categorie, note_application, comment_public, case when langue='$aff_langue' then '' else langue end as trad, langue from categories join noeuds on num_noeud=id_noeud where num_noeud='$idnoeud' order by trad ";
-	$ressql = mysql_query($rqt) or die ($rqt."<br /><br />".mysql_error());
-	while ($data=mysql_fetch_object($ressql)) {
+	$ressql = pmb_mysql_query($rqt) or die ($rqt."<br /><br />".pmb_mysql_error());
+	while ($data=pmb_mysql_fetch_object($ressql)) {
 
 		if ($data->trad) $res.="<br /><font color=blue>".affiche_text($data->trad)."</font> ".affiche_text($data->libelle_categorie)."";
 		elseif ($printcategnoeud) $res.="<br /><br /><b>".affiche_text($data->libelle_categorie)."</b>";
@@ -413,19 +413,19 @@ function infos_categorie($idnoeud, $printcategnoeud=true, $forcer_em=false) {
 		// EP et EM
 		if ($aff_voir) {
 			$rqtva = "select libelle_categorie from categories, noeuds where num_renvoi_voir=$idnoeud and num_noeud=id_noeud and categories.langue='".$data->langue."' order by libelle_categorie " ;
-			$resva = mysql_query($rqtva) or die ($rqtva."<br /><br />".mysql_error());
-			if (mysql_num_rows($resva)) {
+			$resva = pmb_mysql_query($rqtva) or die ($rqtva."<br /><br />".pmb_mysql_error());
+			if (pmb_mysql_num_rows($resva)) {
 				$res.= "\n<font size=-1>";
-				while ($datava=mysql_fetch_object($resva)) $res.= "<br />EP <i>".affiche_text($datava->libelle_categorie)."</i>";
+				while ($datava=pmb_mysql_fetch_object($resva)) $res.= "<br />EP <i>".affiche_text($datava->libelle_categorie)."</i>";
 				$res.= "</font>";
 			}
 		}
 		if ($aff_voir || $forcer_em) {
 			$rqtva = "select libelle_categorie from categories, noeuds where id_noeud=$idnoeud and num_noeud=num_renvoi_voir and categories.langue='".$data->langue."' order by libelle_categorie " ;
-			$resva = mysql_query($rqtva) or die ($rqtva."<br /><br />".mysql_error());
-			if (mysql_num_rows($resva)) {
+			$resva = pmb_mysql_query($rqtva) or die ($rqtva."<br /><br />".pmb_mysql_error());
+			if (pmb_mysql_num_rows($resva)) {
 				$res.= "\n<font size=-1>";
-				while ($datava=mysql_fetch_object($resva)) $res.= "<br />EM <i>".affiche_text($datava->libelle_categorie)."</i>";
+				while ($datava=pmb_mysql_fetch_object($resva)) $res.= "<br />EM <i>".affiche_text($datava->libelle_categorie)."</i>";
 				$res.= "</font>";
 			}
 		}
@@ -433,10 +433,10 @@ function infos_categorie($idnoeud, $printcategnoeud=true, $forcer_em=false) {
 		// TG
 		if ($aff_tg) {
 			$rqttg = "select libelle_categorie from categories join noeuds on num_noeud=id_noeud where num_noeud='$data->num_parent' and libelle_categorie not like '~%' and categories.langue='".$data->langue."' " ;
-			$restg = mysql_query($rqttg) or die ($rqttg."<br /><br />".mysql_error());
-			if (mysql_num_rows($restg)) {
+			$restg = pmb_mysql_query($rqttg) or die ($rqttg."<br /><br />".pmb_mysql_error());
+			if (pmb_mysql_num_rows($restg)) {
 					$res.= "\n<font color=black>";
-					while ($datatg=mysql_fetch_object($restg)) $res.= "<br />TG ".affiche_text($datatg->libelle_categorie);
+					while ($datatg=pmb_mysql_fetch_object($restg)) $res.= "<br />TG ".affiche_text($datatg->libelle_categorie);
 					$res.= "</font>";
 				}
 		}
@@ -444,20 +444,20 @@ function infos_categorie($idnoeud, $printcategnoeud=true, $forcer_em=false) {
 		// TS
 		if ($aff_ts) {
 			$rqtts = "select libelle_categorie from categories join noeuds on num_noeud=id_noeud where num_parent='$data->num_noeud' and libelle_categorie not like '~%' and categories.langue='".$data->langue."' " ;
-			$rests = mysql_query($rqtts) or die ($rqttg."<br /><br />".mysql_error());
-			if (mysql_num_rows($rests)) {
+			$rests = pmb_mysql_query($rqtts) or die ($rqttg."<br /><br />".pmb_mysql_error());
+			if (pmb_mysql_num_rows($rests)) {
 					$res.= "\n<font color=black>";
-					while ($datats=mysql_fetch_object($rests)) $res.= "<br />TS ".affiche_text($datats->libelle_categorie);
+					while ($datats=pmb_mysql_fetch_object($rests)) $res.= "<br />TS ".affiche_text($datats->libelle_categorie);
 					$res.= "</font>";
 				}
 		}		
 		// TA
 		if ($aff_voir_aussi) {
 			$rqtva = "select libelle_categorie from categories, voir_aussi where num_noeud_orig=$idnoeud and num_noeud=num_noeud_dest and categories.langue='".$data->langue."' and voir_aussi.langue='".$data->langue."' order by libelle_categorie " ;
-			$resva = mysql_query($rqtva) or die ($rqtva."<br /><br />".mysql_error());
-			if (mysql_num_rows($resva)) {
+			$resva = pmb_mysql_query($rqtva) or die ($rqtva."<br /><br />".pmb_mysql_error());
+			if (pmb_mysql_num_rows($resva)) {
 				$res.= "\n<font color=green>";
-				while ($datava=mysql_fetch_object($resva)) $res.= "<br />TA ".affiche_text($datava->libelle_categorie);
+				while ($datava=pmb_mysql_fetch_object($resva)) $res.= "<br />TA ".affiche_text($datava->libelle_categorie);
 				$res.= "</font>";
 			}
 			
@@ -481,10 +481,10 @@ function enfants($id, $niveau, &$resultat, &$profondeurmax, $imprimer=false) {
 	
 	// chercher les enfants
 	$rqt = "select id_noeud from noeuds, categories where num_parent='$id' and id_noeud=num_noeud and langue='$aff_langue' and autorite!='TOP' and autorite!='ORPHELINS' and autorite!='NONCLASSES' order by libelle_categorie ";
-	$res = mysql_query($rqt) ;
-	if (mysql_num_rows($res)) {
+	$res = pmb_mysql_query($rqt) ;
+	if (pmb_mysql_num_rows($res)) {
 		$niveau++;
-		while ($data=mysql_fetch_object($res)) {
+		while ($data=pmb_mysql_fetch_object($res)) {
 			enfants($data->id_noeud, $niveau, $resultat, $profondeurmax, $imprimer);
 		}
 	}
@@ -542,9 +542,9 @@ function creer_categ_xml($dom,$parent,$niveau, $num_noeud,$libelle_categorie,$no
     //Voir aussi
     if($aff_voir_aussi){
     	$requete="SELECT libelle_categorie,num_noeud_dest FROM voir_aussi JOIN categories ON num_noeud_dest=num_noeud AND categories.langue='".$aff_langue."' WHERE num_noeud_orig='".$num_noeud."' AND voir_aussi.langue='".$aff_langue."' ORDER BY libelle_categorie";
-	    $res=mysql_query($requete);
-	    if($res && mysql_num_rows($res)){
-	    	while ( $va=mysql_fetch_object($res) ) {
+	    $res=pmb_mysql_query($requete);
+	    if($res && pmb_mysql_num_rows($res)){
+	    	while ( $va=pmb_mysql_fetch_object($res) ) {
 				if(trim($va->libelle_categorie)){
 					creer_noeud_xml($dom,$noeud_categ,"TA",$va->libelle_categorie);
 				}
@@ -555,9 +555,9 @@ function creer_categ_xml($dom,$parent,$niveau, $num_noeud,$libelle_categorie,$no
     //Employé pour
     if($aff_voir){
     	$requete="SELECT libelle_categorie,id_noeud FROM noeuds JOIN categories ON id_noeud=num_noeud AND categories.langue='".$aff_langue."' WHERE num_renvoi_voir='".$num_noeud."' ORDER BY libelle_categorie";
-	    $res=mysql_query($requete);
-	    if($res && mysql_num_rows($res)){
-	    	while ( $ep=mysql_fetch_object($res) ) {
+	    $res=pmb_mysql_query($requete);
+	    if($res && pmb_mysql_num_rows($res)){
+	    	while ( $ep=pmb_mysql_fetch_object($res) ) {
 				if(trim($ep->libelle_categorie)){
 					creer_noeud_xml($dom,$noeud_categ,"EP",$ep->libelle_categorie);
 				}
@@ -568,9 +568,9 @@ function creer_categ_xml($dom,$parent,$niveau, $num_noeud,$libelle_categorie,$no
     //Terme générique
     if($aff_tg && $num_parent){
     	$requete="SELECT libelle_categorie FROM categories WHERE langue='".$aff_langue."' AND num_noeud='".$num_parent."'";
-	    $res=mysql_query($requete);
-	    if($res && mysql_num_rows($res)){
-	    	while ( $tg=mysql_fetch_object($res) ) {
+	    $res=pmb_mysql_query($requete);
+	    if($res && pmb_mysql_num_rows($res)){
+	    	while ( $tg=pmb_mysql_fetch_object($res) ) {
 				if(trim($tg->libelle_categorie)){
 					creer_noeud_xml($dom,$noeud_categ,"TG",$tg->libelle_categorie);
 				}
@@ -581,9 +581,9 @@ function creer_categ_xml($dom,$parent,$niveau, $num_noeud,$libelle_categorie,$no
     //TS
     if($aff_ts){
     	$res=categories::listChilds($num_noeud, $aff_langue,0, "libelle_categorie");
-	    if($res && mysql_num_rows($res)){
+	    if($res && pmb_mysql_num_rows($res)){
 	    	$noeud_ts=creer_noeud_xml($dom,$noeud_categ,"TS".$niveau);
-	    	while ($categ=mysql_fetch_object($res)) {
+	    	while ($categ=pmb_mysql_fetch_object($res)) {
 				if(trim($categ->libelle_categorie)){
 					creer_categ_xml($dom,$noeud_ts,($niveau+1),$categ->num_noeud,$categ->libelle_categorie,$categ->note_application,$categ->comment_public,$categ->num_parent);
 				}
@@ -636,13 +636,13 @@ function cree_export_skos(&$dom,&$racine,$num_noeud_racine,$num_noeud_orphelins)
 	$monTest=true;
 	while($monTest){
 		$requete="SELECT n1.id_noeud, n2.num_renvoi_voir FROM noeuds n1 LEFT JOIN noeuds n2 ON n1.num_renvoi_voir=n2.id_noeud WHERE n1.num_renvoi_voir <>'0' AND  n2.num_renvoi_voir <>'0'";
-		$res=mysql_query($requete);
-		if(mysql_num_rows($res)){		
-			while ($ligne=mysql_fetch_object($res)) {
+		$res=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)){		
+			while ($ligne=pmb_mysql_fetch_object($res)) {
 				if(!in_array($ligne->id_noeud,$arrayId)){
 					$arrayId[]=$ligne->id_noeud;
 				}
-				mysql_query("UPDATE noeuds SET num_renvoi_voir=".$ligne->num_renvoi_voir." WHERE id_noeud=".$ligne->id_noeud);
+				pmb_mysql_query("UPDATE noeuds SET num_renvoi_voir=".$ligne->num_renvoi_voir." WHERE id_noeud=".$ligne->id_noeud);
 			}
 		}else{
 			$monTest=false;
@@ -651,9 +651,9 @@ function cree_export_skos(&$dom,&$racine,$num_noeud_racine,$num_noeud_orphelins)
 	
 	//Je récupère les ids de tous les noeuds qui n'ont pas de renvoie
 	$requete="SELECT * FROM noeuds WHERE num_thesaurus='".$aff_num_thesaurus."' AND num_renvoi_voir='0' AND id_noeud != ".$num_noeud_racine." AND autorite != 'ORPHELINS'";
-	$res=mysql_query($requete);
-	if($res && mysql_num_rows($res)){
-		while ($noeud=mysql_fetch_object($res)) {
+	$res=pmb_mysql_query($requete);
+	if($res && pmb_mysql_num_rows($res)){
+		while ($noeud=pmb_mysql_fetch_object($res)) {
 			$concept=creer_noeud_xml($dom,$racine,"skos:Concept","",array("rdf:about"=>$uri_noeud_skos.$noeud->id_noeud));
 			
 			$noeud_liee=array();
@@ -674,14 +674,14 @@ function cree_export_skos(&$dom,&$racine,$num_noeud_racine,$num_noeud_orphelins)
 			//Les renvois
 			if($aff_voir){
 				$requete="SELECT id_noeud, num_parent, libelle_categorie, langue FROM noeuds JOIN categories ON id_noeud=num_noeud AND noeuds.num_thesaurus=categories.num_thesaurus WHERE num_renvoi_voir='".$noeud->id_noeud."' AND noeuds.num_thesaurus='".$aff_num_thesaurus."'";
-				$res_renvoi=mysql_query($requete);
-				if($res_renvoi && mysql_num_rows($res_renvoi)){
-					while ($renvoi=mysql_fetch_object($res_renvoi)) {
+				$res_renvoi=pmb_mysql_query($requete);
+				if($res_renvoi && pmb_mysql_num_rows($res_renvoi)){
+					while ($renvoi=pmb_mysql_fetch_object($res_renvoi)) {
 						if($do_polyhierarchie){
 							//Je regarde si le libellé du renvoie est le même que celui du noeuds
 							$requete="SELECT * FROM categories WHERE num_noeud='".$noeud->id_noeud."' AND num_thesaurus='".$aff_num_thesaurus."' AND libelle_categorie='".addslashes($renvoi->libelle_categorie)."' AND langue='".addslashes($renvoi->langue)."'";
-							$res2=mysql_query($requete);
-							if($res2 && mysql_num_rows($res2)){//Dans ce cas il s'agit de la même categ qui a été duppliqué pour la polyhierarchie
+							$res2=pmb_mysql_query($requete);
+							if($res2 && pmb_mysql_num_rows($res2)){//Dans ce cas il s'agit de la même categ qui a été duppliqué pour la polyhierarchie
 								if(!$noeud_liee[$renvoi->num_parent]){
 									creer_noeud_xml($dom,$concept,"skos:broader","",array("rdf:resource"=>$uri_noeud_skos.$renvoi->num_parent));
 									$noeud_liee[$renvoi->num_parent]=1;
@@ -702,9 +702,9 @@ function cree_export_skos(&$dom,&$racine,$num_noeud_racine,$num_noeud_orphelins)
 			if($aff_ts){
 				//$requete="SELECT id_noeud FROM noeuds WHERE num_parent='".$noeud->id_noeud."' AND  num_renvoi_voir='0' AND num_thesaurus='".$aff_num_thesaurus."'";
 				$requete="SELECT id_noeud, num_renvoi_voir FROM noeuds WHERE num_parent='".$noeud->id_noeud."' AND num_thesaurus='".$aff_num_thesaurus."'";
-				$res_narrower=mysql_query($requete);
-				if($res_narrower && mysql_num_rows($res_narrower)){
-					while ($narrower=mysql_fetch_object($res_narrower)) {
+				$res_narrower=pmb_mysql_query($requete);
+				if($res_narrower && pmb_mysql_num_rows($res_narrower)){
+					while ($narrower=pmb_mysql_fetch_object($res_narrower)) {
 						if($narrower->num_renvoi_voir){
 							if(!$noeud_liee[$narrower->num_renvoi_voir]){
 								creer_noeud_xml($dom,$concept,"skos:narrower","",array("rdf:resource"=>$uri_noeud_skos.$narrower->num_renvoi_voir));
@@ -722,9 +722,9 @@ function cree_export_skos(&$dom,&$racine,$num_noeud_racine,$num_noeud_orphelins)
 			
 			//Je vais chercher les informations des catégories
 			$requete="SELECT * FROM categories WHERE num_noeud='".$noeud->id_noeud."' AND num_thesaurus='".$aff_num_thesaurus."'";
-			$res_cat=mysql_query($requete);
-			if($res_cat && mysql_num_rows($res_cat)){
-				while ($categ=mysql_fetch_object($res_cat)) {
+			$res_cat=pmb_mysql_query($requete);
+			if($res_cat && pmb_mysql_num_rows($res_cat)){
+				while ($categ=pmb_mysql_fetch_object($res_cat)) {
 					//Appartenance au schéma
 					creer_noeud_xml($dom,$concept,"skos:inScheme","",array("rdf:resource"=>$uri_thes_skos));
 					
@@ -752,9 +752,9 @@ function cree_export_skos(&$dom,&$racine,$num_noeud_racine,$num_noeud_orphelins)
 			//Les voir aussi
 			if($aff_voir_aussi){
 				$requete="SELECT num_noeud_dest FROM voir_aussi WHERE num_noeud_orig='".$noeud->id_noeud."'";
-				$res_related=mysql_query($requete);
-				if($res_related && mysql_num_rows($res_related)){
-					while ($related=mysql_fetch_object($res_related)) {
+				$res_related=pmb_mysql_query($requete);
+				if($res_related && pmb_mysql_num_rows($res_related)){
+					while ($related=pmb_mysql_fetch_object($res_related)) {
 						if(!$noeud_liee[$related->num_noeud_dest]){
 							creer_noeud_xml($dom,$concept,"skos:related","",array("rdf:resource"=>$uri_noeud_skos.$related->num_noeud_dest));
 							$noeud_liee[$related->num_noeud_dest]=1;

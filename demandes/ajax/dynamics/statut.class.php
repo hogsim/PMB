@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: statut.class.php,v 1.2 2010-02-23 16:27:22 kantin Exp $
+// $Id: statut.class.php,v 1.3 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -59,7 +59,7 @@ class statut{
 		global $dbh, $statut;		
 		
 		$req = "update demandes_actions set statut_action='".$statut."' where id_action='".$this->idobjet."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		
 		
 		$action = new demandes_actions($this->idobjet);

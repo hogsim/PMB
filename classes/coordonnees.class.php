@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: coordonnees.class.php,v 1.8 2007-03-10 09:25:48 touraine37 Exp $
+// $Id: coordonnees.class.php,v 1.9 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -45,8 +45,8 @@ class coordonnees{
 		global $dbh;
 		
 		$q = "select * from coordonnees where id_contact = '".$this->id_contact."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->num_entite = $obj->num_entite;
 		$this->type_coord = $obj->type_coord;
 		$this->libelle = $obj->libelle;
@@ -80,7 +80,7 @@ class coordonnees{
 			$q.= "etat = '".$this->etat."', pays = '".$this->pays."', tel1 = '".$this->tel1."', tel2 = '".$this->tel2."', ";
 			$q.= "fax = '".$this->fax."', email = '".$this->email."', commentaires = '".$this->commentaires."' ";
 			$q.= "where id_contact = '".$this->id_contact."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 
 		} else {
 			
@@ -88,8 +88,8 @@ class coordonnees{
 			$q.= "adr1 = '".$this->adr1."', adr2 = '".$this->adr2."', cp = '".$this->cp."', ville = '".$this->ville."', ";
 			$q.= "etat = '".$this->etat."', pays = '".$this->pays."', tel1 = '".$this->tel1."', tel2 = '".$this->tel2."', ";
 			$q.= "fax = '".$this->fax."', email = '".$this->email."', commentaires = '".$this->commentaires."' "; 
-			$r = mysql_query($q, $dbh);
-			$this->id_contact = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_contact = pmb_mysql_insert_id($dbh);
 		}
 	}
 
@@ -102,7 +102,7 @@ class coordonnees{
 		if(!$id_contact) $id_contact = $this->id_contact; 	
 
 		$q = "delete from coordonnees where id_contact = '".$id_contact."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -113,8 +113,8 @@ class coordonnees{
 		global $dbh;
 		if (!$id_contact) $id_contact = $this->id_contact;
 		$q = "select count(1) from coordonnees where id_contact = '".$id_contact."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -125,7 +125,7 @@ class coordonnees{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE coordonnees', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE coordonnees', $dbh);
 		return $opt;
 				
 	}

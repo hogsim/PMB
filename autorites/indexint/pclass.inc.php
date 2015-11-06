@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pclass.inc.php,v 1.4 2013-11-12 15:43:44 dgoron Exp $
+// $Id: pclass.inc.php,v 1.5 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,15 +15,15 @@ $action = $base_url."pclass_form&id_pclass=0";
 //affichage de la liste pclassement
 
 $q = "select id_pclass,name_pclass,typedoc from pclassement ";
-$r = mysql_query($q, $dbh);
-if (mysql_num_rows($r) == 0) {
+$r = pmb_mysql_query($q, $dbh);
+if (pmb_mysql_num_rows($r) == 0) {
 	$browser_content = $msg[4051];
 	affiche();
 	exit;
 }
 
 $odd_even = 1;
-while ($row = mysql_fetch_object($r)) {
+while ($row = pmb_mysql_fetch_object($r)) {
 	if ($odd_even==0) {
 		$browser_content .= "	<tr class='odd'>";
 		$odd_even=1;

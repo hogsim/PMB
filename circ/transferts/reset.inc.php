@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // Â© 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reset.inc.php,v 1.6.4.3 2015-04-16 11:42:47 jpermanne Exp $
+// $Id: reset.inc.php,v 1.10 2015-04-16 11:39:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -63,13 +63,13 @@ if ($form_cb_expl != "") {
 	$formlocid="f_ex_section".$f_ex_location ;
 	$expl_section=$$formlocid ;
 	$query = "select * from exemplaires where expl_cb='".$form_cb_expl."' ";	
-	$result = mysql_query($query, $dbh);
-	$expl_info = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query, $dbh);
+	$expl_info = pmb_mysql_fetch_object($result);
 	if($expl_info->expl_id) {
 		// Reset des transferts en cours
 		$rqt = "UPDATE transferts,transferts_demande, exemplaires set etat_transfert=1, etat_demande=7							
 				WHERE id_transfert=num_transfert and num_expl=expl_id  and etat_transfert=0 AND expl_cb='".$form_cb_expl."' " ;
-		mysql_query ( $rqt );
+		pmb_mysql_query( $rqt );
 		
 		//on met à jour la localisation de expl avec celle de l'utilisateur
 		$rqt = "UPDATE exemplaires 
@@ -77,12 +77,12 @@ if ($form_cb_expl != "") {
 				expl_statut=".$f_ex_statut.", transfert_statut_origine =".$f_ex_statut.",  
 				expl_section=".$expl_section.", transfert_section_origine =".$expl_section." 
 				WHERE expl_cb='".$form_cb_expl."' " ;
-		mysql_query ( $rqt );
+		pmb_mysql_query( $rqt );
 				
 		$rqt = "DELETE FROM transferts_source WHERE trans_source_numexpl=".$expl_info->expl_id ;
-		mysql_query ( $rqt );		
+		pmb_mysql_query( $rqt );		
 		$rqt = "insert transferts_source SET trans_source_numloc=".$f_ex_location." , trans_source_numexpl=".$expl_info->expl_id;
-		mysql_query ( $rqt );
+		pmb_mysql_query( $rqt );
 		
 		// le reset est fait
 		$aff=str_replace("!!cb_expl!!", $form_cb_expl,$transferts_reset_OK);

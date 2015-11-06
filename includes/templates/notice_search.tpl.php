@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_search.tpl.php,v 1.23 2009-10-06 06:25:33 touraine37 Exp $
+// $Id: notice_search.tpl.php,v 1.25 2014-10-30 16:09:35 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -37,7 +37,9 @@ if ($pmb_use_uniform_title)	$menu_search_commun.="<span".ongletSelect("categ=sea
 			".$msg['search_by_titre_uniforme']."
 		</a>
 	</span>";
-$menu_search_commun.="<span".ongletSelect("categ=search&mode=3").">
+$menu_search_commun.="
+	<!-- !!authpersos!! -->
+	<span".ongletSelect("categ=search&mode=3").">
 		<a href='./catalog.php?categ=search&mode=3'>
 			".$msg['search_by_panier']."
 		</a>
@@ -51,8 +53,20 @@ $menu_search_commun.="<span".ongletSelect("categ=search&mode=3").">
 		<a href='./catalog.php?categ=search&mode=8&option_show_notice_fille=$option_show_notice_fille&option_show_expl=$option_show_expl'>
 			".$msg['search_exemplaire']."
 		</a>
+	</span>";
+if ($pmb_map_activate) $menu_search_commun.="<span".ongletSelect("categ=search&mode=11").">
+		<a href='./catalog.php?categ=search&mode=11'>
+			".$msg['search_map']."
+		</a>
 	</span>
-";
+";		
+	$menu_search_tpl="
+	<span !!selected!!>
+		<a href='./catalog.php?categ=search&mode=!!mode!!'>
+			!!label!!
+		</a>
+	</span>
+	";
 if ($pmb_allow_external_search) $menu_search_commun .= "
 	<span".ongletSelect("categ=search&mode=7&external_type=simple").">
 		<a href='./catalog.php?categ=search&mode=7&external_type=simple'>
@@ -106,6 +120,14 @@ $menu_search[7] = "
  
   $menu_search[10] = "
     <h1>$msg[357]<span>$msg[1901]".$msg['search_by_titre_serie']."</span></h1>
+".$menu_search_commun;   
+  
+  $menu_search[11] = "
+  <h1>$msg[357]<span>$msg[1901]".$msg['search_by_map']."</span></h1>
+".$menu_search_commun;
+  
+  $menu_search[1000] = "
+    <h1>$msg[357]<span>$msg[1901]!!authperso_search_title!!</span></h1>
 ".$menu_search_commun;  
 //    ----------------------------
 //    Form: Other Search

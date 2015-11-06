@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fonction_etagere.php,v 1.8 2006-12-29 16:42:17 touraine37 Exp $
+// $Id: fonction_etagere.php,v 1.10 2015-03-13 15:37:26 apetithomme Exp $
 
 $base_path=".";
 require_once($base_path."/includes/includes_etagere.inc.php");
@@ -22,6 +22,8 @@ $liens_opac['lien_rech_motcle'] 		= "./index.php?lvl=more_results&mode=keyword&u
 $liens_opac['lien_rech_categ'] 			= "./index.php?lvl=categ_see&id=!!id!!";
 $liens_opac['lien_rech_perio'] 			= "./index.php?lvl=notice_display&id=!!id!!";
 $liens_opac['lien_rech_bulletin'] 		= "./index.php?lvl=bulletin_display&id=!!id!!";
+$liens_opac['lien_rech_concept'] 		= "./index.php?lvl=concept_see&id=!!id!!";
+$liens_opac['lien_rech_authperso'] 		= "./index.php?lvl=authperso_see&id=!!id!!";
 */
 
 // paramètres :

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: Typdoc.php,v 1.2 2013-04-25 16:02:17 mbertin Exp $
+// $Id: Typdoc.php,v 1.3 2015-04-03 11:16:24 jpermanne Exp $
 
 namespace Sabre\PMB;
 
@@ -51,7 +51,7 @@ class Typdoc extends Collection {
 	function update_notice_infos($notice_id){
 		if($notice_id*1 >0){
 			$query = "update notices set typdoc = '".$this->typdoc."' where notice_id = ".$notice_id;
-			mysql_query($query);
+			pmb_mysql_query($query);
 		}
 	}
 }

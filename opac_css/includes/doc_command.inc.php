@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: doc_command.inc.php,v 1.3 2009-05-16 10:52:45 dbellamy Exp $
+// $Id: doc_command.inc.php,v 1.4 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -54,9 +54,9 @@ if ($nom) {
 	$corps="";
 	if ($id_empr) {
 		$requete="select empr_cb,empr_nom,empr_prenom,empr_login from empr where id_empr=".$id_empr;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);
 			$corps.="<a href='".$pmb_url_base."circ.php?categ=pret&id_empr=$id_empr'>".htmlentities(sprintf($msg["command_phototeque_send_by"],$r->empr_cb." ".$r->empr_nom." ".$r->empr_prenom),ENT_QUOTES,$charset)."</a><br />";
 		}
 	}
@@ -83,10 +83,10 @@ if ($nom) {
 	$flag=false;
 	if ($id_empr) {
 		$requete="select empr_login,concat(empr_prenom,' ',empr_nom) as nom, empr_tel1,empr_mail from empr where id_empr=$id_empr";
-		$resultat=mysql_query($requete); 
-		if (mysql_num_rows($resultat)) {
+		$resultat=pmb_mysql_query($requete); 
+		if (pmb_mysql_num_rows($resultat)) {
 			$flag=true;
-			$r=mysql_fetch_object($resultat);
+			$r=pmb_mysql_fetch_object($resultat);
 			$form_mailing=str_replace("!!nom!!",htmlentities($r->nom,ENT_QUOTES,$charset),$form_mailing);
 			$form_mailing=str_replace("!!telephone!!",htmlentities($r->empr_tel1,ENT_QUOTES,$charset),$form_mailing);
 			$form_mailing=str_replace("!!mail!!",htmlentities($r->empr_mail,ENT_QUOTES,$charset),$form_mailing);

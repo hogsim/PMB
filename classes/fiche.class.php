@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fiche.class.php,v 1.13 2013-11-05 08:06:29 dgoron Exp $
+// $Id: fiche.class.php,v 1.14 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -156,18 +156,18 @@ class fiche{
 		$search_word = str_replace('*','%',$perso_word);
 
 		$requete = "SELECT count(1) FROM fiche where infos_global like '%".$search_word."%' or index_infos_global like '%".$perso_word."%'";
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_result($res, 0, 0);
 
 		if(!$i_search) $limit="limit 0, 2";
 		else $limit="limit ".($i_search-1).", 3";
 
 		$req = "select id_fiche from fiche where infos_global like '%".$search_word."%' or index_infos_global like '%".$perso_word."%' $limit ";
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 		$this->fiche_prec=0;
 		$this->fiche_suiv=0;
-		if ($nb=mysql_num_rows($res)) {
-			while($fic = mysql_fetch_object($res)){
+		if ($nb=pmb_mysql_num_rows($res)) {
+			while($fic = pmb_mysql_fetch_object($res)){
 				$result[] = $fic->id_fiche;
 			}
 			if($i_search<1 && $nb>1){
@@ -194,12 +194,12 @@ class fiche{
 
 		if(!$this->id_fiche){
 			$req = "insert into fiche set infos_global='', index_infos_global=''";
-			mysql_query($req,$dbh);
-			$this->id_fiche = mysql_insert_id();
+			pmb_mysql_query($req,$dbh);
+			$this->id_fiche = pmb_mysql_insert_id();
 			print "<div class='row'><b>".htmlentities($msg['fiche_saved'],ENT_QUOTES,$charset)."</b></div>";
 		} else {
 			$req = "update fiche set infos_global='', index_infos_global='' where id_fiche='".$this->id_fiche."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 		//On met à jour les champs persos
 		$this->p_perso->check_submited_fields();
@@ -215,9 +215,9 @@ class fiche{
 	function delete(){
 		global $dbh;
 		$req = "delete from fiche where id_fiche = ".$this->id_fiche;
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		$req = "delete from ".$this->p_perso->prefix."_custom_values where  ".$this->p_perso->prefix."_custom_origine = ".$this->id_fiche;
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	}
 
 	/*
@@ -232,7 +232,7 @@ class fiche{
 			$infos_global_index.= strip_empty_words($mots_perso).' ';
 		}
 		$req = "update fiche set infos_global='".addslashes($infos_global)."', index_infos_global='".addslashes($infos_global_index)."' where id_fiche=$id";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	}
 
 	/*
@@ -242,8 +242,8 @@ class fiche{
 		global $dbh;
 
 		$req = "select id_fiche from fiche";
-		$res = mysql_query($req,$dbh);
-		while($fiche = mysql_fetch_object($res)){
+		$res = pmb_mysql_query($req,$dbh);
+		while($fiche = pmb_mysql_fetch_object($res)){
 			$this->update_global_index($fiche->id_fiche);
 		}
 	}
@@ -273,16 +273,16 @@ class fiche{
 		if(!$page) $page=1;
 		$debut =($page-1)*$nb_per_page;
 		$requete = "SELECT count(1) FROM fiche where infos_global like '%".$search_word."%' or index_infos_global like '%".$perso_word."%'";
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_result($res, 0, 0);
 
 		$req = "select id_fiche from fiche where infos_global like '%".$search_word."%' or index_infos_global like '%".$perso_word."%' ";
 		if(!isset($dest) || !$dest){
 			$req .= " LIMIT ".$debut.",".$nb_per_page." ";
 		}
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 
-		while($fic = mysql_fetch_object($res)){
+		while($fic = pmb_mysql_fetch_object($res)){
 			$result[$fic->id_fiche] = $this->get_values($fic->id_fiche,1);
 		}
 		$form_search = str_replace("!!nb_per_page!!",$nb_per_page,$form_search);
@@ -327,7 +327,7 @@ class fiche{
 		global $perso_word,$page;
 		global $nb_per_page;
 		$req = "select * from ".$this->p_perso->prefix."_custom where multiple=1 order by ordre";//where multiple=1";
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 		if($export){
 			$display = "<table id='result_table' width='100%'><tr>";
 		}else{
@@ -335,7 +335,7 @@ class fiche{
 		}
 		
 		$nb_field=0;
-		while($champ = mysql_fetch_object($res)){
+		while($champ = pmb_mysql_fetch_object($res)){
 			$field_id[]=$champ->idchamp;
 			if($champ->multiple)$display .= "<th>".htmlentities($champ->titre,ENT_QUOTES,$charset)."</th>";
 			$field_visible[$nb_field++]=$champ->multiple;
@@ -389,11 +389,11 @@ class fiche{
 		$worksheet = &$workbook->addworksheet();
 		
 		$req = "select * from ".$this->p_perso->prefix."_custom where multiple=1 order by ordre";
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 		$num_col=0;
 		$num_ligne=0;
 		$field_id=array();
-		while($champ = mysql_fetch_object($res)){
+		while($champ = pmb_mysql_fetch_object($res)){
 			$field_id[]=$champ->idchamp;
 			$worksheet->write($num_ligne,$num_col,$champ->titre);
 			$num_col++;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bookreader.class.php,v 1.19.4.2 2014-10-13 10:33:09 arenou Exp $
+// $Id: bookreader.class.php,v 1.21 2014-10-13 10:23:36 arenou Exp $
 
 require_once($visionneuse_path."/classes/mimetypes/affichage.class.php");
 //require_once($visionneuse_path."/classes/mimetypes/converter_factory.class.php");

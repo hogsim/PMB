@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_portfolio.class.php,v 1.2 2013-07-24 13:09:22 arenou Exp $
+// $Id: cms_module_common_view_portfolio.class.php,v 1.4 2014-12-18 16:31:50 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -52,7 +52,7 @@ class cms_module_common_view_portfolio extends cms_module_common_view_django{
 		return parent::save_form();
 	}
 	
-	public function get_headers(){
+	public function get_headers($datas=array()){
 		$headers = array();
 		$headers[] = "<script type='text/javascript' src='visionneuse/javascript/visionneuse.js'></script>";
 		$headers[] = "<script type='text/javascript' src='visionneuse/javascript/visionneuse.js'></script>";
@@ -82,6 +82,6 @@ class cms_module_common_view_portfolio extends cms_module_common_view_django{
 
 	public function get_format_data_structure(){
 		$datasource = new cms_module_common_datasource_portfolio();
-		return $datasource->get_format_data_structure();
+		return array_merge($datasource->get_format_data_structure(),parent::get_format_data_structure());
 	}
 }

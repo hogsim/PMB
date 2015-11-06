@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: crypt.php,v 1.6 2009-05-16 11:11:53 dbellamy Exp $
+// $Id: crypt.php,v 1.7 2015-04-03 11:16:20 jpermanne Exp $
 
 //Cryptage d'un fichier
 $base_path="../..";
@@ -30,9 +30,9 @@ echo "<input type=\"hidden\" name=\"currentSauv\" value=\"".$currentSauv."\">\n"
 
 //Recherche des paramètres de cryptage
 $requete="select sauv_sauvegarde_key1, sauv_sauvegarde_key2 from sauv_sauvegardes where sauv_sauvegarde_id=".$currentSauv;
-$resultat=mysql_query($requete);
+$resultat=pmb_mysql_query($requete);
 
-$res=mysql_fetch_object($resultat);
+$res=pmb_mysql_fetch_object($resultat);
 
 //Création du log dans la base log
 

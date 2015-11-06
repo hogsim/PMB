@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bull_info.inc.php,v 1.56.2.2 2014-09-26 07:56:29 dgoron Exp $
+// $Id: bull_info.inc.php,v 1.60 2015-07-16 10:03:11 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,7 +14,7 @@ require_once($class_path."/sur_location.class.php");
 require_once($include_path."/avis_notice.inc.php");
 
 // get_expl : retourne un tableau HTML avec les exemplaires du bulletinage
-function get_expl($expl, $show_in_reception=0) {
+function get_expl($expl, $show_in_reception=0, $return_count = false) {
 	global $msg, $dbh, $base_path, $charset;
 	global $cart_link_non;
 	global $explr_invisible, $explr_visible_unmod, $explr_visible_mod, $pmb_droits_explr_localises ;
@@ -42,16 +42,16 @@ function get_expl($expl, $show_in_reception=0) {
 //		$requete .= " date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour ";
 //		$requete .= " FROM pret ";
 //		$requete .= " WHERE pret_idexpl='$valeur->expl_id' ";
-//		$result_prets = mysql_query($requete, $dbh) or die ("<br />".mysql_error()."<br />".$requete);
-//		if (mysql_num_rows($result_prets)) $expl_pret = mysql_fetch_object($result_prets) ;
+//		$result_prets = pmb_mysql_query($requete, $dbh) or die ("<br />".pmb_mysql_error()."<br />".$requete);
+//		if (pmb_mysql_num_rows($result_prets)) $expl_pret = pmb_mysql_fetch_object($result_prets) ;
 //		else $expl_pret="";
 //		$situation = "";
 //		// prêtable ou pas s'il est prêté, on affiche son état
 //		if (is_object($expl_pret) && $expl_pret->pret_idempr) {
 //			// exemplaire sorti
 //			$rqt_empr = "SELECT empr_nom, empr_prenom, id_empr, empr_cb FROM empr WHERE id_empr='$expl_pret->pret_idempr' ";
-//			$res_empr = mysql_query ($rqt_empr, $dbh) ;
-//			$res_empr_obj = mysql_fetch_object ($res_empr) ;
+//			$res_empr = pmb_mysql_query($rqt_empr, $dbh) ;
+//			$res_empr_obj = pmb_mysql_fetch_object($res_empr) ;
 //			$situation = "<strong>${msg[358]} ".$expl_pret->aff_pret_retour."</strong>";
 //			global $empr_show_caddie, $selector_prop_ajout_caddie_empr;
 //			if (!$show_in_reception && $empr_show_caddie && (SESSrights & CIRCULATION_AUTH)) {
@@ -66,8 +66,8 @@ function get_expl($expl, $show_in_reception=0) {
 //			}
 //		} else {
 //			// tester si réservé				
-//			$result_resa = mysql_query("select 1 from resa where resa_cb='".addslashes($valeur->expl_cb)."' ", $dbh) or die ();
-//			$reserve = mysql_num_rows($result_resa);
+//			$result_resa = pmb_mysql_query("select 1 from resa where resa_cb='".addslashes($valeur->expl_cb)."' ", $dbh) or die ();
+//			$reserve = pmb_mysql_num_rows($result_resa);
 //			if ($reserve) 
 //				$situation = "<strong>".$msg['expl_reserve']."</strong>"; // exemplaire réservé
 //			elseif ($valeur->pret_flag)  
@@ -162,7 +162,9 @@ function get_expl($expl, $show_in_reception=0) {
 		require_once($class_path."/parametres_perso.class.php");
     	$cp=new parametres_perso("expl");
 	}
-	
+	if ($return_count) {
+		return count($expl);
+	}
 	if(count($expl)){
 		$result .= "<table border=\"0\" cellspacing=\"1\">";
 		//un premier tour pour aller chercher les libellés...
@@ -184,16 +186,16 @@ function get_expl($expl, $show_in_reception=0) {
 			$requete .= " date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour ";
 			$requete .= " FROM pret ";
 			$requete .= " WHERE pret_idexpl='$exemplaire->expl_id' ";
-			$result_prets = mysql_query($requete, $dbh) or die ("<br />".mysql_error()."<br />".$requete);
-			if (mysql_num_rows($result_prets)) $expl_pret = mysql_fetch_object($result_prets) ;
+			$result_prets = pmb_mysql_query($requete, $dbh) or die ("<br />".pmb_mysql_error()."<br />".$requete);
+			if (pmb_mysql_num_rows($result_prets)) $expl_pret = pmb_mysql_fetch_object($result_prets) ;
 			else $expl_pret="";
 			$situation = "";
 			// prêtable ou pas s'il est prêté, on affiche son état
 			if (is_object($expl_pret) && $expl_pret->pret_idempr) {
 				// exemplaire sorti
 				$rqt_empr = "SELECT empr_nom, empr_prenom, id_empr, empr_cb FROM empr WHERE id_empr='$expl_pret->pret_idempr' ";
-				$res_empr = mysql_query ($rqt_empr, $dbh) ;
-				$res_empr_obj = mysql_fetch_object ($res_empr) ;
+				$res_empr = pmb_mysql_query($rqt_empr, $dbh) ;
+				$res_empr_obj = pmb_mysql_fetch_object($res_empr) ;
 				$situation = "<strong>${msg[358]} ".$expl_pret->aff_pret_retour."</strong>";
 				global $empr_show_caddie, $selector_prop_ajout_caddie_empr;
 				if (!$show_in_reception && $empr_show_caddie && (SESSrights & CIRCULATION_AUTH)) {
@@ -208,8 +210,8 @@ function get_expl($expl, $show_in_reception=0) {
 				}
 			} else {
 				// tester si réservé				
-				$result_resa = mysql_query("select 1 from resa where resa_cb='".addslashes($exemplaire->expl_cb)."' ", $dbh) or die ();
-				$reserve = mysql_num_rows($result_resa);
+				$result_resa = pmb_mysql_query("select 1 from resa where resa_cb='".addslashes($exemplaire->expl_cb)."' ", $dbh) or die ();
+				$reserve = pmb_mysql_num_rows($result_resa);
 				if ($reserve) 
 					$situation = "<strong>".$msg['expl_reserve']."</strong>"; // exemplaire réservé
 				elseif ($exemplaire->pret_flag)  
@@ -276,7 +278,7 @@ function get_expl($expl, $show_in_reception=0) {
 			}
 			$line="<tr>";
 			for ($i=0; $i<count($colonnesarray); $i++) {
-				if (($i == 0) && ($exemplaire->expl_note || $exemplaire->expl_comment) && $pmb_expl_list_display_comments) $expl_rowspan = "rowspan='2'";
+     			if (($i == 0) && ($exemplaire->expl_note || $exemplaire->expl_comment) && $pmb_expl_list_display_comments) $expl_rowspan = "rowspan='2'";
 				else $expl_rowspan = "";
 				$aff_column ="";
 				if (substr($colonnesarray[$i],0,1)=="#") {
@@ -295,7 +297,7 @@ function get_expl($expl, $show_in_reception=0) {
 					} else if ($colonnesarray[$i]=="expl_cote") {
 						$aff_column="<strong>".htmlentities($colencours,ENT_QUOTES, $charset)."</strong>";
 					} else if ($colonnesarray[$i]=="surloc_libelle") {
-						$aff_column=htmlentities($exemplaire->sur_loc_libelle,ENT_QUOTES, $charset);
+ 						$aff_column=htmlentities($exemplaire->sur_loc_libelle,ENT_QUOTES, $charset);
 	    			}else if($colonnesarray[$i]=="statut_libelle"){
 	    				$aff_column = htmlentities($colencours,ENT_QUOTES, $charset).$situation;
 	    			}else {
@@ -329,7 +331,7 @@ function get_analysis($bul_id) {
 	if(!$bul_id) return '';
 
 	$requete = "SELECT * FROM analysis WHERE analysis_bulletin=$bul_id ORDER BY analysis_notice"; 	
-	$myQuery = mysql_query($requete, $dbh);
+	$myQuery = pmb_mysql_query($requete, $dbh);
 
 	// attention, c'est complexe là. on définit ce qui va se passer pour les liens affichés dans les notices
 	// 1. si le lien est vers une notice chapeau de périodique
@@ -344,7 +346,7 @@ function get_analysis($bul_id) {
 	$link_bulletin = '';
 	 
 	
-	while($analysis=mysql_fetch_object($myQuery)) {
+	while($analysis=pmb_mysql_fetch_object($myQuery)) {
 		$link_explnum = "./catalog.php?categ=serials&sub=analysis&action=explnum_form&analysis_id=$analysis->analysis_notice&bul_id=$bul_id&explnum_id=!!explnum_id!!";
 		// function serial_display ($id, $level='1', $action_serial='', $action_analysis='', $action_bulletin='', $lien_suppr_cart="", $lien_explnum="", $bouton_explnum=1,$print=0,$show_explnum=1, $show_statut=0, $show_opac_hidden_fields=true ) {
 		$display = new serial_display($analysis->analysis_notice, 6, $link_serial, $link_analysis, $link_bulletin,"",$link_explnum, 1, 0, 1, 1, true, 1);		

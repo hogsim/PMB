@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: procs.inc.php,v 1.39.6.5 2015-06-29 06:54:02 jpermanne Exp $
+// $Id: procs.inc.php,v 1.45 2015-06-29 06:56:39 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -10,7 +10,7 @@ include("$class_path/parameters.class.php");
 require_once("$class_path/notice_tpl_gen.class.php");
 
 function show_procs($dbh) {
-
+	
 	global $msg;
  	global $charset;
  	global $PMBuserid, $javascript_path,$form_notice_tpl;
@@ -23,15 +23,15 @@ function show_procs($dbh) {
 
 	// affichage du tableau des procédures
 	$requete = "SELECT idproc, name, requete, comment, autorisations, libproc_classement, num_classement FROM procs left join procs_classements on idproc_classement=num_classement ORDER BY libproc_classement,name ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$class_prec=$msg[proc_clas_aucun];
 	$buf_tit="";
 	$buf_class=0;
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		$rqt_autorisation=explode(" ",$row[4]);
 		if (($PMBuserid==1 || array_search ($PMBuserid, $rqt_autorisation)!==FALSE) && pmb_strtolower(pmb_substr(trim($row[2]),0,6))=='select') {
 			$classement=$row[5];
@@ -45,7 +45,7 @@ function show_procs($dbh) {
 				$buf_tit=$row[5];
 				$buf_class=$row[6];
 				$class_prec=$classement;
-			}
+			}		
 			if ($parity % 2) {
 				$pair_impair = "even";
 			} else {
@@ -60,7 +60,7 @@ function show_procs($dbh) {
 		}
 	}
 	$buf_contenu="<table><tr><th colspan=4>".$buf_tit."</th></tr>".$buf_contenu."</table>";
-	print gen_plus("procclass".$buf_class,$buf_tit,$buf_contenu);
+	print gen_plus("procclass".$buf_class,$buf_tit,$buf_contenu);	
 }
 
 switch($dest) {
@@ -72,33 +72,33 @@ switch($dest) {
 		$worksheet = &$workbook->addworksheet();
 		break;
 	case "TABLEAUHTML":
-		echo "<h1>".$msg[1130]."&nbsp;:&nbsp;".$msg[1131]."</h1>";
+		echo "<h1>".$msg[1130]."&nbsp;:&nbsp;".$msg[1131]."</h1>";  
 		break;
 	case "TABLEAUCSV":
 		break;
 	case "EXPORT_NOTI":
 		$fichier_temp_nom=str_replace(" ","",microtime());
 		$fichier_temp_nom=str_replace("0.","",$fichier_temp_nom);
-		$fname = tempnam("./temp", $fichier_temp_nom.".doc");
+		$fname = tempnam("./temp", $fichier_temp_nom.".doc");		
 		break;
 	default:
-		echo "<h1>".$msg[1130]."&nbsp;:&nbsp;".$msg[1131]."</h1>";
+		echo "<h1>".$msg[1130]."&nbsp;:&nbsp;".$msg[1131]."</h1>";  
 		break;
 	}
 
 if (!$id_proc) {
-	show_procs($dbh);
+	show_procs($dbh); 
 } else {
 	@set_time_limit ($pmb_set_time_limit);
 	//Récupération des variables postées, on en aura besoin pour les liens
 	$page="./edit.php";
 	$requete = "SELECT idproc, name, requete, comment, proc_notice_tpl, proc_notice_tpl_field FROM procs where idproc='".$id_proc."' ";
-	$res = mysql_query($requete, $dbh) or die ("<br/>SQL error : <br/>".mysql_error()."<br/>SQL Query : <br/>".$requete);
-	$row=mysql_fetch_row($res);
-
+	$res = pmb_mysql_query($requete, $dbh) or die ("<br/>SQL error : <br/>".pmb_mysql_error()."<br/>SQL Query : <br/>".$requete);
+	$row=pmb_mysql_fetch_row($res);
+	
 	//Requete et calcul du nombre de pages à afficher selon la taille de la base 'pret'
 	//********************************************************************************/
-
+	
 	// récupérer ici la procédure à lancer
 	$sql = $row[2];
 	//$proc_notice_tpl=$row[4];
@@ -107,7 +107,7 @@ if (!$id_proc) {
 		$hp=new parameters($id_proc,"procs");
 		$hp->gen_form("edit.php?categ=procs&sub=&action=execute&id_proc=".$id_proc."&force_exec=".$force_exec);
 	} else {
-
+		
 		$param_hidden="";
 		if($force_exec){
 			$param_hidden.="<input type='hidden' name='force_exec'  value='".$force_exec."' />";//On a forcé la requete
@@ -119,10 +119,10 @@ if (!$id_proc) {
 			$param_hidden.=$hp->get_hidden_values();//Je mets les paramêtres en champ caché en cas de forçage
 			$param_hidden.="<input type='hidden' name='form_type'  value='gen_form' />";//Je mets le marqueur des paramêtres en champ caché en cas de forçage
 		}
-
+		
 		if($dest != "TABLEAU" && $dest != "TABLEAUHTML" && $dest != "TABLEAUCSV"){
 			print "<form class=\"form-edit\" id=\"formulaire\" name=\"formulaire\" action='./edit.php?categ=procs&sub=&action=execute&id_proc=".$id_proc."&force_exec=".$force_exec."' method=\"post\">";
-
+			
 			print "<input type='button' class='bouton' value='".htmlentities($msg[654], ENT_QUOTES, $charset)."'  onClick='this.form.action=\"./edit.php?categ=procs\";this.form.submit();'/>";
 			if (!explain_requete($sql) && (SESSrights & EDIT_FORCING_AUTH) && !$force_exec) {
 				print $param_hidden;
@@ -133,36 +133,36 @@ if (!$id_proc) {
 			print "<br>";
 			print "</form>";
 		}
-
+		
 		if (!explain_requete($sql) && !((SESSrights & EDIT_FORCING_AUTH) && $force_exec)){
 			die("<br /><br />".$sql."<br /><br />".htmlentities($msg["proc_param_explain_failed"], ENT_QUOTES, $charset)."<br /><br />".$erreur_explain_rqt);
 		}
-
+		
 		$req_nombre_lignes="";
 		if(!$nombre_lignes_total){
-			$req_nombre_lignes = mysql_query($sql);
+			$req_nombre_lignes = pmb_mysql_query($sql);
 			if(!$req_nombre_lignes){
-				 die($sql."<br /><br />".mysql_error());
+				 die($sql."<br /><br />".pmb_mysql_error());
 			}
-			$nombre_lignes_total = mysql_num_rows($req_nombre_lignes);
+			$nombre_lignes_total = pmb_mysql_num_rows($req_nombre_lignes);
 		}
 		$param_hidden.="<input type='hidden' name='nombre_lignes_total'  value='".$nombre_lignes_total."' />";//Je garde le nombre de ligne total pour le pas refaire la requête à la page suivante
-
-
+		
+		
 		//Si aucune limite_page n'a été passée, valeur par défaut : 10
 		if (!$limite_page) $limite_page = 10;
-		$nbpages= $nombre_lignes_total / $limite_page;
-
-		// on arondi le nombre de page pour ne pas avoir de virgules, ici au chiffre supérieur
-		$nbpages_arrondi = ceil($nbpages);
-
+		$nbpages= $nombre_lignes_total / $limite_page; 
+		
+		// on arondi le nombre de page pour ne pas avoir de virgules, ici au chiffre supérieur 
+		$nbpages_arrondi = ceil($nbpages); 
+		
 		// on enlève 1 au nombre de pages, car la 1ere page affichée ne fait pas partie des pages suivantes
-		$nbpages_arrondi = $nbpages_arrondi - 1;
-
+		$nbpages_arrondi = $nbpages_arrondi - 1; 
+		
 		if (!$numero_page) $numero_page=0;
-
-		$limite_mysql = $limite_page * $numero_page;
-
+		
+		$limite_mysql = $limite_page * $numero_page; 
+		
 		//REINITIALISATION DE LA REQUETE SQL
 		switch($dest) {
 			case "TABLEAU":
@@ -170,7 +170,7 @@ if (!$id_proc) {
 			case "TABLEAUCSV":
 			case "EXPORT_NOTI":
 				if(!$req_nombre_lignes){
-					$res = @mysql_query($sql, $dbh) or die($sql."<br /><br />".mysql_error());
+					$res = @pmb_mysql_query($sql, $dbh) or die($sql."<br /><br />".pmb_mysql_error()); 
 				}else{
 					$res = $req_nombre_lignes;
 				}
@@ -185,13 +185,13 @@ if (!$id_proc) {
 				//on définit les limites
 				$sql = $sql." LIMIT ".$limite_mysql.", ".$limite_page;
 				// on execute la requete avec les bonnes limites
-				$res = @mysql_query($sql, $dbh) or die($sql."<br /><br />".mysql_error());
-				echo "<p>";
+				$res = @pmb_mysql_query($sql, $dbh) or die($sql."<br /><br />".pmb_mysql_error()); 
+				echo "<p>";	
 				break;
 		}
-
-		$nbr_lignes = @mysql_num_rows($res);
-		$nbr_champs = @mysql_num_fields($res);
+		
+		$nbr_lignes = @pmb_mysql_num_rows($res);
+		$nbr_champs = @pmb_mysql_num_fields($res);
 
 		if ($nbr_lignes) {
 			switch($dest) {
@@ -200,12 +200,12 @@ if (!$id_proc) {
 					$worksheet->write(0,1,$row[3]);
 					for($i=0; $i < $nbr_champs; $i++) {
 						// entête de colonnes
-						$fieldname = mysql_field_name($res, $i);
+						$fieldname = pmb_mysql_field_name($res, $i);
 						$worksheet->write(1,$i,${fieldname});
 					}
-
+              		        		
 					for($i=0; $i < $nbr_lignes; $i++) {
-						$row = mysql_fetch_row($res);
+						$row = pmb_mysql_fetch_row($res);
 						$j=0;
 						foreach($row as $dummykey=>$col) {
 							if(trim($col)=='') $col=" ";
@@ -213,7 +213,7 @@ if (!$id_proc) {
 							$j++;
 						}
 					}
-
+					
 					$workbook->close();
 					header("Content-Type: application/x-msexcel; name=\""."Procedure_$id_proc".".xls"."\"");
 					header("Content-Disposition: inline; filename=\""."Procedure_$id_proc".".xls"."\"");
@@ -222,14 +222,14 @@ if (!$id_proc) {
 					unlink($fname);
 					break;
 				case "TABLEAUHTML":
-					echo "<h1>$row[1]</h1><h2>$row[3]</h2>$sql<br />";
+					echo "<h1>$row[1]</h1><h2>$row[3]</h2>$sql<br />";						
 					echo "<table>";
 					for($i=0; $i < $nbr_champs; $i++) {
-						$fieldname = mysql_field_name($res, $i);
+						$fieldname = pmb_mysql_field_name($res, $i);
 						print("<th align='left'>${fieldname}</th>");
 					}
        		        for($i=0; $i < $nbr_lignes; $i++) {
-						$row = mysql_fetch_row($res);
+						$row = pmb_mysql_fetch_row($res);
 						echo "<tr>";
 						foreach($row as $dummykey=>$col) {
 							if (is_numeric($col)){
@@ -244,11 +244,11 @@ if (!$id_proc) {
 					break;
 				case "TABLEAUCSV":
 					for($i=0; $i < $nbr_champs; $i++) {
-						$fieldname = mysql_field_name($res, $i);
+						$fieldname = pmb_mysql_field_name($res, $i);
 						print("${fieldname}\t");
 						}
 					for($i=0; $i < $nbr_lignes; $i++) {
-						$row = mysql_fetch_row($res);
+						$row = pmb_mysql_fetch_row($res);
 						echo "\n";
 						foreach($row as $dummykey=>$col) {
 							/* if (is_numeric($col)) {
@@ -257,15 +257,15 @@ if (!$id_proc) {
 							print "$col\t";
 						}
 					}
-					break;
-				case "EXPORT_NOTI":
-					$noti_tpl=new notice_tpl_gen($form_notice_tpl);
+					break;				
+				case "EXPORT_NOTI":					
+					$noti_tpl=new notice_tpl_gen($form_notice_tpl);					
        		        for($i=0; $i < $nbr_lignes; $i++) {
-						$row = mysql_fetch_object($res);
-						$contents.=$noti_tpl->build_notice($row->$proc_notice_tpl_field)."<hr />";
+						$row = pmb_mysql_fetch_object($res);
+						$contents.=$noti_tpl->build_notice($row->$proc_notice_tpl_field)."<hr />";									
 					}
 					header("Content-Disposition: attachment; filename='bibliographie.doc';");
-					header('Content-type: application/msword');
+					header('Content-type: application/msword'); 
 					header("Expires: 0");
 				    header("Cache-Control: must-revalidate, post-check=0,pre-check=0");
 				    header("Pragma: public");
@@ -278,12 +278,12 @@ if (!$id_proc) {
 					}
 					function sort_by_col(type){
 						document.forms['navbar'].sort.value = type;
-						document.forms['navbar'].submit();
+						document.forms['navbar'].submit();					
 					}
 					</script>";
 					echo "<table>";
 					for($i=0; $i < $nbr_champs; $i++) {
-						$fieldname = mysql_field_name($res, $i);
+						$fieldname = pmb_mysql_field_name($res, $i);
 						print("<th align='left' onMouseOver ='survol(this);' onClick='sort_by_col(".($sort==($i+1)?(-($i+1)):($i+1)).");'>${fieldname}");
 						if($sort==($i+1)){
 							print("&nbsp;&#x25B4;");
@@ -294,7 +294,7 @@ if (!$id_proc) {
 					}
        		        $odd_even=0;
 					for($i=0; $i < $nbr_lignes; $i++) {
-						$row = mysql_fetch_row($res);
+						$row = pmb_mysql_fetch_row($res);
 						if ($odd_even==0) {
 							echo "	<tr class='odd'>";
 							$odd_even=1;
@@ -309,7 +309,7 @@ if (!$id_proc) {
 						echo "</tr>";
 					}
 					echo "</table><hr />";
-
+					
 					echo "<p align=left size='-3' class='pn-normal'>
 					<form name='navbar' class='form-$current_module' action='$page' method='post'>";
 					echo "
@@ -319,11 +319,11 @@ if (!$id_proc) {
 					<input type='hidden' name='sub' value='$sub' />
 					<input type='hidden' id='sort' name='sort' value='$sort' />";
 					print $param_hidden;
-
+					
 					// LIENS PAGE SUIVANTE et PAGE PRECEDENTE
 					// si le nombre de page n'est pas 0 et si la variable numero_page n'est pas définie
-					// dans cette condition, la variable numero_page est incrémenté et est inférieure à $nombre
-
+					// dans cette condition, la variable numero_page est incrémenté et est inférieure à $nombre 
+					
 					// constitution des liens
 					$suivante = $numero_page+1;
 					$precedente = $numero_page-1;
@@ -342,7 +342,7 @@ if (!$id_proc) {
 					<input type='submit' class='bouton' value='".$msg['actualiser']."' onclick=\"this.form.dest.value='';document.navbar.numero_page.value=0;\" /><font size='4'>&nbsp;&nbsp;&nbsp;&nbsp;</font>
 					<input type='image' src='./images/tableur.gif' border='0' onClick=\"this.form.dest.value='TABLEAU';\" alt='Export tableau EXCEL' title='Export tableau EXCEL' /><font size='4'>&nbsp;&nbsp;&nbsp;&nbsp;</font>
 					<input type='image' src='./images/tableur_html.gif' border='0' onClick=\"this.form.dest.value='TABLEAUHTML';\" alt='Export tableau HTML' title='Export tableau HTML' />";
-
+ 
 					if($proc_notice_tpl_field) {
 						echo "<font size='4'>&nbsp;&nbsp;&nbsp;&nbsp;</font>
 						<input type='submit' class='bouton' value='".$msg['etatperso_export_notice']."' onclick=\"this.form.dest.value='EXPORT_NOTI';\" />&nbsp;";
@@ -354,7 +354,7 @@ if (!$id_proc) {
 			} else {
 				echo $msg["etatperso_aucuneligne"];
 			}
-
-			mysql_free_result ($res);
+			
+			pmb_mysql_free_result($res); 
 		} // fin if else proc paramétrée
 	}

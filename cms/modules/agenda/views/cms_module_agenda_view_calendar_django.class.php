@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_agenda_view_calendar_django.class.php,v 1.1.2.3 2015-03-12 11:02:50 mbertin Exp $
+// $Id: cms_module_agenda_view_calendar_django.class.php,v 1.3 2015-03-12 11:12:33 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -79,9 +79,9 @@ le {{event.event_start.format_value}}
 		return parent::save_form();
 	}
 	
-	public function get_headers(){
+	public function get_headers($datas=array()){
 		global $lang;
-		$headers = parent::get_headers();
+		$headers = parent::get_headers($datas);
 		$headers[] = "
 		<script type='text/javascript'>
 			require(['dijit/dijit']);

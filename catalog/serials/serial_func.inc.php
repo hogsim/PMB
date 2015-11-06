@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serial_func.inc.php,v 1.79 2014-03-07 11:19:33 dgoron Exp $
+// $Id: serial_func.inc.php,v 1.80 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -53,11 +53,11 @@ function show_serial_info($serial_id, $page, $nbr_lignes) {
 	 
 	$base_url = "./catalog.php?categ=serials&sub=view&serial_id=$serial_id";
 	$serial_action_bar = str_replace('!!serial_id!!', $serial_id, $serial_action_bar);
-	if ($serial_id) $myQuery = mysql_query("SELECT * FROM notices WHERE notice_id=$serial_id ", $dbh);
+	if ($serial_id) $myQuery = pmb_mysql_query("SELECT * FROM notices WHERE notice_id=$serial_id ", $dbh);
 	
-	if ($serial_id && mysql_num_rows($myQuery)) {
+	if ($serial_id && pmb_mysql_num_rows($myQuery)) {
 		//Bulletins
-		$myPerio = mysql_fetch_object($myQuery);
+		$myPerio = pmb_mysql_fetch_object($myQuery);
 		// function serial_display ($id, $level='1', $action_serial='', $action_analysis='', $action_bulletin='', $lien_suppr_cart="", $lien_explnum="", $bouton_explnum=1,$print=0,$show_explnum=1, $show_statut=0, $show_opac_hidden_fields=true ) {
 		$isbd = new serial_display($myPerio, 5, "",                      "",                 "",                  "",                  "./catalog.php?categ=serials&sub=explnum_form&serial_id=!!serial_id!!&explnum_id=!!explnum_id!!");
 		$perio_header = $isbd->header;
@@ -109,19 +109,19 @@ function show_serial_info($serial_id, $page, $nbr_lignes) {
 				
 				//On compte les expl de la localisation
 				$rqt="SELECT COUNT(1) FROM bulletins ".($location?", exemplaires":"")." WHERE ".($location?"(expl_bulletin=bulletin_id and expl_location='$location' or expl_location is null) and ":"")." bulletin_notice='$serial_id'  ";
-				$myQuery = mysql_query($rqt, $dbh);
-				$nb_expl_loc = mysql_result($myQuery,0,0);
+				$myQuery = pmb_mysql_query($rqt, $dbh);
+				$nb_expl_loc = pmb_mysql_result($myQuery,0,0);
 		
 				//On compte les bulletins de la localisation
 				$rqt="SELECT count(distinct bulletin_id) FROM bulletins ".($location?",exemplaires ":"")." WHERE ".($location?"(expl_bulletin=bulletin_id and expl_location='$location') and ":"")." bulletin_notice='$serial_id' ";
-				$myQuery = mysql_query($rqt, $dbh);
-				if ($execute_query&&mysql_num_rows($myQuery)) {
-					$nb_bull_loc = mysql_result($myQuery,0,0);
+				$myQuery = pmb_mysql_query($rqt, $dbh);
+				if ($execute_query&&pmb_mysql_num_rows($myQuery)) {
+					$nb_bull_loc = pmb_mysql_result($myQuery,0,0);
 				}
 				//On compte les bulletinsà afficher
 				$rqt="SELECT count(distinct bulletin_id) FROM bulletins ".($location?", exemplaires":"")." WHERE ".($location?"(expl_bulletin=bulletin_id and expl_location='$location' or expl_location is null) and ":"")." bulletin_notice='$serial_id' $clause ";
-				$myQuery = mysql_query($rqt, $dbh);
-				$nbr_lignes = mysql_result($myQuery,0,0);
+				$myQuery = pmb_mysql_query($rqt, $dbh);
+				$nbr_lignes = pmb_mysql_result($myQuery,0,0);
 				
 				require_once("views/view_bulletins.inc.php");
 				break;
@@ -135,9 +135,9 @@ function show_serial_info($serial_id, $page, $nbr_lignes) {
 			$explr_tab_modif=explode(",",$explr_visible_mod);			
 			$requete = "SELECT expl_location from exemplaires, bulletins,notices where
 				expl_bulletin=bulletin_id and bulletin_notice=notice_id and notice_id= $serial_id";			
-			$execute_query=mysql_query($requete);
-			if ($execute_query&&mysql_num_rows($execute_query)) {
-				while ($r=mysql_fetch_object($execute_query)) {
+			$execute_query=pmb_mysql_query($requete);
+			if ($execute_query&&pmb_mysql_num_rows($execute_query)) {
+				while ($r=pmb_mysql_fetch_object($execute_query)) {
 					if(!in_array ($r->expl_location,$explr_tab_modif )) $flag_no_delete_notice=1;
 				}			
 			}

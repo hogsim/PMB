@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categ_empr.inc.php,v 1.13 2012-04-11 13:30:41 dgoron Exp $
+// $Id: categ_empr.inc.php,v 1.14 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -38,13 +38,13 @@ function show_section($dbh) {
 	// affichage du tableau des utilisateurs
 
 	$requete = "SELECT id_categ_empr, libelle, duree_adhesion, tarif_abt, age_min, age_max FROM empr_categ ORDER BY libelle, id_categ_empr";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -104,8 +104,8 @@ switch($action) {
 	case 'update':
 		// no duplication
 		$requete = " SELECT count(1) FROM empr_categ WHERE (libelle='$form_libelle' AND id_categ_empr!='$id' )  LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 				error_form_message($form_libelle.$msg["docs_label_already_used"]);
 		} else {
@@ -113,14 +113,14 @@ switch($action) {
 			if(!empty($form_libelle)) {
 				if($id) {
 					$requete = "UPDATE empr_categ SET libelle='$form_libelle', duree_adhesion='$form_duree_adhesion', tarif_abt='".$form_tarif_adhesion."', age_min='".$form_age_min."', age_max='".$form_age_max."' WHERE id_categ_empr=$id ";
-					$res = mysql_query($requete, $dbh);
+					$res = pmb_mysql_query($requete, $dbh);
 				} else {
 					$requete = "SELECT count(1) FROM empr_categ WHERE libelle='$form_libelle' LIMIT 1 ";
-					$res = mysql_query($requete, $dbh);
-					$nbr = mysql_result($res, 0, 0);
+					$res = pmb_mysql_query($requete, $dbh);
+					$nbr = pmb_mysql_result($res, 0, 0);
 					if($nbr == 0) {
 						$requete = "INSERT INTO empr_categ (id_categ_empr,libelle,duree_adhesion,tarif_abt,age_min, age_max) VALUES ('', '$form_libelle','$form_duree_adhesion','".$form_tarif_adhesion."','".$form_age_min."','".$form_age_max."') ";
-						$res = mysql_query($requete, $dbh);
+						$res = pmb_mysql_query($requete, $dbh);
 					}
 				}
 			}
@@ -137,9 +137,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT libelle, duree_adhesion, tarif_abt, age_min, age_max FROM empr_categ WHERE id_categ_empr=$id LIMIT 1 ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_row($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_row($res);
 				categempr_form($row[0], $id, $row[1],$row[2],$row[3],$row[4]);
 			} else {
 				show_section($dbh);
@@ -151,16 +151,16 @@ switch($action) {
 	case 'del':
 		if($id) {
 			$total = 0;
-			$total = mysql_result(mysql_query("select count(1) from empr where empr_categ ='".$id."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from empr where empr_categ ='".$id."' ", $dbh), 0, 0);
 			if ($total==0) {
-				$test = mysql_result(mysql_query("select count(1) from search_persopac_empr_categ where id_categ_empr ='".$id."' ", $dbh), 0, 0);
+				$test = pmb_mysql_result(pmb_mysql_query("select count(1) from search_persopac_empr_categ where id_categ_empr ='".$id."' ", $dbh), 0, 0);
 				if($test == 0){
 					$requete = "DELETE FROM empr_categ WHERE id_categ_empr='$id' ";
-					$res = mysql_query($requete, $dbh);
+					$res = pmb_mysql_query($requete, $dbh);
 					$requete = "OPTIMIZE TABLE empr_categ ";
-					$res = mysql_query($requete, $dbh);
+					$res = pmb_mysql_query($requete, $dbh);
 					$requete = "delete from search_persopac_empr_categ where id_categ_empr = $id";
-					$res = mysql_query($requete, $dbh);
+					$res = pmb_mysql_query($requete, $dbh);
 					show_section($dbh);
 				}else{
 					error_message(	$msg[294], $msg['empr_categ_cant_delete_search_perso'], 1, 'admin.php?categ=empr&sub=categ&action=');

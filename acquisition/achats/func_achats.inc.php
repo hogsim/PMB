@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_achats.inc.php,v 1.19 2013-04-23 13:15:09 dgoron Exp $
+// $Id: func_achats.inc.php,v 1.20 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -82,9 +82,9 @@ if ($acquisition_custom_calc_numero) {
 		//recuperation du dernier numero pour le type d'acte concerné et l'entité en cours
 		$q = "select max(substring(numero,".(strlen($prefix)+1).")*1) from actes where type_acte = '".$type_acte."' ";
 		$q.= "and num_entite = '".$id_entite."' ";
-		$r = mysql_query($q, $dbh); 
+		$r = pmb_mysql_query($q, $dbh); 
 	
-		$res = mysql_result($r,0,0);
+		$res = pmb_mysql_result($r,0,0);
 		if (!$res) $res = '0';
 		
 		//creation du numéro avec prefixe et padding

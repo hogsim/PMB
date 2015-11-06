@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_update.inc.php,v 1.53 2013-05-07 08:58:20 dbellamy Exp $
+// $Id: empr_update.inc.php,v 1.55 2015-06-02 13:24:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -38,17 +38,17 @@ function rec_abonnement($id,$type_abt,$empr_categ,$rec_caution=true) {
 		//Récupération du tarif
 		if ($pmb_gestion_abonnement==1) {
 			$requete="select tarif_abt, libelle from empr_categ where id_categ_empr=$empr_categ";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 		} else {
 			if ($pmb_gestion_abonnement==2) {
 				$requete="select tarif, type_abt_libelle, caution from type_abts where id_type_abt=$type_abt";
-				$resultat=mysql_query($requete);
+				$resultat=pmb_mysql_query($requete);
 			}
 		}
-		if (@mysql_num_rows($resultat)) {
-			$tarif=mysql_result($resultat,0,0);
-			$libelle=mysql_result($resultat,0,1);
-			if ($pmb_gestion_abonnement==2) $caution=mysql_result($resultat,0,2);
+		if (@pmb_mysql_num_rows($resultat)) {
+			$tarif=pmb_mysql_result($resultat,0,0);
+			$libelle=pmb_mysql_result($resultat,0,1);
+			if ($pmb_gestion_abonnement==2) $caution=pmb_mysql_result($resultat,0,2);
 		}
 		$compte_id=comptes::get_compte_id_from_empr($id,1);
 		if ($compte_id) {
@@ -61,7 +61,7 @@ function rec_abonnement($id,$type_abt,$empr_categ,$rec_caution=true) {
 		if (($caution*1)&&($rec_caution)) {
 			$cpte->record_transaction("",abs($caution),-1,"Caution : ".$libelle,0);
 			$requete="update empr set caution='".abs($caution)."' where id_empr=$id";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}
 	}
 }
@@ -69,10 +69,10 @@ function rec_abonnement($id,$type_abt,$empr_categ,$rec_caution=true) {
 function rec_groupe_empr($id, $tableau_groupe) {
 	global $dbh;
 	$requete="delete from empr_groupe where empr_id='$id' ";
-	mysql_query($requete, $dbh);
+	pmb_mysql_query($requete, $dbh);
 	for ($i = 0 ; $i < sizeof($tableau_groupe) ; $i++) {
 		$rqt = "insert into empr_groupe (empr_id, groupe_id) values ('".$id."', '".$tableau_groupe[$i]."') " ;
-		mysql_query($rqt, $dbh);
+		pmb_mysql_query($rqt, $dbh);
 		}
 	}
 
@@ -85,18 +85,18 @@ function ins_lect_categ_dsi($id_empr=0, $categorie_lecteurs=0, $anc_categorie_le
 	// suppression de l'inscription dans les bannettes de son ancienne catégorie
 	if ($anc_categorie_lecteurs) {
 		$req_ban = "select id_bannette from bannettes where categorie_lecteurs='$anc_categorie_lecteurs'" ;
-    	$res_ban=mysql_query($req_ban, $dbh) ;
-    	while ($ban=mysql_fetch_object($res_ban)) {
-			mysql_query("delete from bannette_abon where num_bannette='$ban->id_bannette' and num_empr='$id_empr' ", $dbh) ;
+    	$res_ban=pmb_mysql_query($req_ban, $dbh) ;
+    	while ($ban=pmb_mysql_fetch_object($res_ban)) {
+			pmb_mysql_query("delete from bannette_abon where num_bannette='$ban->id_bannette' and num_empr='$id_empr' ", $dbh) ;
     		}
 		}
 	
 	// inscription du lecteur dans la DSI de sa nouvelle catégorie 
 	$req_ban = "select id_bannette from bannettes where categorie_lecteurs='$categorie_lecteurs'" ;
-    $res_ban=mysql_query($req_ban, $dbh) ;
-    while ($ban=mysql_fetch_object($res_ban)) {
-    	mysql_query("delete from bannette_abon where num_bannette='$ban->id_bannette' and num_empr='$id_empr' ", $dbh) ;
-    	mysql_query("insert into bannette_abon (num_bannette, num_empr) values('$ban->id_bannette', '$id_empr')", $dbh) ;
+    $res_ban=pmb_mysql_query($req_ban, $dbh) ;
+    while ($ban=pmb_mysql_fetch_object($res_ban)) {
+    	pmb_mysql_query("delete from bannette_abon where num_bannette='$ban->id_bannette' and num_empr='$id_empr' ", $dbh) ;
+    	pmb_mysql_query("insert into bannette_abon (num_bannette, num_empr) values('$ban->id_bannette', '$id_empr')", $dbh) ;
     	}
     return ;
 	}
@@ -139,8 +139,8 @@ if (!$form_ldap) {
 			$nberrors++;
 		}
 		$requete = "SELECT id_empr, empr_login FROM empr WHERE empr_login='$form_empr_login' and id_empr!='$id' ";
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_num_rows($res);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_num_rows($res);
 		if ($nbr_lignes) {
 			$error_message .= "<p>$form_empr_login : $msg[empr_form_login_existant]</p>";
 			$nberrors++;
@@ -157,8 +157,8 @@ if (!$form_ldap) {
 		$num_login=1 ;
 		while ($pb==1) {
 			$requete = "SELECT empr_login FROM empr WHERE empr_login='$form_empr_login' LIMIT 1 ";
-			$res = mysql_query($requete, $dbh);
-			$nbr_lignes = mysql_num_rows($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = pmb_mysql_num_rows($res);
 			if ($nbr_lignes) {
 				$form_empr_login = $form_empr_login_original.$num_login ;
 				$num_login++;
@@ -231,8 +231,8 @@ if ($empr_lecteur_controle_doublons != 0 && !$id && !$forcage) {
 				default:
 					// Champ perso 
 					$perso = "SELECT idchamp ,datatype FROM empr_custom WHERE name = '$field'";						
-					$res = mysql_query($perso, $dbh);
-					$row=mysql_fetch_row($res);
+					$res = pmb_mysql_query($perso, $dbh);
+					$row=pmb_mysql_fetch_row($res);
 					if($row){
 						$val=$_POST["$field"];
 						$champ="empr_custom_".$row[1];
@@ -245,8 +245,8 @@ if ($empr_lecteur_controle_doublons != 0 && !$id && !$forcage) {
 			}	
 		}			
 	}
-	$res = mysql_query($requete, $dbh) or die ("ERROR with SQL proc to check borrowers<br />".$requete ." <br />".mysql_error());
-	if(($result=mysql_num_rows($res))){
+	$res = pmb_mysql_query($requete, $dbh) or die ("ERROR with SQL proc to check borrowers<br />".$requete ." <br />".pmb_mysql_error());
+	if(($result=pmb_mysql_num_rows($res))){
 		//$error_message .= "<p>".$msg["Doublons_fiche_emprunteur"]."</p>";
 		$error_message .= "<p>ERREUR DOUBLON LECTEUR</p>";
 		$nberrors++;			
@@ -286,11 +286,11 @@ if ($nberrors > 0) {
 			</div>
 			";
 		$requete.=" GROUP BY empr_cb";
-		$res = mysql_query($requete);
-		while ($obj_emp = mysql_fetch_object($res)) {
+		$res = pmb_mysql_query($requete);
+		while ($obj_emp = pmb_mysql_fetch_object($res)) {
 			$requete="SELECT id_empr FROM empr WHERE empr_cb='".$obj_emp->empr_cb."'";
-			$result=mysql_query($requete,$dbh);
-			$id_empr=mysql_result($result,0,0);
+			$result=pmb_mysql_query($requete,$dbh);
+			$id_empr=pmb_mysql_result($result,0,0);
 			$link = './circ.php?categ=pret&form_cb='.rawurlencode($obj_emp->empr_cb);
 			$lien_suppr_cart = "";
 			$empr = new emprunteur($id_empr,"",FALSE,3);
@@ -310,8 +310,8 @@ if ($nberrors > 0) {
 		
 		// création empr
 		$requete = "SELECT empr_cb FROM empr WHERE empr_cb='$f_cb' LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_num_rows($res);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_num_rows($res);
 		if (!$nbr_lignes) {
 			$requete = "INSERT INTO empr SET ";
 			$requete .= "empr_cb='".(string)$f_cb."', ";
@@ -336,13 +336,13 @@ if ($nberrors > 0) {
 			if (($form_expiration=="") or ($form_expiration==$form_adhesion)) {
 				/* AJOUTER ICI LE CALCUL EN FONCTION DE LA CATEGORIE */
 				$rqt_empr_categ = "select duree_adhesion from empr_categ where id_categ_empr = $form_categ ";
-				$res_empr_categ = mysql_query($rqt_empr_categ, $dbh);
-				$empr_categ = mysql_fetch_object($res_empr_categ);
+				$res_empr_categ = pmb_mysql_query($rqt_empr_categ, $dbh);
+				$empr_categ = pmb_mysql_fetch_object($res_empr_categ);
 				//$form_adhesion=preg_replace('/-/', '', $form_adhesion);
 
 				$rqt_date = "select date_add('".$form_adhesion."', INTERVAL $empr_categ->duree_adhesion DAY) as date_expiration " ;
-				$resultatdate=mysql_query($rqt_date);
-				$resdate=mysql_fetch_object($resultatdate);
+				$resultatdate=pmb_mysql_query($rqt_date);
+				$resdate=pmb_mysql_fetch_object($resultatdate);
 				$requete .= "empr_date_expiration='".$resdate->date_expiration."', ";
 
 				} else $requete .= "empr_date_expiration='$form_expiration', ";
@@ -355,8 +355,8 @@ if ($nberrors > 0) {
 			if (!$empr_location_id) {
 				if ($deflt2docs_location) $empr_location_id=$deflt2docs_location ;
 				else {
-					$loca = mysql_query("select min(idlocation) as idlocation from docs_location", $dbh);
-					$locaid = mysql_fetch_object($loca);
+					$loca = pmb_mysql_query("select min(idlocation) as idlocation from docs_location", $dbh);
+					$locaid = pmb_mysql_fetch_object($loca);
 					$empr_location_id = $locaid->idlocation ;
 					}
 				}
@@ -380,11 +380,18 @@ if ($nberrors > 0) {
 			if ($form_empr_password!="") $requete .= "empr_password='$form_empr_password' ";
 				else $requete .= "empr_password='$form_year' ";
 			
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 
 			if($res) {
 				// on récupère l'id du de l'emprunteur
-				$id = mysql_insert_id($dbh);
+				$id = pmb_mysql_insert_id($dbh);
+				if ($form_empr_password!="") {
+					emprunteur::update_digest($form_empr_login,$form_empr_password);
+					emprunteur::hash_password($form_empr_login,$form_empr_password);
+				} else {
+					emprunteur::update_digest($form_empr_login,$form_year);
+					emprunteur::hash_password($form_empr_login,$form_year);
+				}
 				$p_perso->rec_fields_perso($id);
 				rec_groupe_empr($id, $id_grp) ;
 				ins_lect_categ_dsi($id, $form_categ, 0) ;
@@ -411,11 +418,11 @@ if ($nberrors > 0) {
 			*/
 
 			$query_verif = "select empr_cb from empr where id_empr = '".$id."' ";
-			$res_cb = mysql_fetch_row(mysql_query($query_verif,$dbh));
+			$res_cb = pmb_mysql_fetch_row(pmb_mysql_query($query_verif,$dbh));
 			if ($res_cb[0]!=$f_cb) {
 				// il y a eu modif du cb, il faut vérifier qu'il n'est pas déjà utilisé
 				$query_verif = "select count(1) from empr where empr_cb = '".$f_cb."' ";
-				$ok = mysql_result(mysql_query($query_verif,$dbh), 0, 0);
+				$ok = pmb_mysql_result(pmb_mysql_query($query_verif,$dbh), 0, 0);
 				if ($ok) {
 					print "<script type='text/javascript'>alert ('code déjà utilisé'); history.go(-1);</script>";
 					exit;
@@ -423,8 +430,8 @@ if ($nberrors > 0) {
 				}
 
 			$rqt_empr = "select empr_categ, empr_date_expiration from empr where id_empr=$id ";
-			$res_empr = mysql_query($rqt_empr, $dbh);
-			$empr_lu = mysql_fetch_object($res_empr);
+			$res_empr = pmb_mysql_query($rqt_empr, $dbh);
+			$empr_lu = pmb_mysql_fetch_object($res_empr);
 			$anc_categ = $empr_lu->empr_categ ;
 			$form_expiration_applicable = "";
 			if (preg_replace('/-/', '', $empr_lu->empr_date_expiration) != $form_expiration) {
@@ -432,12 +439,12 @@ if ($nberrors > 0) {
 			} elseif ($anc_categ != $form_categ) {
 				//On ne change rien en fait, car si une date d'adhesion est ancienne on se retrouve avec des lecteurs expirés si ils changent de catégorie...
 				/*$rqt_empr_categ = "select duree_adhesion from empr_categ where id_categ_empr = '$form_categ' ";
-				$res_empr_categ = mysql_query($rqt_empr_categ, $dbh);
-				$empr_categ = mysql_fetch_object($res_empr_categ);
+				$res_empr_categ = pmb_mysql_query($rqt_empr_categ, $dbh);
+				$empr_categ = pmb_mysql_fetch_object($res_empr_categ);
 
 				$rqt_date = "select date_add('".$form_adhesion."', INTERVAL $empr_categ->duree_adhesion DAY) as date_expiration " ;
-				$resultatdate=mysql_query($rqt_date);
-				$resdate=mysql_fetch_object($resultatdate);
+				$resultatdate=pmb_mysql_query($rqt_date);
+				$resdate=pmb_mysql_fetch_object($resultatdate);
 				$form_expiration_applicable = "empr_date_expiration='".$resdate->date_expiration."', ";*/
 				$form_expiration_applicable="";
 			}
@@ -487,9 +494,13 @@ if ($nberrors > 0) {
 			$requete .= "empr_login='$form_empr_login' ";
 			$requete .= " WHERE id_empr='$id' ";
 			
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 	
-			if(!mysql_errno($dbh)) {
+			if(!pmb_mysql_errno($dbh)) {
+				if ($form_empr_password!="") {
+					emprunteur::update_digest($form_empr_login,$form_empr_password);
+					emprunteur::hash_password($form_empr_login,$form_empr_password);
+				}
 				$p_perso->rec_fields_perso($id);
 				rec_groupe_empr($id, $id_grp) ;
 				// DSI : sur modification de lecteur, pas de mofification de ses inscriptions aux bannettes.

@@ -4,7 +4,7 @@
 // | creator : Eric ROBERT                                                    |
 // | modified : ...                                                           |
 // +-------------------------------------------------+
-// $Id: z_progression_visible.php,v 1.9 2011-09-30 07:58:18 dgoron Exp $
+// $Id: z_progression_visible.php,v 1.11 2015-04-03 11:16:22 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path="../..";
@@ -13,10 +13,10 @@ $base_title = "";
 require_once ("$base_path/includes/init.inc.php");  
 
 // les requis par z_progression_visible.php ou ses sous modules
-include("$include_path/isbn.inc.php");
-include("$include_path/marc_tables/$pmb_indexation_lang/empty_words");
-include("$class_path/iso2709.class.php");
-include("z3950_func.inc.php");
+require_once("$include_path/isbn.inc.php");
+require_once("$include_path/marc_tables/$pmb_indexation_lang/empty_words");
+require_once("$class_path/iso2709.class.php");
+require_once("z3950_func.inc.php");
 //print "<div id='contenu-frame'>";
 
 print "
@@ -40,8 +40,8 @@ print "
 // On détermine les Bibliothèques sélectionnées
 //
 
-$recherche=mysql_query("select * from z_bib $selection_bib");
-while ($resultat=mysql_fetch_array($recherche)) {
+$recherche=pmb_mysql_query("select * from z_bib $selection_bib");
+while ($resultat=pmb_mysql_fetch_array($recherche)) {
 	$bib_id=$resultat["bib_id"];
 	$nom_bib=$resultat["bib_nom"];
 	print "

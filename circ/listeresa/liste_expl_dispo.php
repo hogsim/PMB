@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liste_expl_dispo.php,v 1.8 2013-02-12 16:17:40 ngantier Exp $
+// $Id: liste_expl_dispo.php,v 1.9 2015-04-03 11:16:25 jpermanne Exp $
 
 $base_path="./../..";
 $base_auth = "CIRCULATION_AUTH";
@@ -34,28 +34,28 @@ $rqt = "SELECT ".
 		"ORDER BY transfert_ordre";
 
 //echo $rqt;
-$res = mysql_query($rqt);
+$res = pmb_mysql_query($rqt);
 $st = "odd";
-while (($data = mysql_fetch_array($res))) {
+while (($data = pmb_mysql_fetch_array($res))) {
 	$sel_expl=1;
 	$statut="";
 	$req_res = "select count(1) from resa where resa_cb='".addslashes($data[1])."' and resa_confirmee='1'";
-	$req_res_result = mysql_query($req_res, $dbh);
-	if(mysql_result($req_res_result, 0, 0)) {					
+	$req_res_result = pmb_mysql_query($req_res, $dbh);
+	if(pmb_mysql_result($req_res_result, 0, 0)) {					
 		$statut=$msg["transferts_circ_resa_expl_reserve"];
 		$sel_expl=0;
 	}
 	$req_pret = "select date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour  from pret where pret_idexpl='".$data[3]."' ";
-	$req_pret_result = mysql_query($req_pret, $dbh);
-	if(mysql_num_rows($req_pret_result)) {					
+	$req_pret_result = pmb_mysql_query($req_pret, $dbh);
+	if(pmb_mysql_num_rows($req_pret_result)) {					
 		//$statut=$msg["transferts_circ_resa_expl_en_pret"]."()";
-		$statut=$msg[358]." ".mysql_result($req_pret_result, 0,0);
+		$statut=$msg[358]." ".pmb_mysql_result($req_pret_result, 0,0);
 		$sel_expl=0;
 	}	
 	// transfert demandé
 	$req="select count(1)  from transferts_demande, transferts where etat_demande ='0' and num_expl='".$data[3]."' and etat_transfert=0 and id_transfert=num_transfert ";
-	$r = mysql_query($req, $dbh);
-	if(mysql_result($r, 0, 0)) {
+	$r = pmb_mysql_query($req, $dbh);
+	if(pmb_mysql_result($r, 0, 0)) {
 		if($statut)$statut.=". ";
 		$statut.=$msg["transfert_demande_in_progress"];
 		$sel_expl=0;
@@ -103,6 +103,6 @@ echo str_replace("!!liste!!",$liste,$global);
 
 echo "</body></html>";
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 ?>

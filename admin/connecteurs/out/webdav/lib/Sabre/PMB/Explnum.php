@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: Explnum.php,v 1.5 2013-04-25 16:02:17 mbertin Exp $
+// $Id: Explnum.php,v 1.6 2015-04-03 11:16:24 jpermanne Exp $
 namespace Sabre\PMB;
 
 use Sabre\DAV;
@@ -19,10 +19,10 @@ class Explnum extends PMB\File {
 	function getName() {
 		global $charset;
 		$query = "select explnum_nom, explnum_extfichier from explnum where explnum_id = ".$this->explnum_id;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$name = "";
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			$name = $row->explnum_nom;
 			if(strpos(strtolower($row->explnum_nom),".".str_replace(".","",$row->explnum_extfichier))!==false){
 				$name = substr($row->explnum_nom,0,strrpos($row->explnum_nom,"."));
@@ -48,9 +48,9 @@ class Explnum extends PMB\File {
 	function getContentType(){
 		$mimetype= "";
 		$query = "select explnum_mimetype from explnum where explnum_id = ".$this->explnum_id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$mimetype = mysql_result($result,0,0);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$mimetype = pmb_mysql_result($result,0,0);
 		}
 		return $mimetype;
 	}

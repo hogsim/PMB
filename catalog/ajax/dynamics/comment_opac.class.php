@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: comment_opac.class.php,v 1.1 2011-06-27 15:26:59 ngantier Exp $
+// $Id: comment_opac.class.php,v 1.2 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,8 +30,8 @@ class comment_opac{
 		global $msg, $charset,$dbh;
 
 		$req="SELECT * from perio_relance where rel_id=".$this->idobjet."";	
-		$res= mysql_query($req);
-		$act = mysql_fetch_object($res);
+		$res= pmb_mysql_query($req);
+		$act = pmb_mysql_fetch_object($res);
 		
 		$display ="";
 		$submit = "<input type='submit' class='bouton' name='soumission' id='soumission' value='".$msg['demandes_valid_progression']."'/>";
@@ -52,7 +52,7 @@ class comment_opac{
 		global $dbh, $comment_opac;		
 		
 		$req = "update perio_relance set rel_comment_opac='".$comment_opac."' where rel_id='".$this->idobjet."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		
 		switch($this->champ_sortie){
 			default :				

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sauv_tables.class.php,v 1.11 2009-05-16 11:21:58 dbellamy Exp $
+// $Id: sauv_tables.class.php,v 1.12 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -45,8 +45,8 @@ class sauv_table {
 			exit();
 		}
 		$requete="select sauv_table_id from sauv_tables where ( sauv_table_nom='".$this->sauv_table_nom."' and sauv_table_id !='".$this -> sauv_table_id."')";
-		$resultat=mysql_query($requete) or die(mysql_error());
-		if (mysql_num_rows($resultat)!=0) {
+		$resultat=pmb_mysql_query($requete) or die(pmb_mysql_error());
+		if (pmb_mysql_num_rows($resultat)!=0) {
 			echo "<script>alert(\"".$msg["sauv_tables_valid_form_error_duplicate"]."\"); history.go(-1);</script>";
 			exit();
 		}
@@ -65,21 +65,21 @@ class sauv_table {
 				if ($this -> sauv_table_id == "") {
 					$this->verifName();
 					$requete = "insert into sauv_tables (sauv_table_nom) values('')";
-					mysql_query($requete) or die(mysql_error());
-					$this -> sauv_table_id = mysql_insert_id();
+					pmb_mysql_query($requete) or die(pmb_mysql_error());
+					$this -> sauv_table_id = pmb_mysql_insert_id();
 					$first="";
 				}
 				//Update avec les données reçues
 				$this->verifTables();
 				$this->verifName();
 				$requete = "update sauv_tables set sauv_table_nom='".$this -> sauv_table_nom."', sauv_table_tables='".implode(",", $this -> sauv_table_tables)."' where sauv_table_id=".$this -> sauv_table_id;
-				mysql_query($requete) or die(mysql_error());
+				pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$first="";
 				break;
 				//Supprimer
 			case "delete" :
 				$requete = "delete from sauv_tables where sauv_table_id=".$this -> sauv_table_id;
-				mysql_query($requete) or die(mysql_error());
+				pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$this -> sauv_table_id = "";
 				$first = 0;
 				break;
@@ -115,9 +115,9 @@ class sauv_table {
 				if ($this -> sauv_table_id) {
 					//Récupération des données de la fiche
 					$requete = "select sauv_table_nom,sauv_table_tables from sauv_tables where sauv_table_id=".$this -> sauv_table_id;
-					$resultat = mysql_query($requete);
-					if (mysql_num_rows($resultat) != 0)
-						list ($this -> sauv_table_nom, $this -> sauv_table_tables) = mysql_fetch_row($resultat);
+					$resultat = pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($resultat) != 0)
+						list ($this -> sauv_table_nom, $this -> sauv_table_tables) = pmb_mysql_fetch_row($resultat);
 					//$form = "<center><b>".$this -> sauv_table_nom."</b></center>".$form;
 					$form = str_replace("!!quel_table!!", $this -> sauv_table_nom, $form);
 					$form = str_replace("!!delete!!", "<input type=\"submit\" value=\"".$msg["sauv_supprimer"]."\" onClick=\"if (confirm('".$msg["sauv_tables_confirm_delete"]."')) { this.form.act.value='delete'; return true; } else { return false; }\" class=\"bouton\">", $form);
@@ -134,9 +134,9 @@ class sauv_table {
 				//Liste des tables
 				$tTablesSelected = explode(",", $this -> sauv_table_tables);
 				$requete = "show tables";
-				$resultat = mysql_query($requete) or die(mysql_error());
+				$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$tTables = array();
-				while (list ($table) = mysql_fetch_row($resultat)) {
+				while (list ($table) = pmb_mysql_fetch_row($resultat)) {
 					$tTables[] = $table;
 				}
 
@@ -177,9 +177,9 @@ class sauv_table {
 				
 				//Récupération de la liste
 				$requete = "select sauv_table_id, sauv_table_nom, sauv_table_tables from sauv_tables order by sauv_table_nom";
-				$resultat = mysql_query($requete) or die(mysql_error());
+				$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$tTables = "";
-				while ($res = mysql_fetch_object($resultat)) {
+				while ($res = pmb_mysql_fetch_object($resultat)) {
 					$tTables.= ",".$res -> sauv_table_tables;
 					$group=array();
 					$group["NOM"]=$res->sauv_table_nom;
@@ -190,9 +190,9 @@ class sauv_table {
 				//Recherche des tables non intégrées dans les groupes
 				$tTablesSelected = explode(",", $tTables);
 				$requete = "show tables";
-				$resultat = mysql_query($requete) or die(mysql_error());
+				$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$unsavedTables = array();
-				while (list ($table) = mysql_fetch_row($resultat)) {
+				while (list ($table) = pmb_mysql_fetch_row($resultat)) {
 					$as=array_search($table, $tTablesSelected);
 					if (( $as!== NULL)&&($as!==false)) {
 						//Do nothing
@@ -229,18 +229,18 @@ class sauv_table {
 		
 		//Récupération de la liste
 		$requete = "select sauv_table_id, sauv_table_nom, sauv_table_tables from sauv_tables ";
-		$resultat = mysql_query($requete) or die(mysql_error());
+		$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error());
 		$tTables = "";
-		while ($res = mysql_fetch_object($resultat)) {
+		while ($res = pmb_mysql_fetch_object($resultat)) {
 			$tTables.= ",".$res -> sauv_table_tables;
 		}
 				
 		//Recherche des tables non intégrées dans les groupes
 		$tTablesSelected = explode(",", $tTables);
 		$requete = "show tables";
-		$resultat = mysql_query($requete) or die(mysql_error());
+		$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error());
 		$unsavedTables = array();
-		while (list ($table) = mysql_fetch_row($resultat)) {
+		while (list ($table) = pmb_mysql_fetch_row($resultat)) {
 			$as=array_search($table, $tTablesSelected);
 			if (( $as!== false)&&($as!==null)) {
 				//Do nothing
@@ -258,7 +258,7 @@ class sauv_table {
 				$n--;
 				for ($j=0; $j<count($table); $j++) {
 					$requete="update sauv_tables set sauv_table_tables=concat(sauv_table_tables,',','".$nomTable."') where sauv_table_id=".$table[$j];
-					mysql_query($requete) or die(mysql_error());
+					pmb_mysql_query($requete) or die(pmb_mysql_error());
 				}
 			}
 		}
@@ -276,9 +276,9 @@ class sauv_table {
 
 		//Récupération de la liste
 		$requete = "select sauv_table_id, sauv_table_nom, sauv_table_tables from sauv_tables order by sauv_table_nom";
-		$resultat = mysql_query($requete, $dbh) or die(mysql_error());
+		$resultat = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error());
 		$tTables = "";
-		while ($res = mysql_fetch_object($resultat)) {
+		while ($res = pmb_mysql_fetch_object($resultat)) {
 			$tTables.= ",".$res -> sauv_table_tables;
 			$tree.= "<tr><td class='nobrd'>";
 			$tree.= "<img src=\"images/table.png\" border=0 align=center>&nbsp;";
@@ -296,9 +296,9 @@ class sauv_table {
 		//Recherche des tables non intégrées dans les groupes
 		$tTablesSelected = explode(",", $tTables);
 		$requete = "show tables";
-		$resultat = mysql_query($requete) or die(mysql_error());
+		$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error());
 		$unsavedTables = array();
-		while (list ($table) = mysql_fetch_row($resultat)) {
+		while (list ($table) = pmb_mysql_fetch_row($resultat)) {
 			$as=array_search($table, $tTablesSelected);
 			if (( $as!== false)&&($as!==null)) {
 				//Do nothing

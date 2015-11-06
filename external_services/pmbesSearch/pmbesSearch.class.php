@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesSearch.class.php,v 1.21.6.1 2014-04-10 15:11:38 dbellamy Exp $
+// $Id: pmbesSearch.class.php,v 1.23 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,7 +37,7 @@ class pmbesSearch extends external_services_api_class {
 	function update_session_date($session_id) {
 		global $dbh;
 		$sql = "UPDATE es_searchsessions SET es_searchsession_lastseendate = NOW() WHERE es_searchsession_id = '".addslashes($session_id)."'";
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	function noticeids_to_recordformats($noticesids, $record_format, $recordcharset='iso-8859-1', $includeLinks=true, $includeItems=false) {
@@ -71,12 +71,12 @@ class pmbesSearch extends external_services_api_class {
 		
 		//Deletons les sessions trop vieilles
 		$sql = "DELETE FROM es_searchsessions WHERE es_searchsession_lastseendate + INTERVAL ".$pmb_external_service_session_duration." SECOND <= NOW()";
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 		//Générons un numéro de session
 		$session_id = md5(microtime());
 		$sql = "INSERT INTO es_searchsessions (es_searchsession_id, es_searchsession_searchnum, es_searchsession_searchrealm, es_searchsession_pmbuserid, es_searchsession_opacemprid, es_searchsession_lastseendate) VALUES ('".$session_id."', '".$search_unique_name."', '".addslashes($search_realm)."', ".$PMBUserId.", ".$OPACEmprId.", NOW())";
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 
 		return array("searchId"=>$session_id,"nbResults"=>$result_count,"typdocs"=>$result_typdoc_list);
 	}
@@ -145,10 +145,10 @@ class pmbesSearch extends external_services_api_class {
 		}
 		
 		$req = "select count(1) from docsloc_section where num_section='".$section."' and num_location='".$location."'";
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 		
 		$sec_valide = false;
-		if(mysql_num_rows($res)){
+		if(pmb_mysql_num_rows($res)){
 			$sec_valide = true;
 		}
 		
@@ -321,8 +321,6 @@ class pmbesSearch extends external_services_api_class {
 		}
 
 		
-		
-		
 		if (isset($search_object->fixedfields[$field_id])){
 			$content = $search_object->fixedfields[$field_id];
 			$aresult = array("operators" => array());
@@ -340,8 +338,8 @@ class pmbesSearch extends external_services_api_class {
 					case "query_list":
 						$aresult["values"] = array();
 		   				$requete=$content["INPUT_OPTIONS"]["QUERY"][0]["value"];
-		   				$resultat=mysql_query($requete, $dbh);
-		   				while ($opt=mysql_fetch_row($resultat)) {
+		   				$resultat=pmb_mysql_query($requete, $dbh);
+		   				while ($opt=pmb_mysql_fetch_row($resultat)) {
 							$aresult["values"][] = array(
 								"value_id" => $opt[0],
 								"value_caption" => utf8_normalize($opt[1])
@@ -368,8 +366,8 @@ class pmbesSearch extends external_services_api_class {
 		
 		 		  			// gestion restriction par code utilise.
 		 		  			if ($content["INPUT_OPTIONS"]["RESTRICTQUERY"][0]["value"]) {
-		 		  				$restrictquery=mysql_query($content["INPUT_OPTIONS"]["RESTRICTQUERY"][0]["value"], $dbh);
-					  		if ($restrictqueryrow=@mysql_fetch_row($restrictquery)) {
+		 		  				$restrictquery=pmb_mysql_query($content["INPUT_OPTIONS"]["RESTRICTQUERY"][0]["value"], $dbh);
+					  		if ($restrictqueryrow=@pmb_mysql_fetch_row($restrictquery)) {
 					  			if ($restrictqueryrow[0]) {
 					  				$restrictqueryarray=explode(",",$restrictqueryrow[0]);
 					  				$existrestrict=true;
@@ -408,8 +406,8 @@ class pmbesSearch extends external_services_api_class {
 			  		  	switch ($input['TYPE']) {
 			  		  		case "query_list":
 			  		  			$concat = "";
-			  		  			$query_list_result=@mysql_query($input['QUERY'][0]['value']);
-			  		  			while ($value=mysql_fetch_array($query_list_result)) {
+			  		  			$query_list_result=@pmb_mysql_query($input['QUERY'][0]['value']);
+			  		  			while ($value=pmb_mysql_fetch_array($query_list_result)) {
 									if($concat)$concat.=",";
 			  		  				$concat.=$value[0];
 									$values[]=array(
@@ -522,7 +520,7 @@ class pmbesSearch extends external_services_api_class {
 			global $$field;
 			if (is_array($afield_s["value"])) {
 				$$field=$afield_s["value"];
-			}else {
+			} else {
 				$$field=array($afield_s["value"]);
 			}
 			$op="op_".$count."_".$search[$count];
@@ -584,11 +582,11 @@ class pmbesSearch extends external_services_api_class {
 
 		//Cherchons la session
 		$sql = "SELECT * FROM es_searchsessions WHERE es_searchsession_id = '".addslashes($searchId)."'";
-		$res = mysql_query($sql, $dbh);
-		if (!mysql_numrows($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		if (!pmb_mysql_num_rows($res)) {
 			return array();
 		}
-		$row = mysql_fetch_assoc($res);
+		$row = pmb_mysql_fetch_assoc($res);
 		$this->update_session_date($searchId);
 
 		$search_unique_id = $row["es_searchsession_searchnum"];
@@ -633,11 +631,11 @@ class pmbesSearch extends external_services_api_class {
 
 		//Cherchons la session
 		$sql = "SELECT * FROM es_searchsessions WHERE es_searchsession_id = '".addslashes($searchId)."'";
-		$res = mysql_query($sql, $dbh);
-		if (!mysql_numrows($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		if (!pmb_mysql_num_rows($res)) {
 			return array();
 		}
-		$row = mysql_fetch_assoc($res);
+		$row = pmb_mysql_fetch_assoc($res);
 		$this->update_session_date($searchId);
 
 		$search_unique_id = $row["es_searchsession_searchnum"];
@@ -661,10 +659,10 @@ class pmbesSearch extends external_services_api_class {
 	function listExternalSources($OPACUserId=-1) {
 		global $dbh, $msg;
 		$sql = 'SELECT connectors_sources.source_id, connectors_sources.name, connectors_sources.comment, connectors_categ.connectors_categ_name FROM connectors_sources LEFT JOIN connectors_categ_sources ON (connectors_categ_sources.num_source = connectors_sources.source_id) LEFT JOIN connectors_categ ON (connectors_categ.connectors_categ_id = connectors_categ_sources.num_categ) WHERE 1 '.($OPACUserId != -1 ? 'AND connectors_sources.opac_allowed = 1' : '').' ORDER BY connectors_categ.connectors_categ_name, connectors_sources.name';
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		$results = array();
 		$categs = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			$categs[$row['connectors_categ_name'] ? $row['connectors_categ_name'] : $msg['source_no_category']][] = array(
 				'source_id' => $row['source_id'],
 				'source_caption' => utf8_normalize($row['name']),
@@ -692,11 +690,11 @@ class pmbesSearch extends external_services_api_class {
 
 		//Cherchons la session
 		$sql = "SELECT * FROM es_searchsessions WHERE es_searchsession_id = '".addslashes($searchId)."'";
-		$res = mysql_query($sql, $dbh);
-		if (!mysql_numrows($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		if (!pmb_mysql_num_rows($res)) {
 			return array();
 		}
-		$row = mysql_fetch_assoc($res);
+		$row = pmb_mysql_fetch_assoc($res);
 		$this->update_session_date($searchId);
 
 		$search_unique_id = $row["es_searchsession_searchnum"];
@@ -731,11 +729,11 @@ class pmbesSearch extends external_services_api_class {
 
 		//Cherchons la session
 		$sql = "SELECT * FROM es_searchsessions WHERE es_searchsession_id = '".addslashes($searchId)."'";
-		$res = mysql_query($sql, $dbh);
-		if (!mysql_numrows($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		if (!pmb_mysql_num_rows($res)) {
 			return array();
 		}
-		$row = mysql_fetch_assoc($res);
+		$row = pmb_mysql_fetch_assoc($res);
 		$this->update_session_date($searchId);
 
 		$search_unique_id = $row["es_searchsession_searchnum"];

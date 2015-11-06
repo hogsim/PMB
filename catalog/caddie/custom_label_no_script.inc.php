@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: custom_label_no_script.inc.php,v 1.11 2011-05-02 08:57:49 dbellamy Exp $
+// $Id: custom_label_no_script.inc.php,v 1.12 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -642,10 +642,10 @@ function print_cote(&$target, $content_value, $content_src='') {
 	global $dbh;
 	
 	$q = "select expl_cote from exemplaires where expl_id = '".$content_src."' ";
-	$r = mysql_query($q, $dbh);
+	$r = pmb_mysql_query($q, $dbh);
 	$cote = "";
-	if (mysql_num_rows($r)) {
-		$row_cote = mysql_fetch_row($r);
+	if (pmb_mysql_num_rows($r)) {
+		$row_cote = pmb_mysql_fetch_row($r);
 		$tab_cote = explode(" ", rtrim(ltrim($row_cote[0])) );
 		$str_cote = implode("\n", $tab_cote);
 	}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search.class.php,v 1.6 2013-05-16 09:44:03 mbertin Exp $
+// $Id: search.class.php,v 1.7 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -125,9 +125,9 @@ class combine_search_unimarc {
 						//Recherche de l'auteur
 						$author_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 						$requete="select concat(author_name,', ',author_rejete) from authors where author_id=".$author_id;
-						$r_author=mysql_query($requete);
-						if (@mysql_num_rows($r_author)) {
-							$valeur_champ=mysql_result($r_author,0,0);
+						$r_author=pmb_mysql_query($requete);
+						if (@pmb_mysql_num_rows($r_author)) {
+							$valeur_champ=pmb_mysql_result($r_author,0,0);
 						}
 					break;
 					case 'categ_see':
@@ -136,9 +136,9 @@ class combine_search_unimarc {
 						//Recherche de la catégorie
 						$categ_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 						$requete="select libelle_categorie from categories where num_noeud=".$categ_id;
-						$r_cat=mysql_query($requete);
-						if (@mysql_num_rows($r_cat)) {
-							$valeur_champ=mysql_result($r_cat,0,0);
+						$r_cat=pmb_mysql_query($requete);
+						if (@pmb_mysql_num_rows($r_cat)) {
+							$valeur_champ=pmb_mysql_result($r_cat,0,0);
 						}
 					break;		
 					case 'indexint_see':	
@@ -147,9 +147,9 @@ class combine_search_unimarc {
 						//Recherche de l'indexation
 						$indexint_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 						$requete="select indexint_name from indexint where indexint_id=".$indexint_id;
-						$r_indexint=mysql_query($requete);
-						if (@mysql_num_rows($r_indexint)) {
-							$valeur_champ=mysql_result($r_indexint,0,0);
+						$r_indexint=pmb_mysql_query($requete);
+						if (@pmb_mysql_num_rows($r_indexint)) {
+							$valeur_champ=pmb_mysql_result($r_indexint,0,0);
 						}
 					break;		
 					case 'coll_see':	
@@ -158,9 +158,9 @@ class combine_search_unimarc {
 						//Recherche de l'indexation
 						$coll_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 						$requete="select collection_name from collections where collection_id=".$coll_id;
-						$r_coll=mysql_query($requete);
-						if (@mysql_num_rows($r_coll)) {
-							$valeur_champ=mysql_result($r_coll,0,0);
+						$r_coll=pmb_mysql_query($requete);
+						if (@pmb_mysql_num_rows($r_coll)) {
+							$valeur_champ=pmb_mysql_result($r_coll,0,0);
 						}
 					break;		
 					case 'publisher_see':	
@@ -169,9 +169,9 @@ class combine_search_unimarc {
 						//Recherche de l'éditeur
 						$publisher_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 						$requete="select ed_name from publishers where ed_id=".$publisher_id;
-						$r_pub=mysql_query($requete);
-						if (@mysql_num_rows($r_pub)) {
-							$valeur_champ=mysql_result($r_pub,0,0);
+						$r_pub=pmb_mysql_query($requete);
+						if (@pmb_mysql_num_rows($r_pub)) {
+							$valeur_champ=pmb_mysql_result($r_pub,0,0);
 						}
 					break;		
 					case 'subcoll_see':	
@@ -180,9 +180,9 @@ class combine_search_unimarc {
 						//Recherche de l'éditeur
 						$subcoll_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 						$requete="select sub_coll_name from sub_collections where sub_coll_id=".$subcoll_id;
-						$r_subcoll=mysql_query($requete);
-						if (@mysql_num_rows($r_subcoll)) {
-							$valeur_champ=mysql_result($r_subcoll,0,0);
+						$r_subcoll=pmb_mysql_query($requete);
+						if (@pmb_mysql_num_rows($r_subcoll)) {
+							$valeur_champ=pmb_mysql_result($r_subcoll,0,0);
 						}
 					break;
 					case 'titre_uniforme_see':	
@@ -191,9 +191,9 @@ class combine_search_unimarc {
 						//Recherche de l'éditeur
 						$tu_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 						$requete="select tu_name from titre_uniformes where tu_id=".$tu_id;
-						$r_tu=mysql_query($requete);
-						if (@mysql_num_rows($r_tu)) {
-							$valeur_champ=mysql_result($r_tu,0,0);
+						$r_tu=pmb_mysql_query($requete);
+						if (@pmb_mysql_num_rows($r_tu)) {
+							$valeur_champ=pmb_mysql_result($r_tu,0,0);
 						}
 					break;							
 				}
@@ -234,9 +234,9 @@ class combine_search_unimarc {
 				//Recherche de la catégorie
 				$categ_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 				$requete="select libelle_categorie from categories where num_noeud=".$categ_id;
-				$r_cat=mysql_query($requete);
-				if (@mysql_num_rows($r_cat)) {
-					$valeur_champ=mysql_result($r_cat,0,0);
+				$r_cat=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_cat)) {
+					$valeur_champ=pmb_mysql_result($r_cat,0,0);
 				}	
 				
 				//opérateur
@@ -274,9 +274,9 @@ class combine_search_unimarc {
 					//Recherche de la catégorie
 					$categ_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 					$requete="select libelle_categorie from categories where num_noeud=".$categ_id;
-					$r_cat=mysql_query($requete);
-					if (@mysql_num_rows($r_cat)) {
-						$valeur_champ=mysql_result($r_cat,0,0);
+					$r_cat=pmb_mysql_query($requete);
+					if (@pmb_mysql_num_rows($r_cat)) {
+						$valeur_champ=pmb_mysql_result($r_cat,0,0);
 					}	
 				break;		
 				case 'indexint_see':	
@@ -285,9 +285,9 @@ class combine_search_unimarc {
 					//Recherche de l'indexation
 					$indexint_id=$_SESSION["notice_view".$valeur[0]]["search_id"];
 					$requete="select indexint_name from indexint where indexint_id=".$indexint_id;
-					$r_indexint=mysql_query($requete);
-					if (@mysql_num_rows($r_indexint)) {
-						$valeur_champ=mysql_result($r_indexint,0,0);
+					$r_indexint=pmb_mysql_query($requete);
+					if (@pmb_mysql_num_rows($r_indexint)) {
+						$valeur_champ=pmb_mysql_result($r_indexint,0,0);
 					}
 				break;		
 				case 'etagere_see':

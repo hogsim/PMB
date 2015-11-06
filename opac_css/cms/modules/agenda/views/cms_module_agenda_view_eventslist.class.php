@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_agenda_view_eventslist.class.php,v 1.4 2012-11-15 09:47:33 arenou Exp $
+// $Id: cms_module_agenda_view_eventslist.class.php,v 1.5 2014-11-17 17:00:53 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -54,6 +54,7 @@ le {{event.event_start.format_value}}
 			'var' => "title",
 			'desc'=> $this->msg['cms_module_agenda_view_evenslist_title_desc']
 		);
+		$format_data = array_merge($format_data,cms_module_common_view_django::get_format_data_structure());
 		return $format_data;
 	}
 }

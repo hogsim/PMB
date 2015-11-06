@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: planificateur.inc.php,v 1.1 2011-07-29 12:32:12 dgoron Exp $
+// $Id: planificateur.inc.php,v 1.2 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once($class_path."/tache.class.php");
@@ -13,12 +13,12 @@ function show_rapport() {
 	global $msg, $dbh, $base_path, $report_task, $report_error, $task_id, $type_task_id;
 	
 	$query_chk = "select id_tache from taches where id_tache=".$task_id;
-	$res_chk = mysql_query($query_chk, $dbh);
+	$res_chk = pmb_mysql_query($query_chk, $dbh);
 	
-	if (mysql_num_rows($res_chk) == '1') {
+	if (pmb_mysql_num_rows($res_chk) == '1') {
 		//date de génération du rapport
-		$rs = mysql_query("select curdate()");
-		$date_MySQL = mysql_result($rs, $row);
+		$rs = pmb_mysql_query("select curdate()");
+		$date_MySQL = pmb_mysql_result($rs, $row);
 				
 		$tasks = new taches();
 		foreach ($tasks->types_taches as $type_tache) {
@@ -81,9 +81,9 @@ switch($sub) {
 //		if ($id) {
 //			if ($planificateur_id) {
 //				$sql = "select param from planificateur where id_planificateur=".$planificateur_id;
-//				$res = mysql_query($sql);
+//				$res = pmb_mysql_query($sql);
 //				
-//				$params = mysql_result($res,0,"param");
+//				$params = pmb_mysql_result($res,0,"param");
 //			} else {
 //				$params ="";
 //			}

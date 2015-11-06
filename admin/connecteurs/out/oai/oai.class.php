@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: oai.class.php,v 1.11 2012-11-13 08:59:17 dbellamy Exp $
+// $Id: oai.class.php,v 1.14 2015-06-19 14:03:50 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -60,6 +60,8 @@ class oai_source extends connecteur_out_source {
 	var $baseURL="";
 	var $include_items=false; //Inclure les exemplaires
 	var $include_links = array('genere_lien'=>0);
+	var $deletion_management = 0;
+	var $deletion_management_transient_duration = 0;
 	
 	function oai_source($connector, $id, $msg) {
 		parent::connecteur_out_source($connector, $id, $msg);
@@ -80,6 +82,8 @@ class oai_source extends connecteur_out_source {
 		if (count($this->config['include_links'])) { 
 			$this->include_links = $this->config['include_links'];
 		}
+		$this->deletion_management = $this->config['deletion_management'];
+		$this->deletion_management_transient_duration = $this->config['deletion_management_transient_duration'];
 	}
 	
 	function get_config_form() {
@@ -184,13 +188,21 @@ class oai_source extends connecteur_out_source {
 		//Linked Status to deletion
 		$notice_statut_select = '<select '.($this->link_status_to_deletion ? '' : 'disabled').' id="linked_status_to_deletion" name="linked_status_to_deletion">';
 		$sql = "SELECT id_notice_statut, gestion_libelle FROM notice_statut";
-		$res = mysql_query($sql, $dbh);
-		while($row=mysql_fetch_assoc($res))
+		$res = pmb_mysql_query($sql, $dbh);
+		while($row=pmb_mysql_fetch_assoc($res))
 			$notice_statut_select .= '<option '.($this->linked_status_to_deletion == $row["id_notice_statut"] ? "selected" : '').' value="'.$row["id_notice_statut"].'">'.htmlentities($row["gestion_libelle"] ,ENT_QUOTES, $charset).'</option>';
 		$notice_statut_select .= '</select>';
 		$result .=	'<blockquote><div class="row"><label class="etiquette" for="linked_status_to_deletion">'.$this->msg["linked_status_to_deletion"].'</label><br />';
 		$result .= $notice_statut_select;
-		$result .=	'</div></blockquote>';
+		$result .=	'</div></blockquote><br/>';
+
+		// Deletion management
+		$result .= '<div class="row"><label class="etiquette">'.$this->msg['deletion_management'].'&nbsp;'.$this->msg['if_none_status_to_deletion'].'</label><br/>';
+		$result .= '<input type="radio" id="deletion_management_none" value="0" name="deletion_management" onChange="document.getElementById(\'deletion_management_transient_duration\').disabled = !document.getElementById(\'deletion_management_transient\').checked" '.(($this->deletion_management == 0) ? 'checked' : '').'/>&nbsp;<label class="etiquette" for="deletion_management_none">'.$this->msg['deletion_management_none'].'</label>&nbsp;';
+		$result .= '<input type="radio" id="deletion_management_transient" value="1" name="deletion_management" onChange="document.getElementById(\'deletion_management_transient_duration\').disabled = !document.getElementById(\'deletion_management_transient\').checked" '.(($this->deletion_management == 1) ? 'checked' : '').'/>&nbsp;<label class="etiquette" for="deletion_management_transient">'.$this->msg['deletion_management_transient'].'</label>,&nbsp;';
+		$result .= '<label class="etiquette" for="deletion_management_transient_duration">'.$this->msg['deletion_management_transient_duration'].'</label>&nbsp;<input '.(($this->deletion_management != 1) ? 'disabled' : '').' type="text" id="deletion_management_transient_duration" value="'.htmlentities($this->deletion_management_transient_duration,ENT_QUOTES, $charset).'" name="deletion_management_transient_duration"/>&nbsp;';
+		$result .= '<input type="radio" id="deletion_management_persistent" value="2" name="deletion_management" onChange="document.getElementById(\'deletion_management_transient_duration\').disabled = !document.getElementById(\'deletion_management_transient\').checked" '.(($this->deletion_management == 2) ? 'checked' : '').'/>&nbsp;<label class="etiquette" for="deletion_management_persistent">'.$this->msg['deletion_management_persistent'].'</label>&nbsp;';
+		$result .= '<div><br/>';
 		
 		//Include items
 		$result .=	'<div class="row"><input id="include_items" '.($this->include_items ? 'checked=checked' : '').' name="include_items" type="checkbox" />'.'<label class="etiquette" for="include_items">'.$this->msg["include_items"].'</label><br />';
@@ -211,7 +223,7 @@ class oai_source extends connecteur_out_source {
 		global $dbh;
 		parent::update_config_from_form();
 		global $repo_name, $admin_email, $included_sets, $repositoryIdentifier, $chunksize, $token_lifeduration, $cache_complete_records, $cache_complete_records_seconds, $link_status_to_deletion, $linked_status_to_deletion, $allow_gzip_compression, $baseURL, $include_items,$suppr_feuille_xslt;
-				
+		global $deletion_management, $deletion_management_transient_duration;
 		//les trucs faciles
 		$this->config["repo_name"] = stripslashes($repo_name);
 		$this->config["admin_email"] = stripslashes($admin_email);
@@ -225,6 +237,8 @@ class oai_source extends connecteur_out_source {
 		$this->config["allow_gzip_compression"] = isset($allow_gzip_compression);
 		$this->config["baseURL"] = stripslashes($baseURL);
 		$this->config["include_items"] = isset($include_items);
+		$this->config["deletion_management"] = $deletion_management;
+		$this->config["deletion_management_transient_duration"] = $deletion_management_transient_duration*1;
 		
 		if(!$_FILES['feuille_xslt']['error']){
 			$this->config['feuille_xslt'] = file_get_contents($_FILES['feuille_xslt']['tmp_name']);
@@ -245,12 +259,15 @@ class oai_source extends connecteur_out_source {
 		
 		//Vérifions que le statut proposé existe bien
 		$sql = "SELECT COUNT(1) > 0 FROM notice_statut WHERE id_notice_statut = ".($linked_status_to_deletion+0);
-		$status_exists = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$status_exists = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		if (!$status_exists)
 			$this->config["linked_status_to_deletion"] = 0;
 		
 		if (!$this->config["cache_complete_records_seconds"])
 			$this->config["cache_complete_records_seconds"] = 86400;
+		
+		if (($this->config["deletion_management"] == 1) && !$this->config["deletion_management_transient_duration"])
+			$this->config["deletion_management"] = 0;
 
 		//et maintenant les sets
 		if (!is_array($included_sets))
@@ -258,9 +275,9 @@ class oai_source extends connecteur_out_source {
 		array_walk($included_sets, create_function('&$a', '$a+=0;'));	//Virons ce qui n'est pas entier
 		//Virons ce qui n'est pas un index de set de notice
 		$sql = "SELECT connector_out_set_id FROM connectors_out_sets WHERE connector_out_set_type IN (".implode(",",$this->allowed_set_types).") AND connector_out_set_id IN (".implode(",", $included_sets).')';
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		$this->config["included_sets"] = array();
-		while($row=mysql_fetch_assoc($res)) {
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$this->config["included_sets"][] = $row["connector_out_set_id"];
 		}
 
@@ -282,6 +299,49 @@ class oai_source extends connecteur_out_source {
 		}
 		
 		return;
+	}
+	
+	/**
+	 * Nettoie la table des enregistrements OAI supprimés
+	 */
+	static public function clean_out_oai_deleted_records() {
+		global $dbh;
+
+		$sets_configs = array();
+		// On récupère les configurations des sources du connecteur oai
+		$query = "select connectors_out_source_config from connectors_out_sources where connectors_out_sources_connectornum = 3";
+		$result = pmb_mysql_query($query, $dbh);
+		if ($result && pmb_mysql_num_rows($result)) {
+			while ($source = pmb_mysql_fetch_object($result)) {
+				$source_config = unserialize($source->connectors_out_source_config);
+				// On vérifie qu'on utilise la gestion de suppression et que l'on a des sets associés à la source
+				if (!$source_config['link_status_to_deletion'] && isset($source_config['included_sets'])) {
+					foreach ($source_config['included_sets'] as $set) {
+						if (!isset($sets_configs[$set])) {
+							$sets_configs[$set] = array(
+									'deletion_management' => $source_config['deletion_management'],
+									'deletion_management_transient_duration' => 0
+							);
+						} else if ($source_config['deletion_management'] > $sets_configs[$set]['deletion_management']) {
+							$sets_configs[$set]['deletion_management'] = $source_config['deletion_management'];
+						}
+						if (($sets_configs[$set]['deletion_management'] == 1) && ($source_config['deletion_management_transient_duration'] > $sets_configs[$set]['deletion_management_transient_duration'])) {
+							$sets_configs[$set]['deletion_management_transient_duration'] = $source_config['deletion_management_transient_duration'];
+						}
+					}
+				}
+			}
+		}
+		// On passe à la suppression !
+		foreach ($sets_configs as $set_id => $set) {
+			if ($set['deletion_management'] != 2) {
+				$query = "delete from connectors_out_oai_deleted_records where num_set = ".$set_id;
+				if ($set['deletion_management'] == 1) {
+					$query .= " and timestampdiff(second, deletion_date, now()) > ".$set['deletion_management_transient_duration'];
+				}
+				pmb_mysql_query($query, $dbh);
+			}
+		}
 	}
 }
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: start_export_generique.php,v 1.2 2009-09-01 13:43:33 mbertin Exp $
+// $Id: start_export_generique.php,v 1.3 2015-04-03 11:16:22 jpermanne Exp $
 
 //Exécution de l'export
 $base_path = "../..";
@@ -54,7 +54,7 @@ else
 
 //Initialisation si première fois
 if ($first != 1) {
-	//mysql_query("delete from import_marc");
+	//pmb_mysql_query("delete from import_marc");
 
 	$origine=str_replace(" ","",microtime());
 	$origine=str_replace("0.","",$origine);
@@ -144,8 +144,8 @@ if ($requete_where != "") {
 $requete.= " group by notice_id limit $n_current,200";
 
 //Nombre de notices correspondantes aux critères
-$resultat = mysql_query($requete_count);
-$n_notices = mysql_result($resultat, 0, 0);
+$resultat = pmb_mysql_query($requete_count);
+$n_notices = pmb_mysql_result($resultat, 0, 0);
 
 if ($first!=1) {
 	$_SESSION["param_export"]["notice_exporte"]="";
@@ -171,19 +171,19 @@ echo "<table align=center width=100%><tr><td style=\"border-width:1px;border-sty
 echo "<center>".sprintf($msg["export_progress"],$n_current,$n_notices,($n_notices - $n_current))."</center>";
 
 //Début d'export du lot
-$resultat = mysql_query($requete);
+$resultat = pmb_mysql_query($requete);
 
 //Recherche du no_notice le plus grand
 $requete_max="select max(no_notice) from import_marc where origine='$origine'";
-$resultat_max=mysql_query($requete_max);
-$no_notice=mysql_result($resultat_max,0,0)*1+1;
+$resultat_max=pmb_mysql_query($requete_max);
+$no_notice=pmb_mysql_result($resultat_max,0,0)*1+1;
 
 $z = 0;
 if($_SESSION["param_export"]["notice_exporte"]) $notice_exporte = $_SESSION["param_export"]["notice_exporte"]; 
 else $notice_exporte=array();
 if($_SESSION["param_export"]["bulletin_exporte"]) $bulletin_exporte = $_SESSION["param_export"]["bulletin_exporte"]; 
 else $bulletin_exporte=array();
-while (list ($id) = mysql_fetch_row($resultat)) {
+while (list ($id) = pmb_mysql_fetch_row($resultat)) {
 	if (!$specialexport) {
 		$e_notice=array();
 		$param = new export_param(EXP_SESSION_CONTEXT);	
@@ -204,13 +204,13 @@ while (list ($id) = mysql_fetch_row($resultat)) {
 	}
 	if (!is_array($e_notice)) {
 		$requete = "insert into import_marc (no_notice, notice, origine) values($no_notice,'".addslashes($e_notice)."', '$origine')";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		$no_notice++;
 		$z ++;
 	} else {
 		for($i=0; $i<sizeof($e_notice);$i++) {
 			$requete = "insert into import_marc (no_notice, notice, origine) values($no_notice,'".addslashes($e_notice[$i])."', '$origine')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$no_notice++;
 		}
 		$z ++;

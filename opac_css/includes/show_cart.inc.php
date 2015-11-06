@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: show_cart.inc.php,v 1.44.2.7 2015-07-08 07:44:42 jpermanne Exp $
+// $Id: show_cart.inc.php,v 1.56 2015-07-08 07:42:01 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -111,16 +111,58 @@ if (count($cart_)) {
 	}
 		
 	print "
-		<input type='button' id='show_cart_empty' class='bouton' value=\"".$msg["show_cart_empty"]."\" title=\"".$msg["show_cart_empty_title"]."\" onClick=\"document.location='./index.php?lvl=show_cart&raz_cart=1'\" />&nbsp;
-		<input type='button' id='show_cart_del_checked' class='bouton' value=\"".$msg["show_cart_del_checked"]."\" title=\"".$msg["show_cart_del_checked_title"]."\" onClick=\"document.cart_form.submit();\" />&nbsp;
-		<input type='button' id='show_cart_print' class='bouton' value=\"".$msg["show_cart_print"]."\" title=\"".$msg["show_cart_print_title"]."\" onClick=\"w=window.open('print.php?lvl=cart','print_window','width=500, height=750,scrollbars=yes,resizable=1'); w.focus();\" />&nbsp;
+		<input type='button' id='show_cart_empty' class='bouton' value=\"".$msg["show_cart_empty"]."\" title=\"".$msg["show_cart_empty_title"]."\" onClick=\"document.location='./index.php?lvl=show_cart&raz_cart=1'\" /><span class=\"espaceCartAction\">&nbsp;</span>
+		<input type='button' id='show_cart_del_checked' class='bouton' value=\"".$msg["show_cart_del_checked"]."\" title=\"".$msg["show_cart_del_checked_title"]."\" onClick=\"document.cart_form.submit();\" /><span class=\"espaceCartAction\">&nbsp;</span>
+		<input type='button' id='show_cart_print' class='bouton' value=\"".$msg["show_cart_print"]."\" title=\"".$msg["show_cart_print_title"]."\" onClick=\"w=window.open('print.php?lvl=cart','print_window','width=500, height=750,scrollbars=yes,resizable=1'); w.focus();\" /><span class=\"espaceCartAction\">&nbsp;</span>
 		<input type='button' id='show_cart_checked_all' class='bouton' value=\"".$msg["show_cart_check_all"]."\" title=\"".$msg["show_cart_check_all"]."\" onClick=\"check_uncheck_all_cart();\" />
 		$print_export_get_form_tpl $print_export_get_form_bt_tpl
 	";
 
 	
+	if($opac_allow_download_docnums) {
+		print "
+		 <script type='text/javascript' >
+			function download_docnum() {
+				var url='./ajax.php?module=ajax&categ=download_docnum&sub=gen_list';
+				window.open(url);
+				
+			}
+			function download_docnum_notice_checked() {
+				var is_check=false;
+				var elts = document.getElementsByName('notice[]') ;
+				var elts_chk = '';
+				var elts_cnt  = (typeof(elts.length) != 'undefined')
+		                  ? elts.length
+		                  : 0;
+				if (elts_cnt) {
+					for (var i = 0; i < elts_cnt; i++) { 		
+						if (elts[i].checked) {
+							if (elts_chk == '') {
+								elts_chk += elts[i].value;
+							} else {
+								elts_chk += ','+elts[i].value;
+							}
+						}
+					}
+				}
+				if(elts_chk != '') {
+					is_check=true;
+				} 
+				if(!is_check){
+					alert('".$msg["docnum_download_no_ck"]."');
+					return false;
+				}
+				var url='./ajax.php?module=ajax&categ=download_docnum&sub=gen_list';
+				window.open(url+'&select_noti='+elts_chk);
+			}	
+		</script>
+		";
+		print "<br /><br /><input type='button' id='docnum_download_caddie' class='bouton' value=\"".$msg["docnum_download_caddie"]."\" title=\"".$msg["docnum_download_caddie_title"]."\" onClick=\"download_docnum();\" /><span class=\"espaceCartAction\">&nbsp;</span>
+			<input type='button' id='docnum_download_checked' class='bouton' value=\"".$msg["docnum_download_checked"]."\" title=\"".$msg["docnum_download_checked_title"]."\" onClick=\"download_docnum_notice_checked();\" />
+			<div id='http_response'></div>";
+	}
 	if($opac_shared_lists && $allow_liste_lecture && $id_empr){
-		print "<br /><br /><input type='button' id='list_lecture_transform_caddie' class='bouton' value=\"".$msg["list_lecture_transform_caddie"]."\" title=\"".$msg["list_lecture_transform_caddie_title"]."\" onClick=\"document.location='./index.php?lvl=show_list&sub=transform_caddie'\" />&nbsp;
+		print "<br /><br /><input type='button' id='list_lecture_transform_caddie' class='bouton' value=\"".$msg["list_lecture_transform_caddie"]."\" title=\"".$msg["list_lecture_transform_caddie_title"]."\" onClick=\"document.location='./index.php?lvl=show_list&sub=transform_caddie'\" /><span class=\"espaceCartAction\">&nbsp;</span>
 			<input type='button' id='list_lecture_transform_checked' class='bouton' value=\"".$msg["list_lecture_transform_checked"]."\" title=\"".$msg["list_lecture_transform_checked_title"]."\" onClick=\"document.cart_form.action='./index.php?lvl=show_list&sub=transform_check';if(confirm_transform()) document.cart_form.submit(); else return false;\" />";
 	}
 	if ($opac_show_suggest && $opac_allow_multiple_sugg && $allow_sugg && $id_empr) {
@@ -151,14 +193,14 @@ if (count($cart_)) {
 		";
 		print "<br /><br />";
 		print "<input type='button' id='transform_caddie_to_multisugg' class='bouton' value=\"".$msg["transform_caddie_to_multisugg"]."\" title=\"".$msg["transform_caddie_to_multisugg_title"]."\" onClick=\"document.getElementById('div_src_sugg').style.display='';\" />";
-		print "&nbsp;<input type='button' id='transform_caddie_notice_to_multisugg' class='bouton' value=\"".$msg["transform_caddie_notice_to_multisugg"]."\" title=\"".$msg["transform_caddie_notice_to_multisugg_title"]."\" onClick=\"if(notice_checked()){ document.getElementById('div_src_sugg').style.display='';} else return false; \" />";		
+		print "<span class=\"espaceCartAction\">&nbsp;</span><input type='button' id='transform_caddie_notice_to_multisugg' class='bouton' value=\"".$msg["transform_caddie_notice_to_multisugg"]."\" title=\"".$msg["transform_caddie_notice_to_multisugg_title"]."\" onClick=\"if(notice_checked()){ document.getElementById('div_src_sugg').style.display='';} else return false; \" />";		
 		print "<div class='row' id='div_src_sugg' style='display:none' >";
 		print "<label class='etiquette'>".$msg['empr_sugg_src'].": </label>";
 		//Affichage du selecteur de source
 		$req = "select * from suggestions_source order by libelle_source";
-		$res= mysql_query($req,$dbh);
+		$res= pmb_mysql_query($req,$dbh);
 		$option = "<option value='0' selected>".htmlentities($msg['empr_sugg_no_src'],ENT_QUOTES,$charset)."</option>";
-		while(($src=mysql_fetch_object($res))){
+		while(($src=pmb_mysql_fetch_object($res))){
 			$option .= "<option value='".$src->id_source."' $selected >".htmlentities($src->libelle_source,ENT_QUOTES,$charset)."</option>";
 		}
 		$selecteur = "<select id='sug_src' name='sug_src'>".$option."</select>";
@@ -174,7 +216,7 @@ if (count($cart_)) {
 			print "<input type='button' id='show_cart_reserve' class='bouton' value=\"".$msg["show_cart_reserve"]."\" title=\"".$msg["show_cart_reserve_title"]."\" 
 					onClick=\"
 						w=window.open('./do_resa.php?lvl=resa_cart&sub=resa_cart','doresa','scrollbars=yes,width=900,height=300,menubar=0,resizable=yes'); w.focus(); return false;
-					\" />&nbsp;
+					\" /><span class=\"espaceCartAction\">&nbsp;</span>
 
 				   <input type='button' id='show_cart_reserve_checked' class='bouton' value=\"".$msg["show_cart_reserve_checked"]."\" title=\"".$msg["show_cart_reserve_checked_title"]."\" 
 					onClick=\"
@@ -205,7 +247,7 @@ if (count($cart_)) {
 		}else{
 			print "<input type='button' id='show_cart_reserve' class='bouton' value=\"".$msg["show_cart_reserve"]."\" title=\"".$msg["show_cart_reserve_title"]."\" onClick=\"
 						document.location='./do_resa.php?lvl=resa_cart&sub=resa_cart';
-					\" />&nbsp;
+					\" /><span class=\"espaceCartAction\">&nbsp;</span>
 				   <input type='button' id='show_cart_reserve_checked' class='bouton' value=\"".$msg["show_cart_reserve_checked"]."\" title=\"".$msg["show_cart_reserve_checked_title"]."\" onClick=\"
 						var notice='';
 						var data=document.forms['cart_form'].elements['notice[]'];
@@ -253,9 +295,9 @@ if (count($cart_)) {
 		$sql="select notice_id from notices where notice_id in ('".implode("','",$cart_)."') order by tit1";
 	}
 
-	$res=mysql_query($sql,$dbh);
+	$res=pmb_mysql_query($sql,$dbh);
 	$cart_=array(); 
-	while ($r=mysql_fetch_object($res)) {			
+	while ($r=pmb_mysql_fetch_object($res)) {			
 		$cart_[]=$r->notice_id;
 	}	
 	if($cart_ext) $cart_ = array_merge($cart_,$cart_ext);
@@ -271,12 +313,12 @@ if (count($cart_)) {
 				$sql="select 1 from origine_notice,notices where notice_id = '$cart_[$z]' and origine_catalogage = orinot_id and orinot_diffusion='1' ";	 	 
 			} else {
 				$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes(substr($cart_[$z],2));
-				$myQuery = mysql_query($requete, $dbh);
-				$source_id = mysql_result($myQuery, 0, 0);				
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				$source_id = pmb_mysql_result($myQuery, 0, 0);				
 				$sql="select 1 from entrepot_source_$source_id where recid='".addslashes(substr($cart_[$z],2))."' group by ufield,usubfield,field_order,subfield_order,value";
 			}	
-			$res=mysql_query($sql,$dbh);
-			if ($ligne=mysql_fetch_array($res)) 
+			$res=pmb_mysql_query($sql,$dbh);
+			if ($ligne=pmb_mysql_fetch_array($res)) 
 				$nb_fiche++;
 		}
 		if ($nb_fiche!=$nb_fiche_total) {
@@ -297,7 +339,7 @@ if (count($cart_)) {
 			$selector_exp .= "<option value='".$exp[$i]["ID"]."'>".$exp[$i]["NAME"]."</option>";
 		}
 		$selector_exp .= "</select>" ;
-		print sprintf($msg[show_cart_export]."&nbsp;",$selector_exp.$radio);
+		print sprintf($msg[show_cart_export]."<span class=\"espaceCartAction\">&nbsp;</span>",$selector_exp.$radio);
 		if ($opac_export_allow_expl) print "<input type='hidden' name=keep_expl value=\"1\" />";
 		print "<script type='text/javascript' >
 			function getNoticeSelected(){
@@ -319,7 +361,7 @@ if (count($cart_)) {
 				return true;
 			}
 		</script>";
-		print "&nbsp;<input type='button' class='bouton' value=\"".$msg["show_cart_export_ok"]."\" onClick=\"$js_export_partiel if(getNoticeSelected()){ document.location='./export.php?action=export&typeexport='+document.export_form.typeexport.options[top.document.export_form.typeexport.selectedIndex].value+getNoticeSelected();}}\" />";
+		print "<span class=\"espaceCartAction\">&nbsp;</span><input type='button' class='bouton' value=\"".$msg["show_cart_export_ok"]."\" onClick=\"$js_export_partiel if(getNoticeSelected()){ document.location='./export.php?action=export&typeexport='+document.export_form.typeexport.options[top.document.export_form.typeexport.selectedIndex].value+getNoticeSelected();}}\" />";
 		print "</form>";
 		}
 	}
@@ -336,7 +378,7 @@ if (count($cart_)) {
 		print str_replace("!!page_en_cours!!","lvl=show_cart",$affich_tris_result_liste);
 	
 	if ($_SESSION["last_sortnotices"]!="")
-		print " ".$msg['tri_par']." ".$sort->descriptionTriParId($_SESSION["last_sortnotices"])."&nbsp;"; 
+		print " ".$msg['tri_par']." ".$sort->descriptionTriParId($_SESSION["last_sortnotices"])."<span class=\"espaceCartAction\">&nbsp;</span>"; 
 
 	print "<blockquote>";
 	

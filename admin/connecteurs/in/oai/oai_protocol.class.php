@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: oai_protocol.class.php,v 1.23.2.2 2015-03-16 13:37:36 dbellamy Exp $
+// $Id: oai_protocol.class.php,v 1.25 2015-03-16 13:44:18 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -15,17 +15,17 @@ require_once($class_path."/xml_dom.class.php");
  * \author Florent TETART
  * \date 2008
  */
- 
+
 //Gestion des dates
 /**
  * \brief Gestion simplifiée des dates selon la norme iso8601
- * 
- * Conversion réciproque des dates format unix en dates au format iso8601 
+ *
+ * Conversion réciproque des dates format unix en dates au format iso8601
  * @author Florent TETART
  */
 class iso8601 {
 	var $granularity; /*!< \brief Granularité courante des dates en format iso8601 : YYYY-MM-DD ou YYYY-MM-DDThh:mm:ssZ */
-	
+
 	/**
 	 * \brief Constructeur
 	 * @param string $granularity Granularité des dates manipulées : YYYY-MM-DD ou YYYY-MM-DDThh:mm:ssZ
@@ -33,7 +33,7 @@ class iso8601 {
 	function iso8601($granularity="YYYY-MM-DD") {
 		$this->granularity=$granularity;
 	}
-	
+
 	/**
 	 * \brief Conversion d'une date unix (nomnbres de secondes depuis le 01/01/1970) en date au format iso8601 selon la granularité
 	 * @param integer $time date au format unix (nombres de secondes depuis le 01/01/1970)
@@ -51,7 +51,7 @@ class iso8601 {
 		$date=date($granularity,$time);
 		return $date;
 	}
-	
+
 	/**
 	 * \brief Conversion d'une date au format iso8601 en date au format unix (nomnbres de secondes depuis le 01/01/1970) selon la granularité
 	 * @param string $date date au format iso8601 YYYY-MM-DD ou YYYY-MM-DDThh:mm:ssZ selon la granularité
@@ -60,7 +60,7 @@ class iso8601 {
 	function iso8601_to_unixtime($date) {
 		$parts=explode("T",$date);
 		if (count($parts)==2) {
-			$day=$parts[0]; 
+			$day=$parts[0];
 			$time=$parts[1];
 		} else {
 			$day=$parts[0];
@@ -90,14 +90,14 @@ class oai_record {
 	var $handler;			//Handler pour parser les métadatas
 	var $prefix;			//Forçage du handler demandé
 	var $base_path;			//Chemin de base pour les feuilles XSLT
-	var $xslt_transform;	//Feuille de style pour transformer l'enregistrement en unimarc	
+	var $xslt_transform;	//Feuille de style pour transformer l'enregistrement en unimarc
 	var $error;
 	var $error_message;
 	var $charset;
-	
+
 	/**
 	 * \brief Instanciation de l'enregistrement OAI
-	 * 
+	 *
 	 * Créé une représentation d'un enregistrement OAI et le transforme en uni_marc si possible
 	 */
 	function oai_record($record,$charset="iso-8859-1",$base_path="",$prefix="",$xslt_transform="",$sets_names="") {
@@ -106,7 +106,7 @@ class oai_record {
 		$this->prefix=$prefix;
 		$this->base_path=$base_path;
 		$this->xslt_transform=$xslt_transform;
-		
+
 		$precord=new xml_dom('<?xml version="1.0" encoding="'.$charset.'"?>'.$record,$charset);
 		if ($precord->error) {
 			$this->error=true;
@@ -121,7 +121,7 @@ class oai_record {
 			$this->metadata=$precord->get_value("record/metadata");
 			//About
 			$this->about=$precord->get_value("record/about");
-			
+
 			$nmeta=$precord->get_node("record/metadata");
 			//Conversion éventuelle en unimarc
 			if (!$this->prefix) {
@@ -148,7 +148,7 @@ class oai_record {
 					$setName["CHILDS"][0]["TYPE"]=2;
 					$hd["CHILDS"][]=$setName;
 				}
-			}	
+			}
 			//Récupération de la feuille xslt si elle n'a pas été fournie
 			if (!$this->xslt_transform) {
 				if (file_exists($this->base_path."/".$this->handler.".xsl")) {
@@ -162,10 +162,10 @@ class oai_record {
 			if ($this->prefix=="pmb_xml_unimarc") $this->unimarc="<?xml version='1.0' encoding='".$this->charset."'?>\n<unimarc>\n".$this->metadata."</unimarc>";
 		}
 	}
-	
+
 	function to_unimarc($metatdata) {
 		//$xsl=file_get_contents("/home/ftetart/public_html/php_dev/admin/connecteurs/in/oai/dc2uni.xsl");
-		
+
 		/* Allocation du processeur XSLT */
 		$xh = xslt_create();
 		xslt_set_encoding($xh, $this->charset);
@@ -176,7 +176,7 @@ class oai_record {
 	   	  '/_xml' => $notice,
 	   	  '/_xsl' => $this->xslt_transform
 		);
-		$result = xslt_process($xh, 'arg:/_xml', 'arg:/_xsl', NULL, $arguments); 
+		$result = xslt_process($xh, 'arg:/_xml', 'arg:/_xsl', NULL, $arguments);
 		return $result;
 	}
 }
@@ -201,7 +201,7 @@ class oai_parser {
 		"ListRecords"=>"record",
 		"ListSets"=>"set"
 	);
-	
+
 	//Fonctions appelées lors du parse d'une réponse
 	function oai_startElement($parser, $name, $attrs) {
 		$this->laction="open";
@@ -267,7 +267,7 @@ class oai_parser {
 						if ($this->verb!="Identify")
 							$this->cur_elt="";
 					}
-				} 
+				}
 				if (($name=="resumptionToken")&&($this->depth==2)) {
 					$this->rtoken["expirationDate"]=$attrs["expirationDate"];
 					$this->rtoken["completeListSize"]=$attrs["completeListSize"];
@@ -278,7 +278,7 @@ class oai_parser {
 			   		// 	$this->cur_elt.="  ";
 					//}
 					$this->cur_elt.="<$name";
-					foreach($attrs as $key=>$val) { 
+					foreach($attrs as $key=>$val) {
 						$this->cur_elt.=" ".$key."=\"".htmlspecialchars($val,ENT_NOQUOTES,$this->charset)."\" ";
 					}
 					$this->cur_elt.=">";
@@ -291,7 +291,7 @@ class oai_parser {
 		}
 		$this->depth++;
 	}
-	
+
 	function oai_charElement($parser,$char) {
 		if (($this->laction=="open")&&(!$this->error)) {
 			if ($this->depth<=2) {
@@ -305,8 +305,8 @@ class oai_parser {
 			}
 		}
 	}
-	
-	function oai_endElement($parser, $name) {  	  
+
+	function oai_endElement($parser, $name) {
 		$this->laction="close";
 		if (!$this->error) {
 			if ($this->depth<=2) {
@@ -346,7 +346,7 @@ class oai_parser {
 		}
 		$this->depth--;
 	}
-	
+
 	function oai_parser($rcallback="",$charset="iso-8859-1") {
 		$this->depth=0;
 		$this->rtoken="";
@@ -371,24 +371,24 @@ class oai_protocol {
     var $time_out;				//Temps maximum d'interrogation de la source
     var $xml_parser;			//Ressource parser
     var $retry_after;			//Délais avant rééssai
-    					
-	var $remainder = ''; 
-    
+
+	var $remainder = '';
+
     function oai_protocol($charset="iso-8859-1",$url="",$time_out="",$clean_base_url=0) {
     	$this->charset=$charset;
     	$this->time_out=$time_out;
     	$this->clean_base_url=$clean_base_url;
     	if ($url) $this->analyse_response($url);
     }
-    
+
     function parse_xml($ch,$data) {
-    	 
+
     	$l=strlen($data);
     	$data = $this->utf8_to_xml($data);
     	if (!$this->retry_after) {
 	    	//Parse de la ressource
 	    	if (!xml_parse($this->xml_parser, $data)) {
-	       		$this->error_message=sprintf("XML error: %s at line %d",xml_error_string(xml_get_error_code($this->xml_parser)),xml_get_current_line_number($this->xml_parser));       		
+	       		$this->error_message=sprintf("XML error: %s at line %d",xml_error_string(xml_get_error_code($this->xml_parser)),xml_get_current_line_number($this->xml_parser));
 	       		$this->error=true;
 	       		return $l;
 	    	} else if ($s->error) {
@@ -399,7 +399,7 @@ class oai_protocol {
     	}
     	return $l;
 	}
-    
+
 	//suppression de caractères interdits en xml
 	function utf8_to_xml($data) {
 		$t = $this->remainder.$data;
@@ -410,15 +410,15 @@ class oai_protocol {
 		while (!$done && $i<4) {
 			$r = preg_replace('/[^\x{9}\x{A}\x{D}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}\x{010000}-\x{10FFFF}]/u','', substr($t,0,$l-$i));
 			if ($r) {
-				$done=true;	
+				$done=true;
 			} else {
 				$this->remainder = substr($t,$l-$i-1);
-				$i++;		
-			} 
+				$i++;
+			}
 		 }
-		return $r;		
+		return $r;
 	}
-	
+
     function verif_header($ch,$headers) {
     	$h=explode("\n",$headers);
     	for ($i=0; $i<count($h); $i++) {
@@ -427,7 +427,7 @@ class oai_protocol {
     	}
     	return strlen($headers);
     }
-    
+
     //Analyse d'une resource
     function analyse_response($url,$rcallback="") {
 
@@ -438,24 +438,24 @@ class oai_protocol {
     	if ($url!=$this->next_request) $this->records=array();
     	$this->next_request="";
     	$this->rtoken="";
-    	
+
     	//Initialisation de la ressource
     	$this->remainder='';
     	$ch = curl_init();
 		// configuration des options CURL
     	curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_WRITEFUNCTION,array(&$this,"parse_xml"));
-		curl_setopt($ch, CURLOPT_HEADERFUNCTION,array(&$this,"verif_header"));	
+		curl_setopt($ch, CURLOPT_HEADERFUNCTION,array(&$this,"verif_header"));
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		if ($this->time_out) {
 			curl_setopt($ch, CURLOPT_TIMEOUT,$this->time_out);
 		}
     	//Réinitialisation du "retry_after"
-		$this->retry_after="";    	
-    	
-		configurer_proxy_curl($ch);	
-		
+		$this->retry_after="";
+
+		configurer_proxy_curl($ch);
+
     	//Explosion des arguments de la requête pour ceux qui ne respectent pas la norme !!
     	$query=substr($url,strpos($url,"?")+1);
     	$query=explode("&",$query);
@@ -465,13 +465,13 @@ class oai_protocol {
     			break;
     		}
     	}
-    	
+
     	//Initialisation de l'environnement d'état du parser
 		$s=new oai_parser($rcallback,$this->charset);
-    	
+
     	//Si le verb est affecté, on prérempli histoire d'aider un peu... :-)
     	if ($verb) $s->verb=$verb;
-    	
+
     	//Initialisation du parser
 		$this->xml_parser=xml_parser_create("utf-8");
 		xml_set_object($this->xml_parser,$s);
@@ -479,12 +479,12 @@ class oai_protocol {
 		xml_parser_set_option( $this->xml_parser, XML_OPTION_SKIP_WHITE, 1 );
 		xml_set_element_handler($this->xml_parser, "oai_startElement", "oai_endElement");
 		xml_set_character_data_handler($this->xml_parser,"oai_charElement");
-		
+
 		$n_try=0;
 		$cexec=curl_exec($ch);
-	
+
 		while (($cexec)&&($this->retry_after)&&($n_try<3)) {
-			$n_try++; 
+			$n_try++;
 			sleep((int)$this->retry_after*1);
 			$this->retry_after="";
 			$cexec=curl_exec($ch);
@@ -496,11 +496,11 @@ class oai_protocol {
 		xml_parser_free($this->xml_parser);
 		$this->xml_parser="";
 		curl_close($ch);
-		
+
 		if ($this->error) {
 			$this->error_message.=" - ".$url;
-			unset($s); 
-			return; 
+			unset($s);
+			return;
 		}
 		//Affectation des éléments de réponse
 		if (stripos($this->charset,'iso-8859-1')!==false) $c=true; else $c=false;
@@ -519,13 +519,13 @@ class oai_protocol {
 		}
 		$this->verb=$c?utf8_decode($s->tree[1][1]["ATTRIB"]["verb"]):$s->tree[1][1]["ATTRIB"]["verb"];
 		$this->rtoken=$s->rtoken;
-		
+
 		if ($s->tree[1][2]["NAME"]=="error") {
 			$this->error=true;
 			$this->error_message="OAI Error, the server tell : ".$s->tree[1][2]["ATTRIB"]["code"]." : ".$s->tree[1][2]["CHAR"];
 			$this->error_oai_code=$s->tree[1][2]["ATTRIB"]["code"];
 		}
-		
+
 		//Si c'est la requête identify
 		if ($this->verb=="Identify") {
 			$this->records[0]=$c?utf8_decode($s->cur_elt):$s->cur_elt;
@@ -540,7 +540,7 @@ class oai_protocol {
 		if ((is_array($this->rtoken)) && ($this->rtoken["token"])) {
 			$t_nr = explode('?',$this->request['URL_BASE']);
 			$this->next_request=$t_nr[0]."?verb=".$s->verb."&resumptionToken=".rawurlencode($this->rtoken["token"]);
-		}	
+		}
 		//Supression de l'environnement d'état !
 		unset($s);
     }
@@ -570,7 +570,7 @@ class oai20 {
 	var $unsupported_features;	//Fonctionalités non supportées (SETS)
 	var $last_query;			//Dernière requête effectué
 	var $time_out;				//Time out total avant erreur d'une commande
-	
+
 	function oai20($url_base,$charset="iso-8859-1",$time_out="",$clean_base_url=0) {
 		//Evitons d'afficher les vilains warning qui trainent
 		ini_set('display_errors', 0);
@@ -587,7 +587,7 @@ class oai20 {
 			return;
 		} else {
 			$this->no_connect=false;
-			//Parse 
+			//Parse
 			$identity=new xml_dom('<?xml version="1.0" encoding="'.$this->charset.'"?>'."<Identity>".$this->prt->records[0]."</Identity>");
 			$this->repositoryName=$identity->get_value("Identity/repositoryName");
 			$this->baseURL=$identity->get_value("Identity/baseURL");
@@ -606,28 +606,28 @@ class oai20 {
 			//Récupération des metadatas et sets
 			$this->list_sets();
 			if ($this->error) {
-				$this->no_connect=true; 
+				$this->no_connect=true;
 			} else {
 				$this->list_metadata_formats();
 				if ($this->error)
-					$this->no_connect=true; 
+					$this->no_connect=true;
 			}
-				
+
 			//if ($node) print $identity->get_datas($node);
 			//print $this->prt->records[0];
 		}
 	}
-	
+
 	function set_clean_base_url($clean_base_url) {
 		$this->clean_base_url=$clean_base_url;
 	}
-	
+
 	function clear_error() {
 		$this->error=false;
 		$this->error_message="";
 		$this->error_oai_code="";
 	}
-	
+
 	function send_request($url,$callback="",$callback_progress="") {
 		$this->last_query=$url;
 		$this->prt->analyse_response($url,$callback);
@@ -651,11 +651,11 @@ class oai20 {
 			$this->error_oai_code=$this->prt->error_oai_code;
 		}
 	}
-	
+
 	function has_feature($feature) {
 		return (!$this->unsupported_features[$feature]);
 	}
-	
+
 	function check_metadata($metadata_prefix) {
 		//Vérification du metadata
 		$found=false;
@@ -667,7 +667,7 @@ class oai20 {
 		}
 		return $found;
 	}
-	
+
 	function list_sets($callback="",$callback_progress="") {
 		$this->clear_error();
 		$this->send_request($this->url_base."?verb=ListSets",$callback,$callback_progress);
@@ -688,7 +688,7 @@ class oai20 {
 						}
 						eval("\$this->h_sets".$path."[\"".$set[$j]."\"][\"NAME\"]=\$set_name;");
 					} else $this->error_message="Can't read record : ".$record->error_message;
-				} 
+				}
 			}
 		} else {
 			if ($this->error_oai_code=="noSetHierarchy") {
@@ -699,7 +699,7 @@ class oai20 {
 		asort($this->sets);
 		return $this->sets;
 	}
-	
+
 	function list_metadata_formats($identifier="",$callback="",$callback_progress="") {
 		$this->clear_error();
 		$url=$this->url_base."?verb=ListMetadataFormats";
@@ -723,7 +723,7 @@ class oai20 {
 		}
 		return $metadatas;
 	}
-	
+
 	function list_records($from,$until,$set,$metadata_prefix,$callback="",$callback_progress="") {
 		$this->clear_error();
 		$records=array();
@@ -751,7 +751,7 @@ class oai20 {
 		}
 		if (!$callback) return $records;
 	}
-	
+
 	function list_identifiers($from,$until,$set,$metadata_prefix,$callback="",$callback_progress="") {
 		$this->clear_error();
 		$records=array();
@@ -779,7 +779,7 @@ class oai20 {
 		}
 		if (!$callback) return $records;
 	}
-	
+
 	function get_record($identifier,$metadata_prefix,$callback="",$callback_progress="") {
 		$this->clear_error();
 		$record="";

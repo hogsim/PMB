@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: opac_views.class.php,v 1.1 2012-08-08 14:42:07 arenou Exp $
+// $Id: opac_views.class.php,v 1.2 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -49,9 +49,9 @@ class opac_views  extends quota {
 				</td>
 			</tr>";
 		$query = "select opac_view_id, opac_view_name from opac_views order by opac_view_name";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$form.="
 			<tr>";
 				$form.="

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serial_display.class.php,v 1.144.2.4 2015-05-21 09:44:23 jpermanne Exp $
+// $Id: serial_display.class.php,v 1.161 2015-07-16 10:03:11 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -13,6 +13,9 @@ require_once($class_path."/collstate.class.php");
 require_once($include_path."/notice_authors.inc.php");
 require_once($include_path."/notice_categories.inc.php");
 require_once($include_path."/explnum.inc.php");
+require_once("$class_path/authperso_notice.class.php");
+require_once("$class_path/map/map_objects_controler.class.php");
+require_once("$class_path/map_info.class.php");
 
 // récupération des codes de fonction
 if (!count($fonction_auteur)) {
@@ -70,6 +73,7 @@ class serial_display {
 	var $print_mode = 0;				// 0 affichage normal
 										// 1 affichage impression sans liens
 										// 2 affichage impression avec liens sur documents numeriques
+										// 4 affichage email : sans lien sauf url associée
 	var $langues = array();
 	var $languesorg = array();
 	var $aff_statut = '' ; 				// carré de couleur pour signaler le statut de la notice
@@ -82,6 +86,7 @@ class serial_display {
 	var $serial_nb_articles = 0;
 	var $serial_nb_etats_collection = 0;
 	var $serial_nb_abo_actif = 0;
+	var $show_map=1;
 
 	// constructeur
 	function serial_display (	$id,						// $id = id de la notice à afficher
@@ -99,6 +104,7 @@ class serial_display {
 								$print=0,					// $print = 0 affichage normal
 															//			1 affichage impression sans liens
 															//			2 affichage impression avec liens sur documents numeriques
+															// 			4 affichage email : sans lien sauf url associée
 
 								$show_explnum=1,
 								$show_statut=0,
@@ -106,10 +112,14 @@ class serial_display {
 								$draggable=0,
 								$ajax_mode=0 ,
 								$anti_loop='',
-								$no_link=false
+								$no_link=false,
+								$show_map=1
 								) {
 
 		global $pmb_recherche_ajax_mode;
+		
+		$this->show_map=$show_map;
+		
 	  	if($pmb_recherche_ajax_mode){
 			$this->ajax_mode=$ajax_mode;
 		  	if($this->ajax_mode) {
@@ -195,8 +205,7 @@ class serial_display {
 			$this->lien_explnum = "";
 			$this->drag="";
 		}
-
-
+		
 		$this->do_header();
 
 		if($level)
@@ -206,14 +215,14 @@ class serial_display {
 		if(!$this->ajax_mode) {
 			$this->childs=array();
 			$requete="select num_notice as notice_id,relation_type from notices_relations,notices where linked_notice=".$this->notice_id." and num_notice=notice_id order by relation_type, rank,create_date";
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				while ($r=mysql_fetch_object($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				while ($r=pmb_mysql_fetch_object($resultat)) {
 					$this->childs[$r->relation_type][]=$r->notice_id;
 				}
 			}
 		}
-
+				
 		switch($level) {
 			case 0:
 				// là, c'est le niveau 0 : juste le header
@@ -221,6 +230,13 @@ class serial_display {
 				$this->result = $this->header;
 				break;
 			default:
+				global $pmb_map_activate;
+				$this->map=array();
+				if($pmb_map_activate){
+					$ids[]=$this->notice_id;
+					$this->map=new map_objects_controler(TYPE_RECORD,$ids);
+					$this->map_info=new map_info($this->notice_id);
+				}		
 				// niveau 1 et plus : header + isbd à générer
 				//$this->do_header();
 				if(!$this->ajax_mode) $this->do_isbd();
@@ -243,9 +259,9 @@ class serial_display {
 		$requete .= " AND c.bulletin_id=a.analysis_bulletin";
 		$requete .= " AND c.bulletin_notice=b.notice_id";
 		$requete .= " LIMIT 1";
-		$myQuery = mysql_query($requete, $dbh);
-		if (mysql_num_rows($myQuery)) {
-			$parent = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($myQuery)) {
+			$parent = pmb_mysql_fetch_object($myQuery);
 			$this->parent_title = $parent->tit1;
 			$this->parent_id = $parent->notice_id;
 			$this->code=$parent->code;
@@ -276,6 +292,7 @@ class serial_display {
 		// propriétés pour le selecteur de panier
 		$selector_prop = "toolbar=no, dependent=yes, width=500, height=400, resizable=yes, scrollbars=yes";
 		$cart_click = "onClick=\"openPopUp('".$base_path."/cart.php?object_type=NOTI&item=!!notice_id!!', 'cart', 600, 700, -2, -2, '$selector_prop')\"";
+		$cart_over_out = "onMouseOver=\"show_div_access_carts(event,!!notice_id!!);\" onMouseOut=\"set_flag_info_div(false);\"";
 		$current=$_SESSION["CURRENT"];
 		if ($current!==false) {
 			$print_action = "&nbsp;<a href='#' onClick=\"openPopUp('".$base_path."/print.php?current_print=$current&notice_id=!!notice_id!!&action_print=print_prepare','print',500,600,-2,-2,'scrollbars=yes,menubar=0'); w.focus(); return false;\"><img src='".$base_path."/images/print.gif' border='0' align='center' alt=\"".$msg["histo_print"]."\" title=\"".$msg["histo_print"]."\"/></a>";
@@ -300,7 +317,7 @@ class serial_display {
 
 		} else{
 			if(SESSrights & CATALOGAGE_AUTH){
-				$caddie="<img src='".$base_path."/images/basket_small_20x20.gif' align='middle' alt='basket' title=\"${msg[400]}\" $cart_click>";
+				$caddie="<img src='".$base_path."/images/basket_small_20x20.gif' align='middle' alt='basket' title=\"${msg[400]}\" $cart_click $cart_over_out>";
 			}else{
 				$caddie="";
 			}
@@ -335,6 +352,7 @@ class serial_display {
 		global $pmb_show_notice_id,$pmb_opac_url,$pmb_show_permalink;
 		global $sort_children;
 		global $tdoc;
+		global $thesaurus_concepts_active;
 
 		$this->isbd = $this->notice->tit1;
 
@@ -395,8 +413,12 @@ class serial_display {
 
 		$libelle_mention_resp = implode ("; ",$mention_resp) ;
 		if($libelle_mention_resp)
-			$this->isbd .= "&nbsp;/ ". $libelle_mention_resp ." " ;
-
+			$this->isbd .= "&nbsp;/ ". $libelle_mention_resp ." " ;		
+		
+		global $pmb_map_activate;
+		if($pmb_map_activate){
+			if($mapisbd=$this->map_info->get_isbd())	$this->isbd .=$mapisbd;
+		}
 		// zone de l'adresse (ne concerne que s1)
 		if ($this->notice->niveau_biblio == 's' && $this->notice->niveau_hierar == 1) {
 			if($this->notice->ed1_id) {
@@ -461,9 +483,9 @@ class serial_display {
 		//Recherche des notices parentes
 		if (!$this->no_link) {
 			$requete="select linked_notice, relation_type, rank, l.niveau_biblio as lnb, l.niveau_hierar as lnh from notices_relations, notices as l where num_notice=".$this->notice_id." and linked_notice=l.notice_id order by relation_type,rank";
-			$result_linked=mysql_query($requete) or die(mysql_error());
+			$result_linked=pmb_mysql_query($requete) or die(pmb_mysql_error());
 			//Si il y en a, on prépare l'affichage
-			if (mysql_num_rows($result_linked)) {
+			if (pmb_mysql_num_rows($result_linked)) {
 				global $relation_listup ;
 				if (!$relation_listup) $relation_listup=new marc_list("relationtypeup");
 			}
@@ -472,7 +494,7 @@ class serial_display {
 			$r_type_local="";
 			//Pour toutes les notices liées
 
-			while (($r_rel=mysql_fetch_object($result_linked))) {
+			while (($r_rel=pmb_mysql_fetch_object($result_linked))) {
 				//Pour avoir le lien par défaut
 				if (!$this->print_mode && (SESSrights & CATALOGAGE_AUTH)) $link_parent=$base_path.'/catalog.php?categ=isbd&id=!!id!!'; else $link_parent="";
 
@@ -494,9 +516,9 @@ class serial_display {
 				} else {
 					if($link_parent && $r_rel->lnb=='b' && $r_rel->lnh=='2'){
 						$requete="SELECT bulletin_id FROM bulletins WHERE num_notice='".$r_rel->linked_notice."'";
-						$res=mysql_query($requete);
-						if(mysql_num_rows($res)){
-							$link_parent=$base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".mysql_result($res,0,0);
+						$res=pmb_mysql_query($requete);
+						if(pmb_mysql_num_rows($res)){
+							$link_parent=$base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".pmb_mysql_result($res,0,0);
 						}
 					}
 					// dans les autres cas
@@ -507,7 +529,7 @@ class serial_display {
 				}
 
 				//Présentation différente si il y en a un ou plusieurs
-				if (mysql_num_rows($result_linked)==1) {
+				if (pmb_mysql_num_rows($result_linked)==1) {
 					$this->isbd.="<br /><b>".$relation_listup->table[$r_rel->relation_type]."</b> ".$aff."<br />";
 				} else {
 					if ($r_rel->relation_type!=$r_type_local) {
@@ -549,6 +571,11 @@ class serial_display {
 			return;
 		}
 		// début du niveau 2
+		
+		// map
+		if($pmb_map_activate && $this->show_map){
+			$this->isbd.=$this->map->get_map();
+		}				
 		// note générale
 		if($this->notice->n_gen)
 			$this->isbd .= "<br /><b>$msg[265]</b>:&nbsp;".nl2br(htmlentities($this->notice->n_gen,ENT_QUOTES, $charset));
@@ -573,8 +600,8 @@ class serial_display {
 		$categ_repetables = array() ;
 		if(!count($categories_top)) {
 			$q = "select num_thesaurus,id_noeud from noeuds where num_parent in(select id_noeud from noeuds where autorite='TOP') ";
-			$r = mysql_query($q, $dbh);
-			while($res = mysql_fetch_object($r)) {
+			$r = pmb_mysql_query($q, $dbh);
+			while($res = pmb_mysql_fetch_object($r)) {
 				$categories_top[]=$res->id_noeud;
 			}
 		}
@@ -590,9 +617,9 @@ class serial_display {
 			) as list_categ group by id_noeud";
 		if ($thesaurus_categories_affichage_ordre==1) $requete .= " order by ordre_vedette, ordre_categorie";
 
-		$result_categ=@mysql_query($requete);
-		if (mysql_num_rows($result_categ)) {
-			while($res_categ = mysql_fetch_object($result_categ)) {
+		$result_categ=@pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($result_categ)) {
+			while($res_categ = pmb_mysql_fetch_object($result_categ)) {
 				$libelle_thesaurus=$res_categ->libelle_thesaurus;
 				$categ_id=$res_categ->id_noeud 	;
 				$libelle_categ=$res_categ->categ_libelle ;
@@ -619,9 +646,9 @@ class serial_display {
 							AND noeuds.id_noeud = categories.num_noeud
 							order by p desc limit 1";
 
-						$result=@mysql_query($requete);
-						if (mysql_num_rows($result)) {
-							$parent = mysql_fetch_object($result);
+						$result=@pmb_mysql_query($requete);
+						if (pmb_mysql_num_rows($result)) {
+							$parent = pmb_mysql_fetch_object($result);
 							$anti_recurse[$parent->categ_id]=1;
 							$path_table[] = array(
 										'id' => $parent->categ_id,
@@ -633,9 +660,9 @@ class serial_display {
 									FROM noeuds, categories where id_noeud ='".$parent->categ_parent."'
 									AND noeuds.id_noeud = categories.num_noeud
 									order by p desc limit 1";
-								$result=@mysql_query($requete);
-								if (mysql_num_rows($result)) {
-									$parent = mysql_fetch_object($result);
+								$result=@pmb_mysql_query($requete);
+								if (pmb_mysql_num_rows($result)) {
+									$parent = pmb_mysql_fetch_object($result);
 									$anti_recurse[$parent->categ_id]=1;
 									$path_table[] = array(
 												'id' => $parent->categ_id,
@@ -703,6 +730,12 @@ class serial_display {
 			if($categ_repetables_aff) $tmpcateg_aff .= "<br />$categ_repetables_aff";
 		}
 		if ($tmpcateg_aff) $this->isbd .= "<br />$tmpcateg_aff";
+	
+		// Concepts
+		if ($thesaurus_concepts_active == 1) {
+			$index_concept = new index_concept($this->notice_id, TYPE_NOTICE);
+			$this->isbd .= $index_concept->get_isbd_display();
+		}
 
 		// fin du niveau 4
 		if($this->level == 4)
@@ -732,7 +765,10 @@ class serial_display {
 
 		//code (ISSN,...)
 		if ($this->notice->code) $this->isbd .="<br /><b>${msg[165]}</b>&nbsp;: ".$this->notice->code;
-
+		
+		$authperso = new authperso_notice($this->notice_id);
+		$this->isbd .=$authperso->get_notice_display();
+		
 		//Champs personalisés
 		$perso_aff = "" ;
 		if (!$this->p_perso->no_special_fields) {
@@ -770,10 +806,10 @@ class serial_display {
 
 						// il faut aller chercher le niveau biblio et niveau hierar de la notice liée
 						$requete_nbnh="select l.niveau_biblio as lnb, l.niveau_hierar as lnh, rank from notices as l join notices_relations on num_notice=notice_id where notice_id='".$child_notices[$i]."' ";
-						$r_rel=mysql_fetch_object(mysql_query($requete_nbnh));
+						$r_rel=pmb_mysql_fetch_object(pmb_mysql_query($requete_nbnh));
 						if($r_rel->rank != $i){
 							$req = "update notices_relations set rank='$i' where num_notice='".$child_notices[$i]."' and relation_type='".$rel_type."' and linked_notice='".$anti_loop[count($serial->anti_loop)-1]."'";
-							mysql_query($req,$dbh);
+							pmb_mysql_query($req,$dbh);
 						}
 						if ($r_rel->lnb=='a' && $r_rel->lnh=='2') {
 							// c'est un dépouillement de bulletin
@@ -781,7 +817,7 @@ class serial_display {
 							if(!$link_analysis){
 								$link_analysis=$base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=!!bul_id!!&art_to_show=!!id!!";
 							}
-							$serial = new serial_display($child_notices[$i], $level_fille, $link_serial, $link_analysis, $link_bulletin, "", $link_explnum_analysis, 0, 0, 1, 1,1,0,0,$anti_loop );
+							$serial = new serial_display($child_notices[$i], $level_fille, $link_serial, $link_analysis, $link_bulletin, "", $link_explnum_analysis, 0, 0, 1, 1 ,1,0,0,$anti_loop );
 
 							if((count($serial->anti_loop) == 1) && $sort_children){
 								//Drag pour trier les notices filles
@@ -868,7 +904,7 @@ class serial_display {
 		//Documents numériques
 		if ($this->show_explnum) {
 			$explnum = show_explnum_per_notice($this->notice_id, 0, $this->lien_explnum);
-			if ($explnum) $this->isbd .= "<br /><b>$msg[explnum_docs_associes]</b><br />".$explnum ;
+			if ($explnum) $this->isbd .= "<br /><b>$msg[explnum_docs_associes]</b> (".show_explnum_per_notice($this->notice->notice_id, 0, $this->lien_explnum,array(),true).")<br />".$explnum ;
 			if ($this->notice->niveau_biblio == 'a' && $this->notice->niveau_hierar == '2' && (SESSrights & CATALOGAGE_AUTH) && $this->bouton_explnum) $this->isbd .= "<br /><input type='button' class='bouton' value=' $msg[explnum_ajouter_doc] ' onClick=\"document.location='".$base_path."/catalog.php?categ=serials&analysis_id=$this->notice_id&sub=analysis&action=explnum_form&bul_id=$this->bul_id'\">" ;
 		}
 
@@ -927,7 +963,7 @@ function do_image(&$entree) {
 					$url_image_ok = str_replace("!!noticecode!!", $code_chiffre, $url_image) ;
 					$title_image_ok = htmlentities($pmb_book_pics_msg, ENT_QUOTES, $charset);
 				}
-				$image = "<img class='img_notice' src='".$url_image_ok."' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2'>";
+				$image = "<img class='img_notice' id='PMBimagecover".$this->notice_id."' src='".$url_image_ok."' title=\"".$title_image_ok."\" align='right' hspace='4' vspace='2'>";
 			}
 		} else $image="" ;
 		if ($image) {
@@ -948,27 +984,27 @@ function do_image(&$entree) {
 		$nb_notices=0;
 		if($this->notice->niveau_biblio=="s") {
 			$requete = "SELECT * FROM bulletins WHERE bulletin_notice=".$this->notice_id;
-			$Query = mysql_query($requete, $dbh);
-			$bulletins=mysql_num_rows($Query);
-			while (($row = mysql_fetch_array($Query))) {
+			$Query = pmb_mysql_query($requete, $dbh);
+			$bulletins=pmb_mysql_num_rows($Query);
+			while (($row = pmb_mysql_fetch_array($Query))) {
 				$requete2 = "SELECT count( * )  AS nb_notices FROM  analysis WHERE analysis_bulletin =".$row['bulletin_id'];
-				$Query2 = mysql_query($requete2, $dbh);
-				$analysis_array=mysql_fetch_array($Query2);
+				$Query2 = pmb_mysql_query($requete2, $dbh);
+				$analysis_array=pmb_mysql_fetch_array($Query2);
 				$nb_notices+=$analysis_array['nb_notices'];
 				$requete3 = "SELECT count( expL_id )  AS nb_expl FROM  exemplaires WHERE expl_bulletin =".$row['bulletin_id'];
-				$Query3 = mysql_query($requete3, $dbh);
-				$expl_array=mysql_fetch_array($Query3);
+				$Query3 = pmb_mysql_query($requete3, $dbh);
+				$expl_array=pmb_mysql_fetch_array($Query3);
 				$nb_expl+=$expl_array['nb_expl'];
 			};
 			$requete="SELECT COUNT(collstate_id) FROM collections_state WHERE id_serial='".$this->notice_id."'";
-			$Query=mysql_query($requete, $dbh);
-			if($Query && mysql_num_rows($Query)){
-				$this->serial_nb_etats_collection=mysql_result($Query,0,0);
+			$Query=pmb_mysql_query($requete, $dbh);
+			if($Query && pmb_mysql_num_rows($Query)){
+				$this->serial_nb_etats_collection=pmb_mysql_result($Query,0,0);
 			}
 			$requete="SELECT COUNT(abt_id) FROM abts_abts WHERE num_notice='".$this->notice_id."' AND date_fin > CURDATE()";
-			$Query=mysql_query($requete, $dbh);
-			if($Query && mysql_num_rows($Query)){
-				$this->serial_nb_abo_actif=mysql_result($Query,0,0);
+			$Query=pmb_mysql_query($requete, $dbh);
+			if($Query && pmb_mysql_num_rows($Query)){
+				$this->serial_nb_abo_actif=pmb_mysql_result($Query,0,0);
 			}
 			$this->serial_nb_bulletins=$bulletins;
 			$this->serial_nb_exemplaires=$nb_expl;
@@ -1025,9 +1061,9 @@ function do_image(&$entree) {
 
 		if ($this->notice->statut) {
 			$rqt_st = "SELECT class_html , gestion_libelle FROM notice_statut WHERE id_notice_statut='".$this->notice->statut."' ";
-			$res_st = mysql_query($rqt_st, $dbh);
-			$class_html = " class='".mysql_result($res_st, 0, 0)."' ";
-			if ($this->notice->statut>1) $txt = mysql_result($res_st, 0, 1) ;
+			$res_st = pmb_mysql_query($rqt_st, $dbh);
+			$class_html = " class='".pmb_mysql_result($res_st, 0, 0)."' ";
+			if ($this->notice->statut>1) $txt = pmb_mysql_result($res_st, 0, 1) ;
 			else $txt = "" ;
 		} else {
 			$class_html = " class='statutnot1' " ;
@@ -1182,18 +1218,22 @@ function do_image(&$entree) {
 				$this->header .= $this->notice->eformat;
 				$this->header .= "\">";
 				$this->header .= "</a>";
-			}
-			else {
+			}  elseif ($this->print_mode=='4') {
+				$this->header .= '<br />';
+				$this->header .= "<a href=\"".$this->notice->lien."\" target=\"__LINK__\">";
+				$this->header .= '<font size="-1">'.$this->notice->lien.'</font>';
+				$this->header .='</a>';	
+			}else {
 				$this->header .= '<br />';
 				$this->header .= '<font size="-1">'.$this->notice->lien.'</font>';
 			}
 		}
 		if (!$this->print_mode || $this->print_mode=='2' && !$no_aff_doc_num_image) {
 			$sql_explnum = "SELECT explnum_id, explnum_nom FROM explnum WHERE explnum_notice = ".$this->notice_id;
-			$explnums = mysql_query($sql_explnum);
-			$explnumscount = mysql_num_rows($explnums);
+			$explnums = pmb_mysql_query($sql_explnum);
+			$explnumscount = pmb_mysql_num_rows($explnums);
 			if ($explnumscount == 1) {
-				$explnumrow = mysql_fetch_object($explnums);
+				$explnumrow = pmb_mysql_fetch_object($explnums);
 				if (!$use_opac_url_base) $this->header .= "<a href=\"".$base_path."/doc_num.php?explnum_id=".$explnumrow->explnum_id."\" target=\"__LINK__\">";
 				else $this->header .= "<a href=\"".$opac_url_base."doc_num.php?explnum_id=".$explnumrow->explnum_id."\" target=\"__LINK__\">";
 				if (!$use_opac_url_base) $this->header .= "<img src=\"".$base_path."/images/globe_orange.png\" border=\"0\" align=\"middle\" hspace=\"3\"";
@@ -1209,21 +1249,21 @@ function do_image(&$entree) {
 				if (!$use_opac_url_base) $this->header .= "<img src=\"".$base_path."/images/globe_rouge.png\" border=\"0\" align=\"middle\" hspace=\"3\">";
 				else $this->header .= "<img src=\"".$opac_url_base."images/globe_rouge.png\" border=\"0\" align=\"middle\" hspace=\"3\">";
 			}
-			if ($this->icondoc) $this->header = $this->icondoc." ".$this->header;
 			if ($this->drag) $this->header.="<span onMouseOver='if(init_drag) init_drag();' id=\"NOTI_drag_".$this->notice_id."\" dragicon=\"".$base_path."/images/icone_drag_notice.png\" dragtext=\"".htmlentities($this->notice->tit1,ENT_QUOTES, $charset)."\" draggable=\"yes\" dragtype=\"notice\" callback_before=\"show_carts\" callback_after=\"\" style=\"padding-left:7px\"><img src=\"".$base_path."/images/notice_drag.png\"/></span>";
-			if ($this->show_statut) $this->header = $this->aff_statut." ".$this->header ;
 		}
+		if ($this->icondoc) $this->header = $this->icondoc." ".$this->header;
+		if ($this->show_statut) $this->header = $this->aff_statut." ".$this->header ;
 	}
 
 	// récupération des valeurs en table
 	function serial_display_fetch_data() {
 		global $dbh;
 		$requete = "SELECT * FROM notices WHERE notice_id=".$this->notice_id.' LIMIT 1';
-		$myQuery = mysql_query($requete, $dbh);
-		if (mysql_num_rows($myQuery)){
-			$this->notice = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($myQuery)){
+			$this->notice = pmb_mysql_fetch_object($myQuery);
 		}
-		return mysql_num_rows($myQuery);
+		return pmb_mysql_num_rows($myQuery);
 		}
 
 	} // fin classe serial_display
@@ -1292,9 +1332,9 @@ function do_image(&$entree) {
 		$requete .= " AND notices.notice_id=bulletins.bulletin_notice";
 		$requete .= " AND notices.niveau_biblio='s' AND notices.niveau_hierar='1' LIMIT 1";
 
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)) {
-			$result = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)) {
+			$result = pmb_mysql_fetch_object($myQuery);
 			$this->parent_title = $result->tit1;
 			$this->bulletin_titre = $result->bulletin_titre;
 			$this->numerotation = $result->bulletin_numero;

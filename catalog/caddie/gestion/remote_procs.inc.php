@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: remote_procs.inc.php,v 1.6.8.1 2014-11-26 10:57:40 jpermanne Exp $
+// $Id: remote_procs.inc.php,v 1.8 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -244,11 +244,11 @@ switch($action) {
 				if ($imported_name)
 					$the_procedure->name = $imported_name;
 				else
-					$the_procedure->name = mysql_escape_string($the_procedure->name);
+					$the_procedure->name = pmb_mysql_escape_string($the_procedure->name);
 				if ($imported_comment)
 					$the_procedure->comment = $imported_comment;
 				else
-					$the_procedure->comment = mysql_escape_string($the_procedure->comment);
+					$the_procedure->comment = pmb_mysql_escape_string($the_procedure->comment);
 					
 				$parameters=$the_procedure->params;
 				//mise à jour de l'encodage de l'entête
@@ -257,8 +257,8 @@ switch($action) {
 				}
 				global $types_selectaction;
 				$type = $types_selectaction[$the_procedure->type];
-				$sql = "INSERT INTO caddie_procs (type, name, requete, comment, autorisations, parameters) VALUES ('".$type."', '".($the_procedure->name)."', '".mysql_escape_string($the_procedure->sql)."', '".$the_procedure->comment."', '".mysql_escape_string($autorisations)."', '".mysql_escape_string($parameters)."')";
-				$res = mysql_query($sql, $dbh);
+				$sql = "INSERT INTO caddie_procs (type, name, requete, comment, autorisations, parameters) VALUES ('".$type."', '".($the_procedure->name)."', '".pmb_mysql_escape_string($the_procedure->sql)."', '".$the_procedure->comment."', '".pmb_mysql_escape_string($autorisations)."', '".pmb_mysql_escape_string($parameters)."')";
+				$res = pmb_mysql_query($sql, $dbh);
 				show_procs($dbh);
 			}
 			else {
@@ -290,7 +290,7 @@ switch($action) {
 							//Regardons si on a déjà une procédure avec ce nom là dans la base de donnée
 				$type = $types_selectaction[$the_procedure->type];
 				$sql_test = "SELECT COUNT(*) FROM caddie_procs WHERE type ='".$type."' AND name='".addslashes($the_procedure->name)."'";
-				$count = mysql_result(mysql_query($sql_test), 0, 0);
+				$count = pmb_mysql_result(pmb_mysql_query($sql_test), 0, 0);
 				if ($count) {
 					print "
 						<br/><div class='erreur'>$msg[remote_procedures_import_remote_already_exists_caution]</div>
@@ -314,9 +314,9 @@ switch($action) {
 				$form .= '<b>'.$msg["remote_procedures_procedure_comment"].':</b><br><input name="imported_comment" size="70" type="text" value="'.htmlentities($the_procedure->comment, ENT_QUOTES, $charset).'" /><br><br>';
 				
 				$requete_users = "SELECT userid, username FROM users order by username ";
-				$res_users = mysql_query($requete_users, $dbh);
+				$res_users = pmb_mysql_query($requete_users, $dbh);
 				$all_users=array();
-				while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+				while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 					$all_users[]=array($all_userid,$all_username);
 				}
 				foreach($all_users as $a_user) {
@@ -378,14 +378,14 @@ switch($action) {
 			
 		if ($the_procedure->params && ($the_procedure->params != "NULL")) {
 //			$sql = "DROP TABLE IF EXISTS remote_proc";
-//			mysql_query($sql, $dbh) or die(mysql_error());
+//			pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
 			
 			$sql = "CREATE TEMPORARY TABLE remote_proc LIKE procs";
-			mysql_query($sql, $dbh) or die(mysql_error());
+			pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
 			
-			$sql = "INSERT INTO remote_proc (idproc, name, requete, comment, autorisations, parameters, num_classement) VALUES (0, '".mysql_escape_string($the_procedure->name)."', '".mysql_escape_string($the_procedure->sql)."', '".mysql_escape_string($the_procedure->comment)."', '', '".mysql_escape_string($the_procedure->params)."', 0)";
-			mysql_query($sql, $dbh) or die(mysql_error());
-			$idproc = mysql_insert_id($dbh);
+			$sql = "INSERT INTO remote_proc (idproc, name, requete, comment, autorisations, parameters, num_classement) VALUES (0, '".pmb_mysql_escape_string($the_procedure->name)."', '".pmb_mysql_escape_string($the_procedure->sql)."', '".pmb_mysql_escape_string($the_procedure->comment)."', '', '".pmb_mysql_escape_string($the_procedure->params)."', 0)";
+			pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
+			$idproc = pmb_mysql_insert_id($dbh);
 			
 			$hp=new parameters($idproc,"remote_proc");
 			if (preg_match_all("|!!(.*)!!|U",$hp->proc->requete,$query_parameters))
@@ -431,11 +431,11 @@ switch($action) {
 		}
 		
 		$sql = "CREATE TEMPORARY TABLE remote_proc LIKE procs";
-		mysql_query($sql, $dbh) or die(mysql_error());
+		pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
 		
-		$sql = "INSERT INTO remote_proc (idproc, name, requete, comment, autorisations, parameters, num_classement) VALUES (0, '".mysql_escape_string($the_procedure->name)."', '".mysql_escape_string($the_procedure->sql)."', '".mysql_escape_string($the_procedure->comment)."', '', '".mysql_escape_string($the_procedure->params)."', 0)";
-		mysql_query($sql, $dbh) or die(mysql_error());
-		$idproc = mysql_insert_id($dbh);
+		$sql = "INSERT INTO remote_proc (idproc, name, requete, comment, autorisations, parameters, num_classement) VALUES (0, '".pmb_mysql_escape_string($the_procedure->name)."', '".pmb_mysql_escape_string($the_procedure->sql)."', '".pmb_mysql_escape_string($the_procedure->comment)."', '', '".pmb_mysql_escape_string($the_procedure->params)."', 0)";
+		pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
+		$idproc = pmb_mysql_insert_id($dbh);
 		
 		$hp=new parameters($idproc,"remote_proc");
 		if (preg_match_all("|!!(.*)!!|U",$hp->proc->requete,$query_parameters)) {

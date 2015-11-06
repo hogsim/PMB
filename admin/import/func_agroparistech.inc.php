@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_agroparistech.inc.php,v 1.7 2013-12-04 09:48:54 mbertin Exp $
+// $Id: func_agroparistech.inc.php,v 1.8 2015-04-03 11:16:23 jpermanne Exp $
 
 /*
  *  ATTENTION CE FICHIER EST EN UTF-8
@@ -19,11 +19,11 @@ function renseigne_cp_agro($val,$notice_id,$type="notices"){
 
 	//on va chercher les informations sur le champs
 	$rqt = "SELECT idchamp, type, datatype FROM ".$type."_custom WHERE name='" . addslashes(trim($nom)) . "'";
-	$res = mysql_query($rqt);
-	if (!mysql_num_rows($res))
+	$res = pmb_mysql_query($rqt);
+	if (!pmb_mysql_num_rows($res))
 		return false;
 
-	$cp=mysql_fetch_object($res);
+	$cp=pmb_mysql_fetch_object($res);
 	
 	if($cp->type != $val["t"]){
 		return false;
@@ -36,51 +36,51 @@ function renseigne_cp_agro($val,$notice_id,$type="notices"){
 			switch ($cp->datatype) {
 				case "integer":
 					$requete="select ".$type."_custom_list_value from ".$type."_custom_lists where ".$type."_custom_list_lib='".addslashes(trim($valeur))."' and ".$type."_custom_champ='".$cp->idchamp."' ";
-					$resultat=mysql_query($requete);
-					if (mysql_num_rows($resultat)) {
-						$value2=mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($resultat)) {
+						$value2=pmb_mysql_result($resultat,0,0);
 					} else {
 						$requete="select max(".$type."_custom_list_value*1) from ".$type."_custom_lists where ".$type."_custom_champ='".$cp->idchamp."' ";
-						$resultat=mysql_query($requete);
-						$max=@mysql_result($resultat,0,0);
+						$resultat=pmb_mysql_query($requete);
+						$max=@pmb_mysql_result($resultat,0,0);
 						$n=$max+1;
 						$requete="insert into ".$type."_custom_lists (".$type."_custom_champ,".$type."_custom_list_value,".$type."_custom_list_lib) values('".$cp->idchamp."',$n,'".addslashes(trim($valeur))."')";
-						if(!mysql_query($requete)) return false;
+						if(!pmb_mysql_query($requete)) return false;
 						$value2=$n;
 					}
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_integer) values('".$cp->idchamp."','".$notice_id."','".$value2."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 				default:
 					$requete="select ".$type."_custom_list_value from ".$type."_custom_lists where ".$type."_custom_list_lib='".addslashes(trim($valeur))."' and ".$type."_custom_champ='".$cp->idchamp."' ";
-					$resultat=mysql_query($requete);
-					if (mysql_num_rows($resultat)) {
-						$value2=mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($resultat)) {
+						$value2=pmb_mysql_result($resultat,0,0);
 					} else {
 						$requete="select ".$type."_custom_list_value from ".$type."_custom_lists where ".$type."_custom_list_value='".addslashes(trim($valeur))."' and ".$type."_custom_champ='".$cp->idchamp."' ";
-						$resultat=mysql_query($requete);
-						if (mysql_num_rows($resultat)) {
-							$value2=mysql_result($resultat,0,0);
+						$resultat=pmb_mysql_query($requete);
+						if (pmb_mysql_num_rows($resultat)) {
+							$value2=pmb_mysql_result($resultat,0,0);
 						} else {
 							$requete="insert into ".$type."_custom_lists (".$type."_custom_champ,".$type."_custom_list_value,".$type."_custom_list_lib) values('".$cp->idchamp."','".addslashes(trim($valeur))."','".addslashes($valeur)."')";
-							if(!mysql_query($requete)) return false;
+							if(!pmb_mysql_query($requete)) return false;
 							$value2=trim($valeur);
 						}
 					}
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_".$cp->datatype.") values('".$cp->idchamp."','".$notice_id."','".$value2."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 			}
 			break;
 		case "url":
 			$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_".$cp->datatype.") values('".$cp->idchamp."','".$notice_id."','".addslashes(trim($val["c"]))."')";
-			if(!mysql_query($requete)) return false;
+			if(!pmb_mysql_query($requete)) return false;
 			break;
 		case "resolve":
 			$mes_pp= new parametres_perso($type);
 			if($mes_pp->get_formatted_output(array($val["c"]),$cp->idchamp) == $val["b"]){
 				$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_".$cp->datatype.") values('".$cp->idchamp."','".$notice_id."','".addslashes($val["c"])."')";
-				if(!mysql_query($requete)) return false;
+				if(!pmb_mysql_query($requete)) return false;
 			}else{
 				return false;
 			}
@@ -90,7 +90,7 @@ function renseigne_cp_agro($val,$notice_id,$type="notices"){
 			$mes_pp= new parametres_perso($type);
 			if($mes_pp->get_formatted_output(array($val["c"]),$cp->idchamp) == $valeur){
 				$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_".$cp->datatype.") values('".$cp->idchamp."','".$notice_id."','".addslashes($val["c"])."')";
-				if(!mysql_query($requete)) return false;
+				if(!pmb_mysql_query($requete)) return false;
 			}else{
 				return false;
 			}
@@ -99,20 +99,20 @@ function renseigne_cp_agro($val,$notice_id,$type="notices"){
 			switch ($cp->datatype) {
 				case "small_text":
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_small_text) values('".$cp->idchamp."','".$notice_id."','".addslashes(trim($valeur))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 				case "int":
 				case "integer":
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_integer) values('".$cp->idchamp."','".$notice_id."','".addslashes(trim($valeur))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 				case "text":
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_text) values('".$cp->idchamp."','".$notice_id."','".addslashes(trim($valeur))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 				case "date":
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_date) values('".$cp->idchamp."','".$notice_id."','".addslashes(decoupe_date(trim($valeur)))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 			}
 			break;
@@ -543,24 +543,24 @@ function import_new_notice_suite() {
 	//dédoublonnage !
 	if($isbn && $isbn_dedoublonnage){
 		$query = "select notice_id from notices where code like '".$isbn."' and notice_id != ".$notice_id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			notice::del_notice($notice_id);
 			$notice_id = $row->notice_id;
-			mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".addslashes("La notice (".$tit_200a[0].", ".$isbn.") n'a pas été reprise car elle existe déjà en base (notice id: ".$notice_id.")")."') ") ;
+			pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".addslashes("La notice (".$tit_200a[0].", ".$isbn.") n'a pas été reprise car elle existe déjà en base (notice id: ".$notice_id.")")."') ") ;
 		}
 	}
 	
 	if(!$isbn_dedoublonnage || ($isbn_only == 1)){
 		$rq="UPDATE notices SET code=REPLACE(code, '_pasToucheACa', '') WHERE notice_id = ".$notice_id;
-		mysql_query($rq);
+		pmb_mysql_query($rq);
 	
 	}elseif($issn_011[0]){
 		$query = "select notice_id from notices where code like '".$issn_011[0]."' and notice_id != ".$notice_id;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				if(in_array($row->notice_id,$notices_crees)){
 					$old = new notice($row->notice_id);
 					$old->replace($notice_id);
@@ -570,7 +570,7 @@ function import_new_notice_suite() {
 				}else{
 					notice::del_notice($notice_id);
 					$notice_id = $row->notice_id;
-					mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".addslashes("La notice (".$tit_200a[0].", ".$isbn.") n'a pas été reprise car elle existe déjà en base (notice id: ".$notice_id.")")."') ") ;
+					pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".addslashes("La notice (".$tit_200a[0].", ".$isbn.") n'a pas été reprise car elle existe déjà en base (notice id: ".$notice_id.")")."') ") ;
 				}
 			}
 		}		
@@ -596,7 +596,7 @@ function import_new_notice_suite() {
 	
 	if($n_gen_plus){
 		$requ="UPDATE notices SET n_gen=IF(n_gen != '',CONCAT(n_gen,'\n".addslashes($n_gen_plus)."'),'".addslashes($n_gen_plus)."') WHERE notice_id = ".$notice_id;
-		if(!mysql_query($requ)){
+		if(!pmb_mysql_query($requ)){
 			echo "Requête echoué: ".$requ."<br/>";
 		}
 	}
@@ -611,8 +611,8 @@ function import_new_notice_suite() {
 					$issn = traite_code_ISSN($child['x']);
 					if($issn){
 						$query = "select notice_id from notices where code ='".$issn."' and niveau_biblio = 's' and niveau_hierar = '1'";
-						$result = mysql_query($query);
-						if(!mysql_num_rows($result)){
+						$result = pmb_mysql_query($query);
+						if(!pmb_mysql_num_rows($result)){
 							//la notice n'existe pas, il faut la créer...
 
 							/* Origine de la notice */
@@ -632,21 +632,21 @@ function import_new_notice_suite() {
 								create_date = sysdate(),
 								update_date = sysdate()
 							";
-							mysql_query($query);
-							$child_id = mysql_insert_id();
+							pmb_mysql_query($query);
+							$child_id = pmb_mysql_insert_id();
 							$notices_crees[$child[0]]=$child_id;
 							notice::majNotices($child_id);
 							notice::majNoticesGlobalIndex($child_id);
 							notice::majNoticesMotsGlobalIndex($child_id);
 						}else{
-							$child_id = mysql_result($result,0,0);
+							$child_id = pmb_mysql_result($result,0,0);
 						}
 						if($child_id){
 							// on regarde si une relation similaire existe déjà...
 							$query = "select relation_type from notices_relations where relation_type = '".$link_type[$key]['code']."' and ((num_notice = ".$notice_id." and linked_notice = ".$child_id.") or (num_notice = ".$child_id." and linked_notice = ".$notice_id."))";
-							$result = mysql_query($query);
+							$result = pmb_mysql_query($query);
 							
-							if(!mysql_num_rows($result)){
+							if(!pmb_mysql_num_rows($result)){
 								$rank = 0;
 								$query = "select count(rank) from notices_relations where relation_type = '".$link_type[$key]['code']."' and ";
 								if($link_type[$key]['sens_link'] == "mother"){
@@ -654,8 +654,8 @@ function import_new_notice_suite() {
 								}else{
 									$query.= "num_notice = ".$notice_id;
 								}
-								$result = mysql_query($query);
-								if(mysql_num_rows($result)) $rank = mysql_result($result,0,0);
+								$result = pmb_mysql_query($query);
+								if(pmb_mysql_num_rows($result)) $rank = pmb_mysql_result($result,0,0);
 								
 								$query = "insert into notices_relations set 
 									".$sens[$link_type[$key]['sens_link']][0]." = ".$notice_id.",
@@ -663,7 +663,7 @@ function import_new_notice_suite() {
 									relation_type = '".$link_type[$key]['code']."',
 									rank = ".($rank+1)."
 								";
-								mysql_query($query);
+								pmb_mysql_query($query);
 							}
 						}
 					}
@@ -676,7 +676,7 @@ function import_new_notice_suite() {
 		for($i=0;$i<count($info_900);$i++){
 			if(trim($info_900[$i]["a"])){
 				if(!renseigne_cp_agro($info_900[$i],$notice_id)){
-					mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".addslashes("La valeur  : ".$info_900[$i]["a"]." n'a pas été reprise dans le champ personnalisé : ".$info_900[$i]["n"]." car le champ n'existe pas ou n'est pas défini de la même façon")."') ") ;
+					pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".addslashes("La valeur  : ".$info_900[$i]["a"]." n'a pas été reprise dans le champ personnalisé : ".$info_900[$i]["n"]." car le champ n'existe pas ou n'est pas défini de la même façon")."') ") ;
 				}
 			}
 		}
@@ -684,12 +684,12 @@ function import_new_notice_suite() {
 	
 	if($tmp=trim($info_003[0])){
 		$requete="SELECT notices_custom_origine FROM notices_custom_values WHERE notices_custom_champ=22 AND notices_custom_origine='".$notice_id."' AND notices_custom_small_text='".addslashes($tmp)."' ";
-		$res=mysql_query($requete);
-		if($res && mysql_num_rows($res)){
+		$res=pmb_mysql_query($requete);
+		if($res && pmb_mysql_num_rows($res)){
 			
 		}else{
 			$requete="INSERT INTO notices_custom_values(notices_custom_champ, notices_custom_origine, notices_custom_small_text) VALUES('22','".$notice_id."','".addslashes($tmp)."')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}
 	}
 }	

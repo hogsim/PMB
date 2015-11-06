@@ -3,7 +3,7 @@
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
 
-// $Id: navigator.inc.php,v 1.30.2.5 2015-06-17 13:37:11 jpermanne Exp $
+// $Id: navigator.inc.php,v 1.39 2015-06-17 13:38:05 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -16,18 +16,24 @@ if ($lvl=="etagere_see")
 //Si le niveau 1 est shunté
 if (($opac_autolevel2)&&($autolevel1)&&(!$get_last_query)&&($user_query)) {
 	//On fait la recherche tous les champs
-	$search_all_fields = new searcher_all_fields(stripslashes($user_query));
+	$search_all_fields = new searcher_all_fields(stripslashes($user_query),$map_emprises_query);
 	$nb_result = $search_all_fields->get_nb_results();
 	if ($nb_result) {
 		$count=$nb_result;
 		$l_typdoc= implode(",",$search_all_fields->get_typdocs());	
 		$mode="tous";
-		
 		//définition du formulaire
 		$form_lvl1 = "
 			<form name=\"search_tous\" action=\"./index.php?lvl=more_results\" method=\"post\">";
 			if (function_exists("search_other_function_post_values")){
 				$form_lvl1 .=search_other_function_post_values(); 
+			}
+			
+			if(count($map_emprise_query)){
+				foreach($map_emprises_query as $map_emprise_query){
+					$form_lvl1 .= "
+				<input type=\"hidden\" name=\"map_emprises_query[]\" value=\"$map_emprise_query\">";
+				}
 			}
 		  	$form_lvl1 .= "
 		  		<input type=\"hidden\" name=\"mode\" value=\"tous\">

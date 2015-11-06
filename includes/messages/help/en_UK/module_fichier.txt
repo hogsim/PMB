@@ -1,11 +1,11 @@
-<h1>Module Fiches</h1>
-<p>Ce module permet de se constituer une base de donn&eacute;es g&eacute;n&eacute;riques (carnet d&rsquo;adresses, ...) &agrave; partir de champs personnalisables que l&apos;on d&eacute;finit.
-Les informations sont stock&eacute;es sous forme de fiche.
+<h1>Files module</h1>
+<p>This module allows you to establish a generic database (address book, ...) based on the custom fields set.
+The informations are stored as records.
 </p>
 
-<h2>Consulter</h2>
-Permet de faire des recherches simples ou multicrit&egrave;res sur les champs personnalis&eacute;s d&eacute;finis et d&apos;afficher les fiches correspondant &agrave; cette recherche.<br />
-<h2>Saisie</h2>
-Cr&eacute;ation d&rsquo;une nouvelle fiche par l&rsquo;interm&eacute;diaire des champs personnalisables.<br />
-<h2>Gestion</h2>
-Gestion des champs personnalisables, affichage des champs, r&eacute;indexation des fiches<br />
+<h2>Browse</h2>
+Allows to do simple or multi-standard searches on the previously set custom fields and to show the records related to this search.<br />
+<h2>Input</h2>
+Creation of a new form through custom fields.<br />
+<h2>Management</h2>
+Management of custom fields, display of the fields, reindexation of the records<br />

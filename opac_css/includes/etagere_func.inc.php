@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: etagere_func.inc.php,v 1.53 2014-02-11 13:02:57 dbellamy Exp $
+// $Id: etagere_func.inc.php,v 1.55 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,9 +14,10 @@ require_once($base_path.'/classes/sort.class.php');
 // 	$accueil=1 filtre les étagères de l'accueil uniquement
 //	$idetagere permet de récupérer soit toutes les éragères soit une seule
 function tableau_etagere($idetagere, $accueil=0) {
-	global $dbh;
-	
+	global $dbh;	
+	global $memo_bannettes_generated; 
 	global $opac_etagere_order ;
+	
 	if (!$opac_etagere_order) $opac_etagere_order =" name ";
 	
 	$tableau_etagere = array() ;
@@ -27,11 +28,15 @@ function tableau_etagere($idetagere, $accueil=0) {
 	if ($idetagere) {
 		$tab_id=explode(",",$idetagere);
 		for ($i=0;$i<sizeof($tab_id);$i++) {
+			
+			// si déjà affiché dans la page (DSI), on ne duplique pas
+			if(is_array($memo_bannettes_generated)) if(in_array($tab_id[$i], $memo_bannettes_generated)) continue;
+			
 			$clause_etagere="idetagere ='".$tab_id[$i]."' and";
 			$query = "select idetagere, name, comment,id_tri from etagere where $clause_accueil $clause_etagere ( (validite_date_deb<=sysdate() and validite_date_fin>=sysdate()) or validite=1 ) ";
-			$result = mysql_query($query, $dbh);
-			if (mysql_num_rows($result)) {
-				$etagere=mysql_fetch_object($result) ;
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_num_rows($result)) {
+				$etagere=pmb_mysql_fetch_object($result) ;
 				$tableau_etagere[] = array (
 						'idetagere' => $etagere->idetagere,
 						'nometagere' => $etagere->name,
@@ -43,9 +48,13 @@ function tableau_etagere($idetagere, $accueil=0) {
 		}
 	} else {
 		$query = "select idetagere, name, comment,id_tri from etagere where $clause_accueil ( (validite_date_deb<=sysdate() and validite_date_fin>=sysdate()) or validite=1 ) order by $opac_etagere_order ";
-		$result = mysql_query($query, $dbh);
-		if (mysql_num_rows($result)) {
-			while ($etagere=mysql_fetch_object($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if (pmb_mysql_num_rows($result)) {
+			while ($etagere=pmb_mysql_fetch_object($result)) {				
+				
+				// si déjà affiché dans la page (DSI), on ne duplique pas
+				if(is_array($memo_bannettes_generated)) if(in_array($etagere->idetagere, $memo_bannettes_generated)) continue;
+				
 				$tableau_etagere[] = array (
 						'idetagere' => $etagere->idetagere,
 						'nometagere' => $etagere->name,
@@ -65,9 +74,9 @@ function caddies_etagere($idetagere) {
 	$caddie_tableau=array() ;
 	// on constitue un tableau avec les caddies de l'étagère
 	$query_caddie = "select caddie_id from etagere_caddie where etagere_id='".$idetagere."' ";
-	$result_caddie = mysql_query($query_caddie, $dbh);
-	if (mysql_num_rows($result_caddie)) {
-		while (($caddie=mysql_fetch_object($result_caddie))) {
+	$result_caddie = pmb_mysql_query($query_caddie, $dbh);
+	if (pmb_mysql_num_rows($result_caddie)) {
+		while (($caddie=pmb_mysql_fetch_object($result_caddie))) {
 			$caddie_tableau[]= $caddie->caddie_id ; 
 		}
 	} // fin if caddies
@@ -96,10 +105,10 @@ function notices_caddie($idetagere, &$notices, $acces_j='', $statut_j='', $statu
 		$query_notice.= "order by $opac_etagere_notices_order ";	
 	}
 	
-	$result_notice = mysql_query($query_notice, $dbh);
+	$result_notice = pmb_mysql_query($query_notice, $dbh);
 	
-	if (mysql_num_rows($result_notice)) {
-		while (($notice=mysql_fetch_object($result_notice))) {
+	if (pmb_mysql_num_rows($result_notice)) {
+		while (($notice=pmb_mysql_fetch_object($result_notice))) {
 			$notices[$notice->notice_id]= $notice->niveau_biblio ; 
 		}
 	} // fin if notices
@@ -240,9 +249,9 @@ function contenu_etagere($idetagere, $aff_notices_nb=0, $mode_aff_notice=AFF_ETA
 	//petit check rapide pour récupérer le tri imposé sur l'étagère...
 	$idetagere+=0;
 	$rqt = "select id_tri from etagere where idetagere=".$idetagere;
-	$res = mysql_query($rqt);
-	if(mysql_num_rows($res)){
-		$id_tri = mysql_result($res,0,0);
+	$res = pmb_mysql_query($rqt);
+	if(pmb_mysql_num_rows($res)){
+		$id_tri = pmb_mysql_result($res,0,0);
 	}else $id_tri = 0;
 	//On récupère les notices associées à l'étagère
 	notices_caddie($idetagere, $notices, $acces_j, $statut_j, $statut_r, $aff_notices_nb, $id_tri) ;

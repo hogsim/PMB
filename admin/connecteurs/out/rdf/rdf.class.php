@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rdf.class.php,v 1.2.2.2 2014-04-03 07:50:46 jpermanne Exp $
+// $Id: rdf.class.php,v 1.2 2014-03-27 15:18:44 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

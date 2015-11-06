@@ -260,4 +260,17 @@ function h2o($name, $options = array()) {
     return $instance;
 }
 
+function messagesLookup($name,$context){
+	global $msg;
+	$value = null;
+	$code = str_replace(":msg.","",$name);
+	if($code != $name && isset($msg[$code])){
+		$value = $msg[$code];
+	}
+	return $value;
+}
+
+H2o::addLookup("messagesLookup");
+
+
 ?>

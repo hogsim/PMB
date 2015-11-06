@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: diffusion_auto.php,v 1.4 2012-08-31 15:08:31 ngantier Exp $
+// $Id: diffusion_auto.php,v 1.5 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -23,9 +23,9 @@ function diff_all_bannettes_full_auto() {
 	global $status_diffusion;	
 	$status_diffusion=array();
 	$requete = "SELECT id_bannette, proprio_bannette FROM bannettes WHERE (DATE_ADD(date_last_envoi, INTERVAL periodicite DAY) <= sysdate()) and bannette_auto=1 ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	print "<table>";		
-	while(($bann=mysql_fetch_object($res))) {
+	while(($bann=pmb_mysql_fetch_object($res))) {
 		$bannette = new bannette($bann->id_bannette);
 		if(!$bannette->limite_type)$bannette->vider();
 		$bannette->remplir();

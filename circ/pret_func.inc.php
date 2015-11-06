@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pret_func.inc.php,v 1.54 2013-05-02 15:50:56 dgoron Exp $
+// $Id: pret_func.inc.php,v 1.55 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -38,8 +38,8 @@ function do_retour($stuff,$confirmed=1) {
 	$query .= " AND s.idsection=".$stuff->expl_section;
 	$query .= " LIMIT 1";
 
-	$result = mysql_query($query, $dbh);
-	$info_doc = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query, $dbh);
+	$info_doc = pmb_mysql_fetch_object($result);
 	
 
 	print pmb_bidi("<br /><form><div class='row'><div class='left'><strong>".$stuff->libelle."</strong></div>");
@@ -131,7 +131,7 @@ function magnetise(commande){
 			
 			//pour afficher le site de l'exemplaire
 			$rqtSite = "SELECT location_libelle FROM docs_location WHERE idlocation=".$stuff->expl_location;
-			$resSite = mysql_result(mysql_query($rqtSite),0);
+			$resSite = pmb_mysql_result(pmb_mysql_query($rqtSite),0);
 			
 			//si on propose une autre action
 			if ($transferts_retour_action_autorise_autre=="1") {			
@@ -141,9 +141,9 @@ function magnetise(commande){
 			
 			//on genere la liste des sections
 			$rqt = "SELECT idsection, section_libelle FROM docs_section ORDER BY section_libelle";
-			$res_section = mysql_query($rqt);
+			$res_section = pmb_mysql_query($rqt);
 			$liste_section = "";
-			while($value = mysql_fetch_object($res_section)) {
+			while($value = pmb_mysql_fetch_object($res_section)) {
 				$liste_section .= "<option value='".$value->idsection ."'";
 				if ($value->idsection==$stuff->expl_section) {
 					$liste_section .= " selected";
@@ -309,8 +309,8 @@ function enregLoc(obj) {
 		// l'exemplaire était effectivement emprunté
 		// calcul du retard éventuel
 		$rqt_date = "select ((TO_DAYS(CURDATE()) - TO_DAYS('$stuff->pret_retour'))) as retard ";
-		$resultatdate=mysql_query($rqt_date);
-		$resdate=mysql_fetch_object($resultatdate);
+		$resultatdate=pmb_mysql_query($rqt_date);
+		$resdate=pmb_mysql_fetch_object($resultatdate);
 		$retard = $resdate->retard;
 		if($retard > 0) {
 			//Calcul du vrai nombre de jours
@@ -334,12 +334,12 @@ function enregLoc(obj) {
 			} else $ndays=0;
 			if ($ndays>0) {
 				//Le lecteur est-il déjà bloqué ?
-				$date_fin_blocage_empr = mysql_result(mysql_query("select date_fin_blocage from empr where id_empr='".$stuff->pret_idempr."'"),0,0);
+				$date_fin_blocage_empr = pmb_mysql_result(pmb_mysql_query("select date_fin_blocage from empr where id_empr='".$stuff->pret_idempr."'"),0,0);
 				//Calcul de la date de fin
 				$date_fin=calendar::add_days(date("d"),date("m"),date("Y"),$ndays);
 				if ($date_fin > $date_fin_blocage_empr) {
 					//Mise à jour
-					mysql_query("update empr set date_fin_blocage='".$date_fin."' where id_empr='".$stuff->pret_idempr."'");
+					pmb_mysql_query("update empr set date_fin_blocage='".$date_fin."' where id_empr='".$stuff->pret_idempr."'");
 					print "<br /><div class='erreur'>".sprintf($msg["blocage_retard_pret"],formatdate($date_fin))."</div>";
 					$alertsound_list[]="critique";
 				} else {
@@ -398,7 +398,7 @@ function enregLoc(obj) {
 							$res_transfert = resa_transfert($affect,$stuff->expl_cb);
 							if ($res_transfert!=0) {
 								$rqt = "SELECT location_libelle FROM docs_location WHERE idlocation=".$res_transfert;
-								$lib_loc = mysql_result(mysql_query($rqt),0);			
+								$lib_loc = pmb_mysql_result(pmb_mysql_query($rqt),0);			
 								$msg_trans =  "<strong>".str_replace("!!site_dest!!",$lib_loc,$msg["transferts_circ_resa_validation_alerte"])."</strong><br />";
 								$trans_en_cours = true;
 							}	
@@ -407,8 +407,8 @@ function enregLoc(obj) {
 						$query .= "empr_prenom, empr_nom, empr_cb ";  
 						$query .= "from (((resa LEFT JOIN notices AS notices_m ON resa_idnotice = notices_m.notice_id ) LEFT JOIN bulletins ON resa_idbulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id), empr ";
 						$query .= "where id_resa in (".$affect.") and resa_idempr=id_empr";
-						$result = mysql_query($query, $dbh);		
-						$empr=@mysql_fetch_object($result);
+						$result = pmb_mysql_query($query, $dbh);		
+						$empr=@pmb_mysql_fetch_object($result);
 						
 						print pmb_bidi("<div class='message_important'>$msg[352]</div>
 							<div class='row'>$msg_trans
@@ -469,13 +469,13 @@ function stat_stuff ($stuff) {
 	$query .= "arc_cpt_prolongation='".	$stuff->cpt_prolongation 		."', ";
 	$query .= "arc_short_loan_flag='".	$stuff->short_loan_flag 		."' ";
 
-	$res = mysql_query($query, $dbh);
-	$id_arc_insere = mysql_insert_id() ;
+	$res = pmb_mysql_query($query, $dbh);
+	$id_arc_insere = pmb_mysql_insert_id() ;
 	// purge des vieux trucs
 	if ($empr_archivage_prets_purge) {
 		//on ne purge qu'une fois par session et par jour
 		if (!isset($_SESSION["last_empr_archivage_prets_purge_day"]) || ($_SESSION["last_empr_archivage_prets_purge_day"] != date("m.d.y"))) {
-			mysql_query("update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()") or die(mysql_error()."<br />"."update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()");
+			pmb_mysql_query("update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()") or die(pmb_mysql_error()."<br />"."update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()");
 			$_SESSION["last_empr_archivage_prets_purge_day"] = date("m.d.y");
 		}
 	}
@@ -519,7 +519,7 @@ function maj_stat_pret ($stuff) {
 	$query .= "arc_cpt_prolongation='".	$stuff->cpt_prolongation 		."', ";	
 	$query .= "arc_short_loan_flag='".	$stuff->short_loan_flag 		."' ";
 	$query .= " where arc_id='".$stuff->pret_arc_id."' ";
-	$res = mysql_query($query, $dbh);
+	$res = pmb_mysql_query($query, $dbh);
 
 	audit::insert_modif (AUDIT_PRET, $stuff->pret_arc_id) ;
 
@@ -527,7 +527,7 @@ function maj_stat_pret ($stuff) {
 	if ($empr_archivage_prets_purge) {
 		//on ne purge qu'une fois par session et par jour
 		if (!isset($_SESSION["last_empr_archivage_prets_purge_day"]) || ($_SESSION["last_empr_archivage_prets_purge_day"] != date("m.d.y"))) {
-			mysql_query("update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()") or die(mysql_error()."<br />"."update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()");
+			pmb_mysql_query("update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()") or die(pmb_mysql_error()."<br />"."update pret_archive set arc_id_empr=0 where arc_id_empr!=0 and date_add(arc_fin, interval $empr_archivage_prets_purge day) < sysdate()");
 			$_SESSION["last_empr_archivage_prets_purge_day"] = date("m.d.y");
 		}
 	}
@@ -543,13 +543,13 @@ function del_pret($stuff) {
 	if(!is_object($stuff))
 		die("serious application error occured in ./circ/retour.inc [del_pret()]. Please contact developpment team");
 	$query = "delete from pret where pret_idexpl=".$stuff->expl_id;
-	if (!mysql_query($query, $dbh)) return 0 ;
+	if (!pmb_mysql_query($query, $dbh)) return 0 ;
 	
 	$query = "update empr set last_loan_date=sysdate() where id_empr='".$stuff->pret_idempr."' ";
-	@mysql_query($query, $dbh);
+	@pmb_mysql_query($query, $dbh);
 	
 	$query = "update exemplaires set expl_lastempr='".$stuff->pret_idempr."', last_loan_date=sysdate() where expl_id='".$stuff->expl_id."' ";
-	if (!mysql_query($query, $dbh)) return 0 ;
+	if (!pmb_mysql_query($query, $dbh)) return 0 ;
 		else return 1 ;
 	}
 
@@ -560,8 +560,8 @@ function check_barcode($cb) {
 	global $dbh;
 	$expl->expl_cb = $cb ;
 	$query = "select * from exemplaires where expl_cb='$cb' ";
-	$result = mysql_query($query, $dbh);
-	$expl = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query, $dbh);
+	$expl = pmb_mysql_fetch_object($result);
 	if(!$expl->expl_id) {
 		// exemplaire inconnu
 		return FALSE;
@@ -577,9 +577,9 @@ function check_barcode($cb) {
 		if ($expl->expl_lastempr) {
 			// récupération des infos emprunteur
 			$query_last_empr = "select empr_cb, empr_nom, empr_prenom from empr where id_empr='".$expl->expl_lastempr."' ";
-			$result_last_empr = mysql_query($query_last_empr, $dbh);
-			if(mysql_num_rows($result_last_empr)) {
-				$last_empr = mysql_fetch_object($result_last_empr);
+			$result_last_empr = pmb_mysql_query($query_last_empr, $dbh);
+			if(pmb_mysql_num_rows($result_last_empr)) {
+				$last_empr = pmb_mysql_fetch_object($result_last_empr);
 				$expl->lastempr_cb = $last_empr->empr_cb;
 				$expl->lastempr_nom = $last_empr->empr_nom;
 				$expl->lastempr_prenom = $last_empr->empr_prenom;
@@ -594,8 +594,8 @@ function pret_construit_infos_stat ($id_expl) {
 	global $dbh;
 	
 	$query = "select * from exemplaires where expl_id='$id_expl' ";
-	$result = mysql_query($query, $dbh);
-	$stuff = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query, $dbh);
+	$stuff = pmb_mysql_fetch_object($result);
 	if(!$stuff->expl_id) {
 		// exemplaire inconnu
 		return FALSE;
@@ -640,19 +640,19 @@ function electronic_ticket($id_empr, $cb_doc="") {
 	$message_prets = "";
 	if ($cb_doc == "") {
 		$rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_idexpl=expl_id order by pret_date " ;
-		$req = mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 
+		$req = pmb_mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 
 	
 		$message_prets = $msg["prets_en_cours"];
-		while ($data = mysql_fetch_array($req)) {
+		while ($data = pmb_mysql_fetch_array($req)) {
 			$message_prets .= electronic_loan_ticket_expl_info ($data['expl_cb']);
 		}
 
 		// Impression des réservations en cours
 		$rqt = "select resa_idnotice, resa_idbulletin from resa where resa_idempr='".$id_empr."' " ;
-		$req = mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 
-		if (mysql_num_rows($req) > 0) {
+		$req = pmb_mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 
+		if (pmb_mysql_num_rows($req) > 0) {
 			$message_resas = $msg["documents_reserves"];
-			while ($data = mysql_fetch_array($req)) {
+			while ($data = pmb_mysql_fetch_array($req)) {
 				$message_resas .= electronic_loan_ticket_not_bull_info_resa ($id_empr, $data['resa_idnotice'],$data['resa_idbulletin']);
 			}
 		} // fin if résas	
@@ -666,8 +666,8 @@ function electronic_ticket($id_empr, $cb_doc="") {
 	$empr_electronic_loan_ticket_msg = str_replace("!!all_loans!!", $message_prets, $empr_electronic_loan_ticket_msg) ;
 	
 	$requete = "select id_empr, empr_mail, empr_nom, empr_prenom from empr where id_empr='$id_empr' ";
-	$res = mysql_query($requete, $dbh);
-	$empr=mysql_fetch_object($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$empr=pmb_mysql_fetch_object($res);
 	
 	//remplacement nom et prenom
 	$empr_electronic_loan_ticket_msg=str_replace("!!empr_name!!", $empr->empr_nom,$empr_electronic_loan_ticket_msg); 
@@ -689,8 +689,8 @@ function electronic_loan_ticket_expl_info($cb_doc) {
 	$requete.= " FROM (((exemplaires LEFT JOIN notices AS notices_m ON expl_notice = notices_m.notice_id ) LEFT JOIN bulletins ON expl_bulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id), docs_type, docs_section, docs_location, pret ";
 	$requete.= " WHERE expl_cb='".addslashes($cb_doc)."' and expl_typdoc = idtyp_doc and expl_section = idsection and expl_location = idlocation and pret_idexpl = expl_id  ";
 
-	$res = mysql_query($requete, $dbh) or die ("<br />".mysql_error());
-	$expl = mysql_fetch_object($res);
+	$res = pmb_mysql_query($requete, $dbh) or die ("<br />".pmb_mysql_error());
+	$expl = pmb_mysql_fetch_object($res);
 	
 	$responsabilites = get_notice_authors(($expl->m_id+$expl->s_id)) ;
 	$as = array_search ("0", $responsabilites["responsabilites"]) ;
@@ -744,11 +744,11 @@ function electronic_loan_ticket_not_bull_info_resa ($id_empr, $notice, $bulletin
 			$requete.= "FROM bulletins, resa, notices ";
 			$requete.= "WHERE resa_idbulletin='$bulletin' and resa_idbulletin = bulletins.bulletin_id and bulletin_notice = notice_id order by resa_date ";
 			}
-	$res = mysql_query($requete, $dbh) or die ("<br />".mysql_error());
-	$nb_resa = mysql_num_rows($res) ;
+	$res = pmb_mysql_query($requete, $dbh) or die ("<br />".pmb_mysql_error());
+	$nb_resa = pmb_mysql_num_rows($res) ;
 	
 	for ($j=0 ; $j<$nb_resa ; $j++ ) {
-		$resa = mysql_fetch_object($res);
+		$resa = pmb_mysql_fetch_object($res);
 		if ($resa->resa_idempr == $id_empr) {
 			$responsabilites = get_notice_authors($resa->notice_id) ;
 			$as = array_search ("0", $responsabilites["responsabilites"]) ;
@@ -776,8 +776,8 @@ function electronic_loan_ticket_not_bull_info_resa ($id_empr, $notice, $bulletin
 				$requete_expl = "SELECT expl_cb, tdoc_libelle, section_libelle, location_libelle " ; 
 				$requete_expl.= " FROM exemplaires, docs_type, docs_section, docs_location ";
 				$requete_expl.= " WHERE expl_cb='".addslashes($resa->resa_cb)."' and expl_typdoc = idtyp_doc and expl_section = idsection and expl_location = idlocation ";
-				$res_expl = mysql_query($requete_expl, $dbh) or die ("<br />".mysql_error());
-				$expl = mysql_fetch_object($res_expl);
+				$res_expl = pmb_mysql_query($requete_expl, $dbh) or die ("<br />".pmb_mysql_error());
+				$expl = pmb_mysql_fetch_object($res_expl);
 				$tmpmsg_res .= "<br /><em>".$expl->location_libelle."</em>: ".$expl->section_libelle;
 				} else {
 					$tmpmsg_res = $msg['fpdf_attente_valid']." / ".$msg['fpdf_rang']." ".($j+1)." : ".$msg['fpdf_reserv_enreg']." ".$resa->date_pose_resa ;

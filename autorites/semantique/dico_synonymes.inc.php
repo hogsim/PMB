@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿? 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dico_synonymes.inc.php,v 1.5 2011-05-10 07:38:32 touraine37 Exp $action $mot
+// $Id: dico_synonymes.inc.php,v 1.6 2015-04-03 11:16:28 jpermanne Exp $action $mot
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -78,8 +78,8 @@ switch ($action) {
 			if ($word_code_selected)$rqt_ins = "update mots set mot='".$word_selected."' where id_mot='$word_code_selected' ";
 			else $rqt_ins ="insert into mots set mot='".$word_selected."' ";
 			
-			@mysql_query($rqt_ins);
-			if (!$word_code_selected)$word_code_selected= mysql_insert_id();		
+			@pmb_mysql_query($rqt_ins);
+			if (!$word_code_selected)$word_code_selected= pmb_mysql_insert_id();		
 		} else {
 				$bool_erreur=true;
 				print "<script> alert('".$msg["word_error"]."'); </script>";
@@ -97,14 +97,14 @@ switch ($action) {
 					else {
 						//vérification de l'existence du mot
 						$rqt_exist="select id_mot, mot from mots left join linked_mots on (num_mot=id_mot) where mot='".$$var_word."' and id_mot not in (select num_mot from linked_mots where linked_mots.num_linked_mot=0) group by id_mot";
-						$query_exist=mysql_query($rqt_exist);
-						if (!mysql_num_rows($query_exist)) {
+						$query_exist=pmb_mysql_query($rqt_exist);
+						if (!pmb_mysql_num_rows($query_exist)) {
 							//insertion d'un nouveau mot
 							$rqt_ins="insert into mots (mot) values ('".$$var_word."')";
 							
-							@mysql_query($rqt_ins);
+							@pmb_mysql_query($rqt_ins);
 							//recherche de l'id du mot inséré
-							$f_words[]=mysql_insert_id();
+							$f_words[]=pmb_mysql_insert_id();
 						}						
 					}
 				}
@@ -114,14 +114,14 @@ switch ($action) {
 		
 			//suppression des enregistrements existants
 			$rqt_del = "delete from linked_mots where num_mot='".$word_code_selected."' ";
-			$res_del = mysql_query($rqt_del, $dbh);
+			$res_del = pmb_mysql_query($rqt_del, $dbh);
 			//insertion du mot et de ses synonymes
 			$rqt_ins = "insert into linked_mots (num_mot, num_linked_mot, type_lien, ponderation) VALUES ";
 						
 			//récupération des synonymes affectés au mot
 			for ($i=0;$i<count($f_words) ; $i++) {
 				$valeurs="('".$word_code_selected."','".$f_words[$i]."','1','0.5')";
-				$res_ins=mysql_query($rqt_ins.$valeurs,$dbh);
+				$res_ins=pmb_mysql_query($rqt_ins.$valeurs,$dbh);
 			}
 			$letter=convert_diacrit(pmb_strtolower(pmb_substr($word_selected,0,1)));
 		}
@@ -144,12 +144,12 @@ switch ($action) {
 		if ($id_mot) {
 			//recherche si le mot est synonyme d'un autre mot
 			$rqt="select num_mot from linked_mots where num_linked_mot=".$id_mot;
-			$execute_query=mysql_query($rqt);
-			if (!mysql_num_rows($execute_query)) {
+			$execute_query=pmb_mysql_query($rqt);
+			if (!pmb_mysql_num_rows($execute_query)) {
 				$rqt_del = "delete from mots where id_mot='".$id_mot."' ";
-				@mysql_query($rqt_del, $dbh);
+				@pmb_mysql_query($rqt_del, $dbh);
 				$rqt_del = "delete from linked_mots where num_mot='".$id_mot."' ";
-				@mysql_query($rqt_del, $dbh);	
+				@pmb_mysql_query($rqt_del, $dbh);	
 				//$letter=convert_diacrit(pmb_strtolower(pmb_substr($mot,0,1)));
 			} else print "<script> alert('".addslashes($msg["other_word_syn_error"])."'); document.location='./autorites.php?categ=semantique&sub=synonyms&id_mot=$id_mot&mot=$mot&action=view';</script>";
 		} else print "<script> alert('".$msg["word_error"]."'); </script>";
@@ -163,12 +163,12 @@ if ($action!='view') {
 	if ($action!='last_words') $tri="order by mot";
 	//comptage des mots
 	$rqt1="select id_mot, mot from mots left join linked_mots on (num_mot=id_mot) where id_mot not in (select num_mot from linked_mots where linked_mots.num_linked_mot=0)$clause group by id_mot";
-	$execute_query1=mysql_query($rqt1);
-	$nb_result=mysql_num_rows($execute_query1);
-	mysql_free_result($execute_query1);
+	$execute_query1=pmb_mysql_query($rqt1);
+	$nb_result=pmb_mysql_num_rows($execute_query1);
+	pmb_mysql_free_result($execute_query1);
 	//recherche des mots
 	$rqt="select id_mot, mot from mots left join linked_mots on (num_mot=id_mot) where id_mot not in (select num_mot from linked_mots where linked_mots.num_linked_mot=0)$clause group by id_mot $tri $limit";
-	$execute_query=mysql_query($rqt);
+	$execute_query=pmb_mysql_query($rqt);
 	if ($execute_query&&$nb_result) {
 		$affichage_mots="<div class='row'>";
 		if ($action=='last_words'||$word_search) {
@@ -179,7 +179,7 @@ if ($action!='view') {
 			$words_for_syn=array();
 			$words_for_syn1=array();
 		}
-		while ($r=mysql_fetch_object($execute_query)) {
+		while ($r=pmb_mysql_fetch_object($execute_query)) {
 			if (!$word_search&&$action!='last_words') {
 				$words_for_syn[$r->id_mot]=stripslashes($r->mot);
 				$words_for_syn1[$r->id_mot]=convert_diacrit(pmb_strtolower(stripslashes($r->mot)));

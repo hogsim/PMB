@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tag.inc.php,v 1.4 2009-05-16 11:12:02 dbellamy Exp $
+// $Id: tag.inc.php,v 1.5 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,8 +18,8 @@ global $opac_allow_add_tag ;
 if (!$opac_allow_add_tag) return "";			
 // comptage des tags à valider
 $sql = " SELECT 1 FROM tags limit 1";
-$req = mysql_query($sql) or die ($msg["err_sql"]."<br />".$sql."<br />".mysql_error());
-$nb_limite = mysql_num_rows($req) ;
+$req = pmb_mysql_query($sql) or die ($msg["err_sql"]."<br />".$sql."<br />".pmb_mysql_error());
+$nb_limite = pmb_mysql_num_rows($req) ;
 if (!$nb_limite) return "" ;
 	else return "<li><a href='./catalog.php?categ=tags' target='_parent'>$msg[alerte_tag_a_valider]</a></li>" ;
 }
@@ -33,8 +33,8 @@ global $opac_avis_allow ;
 if (!$opac_avis_allow) return "";			
 // comptage des avis à valider
 $sql = " SELECT 1 FROM avis where valide=0 limit 1";
-$req = mysql_query($sql) or die ($msg["err_sql"]."<br />".$sql."<br />".mysql_error());
-$nb_depasse = mysql_num_rows($req) ;
+$req = pmb_mysql_query($sql) or die ($msg["err_sql"]."<br />".$sql."<br />".pmb_mysql_error());
+$nb_depasse = pmb_mysql_num_rows($req) ;
 if (!$nb_depasse) return "" ;
 	else return "<li><a href='./catalog.php?categ=avis' target='_parent'>$msg[alerte_avis_a_valider]</a></li>" ;
 }

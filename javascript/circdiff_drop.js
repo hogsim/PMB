@@ -1,7 +1,7 @@
 /* +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: circdiff_drop.js,v 1.2 2011-12-07 10:41:52 ngantier Exp $ */
+// $Id: circdiff_drop.js,v 1.3 2014-10-15 16:09:56 dgoron Exp $ */
 
 /*
  * Fonction pour trier la liste des destinataires en circulation de périodique
@@ -42,6 +42,9 @@ function update_order(source,cible){
 	var url= "./ajax.php?module=catalog&categ=serialcirc_diff&sub=up_order_circdiff";	
 	var action = new http_request();
 	action.request(url,true,"&tablo="+tab_circdiff.join(","));
+	if (document.getElementById('sort_field')) {
+		document.getElementById('sort_field').options[0].setAttribute('selected','selected');
+	}
 }
 
 function circdiff_highlight(obj) {

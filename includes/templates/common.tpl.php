@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: common.tpl.php,v 1.100.2.4 2015-09-28 08:17:11 mbertin Exp $
+// $Id: common.tpl.php,v 1.114 2015-06-19 09:23:03 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -109,6 +109,7 @@ $std_header.="
 	<script src=\"".$base_path."/javascript/popup.js\" type=\"text/javascript\"></script>
 	<script src=\"".$base_path."/javascript/drag_n_drop.js\" type=\"text/javascript\"></script>
 	<script src=\"".$base_path."/javascript/handle_drop.js\" type=\"text/javascript\"></script>
+	<script src=\"".$base_path."/javascript/cart_div.js\" type=\"text/javascript\"></script>
 	<script src=\"".$base_path."/javascript/misc.js\" type=\"text/javascript\"></script>
 	<script src=\"".$base_path."/javascript/http_request.js\" type=\"text/javascript\"></script>
 	<script type=\"text/javascript\"> var base_path='".$base_path."' </script>
@@ -129,8 +130,20 @@ $std_header.="
 			}
 		}
 	</script>
-
 ";
+
+if($pmb_map_activate){
+	switch($pmb_map_base_layer_type){
+		case "GOOGLE" :
+			$std_header.="<script src='http://maps.google.com/maps/api/js?v=3&amp;sensor=false'></script>";
+			break;
+	}
+	$std_header.="<link rel='stylesheet' type='text/css' href='".$javascript_path."/openlayers/theme/default/style.css'/>";
+	$std_header.="<script type='text/javascript' src='".$javascript_path."/openlayers/lib/OpenLayers.js'></script>";	
+	$std_header.="<script type='text/javascript' src='".$javascript_path."/html2canvas.js'></script>";
+}
+
+
 if(isset($base_use_dojo))	
 	$std_header.="
 		<link rel='stylesheet' type='text/css' href='".$base_path."/javascript/dojo/dijit/themes/claro/claro.css' />
@@ -139,10 +152,43 @@ if(isset($base_use_dojo))
 				parseOnLoad: true,
 				locale: '".str_replace("_","-",strtolower($lang))."',
 				isDebug: false,
-				usePlainJson: true
+				usePlainJson: true,
+				packages: [{
+					name: 'pmbBase',
+					location:'../../..'
+				}],
+				deps: ['apps/pmb/MessagesStore'],
+				callback:function(MessagesStore){
+					window.pmbDojo = {};
+					pmbDojo.messages = new MessagesStore({url:'./ajax.php?module=ajax&categ=messages', directInit:false});
+				
+				},
 	        };
 		</script>
 		<script type='text/javascript' src='".$base_path."/javascript/dojo/dojo/dojo.js'></script>
+		<script type='text/javascript' src='".$base_path."/javascript/dojo/dojo/pmbdojo.js'></script>
+		<script type='text/javascript' src='".$base_path."/javascript/dojo/dojo/pmbdijit.js'></script>
+		<link href='".$base_path."/javascript/dojo/dojox/editor/plugins/resources/editorPlugins.css' type='text/css' rel='stylesheet' />
+		<link href='".$base_path."/javascript/dojo/dojox/editor/plugins/resources/css/InsertEntity.css' type='text/css' rel='stylesheet' />
+		<link href='".$base_path."/javascript/dojo/dojox/editor/plugins/resources/css/PasteFromWord.css' type='text/css' rel='stylesheet' />
+		<link href='".$base_path."/javascript/dojo/dojox/editor/plugins/resources/css/InsertAnchor.css' type='text/css' rel='stylesheet' />
+		<link href='".$base_path."/javascript/dojo/dojox/editor/plugins/resources/css/LocalImage.css' type='text/css' rel='stylesheet' />
+		<link href='".$base_path."/javascript/dojo/dojox/form/resources/FileUploader.css' type='text/css' rel='stylesheet' />
+		<script type='text/javascript'>
+			dojo.require('dijit.Editor');
+			dojo.require('dijit._editor.plugins.LinkDialog');
+			dojo.require('dijit._editor.plugins.FontChoice');
+			dojo.require('dijit._editor.plugins.TextColor');
+			dojo.require('dijit._editor.plugins.FullScreen');
+			dojo.require('dijit._editor.plugins.ViewSource');
+			dojo.require('dojox.editor.plugins.InsertEntity');
+			dojo.require('dojox.editor.plugins.TablePlugins');
+			dojo.require('dojox.editor.plugins.ResizeTableColumn');
+			dojo.require('dojox.editor.plugins.PasteFromWord');
+			dojo.require('dojox.editor.plugins.InsertAnchor');
+			dojo.require('dojox.editor.plugins.Blockquote');
+			dojo.require('dojox.editor.plugins.LocalImage');
+		</script>
 	";
 if (function_exists("auto_hide_getprefs")) $std_header.=auto_hide_getprefs()."\n";
 $std_header.="
@@ -324,13 +370,10 @@ $menu_bar = $menu_bar."
 	</ul>
 </div>";
 
-$notification_empty=$base_path."/images/notification_empty.png";
-if(file_exists($styles_path."/".$stylesheet."/images/notification_empty.png")){
-	$notification_empty=$styles_path."/".$stylesheet."/images/notification_empty.png";
-}
+
 $notification_icon = "
 		<div class='notification' id='notification'>
-			<img src='".$notification_empty."' title='".$msg['empty_notification']."' alt='".$msg['empty_notification']."'>
+			<img src='".$styles_path."/".$stylesheet."/images/notification_empty.png' title='".$msg['empty_notification']."' alt='".$msg['empty_notification']."'>
 		</div>";
 $notification_zone = "
 		<div id='notification_zone'>
@@ -532,3 +575,28 @@ $end_result_list = "
 
 	
 /* /listes dépliables et tris */
+
+/* Editeur HTML DOJO */
+$cms_dojo_plugins_editor=
+" data-dojo-props=\"extraPlugins:[
+			{name: 'pastefromword', width: '400px', height: '200px'},
+			{name: 'dojox.editor.plugins.TablePlugins', command: 'insertTable'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'modifyTable'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'InsertTableRowBefore'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'InsertTableRowAfter'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'insertTableColumnBefore'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'insertTableColumnAfter'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'deleteTableRow'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'deleteTableColumn'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'colorTableCell'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'tableContextMenu'},
+		    {name: 'dojox.editor.plugins.TablePlugins', command: 'ResizeTableColumn'},
+			{name: 'fontName', plainText: true},
+			{name: 'fontSize', plainText: true},
+			{name: 'formatBlock', plainText: true},
+			'foreColor','hiliteColor',
+			'createLink','insertanchor', 'unlink', 'insertImage',
+			'fullscreen',
+			'viewsource'
+
+		]\"	";

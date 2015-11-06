@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_document.class.php,v 1.3.2.3 2015-04-24 12:12:33 mbertin Exp $
+// $Id: cms_document.class.php,v 1.8 2015-04-24 13:00:11 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -51,9 +51,9 @@ class cms_document {
 	protected function fetch_datas(){
 		if($this->id){
 			$query = "select document_title,document_description,document_filename,document_mimetype,document_filesize,document_vignette,document_url,document_path,document_create_date,document_num_storage,document_type_object,document_num_object from cms_documents where id_document = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->title = $row->document_title;
 				$this->description = $row->document_description;
 				$this->filename = $row->document_filename;
@@ -73,9 +73,9 @@ class cms_document {
 			
 			//récupération des utilisations
 			$query = "select * from cms_documents_links where document_link_num_document = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row=mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				while($row=pmb_mysql_fetch_object($result)){
 					if(!$this->used[$row->document_link_type_object]) $this->used[$row->document_link_type_object] = array();
 					$this->used[$row->document_link_type_object][] = $row->document_link_num_object;
 				}
@@ -233,9 +233,9 @@ class cms_document {
 						break;
 				}
 				if($query){
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						while($row = mysql_fetch_object($result)){
+					$result = pmb_mysql_query($query) ;
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							$form.="
 						<tr>
 							<td><input type='checkbox' value='".$type."_".$row->id."' name='used[]'/></td>
@@ -328,9 +328,9 @@ class cms_document {
 		global $msg,$charset;
 		global $cms_document_title,$cms_document_description,$cms_document_url,$cms_document_vign;
 		
-		$this->title = $cms_document_title;
-		$this->description = $cms_document_description;
-		$this->url = $cms_document_url;
+		$this->title = stripslashes($cms_document_title);
+		$this->description = stripslashes($cms_document_description);
+		$this->url = stripslashes($cms_document_url);
 		
 		if($cms_document_vign){
 			$this->calculate_vignette();
@@ -352,7 +352,7 @@ class cms_document {
 			$query.= ",
 			document_vignette = '".addslashes($this->vignette)."'";	
 		}
-		if(mysql_query($query.$clause)){
+		if(pmb_mysql_query($query.$clause)){
 			if($caller = "editorial_form"){
 				return $this->get_item_form(true,"openEditDialog");
 			}else{
@@ -366,12 +366,12 @@ class cms_document {
 	
 		//vérification d'utilisation
 		$query = "select * from cms_documents_links where document_link_num_document = ".$this->id;
-		$result = mysql_query($query);
-		if(!mysql_num_rows($result)){
+		$result = pmb_mysql_query($query);
+		if(!pmb_mysql_num_rows($result)){
 			//suppression physique
 			if($this->storage->delete($this->path.$this->filename)){
 				//il ne reste plus que la base
-				if(mysql_query("delete from cms_documents where id_document = ".$this->id)){
+				if(pmb_mysql_query("delete from cms_documents where id_document = ".$this->id)){
 					return true;
 				}
 			}else{
@@ -410,7 +410,7 @@ class cms_document {
 	
 	function regen_vign(){
 		$this->calculate_vignette();
-		mysql_query("update cms_documents set document_vignette = '".addslashes($this->vignette)."' where id_document = ".$this->id);
+		pmb_mysql_query("update cms_documents set document_vignette = '".addslashes($this->vignette)."' where id_document = ".$this->id);
 	}
 	
 	function get_document_in_tmp(){
@@ -589,7 +589,7 @@ class cms_document {
 		foreach($elem as $type=> $elem){
 			//TODO, vérifier utilisation du document dans l'association
 			$query = "delete from cms_documents_links where document_link_type_object = '".$type."' and document_link_num_object in (".implode(",",$elem).") and document_link_num_document = ".$this->id;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query);
 			if(!$result) return false;
 		}
 		return true;

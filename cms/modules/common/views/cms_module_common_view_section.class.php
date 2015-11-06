@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_section.class.php,v 1.12 2013-09-05 12:08:14 apetithomme Exp $
+// $Id: cms_module_common_view_section.class.php,v 1.13 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -84,9 +84,9 @@ class cms_module_common_view_section extends cms_module_common_view_django{
 				<select id='".$name."' name='".$name."' onChange='cms_module_common_view_section_load_".$type."_page_env();'>
 					<option value='0'>".$this->format_text($this->msg['cms_module_common_link_constructor_page'])."</option>";
 		$query = "select id_page,page_name from cms_pages order by 2";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while( $row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while( $row = pmb_mysql_fetch_object($result)){
 				$form.= "
 					<option value='".$row->id_page."' ".($row->id_page == $this->parameters['links'][$type]['page'] ? "selected='selected'" : "").">".$this->format_text($row->page_name)."</option>";
 			}

@@ -5,17 +5,18 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_search_view_search.xml,v 1.4.2.1 2015-03-27 08:46:09 cbenard Exp $ -->
+$Id: cms_module_search_view_search.xml,v 1.7 2015-06-16 12:05:54 pmbs Exp $ -->
 
 <XMLlist>
 	<entry code='cms_module_search_button_label'>Search</entry>
-	<entry code='cms_module_search_view_help'>Afficher le bouton d'aide</entry>
-	<entry code='cms_module_search_view_help_yes'>Oui</entry>
-	<entry code='cms_module_search_view_help_no'>Non</entry>
+	<entry code='cms_module_search_view_help'>Display the help button</entry>
+	<entry code='cms_module_search_view_help_yes'>Yes</entry>
+	<entry code='cms_module_search_view_help_no'>No</entry>
 	<entry code='cms_module_search_help'>Help</entry>
-	<entry code='cms_module_search_view_title'>Titre du cadre de recherche</entry>
-	<entry code='cms_module_search_view_link_search_advanced'>Afficher le lien de recherche avancée</entry>
-	<entry code='cms_module_search_view_link_search_advanced_yes'>Oui</entry>
-	<entry code='cms_module_search_view_link_search_advanced_no'>Non</entry>
+	<entry code='cms_module_search_view_title'>Title of the search frame</entry>
+	<entry code='cms_module_search_view_link_search_advanced'>Display the advanced search link</entry>
+	<entry code='cms_module_search_view_link_search_advanced_yes'>Yes</entry>
+	<entry code='cms_module_search_view_link_search_advanced_no'>No</entry>
 	<entry code='cms_module_search_view_link_search_advanced_display'>Advanced search</entry>
+	<entry code='cms_module_search_view_input_placeholder'>Default informative text</entry>
 </XMLlist>

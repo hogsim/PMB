@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: expand_ajax.inc.php,v 1.6 2013-06-20 09:59:31 ngantier Exp $
+// $Id: expand_ajax.inc.php,v 1.7 2015-04-18 13:12:36 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -49,6 +49,17 @@ $html=$display->result;
 if(!$flag_no_onglet_perso){
 	$onglet_perso=new notice_onglets();
 	$html=$onglet_perso->insert_onglets($param['id'],$html);
+}
+if ($param['id'] && $param['datetime'] && $param['token']) {
+	if ($opac_notice_affichage_class::check_token($param['id'], $param['datetime'], $param['token'])) {
+		add_value_session('tab_result_read',$param['id']);
+		if($pmb_logs_activate) {
+			global $infos_notice,$infos_expl;
+			$infos_notice = $opac_notice_affichage_class::get_infos_notice($param['id']);
+			$infos_expl = $opac_notice_affichage_class::get_infos_expl($param['id']);
+			generate_log();
+		}
+	}
 }
 ajax_http_send_response($html);
 ?>

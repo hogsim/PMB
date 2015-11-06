@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: statut.inc.php,v 1.8 2011-12-12 13:27:06 arenou Exp $
+// $Id: statut.inc.php,v 1.9 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -48,12 +48,12 @@ function show_statut($dbh) {
 
 	// affichage du tableau des statuts
 	$requete = "SELECT idstatut, statut_libelle, allow_loan, allow_loan_hist, allow_book, allow_opac, allow_dsi, allow_dsi_priv, allow_sugg, allow_dema, allow_prol, allow_avis, allow_tag , allow_pwd, allow_liste_lecture, allow_self_checkout, allow_self_checkin, allow_serialcirc FROM empr_statut ORDER BY statut_libelle ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -172,18 +172,18 @@ switch($action) {
 	case 'update':
 		// vérification validité des données fournies.
 		$requete = " SELECT count(1) FROM empr_statut WHERE (statut_libelle='$statut_libelle' AND idstatut!='$id' ) ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 			error_form_message($statut_libelle.$msg["empr_statut_label_already_used"]);
 		} else {
 			// O.K.,  now if item already exists UPDATE else INSERT
 			if($id) {
 				$requete = "UPDATE empr_statut SET statut_libelle='$statut_libelle', allow_loan='$allow_loan', allow_loan_hist='$allow_loan_hist', allow_book='$allow_book', allow_opac='$allow_opac', allow_dsi='$allow_dsi', allow_dsi_priv='$allow_dsi_priv', allow_sugg='$allow_sugg', allow_dema='$allow_dema', allow_prol='$allow_prol', allow_avis='$allow_avis', allow_tag='$allow_tag', allow_pwd='$allow_pwd', allow_liste_lecture='$allow_liste_lecture', allow_self_checkout='$allow_self_checkout', allow_self_checkin='$allow_self_checkin', allow_serialcirc='$allow_serialcirc' WHERE idstatut=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}else {
 				$requete = "INSERT INTO empr_statut set idstatut=0, statut_libelle='$statut_libelle', allow_loan='$allow_loan', allow_loan_hist='$allow_loan_hist', allow_book='$allow_book', allow_opac='$allow_opac', allow_dsi='$allow_dsi', allow_dsi_priv='$allow_dsi_priv', allow_sugg='$allow_sugg', allow_dema='$allow_dema', allow_prol='$allow_prol', allow_avis='$allow_avis', allow_tag='$allow_tag', allow_pwd='$allow_pwd', allow_liste_lecture='$allow_liste_lecture', allow_self_checkout='$allow_self_checkout', allow_self_checkin='$allow_self_checkin', allow_serialcirc='$allow_serialcirc' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}
 		}
 		show_statut($dbh);
@@ -195,9 +195,9 @@ switch($action) {
 	case 'modif':
 		if ($id){
 			$requete = "SELECT idstatut, statut_libelle, allow_loan, allow_loan_hist, allow_book, allow_opac, allow_dsi, allow_dsi_priv, allow_sugg, allow_liste_lecture, allow_dema, allow_prol, allow_avis, allow_tag, allow_pwd, allow_self_checkout, allow_self_checkin, allow_serialcirc FROM empr_statut WHERE idstatut=$id ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				statut_form($row->statut_libelle, $row->allow_loan, $row->allow_loan_hist, $row->allow_book, $row->allow_opac, $row->allow_dsi, $row->allow_dsi_priv, $row->allow_sugg, $row->allow_liste_lecture, $row->allow_dema, $row->allow_prol, $row->allow_avis, $row->allow_tag, $row->allow_pwd, $row->allow_self_checkout, $row->allow_self_checkin, $row->allow_serialcirc, $id);
 			} else {
 				show_statut($dbh);
@@ -209,10 +209,10 @@ switch($action) {
 	case 'del':
 		if ($id>2) {
 			$total = 0;
-			$total = mysql_result(mysql_query("select count(1) from empr where empr_statut ='".$id."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from empr where empr_statut ='".$id."' ", $dbh), 0, 0);
 			if ($total==0) {
 				$requete = "DELETE FROM empr_statut WHERE idstatut=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_statut($dbh);
 				} else {
 					error_message(	"", $msg['empr_statut_del_impossible'], 1, 'admin.php?categ=empr&sub=statut&action=');

@@ -2,12 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: external_services_caches.class.php,v 1.5.6.1 2015-01-13 10:13:10 dbellamy Exp $
+// $Id: external_services_caches.class.php,v 1.8 2015-04-03 11:16:19 jpermanne Exp $
 
 define("CACHE_TYPE_NOTICE", 1);
 define("CACHE_TYPE_OPACEMPRSESSION", 2);
 define("CACHE_TYPE_MISC", 3);
 define("CACHE_TYPE_EXTERNAL_NOTICE", 4);
+define("CACHE_TYPE_CMS_EDITORIAL_ARTICLE", 5);
+define("CACHE_TYPE_SHELF", 6);
 
 class external_services_cache {
 	var $table_name='';
@@ -25,7 +27,7 @@ class external_services_cache {
 		global $dbh;
 		//Deletons les valeurs trop vielles
 		$sql = "DELETE FROM ".$this->table_name." WHERE es_cache_expirationdate < NOW()";
-		mysql_query($sql);
+		pmb_mysql_query($sql);
 	}
 	
 	/*
@@ -53,8 +55,8 @@ class external_services_cache {
 		}
 			
 		$sql = "SELECT es_cache_objectref FROM ".$this->table_name." WHERE es_cache_owner = '".addslashes($object_owner)."' AND es_cache_objectformat = '".addslashes($object_format)."' AND es_cache_objecttype = '".addslashes($object_type)."'".$limit;
-		$res = mysql_query($sql, $dbh);
-		while($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$this->objects[] = $row["es_cache_objectref"];
 		}
 		return $this->objects;
@@ -112,15 +114,15 @@ class external_services_cache {
 		}
 		
 		$sql = "SELECT COUNT(1) FROM ".$this->table_name." WHERE es_cache_owner = '".addslashes($object_owner)."' AND es_cache_objectformat = '".addslashes($object_format)."' AND es_cache_objecttype = '".addslashes($object_type)."'";
-		$res = mysql_query($sql, $dbh);
-		$result = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($sql, $dbh);
+		$result = pmb_mysql_result($res, 0, 0);
 		return $result;
 	}
 
 	function delete_objectref_list($object_type, $object_owner, $object_format) {
 		global $dbh;
 		$sql = "DELETE FROM ".$this->table_name." WHERE es_cache_owner = '".addslashes($object_owner)."' AND es_cache_objectformat = '".addslashes($object_format)."' AND es_cache_objecttype = '".addslashes($object_type)."'";
-		mysql_query($sql, $dbh);		
+		pmb_mysql_query($sql, $dbh);		
 	}
 
 	function delete_objectref_list_multiple($object_type, $object_owner, $object_format) {
@@ -132,13 +134,13 @@ class external_services_cache {
 			$in_clause[] = "'".addslashes($aowner)."'";
 		$in_clause = implode(",", $in_clause);
 		$sql = "DELETE FROM ".$this->table_name." WHERE es_cache_owner IN (".$in_clause.") AND es_cache_objectformat = '".addslashes($object_format)."' AND es_cache_objecttype = '".addslashes($object_type)."'";
-		mysql_query($sql, $dbh);		
+		pmb_mysql_query($sql, $dbh);		
 	}
 	
 	function delete_objectref_list_multiple_using_query($object_type, $object_owner_sql, $object_format) {
 		global $dbh;
 		$sql = "DELETE FROM ".$this->table_name." WHERE es_cache_owner IN (".$object_owner_sql.") AND es_cache_objectformat = '".addslashes($object_format)."' AND es_cache_objecttype = '".addslashes($object_type)."'";
-		mysql_query($sql, $dbh);		
+		pmb_mysql_query($sql, $dbh);		
 	}
 	
 	function encache_objectref_list($object_type, $object_owner, $object_format, $object_refs) {
@@ -151,7 +153,7 @@ class external_services_cache {
 			$values = implode(", ".$information."),(", $someobjects);
 			$values = '('.$values.','.$information.")";
 			$sql = "INSERT INTO ".$this->table_name." (es_cache_objectref, es_cache_objecttype, es_cache_objectformat, es_cache_owner, es_cache_creationdate, es_cache_expirationdate, es_cache_content) VALUES ".$values;
-			$res = mysql_query($sql, $dbh);
+			$res = pmb_mysql_query($sql, $dbh);
 		}
 	}
 
@@ -159,14 +161,14 @@ class external_services_cache {
 	function encache_objectref_list_from_select($object_type, $object_owner, $object_format, $ref_select) {
 		global $dbh;
 		$sql = "INSERT INTO ".$this->table_name." (es_cache_objectref, es_cache_objecttype, es_cache_objectformat, es_cache_owner, es_cache_creationdate, es_cache_expirationdate) SELECT subquery.* , ".$object_type.", '".addslashes($object_format)."', '".addslashes($object_owner)."', NOW(), NOW() + INTERVAL ".$this->cache_duration." SECOND FROM (".$ref_select.") as subquery";
-		mysql_query($sql, $dbh);		
+		pmb_mysql_query($sql, $dbh);		
 	}
 	
 	//Cette fonction remplit le cache à partir d'une sous requête renvoyant uniquement deux colonnes
 	function encache_objectref_list_from_select_with_content($object_type, $object_owner, $object_format, $ref_select) {
 		global $dbh;
 		$sql = "INSERT INTO ".$this->table_name." (es_cache_objectref, es_cache_content, es_cache_objecttype, es_cache_objectformat, es_cache_owner, es_cache_creationdate, es_cache_expirationdate) SELECT subquery.* , ".$object_type.", '".addslashes($object_format)."', '".addslashes($object_owner)."', NOW(), NOW() + INTERVAL ".$this->cache_duration." SECOND FROM (".$ref_select.") as subquery";	
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	/*
@@ -190,8 +192,8 @@ class external_services_cache {
 		$paquets_de_100_objets = array_chunk($object_refs, 100);
 		foreach ($paquets_de_100_objets as $someobjects) {
 			$sql = "SELECT es_cache_objectref, es_cache_content FROM ".$this->table_name." WHERE es_cache_objecttype = ".$object_type." AND es_cache_objectformat = '".$object_format."' AND es_cache_objectref IN (".implode(",", $someobjects).") AND es_cache_owner = '".$object_owner."'";
-			$res = mysql_query($sql, $dbh);
-			while ($row = mysql_fetch_assoc($res)) {
+			$res = pmb_mysql_query($sql, $dbh);
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$this->objects[$row["es_cache_objectref"]] = $row["es_cache_content"];
 			}
 		}
@@ -205,7 +207,7 @@ class external_services_cache {
 		$paquets_de_1000_objets = array_chunk($object_refs, 1000);
 		foreach ($paquets_de_1000_objets as $someobjects) {
 			$sql = "DELETE FROM ".$this->table_name." WHERE es_cache_objecttype = ".$object_type." AND es_cache_objectformat = '".$object_format."' AND es_cache_objectref IN (".implode(",", $someobjects).") AND   	es_cache_owner = ".$object_owner;
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 		}
 	}
 
@@ -221,7 +223,7 @@ class external_services_cache {
 			}
 			$valuee = implode(',', $values);
 			$sql = "INSERT INTO ".$this->table_name." (es_cache_objectref, es_cache_content, es_cache_objecttype, es_cache_objectformat, es_cache_owner, es_cache_creationdate, es_cache_expirationdate) VALUES ".$valuee;
-			$res = mysql_query($sql, $dbh);
+			$res = pmb_mysql_query($sql, $dbh);
 		}		
 	}
 	
@@ -234,8 +236,8 @@ class external_services_cache {
 		global $dbh;
 		$object_type+=0;
 		$sql = "REPLACE INTO ".$this->table_name." SET es_cache_objectref = '".addslashes($object_ref)."', es_cache_objecttype = ".$object_type.", es_cache_objectformat = 'none', es_cache_owner = 'single_cache', es_cache_creationdate = NOW(), es_cache_expirationdate = NOW() + INTERVAL ".$this->cache_duration." SECOND, es_cache_content = '".addslashes($object_value)."'";
-		mysql_query($sql, $dbh);
-		return mysql_error() != '';
+		pmb_mysql_query($sql, $dbh);
+		return pmb_mysql_error() != '';
 	}
 	
 	function decache_single_object($object_ref, $object_type, $delete_expired=true) {
@@ -249,17 +251,17 @@ class external_services_cache {
 				
 		$object_type+=0;
 		$sql = "SELECT es_cache_content FROM ".$this->table_name." WHERE es_cache_objecttype = ".$object_type." AND es_cache_objectformat = 'none' AND es_cache_owner='single_cache' AND es_cache_objectref='".addslashes($object_ref)."'";
-		$res = mysql_query($sql, $dbh);
-		if (!mysql_numrows($res))
+		$res = pmb_mysql_query($sql, $dbh);
+		if (!pmb_mysql_num_rows($res))
 			return false;
-		return mysql_result($res, 0, 0);
+		return pmb_mysql_result($res, 0, 0);
 	}
 	
 	function delete_single_object($object_ref, $object_type) {
 		global $dbh;
 		$object_type+=0;
 		$sql = "DELETE FROM ".$this->table_name." WHERE es_cache_objecttype = ".$object_type." AND es_cache_objectformat = 'none' AND es_cache_owner='single_cache' AND es_cache_objectref='".addslashes($object_ref)."'";
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 	}
 }

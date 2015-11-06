@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: perio.inc.php,v 1.5 2009-05-16 10:52:44 dbellamy Exp $
+// $Id: perio.inc.php,v 1.6 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -46,8 +46,8 @@ function show_results ($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 		$requete = "select count(notice_id) from notices where (".$members["where"]." or code like '".stripslashes($user_input)."') and notice_id!='".$no_display."' and niveau_biblio='s' and niveau_hierar='1'";
 	}
 	
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 
 	if(!$page) $page=1;
 	$debut =($page-1)*$nb_per_page;
@@ -61,9 +61,9 @@ function show_results ($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			$requete = "select notice_id, tit1, code, ".$members["select"]." as pert from notices where (".$members["where"]." or code like '".stripslashes($user_input)."') and notice_id!='".$no_display."' and niveau_biblio='s' and niveau_hierar='1' group by notice_id order by pert desc, index_serie, tnvol, index_sew, code limit $debut,$nb_per_page";
 		}
 
-		$res = @mysql_query($requete, $dbh);
+		$res = @pmb_mysql_query($requete, $dbh);
 		print "<table><tr>";
-		while(($notice=mysql_fetch_object($res))) {
+		while(($notice=pmb_mysql_fetch_object($res))) {
 			$notice_entry = $notice->tit1."&nbsp;".$notice->code;
 			print "
 				<tr>
@@ -73,7 +73,7 @@ function show_results ($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			print "</tr>";
 		}
 		print "</table>";
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 

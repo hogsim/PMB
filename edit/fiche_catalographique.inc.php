@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fiche_catalographique.inc.php,v 1.10.18.2 2014-12-10 11:32:39 jpermanne Exp $
+// $Id: fiche_catalographique.inc.php,v 1.12 2014-12-10 11:33:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -109,7 +109,7 @@ class FPDF_Catalog extends FPDF
         }
         
     /* book editor(s) */
-    	if (strlen($notice->ed1)>0) {
+        if (strlen($notice->ed1)>0) {
            $body=$body.$notice->ed1. ", ";
            if (strlen($notice->ed2)>0) {
               $body=$body.$notice->ed2. ", ";
@@ -118,7 +118,6 @@ class FPDF_Catalog extends FPDF
         if ((strlen($notice->ed1)>0)||(strlen($notice->ed2)>0)) {
         	$body=pmb_substr($body,0,pmb_strlen($body)-2);
         }
-        $body=pmb_substr($body,0,pmb_strlen($body)-2);
         if (strlen($notice->year)>0) $body=$body." :".$notice->year;
         $body=$body.".&nbsp;-";
 

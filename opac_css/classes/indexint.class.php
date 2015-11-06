@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: indexint.class.php,v 1.21 2012-11-23 16:30:06 mbertin Exp $
+// $Id: indexint.class.php,v 1.22 2015-04-03 11:16:18 jpermanne Exp $
 
 // définition de la classe de gestion des 'indexations internes'
 if ( ! defined( 'INDEXINT_CLASS' ) ) {
@@ -43,9 +43,9 @@ function getData() {
 	if(!$this->indexint_id) {
 		if ($this->name) { // rech par cote et non par $id
 			$requete = "SELECT indexint_id,indexint_name,indexint_comment,num_pclass FROM indexint WHERE indexint_name='".$this->name."' " ;
-			$result = mysql_query($requete, $dbh) or die ($requete."<br />".mysql_error());
-			if(mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);
+			$result = pmb_mysql_query($requete, $dbh) or die ($requete."<br />".pmb_mysql_error());
+			if(pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);
 				$this->indexint_id	= $temp->indexint_id;
 				$this->name		= $temp->indexint_name;
 				$this->comment		= $temp->indexint_comment;
@@ -70,9 +70,9 @@ function getData() {
 		}
 	} else {
 		$requete = "SELECT indexint_id,indexint_name,indexint_comment,num_pclass FROM indexint WHERE indexint_id='".$this->indexint_id."' " ;
-		$result = mysql_query($requete, $dbh) or die ($requete."<br />".mysql_error());
-		if(mysql_num_rows($result)) {
-			$temp = mysql_fetch_object($result);
+		$result = pmb_mysql_query($requete, $dbh) or die ($requete."<br />".pmb_mysql_error());
+		if(pmb_mysql_num_rows($result)) {
+			$temp = pmb_mysql_fetch_object($result);
 			$this->indexint_id	= $temp->indexint_id;
 			$this->name		= $temp->indexint_name;
 			$this->comment		= $temp->indexint_comment;
@@ -94,8 +94,8 @@ function getData() {
 function has_notices() {
 	global $dbh;
 	$query = "select count(1) from notices where indexint=".$this->indexint_id;
-	$result = mysql_query($query, $dbh);
-	return (@mysql_result($result, 0, 0));
+	$result = pmb_mysql_query($query, $dbh);
+	return (@pmb_mysql_result($result, 0, 0));
 	}
 
 function cherche_direct_child() {
@@ -140,10 +140,10 @@ function cherche_direct_child() {
 	}
 	
 	$query = "select indexint_id,indexint_name,indexint_comment from indexint where ".$clause." order by indexint_name ";
-	$res = mysql_query($query, $dbh);
-	$this->has_child=mysql_num_rows($res) ;
+	$res = pmb_mysql_query($query, $dbh);
+	$this->has_child=pmb_mysql_num_rows($res) ;
 	if ($this->has_child) {
-		while ($obj=mysql_fetch_object($res)) {
+		while ($obj=pmb_mysql_fetch_object($res)) {
 			$this->childs[]=array(
 					'idchild' => $obj->indexint_id,
 					'namechild' => $obj->indexint_name,
@@ -195,10 +195,10 @@ function cherche_child() {
 	// $query = "select indexint_id,indexint_name,indexint_comment from indexint where ".$clause." order by indexint_name ";
 	// sans affichage de l'indexation parente
 	$query = "select indexint_id,indexint_name,indexint_comment from indexint where ".$clause." and indexint_name <> '".addslashes($this->name)."' order by indexint_name ";
-	$res = mysql_query($query, $dbh);
-	$this->has_child=mysql_num_rows($res) ;
+	$res = pmb_mysql_query($query, $dbh);
+	$this->has_child=pmb_mysql_num_rows($res) ;
 	if ($this->has_child) 
-		while ($obj=mysql_fetch_object($res)) {
+		while ($obj=pmb_mysql_fetch_object($res)) {
 			$this->childs[]=array(
 					'idchild' => $obj->indexint_id,
 					'namechild' => $obj->indexint_name,

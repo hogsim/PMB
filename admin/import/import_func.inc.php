@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: import_func.inc.php,v 1.111.2.5 2015-03-09 13:03:53 dbellamy Exp $
+// $Id: import_func.inc.php,v 1.117 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -231,9 +231,9 @@ function loadfile_in_table () {
 	/* First load of the shot, let's empty the import table */
 	if ($recharge=="") {
 		$sql = "DELETE FROM import_marc WHERE origine='".addslashes(SESSid)."' ";
-		$sql_result = mysql_query($sql) or die ("Couldn't delete import table !");
+		$sql_result = pmb_mysql_query($sql) or die ("Couldn't delete import table !");
 		$sql = "DELETE FROM error_log WHERE error_origin LIKE '%_".addslashes(SESSid).".%' ";
-		$sql_result = mysql_query($sql) or die ("Couldn't delete error_log table !");
+		$sql_result = pmb_mysql_query($sql) or die ("Couldn't delete error_log table !");
 	}
 
 	/* The whole file is in $contents, let's read it */
@@ -254,7 +254,7 @@ function loadfile_in_table () {
 				$str_lu = $str_lu.$car_lu;
 				$j++;
 				$sql = "INSERT INTO import_marc (notice,origine) VALUES('".addslashes($str_lu)."','".addslashes(SESSid)."')";
-				$sql_result = mysql_query($sql)
+				$sql_result = pmb_mysql_query($sql)
 					or die ("Couldn't insert record!");
 				if ($j>=$pmb_import_limit_read_file && $i<strlen($contents)) {
 					/* let's rewrite the file with the remaing string  */
@@ -457,7 +457,7 @@ function recup_noticeunimarc($notice) {
 		$num_notice=$record->get_subfield("001");
 		$titr=$record->get_subfield_array("200", 'a');
 		$requete="insert into error_log(error_origin,error_text) values('import_func_".addslashes(SESSid).".inc.php','".addslashes("La notice (numéro : ".$num_notice[0].", titre : ".$titr[0].") n'a pas été reprise. <BR/><span style='color:#FF0000'>Erreur(s):".implode("<BR/>",$record->errors)."</span>")."')";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		return false;
 	}
 	$doc_type=$record->inner_guide['dt'];
@@ -1106,8 +1106,8 @@ function import_new_notice() {
 						sysdate(),
 						'".addslashes($date_parution)."'
 						)";
-		mysql_query($sql_ins,$dbh) or die ("Couldn't insert into notices ! = ".$sql_ins);
-		$notice_id = mysql_insert_id($dbh) ;
+		pmb_mysql_query($sql_ins,$dbh) or die ("Couldn't insert into notices ! = ".$sql_ins);
+		$notice_id = pmb_mysql_insert_id($dbh) ;
 		notice::majNotices($notice_id);
 		audit::insert_creation(AUDIT_NOTICE,$notice_id);
 		//calcul des droits d'accès s'ils sont activés
@@ -1292,10 +1292,10 @@ function import_new_notice() {
 					if($values!= "") $values.=",";
 					$values.=" ('".$aut_array[$i]["id"]."','".$notice_id."','".addslashes($aut_array[$i]['fonction'])."','".$aut_array[$i]['responsabilite']."','".$aut_array[$i]['ordre']."') " ;
 	//				$rqt = $rqt_ins . " ('".$aut_array[$i]["id"]."','".$notice_id."','".addslashes($aut_array[$i]['fonction'])."','".$aut_array[$i]['responsabilite']."','".$aut_array[$i]['ordre']."') " ;
-	//				@mysql_query($rqt, $dbh);
+	//				@pmb_mysql_query($rqt, $dbh);
 				}
 			}
-			@mysql_query($rqt_ins.$values);
+			@pmb_mysql_query($rqt_ins.$values);
 		}
 		// Titres uniformes
 		global $pmb_use_uniform_title;
@@ -1333,7 +1333,7 @@ function import_new_notice() {
 					ntu_mention='".addslashes($tu_500[$i]['w'])."',
 					ntu_ordre=$i
 					";
-					mysql_query($requete, $dbh);
+					pmb_mysql_query($requete, $dbh);
 				}
 			}
 		}
@@ -1347,23 +1347,23 @@ function import_new_notice() {
 			if($values!="") $values.=",";
 			$values.="('$notice_id',0, '".addslashes($lang_code[$i])."','$i') ";
 			//$rqt_ins = "insert into notices_langues (num_notice, type_langue, code_langue) VALUES ('$notice_id',0, '".addslashes($lang_code[$i])."') " ;
-			//@mysql_query($rqt_ins, $dbh);
+			//@pmb_mysql_query($rqt_ins, $dbh);
 		}
 		for ($i=0; $i<count($org_lang_code); $i++) {
 			$org_lang_code[$i]=trim($org_lang_code[$i]);
 			if($values!="") $values.=",";
 			$values.="('$notice_id',1, '".addslashes($org_lang_code[$i])."','".$i."') ";
 			//$rqt_ins = "insert into notices_langues (num_notice, type_langue, code_langue) VALUES ('$notice_id',1, '".addslashes($org_lang_code[$i])."') " ;
-// 			@mysql_query($rqt_ins, $dbh);
+// 			@pmb_mysql_query($rqt_ins, $dbh);
 		}
-		@mysql_query($rqt_ins.$values, $dbh);
+		@pmb_mysql_query($rqt_ins.$values, $dbh);
 
 	//Import des catégories
 	category_auto::save_info_categ();
 	//Calcule de la signature
 	$sign= new notice_doublon();
 	$val= $sign->gen_signature($notice_id);
-	mysql_query("update notices set signature='$val' where notice_id=".$notice_id, $dbh);
+	pmb_mysql_query("update notices set signature='$val' where notice_id=".$notice_id, $dbh);
 
 	//Si on a un id de notice et qu'il n'est pas dans le tableau des notices créées, on l'ajoute
 	if($link_generate && trim($id_unimarc) !== "" && !$notices_crees[$id_unimarc]){
@@ -1378,9 +1378,9 @@ function import_new_notice() {
 		 		$notice_a_supp=$notices_crees[$id_unimarc];
 		 		//On garde les liens
 		 		$requete = "UPDATE notices_relations SET num_notice='".$notice_id."' WHERE num_notice='".$notice_a_supp."' ";
-		 		@mysql_query($requete, $dbh);
+		 		@pmb_mysql_query($requete, $dbh);
 		 		$requete = "UPDATE notices_relations SET linked_notice='".$notice_id."' WHERE linked_notice='".$notice_a_supp."' ";
-		 		@mysql_query($requete, $dbh);
+		 		@pmb_mysql_query($requete, $dbh);
 
 		 		$ma_notice= new notice($notice_a_supp);
 		 		$ma_notice->replace($notice_id);
@@ -1396,12 +1396,12 @@ function import_new_notice() {
 		 		$notice_a_supp=$notices_crees[$id_unimarc];
 		 		//Dans les bulletins
 		 		$requete="update bulletins set num_notice='".$notice_id."' where num_notice='".$notice_a_supp."' ";
-		 		mysql_query($requete,$dbh);
+		 		pmb_mysql_query($requete,$dbh);
 		 		//Dans les relations entre notice
 		 		$requete="update notices_relations set num_notice='".$notice_id."' where num_notice='".$notice_a_supp."'";
-		 		mysql_query($requete,$dbh);
+		 		pmb_mysql_query($requete,$dbh);
 		 		$requete="update notices_relations set linked_notice='".$notice_id."' where linked_notice='".$notice_a_supp."'";
-		 		mysql_query($requete,$dbh);
+		 		pmb_mysql_query($requete,$dbh);
 		 		notice::del_notice($notice_a_supp);
 		 		break;
 		 	case 'a2':
@@ -1409,12 +1409,12 @@ function import_new_notice() {
 		 		$notice_a_supp=$notices_crees[$id_unimarc];
 		 		//Dans les bulletins
 		 		$requete="update analysis set analysis_notice='".$notice_id."' where analysis_notice='".$notice_a_supp."' ";
-		 		mysql_query($requete,$dbh);
+		 		pmb_mysql_query($requete,$dbh);
 		 		//Dans les relations entre notice
 		 		$requete="update notices_relations set num_notice='".$notice_id."' where num_notice='".$notice_a_supp."'";
-		 		mysql_query($requete,$dbh);
+		 		pmb_mysql_query($requete,$dbh);
 		 		$requete="update notices_relations set linked_notice='".$notice_id."' where linked_notice='".$notice_a_supp."'";
-		 		mysql_query($requete,$dbh);
+		 		pmb_mysql_query($requete,$dbh);
 		 		notice::del_notice($notice_a_supp);
 		 		break;
 		}
@@ -1448,8 +1448,8 @@ function import_notice_link(){
 
 	//Traitements des liens entre notices
 	$requete = "SELECT * FROM notices WHERE notice_id='".$notice_id."'";
-	$res = mysql_query($requete,$dbh);
-	while(($notice_creee=mysql_fetch_object($res))){
+	$res = pmb_mysql_query($requete,$dbh);
+	while(($notice_creee=pmb_mysql_fetch_object($res))){
 		$niveau_biblio = $notice_creee->niveau_biblio.$notice_creee->niveau_hierar;
 		$tab_field = $tab_art = $tab_bull = $tab_perio = array();
 
@@ -1518,21 +1518,21 @@ function import_notice_link(){
 				//on a une relation vers un parent
 				$req_insert_relation = "insert into notices_relations (num_notice, linked_notice, relation_type, rank)
 					values( '".addslashes($notices_a_creer[$id_unimarc][$i]['id_asso'])."', '".addslashes($notice_id)."', '".addslashes($notices_a_creer[$id_unimarc][$i]['type_lnk'])."', '".addslashes($notices_a_creer[$id_unimarc][$i]['rank'])."' )";
-				mysql_query($req_insert_relation,$dbh);
+				pmb_mysql_query($req_insert_relation,$dbh);
 
 			} elseif($notices_a_creer[$id_unimarc][$i]['lnk'] == 'child'){
 				//on a une relation vers un enfant
 				$req_insert_relation = "insert into notices_relations (num_notice, linked_notice, relation_type, rank)
 					values( '".addslashes($notice_id)."', '".addslashes($notices_a_creer[$id_unimarc][$i]['id_asso'])."', '".addslashes($notices_a_creer[$id_unimarc][$i]['type_lnk'])."', '".addslashes($notices_a_creer[$id_unimarc][$i]['rank'])."' )";
-				mysql_query($req_insert_relation,$dbh);
+				pmb_mysql_query($req_insert_relation,$dbh);
 
 			} elseif($notices_a_creer[$id_unimarc][$i]['lnk'] == 'art'){
 				//on a un lien d'un article vers un periodique
 				if(!$notices_crees[$id_unimarc] ){//On ne peut pas passer par la
 					$req_insert_art = "insert into notices (tit1, niveau_biblio, niveau_hierar, npages)
 												values( '".addslashes($notices_a_creer[$id_unimarc][$i]['titre_art'])."', 'a', '2','".addslashes($notices_a_creer[$id_unimarc][$i]['page'])."' )";
-					mysql_query($req_insert_art,$dbh);
-					$id_art = mysql_insert_id();
+					pmb_mysql_query($req_insert_art,$dbh);
+					$id_art = pmb_mysql_insert_id();
 					audit::insert_creation(AUDIT_NOTICE,$id_art);
 					//calcul des droits d'accès s'ils sont activés
 					calc_notice_acces_rights($id_art);
@@ -1547,8 +1547,8 @@ function import_notice_link(){
 				if(!$notices_crees[$id_unimarc]){//On ne peut pas passer par la
 					$req_insert_perio = "insert into notices (tit1, code, niveau_biblio, niveau_hierar)
 												values( '".addslashes($notices_a_creer[$id_unimarc][$i]['titre_perio'])."', '".addslashes($notices_a_creer[$id_unimarc][$i]['code']).", 's', '1' )";
-					mysql_query($req_insert_perio,$dbh);
-					$id_perio = mysql_insert_id();
+					pmb_mysql_query($req_insert_perio,$dbh);
+					$id_perio = pmb_mysql_insert_id();
 					audit::insert_creation(AUDIT_NOTICE,$id_perio);
 					//calcul des droits d'accès s'ils sont activés
 					calc_notice_acces_rights($id_perio);
@@ -1668,7 +1668,7 @@ function creer_liens_pour_bull_notice($titre200=array(), $titre530=array(), $cha
 		if(!$notices_crees[$id_unimarc]){//On passe ici si on importe les liens pour une notice de bulletin qui n'a ni numéro ni lien vers un periodique (très improbable)
 			//On passe la notice en monographie
 			$requete="update notices set niveau_biblio='m' and niveau_hierar='0' where notice_id='".$notice_id."'";
-			mysql_query($requete,$dbh);
+			pmb_mysql_query($requete,$dbh);
 
 		}else{
 			if(!trim($titre530[0]))$titre530[0]="Sans titre";
@@ -1704,11 +1704,11 @@ function creer_liens_pour_bull_notice($titre200=array(), $titre530=array(), $cha
 		}else{
 			//Si j'ai un bulletin avec un 461 qui ne rentre pas dans les autres cas je passe le bulletin en monographie (cas très peu probable)
 			$requete="select bulletin_id from bulletins where num_notice='".addslashes($notice_id)."' ";
-			$res = mysql_query($requete,$dbh);
-			if (!mysql_num_rows($res))  {
+			$res = pmb_mysql_query($requete,$dbh);
+			if (!pmb_mysql_num_rows($res))  {
 				//Si il n'est pas déja relié je le passe en monographie sinon je n'y touche pas
 				$requete="update notices set niveau_biblio='m', niveau_hierar='0' where notice_id='".$notice_id."' ";
-				mysql_query($requete,$dbh);
+				pmb_mysql_query($requete,$dbh);
 			}
 		}
 	}
@@ -1730,18 +1730,18 @@ function creer_liens_pour_articles($tab_bull=array(),$tab_perio=array(), $tab_fi
 				if( !$tab_field['id_base'] || ($notices_crees[$tab_field['id_base']] && !$notices_a_creer[$tab_field['id_base']])){
 					//On regarde si elle n'est pas reliée a un bulletin
 					$requete="select analysis_bulletin from analysis where analysis_notice='".addslashes($notices_crees[$tab_field['id_base']])."' ";
-					$res=mysql_query($requete,$dbh);
-					if(!mysql_num_rows($res)){
+					$res=pmb_mysql_query($requete,$dbh);
+					if(!pmb_mysql_num_rows($res)){
 						//Si elle n'est pas reliée on la passe en monographie, sinon c'est bien un article
 						$requete="update notices set niveau_biblio='m', niveau_hierar='0' where notice_id='".addslashes($notice_id)."' ";
-						mysql_query($requete,$dbh);
+						pmb_mysql_query($requete,$dbh);
 					}
 				}elseif(!$notices_crees[$tab_field['id_base']] && !$notices_a_creer[$tab_field['id_base']]){
 					//on ne doit pas passer par là
 					$req_insert_art = "insert into notices (tit1, niveau_biblio, niveau_hierar)
 												values( '".addslashes($tab_field['titre'][0]['a'])."', 'm', '0' )";
-					mysql_query($req_insert_art,$dbh);
-					$notices_crees[$tab_field['id_base']] = mysql_insert_id();
+					pmb_mysql_query($req_insert_art,$dbh);
+					$notices_crees[$tab_field['id_base']] = pmb_mysql_insert_id();
 					audit::insert_creation(AUDIT_NOTICE,$notices_crees[$tab_field['id_base']]);
 					//calcul des droits d'accès s'ils sont activés
 					calc_notice_acces_rights($notices_crees[$tab_field['id_base']]);
@@ -1813,17 +1813,17 @@ function creer_bulletinage_et_articles($bull=array(), $art=array()){
 	//On regarde si la notice n'existe pas déjà dans la base
 	$requete="select notice_id from notices where tit1 LIKE '".addslashes(clean_string(implode (" ; ",$tit_200a)))."' and niveau_biblio='s' and niveau_hierar='1' and notice_id !='".addslashes($notice_id)."' ";
 	if($isbn_OK) $requete.= "and code = '".addslashes($isbn_OK)."'";
-	$res=mysql_query($requete,$dbh);
-	if((!isset($force_creation_notice_perio) || !$force_creation_notice_perio) && mysql_num_rows($res)){
+	$res=pmb_mysql_query($requete,$dbh);
+	if((!isset($force_creation_notice_perio) || !$force_creation_notice_perio) && pmb_mysql_num_rows($res)){
 		$id_perio_garde=0;
-		while (($r=mysql_fetch_object($res)) && !$id_perio_garde) {
+		while (($r=pmb_mysql_fetch_object($res)) && !$id_perio_garde) {
 			if(!array_search($r->notice_id,$notices_crees)){
 				//Si le periodique ne fait pas parti des notices créées (il était déja dans la base)
 				$id_perio_garde=$r->notice_id;
 			}
 		}
 		if($id_perio_garde){
-			mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[542]." $id_unimarc "." $isbn_OK ".addslashes(clean_string(implode (" ; ",$tit_200a)))."') ",$dbh) ;
+			pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[542]." $id_unimarc "." $isbn_OK ".addslashes(clean_string(implode (" ; ",$tit_200a)))."') ",$dbh) ;
 			//Si j'ai déja une notice dans la base avec ce titre et ce code je supprime celle que je suis en train d'importer
 			$perio_traite = new serial($notice_id);
 			$perio_traite->replace($id_perio_garde);
@@ -1928,7 +1928,7 @@ function creer_relation_notice($notice_liee=array()){
 		if($id_mere && $id_fille && ($id_mere != $id_fille)){
 			//Je créer le lien entre les deux notices
 			$requete="insert into notices_relations(num_notice,linked_notice,relation_type,rank) values ('".$id_fille."','".$id_mere."','".addslashes($type_lien)."','".addslashes($rank)."')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}
 	}
 }
@@ -1940,9 +1940,9 @@ function creer_notice_monographie($ancien_id=0,$titre="",$code=""){
 	global $isbn_dedoublonnage,$isbn_only;
 	if((($isbn_dedoublonnage)&&(!$isbn_only))||(($isbn_dedoublonnage)&&($isbn_only)&&(isISBN($code)))){// Si dédoublonnage sur ISBN activé
 		$requete="SELECT notice_id FROM notices WHERE niveau_biblio='m' and niveau_hierar='0' AND code='".addslashes($code)."' ";
-		$res=mysql_query($requete,$dbh);
-		if($res && (mysql_num_rows($res) == 1)){//J'ai déjà une notice dans la base avec ce code barre
-			$id=mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete,$dbh);
+		if($res && (pmb_mysql_num_rows($res) == 1)){//J'ai déjà une notice dans la base avec ce code barre
+			$id=pmb_mysql_result($res,0,0);
 			if($ancien_id){
 				$notices_crees[$ancien_id]=$id;
 			}
@@ -1951,8 +1951,8 @@ function creer_notice_monographie($ancien_id=0,$titre="",$code=""){
 	}
 
 	$requete="insert into notices (tit1, code, niveau_biblio, niveau_hierar,statut) values ('".addslashes($titre)."','".addslashes($code)."', 'm', '0','".$statutnot."')";
-	mysql_query($requete,$dbh);
-	$id=mysql_insert_id();
+	pmb_mysql_query($requete,$dbh);
+	$id=pmb_mysql_insert_id();
 	audit::insert_creation(AUDIT_NOTICE,$id);
 	// Mise à jour des index de la notice
 	notice::majNotices($id);
@@ -1977,13 +1977,13 @@ function creer_notice_periodique($ancien_id=0,$titre="",$code=""){
 		}else{
 			$requete="select notice_id from notices where tit1 LIKE '".addslashes(clean_string($titre))."' and niveau_biblio='s' and niveau_hierar='1'";
 			if($code) $requete.=" and code='".addslashes($code)."'";
-			$res_perio = mysql_query($requete,$dbh);
-			if ((!isset($force_creation_notice_perio) || !$force_creation_notice_perio) && mysql_num_rows($res_perio))  {
-				$id_perio = mysql_result($res_perio,0,0);
+			$res_perio = pmb_mysql_query($requete,$dbh);
+			if ((!isset($force_creation_notice_perio) || !$force_creation_notice_perio) && pmb_mysql_num_rows($res_perio))  {
+				$id_perio = pmb_mysql_result($res_perio,0,0);
 			}else{
 				$requete="insert into notices (tit1,code, niveau_biblio, niveau_hierar,statut) values('".addslashes(clean_string($titre))."','".addslashes($code)."', 's', '1','".$statutnot."')";
-				mysql_query($requete, $dbh);
-				$id_perio = mysql_insert_id();
+				pmb_mysql_query($requete, $dbh);
+				$id_perio = pmb_mysql_insert_id();
 				audit::insert_creation(AUDIT_NOTICE,$id_perio);
 				// Mise à jour des index de la notice
 				notice::majNotices($id_perio);
@@ -1997,13 +1997,13 @@ function creer_notice_periodique($ancien_id=0,$titre="",$code=""){
 	}else{
 		$requete="select notice_id from notices where tit1 LIKE '".addslashes(clean_string($titre))."' and niveau_biblio='s' and niveau_hierar='1'";
 		if($code) $requete.=" and code='".addslashes($code)."'";
-		$res_perio = mysql_query($requete,$dbh);
-		if ((!isset($force_creation_notice_perio) || !$force_creation_notice_perio) && mysql_num_rows($res_perio))  {
-			$id_perio = mysql_result($res_perio,0,0);
+		$res_perio = pmb_mysql_query($requete,$dbh);
+		if ((!isset($force_creation_notice_perio) || !$force_creation_notice_perio) && pmb_mysql_num_rows($res_perio))  {
+			$id_perio = pmb_mysql_result($res_perio,0,0);
 		}else{
 			$requete="insert into notices (tit1,code, niveau_biblio, niveau_hierar,statut) values('".addslashes(clean_string($titre))."','".addslashes($code)."', 's', '1','".$statutnot."')";
-			mysql_query($requete, $dbh);
-			$id_perio = mysql_insert_id();
+			pmb_mysql_query($requete, $dbh);
+			$id_perio = pmb_mysql_insert_id();
 			audit::insert_creation(AUDIT_NOTICE,$id_perio);
 			// Mise à jour des index de la notice
 			notice::majNotices($id_perio);
@@ -2031,13 +2031,13 @@ function creer_bulletin($id_perio=0,$bulletin=array(),$titre_perio="",$code_peri
 		//Si il n'est pas déja créé, on regarde si le bulletin est présent dans la base avant de le créer
 		$requete="select bulletin_id from bulletins where bulletin_notice='".addslashes($id_perio)."' and bulletin_numero='".addslashes($bulletin["num"])."' and mention_date='".addslashes($bulletin["mention"])."'";
 		if($bulletin["date"])$requete.=" and date_date='".addslashes($bulletin["date"])."' ";
-		$res=mysql_query($requete, $dbh);
-		if(mysql_num_rows($res)){
-			$id_bull = mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($res)){
+			$id_bull = pmb_mysql_result($res,0,0);
 		}else{
 			$requete_bulletin = "insert into bulletins (bulletin_numero, bulletin_notice, mention_date, date_date, bulletin_titre) values ('".addslashes($bulletin["num"])."', '".addslashes($id_perio)."', '".addslashes($bulletin["mention"])."', '".addslashes($bulletin["date"])."', '".addslashes($bulletin["titre"])."')";
-			mysql_query($requete_bulletin, $dbh);
-			$id_bull = mysql_insert_id();
+			pmb_mysql_query($requete_bulletin, $dbh);
+			$id_bull = pmb_mysql_insert_id();
 			audit::insert_creation(AUDIT_BULLETIN,$id_bull);
 		}
 		$bulletins_crees[$id_perio][$bulletin["num"]][$bulletin["date"].$bulletin["mention"]] = $id_bull;
@@ -2066,8 +2066,8 @@ function creer_notice_article($ancien_id=0,$titre_article="",$npage_article="",$
 			//On créer l'article
 			if(!$id_article){
 				$requete="insert into notices (tit1, npages, niveau_biblio, niveau_hierar,statut) values ('".addslashes(clean_string($titre_article))."','".addslashes($npage_article)."', 'a', '2','".$statutnot."')";
-				mysql_query($requete,$dbh);
-				$id_article=mysql_insert_id();
+				pmb_mysql_query($requete,$dbh);
+				$id_article=pmb_mysql_insert_id();
 				audit::insert_creation(AUDIT_NOTICE,$id_article);
 				//calcul des droits d'accès s'ils sont activés
 				calc_notice_acces_rights($id_article);
@@ -2080,18 +2080,18 @@ function creer_notice_article($ancien_id=0,$titre_article="",$npage_article="",$
 			}
 			//Je regarde si je n'ai pas un autre article avec ce titre
 			$requete="SELECT old.notice_id,old.tit1 FROM notices new, notices old JOIN analysis ON analysis_notice=old.notice_id WHERE new.notice_id='".addslashes($id_article)."' AND new.notice_id!=old.notice_id AND analysis_bulletin='".addslashes($id_bulletin)."' AND new.tit1=old.tit1 ";
-			$res_doubl=mysql_query($requete);
-			if(mysql_num_rows($res_doubl)){
+			$res_doubl=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res_doubl)){
 				notice::del_notice($id_article);
-				mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[542]." $id_unimarc "." $isbn_OK ".addslashes(mysql_result($res_doubl,0,1))."') ",$dbh) ;
-				$id_article=mysql_result($res_doubl,0,0);//A voir pr modif
+				pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[542]." $id_unimarc "." $isbn_OK ".addslashes(pmb_mysql_result($res_doubl,0,1))."') ",$dbh) ;
+				$id_article=pmb_mysql_result($res_doubl,0,0);//A voir pr modif
 			}else{
 				$requete="SELECT notice_id FROM notices WHERE notice_id='".addslashes($id_article)."'";
-				$res_art=mysql_query($requete);
-				if(mysql_num_rows($res_art)){
+				$res_art=pmb_mysql_query($requete);
+				if(pmb_mysql_num_rows($res_art)){
 					//On créer le lien entre le bulletin et l'article
 					$requete="insert into analysis (analysis_bulletin, analysis_notice) values ( '".addslashes($id_bulletin)."', '".addslashes($id_article)."' )";
-					mysql_query($requete,$dbh);
+					pmb_mysql_query($requete,$dbh);
 				}
 			}
 			$notices_crees[$ancien_id]=$id_article;
@@ -2106,8 +2106,8 @@ function creer_notice_article($ancien_id=0,$titre_article="",$npage_article="",$
 		//On créer l'article
 		if(!$id_article){
 			$requete="insert into notices (tit1, npages, niveau_biblio, niveau_hierar,statut) values ('".addslashes(clean_string($titre_article))."','".addslashes($npage_article)."', 'a', '2','".$statutnot."')";
-			mysql_query($requete,$dbh);
-			$id_article=mysql_insert_id();
+			pmb_mysql_query($requete,$dbh);
+			$id_article=pmb_mysql_insert_id();
 			audit::insert_creation(AUDIT_NOTICE,$id_article);
 			//calcul des droits d'accès s'ils sont activés
 			calc_notice_acces_rights($id_article);
@@ -2120,24 +2120,24 @@ function creer_notice_article($ancien_id=0,$titre_article="",$npage_article="",$
 		}
 		//Je regarde si je n'ai pas un autre article avec ce titre
 		$requete="SELECT old.notice_id,old.tit1 FROM notices new, notices old JOIN analysis ON analysis_notice=old.notice_id WHERE new.notice_id='".addslashes($id_article)."' AND new.notice_id!=old.notice_id  AND analysis_bulletin='".addslashes($id_bulletin)."' AND new.tit1=old.tit1 ";
-		$res_doubl=mysql_query($requete);
-		if(mysql_num_rows($res_doubl)){
+		$res_doubl=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res_doubl)){
 			notice::del_notice($id_article);
-			mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[542]." $id_unimarc "." $isbn_OK ".addslashes(mysql_result($res_doubl,0,1))."') ",$dbh) ;
-			$id_article=mysql_result($res_doubl,0,0);//A voir pr modif
+			pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[542]." $id_unimarc "." $isbn_OK ".addslashes(pmb_mysql_result($res_doubl,0,1))."') ",$dbh) ;
+			$id_article=pmb_mysql_result($res_doubl,0,0);//A voir pr modif
 		}else{
 			$requete="SELECT notice_id FROM notices WHERE notice_id='".addslashes($id_article)."'";
-			$res_art=mysql_query($requete);
-			if(mysql_num_rows($res_art)){
+			$res_art=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res_art)){
 				//On créer le lien entre le bulletin et l'article
 				$requete="insert into analysis (analysis_bulletin, analysis_notice) values ( '".addslashes($id_bulletin)."', '".addslashes($id_article)."' )";
-				mysql_query($requete,$dbh);
+				pmb_mysql_query($requete,$dbh);
 			}
 		}
 	}
 	if($id_article && ($bulletin["date"])){
 		$requete="UPDATE notices SET year='".addslashes(substr($bulletin["date"],0,4))."', date_parution='".addslashes($bulletin["date"])."' WHERE notice_id='".$id_article."'";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 	}
 	return $id_article;
 }
@@ -2175,24 +2175,24 @@ function creer_lien_notice_bulletin($ancien_id=0,$id_perio=0,$id_bulletin=0,$id_
 	//On control que ce bulletin n'a pas déjà une notice
 	$requete="select num_notice from bulletins where bulletin_id='".$id_bulletin."'";
 	if($id_not_bull)$requete.=" and num_notice!='".$id_not_bull."'";
-	$res=mysql_query($requete,$dbh);
-	if(mysql_num_rows($res) && mysql_result($res,0,0)){
+	$res=pmb_mysql_query($requete,$dbh);
+	if(pmb_mysql_num_rows($res) && pmb_mysql_result($res,0,0)){
 		//Si j'ai déja une notice associé à ce bulletin je la récupère
 		if($id_not_bull){
 			//Si j'ai aussi un identifiant de notice de bulletin, je supprime le plus récent
 			notice::del_notice($id_not_bull);
-			mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[542]." $id_unimarc "." $isbn_OK ".addslashes(clean_string(implode (" ; ",$tit_200a)))."') ",$dbh) ;
-			$id_notice_bulletin=mysql_result($res,0,0);//A voir pr modif
+			pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[542]." $id_unimarc "." $isbn_OK ".addslashes(clean_string(implode (" ; ",$tit_200a)))."') ",$dbh) ;
+			$id_notice_bulletin=pmb_mysql_result($res,0,0);//A voir pr modif
 		}else{
-			$id_notice_bulletin= mysql_result($res,0,0);
+			$id_notice_bulletin= pmb_mysql_result($res,0,0);
 		}
 		$notice_id=$id_notice_bulletin;
 	}else{
 		if($titre_not_bull){
 			//Si j'ai un titre je créé la notice de bulletin
 			$requete="insert into notices (tit1,niveau_biblio, niveau_hierar,statut) values ('".addslashes(clean_string($titre_not_bull))."', 'b', '2','".$statutnot."')";
-			mysql_query($requete,$dbh);
-			$id_notice_bulletin=mysql_insert_id();
+			pmb_mysql_query($requete,$dbh);
+			$id_notice_bulletin=pmb_mysql_insert_id();
 			audit::insert_creation(AUDIT_NOTICE,$id_notice_bulletin);
 			//calcul des droits d'accès s'ils sont activés
 			calc_notice_acces_rights($id_notice_bulletin);
@@ -2207,15 +2207,15 @@ function creer_lien_notice_bulletin($ancien_id=0,$id_perio=0,$id_bulletin=0,$id_
 		}
 		//On créer le lien entre le bulletin et la notice de bulletin
 		$requete="update bulletins set num_notice='".$id_notice_bulletin."' where bulletin_id='".$id_bulletin."'";
-		mysql_query($requete,$dbh);
+		pmb_mysql_query($requete,$dbh);
 	}
 	$notices_crees[$ancien_id]=$id_notice_bulletin;
 	//Lien entre la notice de bulletin et la notice de periodique
 	$requete="insert into notices_relations(num_notice,linked_notice,relation_type) values ('".$id_notice_bulletin."','".$id_perio."','b')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	if($id_notice_bulletin && ($bulletin["date"])){
 		$requete="UPDATE notices SET year='".addslashes(substr($bulletin["date"],0,4))."', date_parution='".addslashes($bulletin["date"])."' WHERE notice_id='".$id_notice_bulletin."'";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 	}
 	return $id_notice_bulletin;
 }
@@ -2223,16 +2223,16 @@ function creer_lien_notice_bulletin($ancien_id=0,$id_perio=0,$id_bulletin=0,$id_
 function keep_authority_infos($authority_number,$type,$origin_authority,$notice_id,$authority_infos=array()){
 	//on a un numéro d'autorité, on regarde si on l'a déjà rencontré
 	$query = "select id_authority_source,num_authority from authorities_sources where authority_number = '".$authority_number."' and num_origin_authority='".$origin_authority."' and authority_type = '".$type."'";
-	$result = mysql_query($query);
-	if(mysql_num_rows($result)){
-		$row = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query);
+	if(pmb_mysql_num_rows($result)){
+		$row = pmb_mysql_fetch_object($result);
 		$num_authority = $row->num_authority;
 		$num_authority_source= $row->id_authority_source;
 		// on cherche la préférence... dès fois que...
 		$query = "select id_authority_source, num_authority from authorities_sources where authority_number = '".$authority_number."' and authority_type = '".$type."' and authority_favorite = 1";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			$num_authority = $row->num_authority;
 			$num_authority_source= $row->id_authority_source;
 		}
@@ -2264,15 +2264,15 @@ function keep_authority_infos($authority_number,$type,$origin_authority,$notice_
 			authority_type = '$type',
 			num_origin_authority = ".$origin_authority.",
 			import_date = now()";
-		mysql_query($query);
-		$num_authority_source = mysql_insert_id();
+		pmb_mysql_query($query);
+		$num_authority_source = pmb_mysql_insert_id();
 	}
 	//certaines autorités sont créés avant la notice...
 	if($notice_id!=0){
 		$query = "insert into notices_authorities_sources set
 		num_authority_source = ".$num_authority_source.",
 		num_notice = ".$notice_id;
-		mysql_query($query);
+		pmb_mysql_query($query);
 	}
 	return $num_authority;
 }

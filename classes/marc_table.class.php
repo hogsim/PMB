@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: marc_table.class.php,v 1.20 2013-03-12 17:12:21 mbertin Exp $
+// $Id: marc_table.class.php,v 1.23 2015-03-05 16:26:33 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -126,7 +126,17 @@ class marc_list {
 				$parser = new XMLlist("$include_path/messages/languages.xml");
 				$parser->analyser();
 				$this->table = $parser->table;
-				break;		
+				break;
+			case 'music_key':
+				$parser = new XMLlist("$include_path/marc_tables/$lang/music_key.xml");
+				$parser->analyser();
+				$this->table = $parser->table;
+				break;	
+			case 'music_form':
+				$parser = new XMLlist("$include_path/marc_tables/$lang/music_form.xml");
+				$parser->analyser();
+				$this->table = $parser->table;
+				break;
 			default:
 				$this->table=array();
 				break;
@@ -140,6 +150,7 @@ class marc_select {
 // propriétés
 
 	var $display;
+	var $libelle; // libellé du selected
 
 // méthodes
 
@@ -148,6 +159,8 @@ class marc_select {
 
 	function marc_select($type, $name='mySelector', $selected='', $onchange='', $option_premier_code='', $option_premier_info='')
 	{
+		global $charset;
+		
 		$source = new marc_list($type);
 		$source_tab = $source->table;
 
@@ -163,10 +176,12 @@ class marc_select {
 			foreach($source_tab as $value=>$libelle) {
 				if(!($value == $selected))
 					$tag = "<option value='$value'>";
-				else
+				else{
 					$tag = "<option value='$value' selected='selected'>";
-
-				$this->display .= "$tag$libelle</option>";
+					$this->libelle="$libelle";
+				}
+				$this->display .= $tag.htmlentities($libelle,ENT_QUOTES,$charset)."</option>";
+				
 			}
 
 		} else {
@@ -174,11 +189,11 @@ class marc_select {
 			// cirque à cause d'un bug d'IE
 			reset($source_tab);
 			$this->display .= "<option value='".key($source_tab)."' selected='selected'>";
-			$this->display .= pos($source_tab).'</option>';
+			$this->display .= htmlentities(pos($source_tab),ENT_QUOTES,$charset).'</option>';
 
 			while(next($source_tab)) {
 				$this->display .= "<option value='".key($source_tab)."'>";
-				$this->display .= pos($source_tab).'</option>';
+				$this->display .= htmlentities(pos($source_tab),ENT_QUOTES,$charset).'</option>';
 			}
 
 		}

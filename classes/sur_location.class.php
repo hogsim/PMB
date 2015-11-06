@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sur_location.class.php,v 1.2.2.1 2014-03-31 09:05:42 dgoron Exp $
+// $Id: sur_location.class.php,v 1.4 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -29,9 +29,9 @@ function fetch_data() {
 	$this->docs_location_data=array();
 	if($this->id){
 		$requete="SELECT * FROM sur_location WHERE surloc_id='".$this->id."' LIMIT 1";
-		$res = mysql_query($requete, $dbh) or die(mysql_error()."<br />$requete");
-		if(mysql_num_rows($res)) {
-			$row=mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error()."<br />$requete");
+		if(pmb_mysql_num_rows($res)) {
+			$row=pmb_mysql_fetch_object($res);
 		}	
 		$this->libelle=$row->surloc_libelle;
 		$this->pic=$row->surloc_pic; 
@@ -55,8 +55,8 @@ function fetch_data() {
 	}else{ 
 		$requete = "SELECT * FROM docs_location where surloc_num=0 ORDER BY location_libelle";		
 	}		
-	$myQuery = mysql_query($requete, $dbh);					
-	while(($r=mysql_fetch_assoc($myQuery))) {	
+	$myQuery = pmb_mysql_query($requete, $dbh);					
+	while(($r=pmb_mysql_fetch_assoc($myQuery))) {	
 		$this->docs_location_data[]=$r;
 	}
 			
@@ -67,9 +67,9 @@ static function get_info_surloc_from_location($id_docs_location=0){
 	global $dbh;
 	if($id_docs_location){
 		$requete = "SELECT * FROM docs_location where idlocation='$id_docs_location'";
-		$res = mysql_query($requete, $dbh) or die(mysql_error()."<br />$requete");
-		if(mysql_num_rows($res)) {
-			$row=mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error()."<br />$requete");
+		if(pmb_mysql_num_rows($res)) {
+			$row=pmb_mysql_fetch_object($res);
 			if($row->surloc_num){
 				$sur_loc= new sur_location($row->surloc_num);
 				return $sur_loc;
@@ -115,10 +115,10 @@ function get_list($name='form_sur_localisation', $value_selected=0,$no_sel=0) {
 		!$value_selected ? $selector .= ' selected=\'selected\'>' : $selector .= '>';
  		$selector .= htmlentities($msg["sur_location_aucune"],ENT_QUOTES, $charset).'</option>';
 	}
-	$myQuery = mysql_query("SELECT * FROM sur_location order by surloc_libelle ", $dbh);
-	if(mysql_num_rows($myQuery)){
+	$myQuery = pmb_mysql_query("SELECT * FROM sur_location order by surloc_libelle ", $dbh);
+	if(pmb_mysql_num_rows($myQuery)){
 		$i=0;
-		while(($r=mysql_fetch_object($myQuery))) {
+		while(($r=pmb_mysql_fetch_object($myQuery))) {
 			$this->sur_location_list[$i]=new stdClass();
 			$this->sur_location_list[$i]->id=$r->surloc_id;
 			$this->sur_location_list[$i]->libelle=$r->surloc_libelle;
@@ -164,14 +164,14 @@ function update() {
 		surloc_css_style='$form_css_style' " ;
 	if($this->id) {
 		$requete = "UPDATE sur_location $set_values WHERE surloc_id='$this->id' ";
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 	} else {
 		$requete = "INSERT INTO sur_location $set_values ";
-		$res = mysql_query($requete, $dbh);
-		$this->id = mysql_insert_id($dbh);
+		$res = pmb_mysql_query($requete, $dbh);
+		$this->id = pmb_mysql_insert_id($dbh);
 	}		
 	$requete = "UPDATE docs_location SET surloc_num='0' WHERE surloc_num='$this->id' ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	
 	// mémo des localisations associées
 	foreach($this->docs_location_data as $docs_loc){
@@ -182,7 +182,7 @@ function update() {
 		");
 		if($selected){
 			$requete = "UPDATE docs_location SET surloc_num='$this->id' WHERE idlocation=".$docs_loc["idlocation"];
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 		}	
 	}	
 	// rafraischissement des données
@@ -257,8 +257,8 @@ function delete() {
 	
 	if($this->id) {
 		$requete = "UPDATE docs_location SET surloc_num='0' WHERE surloc_num='$this->id' ";
-		$res = mysql_query($requete, $dbh);
-		mysql_query("DELETE from sur_location WHERE surloc_id='".$this->id."' ", $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
+		pmb_mysql_query("DELETE from sur_location WHERE surloc_id='".$this->id."' ", $dbh);
 	}
 	$this->id=0;
 	$this->get_list();

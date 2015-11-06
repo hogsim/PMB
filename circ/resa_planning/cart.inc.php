@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart.inc.php,v 1.4 2011-11-04 10:28:20 trenon Exp $
+// $Id: cart.inc.php,v 1.6 2015-04-24 14:20:57 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -47,7 +47,7 @@ switch ($action) {
 		if (is_array($cart_autorisations)) $autorisations=implode(" ",$cart_autorisations);
 				else $autorisations="";
 		$myCart->autorisations = $autorisations;
-		
+
 		$myCart->create_cart();
 		aff_paniers($idcaddie, "NOTI", "./circ.php?categ=resa_planning&resa_action=search_resa&mode=3&unq=".md5(microtime())."&id_empr=$id_empr&groupID=$groupID", "add_item", "Sélectionnez un caddie pour en afficher le contenu", "NOTI", 0, 1, 1);
 		break;
@@ -56,21 +56,21 @@ switch ($action) {
 			$myCart = new caddie($idcaddie);
 			print pmb_bidi("<div class=\"row\"><b>Panier&nbsp;: ".$myCart->name.' ('.$myCart->type.')</b></div>');
 			aff_cart_notices($myCart->get_cart(), $myCart->type, $idcaddie);
-			} else aff_paniers($idcaddie, "NOTI", "./circ.php?categ=resa_planning&resa_action=search_resa&mode=3&unq=".md5(microtime())."&id_empr=$id_empr&groupID=$groupID", "add_item", "Sélectionnez un caddie pour en afficher le contenu", "NOTI", 0, 1, 1);
-	}
+		} else aff_paniers($idcaddie, "NOTI", "./circ.php?categ=resa_planning&resa_action=search_resa&mode=3&unq=".md5(microtime())."&id_empr=$id_empr&groupID=$groupID", "add_item", "Sélectionnez un caddie pour en afficher le contenu", "NOTI", 0, 1, 1);
+}
 
 // affichage du contenu du caddie à partir de $liste qui contient les object_id
 function aff_cart_notices($liste, $caddie_type="", $idcaddie=0) {
-global $msg;
-global $dbh;
-global $begin_result_liste, $end_result_liste;
-global $end_result_list;
-global $id_empr;
-global $groupID;
+	global $msg;
+	global $dbh;
+	global $begin_result_liste, $end_result_liste;
+	global $end_result_list;
+	global $id_empr;
+	global $groupID;
 
-if(!sizeof($liste) || !is_array($liste)) {
-	print $msg[399];
-	return;
+	if(!sizeof($liste) || !is_array($liste)) {
+		print $msg[399];
+		return;
 	} else {
 		// boucle de parcours des notices trouvées
 		// inclusion du javascript de gestion des listes dépliables
@@ -79,29 +79,34 @@ if(!sizeof($liste) || !is_array($liste)) {
 		while(list($cle, $notice) = each($liste)) {
 			// affichage de la liste des notices sous la forme 'expandable'
 			$requete = "SELECT * FROM notices WHERE notice_id=$notice LIMIT 1";
-			$fetch = $myQuery = mysql_query($requete, $dbh);
-			if(mysql_num_rows($fetch)) {
-				$notice = mysql_fetch_object($fetch);
-				if($notice->niveau_biblio != 's' && $notice->niveau_biblio != 'a') {
+			$fetch = $myQuery = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($fetch)) {
+				$notice = pmb_mysql_fetch_object($fetch);
+				if($notice->niveau_biblio == 'm'){
 					// notice de monographie
 					$link = "./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id_empr&groupID=$groupID&id_notice=!!id!!";
-					//$lien_suppr_cart = "<a href='./circ.php?categ=resa&mode=3&id_empr=$id_empr&groupID=$groupID&action=del_item&object_type=NOTI&idcaddie=$idcaddie&item=$notice->notice_id'><img src='./images/basket_empty_20x20.gif' alt='basket' title=\"${msg[400]}\" /></a>";
 					$lien_suppr_cart = "";
 					$display = new mono_display($notice, 6, $link, 1, '', $lien_suppr_cart, "", 1 );
 					print pmb_bidi($display->result);
-					} else {
-						// on a affaire à un périodique
-						// préparation des liens pour lui
-						$link_serial = '';
-						$link_analysis = '';
-						$link_bulletin = '';
-						//$lien_suppr_cart = "<a href='./circ.php?categ=resa&mode=3&id_empr=$id_empr&groupID=$groupID&action=del_item&object_type=NOTI&idcaddie=$idcaddie&item=$notice->notice_id'><img src='./images/basket_empty_20x20.gif' alt='basket' title=\"${msg[400]}\" /></a>";
-						$lien_suppr_cart = "";
-						$serial = new serial_display($notice, 6, $link_serial, $link_analysis, $link_bulletin, $lien_suppr_cart, "", 0 );
-						print pmb_bidi($serial->result);
-						}
+				} elseif($notice->niveau_biblio == 'b'){
+					//bulletin
+					$rqt_bull_info = "SELECT s.notice_id as id_notice_mere, bulletin_id as id_du_bulletin, b.notice_id as id_notice_bulletin FROM notices as s, notices as b, bulletins WHERE b.notice_id=$notice->notice_id and s.notice_id=bulletin_notice and num_notice=b.notice_id";
+					$bull_ids=@mysql_fetch_object(mysql_query($rqt_bull_info));
+					$link = "./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id_empr&groupID=$groupID&id_bulletin=$bull_ids->id_du_bulletin";
+					$display = new mono_display($notice, 6, $link, 1, '', $lien_suppr_cart, "", 1 );
+					print pmb_bidi($display->result);
+				} elseif($notice->niveau_biblio == 'a'){
+					//on a affaire à un périodique
+					// préparation des liens pour lui
+					$link_serial = "./circ.php?categ=resa_planning&resa_action=search_resa&id_empr=$id_empr&groupID=$groupID&mode=view_serial&serial_id=!!id!!";
+					$link_analysis = '';
+					$link_bulletin = "./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id_empr&groupID=$groupID&id_bulletin=!!id!!";
+					$lien_suppr_cart = "";
+					$serial = new serial_display($notice, 6, $link_serial, $link_analysis, $link_bulletin, $lien_suppr_cart, "", 0 );
+					print pmb_bidi($serial->result);
 				}
-			} // fin de liste
+			}
+		} // fin de liste
 		print $end_result_liste;
-		}
+	}
 }

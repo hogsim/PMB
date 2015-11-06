@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: common.tpl.php,v 1.177.2.9 2015-03-12 11:26:00 mbertin Exp $
+// $Id: common.tpl.php,v 1.198 2015-06-22 08:29:09 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -172,6 +172,76 @@ $std_header.="
 		}
 	</script>
 ";
+
+if($opac_map_activate){
+	switch($opac_map_base_layer_type){
+		case "GOOGLE" :
+			$std_header.="<script src='http://maps.google.com/maps/api/js?v=3&amp;sensor=false'></script>";
+			break;
+	}
+	$std_header.="<link rel='stylesheet' type='text/css' href='".$javascript_path."/openlayers/theme/default/style.css'/>";
+	$std_header.="<script type='text/javascript' src='".$javascript_path."/openlayers/lib/OpenLayers.js'></script>";
+}
+$std_header.="
+<link rel='stylesheet' type='text/css' href='".$javascript_path."/dojo/dijit/themes/tundra/tundra.css' />
+<script type='text/javascript'>
+	var dojoConfig = {
+		parseOnLoad: true,
+		locale: '".str_replace("_","-",strtolower($lang))."',
+		isDebug: false,
+		usePlainJson: true,
+		packages: [{
+			name: 'pmbBase',
+			location:'../../..'
+		}],
+		deps: ['apps/pmb/MessagesStore'],
+		callback:function(MessagesStore){
+			window.pmbDojo = {};
+			pmbDojo.messages = new MessagesStore({url:'./ajax.php?module=ajax&categ=messages', directInit:false});
+		
+		},
+	};
+</script>
+<script type='text/javascript' src='".$javascript_path."/dojo/dojo/dojo.js'>
+</script><script type='text/javascript' src='".$javascript_path."/dojo/dojo/pmbdojo.js'></script>
+";
+
+if (!$_COOKIE['PhpMyBibli-COOKIECONSENT']) {
+	if ($opac_script_analytics || $opac_show_social_network || $pmb_logs_activate) {
+		$std_header.="
+		<script type='text/javascript'>
+			var msg_script_analytics_content = '".addslashes($msg["script_analytics_content"])."';
+			var msg_script_analytics_inform_title = '".addslashes($msg["script_analytics_inform_title"])."';
+			var msg_script_analytics_inform_content = '".addslashes($msg["script_analytics_inform_content"])."';
+			var msg_script_analytics_inform_ask_opposite = '".addslashes($msg["script_analytics_inform_ask_opposite"])."';
+			var msg_script_analytics_inform_ask_accept = '".addslashes($msg["script_analytics_inform_ask_accept"])."';
+			var msg_script_analytics_content_opposed = '".addslashes($msg["script_analytics_content_opposed"])."';
+		";
+		if ($opac_url_more_about_cookies) {
+			$std_header.="var script_analytics_content_link_more = '<a href=\'".$opac_url_more_about_cookies."\' target=\'_blank\'>".addslashes($msg["script_analytics_content_link_more"])."</a>';";
+		} else {
+			$std_header.="var script_analytics_content_link_more = '';";
+		}
+		$std_header.="
+		</script>
+		<script type='text/javascript' src='".$include_path."/javascript/script_analytics.js' />
+		<script type='text/javascript'>
+			scriptAnalytics.CookieConsent.start();
+		</script>
+		";
+	}
+}
+if ($_COOKIE['PhpMyBibli-COOKIECONSENT'] != "false") {
+	if ($opac_script_analytics) {
+		eval("\$opac_script_analytics=\"".str_replace("\"","\\\"",$opac_script_analytics)."\";");
+		$std_header.= $opac_script_analytics;
+	}
+}
+//Opposition à l'utilisation des cookies, désactivation des partages sur les réseaux sociaux
+if ($_COOKIE['PhpMyBibli-COOKIECONSENT'] == "false") {
+	$opac_show_social_network = 0;
+}
+
 $std_header.="<script type='text/javascript'>var opac_show_social_network =$opac_show_social_network;</script>";
 if($opac_show_social_network){
 	
@@ -202,7 +272,6 @@ $std_header.="
 	<script type='text/javascript' src='$include_path/javascript/http_request.js'></script>
 	
 	";
-	
 
 $std_header.="
 	!!enrichment_headers!!
@@ -275,6 +344,7 @@ if($opac_recherche_ajax_mode){
 }
 $std_header.="
 <script type='text/javascript' src='./includes/javascript/tablist.js'></script>
+<script type='text/javascript' src='./includes/javascript/misc.js'></script>
 	<div id='att' style='z-Index:1000'></div>
 	<div id=\"container\"><div id=\"main\"><div id='main_header'>!!main_header!!</div><div id=\"main_hors_footer\">!!home_on_top!!
 						\n";
@@ -553,6 +623,19 @@ $opac_lien_moteur_recherche &nbsp;
 		
 </div>" ;
 
+// ACCESSIBILITE
+if ($opac_accessibility) {
+	$accessibility="<div id='accessibility'>\n
+		<ul class='accessibility_font_size'>
+			<li class='accessibility_font_size_small'><a href='javascript:set_font_size(-1);' title='".$msg["accessibility_font_size_small"]."'>A-</a></li>
+			<li class='accessibility_font_size_normal'><a href='javascript:set_font_size(0);' title='".$msg["accessibility_font_size_normal"]."'>A</a></li>
+			<li class='accessibility_font_size_big'><a href='javascript:set_font_size(1);' title='".$msg["accessibility_font_size_big"]."'>A+</a></li>
+		</ul>
+		</div>\n";
+	if($_SESSION["pmbopac_fontSize"]) {
+		$accessibility.="<script type='text/javascript'>set_value_style('pmbopac', 'fontSize', '".$_SESSION["pmbopac_fontSize"]."');</script>";
+	}
+}
 
 // HOME
 $home_on_left = "<div id=\"accueil\">\n
@@ -618,7 +701,7 @@ if ($opac_biblio_post_adress){
 	    </div><!-- fermeture #post_adress -->" ;
 }
 
-if($lvl=="more_results"){
+if($lvl=="more_results" || strpos($lvl,"_see") !== false){
 $facette ="
 			<div id='facette'>
 				!!lst_facette!!
@@ -695,10 +778,13 @@ $liens_opac['lien_rech_serie'] 			= "./index.php?lvl=serie_see&id=!!id!!";
 $liens_opac['lien_rech_collection'] 	= "./index.php?lvl=coll_see&id=!!id!!";
 $liens_opac['lien_rech_subcollection'] 	= "./index.php?lvl=subcoll_see&id=!!id!!";
 $liens_opac['lien_rech_indexint'] 		= "./index.php?lvl=indexint_see&id=!!id!!";
-$liens_opac['lien_rech_motcle'] 		= "./index.php?lvl=search_result&mode=keyword&auto_submit=1&user_query=!!mot!!";
+//$liens_opac['lien_rech_motcle'] 		= "./index.php?lvl=search_result&mode=keyword&auto_submit=1&user_query=!!mot!!";
+$liens_opac['lien_rech_motcle'] 		= "./index.php?lvl=more_results&mode=keyword&user_query=!!mot!!&tags=ok";
 $liens_opac['lien_rech_categ'] 			= "./index.php?lvl=categ_see&id=!!id!!";
 $liens_opac['lien_rech_perio'] 			= "./index.php?lvl=notice_display&id=!!id!!";
 $liens_opac['lien_rech_bulletin'] 		= "./index.php?lvl=bulletin_display&id=!!id!!";
+$liens_opac['lien_rech_concept'] 		= "./index.php?lvl=concept_see&id=!!id!!";
+$liens_opac['lien_rech_authperso'] 		= "./index.php?lvl=authperso_see&id=!!id!!";
 
 
 switch($opac_allow_simili_search){
@@ -728,6 +814,7 @@ define( 'AFF_ETA_NOTICES_BOTH_ISBD_FIRST', 5 );
 define( 'AFF_ETA_NOTICES_REDUIT', 8 );
 define( 'AFF_ETA_NOTICES_DEPLIABLES_NON', 0 );
 define( 'AFF_ETA_NOTICES_DEPLIABLES_OUI', 1 );
+define( 'AFF_ETA_NOTICES_TEMPLATE_DJANGO', 9 );
 
 define( 'AFF_BAN_NOTICES_NON', 0 );
 define( 'AFF_BAN_NOTICES_ISBD', 1 );

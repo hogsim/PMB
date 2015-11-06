@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: doc_num.php,v 1.37.2.4 2015-08-24 09:18:59 jpermanne Exp $
+// $Id: doc_num.php,v 1.46 2015-06-26 13:03:18 dbellamy Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -34,6 +34,45 @@ require_once ("./includes/explnum.inc.php");
 
 require_once ($class_path."/upload_folder.class.php"); 
 
+//si les vues sont activées (à laisser après le calcul des mots vides)
+if($opac_opac_view_activate){
+	$current_opac_view=$_SESSION["opac_view"];
+	if($opac_view==-1){
+		$_SESSION["opac_view"]="default_opac";
+	}else if($opac_view)	{
+		$_SESSION["opac_view"]=$opac_view*1;
+	}
+	$_SESSION['opac_view_query']=0;
+	if(!$pmb_opac_view_class) $pmb_opac_view_class= "opac_view";
+	require_once($base_path."/classes/".$pmb_opac_view_class.".class.php");
+
+	$opac_view_class= new $pmb_opac_view_class($_SESSION["opac_view"],$_SESSION["id_empr_session"]);
+	if($opac_view_class->id){
+		$opac_view_class->set_parameters();
+		$opac_view_filter_class=$opac_view_class->opac_filters;
+		$_SESSION["opac_view"]=$opac_view_class->id;
+		if(!$opac_view_class->opac_view_wo_query) {
+			$_SESSION['opac_view_query']=1;
+		}
+	} else {
+		$_SESSION["opac_view"]=0;
+	}
+	$css=$_SESSION["css"]=$opac_default_style;
+	if ($opac_view) {
+		if ($current_opac_view!=$opac_view*1) {
+			//on change de vue donc :
+			//on stocke le tri en cours pour la vue en cours
+			$_SESSION["last_sortnotices_view_".$current_opac_view]=$_SESSION["last_sortnotices"];
+			if (isset($_SESSION["last_sortnotices_view_".($opac_view*1)])) {
+				//on a déjà un tri pour la nouvelle vue, on l'applique
+				$_SESSION["last_sortnotices"] = $_SESSION["last_sortnotices_view_".($opac_view*1)];
+			} else {
+				unset($_SESSION["last_sortnotices"]);
+			}
+		}
+	}
+}
+
 //gestion des droits
 require_once($class_path."/acces.class.php");
 
@@ -61,8 +100,8 @@ function recup_explnum_infos($id_explnum){
 		LEFT JOIN docs_location dl ON ex_l.num_location= dl.idlocation
 		LEFT JOIN upload_repertoire rep ON ex_n.explnum_repertoire= rep.repertoire_id
 		where explnum_id='".$id_explnum."'";
-	$res_explnum=mysql_query($rqt_explnum,$dbh);
-	while(($explnum = mysql_fetch_array($res_explnum,MYSQL_ASSOC))){
+	$res_explnum=pmb_mysql_query($rqt_explnum,$dbh);
+	while(($explnum = pmb_mysql_fetch_array($res_explnum,MYSQL_ASSOC))){
 		$infos_explnum[]=$explnum;
 	}
 }
@@ -70,8 +109,8 @@ function recup_explnum_infos($id_explnum){
 $requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_nomfichier, explnum_mimetype, explnum_url, 
 			explnum_data, explnum_extfichier, explnum_path, concat(repertoire_path,explnum_path,explnum_nomfichier) as path, repertoire_id
 			FROM explnum left join upload_repertoire on repertoire_id=explnum_repertoire WHERE explnum_id = '$explnum_id' ";
-$resultat = mysql_query($requete,$dbh);
-$nb_res = mysql_num_rows($resultat) ;
+$resultat = pmb_mysql_query($requete,$dbh);
+$nb_res = pmb_mysql_num_rows($resultat) ;
 
 
 if (!$nb_res) {
@@ -79,15 +118,15 @@ if (!$nb_res) {
 	exit ;
 } 
 	
-$ligne = mysql_fetch_object($resultat);
+$ligne = pmb_mysql_fetch_object($resultat);
 
 $id_for_rigths = $ligne->explnum_notice;
 if($ligne->explnum_bulletin != 0){
 	//si bulletin, les droits sont rattachés à la notice du bulletin, à défaut du pério...
 	$req = "select bulletin_notice,num_notice from bulletins where bulletin_id =".$ligne->explnum_bulletin;
-	$res = mysql_query($req,$dbh);
-	if(mysql_num_rows($res)){
-		$row = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req,$dbh);
+	if(pmb_mysql_num_rows($res)){
+		$row = pmb_mysql_fetch_object($res);
 		$id_for_rigths = $row->num_notice;
 		if(!$id_for_rigths){
 			$id_for_rigths = $row->bulletin_notice;
@@ -106,16 +145,33 @@ if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1) {
 //Accessibilité des documents numériques aux abonnés en opac
 $req_restriction_abo = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM notices,notice_statut WHERE notice_id='".$id_for_rigths."' AND statut=id_notice_statut ";
 
-$result=mysql_query($req_restriction_abo,$dbh);
-$expl_num=mysql_fetch_array($result,MYSQL_ASSOC);
+$result=pmb_mysql_query($req_restriction_abo,$dbh);
+$expl_num=pmb_mysql_fetch_array($result,MYSQL_ASSOC);
 
-if($pmb_logs_activate){
-	//Récupération des informations du document numérique
-	recup_explnum_infos($explnum_id);
-	//Enregistrement du log
-	global $log, $infos_explnum;
-			
-	$rqt= " select empr_prof,empr_cp, empr_ville as ville, empr_year, empr_sexe, empr_login,  empr_date_adhesion, empr_date_expiration, count(pret_idexpl) as nbprets, count(resa.id_resa) as nbresa, code.libelle as codestat, es.statut_libelle as statut, categ.libelle as categ, gr.libelle_groupe as groupe,dl.location_libelle as location 
+//droits d'acces emprunteur/document numérique
+if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+	$ac= new acces();
+	$dom_3= $ac->setDomain(3);
+	$docnum_rights= $dom_3->getRights($_SESSION['id_empr_session'],$explnum_id);
+}
+
+//Accessibilité (Consultation/Téléchargement) sur le document numérique aux abonnés en opac 
+$req_restriction_docnum_abo = "SELECT explnum_download_opac, explnum_download_opac_abon FROM explnum,explnum_statut WHERE explnum_id='".$explnum_id."' AND explnum_docnum_statut=id_explnum_statut ";
+
+$result_docnum=pmb_mysql_query($req_restriction_docnum_abo,$dbh);
+$docnum_expl_num=pmb_mysql_fetch_array($result_docnum,MYSQL_ASSOC);
+
+		
+if( ($rights & 16 || (is_null($dom_2) && $expl_num["explnum_visible_opac"] && (!$expl_num["explnum_visible_opac_abon"] || ($expl_num["explnum_visible_opac_abon"] && $_SESSION["user_code"]))))
+	&& ($docnum_rights & 8 || (is_null($dom_3) && $docnum_expl_num["explnum_download_opac"] && (!$docnum_expl_num["explnum_download_opac_abon"] || ($docnum_expl_num["explnum_download_opac_abon"] && $_SESSION["user_code"]))))){
+	if (($ligne->explnum_data)||($ligne->explnum_path)) {
+		if($pmb_logs_activate){
+			//Récupération des informations du document numérique
+			recup_explnum_infos($explnum_id);
+			//Enregistrement du log
+			global $log, $infos_explnum;
+				
+			$rqt= " select empr_prof,empr_cp, empr_ville as ville, empr_year, empr_sexe, empr_login,  empr_date_adhesion, empr_date_expiration, count(pret_idexpl) as nbprets, count(resa.id_resa) as nbresa, code.libelle as codestat, es.statut_libelle as statut, categ.libelle as categ, gr.libelle_groupe as groupe,dl.location_libelle as location
 			from empr e
 			left join empr_codestat code on code.idcode=e.empr_codestat
 			left join empr_statut es on e.empr_statut=es.idstatut
@@ -126,27 +182,29 @@ if($pmb_logs_activate){
 			left join resa on e.id_empr=resa_idempr
 			left join pret on e.id_empr=pret_idempr
 			where e.empr_login='".addslashes($_SESSION['user_code'])."'
-			group by resa_idempr, pret_idempr";	
-	$res=mysql_query($rqt,$dbh);
-	if($res){
-		$empr_carac = mysql_fetch_array($res);
-		$log->add_log('empr',$empr_carac);
-	}
-
-	$log->add_log('num_session',session_id());
-	$log->add_log('explnum',$infos_explnum);
-	$infos_restriction_abo = array();
-	foreach ($expl_num as $key=>$value) {
-		$infos_restriction_abo[$key] = $value;
-	}
-	$log->add_log('restriction_abo',$infos_restriction_abo);
-
-	$log->save();
-}
+			group by resa_idempr, pret_idempr";
+			$res=pmb_mysql_query($rqt,$dbh);
+			if($res){
+				$empr_carac = pmb_mysql_fetch_array($res);
+				$log->add_log('empr',$empr_carac);
+			}
 		
-if( $rights & 16 || (is_null($dom_2) && $expl_num["explnum_visible_opac"] && (!$expl_num["explnum_visible_opac_abon"] || ($expl_num["explnum_visible_opac_abon"] && $_SESSION["user_code"])))){
-	if (($ligne->explnum_data)||($ligne->explnum_path)) {
-
+			$log->add_log('num_session',session_id());
+			$log->add_log('explnum',$infos_explnum);
+			$infos_restriction_abo = array();
+			foreach ($expl_num as $key=>$value) {
+				$infos_restriction_abo[$key] = $value;
+			}
+			$log->add_log('restriction_abo',$infos_restriction_abo);
+			$infos_restriction_docnum_abo = array();
+			foreach ($docnum_expl_num as $key=>$value) {
+				$infos_restriction_docnum_abo[$key] = $value;
+			}
+			$log->add_log('restriction_docnum_abo',$infos_restriction_docnum_abo);
+		
+			$log->save();
+		}
+		
 		if ($ligne->explnum_path) {
 			$up = new upload_folder($ligne->repertoire_id);
 			$path = str_replace("//","/",$ligne->path);
@@ -213,5 +271,20 @@ if( $rights & 16 || (is_null($dom_2) && $expl_num["explnum_visible_opac"] && (!$
 		exit ;
 	}
 }else{
-	print $msg['forbidden_docnum'];
+	if(!$_SESSION['id_empr_session']){
+		require_once($base_path."/includes/templates/common.tpl.php");
+		$short_header = str_replace("!!liens_rss!!","",$short_header);
+		print $short_header;
+		require_once($class_path."/auth_popup.class.php");
+		print "<div id='att'></div>
+				<script type='text/javascript' src='".$include_path."/javascript/auth_popup.js'></script>";
+		print "<script type='text/javascript'>
+				auth_popup('./ajax.php?module=ajax&categ=auth&callback_func=docnum_refresh');
+				function docnum_refresh(){
+					window.location.reload();
+				}
+			</script>";
+	}else{
+		print $msg['forbidden_docnum'];
+	}
 }

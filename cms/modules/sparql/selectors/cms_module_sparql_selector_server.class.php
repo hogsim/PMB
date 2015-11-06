@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_sparql_selector_server.class.php,v 1.1 2013-09-26 10:15:57 arenou Exp $
+// $Id: cms_module_sparql_selector_server.class.php,v 1.2 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -49,9 +49,9 @@ class cms_module_sparql_selector_server extends cms_module_common_selector{
 	protected function get_servers_list(){
 		$servers = array();
 		$query = "select managed_module_box from cms_managed_modules where managed_module_name = '".$this->module_class_name."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$box = mysql_result($result,0,0);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$box = pmb_mysql_result($result,0,0);
 			$infos =unserialize($box);
 			$this->debug($infos);
 			foreach($infos['datasources']['cms_module_sparql_datasource_sparql']['stores'] as $key => $values){

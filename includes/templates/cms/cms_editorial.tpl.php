@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial.tpl.php,v 1.12.2.5 2015-03-10 17:17:15 arenou Exp $
+// $Id: cms_editorial.tpl.php,v 1.25 2015-05-26 13:23:48 gueluneau Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -32,18 +32,38 @@ $cms_editorial_form_tpl = "
 		<div class='row'>&nbsp;</div>
 	</form>
 	<script type='text/javascript'>
+		function unload_tinymce() {
+				if (typeof(tinyMCE) != 'undefined') {
+					if (tinyMCE.getInstanceById('cms_editorial_form_resume')) {
+						tinyMCE.execCommand('mceToggleEditor',true,'cms_editorial_form_resume');
+						tinyMCE.execCommand('mceRemoveControl',true,'cms_editorial_form_resume');
+					}
+					if (tinyMCE.getInstanceById('cms_editorial_form_contenu')) {	
+						tinyMCE.execCommand('mceToggleEditor',true,'cms_editorial_form_contenu');
+						tinyMCE.execCommand('mceRemoveControl',true,'cms_editorial_form_contenu');
+					}	
+				}
+		}
+						
 		function load_textareas(){
-			if(document.forms['!!cms_editorial_form_name!!'].cms_editorial_form_resume) document.forms['!!cms_editorial_form_name!!'].cms_editorial_form_resume.value = dijit.byId('cms_editorial_form_resume_form').get('value');
-			if(document.forms['!!cms_editorial_form_name!!'].cms_editorial_form_contenu) document.forms['!!cms_editorial_form_name!!'].cms_editorial_form_contenu.value = dijit.byId('cms_editorial_form_contenu_form').get('value');
+			if(dijit.byId('cms_editorial_form_resume_form')){
+				if(document.forms['!!cms_editorial_form_name!!'].cms_editorial_form_resume) document.forms['!!cms_editorial_form_name!!'].cms_editorial_form_resume.value = dijit.byId('cms_editorial_form_resume_form').get('value');
+				if(document.forms['!!cms_editorial_form_name!!'].cms_editorial_form_contenu) document.forms['!!cms_editorial_form_name!!'].cms_editorial_form_contenu.value = dijit.byId('cms_editorial_form_contenu_form').get('value');
+			} else {
+				unload_tinymce();
+			}
+			if(typeof(check_form) == 'function' && !check_form()){
+				return false;
+			}
 		}
 	</script>";
 
 $cms_editorial_form_del_button_tpl ="
-			<input type='submit' class='bouton' onclick='document.forms[\"!!cms_editorial_form_name!!\"].cms_editorial_form_delete.value=1;document.forms[\"!!cms_editorial_form_name!!\"].action=\"$base_path/cms.php?categ=!!type!!&sub=del\"' value='".$msg['cms_editorial_form_delete']."'/>
+			<input type='submit' class='bouton' onclick='document.forms[\"!!cms_editorial_form_name!!\"].cms_editorial_form_delete.value=1;document.forms[\"!!cms_editorial_form_name!!\"].action=\"$base_path/cms.php?categ=!!type!!&sub=del\";unload_tinymce();' value='".$msg['cms_editorial_form_delete']."'/>
 ";
 
 $cms_editorial_form_dupli_button_tpl = "
-			<input type='submit' class='bouton' onclick='document.forms[\"!!cms_editorial_form_name!!\"].cms_editorial_form_duplicate.value=1;document.forms[\"!!cms_editorial_form_name!!\"].cms_editorial_form_delete.value=0;' value='".$msg['cms_editorial_form_duplicate']."'/>
+			<input type='submit' class='bouton' onclick='document.forms[\"!!cms_editorial_form_name!!\"].cms_editorial_form_duplicate.value=1;document.forms[\"!!cms_editorial_form_name!!\"].cms_editorial_form_delete.value=0;unload_tinymce();' value='".$msg['cms_editorial_form_duplicate']."'/>
 ";
 
 $cms_editorial_parent_field = "
@@ -75,13 +95,26 @@ $cms_editorial_title_field = "
 
 $cms_dojo_plugins_editor=
 		" data-dojo-props=\"extraPlugins:[
+			{name: 'pastefromword', width: '400px', height: '200px'},
+			{name: 'insertTable', command: 'insertTable'},
+		    {name: 'modifyTable', command: 'modifyTable'},
+		    {name: 'insertTableRowBefore', command: 'insertTableRowBefore'},
+		    {name: 'insertTableRowAfter', command: 'insertTableRowAfter'},
+		    {name: 'insertTableColumnBefore', command: 'insertTableColumnBefore'},
+		    {name: 'insertTableColumnAfter', command: 'insertTableColumnAfter'},
+		    {name: 'deleteTableRow', command: 'deleteTableRow'},
+		    {name: 'deleteTableColumn', command: 'deleteTableColumn'},
+		    {name: 'colorTableCell', command: 'colorTableCell'},
+		    {name: 'tableContextMenu', command: 'tableContextMenu'},
+		    {name: 'resizeTableColumn', command: 'resizeTableColumn'},
 			{name: 'fontName', plainText: true}, 
 			{name: 'fontSize', plainText: true}, 
 			{name: 'formatBlock', plainText: true},
 			'foreColor','hiliteColor',
-			'createLink', 'unlink', 'insertImage',
+			'createLink','insertanchor', 'unlink', 'insertImage',
 			'fullscreen',
 			'viewsource'
+			
 		]\"	";
 
 $cms_editorial_resume_field = "
@@ -93,6 +126,17 @@ $cms_editorial_resume_field = "
 					<div class='row'>
 						<input type='hidden' name='cms_editorial_form_resume' value=''/>
 						<div data-dojo-type='dijit/Editor' $cms_dojo_plugins_editor	id='cms_editorial_form_resume_form' rows='5' class='saisie-80em' wrap='virtual'>!!cms_editorial_form_resume!!</div>
+					</div>
+				</div>
+			</div>";
+$cms_editorial_resume_field_no_dojo = "
+			<div class='row'>
+				<div class='colonne'>
+					<div class='row'>
+						<label for='cms_editorial_form_resume'>".$msg['cms_editorial_form_resume']."</label>
+					</div>
+					<div class='row'>
+						<textarea name='cms_editorial_form_resume'>!!cms_editorial_form_resume!!</textarea>
 					</div>
 				</div>
 			</div>";
@@ -109,6 +153,18 @@ $cms_editorial_contenu_field = "
 					</div>
 				</div>
 			</div>";
+$cms_editorial_contenu_field_no_dojo = "
+			<div class='row'>
+				<div class='colonne'>
+					<div class='row'>
+						<label for='cms_editorial_form_contenu'>".$msg['cms_editorial_form_contenu']."</label>
+					</div>
+					<div class='row'>
+						<textarea name='cms_editorial_form_contenu'>!!cms_editorial_form_contenu!!</textarea>
+					</div>
+				</div>
+			</div>";
+
 
 $cms_editorial_desc_field = "
 			<div class='row'>
@@ -122,15 +178,26 @@ $cms_editorial_desc_field = "
 					</div>
 				</div>
 			</div>
+    		<link href='./javascript/dojo/dojox/editor/plugins/resources/editorPlugins.css' type='text/css' rel='stylesheet' />
+    		<link href='./javascript/dojo/dojox/editor/plugins/resources/css/InsertEntity.css' type='text/css' rel='stylesheet' />
+    		<link href='./javascript/dojo/dojox/editor/plugins/resources/css/PasteFromWord.css' type='text/css' rel='stylesheet' />
+    		<link href='./javascript/dojo/dojox/editor/plugins/resources/css/InsertAnchor.css' type='text/css' rel='stylesheet' />
+    		<link href='./javascript/dojo/dojox/editor/plugins/resources/css/LocalImage.css' type='text/css' rel='stylesheet' />
+    		<link href='./javascript/dojo/dojox/form/resources/FileUploader.css' type='text/css' rel='stylesheet' />
 			<script type='text/javascript'>
 				dojo.require('dijit.Editor');
 				dojo.require('dijit._editor.plugins.LinkDialog');
                 dojo.require('dijit._editor.plugins.FontChoice');
 				dojo.require('dijit._editor.plugins.TextColor');
-				
 				dojo.require('dijit._editor.plugins.FullScreen');
 				dojo.require('dijit._editor.plugins.ViewSource');
-				
+				dojo.require('dojox.editor.plugins.InsertEntity');
+				dojo.require('dojox.editor.plugins.TablePlugins');
+				dojo.require('dojox.editor.plugins.ResizeTableColumn');
+				dojo.require('dojox.editor.plugins.PasteFromWord');
+				dojo.require('dojox.editor.plugins.InsertAnchor');
+				dojo.require('dojox.editor.plugins.Blockquote');
+				dojo.require('dojox.editor.plugins.LocalImage');
 				ajax_parse_dom();
 				function add_categ() {
 			        template = document.getElementById('addcateg');

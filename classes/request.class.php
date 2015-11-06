@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: request.class.php,v 1.4 2013-04-16 08:16:41 mbertin Exp $
+// $Id: request.class.php,v 1.5 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -40,8 +40,8 @@ class request {
 		global $dbh;
 		
 		$q = "select name, requete, comment, autorisations, parameters, num_classement, p_mode, p_form from procs where idproc = '".$this->idproc."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 
 		$this->name = $obj->name;
 		$this->requete = $obj->requete;
@@ -73,7 +73,7 @@ class request {
 			$q.= "p_mode = '".$this->p_mode."', ";
 			$q.= "p_form = '".addslashes($this->p_form)."' ";
 			$q.= "where idproc = '".$this->idproc."' ";
-			mysql_query($q, $dbh);
+			pmb_mysql_query($q, $dbh);
 		
 		} else {
 
@@ -85,8 +85,8 @@ class request {
 			$q.= "num_classement = '".$this->num_classement."', ";
 			$q.= "p_mode = '".$this->p_mode."', ";
 			$q.= "p_form = '".addslashes($this->p_form)."' ";
-			mysql_query($q, $dbh);
-			$this->idproc = mysql_insert_id($dbh);			
+			pmb_mysql_query($q, $dbh);
+			$this->idproc = pmb_mysql_insert_id($dbh);			
 		}
 	}
 
@@ -98,7 +98,7 @@ class request {
 
 		if(!$idproc) $idproc = $this->idproc; 	
 		$q = "delete from procs where idproc = '".$idproc."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 				
 	}
 	
@@ -112,9 +112,9 @@ class request {
 		
 		//recuperation des utilisateurs
 		$q = "SELECT userid, username FROM users ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$p_user = array();
-		while (($row=mysql_fetch_row($r))) {
+		while (($row=pmb_mysql_fetch_row($r))) {
 			$p_user[$row[0]]=$row[1];
 		}
 		

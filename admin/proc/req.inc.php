@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: req.inc.php,v 1.1 2008-03-19 11:48:25 dbellamy Exp $
+// $Id: req.inc.php,v 1.2 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -71,8 +71,8 @@ switch($action) {
 	case 'update':
 		if($req_name && $req_code) {
 			$requete = "SELECT count(1) FROM procs WHERE name='".$req_name."' ";
-			$res = mysql_query($requete, $dbh);
-			$nbr_lignes = mysql_result($res, 0, 0);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = pmb_mysql_result($res, 0, 0);
 			if(!$nbr_lignes) {
 				if (is_array($user_aut)) { 
 					$autorisations=implode(" ",$user_aut);
@@ -85,7 +85,7 @@ switch($action) {
 					exit();
 				}
 				$requete = "INSERT INTO procs (idproc,name,requete,comment,autorisations,num_classement) VALUES ('', '$req_name', '$req_code', '$req_comm', '$autorisations', '$form_classement'  ) ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				print "<script language='Javascript'>alert(\"".addslashes($msg[709])."\");</script>";
 			}

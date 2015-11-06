@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_main.inc.php,v 1.1 2014-01-07 10:16:16 arenou Exp $
+// $Id: ajax_main.inc.php,v 1.2 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -22,9 +22,9 @@ switch($sub):
 	break;
 	case "save_notification_readed" :
 		$query = "select notifications from sessions where SESSID = ".SESSid;
-		$result = mysql_query($query,$dbh);
-		if(mysql_num_rows($result)){
-			$notifications = mysql_result($result,0,0);
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$notifications = pmb_mysql_result($result,0,0);
 			if(!$notifications){
 				$notifications = array();
 			}else{
@@ -32,7 +32,7 @@ switch($sub):
 			}
 			$notifications[$module] = 0;			
 			$query = "update sessions set notifications = '".addslashes(serialize($notifications))."' where  SESSID = ".SESSid;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query);
 			if($result){
 				ajax_http_send_response(1);
 			}else{
@@ -44,9 +44,9 @@ switch($sub):
 		break;	
 	case "save_new_notification" :
 		$query = "select notifications from sessions where SESSID = ".SESSid;
-		$result = mysql_query($query,$dbh);
-		if(mysql_num_rows($result)){
-			$notifications = mysql_result($result,0,0);
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$notifications = pmb_mysql_result($result,0,0);
 			if(!$notifications){
 				$notifications = array();
 			}else{
@@ -54,7 +54,7 @@ switch($sub):
 			}
 			$notifications[$module] = 1;
 			$query = "update sessions set notifications = '".addslashes(serialize($notifications))."' where  SESSID = ".SESSid;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query);
 			if($result){
 				ajax_http_send_response(1);
 			}else{
@@ -66,9 +66,9 @@ switch($sub):
 		break;
 	case "get_notifications_state" :
 		$query = "select notifications from sessions where SESSID = ".SESSid;
-		$result = mysql_query($query,$dbh);
-		if(mysql_num_rows($result)){
-			$notifications = mysql_result($result,0,0);
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$notifications = pmb_mysql_result($result,0,0);
 			if(!$notifications){
 				$notifications = array();
 			}else{

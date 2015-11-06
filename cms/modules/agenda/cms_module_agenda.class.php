@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_agenda.class.php,v 1.2 2012-10-12 14:03:49 arenou Exp $
+// $Id: cms_module_agenda.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -91,9 +91,9 @@ class cms_module_agenda extends cms_module_common_module {
 					<select name='cms_module_agenda_calendar_type' onchange='load_date_form(this.value)'>
 						<option value='0' ".(!$infos['type'] ? "selected='selected'" : "").">".$this->format_text($this->msg['cms_module_agenda_type_choice'])."</option>";
 		$query = "select id_editorial_type, editorial_type_label from cms_editorial_types where editorial_type_element = 'article' order by 2 asc";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row =  mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row =  pmb_mysql_fetch_object($result)){
 				$form.="
 						<option value='".$this->format_text($row->id_editorial_type)."'  ".($infos['type'] == $row->id_editorial_type ? "selected='selected'" : "").">".$this->format_text($row->editorial_type_label)."</option>";
 			}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: receptions.class.php,v 1.4.6.2 2014-09-02 10:18:44 dgoron Exp $
+// $Id: receptions.class.php,v 1.7 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -122,7 +122,7 @@ class receptions {
 					$q_cde.= "left join suggestions on num_acquisition=id_suggestion left join suggestions_origine on num_suggestion=id_suggestion ";
 					$q_cde.= "where ";
 					$q_cde.= $this->filtre_actes.$this->filtre_lignes.$this->filtre_origines;
-					mysql_query($q_cde, $dbh);
+					pmb_mysql_query($q_cde, $dbh);
 					//echo $q_cde.'<br />';
 					
 					$q_liv = "create temporary table tmp_liv as ";
@@ -130,7 +130,7 @@ class receptions {
 					$q_liv.= "join actes on num_acte=id_acte and type_acte='".TYP_ACT_LIV."' ";
 					$q_liv.= "where lig_ref in (select id_ligne from tmp_cde)";
 					$q_liv.= "group by lig_ref ";
-					mysql_query($q_liv, $dbh);
+					pmb_mysql_query($q_liv, $dbh);
 					//echo $q_liv.'<br />';
 					
 					$q_sol = "select distinct id_ligne, id_acte, numero, num_fournisseur, raison_sociale, type_ligne, date_acte, nb_cde ,if(nb_liv is null,0,nb_liv) as nb_liv, if(nb_liv is null,nb_cde,((nb_cde*1)-(nb_liv*1))) as nb_sol, ";
@@ -138,12 +138,12 @@ class receptions {
 					$q_sol.= "from tmp_cde left join tmp_liv on id_ligne=lig_ref ";
 					$q_sol.= "where ((nb_cde*1)-(nb_liv*1)) > 0 or nb_liv is null ";
 					$q_sol.= "order by raison_sociale, numero ";
-					$r_sol = mysql_query($q_sol, $dbh);
+					$r_sol = pmb_mysql_query($q_sol, $dbh);
 					//echo $q_sol.'<br />';
 					
-					$r = mysql_num_rows($r_sol);
+					$r = pmb_mysql_num_rows($r_sol);
 					if ($r) {
-						while ($row=mysql_fetch_object($r_sol)) {
+						while ($row=pmb_mysql_fetch_object($r_sol)) {
 							$i=$row->id_acte;
 							$j=$row->id_ligne;
 							$this->t_list[$i][$j]=array();
@@ -206,7 +206,7 @@ class receptions {
 						$q_cde.= "or ".$members_global['where'].") ";
 						$q_cde.= ")  ";
 						
-						mysql_query($q_cde, $dbh);
+						pmb_mysql_query($q_cde, $dbh);
 						//echo $q_cde.'<br />';
 						
 						$q_liv = "create temporary table tmp_liv as ";
@@ -214,7 +214,7 @@ class receptions {
 						$q_liv.= "join actes on lignes_actes.num_acte=actes.id_acte and actes.type_acte='".TYP_ACT_LIV."' ";
 						$q_liv.= "where lig_ref in (select id_ligne from tmp_cde) ";
 						$q_liv.= "group by lig_ref ";
-						mysql_query($q_liv, $dbh);
+						pmb_mysql_query($q_liv, $dbh);
 						//echo $q_liv.'<br />';
 						
 						$q_sol = "select distinct id_ligne, id_acte, numero, num_fournisseur, raison_sociale, type_ligne, date_acte, nb_cde, if(nb_liv is null,0,nb_liv) as nb_liv, if(nb_liv is null,nb_cde, ((nb_cde*1)-(nb_liv*1))) as nb_sol, ";
@@ -222,12 +222,12 @@ class receptions {
 						$q_sol.= "from tmp_cde left join tmp_liv on id_ligne=lig_ref ";
 						$q_sol.= "where ((nb_cde*1)-(nb_liv*1)) > 0 or nb_liv is null ";
 						$q_sol.= "order by raison_sociale, numero ";
-						$r_sol = mysql_query($q_sol, $dbh);
+						$r_sol = pmb_mysql_query($q_sol, $dbh);
 						//echo $q_sol.'<br />';
 						
-						$r = mysql_num_rows($r_sol);
+						$r = pmb_mysql_num_rows($r_sol);
 						if ($r) {
-							while ($row=mysql_fetch_object($r_sol)) {
+							while ($row=pmb_mysql_fetch_object($r_sol)) {
 								$i=$row->id_acte;
 								$j=$row->id_ligne;
 								$this->t_list[$i][$j]=array();

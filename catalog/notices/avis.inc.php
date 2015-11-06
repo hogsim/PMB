@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: avis.inc.php,v 1.24.2.4 2015-06-23 07:07:04 Alexandre Exp $
+// $Id: avis.inc.php,v 1.29 2015-06-23 07:27:37 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,14 +35,14 @@ switch ($quoifaire) {
 			$acces_m=1;
 			if ($acces_jm) {
 				$q = "select count(1) from avis $acces_jm where id_avis=".$valid_id_avis[$i];
-				$r = mysql_query($q, $dbh);
-				if(mysql_result($r,0,0)==0) {
+				$r = pmb_mysql_query($q, $dbh);
+				if(pmb_mysql_result($r,0,0)==0) {
 					$acces_m=0;
 				}
 			}
 			if ($acces_m!=0) {
 				$rqt = "update avis set valide=1 where id_avis='".$valid_id_avis[$i]."' ";
-				mysql_query ($rqt, $dbh) ;
+				pmb_mysql_query($rqt, $dbh) ;
 			}
 		}
 		break;
@@ -51,14 +51,14 @@ switch ($quoifaire) {
 			$acces_m=1;
 			if ($acces_jm) {
 				$q = "select count(1) from avis $acces_jm where id_avis=".$valid_id_avis[$i];
-				$r = mysql_query($q, $dbh);
-				if(mysql_result($r,0,0)==0) {
+				$r = pmb_mysql_query($q, $dbh);
+				if(pmb_mysql_result($r,0,0)==0) {
 					$acces_m=0;
 				}
 			}
 			if ($acces_m!=0) {
 				$rqt = "update avis set valide=0 where id_avis='".$valid_id_avis[$i]."' ";
-				mysql_query ($rqt, $dbh) ;
+				pmb_mysql_query($rqt, $dbh) ;
 			}
 		}
 		break;
@@ -67,14 +67,14 @@ switch ($quoifaire) {
 			$acces_m=1;
 			if ($acces_jm) {
 				$q = "select count(1) from avis $acces_jm where id_avis=".$valid_id_avis[$i];
-				$r = mysql_query($q, $dbh);
-				if(mysql_result($r,0,0)==0) {
+				$r = pmb_mysql_query($q, $dbh);
+				if(pmb_mysql_result($r,0,0)==0) {
 					$acces_m=0;
 				}
 			}
 			if ($acces_m!=0) {
 				$rqt = "delete from avis where id_avis='".$valid_id_avis[$i]."' ";
-				mysql_query ($rqt, $dbh) ;
+				pmb_mysql_query($rqt, $dbh) ;
 			}
 		}
 		break;
@@ -130,18 +130,18 @@ $requete.= "$acces_jl ";
 $requete.= "where $restrict ";
 $requete.= "order by index_serie, tnvol, index_sew ,dateAjout desc ";
 if(!$nbr_lignes) {
-	$r = mysql_query($requete, $dbh) or die (mysql_error()." <br /><br />".$requete);
-	$nbr_lignes=mysql_num_rows($r);
+	$r = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." <br /><br />".$requete);
+	$nbr_lignes=pmb_mysql_num_rows($r);
 }
 $requete.= "limit $debut, $nb_per_page";
 
-$r = mysql_query($requete, $dbh) or die (mysql_error()." <br /><br />".$requete);
-if (mysql_num_rows($r)) {
+$r = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." <br /><br />".$requete);
+if (pmb_mysql_num_rows($r)) {
 	//affichage des notices
 	print $begin_result_liste;
 	$res_final = "";
 	$notice_id=0;
-	while ($loc = mysql_fetch_object($r)) {
+	while ($loc = pmb_mysql_fetch_object($r)) {
 		if ($notice_id!=$loc->notice_id) {
 			if ($notice_id!=0) $res_final .=  "</ul><br />" ;
 			$notice_id=$loc->notice_id;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sessions.inc.php,v 1.38.6.1 2015-05-19 14:29:28 apetithomme Exp $
+// $Id: sessions.inc.php,v 1.40 2015-05-19 14:29:28 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -63,8 +63,8 @@ function checkUser($SESSNAME, $allow=0,$user_connexion='') {
 	$query = "SELECT SESSID, login, IP, SESSstart, LastOn, SESSNAME FROM sessions WHERE ";
 	$query .= "SESSID='$PHPSESSID'";
 	$txt_er = $query;
-	$result = mysql_query($query, $dbh);
-	$numlignes = mysql_num_rows($result);
+	$result = pmb_mysql_query($query, $dbh);
+	$numlignes = pmb_mysql_num_rows($result);
 
 	if(!$result || !$numlignes) {
 		$checkuser_type_erreur = CHECK_USER_NO_SESSION ;
@@ -72,7 +72,7 @@ function checkUser($SESSNAME, $allow=0,$user_connexion='') {
 	}
 	
 	// vérification de la durée de la session
-	$session = mysql_fetch_object($result);
+	$session = pmb_mysql_fetch_object($result);
 	// durée depuis le dernier rafraichissement
 	if(($session->LastOn+SESSION_REACTIVATE) < time()) {
 		$checkuser_type_erreur = CHECK_USER_SESSION_DEPASSEE ;
@@ -94,8 +94,8 @@ function checkUser($SESSNAME, $allow=0,$user_connexion='') {
 	}
 	// contrôle des droits utilisateurs
 	$query = "SELECT * FROM users WHERE username='$PHPSESSLOGIN' ";
-	$result = @mysql_query($query, $dbh);
-	$session = mysql_fetch_object($result);
+	$result = @pmb_mysql_query($query, $dbh);
+	$session = pmb_mysql_fetch_object($result);
 
 	if($allow) {
 		if(!($allow & $session->rights)) {
@@ -114,7 +114,7 @@ function checkUser($SESSNAME, $allow=0,$user_connexion='') {
 	
 	// on avait bien stocké le sessid, on va pouvoir remettre à jour le laston, avec sessid dans la clause where au lieu de id en outre.
 	$query = "UPDATE sessions SET LastOn='$t' WHERE sessid='$id' ";
-	$result = mysql_query($query, $dbh) or die (mysql_error());
+	$result = pmb_mysql_query($query, $dbh) or die (pmb_mysql_error());
 
 	if(!$result) {
 		$checkuser_type_erreur = CHECK_USER_PB_ENREG_SESSION ;
@@ -145,12 +145,12 @@ function checkUser($SESSNAME, $allow=0,$user_connexion='') {
 	
 	/* param par défaut */	
 	$requete_param = "SELECT * FROM users WHERE username='$PHPSESSLOGIN' LIMIT 1 ";
-	$res_param = mysql_query($requete_param, $dbh);
-	$field_values = mysql_fetch_row ( $res_param );
-	$array_values = mysql_fetch_array ( $res_param );
+	$res_param = pmb_mysql_query($requete_param, $dbh);
+	$field_values = pmb_mysql_fetch_row( $res_param );
+	$array_values = pmb_mysql_fetch_array( $res_param );
 	$i = 0;
-	while ($i < mysql_num_fields($res_param)) {
-		$field = mysql_field_name($res_param, $i) ;
+	while ($i < pmb_mysql_num_fields($res_param)) {
+		$field = pmb_mysql_field_name($res_param, $i) ;
 		$field_deb = substr($field,0,6);
 		switch ($field_deb) {
 			case "deflt_" :
@@ -183,8 +183,8 @@ function checkUser($SESSNAME, $allow=0,$user_connexion='') {
 		$i++;
 		}
 	$requete_nom = "SELECT nom, prenom, user_email, userid, username, environnement, grp_num FROM users WHERE username='$PHPSESSLOGIN' ";
-	$res_nom = mysql_query($requete_nom, $dbh);
-	$param_nom = @mysql_fetch_object ( $res_nom );
+	$res_nom = pmb_mysql_query($requete_nom, $dbh);
+	$param_nom = @pmb_mysql_fetch_object( $res_nom );
 	$PMBusernom=$param_nom->nom ;
 	$PMBuserprenom=$param_nom->prenom ;
 	$PMBuseremail=$param_nom->user_email ;	
@@ -203,8 +203,8 @@ function checkUser($SESSNAME, $allow=0,$user_connexion='') {
 	/* param de la localisation */	
 	if ($deflt2docs_location) $requete_param = "SELECT * FROM docs_location where idlocation='$deflt2docs_location'";
 	else $requete_param = "SELECT * FROM docs_location limit 1";
-	$res_param = mysql_query($requete_param, $dbh);
-	$obj_location = mysql_fetch_object ( $res_param ) ;
+	$res_param = pmb_mysql_query($requete_param, $dbh);
+	$obj_location = pmb_mysql_fetch_object( $res_param ) ;
 	$biblio_name=         $obj_location->name ;  
 	$biblio_adr1=         $obj_location->adr1 ;   
 	$biblio_adr2=         $obj_location->adr2 ;   
@@ -221,9 +221,9 @@ function checkUser($SESSNAME, $allow=0,$user_connexion='') {
 	if($pmb_sur_location_activate && $deflt2docs_location){		
 		if($obj_location->surloc_num && $obj_location->surloc_used){
 			$requete="SELECT * FROM sur_location WHERE surloc_id='".$obj_location->surloc_num."' LIMIT 1";			
-			$sur_loc_session = mysql_query($requete, $dbh) or die(mysql_error()."<br />$requete");
-			if(mysql_num_rows($sur_loc_session)) {
-				$sur_loc_session=mysql_fetch_object($sur_loc_session);				
+			$sur_loc_session = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error()."<br />$requete");
+			if(pmb_mysql_num_rows($sur_loc_session)) {
+				$sur_loc_session=pmb_mysql_fetch_object($sur_loc_session);				
 				$biblio_name=         $sur_loc_session->surloc_name ;  
 				$biblio_adr1=         $sur_loc_session->surloc_adr1 ;   
 				$biblio_adr2=         $sur_loc_session->surloc_adr2 ;   
@@ -301,8 +301,8 @@ function startSession($SESSNAME, $login, $database=LOCATION) {
 	$IP = $_SERVER['REMOTE_ADDR'];
 
 	$query = "SELECT rights, user_lang FROM users WHERE username='$login'";
-	$result = mysql_query($query, $dbh);
-	$ff = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query, $dbh);
+	$ff = pmb_mysql_fetch_object($result);
 	$flag = $ff->rights;
 
 	// inscription de la session dans la table
@@ -314,7 +314,7 @@ function startSession($SESSNAME, $login, $database=LOCATION) {
 	$query .= ", '$SESSstart'";
 	$query .= ", '$SESSNAME' )";
 
-	$result = mysql_query($query, $dbh);
+	$result = pmb_mysql_query($query, $dbh);
 	if(!$result) {
 		$checkuser_type_erreur = CHECK_USER_PB_OUVERTURE_SESSION ;
 		return CHECK_USER_PB_OUVERTURE_SESSION ;
@@ -342,11 +342,11 @@ function startSession($SESSNAME, $login, $database=LOCATION) {
 	
 	/* param par défaut */	
 	$requete_param = "SELECT * FROM users WHERE username='$login' LIMIT 1 ";
-	$res_param = mysql_query($requete_param, $dbh);
-	$field_values = mysql_fetch_row( $res_param );
+	$res_param = pmb_mysql_query($requete_param, $dbh);
+	$field_values = pmb_mysql_fetch_row( $res_param );
 	$i = 0;
-	while ($i < mysql_num_fields($res_param)) {
-		$field = mysql_field_name($res_param, $i) ;
+	while ($i < pmb_mysql_num_fields($res_param)) {
+		$field = pmb_mysql_field_name($res_param, $i) ;
 		$field_deb = substr($field,0,6);
 		switch ($field_deb) {
 			case "deflt_" :
@@ -379,8 +379,8 @@ function startSession($SESSNAME, $login, $database=LOCATION) {
 		$i++;
 		}
 	$requete_nom = "SELECT nom, prenom, user_email, userid, username, grp_num FROM users WHERE username='$login' ";
-	$res_nom = mysql_query($requete_nom, $dbh);
-	$param_nom = mysql_fetch_object ( $res_nom );
+	$res_nom = pmb_mysql_query($requete_nom, $dbh);
+	$param_nom = pmb_mysql_fetch_object( $res_nom );
 	$PMBusernom=$param_nom->nom ;
 	$PMBuserprenom=$param_nom->prenom ;
 	$PMBgrp_num=$param_nom->grp_num;
@@ -403,10 +403,10 @@ function startSession($SESSNAME, $login, $database=LOCATION) {
 	
 	//Récupération  de l'historique
 	$query = "select session from admin_session where userid=".$PMBuserid;
-	$resultat=mysql_query($query);
+	$resultat=pmb_mysql_query($query);
 	if ($resultat) {
-		if (mysql_num_rows($resultat)) {
-			$_SESSION["session_history"]=@unserialize(@mysql_result($resultat,0,0));
+		if (pmb_mysql_num_rows($resultat)) {
+			$_SESSION["session_history"]=@unserialize(@pmb_mysql_result($resultat,0,0));
 		}
 	}
 
@@ -422,7 +422,7 @@ function cleanTable($SESSNAME) {
 
 	// suppression des sessions inactives
 	$query = "DELETE FROM sessions WHERE LastOn < ".$time_out." and SESSNAME = '".$SESSNAME."'";
-	$result = mysql_query($query, $dbh);
+	$result = pmb_mysql_query($query, $dbh);
 	}
 
 // sessionDelete : fin d'une session
@@ -457,7 +457,7 @@ function sessionDelete($SESSNAME) {
 	$query = "DELETE FROM sessions WHERE login='$login'";
 	$query .= " AND SESSNAME='$SESSNAME' and SESSID='$PHPSESSID'";
 
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if($result)
 		return TRUE;
 

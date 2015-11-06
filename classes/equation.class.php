@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: equation.class.php,v 1.17 2011-09-29 09:08:53 dgoron Exp $
+// $Id: equation.class.php,v 1.18 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -58,9 +58,9 @@ function getData() {
 		$this->human_query = "" ;
 	} else {
 		$requete = "SELECT id_equation, num_classement, nom_equation,comment_equation,requete, proprio_equation FROM equations WHERE id_equation='".$this->id_equation."' " ;
-		$result = mysql_query($requete, $dbh) or die ($requete."<br /> in equation.class.php : ".mysql_error());
-		if(mysql_num_rows($result)) {
-			$temp = mysql_fetch_object($result);
+		$result = pmb_mysql_query($requete, $dbh) or die ($requete."<br /> in equation.class.php : ".pmb_mysql_error());
+		if(pmb_mysql_num_rows($result)) {
+			$temp = pmb_mysql_fetch_object($result);
 		 	$this->id_equation		= $temp->id_equation ;
 		 	$this->num_classement	= $temp->num_classement ;
 			$this->nom_equation		= $temp->nom_equation ;
@@ -141,16 +141,16 @@ function delete() {
 		return $msg[409];
 
 	$requete = "delete from bannette_equation WHERE num_equation='$this->id_equation'";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	$requete = "delete from equations WHERE id_equation='$this->id_equation'";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$query = mysql_query("DELETE bannettes FROM bannettes LEFT JOIN empr ON proprio_bannette = id_empr WHERE id_empr IS NULL AND proprio_bannette !=0");
-	$query = mysql_query("DELETE equations FROM equations LEFT JOIN empr ON proprio_equation = id_empr WHERE id_empr IS NULL AND proprio_equation !=0 ");
-	$query = mysql_query("DELETE bannette_equation FROM bannette_equation LEFT JOIN bannettes ON num_bannette = id_bannette WHERE id_bannette IS NULL ");
-	$query = mysql_query("DELETE bannette_equation FROM bannette_equation LEFT JOIN equations on num_equation=id_equation WHERE id_equation is null");
-	$query = mysql_query("DELETE bannette_abon FROM bannette_abon LEFT JOIN empr on num_empr=id_empr WHERE id_empr is null");
-	$query = mysql_query("DELETE bannette_abon FROM bannette_abon LEFT JOIN bannettes ON num_bannette=id_bannette WHERE id_bannette IS NULL ");
+	$query = pmb_mysql_query("DELETE bannettes FROM bannettes LEFT JOIN empr ON proprio_bannette = id_empr WHERE id_empr IS NULL AND proprio_bannette !=0");
+	$query = pmb_mysql_query("DELETE equations FROM equations LEFT JOIN empr ON proprio_equation = id_empr WHERE id_empr IS NULL AND proprio_equation !=0 ");
+	$query = pmb_mysql_query("DELETE bannette_equation FROM bannette_equation LEFT JOIN bannettes ON num_bannette = id_bannette WHERE id_bannette IS NULL ");
+	$query = pmb_mysql_query("DELETE bannette_equation FROM bannette_equation LEFT JOIN equations on num_equation=id_equation WHERE id_equation is null");
+	$query = pmb_mysql_query("DELETE bannette_abon FROM bannette_abon LEFT JOIN empr on num_empr=id_empr WHERE id_empr is null");
+	$query = pmb_mysql_query("DELETE bannette_abon FROM bannette_abon LEFT JOIN bannettes ON num_bannette=id_bannette WHERE id_bannette IS NULL ");
 	
 }
 
@@ -177,8 +177,8 @@ function update($temp) {
 	$req.="requete='$temp->requete',";
 	$req.="proprio_equation='$temp->proprio_equation'";	
 	$req.=$clause ;
-	$res = mysql_query($req, $dbh);
-	if (!$this->id_equation) $this->id_equation = mysql_insert_id() ;
+	$res = pmb_mysql_query($req, $dbh);
+	if (!$this->id_equation) $this->id_equation = pmb_mysql_insert_id() ;
 }
 
 // pour maj de requete d'équation

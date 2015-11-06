@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reindex_docnum.inc.php,v 1.1 2009-06-12 10:13:07 kantin Exp $
+// $Id: reindex_docnum.inc.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once("$class_path/indexation_docnum.class.php");
@@ -21,15 +21,15 @@ if (!isset($start)) $start=0;
 $v_state=urldecode($v_state);
 
 if (!$count) {
-	$explnum = mysql_query("SELECT count(1) FROM explnum", $dbh);
-	$count = mysql_result($explnum, 0, 0);
+	$explnum = pmb_mysql_query("SELECT count(1) FROM explnum", $dbh);
+	$count = pmb_mysql_result($explnum, 0, 0);
 }
 
 print "<br /><br /><h2 align='center'>".htmlentities($msg["docnum_reindexation"], ENT_QUOTES, $charset)."</h2>";
 
 $requete = "select explnum_id as id from explnum order by id LIMIT $start, $lot";
-$res_explnum = mysql_query($requete,$dbh);
-if(mysql_num_rows($res_explnum)) {
+$res_explnum = pmb_mysql_query($requete,$dbh);
+if(pmb_mysql_num_rows($res_explnum)) {
 	
 	// définition de l'état de la jauge
 	$state = floor($start / ($count / $jauge_size));
@@ -44,7 +44,7 @@ if(mysql_num_rows($res_explnum)) {
 	// affichage du % d'avancement et de l'état
 	print "<div align='center'>$percent%</div>";
 	
-	while(($explnum = mysql_fetch_object($res_explnum))){
+	while(($explnum = pmb_mysql_fetch_object($res_explnum))){
 		
 		$index = new indexation_docnum($explnum->id);
 		$index->indexer();
@@ -64,8 +64,8 @@ if(mysql_num_rows($res_explnum)) {
 		</script>";
 } else {
 	$spec = $spec - INDEX_DOCNUM;
-	$not = mysql_query("SELECT count(1) FROM explnum", $dbh);
-	$compte = mysql_result($not, 0, 0);
+	$not = pmb_mysql_query("SELECT count(1) FROM explnum", $dbh);
+	$compte = pmb_mysql_result($not, 0, 0);
 	$v_state .= "<br /><img src=../../images/d.gif hspace=3>".htmlentities($msg['docnum_reindexation'], ENT_QUOTES, $charset)." : ";
 	$v_state .= $compte." ".htmlentities($msg['docnum_reindex_expl'], ENT_QUOTES, $charset);
 	print "

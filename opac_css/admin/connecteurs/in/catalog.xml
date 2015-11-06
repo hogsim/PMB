@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: catalog.xml,v 1.16.2.1 2014-12-01 17:34:16 mbertin Exp $ -->
+$Id: catalog.xml,v 1.20 2015-05-25 09:21:04 apetithomme Exp $ -->
 
 <catalog>
 	<item name="Z 39.50" path="z3950" id="1"/>
@@ -29,4 +29,6 @@ $Id: catalog.xml,v 1.16.2.1 2014-12-01 17:34:16 mbertin Exp $ -->
 	<item name="Sudoc" path="sudoc" id="22"/>
 	<item name="Liste Entrepot Externe" path="es_list" id="23"/>
 	<item name="data.bnf.fr" path="databnf" id="25"/>
+	<item name="ArteVOD" path="artevod" id="26"/>
+	<item name="Tout Apprendre" path="toutapprendre" id="27"/>
 </catalog>

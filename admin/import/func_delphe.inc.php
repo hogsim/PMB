@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_delphe.inc.php,v 1.8 2013-02-26 08:41:03 jpermanne Exp $
+// $Id: func_delphe.inc.php,v 1.9 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -123,11 +123,11 @@ function import_new_notice_suite() {
 	//on renseigne le champ perso indexpresse avec le 001...
 	//on récup l'id du champ
 	$rqt = "select idchamp, datatype from notices_custom where name ='cp_index' ";
-	$res = mysql_query($rqt);
-	if(mysql_num_rows($res)){
-		$cp_indexpresse = mysql_fetch_object($res);
+	$res = pmb_mysql_query($rqt);
+	if(pmb_mysql_num_rows($res)){
+		$cp_indexpresse = pmb_mysql_fetch_object($res);
 		$insert = "insert into notices_custom_values set notices_custom_champ=".$cp_indexpresse->idchamp.", notices_custom_origine=".$notice_id.", notices_custom_".$cp_indexpresse->datatype." = '".$id_unimarc."'";
-		mysql_query($insert) or die(mysql_error());
+		pmb_mysql_query($insert) or die(pmb_mysql_error());
 	}	
 	
 } // fin import_new_notice_suite
@@ -174,7 +174,7 @@ function add_categ($term,$id_thesaurus,$non_classes,$lang){
 function save_categ($categ_to_index,$ordre_categ){
 	global $notice_id;
 	$requete = "INSERT INTO notices_categories (notcateg_notice,num_noeud,ordre_categorie) VALUES(".$notice_id.",".$categ_to_index.",".$ordre_categ.")";
-	mysql_query($requete);	
+	pmb_mysql_query($requete);	
 }
 
 function init_delphe_term_convert(){
@@ -241,27 +241,27 @@ function decoupe_date($date_nom_formate,$annee_seule=false){
 function update_notice($bl,$hl,$typdoc){
 	global $notice_id;
 	$update =" update notices set niveau_biblio = '$bl', niveau_hierar ='$hl', typdoc='$typdoc' where notice_id = $notice_id";
-	mysql_query($update);
+	pmb_mysql_query($update);
 }
 function notice_to_article($perio_info,$bull_info){
 	global $notice_id;
 	$bull_id = genere_bulletin($perio_info,$bull_info);
 	update_notice("a","2","q");
 	$insert = "insert into analysis set analysis_bulletin = $bull_id, analysis_notice = $notice_id";
-	mysql_query($insert);
+	pmb_mysql_query($insert);
 }
 
 function genere_perio($perio_info){
 	global $statutnot;
 	$search = "select notice_id from notices where tit1 LIKE '".addslashes($perio_info['titre'])."' and niveau_biblio = 's' and niveau_hierar = '1'";
-	$res = mysql_query($search);
-	if(mysql_num_rows($res) == 0){
+	$res = pmb_mysql_query($search);
+	if(pmb_mysql_num_rows($res) == 0){
 		//il existe pas, faut le créer
 		//le type de document par défaut est révue
 		$insert = "insert into notices set tit1 = '".addslashes($perio_info['titre'])."', typdoc = 'n', niveau_biblio = 's', niveau_hierar = '1', statut = '".$statutnot."', create_date = '".date("Y-m-d H:i:s")."'";
-		$result = mysql_query($insert);
-		$perio_id = mysql_insert_id();
-	}else $perio_id = mysql_result($res,0,0);
+		$result = pmb_mysql_query($insert);
+		$perio_id = pmb_mysql_insert_id();
+	}else $perio_id = pmb_mysql_result($res,0,0);
 	return $perio_id;
 }
 
@@ -271,8 +271,8 @@ function genere_bulletin($perio_info,$bull_info,$isbull=true){
 	$perio_id = genere_perio($perio_info);
 	//on s'occupe du cas ou on a pas de titre pour le bulletin
 	$search = "select bulletin_id from bulletins where date_date  = '".$bull_info['date']."' and bulletin_numero LIKE '".$bull_info['num']."' and bulletin_notice = $perio_id";
-	$res = mysql_query($search);
-	if(mysql_num_rows($res) == 0){
+	$res = pmb_mysql_query($search);
+	if(pmb_mysql_num_rows($res) == 0){
 		if($bull_info['mention'] ==""){
 			$bull_info['mention'] = substr($bull_info['date'],8,2)."/".substr($bull_info['date'],5,2)."/".substr($bull_info['date'],0,4);
 		}
@@ -281,10 +281,10 @@ function genere_bulletin($perio_info,$bull_info,$isbull=true){
 			$insert .=", num_notice = $notice_id";
 			update_notice("b","2");
 		}
-		$result = mysql_query($insert);
-		$bull_id = mysql_insert_id();
+		$result = pmb_mysql_query($insert);
+		$bull_id = pmb_mysql_insert_id();
 	}else {
-		$bull_id = mysql_result($res,0,0);
+		$bull_id = pmb_mysql_result($res,0,0);
 	}
 	return $bull_id;
 }
@@ -293,43 +293,43 @@ function identifiants_thesaurus ($thesaurus_name,$langues_thesaurus='fr_FR') {
 	global $charset;
 	
 	$q = "select id_thesaurus from thesaurus where libelle_thesaurus='".addslashes($thesaurus_name)."'";
-	$r = mysql_query($q);
-	if ($o=mysql_fetch_object($r)) {
+	$r = pmb_mysql_query($q);
+	if ($o=pmb_mysql_fetch_object($r)) {
 		$res[NUMTHESAURUS]=$o->id_thesaurus;
 		$q="select id_noeud, autorite from noeuds where num_thesaurus=".$o->id_thesaurus." and autorite in ('TOP','NONCLASSES','ORPHELINS') ";
-		$r = mysql_query($q) or die(mysql_error()."<br><br>$q<br><br>");
-		while ($o=mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($q) or die(pmb_mysql_error()."<br><br>$q<br><br>");
+		while ($o=pmb_mysql_fetch_object($r)) {
 			$res[$o->autorite]=$o->id_noeud ;
 		}
 		return $res ;
 	} else {
 		$q = "INSERT INTO thesaurus (id_thesaurus, libelle_thesaurus, langue_defaut, active, opac_active, num_noeud_racine) VALUES (0, '".addslashes($thesaurus_name)."', '$langues_thesaurus', '1', '1', 0)";
-		$r = mysql_query($q) or die(mysql_error()."<br><br>$q<br><br>");
-		$res[NUMTHESAURUS]=mysql_insert_id();
+		$r = pmb_mysql_query($q) or die(pmb_mysql_error()."<br><br>$q<br><br>");
+		$res[NUMTHESAURUS]=pmb_mysql_insert_id();
 
 		$q = "INSERT INTO noeuds (id_noeud, autorite, num_parent, num_renvoi_voir, visible, num_thesaurus) VALUES (0, 'TOP', 0, 0, '0', ".$res[NUMTHESAURUS].")";
-		$r = mysql_query($q) or die(mysql_error()."<br><br>$q<br><br>");
-		$res[TOP]=mysql_insert_id();
+		$r = pmb_mysql_query($q) or die(pmb_mysql_error()."<br><br>$q<br><br>");
+		$res[TOP]=pmb_mysql_insert_id();
 		$q = "update thesaurus set num_noeud_racine=".$res[TOP]." where id_thesaurus=".$res[NUMTHESAURUS]." ";
-		$r = mysql_query($q) or die(mysql_error()."<br><br>$q<br><br>");
+		$r = pmb_mysql_query($q) or die(pmb_mysql_error()."<br><br>$q<br><br>");
 
 		$q = "INSERT INTO noeuds (id_noeud, autorite, num_parent, num_renvoi_voir, visible, num_thesaurus) VALUES (0, 'NONCLASSES', ".$res[TOP].", 0, '0', ".$res[NUMTHESAURUS].")";
-		$r = mysql_query($q) or die(mysql_error()."<br><br>$q<br><br>");
-		$res[NONCLASSES]=mysql_insert_id();
+		$r = pmb_mysql_query($q) or die(pmb_mysql_error()."<br><br>$q<br><br>");
+		$res[NONCLASSES]=pmb_mysql_insert_id();
 
 		$q = "INSERT INTO noeuds (id_noeud, autorite, num_parent, num_renvoi_voir, visible, num_thesaurus) VALUES (0, 'ORPHELINS', ".$res[TOP].", 0, '0', ".$res[NUMTHESAURUS].")";
-		$r = mysql_query($q) or die(mysql_error()."<br><br>$q<br><br>");
-		$res[ORPHELINS]=mysql_insert_id();
+		$r = pmb_mysql_query($q) or die(pmb_mysql_error()."<br><br>$q<br><br>");
+		$res[ORPHELINS]=pmb_mysql_insert_id();
 		
 		$tmp='~termes non classés';
 		if($charset=='utf-8'){
 			$tmp=utf8_encode($tmp);
 		}
 		$q = "INSERT INTO categories (num_thesaurus,num_noeud, langue, libelle_categorie, note_application, comment_public, comment_voir, index_categorie) VALUES (".$res[NUMTHESAURUS].", ".$res[NONCLASSES].", 'fr_FR', '".$tmp."', '', '', '', ' termes non classes ')";
-		$r = mysql_query($q) or die(mysql_error()."<br><br>$q<br><br>");
+		$r = pmb_mysql_query($q) or die(pmb_mysql_error()."<br><br>$q<br><br>");
 
 		$q = "INSERT INTO categories (num_thesaurus,num_noeud, langue, libelle_categorie, note_application, comment_public, comment_voir, index_categorie) VALUES (".$res[NUMTHESAURUS].", ".$res[ORPHELINS].", 'fr_FR', '~termes orphelins', '', '', '', ' termes orphelins ')";
-		$r = mysql_query($q) or die(mysql_error()."<br><br>$q<br><br>");
+		$r = pmb_mysql_query($q) or die(pmb_mysql_error()."<br><br>$q<br><br>");
 
 		return $res ;
 	}

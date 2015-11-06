@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: external.inc.php,v 1.12 2012-02-28 14:22:50 dbellamy Exp $
+// $Id: external.inc.php,v 1.13 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 $nb_result_external=0;
@@ -40,8 +40,8 @@ if ($_SESSION["ext_type"]=="multi") {
 		$es->remove_forbidden_fields();
 		$table=$es->make_search();
 		$requete="select count(1) from $table";
-		$resultat=mysql_query($requete);
-		$nb_result_external=@mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		$nb_result_external=@pmb_mysql_result($resultat,0,0);
 		if ($nb_result_external) {
 			print pmb_bidi("<strong>".$es->make_human_query()."</strong> ".$nb_result_external." $msg[results] ");
 			print "<a href=\"#\" onclick=\"document.search_form.action='./index.php?lvl=more_results&mode=external'; document.search_form.submit(); return false;\">$msg[suite]&nbsp;<img src='./images/search.gif' border='0' align='absmiddle'/></a><br /><br />";
@@ -112,8 +112,8 @@ if ($_SESSION["ext_type"]=="multi") {
 	    		$table=$es->make_search("f_".$look_id[$k]);
 	    		
 	    		$requete="select count(1) from $table";
-				$resultat=mysql_query($requete);
-				$nb_result_partial=@mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$nb_result_partial=@pmb_mysql_result($resultat,0,0);
 				if ($nb_result_partial) {
 					$nb_result_external+=$nb_result_partial;
 					print "<form name='form_".$look_id[$k]."' action='./index.php?lvl=more_results&mode=external' method='post'>\n";

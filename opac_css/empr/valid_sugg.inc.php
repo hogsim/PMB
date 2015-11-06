@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: valid_sugg.inc.php,v 1.18.2.2 2015-10-05 13:16:10 jpermanne Exp $
+// $Id: valid_sugg.inc.php,v 1.19 2015-01-22 14:07:59 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -39,7 +39,7 @@ if (($tit != "") && ($aut != "" || $edi != "" || $code != "" || $_FILES['piece_j
 		$su->code = stripslashes($code);
 		$prix = str_replace(',','.',$prix);
 		if (is_numeric($prix)) $su->prix = $prix;
-		$su->nb = ((int)$nb?(int)$nb:"1");
+		$su->nb = 1;
 		$su->statut = $sug_map->getFirstStateId();
 		$su->url_suggestion = stripslashes($url_sug);
 		$su->commentaires = stripslashes($comment);
@@ -124,11 +124,6 @@ if (($tit != "") && ($aut != "" || $edi != "" || $code != "" || $_FILES['piece_j
 			<td >".htmlentities($msg["empr_sugg_datepubli"], ENT_QUOTES, $charset)."</td>
 			<td>".htmlentities($su->date_publi, ENT_QUOTES, $charset)."</td>
 		</tr>";
-		$sug_form.= "
-		<tr>
-			<td >".htmlentities($msg["empr_sugg_qte"], ENT_QUOTES, $charset)."</td>
-			<td>".htmlentities($su->nb, ENT_QUOTES, $charset)."</td>
-		</tr>";
 		$source = new suggestion_source($su->sugg_src);
 		$sug_form.= "
 		<tr>
@@ -170,10 +165,6 @@ if (($tit != "") && ($aut != "" || $edi != "" || $code != "" || $_FILES['piece_j
 			<tr>
 				<td >".htmlentities($msg["empr_sugg_code"], ENT_QUOTES, $charset)."</td>
 				<td>".htmlentities($code, ENT_QUOTES, $charset)."</td>
-			</tr>
-			<tr>
-				<td >".htmlentities($msg["empr_sugg_qte"], ENT_QUOTES, $charset)."</td>
-				<td>".htmlentities($nb, ENT_QUOTES, $charset)."</td>
 			</tr>";
 		$sug_form.= "</table><br />";
 		$sug_form.= "<b>".htmlentities($msg["empr_sugg_already_exist"], ENT_QUOTES, $charset)."</b><br /><br />";

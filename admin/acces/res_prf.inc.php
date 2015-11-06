@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: res_prf.inc.php,v 1.5.12.1 2015-02-10 11:18:03 jpermanne Exp $
+// $Id: res_prf.inc.php,v 1.7 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -83,21 +83,21 @@ function show_res_prf_list($id,$maj=false) {
 	$rows.= "</tr>";
 	
 	$q=$dom->loadResourceProfiles();
-	$r=mysql_query($q, $dbh);
-	if (mysql_num_rows($r)) {
+	$r=pmb_mysql_query($q, $dbh);
+	if (pmb_mysql_num_rows($r)) {
 		
 		//generation selecteur
 		$selector = "<select name='!!sel_name!!' id='!!sel_name!!'>";
 		$selector.= "<option value=\"0\" >".htmlentities($dom->getComment('res_prf_def_lib'), ENT_QUOTES, $charset)."</option>";
-		while(($row = mysql_fetch_object($r))) {
+		while(($row = pmb_mysql_fetch_object($r))) {
 			$selector .= "<option value=\"".$row->prf_id."\" >";
 	 		$selector .= htmlentities($row->prf_name, ENT_QUOTES, $charset)."</option>";
 		}                                         
 		$selector .= "</select>";                 
 		$selector .= "<script type=\"text/javascript\">!!sel_script!!</script>";
 
-		mysql_data_seek($r,0);
-		while(($row=mysql_fetch_object($r))) {
+		pmb_mysql_data_seek($r,0);
+		while(($row=pmb_mysql_fetch_object($r))) {
 			
 			if ($parity % 2) {
 				$pair_impair = 'even';
@@ -228,8 +228,8 @@ function show_calc_res_prf_list($id) {
 	
 	//anciens profils inutilises a reaffecter
 	$q_unused=$dom->loadUsedResourceProfiles($t_reused);
-	$r_unused=mysql_query($q_unused,$dbh);
-	if(mysql_num_rows($r_unused)){
+	$r_unused=pmb_mysql_query($q_unused,$dbh);
+	if(pmb_mysql_num_rows($r_unused)){
 		
 		//generation selecteur
 		$selector = "<select name='!!sel_name!!' id='!!sel_name!!'>";
@@ -243,7 +243,7 @@ function show_calc_res_prf_list($id) {
 		
 		$parity = 0;
 		$rows="<tr><th>".htmlentities($msg['dom_prf_name'], ENT_QUOTES, $charset)."</th><th>".htmlentities($msg['dom_prf_use'], ENT_QUOTES, $charset)."</th><th>".htmlentities($msg['dom_prf_rule'], ENT_QUOTES, $charset)."</th><tr>";
-		while(($row_unused=mysql_fetch_object($r_unused))) {
+		while(($row_unused=pmb_mysql_fetch_object($r_unused))) {
 			
 			if ($parity % 2) {
 				$pair_impair = 'even';

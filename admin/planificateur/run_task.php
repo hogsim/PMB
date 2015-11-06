@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: run_task.php,v 1.5.6.1 2014-07-01 12:47:07 mbertin Exp $
+// $Id: run_task.php,v 1.7 2015-04-03 11:16:26 jpermanne Exp $
 
 $base_path="..";
 $base_title="";
@@ -33,8 +33,8 @@ $requete_nom = "SELECT nom, prenom, user_email, userid, username, rights, user_l
 	LEFT JOIN es_esgroups on userid=esgroup_pmbusernum
 	LEFT JOIN es_esusers on esgroup_id=esuser_groupnum
 	WHERE esuser_id=$user_id";
-$res_nom = mysql_query($requete_nom, $dbh);
-@$param_nom = mysql_fetch_object ( $res_nom );
+$res_nom = pmb_mysql_query($requete_nom, $dbh);
+@$param_nom = pmb_mysql_fetch_object( $res_nom );
 $lang = $param_nom->user_lang ;
 $PMBusernom=$param_nom->nom ;
 $PMBuserprenom=$param_nom->prenom ;
@@ -61,8 +61,8 @@ function run_task($id_tache, $type_tache, $id_planificateur, $num_es_user, $conn
 	@ini_set('zend.ze1_compatibility_mode',0);
 	
 	$query = "select * from connectors_out_sources where connectors_out_source_id=".$connectors_out_source_id;
-	$res = mysql_query($query);
-	$row = mysql_fetch_object($res);
+	$res = pmb_mysql_query($query);
+	$row = pmb_mysql_fetch_object($res);
 
 	$connectors_out_sources_connectornum = $row->connectors_out_sources_connectornum; 
 

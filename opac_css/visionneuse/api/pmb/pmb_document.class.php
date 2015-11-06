@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmb_document.class.php,v 1.1.4.1 2014-06-11 15:40:43 arenou Exp $
+// $Id: pmb_document.class.php,v 1.3 2015-04-03 11:16:26 jpermanne Exp $
 
 require_once($class_path."/cms/cms_document.class.php");
 
@@ -60,10 +60,10 @@ class pmb_document extends base_params implements params {
 	 				$id_article = ($this->params['num_type']*1);
 					$query = "select document_link_num_document from cms_documents_links where document_link_type_object = 'article' and document_link_num_object = '".$id_article."'";
 					
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
 						$i=0;
-						while($row = mysql_fetch_object($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							if($this->params['explnum'] == $row->document_link_num_document){
 								$this->current = $i;
 							}
@@ -76,10 +76,10 @@ class pmb_document extends base_params implements params {
  					$id_section = ($this->params['num_type']*1);
  					$query = "select document_link_num_document from cms_documents_links where document_link_type_object = 'section' and document_link_num_object = '".$id_section."'";
  						
- 					$result = mysql_query($query);
- 					if(mysql_num_rows($result)){
+ 					$result = pmb_mysql_query($query);
+ 					if(pmb_mysql_num_rows($result)){
  						$i=0;
- 						while($row = mysql_fetch_object($result)){
+ 						while($row = pmb_mysql_fetch_object($result)){
  							if($this->params['explnum'] == $row->document_link_num_document){
  								$this->current = $i;
  							}
@@ -108,8 +108,8 @@ class pmb_document extends base_params implements params {
 //				$requete .= "where explnum_id = $id";
 //				//if($opac_photo_filtre_mimetype) //Si on est ici c'est que la visionneuse est activé alors on filtre les mimetypes (si il y en a pas on ne doit rien afficher)
 //					$requete .= " and explnum_mimetype in ($opac_photo_filtre_mimetype)";
-//				$res = mysql_query($requete,$dbh);
-//				$this->listeDocs[] = mysql_fetch_object($res);
+//				$res = pmb_mysql_query($requete,$dbh);
+//				$this->listeDocs[] = pmb_mysql_fetch_object($res);
 //				$this->current = 0;
 //			}else {
 //				if(sizeof($this->listeNotices) > 0 && sizeof($this->listeBulls) == 0){
@@ -121,8 +121,8 @@ class pmb_document extends base_params implements params {
 //				}
 //				//if($opac_photo_filtre_mimetype) //Si on est ici c'est que la visionneuse est activé alors on filtre les mimetypes (si il y en a pas on ne doit rien afficher)
 //					$requete .= " and explnum_mimetype in ($opac_photo_filtre_mimetype)";
-//				$res = mysql_query($requete,$dbh);
-//				while(($expl = mysql_fetch_object($res))){
+//				$res = pmb_mysql_query($requete,$dbh);
+//				while(($expl = pmb_mysql_fetch_object($res))){
 //					$this->listeDocs[] = $expl;
 //				}
 //			}
@@ -190,9 +190,9 @@ class pmb_document extends base_params implements params {
 		$params = serialize(array());
 		if($class != ""){
 			$req="SELECT visionneuse_params_parameters FROM visionneuse_params WHERE visionneuse_params_class LIKE '$class'";
-			if($res=mysql_query($req)){
-				if(mysql_num_rows($res)){
-					$result = mysql_fetch_object($res);
+			if($res=pmb_mysql_query($req)){
+				if(pmb_mysql_num_rows($res)){
+					$result = pmb_mysql_fetch_object($res);
 					$params = htmlspecialchars_decode($result->visionneuse_params_parameters);
 				}
 			}
@@ -253,14 +253,14 @@ class pmb_document extends base_params implements params {
 // 		$current = $this->listeDocs[$this->current]->explnum_id;
 // 		if(!isset($this->biblioInfos[$current])){
 // 			$query = "select explnum_notice,explnum_bulletin from explnum where explnum_id = ".$current;
-// 			$result = mysql_query($query);
-// 			if(mysql_num_rows($result)){
-// 				$row = mysql_fetch_object($result);
+// 			$result = pmb_mysql_query($query);
+// 			if(pmb_mysql_num_rows($result)){
+// 				$row = pmb_mysql_fetch_object($result);
 // 				if($row->explnum_notice){
 // 					$query = "select notice_id, tit1, year from notices where notice_id = ".$row->explnum_notice;
-// 					$result = mysql_query($query);
-// 					if(mysql_num_rows($result)){
-// 						$row = mysql_fetch_object($result);
+// 					$result = pmb_mysql_query($query);
+// 					if(pmb_mysql_num_rows($result)){
+// 						$row = pmb_mysql_fetch_object($result);
 // 						$this->biblioInfos[$current]['title']['value'] = $row->tit1;
 // 						$this->biblioInfos[$current]['date']['value'] = $row->year;
 // 						$this->biblioInfos[$current]['permalink']['value'] = "./index.php?lvl=notice_display&id=".$row->notice_id;
@@ -268,9 +268,9 @@ class pmb_document extends base_params implements params {
 // 					}
 // 				}else{
 // 					$query = "select bulletin_id, bulletin_titre,mention_date,date_date,notices.tit1,perio.tit1 as perio_title, notices.notice_id, perio.notice_id as serial_id from bulletins join notices as perio on bulletin_notice = perio.notice_id left join notices on num_notice = notices.notice_id where bulletin_id = ".$row->explnum_bulletin;					
-// 					$result = mysql_query($query);
-// 					if(mysql_num_rows($result)){
-// 						$row = mysql_fetch_object($result);
+// 					$result = pmb_mysql_query($query);
+// 					if(pmb_mysql_num_rows($result)){
+// 						$row = pmb_mysql_fetch_object($result);
 // 						$titre = $row->tit1;
 // 						if(!$titre) $titre = $row->bulletin_titre;
 // 						$this->biblioInfos[$current]['title']['value'] = $row->perio_title.", ".$titre;
@@ -279,9 +279,9 @@ class pmb_document extends base_params implements params {
 // 						$aut_query = "select responsability_author from responsability where responsability_notice = ".($row->notice_id ? $row->notice_id:$row->serial_id)." order by responsability_type asc, responsability_ordre asc limit 1";
 // 					}
 // 				}
-// 				$result = mysql_query($aut_query);
-// 				if(mysql_num_rows($result)){
-// 					$author_id = mysql_result($result,0,0);
+// 				$result = pmb_mysql_query($aut_query);
+// 				if(pmb_mysql_num_rows($result)){
+// 					$author_id = pmb_mysql_result($result,0,0);
 // 					$author= new auteur($author_id);
 // 					$this->biblioInfos[$current]['author']['value'] =$author->isbd_entry;
 // 				}

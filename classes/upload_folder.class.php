@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: upload_folder.class.php,v 1.6 2011-02-17 14:31:30 arenou Exp $
+// $Id: upload_folder.class.php,v 1.7 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,9 +30,9 @@ class upload_folder {
 		if($this->repertoire_id){
 			//Modification
 			$req="select repertoire_nom, repertoire_url, repertoire_path, repertoire_navigation, repertoire_hachage, repertoire_subfolder, repertoire_utf8 from upload_repertoire where repertoire_id='".$this->repertoire_id."'";
-			$res=mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$item = mysql_fetch_object($res);
+			$res=pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$item = pmb_mysql_fetch_object($res);
 				$this->repertoire_nom=$item->repertoire_nom;
 				$this->repertoire_url=$item->repertoire_url;
 				$this->repertoire_path=$item->repertoire_path;
@@ -97,12 +97,12 @@ class upload_folder {
 		global $liste_rep_form, $dbh, $charset, $msg;
 		
 		$req="select repertoire_id, repertoire_nom, repertoire_url, repertoire_path, repertoire_navigation, repertoire_hachage, repertoire_subfolder, repertoire_utf8 from upload_repertoire";
-		$res=mysql_query($req,$dbh);
-		$nbr = mysql_num_rows($res);
+		$res=pmb_mysql_query($req,$dbh);
+		$nbr = pmb_mysql_num_rows($res);
 
 		$parity=1;
 		for($i=0;$i<$nbr;$i++) {
-			$rep=mysql_fetch_object($res);
+			$rep=pmb_mysql_fetch_object($res);
 			if ($parity % 2)
 				$pair_impair = "even";
 			 else 
@@ -176,12 +176,12 @@ class upload_folder {
 		global $msg,$dbh;
 		
 		$req="select explnum_id from explnum where explnum_repertoire='".$id."'";
-		$res = mysql_query($req,$dbh);
-		if(mysql_num_rows($res)){
+		$res = pmb_mysql_query($req,$dbh);
+		if(pmb_mysql_num_rows($res)){
 			error_form_message($msg["upload_repertoire_no_del"]);
 		} else{		
 			$req = "delete from upload_repertoire where repertoire_id='".$id."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 	
@@ -196,15 +196,15 @@ class upload_folder {
 				 
 		if($id) {
 			$req = "update upload_repertoire set repertoire_nom='".$rep_nom."', repertoire_url='".$rep_url."', repertoire_path='".$rep_path."', repertoire_navigation='".$rep_navig."', repertoire_hachage='".$rep_hash."', repertoire_utf8='".$rep_utf8."' where repertoire_id='".$id."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		} else{			
 			$req = "select repertoire_id from upload_repertoire where repertoire_nom='".$rep_nom."'";
-			$res = mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
 				error_form_message($msg["upload_repertoire_name_exists"]);
 			} else {		
 				$req="insert into upload_repertoire (repertoire_nom, repertoire_url, repertoire_path, repertoire_navigation, repertoire_hachage, repertoire_subfolder,repertoire_utf8) values ('".$rep_nom."', '".$rep_url."', '".$rep_path."', '".$rep_navig."', '".$rep_hash."', '".$rep_sub."', '".$rep_utf8."')";
-				mysql_query($req,$dbh);
+				pmb_mysql_query($req,$dbh);
 			}
 		}
 		
@@ -217,9 +217,9 @@ class upload_folder {
 		global $dbh;
 		
 		$req = "select count(repertoire_id) from upload_repertoire";
-		$res = mysql_query($req,$dbh);
-		if(mysql_num_rows($res)){
-			$this->nb_enregistrement =  mysql_result($res,0,0);
+		$res = pmb_mysql_query($req,$dbh);
+		if(pmb_mysql_num_rows($res)){
+			$this->nb_enregistrement =  pmb_mysql_result($res,0,0);
 		} else 	$this->nb_enregistrement = 0;
 		
 	}
@@ -242,8 +242,8 @@ class upload_folder {
 		$dtree.="_dt_fiel_.add('Rep_0',-1,'&nbsp;&nbsp;".addslashes($msg["upload_repertoire_my_folder"])."');\n";
 			
 		$req = "select * from upload_repertoire";
-		$res=mysql_query($req,$dbh);
-		while(($rep=mysql_fetch_object($res))){	
+		$res=pmb_mysql_query($req,$dbh);
+		while(($rep=pmb_mysql_fetch_object($res))){	
 			$up = new upload_folder($rep->repertoire_id);
 			$dtree .= "tab_libelle[\"Rep_".$rep->repertoire_id."\"] = \"".addslashes($up->formate_path_to_nom($rep->repertoire_path)). "\";";  		
 			$dtree.="_dt_fiel_.add('Rep_".$rep->repertoire_id."','Rep_0','".addslashes($rep->repertoire_nom)."','','javascript:copy_to_div(\'Rep_".$rep->repertoire_id."\', \'".$rep->repertoire_id."\');');\n";

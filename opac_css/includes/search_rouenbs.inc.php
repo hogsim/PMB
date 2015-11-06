@@ -26,7 +26,7 @@ function search_other_function_filters() {
 	}
 	
 	$requete = "SELECT typdoc FROM notices $acces_j $statut_j where typdoc!='' $statut_r GROUP BY typdoc";
-	$result = mysql_query($requete, $dbh);
+	$result = pmb_mysql_query($requete, $dbh);
 	$r .= " <span><table style='width:30%'><tr><td>";
 	$r .= " <select name='typdoc_multi[]' multiple size='3'>";
 	$r .= "  <option ";
@@ -36,7 +36,7 @@ function search_other_function_filters() {
 	}
 	$r .=">".$msg["simple_search_all_doc_type"]."</option>\n";
 	$doctype = new marc_list('doctype');
-	while (($rt = mysql_fetch_row($result))) {
+	while (($rt = pmb_mysql_fetch_row($result))) {
 		$obj[$rt[0]]=1;
 	}	
 	foreach ($doctype->table as $key=>$libelle){
@@ -53,9 +53,9 @@ function search_other_function_filters() {
 	$r.="<select name='rbs_bibli'>";
 	$r.="<option value=''>".htmlentities($msg["search_loc_all_site"],ENT_QUOTES,$charset)."</option>";
 	$requete="select location_libelle,idlocation from docs_location where location_visible_opac=1";
-	$result = mysql_query($requete, $dbh);
-	if (mysql_numrows($result)){
-		while ($loc = mysql_fetch_object($result)) {
+	$result = pmb_mysql_query($requete, $dbh);
+	if (pmb_mysql_num_rows($result)){
+		while ($loc = pmb_mysql_fetch_object($result)) {
 			$selected="";
 			if ($rbs_bibli==$loc->idlocation) {$selected="selected";}
 			$r.= "<option value='$loc->idlocation' $selected>$loc->location_libelle</option>";
@@ -144,8 +144,8 @@ function search_other_function_human_query($n) {
 	if ($rbs_bibli) {
 		$r.="bibliotheque : ";
 		$requete="select location_libelle from docs_location where idlocation='".$rbs_bibli."' limit 1";
-		$res=mysql_query($requete);
-		$r.=@mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete);
+		$r.=@pmb_mysql_result($res,0,0);
 	}
 	return $r;
 }

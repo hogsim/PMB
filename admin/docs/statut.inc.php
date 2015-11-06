@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: statut.inc.php,v 1.21 2013-11-29 13:55:10 dgoron Exp $
+// $Id: statut.inc.php,v 1.22 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -61,12 +61,12 @@ function show_statut($dbh) {
 
 	// affichage du tableau des statuts
 	$requete = "SELECT * FROM docs_statut left join lenders on statusdoc_owner=idlender ORDER BY statut_libelle ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 		} else {
@@ -135,18 +135,18 @@ switch($action) {
 	case 'update':
 		// vérification validité des données fournies.
 		$requete = " SELECT count(1) FROM docs_statut WHERE (statut_libelle='$form_libelle' AND idstatut!='$id' )  LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 			error_form_message($form_libelle.$msg["docs_label_already_used"]);
 		} else {
 			// O.K.,  now if item already exists UPDATE else INSERT
 			if($id) {
 				$requete = "UPDATE docs_statut SET statut_libelle='$form_libelle',pret_flag='$form_pret',statut_allow_resa='$form_allow_resa', transfert_flag='$form_trans',statusdoc_codage_import='$form_statusdoc_codage_import', statusdoc_owner='$form_statusdoc_owner', statut_libelle_opac='$form_libelle_opac', statut_visible_opac='$form_visible_opac' WHERE idstatut=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				$requete = "INSERT INTO docs_statut SET statut_libelle='$form_libelle',pret_flag='$form_pret',statut_allow_resa='$form_allow_resa', transfert_flag='$form_trans',statusdoc_codage_import='$form_statusdoc_codage_import', statusdoc_owner='$form_statusdoc_owner', statut_libelle_opac='$form_libelle_opac', statut_visible_opac='$form_visible_opac' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}
 		}
 		show_statut($dbh);
@@ -158,9 +158,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT * FROM docs_statut WHERE idstatut=$id LIMIT 1 ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				statut_form($row->statut_libelle, $row->pret_flag, $row->transfert_flag, $row->statusdoc_codage_import,$row->statusdoc_owner, $id, $row->statut_libelle_opac, $row->statut_visible_opac, $row->statut_allow_resa);
 			} else {
 				show_statut($dbh);
@@ -172,12 +172,12 @@ switch($action) {
 	case 'del':
 		if($id) {
 			$total_serialcirc = 0;
-			$total_serialcirc = mysql_result(mysql_query("select count(1) from serialcirc where serialcirc_expl_statut_circ='".$id."' or serialcirc_expl_statut_circ_after='".$id."'", $dbh), 0, 0);
+			$total_serialcirc = pmb_mysql_result(pmb_mysql_query("select count(1) from serialcirc where serialcirc_expl_statut_circ='".$id."' or serialcirc_expl_statut_circ_after='".$id."'", $dbh), 0, 0);
 			if ($total_serialcirc > 0) {
 				error_message(	$msg[294], $msg["admin_docs_statut_serialcirc_delete_forbidden"], 1, 'admin.php?categ=docs&sub=statut&action=');
 			} else {
 				$total = 0;
-				$total = mysql_result(mysql_query("select count(1) from exemplaires where expl_statut ='".$id."' ", $dbh), 0, 0);
+				$total = pmb_mysql_result(pmb_mysql_query("select count(1) from exemplaires where expl_statut ='".$id."' ", $dbh), 0, 0);
 				if ($total > 0) {
 					$msg_suppr_err = $admin_liste_jscript;
 					$msg_suppr_err .= $msg[1703]." <a href='#' onclick=\"showListItems(this);return(false);\" what='statut_docs' item='".$id."' total='".$total."' alt=\"".$msg["admin_docs_list"]."\" title=\"".$msg["admin_docs_list"]."\"><img src='./images/req_get.gif'></a>" ;
@@ -189,7 +189,7 @@ switch($action) {
 						error_message(	$msg[294], $msg["admin_docs_statut_gestion_financiere_delete_forbidden"], 1, 'admin.php?categ=docs&sub=statut&action=');
 					} else {
 						$requete = "DELETE FROM docs_statut WHERE idstatut=$id ";
-						$res = mysql_query($requete, $dbh);
+						$res = pmb_mysql_query($requete, $dbh);
 						show_statut($dbh);
 					}
 				}

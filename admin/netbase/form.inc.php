@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: form.inc.php,v 1.27.4.2 2014-04-04 09:26:08 arenou Exp $
+// $Id: form.inc.php,v 1.35 2015-06-26 13:22:08 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -22,7 +22,9 @@ function check_clean_form(form) {
 	// if(form.clean_relations.checked) clean_relations est forcé ! 
 	flag += 256;
 	if(form.clean_notices.checked) flag += 512;
-	if(form.index_acquisitions.checked) flag += 1024;
+	if(form.index_acquisitions) {
+		if(form.index_acquisitions.checked) flag += 1024;
+	}
 	if(form.gen_signature_notice.checked) flag += 2048;
 	if(form.nettoyage_clean_tags.checked) flag += 4096;
 	if(form.clean_categories_path.checked) flag += 8192;
@@ -151,13 +153,29 @@ if($pmb_synchro_rdf){
 	<div class='row'>
 		<input type='checkbox' value='8388608' name='index_synchrordfstore'>&nbsp;<label class='etiquette'>".htmlentities($msg["nettoyage_synchrordfstore_reindex"], ENT_QUOTES, $charset)."</label>
 	</div>";
-	}
+}
+if($faq_active){
+		print "
+	<div class='row'>
+		<input type='checkbox' value='16777216' name='index_faq'>&nbsp;<label class='etiquette'>".htmlentities($msg["nettoyage_faq_reindex"], ENT_QUOTES, $charset)."</label>
+	</div>";
+}
 if($cms_active){
 		print "
 	<div class='row'>
 		<input type='checkbox' value='33554432' name='index_cms'>&nbsp;<label class='etiquette'>".htmlentities($msg["nettoyage_cms_reindex"], ENT_QUOTES, $charset)."</label>
 	</div>";
-	}
+}
+if($thesaurus_concepts_active==1){
+		print "
+	<div class='row'>
+		<input type='checkbox' value='67108864' name='index_concept'>&nbsp;<label class='etiquette'>".htmlentities($msg["nettoyage_concept_reindex"], ENT_QUOTES, $charset)."</label>
+	</div>";
+}
+print "
+<div class='row'>
+	<input type='checkbox' value='134217728' name='hash_empr_password'>&nbsp;<label class='etiquette'>".htmlentities($msg["hash_empr_password"], ENT_QUOTES, $charset)."</label>
+	</div>";
 print "
 	</div>
 <input type='submit' value='$msg[502]' class='bouton' onClick=\"return check_clean_form(this.form)\">

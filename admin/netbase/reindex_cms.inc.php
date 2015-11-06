@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reindex_cms.inc.php,v 1.1.4.2 2014-04-04 09:26:08 arenou Exp $
+// $Id: reindex_cms.inc.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -20,28 +20,28 @@ $jauge_size .= "px";
 if (!isset($start)) {
 	$start=$start_2=0;
 	//remise a zero de la table au début
-	mysql_query("TRUNCATE cms_editorial_words_global_index",$dbh);
-	mysql_query("ALTER TABLE cms_editorial_words_global_index DISABLE KEYS",$dbh);
+	pmb_mysql_query("TRUNCATE cms_editorial_words_global_index",$dbh);
+	pmb_mysql_query("ALTER TABLE cms_editorial_words_global_index DISABLE KEYS",$dbh);
 	
-	mysql_query("TRUNCATE cms_editorial_fields_global_index",$dbh);
-	mysql_query("ALTER TABLE cms_editorial_fields_global_index DISABLE KEYS",$dbh);
+	pmb_mysql_query("TRUNCATE cms_editorial_fields_global_index",$dbh);
+	pmb_mysql_query("ALTER TABLE cms_editorial_fields_global_index DISABLE KEYS",$dbh);
 }
 
 $v_state=urldecode($v_state);
 
 if (!$count) {
-	$notices = mysql_query("SELECT count(1) FROM cms_articles", $dbh);
-	$count = mysql_result($notices, 0, 0);
-	$notices = mysql_query("SELECT count(1) FROM cms_sections", $dbh);
-	$count+= mysql_result($notices, 0, 0);
+	$notices = pmb_mysql_query("SELECT count(1) FROM cms_articles", $dbh);
+	$count = pmb_mysql_result($notices, 0, 0);
+	$notices = pmb_mysql_query("SELECT count(1) FROM cms_sections", $dbh);
+	$count+= pmb_mysql_result($notices, 0, 0);
 }
 	
 print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_reindex_cms"], ENT_QUOTES, $charset)."</h2>";
 
 $NoIndex = 1;
 
-$query = mysql_query("select id_article from cms_articles order by id_article LIMIT $start, $lot");
-if(mysql_num_rows($query)) {
+$query = pmb_mysql_query("select id_article from cms_articles order by id_article LIMIT $start, $lot");
+if(pmb_mysql_num_rows($query)) {
 		
 	// définition de l'état de la jauge
 	$state = floor(($start+$start_2) / ($count / $jauge_size));
@@ -58,12 +58,12 @@ if(mysql_num_rows($query)) {
 	if($percent>100) $percent = 50;
 	// affichage du % d'avancement et de l'état
 	print "<div align='center'>$percent%</div>";
-	while($row = mysql_fetch_assoc($query)) {		
+	while($row = pmb_mysql_fetch_assoc($query)) {		
 		// permet de charger la bonne langue, mot vide...
 		$article = new cms_article($row['id_article']);
 		$info=$article->maj_indexation();
 		}
-	mysql_free_result($query);
+	pmb_mysql_free_result($query);
 	
 	$next = $start + $lot;
 	print "
@@ -79,8 +79,8 @@ if(mysql_num_rows($query)) {
 	-->
 	</script>";
 } else {
-	$query = mysql_query("select id_section from cms_sections order by id_section LIMIT $start_2, $lot");
-	if(mysql_num_rows($query)) {
+	$query = pmb_mysql_query("select id_section from cms_sections order by id_section LIMIT $start_2, $lot");
+	if(pmb_mysql_num_rows($query)) {
 	
 		// définition de l'état de la jauge
 		$state = floor(($start+$start_2) / ($count / $jauge_size));
@@ -99,12 +99,12 @@ if(mysql_num_rows($query)) {
 		// affichage du % d'avancement et de l'état
 		print "<div align='center'>$percent%</div>";
 	
-		while($row = mysql_fetch_assoc($query)) {
+		while($row = pmb_mysql_fetch_assoc($query)) {
 			// permet de charger la bonne langue, mot vide...
 			$section = new cms_section($row['id_section']);
 			$info=$section->maj_indexation();
 		}
-		mysql_free_result($query);
+		pmb_mysql_free_result($query);
 	
 		$next = $start + $lot;
 		print "
@@ -122,8 +122,8 @@ if(mysql_num_rows($query)) {
 	}else {
 	
 		$spec = $spec - INDEX_CMS;
-		$not = mysql_query("SELECT 1 FROM cms_editorial_words_global_index group by num_obj,type", $dbh);
-		$compte = mysql_num_rows($not);
+		$not = pmb_mysql_query("SELECT 1 FROM cms_editorial_words_global_index group by num_obj,type", $dbh);
+		$compte = pmb_mysql_num_rows($not);
 		$v_state .= "<br /><img src=../../images/d.gif hspace=3>".htmlentities($msg["nettoyage_reindex_cms"], ENT_QUOTES, $charset)." :";
 		$v_state .= $compte." ".htmlentities($msg["nettoyage_res_reindex_cms"], ENT_QUOTES, $charset);
 		print "
@@ -135,7 +135,7 @@ if(mysql_num_rows($query)) {
 				document.forms['process_state'].submit();
 				-->
 			</script>";
-		mysql_query("ALTER TABLE cms_editorial_words_global_index ENABLE KEYS",$dbh);
-		mysql_query("ALTER TABLE cms_editorial_fields_global_index ENABLE KEYS",$dbh);
+		pmb_mysql_query("ALTER TABLE cms_editorial_words_global_index ENABLE KEYS",$dbh);
+		pmb_mysql_query("ALTER TABLE cms_editorial_fields_global_index ENABLE KEYS",$dbh);
 	}
 }

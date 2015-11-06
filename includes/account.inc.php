@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: account.inc.php,v 1.10.18.1 2015-04-07 10:01:22 jpermanne Exp $
+// $Id: account.inc.php,v 1.12 2015-04-07 10:02:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -10,9 +10,9 @@ function get_account_info($user) {
 	if(! $user ) return 0;
 	global $dbh;
 	$requete = "SELECT * FROM users WHERE username='$user' LIMIT 1";
-	$result = mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) {
-		$values = mysql_fetch_object($result);
+	$result = pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		$values = pmb_mysql_fetch_object($result);
 		return $values;
 		} else return 0;
 	}
@@ -90,9 +90,9 @@ function make_user_tdoc_combo($typdoc=0) {
 	global $dbh;
 	global $msg;
 	$requete = "SELECT idtyp_doc, tdoc_libelle FROM docs_type order by 2";
-	$result = mysql_query($requete, $dbh);
+	$result = pmb_mysql_query($requete, $dbh);
 	$combo = "<select name='form_deflt_tdoc' id='form_deflt_tdoc' class='saisie-30em'>";
-	while($tdoc = mysql_fetch_object($result)) {
+	while($tdoc = pmb_mysql_fetch_object($result)) {
 		if($tdoc->idtyp_doc != $typdoc) $combo .= "<option value='".$tdoc->idtyp_doc."'>".$tdoc->tdoc_libelle."</option>";
 			else $combo .= "<option value='".$tdoc->idtyp_doc."' selected='selected'>".$tdoc->tdoc_libelle."</option>";
 		}

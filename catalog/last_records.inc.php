@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: last_records.inc.php,v 1.19.12.1 2014-03-31 13:26:56 dgoron Exp $
+// $Id: last_records.inc.php,v 1.23 2015-06-18 13:11:10 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,19 +32,19 @@ $requete = "SELECT * FROM notices ";
 $requete.= $acces_j;
 $requete.= "ORDER BY $pmb_latest_order LIMIT $last_records";
 
-$result = mysql_query($requete, $dbh);
-if (mysql_num_rows($result)) {
-	while(($notice = mysql_fetch_object($result))) {
+$result = pmb_mysql_query($requete, $dbh);
+if (pmb_mysql_num_rows($result)) {
+	while(($notice = pmb_mysql_fetch_object($result))) {
 		if (($notice->niveau_biblio =='s' || $notice->niveau_biblio =='a') && ($notice->niveau_hierar== 1 || $notice->niveau_hierar== 2)) {
 			$link_serial = './catalog.php?categ=serials&sub=view&serial_id=!!id!!';
 			$link_analysis = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=!!bul_id!!&art_to_show=!!id!!';
 			$link_bulletin = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=!!id!!';
-			if ($notice->niveau_biblio =='s') {
+ 			if ($notice->niveau_biblio =='s') {
  				$link_explnum = "./catalog.php?categ=serials&sub=explnum_form&serial_id=!!serial_id!!&explnum_id=!!explnum_id!!";
  			} else {
 				$link_explnum = "./catalog.php?categ=serials&sub=analysis&action=explnum_form&bul_id=!!bul_id!!&analysis_id=!!analysis_id!!&explnum_id=!!explnum_id!!";
 			}
-			$serial = new serial_display($notice, 6, $link_serial, $link_analysis, $link_bulletin, "", $link_explnum, 0, 0,1, 1);
+			$serial = new serial_display($notice, 6, $link_serial, $link_analysis, $link_bulletin, "", $link_explnum, 0, 0,1, 1,1,1);
 			print pmb_bidi($serial->result);
 		} elseif ($notice->niveau_biblio=='m' && $notice->niveau_hierar== 0) { 
 			$link = './catalog.php?categ=isbd&id=!!id!!';
@@ -55,12 +55,13 @@ if (mysql_num_rows($result)) {
 			print pmb_bidi($display->result);
         } elseif ($notice->niveau_biblio=='b' && $notice->niveau_hierar==2) { // on est face à une notice de bulletin
         	$requete_suite = "SELECT bulletin_id, bulletin_notice FROM bulletins where num_notice='".$notice->notice_id."'";
-        	$result_suite = mysql_query($requete_suite, $dbh) or die("<br /><br />".mysql_error()."<br /><br />");
-        	$notice_suite = mysql_fetch_object($result_suite);
+        	$result_suite = pmb_mysql_query($requete_suite, $dbh) or die("<br /><br />".pmb_mysql_error()."<br /><br />");
+        	$notice_suite = pmb_mysql_fetch_object($result_suite);
         	$notice->bulletin_id=$notice_suite->bulletin_id;
         	$notice->bulletin_notice=$notice_suite->bulletin_notice;
 			$link_bulletin = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id='.$notice->bulletin_id;
 			$link_explnum = "./catalog.php?categ=serials&sub=bulletinage&action=explnum_form&bul_id=".$notice->bulletin_id."&explnum_id=!!explnum_id!!";
+			$link_expl="./catalog.php?categ=serials&sub=bulletinage&action=expl_form&bul_id=!!bull_id!!&expl_id=!!expl_id!!";
 			$display = new mono_display($notice, 6, $link_bulletin, 1, $link_expl, '', $link_explnum,1, 0, 1, 1, "", 1);
 			print $display->result;
 		}

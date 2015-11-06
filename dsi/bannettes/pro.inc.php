@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pro.inc.php,v 1.44.2.1 2015-05-05 10:18:37 jpermanne Exp $
+// $Id: pro.inc.php,v 1.48 2015-05-05 10:20:01 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -54,6 +54,7 @@ switch($suite) {
     	$temp->typeexport=			$typeexport;
     	$temp->prefixe_fichier=		$prefixe_fichier; 
     	$temp->group_pperso=		$group_pperso; 
+    	$temp->display_notice_in_every_group=		$display_notice_in_every_group;
     	$temp->archive_number=		$archive_number;     	
     	$temp->document_generate=	$document_generate; 
     	$temp->document_notice_tpl=	$document_notice_tpl; 
@@ -61,6 +62,7 @@ switch($suite) {
     	$temp->document_group=		$document_group; 
     	$temp->document_add_summary=$document_add_summary;
     	$temp->bannette_opac_accueil=$bannette_opac_accueil;
+    	$temp->bannette_tpl_num=	$bannette_tpl_num;
     	$temp->param_export=array("genere_lien" => $genere_lien,
     							  "mere"=>$mere,
     							  "fille"=>$fille,
@@ -93,9 +95,9 @@ switch($suite) {
 						} else {
 							$req_lec .= " where empr_categ='$anc_categorie_lecteurs'";
 						}
-						$res_lec=mysql_query($req_lec, $dbh) ;
-		    			while ($lec=mysql_fetch_object($res_lec)) {
-		    				mysql_query("delete from bannette_abon where num_empr='$lec->id_empr' and num_bannette='$id_bannette'", $dbh) ;
+						$res_lec=pmb_mysql_query($req_lec, $dbh) ;
+		    			while ($lec=pmb_mysql_fetch_object($res_lec)) {
+		    				pmb_mysql_query("delete from bannette_abon where num_empr='$lec->id_empr' and num_bannette='$id_bannette'", $dbh) ;
 		    			}
 					}
 					if ($new_categorie_lecteurs || $new_groupe_lecteurs) {
@@ -106,9 +108,9 @@ switch($suite) {
 						} else {
 							$req_lec .= " where groupe_id='$new_groupe_lecteurs'";
 						}
-						$res_lec=mysql_query($req_lec, $dbh) ;
-			    		while ($lec=mysql_fetch_object($res_lec)) {
-			    			mysql_query("insert into bannette_abon (num_bannette, num_empr) values('$id_bannette', '$lec->id_empr')", $dbh) ;
+						$res_lec=pmb_mysql_query($req_lec, $dbh) ;
+			    		while ($lec=pmb_mysql_fetch_object($res_lec)) {
+			    			pmb_mysql_query("insert into bannette_abon (num_bannette, num_empr) values('$id_bannette', '$lec->id_empr')", $dbh) ;
 		    			}
 					}
 				}
@@ -119,9 +121,9 @@ switch($suite) {
 		    			$req_lec = "select id_empr from empr left join empr_groupe on (empr.id_empr=empr_groupe.empr_id)";
 		    			$req_lec .= " where groupe_id='$anc_groupe_lecteurs'";
 		    			if ($new_categorie_lecteurs) $req_lec .= " and empr_categ<>'$new_categorie_lecteurs'";
-			    		$res_lec=mysql_query($req_lec, $dbh) ;
-			    		while ($lec=mysql_fetch_object($res_lec)) {
-			    			mysql_query("delete from bannette_abon where num_empr='$lec->id_empr' and num_bannette='$id_bannette'", $dbh) ;
+			    		$res_lec=pmb_mysql_query($req_lec, $dbh) ;
+			    		while ($lec=pmb_mysql_fetch_object($res_lec)) {
+			    			pmb_mysql_query("delete from bannette_abon where num_empr='$lec->id_empr' and num_bannette='$id_bannette'", $dbh) ;
 		    			}
 		    		}
 		    		if ($new_groupe_lecteurs || $new_categorie_lecteurs) {
@@ -132,9 +134,9 @@ switch($suite) {
 		    			} else {
 		    				$req_lec .= " where empr_categ='$new_categorie_lecteurs'";
 		    			}	
-			    		$res_lec=mysql_query($req_lec, $dbh) ;
-			    		while ($lec=mysql_fetch_object($res_lec)) {
-			    			mysql_query("insert into bannette_abon (num_bannette, num_empr) values('$id_bannette', '$lec->id_empr')", $dbh) ;
+			    		$res_lec=pmb_mysql_query($req_lec, $dbh) ;
+			    		while ($lec=pmb_mysql_fetch_object($res_lec)) {
+			    			pmb_mysql_query("insert into bannette_abon (num_bannette, num_empr) values('$id_bannette', '$lec->id_empr')", $dbh) ;
 		    			}	
 		    		}
 				}
@@ -166,12 +168,12 @@ switch($suite) {
     		if ($id_classement>0) $equ = "select id_equation from equations where num_classement='$id_classement' and proprio_equation=0";
     		if ($id_classement==0) $equ = "select id_equation from equations where proprio_equation=0 ";
     		if ($id_classement==-1) $equ = "select id_equation from equations, bannette_equation where proprio_equation=0 and num_bannette='$id_bannette' and num_equation=id_equation";
-    		$res = mysql_query($equ, $dbh) or die (mysql_error()." $equ ") ;
+    		$res = pmb_mysql_query($equ, $dbh) or die (pmb_mysql_error()." $equ ") ;
     		if (!$bannette_equation) $bannette_equation = array();
-			while ($equa=mysql_fetch_object($res)) {
-				mysql_query("delete from bannette_equation where num_equation='$equa->id_equation' and num_bannette='$id_bannette' ", $dbh) ; 
+			while ($equa=pmb_mysql_fetch_object($res)) {
+				pmb_mysql_query("delete from bannette_equation where num_equation='$equa->id_equation' and num_bannette='$id_bannette' ", $dbh) ; 
 				$as = array_search($equa->id_equation,$bannette_equation) ;
-				if (($as!==false) && ($as!==null) ) mysql_query("insert into bannette_equation set num_equation='$equa->id_equation', num_bannette='$id_bannette'", $dbh) ; 
+				if (($as!==false) && ($as!==null) ) pmb_mysql_query("insert into bannette_equation set num_equation='$equa->id_equation', num_bannette='$id_bannette'", $dbh) ; 
 				}
     		}
     	$bannette = new bannette($id_bannette) ;
@@ -201,13 +203,13 @@ switch($suite) {
     			if ($id_categorie==-1) $equ = "select id_empr, concat(empr_nom, ' ', empr_prenom) as nom_prenom, empr_cb from empr, bannette_abon where num_bannette='$id_bannette' and num_empr=id_empr $restrict_loc ".$lect_query;
     		}
     		
-    		$res = mysql_query($equ, $dbh) or die (mysql_error()." $equ ") ;
+    		$res = pmb_mysql_query($equ, $dbh) or die (pmb_mysql_error()." $equ ") ;
     		if (!$bannette_abon) $bannette_abon = array();
-			while ($empr=mysql_fetch_object($res)) {
-				mysql_query("delete from bannette_abon where num_empr='$empr->id_empr' and num_bannette='$id_bannette'", $dbh) ; 
+			while ($empr=pmb_mysql_fetch_object($res)) {
+				pmb_mysql_query("delete from bannette_abon where num_empr='$empr->id_empr' and num_bannette='$id_bannette'", $dbh) ; 
 				$as = array_search($empr->id_empr,$bannette_abon) ;
 				$sel_mail="sel_mail_".$empr->id_empr;
-				if (($as!==false) && ($as!==null) ) mysql_query("insert into bannette_abon set num_empr='$empr->id_empr', num_bannette='$id_bannette', 
+				if (($as!==false) && ($as!==null) ) pmb_mysql_query("insert into bannette_abon set num_empr='$empr->id_empr', num_bannette='$id_bannette', 
 						bannette_mail='".$$sel_mail."'", $dbh) ; 
 			}
     	}

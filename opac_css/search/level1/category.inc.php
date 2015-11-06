@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.inc.php,v 1.48.2.1 2015-03-02 16:16:45 jpermanne Exp $
+// $Id: category.inc.php,v 1.51 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,13 +15,13 @@ require_once($class_path."/thesaurus.class.php");
 $first_clause.= "categories.libelle_categorie not like '~%' ";
 
 $q = 'drop table if exists catjoin ';
-$r = mysql_query($q, $dbh);
+$r = pmb_mysql_query($q, $dbh);
 $q = 'create  temporary table catjoin ( ';
 $q.= "num_thesaurus int(3) unsigned not null default '0', ";
 $q.= "num_noeud int(9) unsigned not null default '0', ";
 $q.= 'key (num_noeud,num_thesaurus) ';
 $q.= ") ENGINE=MyISAM ";
-$r = mysql_query($q, $dbh);
+$r = pmb_mysql_query($q, $dbh);
 
 
 
@@ -53,7 +53,7 @@ foreach ($list_thes as $id_thesaurus=>$libelle_thesaurus) {
 		//$q.=" WHERE noeuds.num_thesaurus='".$id_thesaurus."' AND not_use_in_indexation='0' AND if(catlg.num_noeud is null, ".$members_catdef["where"].", ".$members_catlg["where"].") AND if(catlg.num_noeud is null,catdef.libelle_categorie not like '~%',catlg.libelle_categorie not like '~%')";
 		$q.=" WHERE noeuds.num_thesaurus='".$id_thesaurus."' AND if(catlg.num_noeud is null, ".$members_catdef["where"].", ".$members_catlg["where"].") AND if(catlg.num_noeud is null,catdef.libelle_categorie not like '~%',catlg.libelle_categorie not like '~%')";
 	}
-	$r = mysql_query($q, $dbh);
+	$r = pmb_mysql_query($q, $dbh);
 }
 
 $clause = '';
@@ -73,8 +73,8 @@ if ($add_notice) $clause.= ' and notice_id in ('.$add_notice.')';
 
 $q = 'select count(distinct catjoin.num_noeud) from catjoin '.$clause;
 
-$r=mysql_query($q);
-$nb_result_categories = mysql_result($r, 0 , 0);
+$r=pmb_mysql_query($q);
+$nb_result_categories = pmb_mysql_result($r, 0 , 0);
 
 //Enregistrement des stats
 if($pmb_logs_activate){
@@ -88,14 +88,15 @@ if (function_exists("search_other_function_post_values")){ $form .=search_other_
 $form .= "<input type=\"hidden\" name=\"mode\" value=\"categorie\">\n";
 $form .= "<input type=\"hidden\" id=\"count\" name=\"count\" value=\"".$nb_result_categories."\">\n";
 $form .= "<input type=\"hidden\" name=\"clause\" value=\"".htmlentities($clause,ENT_QUOTES,$charset)."\">\n";
-$form .= "<input type=\"hidden\" id=\"id_thes\" name=\"id_thes\" value=\"".$id_thes_for_link."\"></form>\n";
+$form .= "<input type=\"hidden\" id=\"id_thes2\" name=\"id_thes\" value=\"".$id_thes_for_link."\">\n";
+$form .= "</form>\n";
 
 $form .= "
 			<script type='text/javascript' >\n
 
 				function submitSearch_CategorieForm(id, nb)
 				{
-					document.getElementById('id_thes').value = id;
+					document.getElementById('id_thes2').value = id;
 					document.getElementById('count').value = nb;
 					document.forms['search_categorie'].submit();  
 				}
@@ -114,8 +115,8 @@ if($opac_allow_affiliate_search){
 				$q = 'select count(distinct catjoin.num_noeud) from catjoin '.$clause;
 				$q.= " and catjoin.num_thesaurus = '".$id_thesaurus."' ";
 				$clause_link=$clause." and catjoin.num_thesaurus = '".$id_thesaurus."' ";
-				$r = mysql_query($q, $dbh);
-				$nb = mysql_result($r, 0, 0);
+				$r = pmb_mysql_query($q, $dbh);
+				$nb = pmb_mysql_result($r, 0, 0);
 				if ($nb) {
 					$nb_thes++;
 					if($nb_thes==1) $link .= '<blockquote>';
@@ -146,8 +147,8 @@ if($opac_allow_affiliate_search){
 				$q = 'select count(distinct catjoin.num_noeud) from catjoin '.$clause;
 				$q.= " and catjoin.num_thesaurus = '".$id_thesaurus."' ";
 				$clause_link=$clause." and catjoin.num_thesaurus = '".$id_thesaurus."' ";
-				$r = mysql_query($q, $dbh);
-				$nb = mysql_result($r, 0, 0);
+				$r = pmb_mysql_query($q, $dbh);
+				$nb = pmb_mysql_result($r, 0, 0);
 				if ($nb) {
 					$nb_thes++;
 					if($nb_thes==1)print '<blockquote>';

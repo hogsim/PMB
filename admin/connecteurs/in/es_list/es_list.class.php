@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: es_list.class.php,v 1.2.2.1 2014-04-08 07:35:34 arenou Exp $
+// $Id: es_list.class.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -108,9 +108,9 @@ class es_list extends connector {
 		
 		// on regarde les connecteurs existants !
 		$query = "select source_id, name from connectors_sources where id_connector != 'es_list' order by name";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$form.="
 					<option value='".htmlentities($row->source_id,ENT_QUOTES,$charset)."'".(in_array($row->source_id,$es_selected) ? " selected='selected'" : "").">".htmlentities($row->name,ENT_QUOTES,$charset)."</option>";
 			}
@@ -205,22 +205,18 @@ class es_list extends connector {
 			case "external" :
 			default :
 				$rqt="select code from notices where notice_id = '$notice_id'";
-				$res=mysql_query($rqt);
-				if(mysql_num_rows($res)){
-					$code = mysql_result($res,0,0);
-					if(!$code){
-						$queries = array();
-						for($i=0 ; $i<count($es_selected) ; $i++){
-							$queries[] = "select recid from entrepot_source_".$es_selected[$i]." where (ufield = '011' or ufield ='010')  and usubfield = 'a' and value = '".addslashes($code)."'";
-						}
-						$query = "select recid from ((".implode(") union (",$queries).")) as subs";
-						$result = mysql_query($query);
-						if(mysql_num_rows($result)){
-							while($row = mysql_fetch_object($result)){
-								$enrichment['external']['content'].= aff_notice_unimarc($row->recid);
-							}
-						}else{
-							$enrichment['external']['content'] = $query."<span>".$this->msg["es_list_no_preview"]."</span>";
+				$res=pmb_mysql_query($rqt);
+				if(pmb_mysql_num_rows($res)){
+					$code = pmb_mysql_result($res,0,0);
+					$queries = array();
+					for($i=0 ; $i<count($es_selected) ; $i++){
+						$queries[] = "select recid from entrepot_source_".$es_selected[$i]." where (ufield = '011' or ufield ='010')  and usubfield = 'a' and value = '".addslashes($code)."'";
+					}
+					$query = "select recid from ((".implode(") union (",$queries).")) as subs";
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						while($row = pmb_mysql_fetch_object($result)){
+							$enrichment['external']['content'].= aff_notice_unimarc($row->recid);
 						}
 					}else{
 						$enrichment['external']['content'] = $query."<span>".$this->msg["es_list_no_preview"]."</span>";

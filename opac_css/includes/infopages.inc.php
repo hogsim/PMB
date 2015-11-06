@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: infopages.inc.php,v 1.6 2012-09-10 13:34:03 ngantier Exp $
+// $Id: infopages.inc.php,v 1.7 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -10,8 +10,8 @@ $retaff = "";
 for ($ip=0; $ip<count($idpages); $ip++) {
 	$idpages[$ip]+=0;
 	$requete="select id_infopage, content_infopage, restrict_infopage from infopages where id_infopage=".$idpages[$ip]." and valid_infopage=1";
-	$resultat=mysql_query($requete);
-	while ($res=mysql_fetch_object($resultat)) {			
+	$resultat=pmb_mysql_query($requete);
+	while ($res=pmb_mysql_fetch_object($resultat)) {			
 		if($opac_view_filter_class){
 			if(!$opac_view_filter_class->is_selected("infopages", $idpages[$ip]))  continue; 
 		}

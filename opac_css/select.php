@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: select.php,v 1.6 2013-02-05 08:17:54 dbellamy Exp $
+// $Id: select.php,v 1.7 2015-04-03 11:16:25 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";
@@ -70,4 +70,4 @@ switch($what) {
 
 print $popup_footer;
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);

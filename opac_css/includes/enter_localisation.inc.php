@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: enter_localisation.inc.php,v 1.16 2011-05-12 13:12:24 ngantier Exp $
+// $Id: enter_localisation.inc.php,v 1.17 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,11 +18,11 @@ if($opac_view_filter_class){
 else
 	$requete="select idlocation, location_libelle, location_pic, css_style from docs_location where location_visible_opac=1 order by location_libelle ";
 
-$resultat=mysql_query($requete);
-if (mysql_num_rows($resultat)>1) {
+$resultat=pmb_mysql_query($requete);
+if (pmb_mysql_num_rows($resultat)>1) {
 	print "<table align='center' width='100%'>";
 	$npl=0;
-	while ($r=mysql_fetch_object($resultat)) {
+	while ($r=pmb_mysql_fetch_object($resultat)) {
 		if ($npl==0) print "<tr>";
 		if ($r->location_pic) $image_src = $r->location_pic ;
 			else  $image_src = "images/bibli-small.png" ;
@@ -44,13 +44,13 @@ if (mysql_num_rows($resultat)>1) {
 	}
 	print "</table>";
 } else {
-	if (mysql_num_rows($resultat)) {
-		$location=mysql_result($resultat,0,0);
+	if (pmb_mysql_num_rows($resultat)) {
+		$location=pmb_mysql_result($resultat,0,0);
 		$requete="select idsection, section_libelle, section_pic from docs_section, exemplaires where expl_location=$location and section_visible_opac=1 and expl_section=idsection group by idsection order by section_libelle ";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		print "<table align='center' width='100%'>";
 		$npl=0;
-		while ($r=mysql_fetch_object($resultat)) {
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			if ($npl==0) print "<tr>";
 			if ($r->section_pic) $image_src = $r->section_pic ;
 				else  $image_src = "images/rayonnage-small.png" ;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_search.inc.php,v 1.2 2011-05-23 13:21:06 arenou Exp $
+// $Id: ajax_search.inc.php,v 1.3 2015-03-18 11:03:34 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -43,6 +43,9 @@ switch($type){
 		break;	
 	case "publisher" :
 		$as=new affiliate_search_publisher($user_query,$search_type);
+		break;	
+	case "concept" :
+		$as=new affiliate_search_concept($user_query,$search_type);
 		break;	
 	case "all" :	
 	default :

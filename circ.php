@@ -2,12 +2,13 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: circ.php,v 1.19.2.1 2014-04-23 10:28:56 Alexandre Exp $
+// $Id: circ.php,v 1.25 2015-04-03 11:16:23 jpermanne Exp $
 
-// définition du minimum nécéssaire
+// définition du minimum nécéssaire 
 $base_path=".";                            
 $base_auth = "CIRCULATION_AUTH";  
 $base_title = "\$msg[5]";
+$base_use_dojo = 1;
 require_once ("$base_path/includes/init.inc.php");  
 
 if ((SESSrights & RESTRICTCIRC_AUTH) && ($categ!="pret") && ($categ!="pretrestrict") ) {
@@ -38,4 +39,4 @@ print "<div id='att' style='z-Index:1000'></div>";
 	print $circ_layout_end;
 	print $footer;
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);

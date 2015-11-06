@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_rss.inc.php,v 1.5 2007-09-07 08:52:59 gueluneau Exp $
+// $Id: func_rss.inc.php,v 1.6 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -34,8 +34,8 @@ if ($form_cb) {
 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM rss_flux $clause ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	}
 
 if (!$page) $page=1;
@@ -45,11 +45,11 @@ if($nbr_lignes) {
 
 		// on lance la vraie requête
 		$requete = "SELECT id_rss_flux, nom_rss_flux, format_flux FROM rss_flux $clause ORDER BY nom_rss_flux, id_rss_flux LIMIT $debut,$nb_per_page ";
-		$res = @mysql_query($requete, $dbh);
+		$res = @pmb_mysql_query($requete, $dbh);
 
 		$parity = 0;
-		$flux_trouves =  mysql_num_rows($res) ;
-		while(($flux=mysql_fetch_object($res))) {
+		$flux_trouves =  pmb_mysql_num_rows($res) ;
+		while(($flux=pmb_mysql_fetch_object($res))) {
 			if ($parity % 2) $pair_impair = "even";
 				else $pair_impair = "odd";
 			$td_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./dsi.php?categ=fluxrss&sub=&id_rss_flux=$flux->id_rss_flux&suite=acces';\" ";
@@ -65,7 +65,7 @@ if($nbr_lignes) {
 			$flux_list .= "</tr>";
 			$parity += 1;
 			}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);
@@ -113,8 +113,8 @@ if ($form_cb) {
 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM rss_flux $clause ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	}
 
 if (!$page) $page=1;
@@ -124,7 +124,7 @@ if($nbr_lignes) {
 
 		// on lance la vraie requête
 		$requete = "SELECT id_rss_flux FROM rss_flux $clause ORDER BY nom_rss_flux, id_rss_flux LIMIT $debut,$nb_per_page ";
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 
 		$flux_list .= "<tr >";
 		$flux_list .= "
@@ -145,8 +145,8 @@ if($nbr_lignes) {
 		$flux_list .= "</tr>";
 		
 		$parity = 0;
-		$flux_trouves =  mysql_num_rows($res) ;
-		while(($flux=mysql_fetch_object($res))) {
+		$flux_trouves =  pmb_mysql_num_rows($res) ;
+		while(($flux=pmb_mysql_fetch_object($res))) {
 			$flux = new rss_flux($flux->id_rss_flux) ;
 			if ($parity % 2) $pair_impair = "even";
 				else $pair_impair = "odd";
@@ -169,7 +169,7 @@ if($nbr_lignes) {
 			$flux_list .= "</tr>";
 			$parity += 1;
 			}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);

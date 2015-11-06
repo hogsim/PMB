@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: alter.php,v 1.17.2.1 2014-04-17 12:18:39 dgoron Exp $
+// $Id: alter.php,v 1.19 2015-04-03 11:16:24 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path="../..";                            
@@ -50,9 +50,9 @@ function traite_rqt($requete="", $message="") {
 	/*if($charset == "utf-8"){ //Contrairement au addon ce n'est pas à faire car dans les fichiers alter_vX.inc.php on fait un set names latin1
 		$requete=utf8_encode($requete);
 	}*/
-	$res = mysql_query($requete, $dbh) ; 
+	$res = pmb_mysql_query($requete, $dbh) ; 
 	
-	$erreur_no = mysql_errno();
+	$erreur_no = pmb_mysql_errno();
 	if (!$erreur_no) {
 		$retour = "Successful";
 	} else {
@@ -67,7 +67,7 @@ function traite_rqt($requete="", $message="") {
 				$retour = "Object already deleted, no problem.";
 				break;
 			default:
-				$retour = "<font color=\"#FF0000\">Error may be fatal : <i>".mysql_error()."<i></font>";
+				$retour = "<font color=\"#FF0000\">Error may be fatal : <i>".pmb_mysql_error()."<i></font>";
 				break;
 			}
 	}		
@@ -79,7 +79,7 @@ settype ($action,"string");
 
 /* vérification de l'existence de la table paramètres */
 $query = "select count(1) from parametres ";
-$req = mysql_query($query, $dbh);
+$req = pmb_mysql_query($query, $dbh);
 if (!$req) { /* la table parametres n'existe pas... */
 	$rqt = "CREATE TABLE if not exists parametres ( 
 		id_param INT( 6 ) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -89,20 +89,20 @@ if (!$req) { /* la table parametres n'existe pas... */
 		PRIMARY KEY ( id_param ) ,
 		INDEX ( type_param , sstype_param ) 
 		) " ;
-	$res = mysql_query($rqt, $dbh) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
 }
 		
 
 $query = "select valeur_param from parametres where type_param='pmb' and sstype_param='bdd_version' ";
-$req = mysql_query($query, $dbh);
-if (mysql_num_rows($req) == 0) { /* la version de la base n'existe pas... */
+$req = pmb_mysql_query($query, $dbh);
+if (pmb_mysql_num_rows($req) == 0) { /* la version de la base n'existe pas... */
 	$rqt = "INSERT INTO parametres (id_param, type_param, sstype_param, valeur_param) VALUES (0, 'pmb', 'bdd_version', 'v1.0')" ;
-	$res = mysql_query($rqt, $dbh) ;
+	$res = pmb_mysql_query($rqt, $dbh) ;
 	$query = "select valeur_param from parametres where type_param='pmb' and sstype_param='bdd_version' ";
-	$req = mysql_query($query, $dbh);
+	$req = pmb_mysql_query($query, $dbh);
 }
 
-$data = mysql_fetch_array($req) ;
+$data = pmb_mysql_fetch_array($req) ;
 $version_pmb_bdd = $data['valeur_param'];
 
 echo "<div id='contenu-frame'>";

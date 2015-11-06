@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categ_browser.php,v 1.1 2006-10-30 17:20:53 dbellamy Exp $
+// $Id: categ_browser.php,v 1.2 2015-04-03 11:16:21 jpermanne Exp $
 
 // affichage du browser de catégories
 
@@ -57,7 +57,7 @@ if ($id_thes != -1) {
 } else {
 //	Afficher ici la liste des thesaurus si besoin en mode tous les thesaurus
 }
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 // affichage du footer
 print "</div></body></html>";

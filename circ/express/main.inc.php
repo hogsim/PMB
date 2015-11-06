@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.6 2007-03-10 09:03:17 touraine37 Exp $
+// $Id: main.inc.php,v 1.7 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,12 +15,12 @@ if (!$id_empr) {
 } else {
 	// récupération nom emprunteur
 	$requete = "SELECT empr_nom, empr_prenom, empr_cb FROM empr WHERE id_empr=$id_empr LIMIT 1";
-	$result = @mysql_query($requete, $dbh);
-	if(!mysql_num_rows($result)) {
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(!pmb_mysql_num_rows($result)) {
 		// pas d'emprunteur correspondant, quelque chose ne va pas
 		error_message($msg[350], $msg[54], 1 , './circ.php');
 	} else {
-		$empr = mysql_fetch_object($result);
+		$empr = pmb_mysql_fetch_object($result);
 		$name = $empr->empr_prenom;
 		$name ? $name .= ' '.$empr->empr_nom : $name = $empr->empr_nom;
 		echo window_title($database_window_title.$name.$msg['pret_express_wtit']);

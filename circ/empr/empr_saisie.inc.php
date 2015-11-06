@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_saisie.inc.php,v 1.12 2013-02-15 14:43:35 ngantier Exp $
+// $Id: empr_saisie.inc.php,v 1.13 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -22,8 +22,8 @@ if (!$id) {
 if(!$id) {
 	// regarder si le code-barre existe déjà
 	$requete = "SELECT empr_cb FROM empr WHERE empr_cb='$form_cb' LIMIT 1 ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_num_rows($res);
 
 	if(!$nbr_lignes) {
 		show_empr_form("./circ.php?categ=empr_update","./circ.php?categ=empr_create",$dbh, '', $form_cb);

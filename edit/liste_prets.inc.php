@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liste_prets.inc.php,v 1.8 2012-12-03 12:49:39 dgoron Exp $
+// $Id: liste_prets.inc.php,v 1.9 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -45,9 +45,9 @@ while ($coch_groupe[$j]) {
 
 	//requete par rapport à un groupe d'emprunteurs
 	$rqt1 = "select empr_id from empr_groupe, empr, pret where groupe_id='".$id_groupe."' and empr_groupe.empr_id=empr.id_empr and pret.pret_idempr=empr_groupe.empr_id group by empr_id order by empr_nom, empr_prenom";
-	$req1 = mysql_query($rqt1) or die($msg['err_sql'].'<br />'.$rqt1.'<br />'.mysql_error());
+	$req1 = pmb_mysql_query($rqt1) or die($msg['err_sql'].'<br />'.$rqt1.'<br />'.pmb_mysql_error());
 	
-	while ($data1=mysql_fetch_array($req1)) {
+	while ($data1=pmb_mysql_fetch_array($req1)) {
 		$id_empr=$data1['empr_id'];	
 		if ($nb_page==0 && $indice_page==$nb_1ere_page) {
 			$ourPDF->addPage();
@@ -66,9 +66,9 @@ while ($coch_groupe[$j]) {
 		
 		//requete par rapport à un emprunteur
 		$rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_idexpl=expl_id order by pret_date " ;	
-		$req = mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error());
+		$req = pmb_mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error());
 		
-		while ($data = mysql_fetch_array($req)) {
+		while ($data = pmb_mysql_fetch_array($req)) {
 			if ($nb_page==0 && $indice_page==$nb_1ere_page) {
 				$ourPDF->addPage();
 				$nb_page++;

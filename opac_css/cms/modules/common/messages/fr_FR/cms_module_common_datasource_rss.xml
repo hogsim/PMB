@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_datasource_rss.xml,v 1.3.6.1 2014-10-30 09:09:29 arenou Exp $ -->
+$Id: cms_module_common_datasource_rss.xml,v 1.6 2015-05-15 10:43:57 dbellamy Exp $ -->
 
 <XMLlist>
 	<entry code="cms_module_common_datasource_rss_limit">Nombres d'éléments maximum à renvoyer</entry>
@@ -26,5 +26,7 @@ $Id: cms_module_common_datasource_rss.xml,v 1.3.6.1 2014-10-30 09:09:29 arenou E
 	<entry code="cms_module_common_selector_rss">Définition manuelle</entry>
 	<entry code="cms_module_common_selector_type_article">Sélection depuis le champ d'un type de contenu d'un article</entry>
 	<entry code="cms_module_common_selector_type_section">Sélection depuis le champ d'un type de contenu d'une rubrique</entry>
-	
+	<entry code="cms_module_common_selector_type_article_generic">Sélecteur par la valeur d'un champ générique d'article</entry>
+	<entry code="cms_module_common_selector_type_section_generic">Sélecteur par la valeur d'un champ générique de rubrique</entry>
+	<entry code="cms_module_common_datasource_rss_timeout">Time-out (En secondes)</entry>
 </XMLlist>

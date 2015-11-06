@@ -4,7 +4,7 @@
 // © 2006 mental works / www.mental-works.com contact@mental-works.com
 // 	complètement repris et corrigé par PMB Services
 // +-------------------------------------------------+
-// $Id: avis.php,v 1.40.2.3 2015-06-23 07:03:13 Alexandre Exp $
+// $Id: avis.php,v 1.45 2015-07-17 14:04:46 jpermanne Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -122,7 +122,7 @@ switch($todo) {
 		$commentaire = preg_replace($masque,'',$commentaire);
 		if($charset != "utf-8") $commentaire=cp1252Toiso88591($commentaire);
 		$sql="insert into avis (num_empr,num_notice,note,sujet,commentaire) values ('$id_empr','$noticeid','$note','$sujet','$commentaire')";
-		if (mysql_query($sql, $dbh)) {
+		if (pmb_mysql_query($sql, $dbh)) {
 			print $avis_tpl_post_add;
 		} else {
 			print $avis_tpl_post_add_pb;
@@ -143,8 +143,8 @@ switch($todo) {
 		//moyenne des notes
 
 		$sql="select avg(note) as m from avis where valide=1 and num_notice='".$noticeid."' group by num_notice";
-		$r = mysql_query($sql, $dbh);
-		$loc = mysql_fetch_object($r);
+		$r = pmb_mysql_query($sql, $dbh);
+		$loc = pmb_mysql_fetch_object($r);
 		$moyenne=number_format($loc->m,1, ',', '');
 		$c_notice = new notice_affichage($noticeid,"");
 		$etoiles_moyenne = $c_notice->stars();
@@ -155,14 +155,14 @@ switch($todo) {
 				where valide=1 and num_notice='".$noticeid."'
 				order by dateajout desc";
 
-		$r = mysql_query($requete, $dbh);
-		if (mysql_numrows($r)){
+		$r = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($r)){
 			echo "<div class='row'>
 					<div class='left'><b>".$msg['avis_titre_tous'].":</b> ".$msg['avis_note'].": $moyenne</div>
 					<div class='right'>$etoiles_moyenne</div>&nbsp;
 					</div>";
 			$cpt_star = 4;
-			while ($loc = mysql_fetch_object($r)) {
+			while ($loc = pmb_mysql_fetch_object($r)) {
 				$etoiles="";
 				for ($i = 1; $i <= $loc->note; $i++) {
 					$etoiles.="<img border=0 src='images/star.png' align='absmiddle'>";
@@ -182,7 +182,7 @@ switch($todo) {
 					</div>";
 			}
 		} else {
-			echo "<div align='center'><br /><br />".$msg['avis_aucun']."</div>";
+			echo "<div align='center'><br /><br />".$msg['avis_aucun_popup']."</div>";
 		}
 
 		break;
@@ -204,4 +204,4 @@ if($pmb_logs_activate){
 print $popup_footer;
 
 /* Fermeture de la connexion */
-mysql_close($dbh);
+pmb_mysql_close($dbh);

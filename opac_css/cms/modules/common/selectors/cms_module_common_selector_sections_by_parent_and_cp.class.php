@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_sections_by_parent_and_cp.class.php,v 1.1 2012-12-17 10:35:13 arenou Exp $
+// $Id: cms_module_common_selector_sections_by_parent_and_cp.class.php,v 1.2 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");
@@ -36,10 +36,10 @@ class cms_module_common_selector_sections_by_parent_and_cp extends cms_module_co
 			$this->value = array();
 			if(is_array($parents) && count($parents)){
 				$query = "select id_section from cms_sections where section_num_parent in (".implode(",",$parents).")";
-				$result = mysql_query($query);
+				$result = pmb_mysql_query($query);
 				$fields = new cms_editorial_parametres_perso($field['type']);
-				if(mysql_num_rows($result)){
-					while($row = mysql_fetch_object($result)){
+				if(pmb_mysql_num_rows($result)){
+					while($row = pmb_mysql_fetch_object($result)){
 						$fields->get_values($row->id_section);
 						if(in_array($var->get_value(),$fields->values[$field['field']])){
 							$this->value[] = $row->id_section;

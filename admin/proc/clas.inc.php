@@ -27,11 +27,11 @@ function show_clas($dbh) {
 	</tr>";
 
 	$requete = "SELECT idproc_classement,libproc_classement FROM procs_classements ORDER BY libproc_classement ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -67,8 +67,8 @@ switch($action) {
 	case 'update':
 		// vérification validité des données fournies.
 		$requete = " SELECT count(1) FROM procs_classements WHERE (libproc_classement='$form_libproc_classement' AND idproc_classement!='$idproc_classement' ) LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if(!trim($form_libproc_classement)){
 			error_form_message($msg["acquisition_lib_liv_inv"]);
 		}elseif ($nbr > 0) {
@@ -77,10 +77,10 @@ switch($action) {
 			// O.K.  if item already exists UPDATE else INSERT
 			if ($idproc_classement) {
 				$requete = "UPDATE procs_classements SET libproc_classement='$form_libproc_classement' WHERE idproc_classement='$idproc_classement' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				$requete = "INSERT INTO procs_classements SET libproc_classement='$form_libproc_classement' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}
 		}
 		show_clas($dbh);
@@ -95,9 +95,9 @@ switch($action) {
 	case 'modif':
 		if ($idproc_classement) {
 			$requete = "SELECT libproc_classement FROM procs_classements WHERE idproc_classement='$idproc_classement' ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				clas_form($row->libproc_classement, $idproc_classement);
 			} else {
 				show_clas($dbh);
@@ -108,10 +108,10 @@ switch($action) {
 		break;
 	case 'del':
 		if ($idproc_classement) {
-			$total = mysql_result (mysql_query("select count(1) from procs where num_classement='".$idproc_classement."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from procs where num_classement='".$idproc_classement."' ", $dbh), 0, 0);
 			if ($total==0) {
 				$requete = "DELETE FROM procs_classements WHERE idproc_classement='$idproc_classement' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_clas($dbh);
 			} else {
 				error_message(	$msg[proc_clas], $msg[proc_clas_used], 1, 'admin.php?categ=proc&sub=clas&action=');

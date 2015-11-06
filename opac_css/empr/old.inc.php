@@ -28,8 +28,8 @@ $sql.= "group by arc_expl_notice, arc_expl_bulletin, tit, not_id ";
 $sql.= "having tit is not null and tit <> '' ";
 $sql.= "order by arc_debut desc $limit ";
 
-$req = mysql_query($sql) or die("Erreur SQL !<br />".$sql."<br />".mysql_error()); 
-$nb_elements = mysql_num_rows($req) ;
+$req = pmb_mysql_query($sql) or die("Erreur SQL !<br />".$sql."<br />".pmb_mysql_error()); 
+$nb_elements = pmb_mysql_num_rows($req) ;
 
 if ($nb_elements) {
 	echo"<table $class_aff_expl width='100%'>";
@@ -39,7 +39,7 @@ if ($nb_elements) {
 		<th><center>".$msg["date_loan"]."</center></th>";
 	echo "</tr>" ;
 	$odd_even=1;
-	while ($data = mysql_fetch_array($req)) { 
+	while ($data = pmb_mysql_fetch_array($req)) { 
 		$titre = $data['tit'];
 		
 		// **********
@@ -53,6 +53,7 @@ if ($nb_elements) {
 			$auteur = new auteur($auteur_0["id"]);
 			$mention_resp = $auteur->isbd_entry;
 		} else {
+			$aut1_libelle = array();
 			$as = array_keys ($responsab["responsabilites"], "1" ) ;
 			for ($i = 0 ; $i < count($as) ; $i++) {
 				$indice = $as[$i] ;
@@ -61,7 +62,6 @@ if ($nb_elements) {
 				$aut1_libelle[]= $auteur->isbd_entry;
 			}
 			$mention_resp = implode (", ",$aut1_libelle) ;
-			$aut1_libelle = array();
 		}
 		
 		$mention_resp ? $auteur = $mention_resp : $auteur="";

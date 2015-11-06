@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_condition_lvl.class.php,v 1.7.4.1 2014-11-19 16:03:35 arenou Exp $
+// $Id: cms_module_common_condition_lvl.class.php,v 1.8 2014-11-19 15:53:45 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: record_log.class.php,v 1.11.6.1 2014-10-03 10:41:22 dgoron Exp $
+// $Id: record_log.class.php,v 1.14 2015-04-10 14:36:37 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -63,6 +63,7 @@ class record_log{
 	
 	//Enregistrement dans la table de log
 	function save(){
+		global $dbh;
 		global $pmb_perio_vidage_log, $pmb_perio_vidage_stat, $internal_emptylogstatopac;
 		global $pmb_logs_exclude_robots;
 		
@@ -85,6 +86,10 @@ class record_log{
 				return;
 			}
 		}
+		//Opposition à l'utilisation des cookies, aucun enregistrement de logs
+		if ($_COOKIE['PhpMyBibli-COOKIECONSENT'] == "false") {
+			return;
+		}
 		
 		$rqt = "INSERT INTO logopac (url_demandee,url_referente,get_log,post_log,num_session,server_log,empr_carac,empr_doc,empr_expl,nb_result, gen_stat) VALUES ('";
 		$rqt .= addslashes($this->url_asked)."','".addslashes($this->url_ref)."','".addslashes(serialize($this->get_log))."','".addslashes(serialize($this->post_log))."','".addslashes($this->num_session)."','".addslashes(serialize($this->serveur))."','".addslashes(serialize($this->empr))."','".addslashes(serialize($this->doc))."','".addslashes(serialize($this->expl))."','".addslashes(serialize($this->nb_results))."','".addslashes(serialize($this->generique))."')";
@@ -92,16 +97,16 @@ class record_log{
 		$periodicite = $this->sql_value("SELECT DATEDIFF(CURRENT_DATE(),'".addslashes($first_day)."')");
 		if($periodicite >= $pmb_perio_vidage_log){	
 			//On copie la table log dans stat et on la vide
-			mysql_query("INSERT INTO statopac (date_log, url_demandee, url_referente, get_log, post_log,num_session, server_log, empr_carac, empr_doc, empr_expl,nb_result, gen_stat) 
-					SELECT date_log, url_demandee, url_referente, get_log, post_log, num_session, server_log, empr_carac, empr_doc, empr_expl, nb_result, gen_stat FROM logopac");
-			mysql_query("TRUNCATE TABLE logopac");			
+			pmb_mysql_query("INSERT INTO statopac (date_log, url_demandee, url_referente, get_log, post_log,num_session, server_log, empr_carac, empr_doc, empr_expl,nb_result, gen_stat) 
+					SELECT date_log, url_demandee, url_referente, get_log, post_log, num_session, server_log, empr_carac, empr_doc, empr_expl, nb_result, gen_stat FROM logopac",$dbh);
+			pmb_mysql_query("TRUNCATE TABLE logopac",$dbh);			
 		} 
-		mysql_query($rqt);
+		pmb_mysql_query($rqt,$dbh);
 		
 		if ($internal_emptylogstatopac) {
 			$date_internal=explode(" ",$internal_emptylogstatopac);
 			if ((time()-$date_internal[1])>86400) {
-				mysql_query("update parametres set valeur_param=0 where type_param='internal' and sstype_param='emptylogstatopac'");
+				pmb_mysql_query("update parametres set valeur_param=0 where type_param='internal' and sstype_param='emptylogstatopac'",$dbh);
 				$internal_emptylogstatopac=0;
 			}
 		}
@@ -116,19 +121,19 @@ class record_log{
 					//On vide tous les x jours
 					$periodicite = $this->sql_value("SELECT DATEDIFF(CURRENT_DATE(),'".addslashes($first_day_stat)."')");
 					if($periodicite >= $nb_jours){
-						mysql_query("update parametres set valeur_param='1 ".(time())."' where type_param='internal' and sstype_param='emptylogstatopac'");
-						mysql_query("TRUNCATE TABLE statopac");
-						mysql_query("update parametres set valeur_param=0 where type_param='internal' and sstype_param='emptylogstatopac'");
+						pmb_mysql_query("update parametres set valeur_param='1 ".(time())."' where type_param='internal' and sstype_param='emptylogstatopac'",$dbh);
+						pmb_mysql_query("TRUNCATE TABLE statopac",$dbh);
+						pmb_mysql_query("update parametres set valeur_param=0 where type_param='internal' and sstype_param='emptylogstatopac'",$dbh);
 					}
 					break;
 				case '2':
 					//On vide tout ce qui a plus de x jours
 					$periodicite = $this->sql_value("SELECT DATEDIFF(CURRENT_DATE(),'".addslashes($first_day_stat)."')");
 					if($periodicite >= $nb_jours){
-						mysql_query("update parametres set valeur_param='1 ".(time())."' where type_param='internal' and sstype_param='emptylogstatopac'");
+						pmb_mysql_query("update parametres set valeur_param='1 ".(time())."' where type_param='internal' and sstype_param='emptylogstatopac'",$dbh);
 						$rqt = "DELETE from statopac where date_log< DATE_SUB(CURRENT_DATE() , INTERVAL ".addslashes($nb_jours)." DAY)";
-						mysql_query($rqt);
-						mysql_query("update parametres set valeur_param=0 where type_param='internal' and sstype_param='emptylogstatopac'");
+						pmb_mysql_query($rqt,$dbh);
+						pmb_mysql_query("update parametres set valeur_param=0 where type_param='internal' and sstype_param='emptylogstatopac'",$dbh);
 					}
 					break;
 			}
@@ -137,7 +142,8 @@ class record_log{
 	
 	//retourne le resultat d'une requete
 	function sql_value($rqt) {
-		$result=mysql_query($rqt);
+		global $dbh;
+		$result=pmb_mysql_query($rqt,$dbh);
 		if ($result) $row = mysql_fetch_row($result);
 		return $row[0];
 	}

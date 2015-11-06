@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mailing.php,v 1.19.2.1 2014-10-03 07:21:28 mbertin Exp $
+// $Id: mailing.php,v 1.21 2015-04-03 11:16:28 jpermanne Exp $
 
 // définition du minimum nécéssaire
 $base_path="../../..";
@@ -239,8 +239,8 @@ switch ($sub) {
 			$mailing->send($f_objet_mail, $f_message, 20,$pieces_jointes);
 			
 			$sql = "select id_empr, empr_mail, empr_nom, empr_prenom from empr, empr_caddie_content where (flag='' or flag is null) and empr_caddie_id=$idemprcaddie and object_id=id_empr";
-			$sql_result = mysql_query($sql) or die ("Couldn't select compte reste mailing !");
-			$n_envoi_restant=mysql_num_rows($sql_result);
+			$sql_result = pmb_mysql_query($sql) or die ("Couldn't select compte reste mailing !");
+			$n_envoi_restant=pmb_mysql_num_rows($sql_result);
 		}else{//Todo: gérer proprement les ereurs
 			$n_envoi_restant=0;
 		}
@@ -287,13 +287,13 @@ switch ($sub) {
 					</div>
 				";
 			$sql = "select id_empr, empr_mail, empr_nom, empr_prenom from empr, empr_caddie_content where flag='2' and empr_caddie_id=$idemprcaddie and object_id=id_empr ";
-			$sql_result = mysql_query($sql) ;
-			if (mysql_num_rows($sql_result)) {
+			$sql_result = pmb_mysql_query($sql) ;
+			if (pmb_mysql_num_rows($sql_result)) {
 				print "
 					<hr /><div class='row'>
 					<strong>$msg[empr_mailing_liste_erreurs]</strong>  
 					</div>";
-				while ($obj_erreur=mysql_fetch_object($sql_result)) {
+				while ($obj_erreur=pmb_mysql_fetch_object($sql_result)) {
 					print "<div class='row'>
 						".$obj_erreur->empr_nom." ".$obj_erreur->empr_prenom." (".$obj_erreur->empr_mail.") 
 						</div>

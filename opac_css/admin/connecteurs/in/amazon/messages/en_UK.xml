@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: en_UK.xml,v 1.8.6.1 2015-05-28 10:34:01 jpermanne Exp $ -->
+$Id: en_UK.xml,v 1.12 2015-06-26 12:35:02 pmbs Exp $ -->
 
 <XMLlist>
 	<entry code="amazon_key">AWSAccessKeyID Key</entry>
@@ -29,14 +29,16 @@ $Id: en_UK.xml,v 1.8.6.1 2015-05-28 10:34:01 jpermanne Exp $ -->
 	<entry code="amazon_magazines">Magazines</entry>
 	<entry code="amazon_secret_key">Secret Key</entry>
 	<entry code="amazon_enrichment_source">(source Amazon)</entry>
-	<entry code="amazon_enrichment_no_similarities">Aucune information disponible.</entry>
-	<entry code="amazon_enrichment_listen_extract">Ecouter un extrait de %s sur Amazon</entry>
-	<entry code="amazon_enrichment_customers_reviews">Avis Amazon</entry>
-	<entry code="amazon_associate_tag">Tag Partenaire</entry>
-	<entry code="numberofitems">Nombre d'éléments</entry>
-	<entry code="numberofdiscs">Nombre de disques</entry>
-	<entry code="runningtime">Durée</entry>
-	<entry code="theatricaldate">Enregistré le</entry>
+	<entry code="amazon_enrichment_no_similarities">No information available.</entry>
+	<entry code="amazon_enrichment_listen_extract">Listen to an extract of %s on Amazon</entry>
+	<entry code="amazon_enrichment_customers_reviews">Amazon customer reviews</entry>
+	<entry code="amazon_associate_tag">Related tag</entry>	
+	<entry code="numberofitems">Number of items</entry>
+	<entry code="numberofdiscs">Number of discs</entry>
+	<entry code="runningtime">Running time</entry>
+	<entry code="theatricaldate">Recorded on the</entry>
 	<entry code="format">Format</entry>
-	<entry code="disc">Disque</entry>
+	<entry code="disc">Disc</entry>
+	<entry code="amazon_review_height">Height of the customer reviews frame</entry>
+	<entry code="amazon_review_width">Width of the customer reviews frame</entry>
 </XMLlist>

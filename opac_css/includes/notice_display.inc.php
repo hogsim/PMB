@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // Â© 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_display.inc.php,v 1.76.2.2 2015-03-05 09:21:51 mbertin Exp $
+// $Id: notice_display.inc.php,v 1.80 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -57,9 +57,9 @@ if ($ref) {
 	} elseif ($code) {
 		$requete = "SELECT notice_id FROM notices where code like '$code' limit 1";
 	}
-	$res = mysql_query($requete, $dbh);
-	if(mysql_num_rows($res)) {
-		$id=mysql_result($res,0,0);
+	$res = pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($res)) {
+		$id=pmb_mysql_result($res,0,0);
 	}
 }
 
@@ -67,9 +67,9 @@ $id+=0;
 
 if($show_bull && $id != 0){
 	$query = "select bulletin_id from bulletins where num_notice = ".$id;
-	$result = mysql_query($query);
-	if(mysql_num_rows($result)>0){
-		header("Location:".$opac_url_base."index.php?lvl=bulletin_display&id=".(mysql_result($result,0,0)*1));
+	$result = pmb_mysql_query($query);
+	if(pmb_mysql_num_rows($result)>0){
+		header("Location:".$opac_url_base."index.php?lvl=bulletin_display&id=".(pmb_mysql_result($result,0,0)*1));
 	}
 }
 
@@ -83,9 +83,9 @@ if ($id) {
 		$acces_v = $dom_2->getRights($_SESSION['id_empr_session'],$id,4);
 	} else {
 		$requete = "SELECT notice_visible_opac, expl_visible_opac, notice_visible_opac_abon, expl_visible_opac_abon, explnum_visible_opac, explnum_visible_opac_abon FROM notices, notice_statut WHERE notice_id ='".$id."' and id_notice_statut=statut ";
-		$myQuery = mysql_query($requete, $dbh);
-		if(mysql_num_rows($myQuery)) {
-			$statut_temp = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)) {
+			$statut_temp = pmb_mysql_fetch_object($myQuery);
 			if(!$statut_temp->notice_visible_opac)	$acces_v=FALSE;
 			if($statut_temp->notice_visible_opac_abon && !$_SESSION['id_empr_session'])	$acces_v=FALSE;
 		} else 	$acces_v=FALSE;
@@ -96,19 +96,19 @@ if($id && $acces_v) {
 	global $pmb_logs_activate;
 	if($pmb_logs_activate) recup_notice_infos($id);
 	$requete = "SELECT notice_id, niveau_biblio,typdoc,opac_visible_bulletinage FROM notices WHERE notice_id='$id' LIMIT 1";
-	$res = @mysql_query($requete, $dbh);
-	while (($obj=mysql_fetch_object($res))) {
+	$res = @pmb_mysql_query($requete, $dbh);
+	while (($obj=pmb_mysql_fetch_object($res))) {
 
 		if ($mode_phototeque) {
 			// Traitement exemplaire numerique
 			$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_data, explnum_vignette, explnum_nomfichier, explnum_extfichier FROM explnum WHERE ";
 			$requete .= "explnum_notice='$id' ";
 			$requete .= " order by explnum_id LIMIT 1";
-			$resultat = mysql_query($requete, $dbh) or die ($requete." ".mysql_error());
-			$nb_ex = mysql_num_rows($resultat);
+			$resultat = pmb_mysql_query($requete, $dbh) or die ($requete." ".pmb_mysql_error());
+			$nb_ex = pmb_mysql_num_rows($resultat);
 			if ($nb_ex) {
-				// $explnum=mysql_result($resultat,0,0);
-				$explnumobj=mysql_fetch_object($resultat);
+				// $explnum=pmb_mysql_result($resultat,0,0);
+				$explnumobj=pmb_mysql_fetch_object($resultat);
 				if ($explnumobj->explnum_url) print "<center><img width='$opac_photo_mean_size_x' src=\"".$explnumobj->explnum_url."\"/></center><br />";
 				else{
 					//répertoire d'upload ou stockage en base, le traitement reste identique...
@@ -120,8 +120,8 @@ if($id && $acces_v) {
 		}else{
 			//$req = "select explnum_id from explnum left join bulletins on num_notice = $id where explnum_notice = $id or explnum_bulletin = bulletin_id";
 			$req = "select explnum_id from explnum join bulletins on explnum_bulletin=bulletin_id where num_notice=$id union select explnum_id from explnum where explnum_notice=$id";
-			$resultat = mysql_query($req, $dbh) or die ($req." ".mysql_error());
-			$nb_ex = mysql_num_rows($resultat);
+			$resultat = pmb_mysql_query($req, $dbh) or die ($req." ".pmb_mysql_error());
+			$nb_ex = pmb_mysql_num_rows($resultat);
 			if($opac_visionneuse_allow && $nb_ex){
 				//print "&nbsp;&nbsp;&nbsp;".$link_to_visionneuse;
 				print $sendToVisionneuseNoticeDisplay;
@@ -250,21 +250,31 @@ if($id && $acces_v) {
 						$join_docnum_bull = "join notices on bulletins.bulletin_notice = notices.notice_id join notice_statut on notices.statut = notice_statut.id_notice_statut AND ((explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
 					}	
 				}
-				$requete_docnum_noti = "select bulletin_id, count(explnum_id) as nbexplnum from explnum join bulletins on explnum_bulletin = bulletin_id and explnum_notice = 0 ".$join_docnum_noti." where bulletin_notice = ".$id." group by bulletin_id";
-				$requete_docnum_bull = "select bulletin_id, count(explnum_id) as nbexplnum from explnum join bulletins on explnum_bulletin = bulletin_id and explnum_notice = 0 ".$join_docnum_bull." where bulletin_notice = ".$id." group by bulletin_id";
+				$join_docnum_explnum = "";
+				if(!$opac_show_links_invisible_docnums) {
+					if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+						$ac = new acces();
+						$dom_3= $ac->setDomain(3);
+						$join_docnum_explnum = $dom_3->getJoin($_SESSION["id_empr_session"],16,"explnum_id");
+					}else{
+						$join_docnum_explnum = "join explnum_statut on explnum_docnum_statut=id_explnum_statut and ((explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
+					}
+				}
+				$requete_docnum_noti = "select bulletin_id, count(explnum_id) as nbexplnum from explnum join bulletins on explnum_bulletin = bulletin_id and explnum_notice = 0 ".$join_docnum_explnum." where bulletin_notice = ".$id." and explnum_bulletin in (select bulletin_id from bulletins ".$join_docnum_noti." where bulletin_notice = ".$id.") group by bulletin_id";
+				$requete_docnum_bull = "select bulletin_id, count(explnum_id) as nbexplnum from explnum join bulletins on explnum_bulletin = bulletin_id and explnum_notice = 0 ".$join_docnum_explnum." where bulletin_notice = ".$id." and explnum_bulletin in (select bulletin_id from bulletins ".$join_docnum_bull." where bulletin_notice = ".$id.") group by bulletin_id";
 				$requete_noti = "select bulletins.*,ifnull(nbexplnum,0) as nbexplnum from bulletins ".$join_noti." left join ($requete_docnum_noti) as docnum_noti on bulletins.bulletin_id = docnum_noti.bulletin_id where bulletins.num_notice != 0 and bulletin_notice = ".$id." $restrict_num $restrict_date GROUP BY bulletins.bulletin_id";
 				$requete_bull = "select bulletins.*,ifnull(nbexplnum,0) as nbexplnum from bulletins ".$join_bull." left join ($requete_docnum_bull) as docnum_bull on bulletins.bulletin_id = docnum_bull.bulletin_id where bulletins.num_notice = 0 and bulletin_notice = ".$id." $restrict_num $restrict_date GROUP BY bulletins.bulletin_id";
 				
 				$requete = "select * from (".$requete_noti." union ".$requete_bull.") as uni where 1 ".$restrict_num." ".$restrict_date;
-				$rescount1=mysql_query($requete);
-				$count1=mysql_num_rows($rescount1);
+				$rescount1=pmb_mysql_query($requete);
+				$count1=pmb_mysql_num_rows($rescount1);
 
 				//si on recherche par date ou par numéro, le résultat sera trié par ordre croissant
 				if (($restrict_num)||($restrict_date)) $requete.=" ORDER BY date_date, bulletin_numero*1 ";
 				else $requete.=" ORDER BY date_date DESC, bulletin_numero*1 DESC";
 				$requete.=$limiter;
-				$res = @mysql_query($requete, $dbh);
-				$count=mysql_num_rows($res);
+				$res = @pmb_mysql_query($requete, $dbh);
+				$count=pmb_mysql_num_rows($res);
 				
 				if ($count) {
 					if ($opac_fonction_affichage_liste_bull) eval("\$opac_fonction_affichage_liste_bull (\$res);");
@@ -308,8 +318,8 @@ function recup_notice_infos($id_notice){
 		left join indexint i on n.indexint=i.indexint_id
 		left join pclassement pc on i.num_pclass=pc.id_pclass
 		where notice_id='".$id_notice."'";
-	$res_noti = mysql_query($rqt);
-	while(($noti=mysql_fetch_array($res_noti))){
+	$res_noti = pmb_mysql_query($rqt);
+	while(($noti=pmb_mysql_fetch_array($res_noti))){
 		$infos_notice=$noti;
 		$rqt_expl = " select section_libelle, location_libelle, statut_libelle, codestat_libelle, expl_date_depot, expl_date_retour, tdoc_libelle
 					from exemplaires e
@@ -319,8 +329,8 @@ function recup_notice_infos($id_notice){
 					left join docs_statut dst on e.expl_statut=dst.idstatut
 					left join docs_type dt on dt.idtyp_doc=e.expl_typdoc
 					where expl_notice='".$id_notice."'";
-		$res_expl=mysql_query($rqt_expl);
-		while(($expl = mysql_fetch_array($res_expl))){
+		$res_expl=pmb_mysql_query($rqt_expl);
+		while(($expl = pmb_mysql_fetch_array($res_expl))){
 			$infos_expl[]=$expl;
 		}
 	}
@@ -350,4 +360,4 @@ function compare_date($date_debut="",$date_fin=""){
 
 print $notice_display_footer;
 print pmb_bidi($form);
-if($res) mysql_free_result($res);
+if($res) pmb_mysql_free_result($res);

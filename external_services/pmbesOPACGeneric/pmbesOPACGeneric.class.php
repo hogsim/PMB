@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesOPACGeneric.class.php,v 1.8 2010-07-29 12:53:11 erwanmartin Exp $
+// $Id: pmbesOPACGeneric.class.php,v 1.9 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -20,9 +20,9 @@ class pmbesOPACGeneric extends external_services_api_class{
 		// on constitue un tableau avec les étagères et les caddies associés
 		$clause_accueil="visible_accueil=1 and";
 		$query = "select idetagere, name, comment from etagere where $clause_accueil ( (validite_date_deb<=sysdate() and validite_date_fin>=sysdate()) or validite=1 ) order by $opac_etagere_order ";
-		$result = mysql_query($query, $dbh);
-		if (mysql_num_rows($result)) {
-			while ($etagere=mysql_fetch_object($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if (pmb_mysql_num_rows($result)) {
+			while ($etagere=pmb_mysql_fetch_object($result)) {
 				$tableau_etagere[] = array (
 						'id' => $etagere->idetagere,
 						'name' => utf8_normalize($etagere->name),
@@ -58,9 +58,9 @@ class pmbesOPACGeneric extends external_services_api_class{
 		}
 
 		$sql = "SELECT object_id FROM etagere LEFT JOIN etagere_caddie ON (etagere_id = idetagere) LEFT JOIN caddie_content ON (caddie_content.caddie_id = etagere_caddie.caddie_id) LEFT JOIN notices ON (object_id = notice_id) $acces_j $statut_j WHERE etagere_id = ".$shelf_id." AND object_id $statut_r GROUP BY object_id";
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		$results = array();
-		while($row = mysql_fetch_row($res)) {
+		while($row = pmb_mysql_fetch_row($res)) {
 			$results[] = $row[0];
 		}
 		return $results;
@@ -70,8 +70,8 @@ class pmbesOPACGeneric extends external_services_api_class{
 		global $dbh;
 		$results = array();
 		$sql = "SELECT idlocation, location_libelle FROM docs_location WHERE location_visible_opac = 1";
-		$res = mysql_query($sql, $dbh);
-		while($row = mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			$results[] = array(
 				"location_id" => $row["idlocation"],
 				"location_caption" => utf8_normalize($row["location_libelle"])
@@ -86,9 +86,9 @@ class pmbesOPACGeneric extends external_services_api_class{
 		$results = array();
 		$location+=0;
 		$requete="select idsection, section_libelle, section_pic from docs_section, exemplaires where expl_location=$location and section_visible_opac=1 and expl_section=idsection group by idsection order by section_libelle ";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		$n=0;
-		while ($r=mysql_fetch_object($resultat)) {
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			$aresult = array();
 			$aresult["section_id"] = $r->idsection;
 			$aresult["section_location"] = $location;
@@ -136,10 +136,10 @@ class pmbesOPACGeneric extends external_services_api_class{
 				ORDER BY $opac_autres_lectures_tri 
 				"; 
 	
-		$res_autres_lectures = mysql_query($rqt_autres_lectures); 
+		$res_autres_lectures = pmb_mysql_query($rqt_autres_lectures); 
 		if (!$res_autres_lectures)
 			return $results;
-		if (mysql_num_rows($res_autres_lectures)) {
+		if (pmb_mysql_num_rows($res_autres_lectures)) {
 			$odd_even=1;
 			$inotvisible=0;
 			$aresult = array();
@@ -160,11 +160,11 @@ class pmbesOPACGeneric extends external_services_api_class{
 				$statut_r="and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").")";
 			}
 			
-			while (($data=mysql_fetch_array($res_autres_lectures))) { // $inotvisible<=$opac_autres_lectures_nb_maxi
+			while (($data=pmb_mysql_fetch_array($res_autres_lectures))) { // $inotvisible<=$opac_autres_lectures_nb_maxi
 				$requete = "SELECT  1  ";
 				$requete .= " FROM notices $acces_j $statut_j  WHERE notice_id='".$data[not_id]."' $statut_r ";
-				$myQuery = mysql_query($requete, $dbh);
-				if (mysql_num_rows($myQuery) && $inotvisible<=$opac_autres_lectures_nb_maxi) { // mysql_num_rows($myQuery)
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				if (pmb_mysql_num_rows($myQuery) && $inotvisible<=$opac_autres_lectures_nb_maxi) { // pmb_mysql_num_rows($myQuery)
 					$inotvisible++;
 					$titre = $data['tit'];
 					// **********
@@ -215,8 +215,8 @@ class pmbesOPACGeneric extends external_services_api_class{
 			throw new Exception("Missing parameter: location_id");
 		
 		$sql = "SELECT idlocation, location_libelle FROM docs_location WHERE location_visible_opac = 1 AND idlocation = ".$location_id;
-		$res = mysql_query($sql, $dbh);
-		if ($row = mysql_fetch_assoc($res))
+		$res = pmb_mysql_query($sql, $dbh);
+		if ($row = pmb_mysql_fetch_assoc($res))
 			$result = array(
 				"location_id" => $row["idlocation"],
 				"location_caption" => utf8_normalize($row["location_libelle"])
@@ -240,8 +240,8 @@ class pmbesOPACGeneric extends external_services_api_class{
 			throw new Exception("Missing parameter: section_id");
 
 		$requete="select idsection, section_libelle, section_pic, expl_location from docs_section, exemplaires where idsection = ".$section_id." and section_visible_opac=1 and expl_section=idsection group by idsection order by section_libelle ";
-		$resultat=mysql_query($requete);
-		if ($r=mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		if ($r=pmb_mysql_fetch_object($resultat)) {
 			$result["section_id"] = $r->idsection;
 			$result["section_location"] = $r->expl_location;
 			$result["section_caption"] = utf8_normalize($r->section_libelle);
@@ -255,8 +255,8 @@ class pmbesOPACGeneric extends external_services_api_class{
 		global $dbh;
 		$results = array();
 		$sql = "SELECT idlocation, location_libelle FROM docs_location WHERE location_visible_opac = 1";
-		$res = mysql_query($sql, $dbh);
-		while($row = mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while($row = pmb_mysql_fetch_assoc($res)) {
 			$aresult = array(
 				'location' => array(
 					"location_id" => $row["idlocation"],
@@ -266,9 +266,9 @@ class pmbesOPACGeneric extends external_services_api_class{
 			);
 			
 			$sql2="select idsection, section_libelle, section_pic from docs_section, exemplaires where expl_location=".($row["idlocation"])." and section_visible_opac=1 and expl_section=idsection group by idsection order by section_libelle ";
-			$res2=mysql_query($sql2);
+			$res2=pmb_mysql_query($sql2);
 			$n=0;
-			while ($r=mysql_fetch_object($res2)) {
+			while ($r=pmb_mysql_fetch_object($res2)) {
 				$asection = array();
 				$asection["section_id"] = $r->idsection;
 				$asection["section_location"] = $row["idlocation"];
@@ -287,9 +287,9 @@ class pmbesOPACGeneric extends external_services_api_class{
 		global $dbh,$charset,$opac_url_base;
 		
 		$requete = "SELECT content_infopage FROM infopages WHERE id_infopage = $infopage_id";
-		$result = mysql_query($requete,$dbh);
-		if (mysql_num_rows($result)){
-			$infopage = mysql_result($result,0,0);
+		$result = pmb_mysql_query($requete,$dbh);
+		if (pmb_mysql_num_rows($result)){
+			$infopage = pmb_mysql_result($result,0,0);
 			if($js_subst){
 				$infopage = str_replace($opac_url_base."index.php?lvl=infopages&amp;pagesid=","!!INFOPAGE_URL!!",$infopage);
 				preg_match_all("/!!INFOPAGE_URL!!([0-9]+)/",$infopage,$tab);

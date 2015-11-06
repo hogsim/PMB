@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.1 2008-06-03 15:35:41 ngantier Exp $
+// $Id: main.inc.php,v 1.2 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once('./circ/print_pret/func.inc.php');
@@ -48,8 +48,8 @@ switch($sub):
 		
 		$xml_bibli.="<text style=\"t1\">".htmlspecialchars("Liste des prêts:",ENT_QUOTES,$charset)."</text>";
 		$query = "select expl_cb from pret,exemplaires  where pret_idempr=$id_empr and expl_id=pret_idexpl ";		
-		$result = mysql_query($query, $dbh);
-		while (($r= mysql_fetch_array($result))) 	$xml_bibli.=print_expl( $r['expl_cb']);
+		$result = pmb_mysql_query($query, $dbh);
+		while (($r= pmb_mysql_fetch_array($result))) 	$xml_bibli.=print_expl( $r['expl_cb']);
 		$xml_bibli.="<text style=\"t1\"></text>";
 	break;
 	default:

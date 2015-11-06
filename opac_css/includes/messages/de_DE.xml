@@ -2,7 +2,7 @@
 <!DOCTYPE XMLlist SYSTEM "../XMLlist.dtd" [<!ENTITY nbsp "&amp;nbsp;">]>
 
 <!-- messages localises en anglais pour l'OPAC de PMB
-$Id: de_DE.xml,v 1.59.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
+$Id: de_DE.xml,v 1.111 2015-07-17 14:04:46 jpermanne Exp $ -->
 
 <XMLlist>
 <entry code="not_allowed">Operation nicht erlaubt</entry>
@@ -529,7 +529,7 @@ $Id: de_DE.xml,v 1.59.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="voir_contenu_detail">See inside in details</entry>
 <entry code="mdp_txt_intro_demande">Enter your email so we can send you your login information.</entry>
 <entry code="mdp_bt_send">Send</entry>
-<entry code="mdp_mail_body"><![CDATA[Here are your login information for <b>!!biblioname!!</b>:<br /> -Login: !!login!! <br /> -Password: !!password!! <br /><br />If you're having trouble, send an email to !!biblioemail!!.<br /><br />]]></entry>
+<entry code="mdp_mail_body"><![CDATA[Bonjour,<br /><br />Pour faire suite à votre demande de réinitialisation de mot de passe à <b>!!biblioname!!</b>, veuillez trouver ci-dessous le lien qui vous permettra d'effectuer ce changement : <br /><br />!!lien_mdp!!<br /><br />La clé de connexion automatique sera effacée après ouverture du lien pour des raisons de sécurité.<br /><br /> - Pour rappel, votre identifiant est : !!login!!<br /><br />Si vous rencontrez des difficultés, adressez un mail à !!biblioemail!!.<br /><br />]]></entry>
 <entry code="mdp_mail_obj">Login information for !!biblioname!!</entry>
 <entry code="mdp_sent_ok">The login information has been sent to </entry>
 <entry code="mdp_no_email">Wrong or unknown email, if you're having trouble, send an email to !!biblioemail!!.</entry>
@@ -960,7 +960,7 @@ $Id: de_DE.xml,v 1.59.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="demandes_actions">Related actions</entry>
 <entry code="empr_no_allow_dema">You're not allowed to record requests.</entry>
 <entry code="demandes_note_mail_reponse">answered to the note %s in the action %s of the request %s</entry>
-<entry code="demandes_note_mail_new">posted a note in the action %s of the request %s</entry>
+<entry code="demandes_note_mail_new">Hi, %s posted a note in the action %s - of the request %s</entry>
 <entry code="demandes_note_mail_new_object">A new note has been created</entry>
 <entry code="demandes_note_mail_reponse_object">Answer to the note %s</entry>
 <entry code="list_lecture_intro_mail">Dear %s</entry>
@@ -1383,8 +1383,8 @@ $Id: de_DE.xml,v 1.59.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 
 <entry code="show_cart_reserve">Réserver le contenu du panier</entry>
 <entry code="show_cart_reserve_title">Réserver le contenu du panier</entry>
-<entry code="show_cart_reserve_checked">Réserver les notices cochés</entry>
-<entry code="show_cart_reserve_checked_title">Réserver les notices cochés</entry>
+<entry code="show_cart_reserve_checked">Réserver les notices cochées</entry>
+<entry code="show_cart_reserve_checked_title">Réserver les notices cochées</entry>
 
 <entry code="resa_no_create">Impossible de créer la réservation.</entry>
 <entry code="resa_ajoutee">Réservation ajoutée.</entry>
@@ -1405,7 +1405,7 @@ $Id: de_DE.xml,v 1.59.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="explnum_associate_minutes">minutes</entry>
 <entry code="explnum_associate_no_author">Aucun auteur associé</entry>
 
-<entry code="aut_oeuvre_form_forme">Forme de l'oeuvre</entry>
+<entry code="aut_oeuvre_form_forme">Forme de l'oeuvre (Saisie Libre)</entry>
 <entry code="aut_oeuvre_form_date">Date de l'oeuvre</entry>
 <entry code="aut_oeuvre_form_sujet">Sujet de l'oeuvre</entry>
 <entry code="aut_oeuvre_form_lieu">Lieu d'origine de l'oeuvre</entry>
@@ -1423,11 +1423,89 @@ $Id: de_DE.xml,v 1.59.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="accueil_bannette_public">Alerte(s) disponible(s)</entry>
 <entry code="bannette_see_nothing_to_see">Aucune information à afficher</entry>
 
+<entry code="audit_lecteur">Lecteur opac</entry>
+
+<entry code="etat_todo">A valider</entry>
+<entry code="etat_validate">Validé</entry>
+<entry code="etat_refused">Refusé</entry>
+<entry code="etat_finished">Fini</entry>
+<entry code="etat_givenup">Abandonné</entry>
+<entry code="etat_classified">Archivé</entry>
+<entry code="etat_opened">Ouvert</entry>
+<entry code="etat_awaiting">En Attente</entry>
+<entry code="etat_closed">Fermé</entry>
+<entry code="type_question">Question/Réponse</entry>
+<entry code="type_info">Information Complémentaire</entry>
+<entry code="type_search">Recherche</entry>
+<entry code="type_rdv">Rendez-vous</entry>
+<entry code="demandes_action_sujet">Sujet</entry>
+<entry code="demandes_action_type">Type d'action</entry>
+<entry code="demandes_action_statut">Statut de l'action</entry>
+<entry code="demandes_action_detail">Détail</entry>
+<entry code="demandes_action_progression">Progression</entry>
+<entry code="demandes_action_cout">Coût</entry>
+<entry code="demandes_action_date">Date de début</entry>
+<entry code="demandes_action_date_butoir">Echéance demandée</entry>
+<entry code="demandes_action_time_elapsed">Temps passé</entry>
+<entry code="demandes_action_liste">Liste des actions</entry>
+<entry code="demandes_action_nbnotes">Notes associées</entry>
+<entry code="demandes_attribution">Attribuée à</entry>
+<entry code="demandes_retour">Retour</entry>
+<entry code="demandes_action_createur">Créateur</entry>
+<entry code="demandes_action_privacy">Privé</entry>
+<entry code="39">Non</entry>
+<entry code="40">Oui</entry>
+<entry code="demandes_note_privacy">Privé</entry>
+<entry code="demandes_note_no_list">Il n'y a aucune note associée à cette action</entry>
+<entry code="demandes_note_vue">Marquer comme lue</entry>
+<entry code="demandes_note_add">Ajouter une note</entry>
+<entry code="demandes_note_liste">Liste des notes</entry>
+<entry code="demandes_action_liste_vide">Aucune action n'est associée à cette demande.</entry>
+<entry code="demandes_add">Ajouter une demande</entry>
+<entry code="demandes_action_type_add">Ajouter une action de type</entry>
+<entry code="76">Annuler</entry>
+<entry code="77">Enregistrer</entry>
+<entry code="demandes_modify">Modifier</entry>
+
+<entry code="faq_question_no_question">Pas de question</entry>
+<entry code="faq_question_no_answer">Pas de réponse</entry>
+<entry code="faq_question_page_title">%d Question(s)</entry>
+<entry code="faq_filter_themes">Thème</entry>
+<entry code="faq_filter_types">Type</entry>
+<entry code="faq_filter_descriptors">Catégorie</entry>
+<entry code="faq_filter_years">Année</entry>
+<entry code="faq_facette_no_date">Indéterminée</entry>
+
+<entry code="demandes_see_last_note">Voir la dernière publication</entry>
+
+<entry code="faq_filter_user_query">Recherche dans la FAQ</entry>
+<entry code="faq_facettes_actives">Filtre(s) actif(s)</entry>
+
 <entry code="bannette_abonn">S'abonner</entry>
 <entry code='websubscribe_label'>S'inscrire</entry>
 <entry code='websubscribe_resa_action'>Vous alliez faire une réservation pour  :</entry>
 <entry code='websubscribe_bannette_action'>Vous alliez vous abonner à :</entry>
 <entry code="bannette_doit_etre_abon">Vous devez vous authentifier pour vous abonner à une alerte :</entry>
+
+<entry code="facette_list_compare_crit">Comparer entre</entry>
+<entry code="facette_list_groupby_crit">Regrouper par</entry>
+<entry code="facette_compare">Comparer</entry>
+<entry code="facette_compare_not_selected">Pas de critère de comparaison.</entry>
+<entry code="facettes_not_grouped">Sans groupement</entry>
+<entry code="facette_compare_too_more_result">Trop de résultats dans le comparateur</entry>
+<entry code="facette_compare_no_result">Pas de résultat dans le comparateur</entry>
+<entry code="facette_compare_remove">Retirer le critère</entry>
+<entry code="facette_compare_groupby">Regrouper par</entry>
+<entry code="facette_compare_search_result">Revenir au résultat</entry>
+<entry code="facette_compare_search_compare">Afficher le comparateur</entry>
+<entry code="facette_compare_reinit">Remise à zéro des critères</entry>
+<entry code="facette_list_compare">Affiner ou comparer</entry>
+<entry code="facette_compare_helper">Aide à l'utilisation des facettes</entry>
+<entry code="facette_compare_helper_message"><![CDATA[Pour affiner votre liste de résultats, cochez les critères souhaités puis cliquez sur \"Filtrer\". Vous pouvez également cliquer sur un critère à la fois.<br />Pour obtenir un tableau de comparaison des résultats, cochez les critères souhaités puis cliquez sur \"Comparer\". Vous pouvez ensuite les regrouper en cliquant sur l\'icône de regroupement.<br />Utilisez les croix rouges pour supprimer les critères sélectionnés.]]></entry>
+
+<entry code="authperso_see_title">Détail de l'autorité</entry>
+<entry code="authperso_doc_auth_title">Documents disponibles</entry>
+<entry code="authperso_multi_search_title">Autorités personalisées</entry>
 <entry code="categ_see_synonyme">Synonymes</entry>
 <entry code="categ_see_renvoi_voir">Voir aussi</entry>
 
@@ -1444,24 +1522,204 @@ $Id: de_DE.xml,v 1.59.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="collstate_header_surloc_libelle">Sur localisation</entry>
 <entry code="collstate_header_state_collections">Collection</entry>
 <entry code="categ_see_aut_link">Relation(s) </entry>
+<entry code="statut_explnum_sort">Statut de document numérique</entry>
+
+<entry code="authperso_multi_search_by_field_title">Autorité</entry>
+<entry code="authperso_multi_search_tous_champs_title">Tous les champs</entry>
 <entry code="cms_module_common_datasource_desc_nb_documents">Nombre de documents attachés</entry>
 <entry code="cms_module_common_datasource_desc_documents">Documents</entry>
 
+<entry code="cms_module_common_datasource_desc_small">140x140</entry>
+<entry code="cms_module_common_datasource_desc_medium">300x300</entry>
+<entry code="cms_module_common_datasource_desc_big">600x600</entry>
+<entry code="cms_module_common_datasource_desc_custom">Taille à définir manuellement (concaténer avec un nombre. ex : {{logo.custom}}150)</entry>
+<entry code="map_notice_echelle">Echelle : </entry>
+<entry code="map_notice_projection">Projection : </entry>
+<entry code="map_notice_ref">Référence : </entry>
+<entry code="map_notice_equinoxe">Equinoxe : </entry>
+<entry code="map_notice_transcription">Emprise : </entry>
+<entry code="map_notice_map">Carte : </entry>
+<entry code="search_map">Géolocalisation</entry>
+<entry code="search_by_map">Géolocalisation</entry>
+<entry code="categ_map_title">Carte</entry>
+
+<entry code="map_echelle">Echelle</entry>
+<entry code="map_projection">Système de projection du document</entry>
+<entry code="map_ref">Système de référence de coordonnées de la carte</entry>
+<entry code="map_equinoxe">Equinoxe</entry>
+<entry code="map_echelle_vide">Sans échelle</entry>
+<entry code="map_projection_vide">Sans projection</entry>
+<entry code="map_ref_vide">Sans référence</entry>
+<entry code="map_search">Carte</entry> 
+<entry code="map_emprise">Emprise</entry>
+<entry code="map_emprises_query">Emprises</entry>
+<entry code="map_multisearch_aerainf">surface inférieure</entry>
+<entry code="map_multisearch_aerasup">surface supérieure</entry>
+<entry code="map_multisearch_intersects">Intersecte</entry>
+<entry code="map_history_emprises"> Géolocalisation : Emprises </entry>
+
 <entry code="mail_sugg_non_empr">Visiteur non authentifié</entry>
 <entry code="mail_sugg_obj">Nouvelle suggestion</entry>
+<entry code="demandes_mail_new_demande">Bonjour, !!nom!! a publié une nouvelle demande: !!titre_demande!!</entry>
+<entry code="demandes_mail_new_demande_object">Une nouvelle demande a été ajoutée !</entry>
+
+<entry code="onto_common_definition">Définition</entry>
+<entry code="onto_common_altlabel">Libellé alternatif</entry>
+<entry code="onto_common_scopenote">Note d'emploi</entry>
+<entry code="onto_common_inscheme">Dans les schémas</entry>
+<entry code="onto_common_topconceptof">Concept racine dans les schémas</entry>
+<entry code="onto_common_hiddenlabel">Libellé caché</entry>
+<entry code="onto_common_notation">Notation</entry>
+<entry code="onto_common_note">Notes</entry>
+<entry code="onto_common_changenote">Note modifiée</entry>
+<entry code="onto_common_editorialnote">Note éditoriale</entry>
+<entry code="onto_common_historynote">Note historique</entry>
+<entry code="onto_common_semanticrelation">En relation sémantique avec</entry>
+<entry code="onto_common_broader">Termes génériques</entry>
+<entry code="onto_common_broadertransitive">Termes génériques par transitivité</entry>
+<entry code="onto_common_narrower">Termes spécifiques</entry>
+<entry code="onto_common_related">Relations associatives</entry>
+<entry code="onto_common_narrowertransitive">Termes spécifiques par transitivité</entry>
+<entry code="onto_common_mappingrelation">Relations d'équivalence</entry>
+<entry code="onto_common_broadmatch">Termes génériques partiels</entry>
+<entry code="onto_common_narrowmatch">Termes spécifiques partiels</entry>
+<entry code="onto_common_exactmatch">Termes équivalents</entry>
+<entry code="onto_common_relatedmatch">Termes associés</entry>
+<entry code="onto_common_closematch">Termes approchants</entry>
+<entry code="onto_common_hastopconcept">Têtes de hiérarchie</entry>
+<entry code="onto_common_member">Contient</entry>
+<entry code="onto_common_concept">Concepts</entry>
+<entry code="onto_common_conceptscheme">Schémas</entry>
+<entry code="onto_common_collection">Collections</entry>
+<entry code="onto_common_orderedcollection">Collections ordonnées</entry>
+
+<entry code="concepts_start">Concepts :</entry>
+<entry code="skos_view_concepts_concepts">Concepts</entry>
+<entry code="skos_view_concept_no_scheme">Sans schéma</entry>
+<entry code="skos_view_concepts_composed_concepts">Concepts composés</entry>
+<entry code="vedette_subdivision_tete">Tête</entry>
+<entry code="vedette_subdivision_sujet">Sujet</entry>
+<entry code="vedette_subdivision_geo">Géographique</entry>
+<entry code="vedette_subdivision_chrono">Chronologique</entry>
+<entry code="vedette_subdivision_forme">Forme</entry>
+<entry code="skos_view_concept_composition">Composition</entry>
+<entry code="map_coord_format">!!degres!!°!!minutes!!'!!secondes!!''</entry>
+
+<entry code="opac_print_no_expl_checked">Veuillez sélectionner au moins un document numérique.</entry>
+
+<entry code="concepts_found">concepts trouvés pour la recherche</entry>
+<entry code="skos_concept">Concept</entry>
+<entry code="concepts_search">Concepts</entry>
 
 <entry code="resa_no_expl_in_location_transferable">Réservation: Ce document n'est pas réservable car non transférable </entry>
+<entry js="carto" code="carto_sexagesimal_degrees">Degrés sexagésimaux</entry>
+<entry js="carto" code="carto_decimal_degrees">Degrés décimaux</entry>
+<entry js="carto" code="carto_lon_abbr">Lon</entry>
+<entry js="carto" code="carto_lat_abbr">Lat</entry>
+<entry js="carto" code="carto_ok_popup">OK</entry>
+<entry js="carto" code="carto_btn_affiner">Affiner</entry>
+<entry js="carto" code="carto_popup_linked_records">Notices Liées</entry>
+<entry js="carto" code="carto_control_rectangle">Rectangle</entry>
+<entry js="carto" code="carto_control_circle">Cercle</entry>
+<entry js="carto" code="carto_control_triangle">Triangle</entry>
+<entry js="carto" code="carto_control_polygon">Polygone</entry>
+<entry js="carto" code="carto_control_path">Ligne</entry>
+<entry js="carto" code="carto_control_point">Point</entry>
+<entry js="carto" code="carto_control_regular_polygon">Polygone régulier</entry>
+<entry js="carto" code="carto_point_label">Point</entry>
+<entry js="carto" code="carto_show_points_label">Afficher les points</entry>
+<entry js="carto" code="carto_show_point_label">Afficher le point</entry>
+<entry js="carto" code="carto_polygon_form_label">Modification fine des points d'un polygone</entry>
+<entry js="carto" code="carto_path_form_label">Modification fine des points d'une ligne</entry>
+<entry js="carto" code="carto_point_form_label">Modification fine du placement d'un point</entry>
+<entry js="carto" code="carto_polygon_nb_pt">Le polygone possède %s points</entry>
+<entry js="carto" code="carto_path_nb_pt">La ligne possède %s points</entry>
+<entry js="carto" code="carto_points_label">points</entry>
+<entry js="carto" code="carto_warning_not_enough_points">Vous n'avez pas renseigné assez de points</entry>
+<entry js="carto" code="carto_warning_no_feature_selected">Aucune emprise sélectionnée</entry>
+<entry js="carto" code="carto_wkt_import_label">Import wkt</entry>
+<entry js="carto" code="carto_wkt_export_label">Export wkt</entry>
+<entry js="carto" code="carto_wkt_import_placeholder">Entrez une chaine WKT ici</entry>
+<entry js="carto" code="carto_validate_label">Valider</entry>
+<entry js="carto" code="carto_warning_invalid_wkt_string">La chaine wkt: %s n'est pas conforme</entry>
+<entry js="carto" code="carto_select_record">Sélectionner emprise</entry>
+<entry js="carto" code="carto_draw_label">Dessiner</entry>
+<entry js="carto" code="carto_delete_label">Supprimer</entry>
+<entry js="carto" code="carto_warning_delete">Vous êtes sur le point de supprimer cette emprise. Voulez vous continuer ?</entry>
+<entry js="carto" code="carto_control_edit_label">Modifier</entry>
+<entry js="carto" code="carto_control_resize_label">Redimensionner</entry>
+<entry js="carto" code="carto_control_move_label">Déplacer</entry>
+<entry js="carto" code="carto_refinement_popup">Voulez vous réaliser un affinage sur cette zone ?</entry>
+<entry js="carto" code="carto_control_clustering">Clustering</entry>
+<entry js="carto" code="carto_warning_edit_form">ATTENTION /!\ si vous modifiez votre emprise directement sur la carte, ce formulaire disparaîtra</entry>
+<entry js="carto" code="carto_label_new_point">Nouveau point</entry>
+<entry js="carto" code="carto_warning_point_delete_number">Etes vous sûr de vouloir supprimer le point n°:%s ?</entry>
+<entry js="carto" code="carto_warning_point_delete">Etes vous sûr de vouloir supprimer le point ?</entry>
+<entry js="carto" code="carto_warning_point_misinformed">Point n°:%s mal renseigné.</entry>
+<entry js="carto" code="carto_warning_new_point_misinformed">Nouveau point n°:%s mal renseigné.</entry>
+<entry js="carto" code="carto_label_new_regular_polygon">Création d'un polygone régulier</entry>
+<entry js="carto" code="carto_label_shape_choosing">Choix de la forme</entry>
+<entry js="carto" code="carto_label_cancel_modifications">Annuler les modifications</entry>
+<entry js="carto" code="carto_label_cancel_last_modification">Annuler la dernière modification</entry>
+<entry js="carto" code="carto_label_regular">Régulier</entry>
+<entry js="carto" code="carto_create_form_point">Création d'un point</entry>
+<entry js="carto" code="carto_create_form_polygon">Création d'un polygone</entry>
+<entry js="carto" code="carto_create_form_path">Création d'une ligne</entry>
+
+<entry code="script_analytics_content">Les cookies assurent le bon fonctionnement de nos services; En utilisant ces derniers, vous acceptez l'utilisation des cookies.</entry>
+<entry code="script_analytics_inform_ask_opposite">S'opposer</entry>
+<entry code="script_analytics_inform_ask_accept">Accepter</entry>
+<entry code="accessibility_font_size_small">Réduire le texte</entry>
+<entry code="accessibility_font_size_normal">Réinitialiser le texte</entry>
+<entry code="accessibility_font_size_big">Agrandir le texte</entry>
+<entry code="empr_quick_access">Accès Rapide</entry>
+<entry code="empr_my_loans">Mes prêts</entry>
+<entry code="empr_my_resas">Mes réservations</entry>
+<entry code="histo_print">Imprimer...</entry>
+<entry code="short_url_generate">Générer le flux rss de la recherche</entry>
+<entry code="newrecord_rss_flux_name">Nouveautés</entry>
+<entry code="notice_title_basket_exist">Cette notice est présente dans votre panier !</entry>
+
+<entry code="record_display_permalink_label">Lien vers la notice</entry>
+<entry code="record_display_expl_unavailable">Non disponible</entry>
+<entry code="record_display_expl_out">De retour le </entry>
+<entry code="record_display_expl_reserve">Réserver</entry>
+<entry code="record_display_new">Nouveauté</entry>
+<entry code="record_display_add_to_cart">Ajouter au panier</entry>
+<entry code="print_output_pdf">Pdf</entry>
+<entry code="docnum_download_checked">Télécharger les documents numériques des notices cochées</entry>
+<entry code="docnum_download_caddie">Télécharger les documents numériques du panier</entry>
+<entry code="docnum_download_no_ck">Veuillez sélectionner au moins une notice !</entry>
+<entry code="resa_planning_date_debut">Début : </entry>
+<entry code="resa_planning_date_fin">Fin : </entry>
+<entry code="resa_planning_unknown_record">Notice ou bulletin inconnu</entry>
+<entry code="resa_planning_no_item_available">Aucun exemplaire n'est réservable.</entry>
+<entry code="resa_planning_loc_retrait">Localisation retrait</entry>
+<entry code="resa_planning_qty_requested">Quantité à réserver</entry>
+<entry code="resa_planning_qty">Qté</entry>
+<entry code="resa_planning_alert_qty">Quantité nulle ou erronée.</entry>
+<entry code="resa_planning_alert_date">La date de fin doit être supérieure à la date de début</entry>
+<entry code="resa_planning_title">Titre</entry>
+<entry code="resa_planning_dates">Dates</entry>
+<entry code="resa_planning_current">Mes réservations sur ce document</entry>
+<entry code="resa_planning_overtime">(Périmée)</entry>
+<entry code="resa_planning_attente_validation">(En attente de validation)</entry>
+<entry code="script_analytics_content_link_more">En savoir plus</entry>
+<entry code="notice_is_new_search">Nouveautés</entry>
+<entry code="notice_is_not_new_search">Fonds antérieur</entry>
+
+<entry code="aut_oeuvre_form_distribution">Distribution (oeuvre musicale)</entry>
+<entry code="aut_oeuvre_form_reference">Référence (oeuvre musicale)</entry>
+<entry code="aut_oeuvre_form_tonalite">Tonalité (Saisie Libre)</entry>
+<entry code="aut_oeuvre_form_tonalite_list">Tonalité</entry>
+<entry code="aut_oeuvre_form_subdivision">Subdivision de forme</entry>
+<entry code="aut_oeuvre_form_forme_list">Forme de l'oeuvre</entry>
+<entry code="empr_my_dmde">Mes demandes</entry>
+
+<entry code="print_loans_bt">Export excel</entry>
 
 <entry code="show_cart_check_all">Tout cocher</entry>
 <entry code="show_cart_uncheck_all">Tout décocher</entry>
 
-<entry code="bbcode_button_label_b"> B </entry>
-<entry code="bbcode_button_label_i"> I </entry>
-<entry code="bbcode_button_label_u"> U </entry>
-<entry code="bbcode_button_label_http"> http:// </entry>
-<entry code="bbcode_button_label_img"> Img </entry>
-<entry code="bbcode_button_label_code"> Code </entry>
-<entry code="bbcode_button_label_quote"> Quote </entry>
-<entry code="bbcode_button_label_red"> Red </entry>
-<entry code="bbcode_button_label_list"> List </entry>
+<entry code="avis_aucun_popup">Aucun avis sur cette notice.</entry>
 </XMLlist>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: editions_datasource.class.php,v 1.3.6.1 2014-10-28 17:44:26 mbertin Exp $
+// $Id: editions_datasource.class.php,v 1.4 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -66,7 +66,6 @@ class editions_datasource {
 				if($vals->length){
 					$this->struct_format[$id]['value_type']=$vals->item(0)->getAttribute('type');
 					$this->struct_format[$id]['value_object']=$vals;
-					$this->redo_values($id);
 				}
 			}
 		}
@@ -120,9 +119,9 @@ class editions_datasource {
 					}
 				}
 			}
-			$result = mysql_query($query,$dbh);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$tab_return[$row->id] = $row->list_value;
 				}
 			}
@@ -139,9 +138,9 @@ class editions_datasource {
 		$datas[]=$label;
 		$requete=$this->generate_query($params,$params_values);
 		
-		$result = mysql_query($requete);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_row($result)){
+		$result = pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_row($result)){
 				$values =array();
 				foreach($row as $i =>$val){
 					if(!$params['fields']['content'][$i]){

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: keyword.inc.php,v 1.62.2.1 2014-12-16 13:59:03 jpermanne Exp $
+// $Id: keyword.inc.php,v 1.72 2015-07-09 10:21:31 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -40,12 +40,17 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 		$_SESSION["last_sortnotices"]="";
 	}
 	
-	$searcher = new searcher_keywords(stripslashes($user_query));
+	if ($tags == "ok") {
+		//recherche par tags
+		$searcher = new searcher_tags(stripslashes($user_query));
+	} else {
+		$searcher = new searcher_keywords(stripslashes($user_query));
+	}
 	if(!isset($count)){
 		//accès direct sans calcul préalable, on a besoin de recalculer les éléments du paginateur
 		$count = $searcher->get_nb_results();
 		$nbepages = ceil($count/$opac_search_results_per_page);
-		$catal_navbar= "<div class='row'>&nbsp;</div>";
+		$catal_navbar= "<div class='row'><span class=\"espaceResultSearch\">&nbsp;</span></div>";
 		$catal_navbar .= "<div id='navbar'><hr />\n<center>".printnavbar($page, $nbepages, $url_page,$action)."</center></div>";
 	}
 	
@@ -71,6 +76,11 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 		}else{
 			$notices = $searcher->get_sorted_result("default",$debut,$opac_search_results_per_page);	
 		}
+		if (count($notices)) {
+			$_SESSION['tab_result_current_page'] = implode(",", $notices);
+		} else {
+			$_SESSION['tab_result_current_page'] = "";
+		}
 	}		
 	
 	if(!$opac_allow_affiliate_search) print "
@@ -78,7 +88,16 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 	print "
 			<div id=\"resultatrech_liste\">";
 	
-	if ($opac_notices_depliable) print $begin_result_liste;
+	if ($opac_notices_depliable) {
+		if($filtre_compare=='compare'){
+			 print facette_search_compare::get_begin_result_list();
+		}else{
+			print $begin_result_liste;
+		}
+	}
+	
+	//impression
+	print "<span class='print_search_result'>".$link_to_print_search_result."</span>";
 	
 	//gestion du tri
 	if ($count<=$opac_nb_max_tri) {
@@ -93,17 +112,17 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 		print $affich_tris_result_liste;
 		if ($_SESSION["last_sortnotices"]!="") {
 			$sort=new sort('notices','session');
-			print "<span class='sort'>".$msg['tri_par']." ".$sort->descriptionTriParId($_SESSION["last_sortnotices"])."&nbsp;</span>"; 
+			print "<span class='sort'>".$msg['tri_par']." ".$sort->descriptionTriParId($_SESSION["last_sortnotices"])."<span class=\"espaceResultSearch\">&nbsp;</span></span>"; 
 		} elseif ($opac_default_sort_display) {
 			$sort=new sort('notices','session');
-			print "<span class='sort'>".$msg['tri_par']." ".$sort->descriptionTriParId("default")."&nbsp;</span>";
+			print "<span class='sort'>".$msg['tri_par']." ".$sort->descriptionTriParId("default")."<span class=\"espaceResultSearch\">&nbsp;</span></span>";
 		}
-	} else print "&nbsp;";
+	} else print "<span class=\"espaceResultSearch\">&nbsp;</span>";
 	//fin gestion du tri
 	
 	print $add_cart_link;
 	if($opac_visionneuse_allow && $nbexplnum_to_photo){
-		print "&nbsp;&nbsp;&nbsp;".$link_to_visionneuse;
+		print "<span class=\"espaceResultSearch\">&nbsp;&nbsp;&nbsp;</span>".$link_to_visionneuse;
 		print $sendToVisionneuseByPost; 
 	}
 	//affinage
@@ -114,38 +133,72 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 	$_SESSION["notice_view".$n]["search_page"]=$page;
 	
 	//affichage
-	print "&nbsp;&nbsp;<span class=\"affiner_recherche\"><a href='$base_path/index.php?search_type_asked=extended_search&mode_aff=aff_simple_search'>".$msg["affiner_recherche"]."</a></span>";
+	print "<span class=\"espaceResultSearch\">&nbsp;&nbsp;</span><span class=\"affiner_recherche\"><a href='$base_path/index.php?search_type_asked=extended_search&mode_aff=aff_simple_search' title='".$msg["affiner_recherche"]."'>".$msg["affiner_recherche"]."</a></span>";
 	//fin affinage
+	// url courte
+	print "<span class=\"espaceResultSearch\">&nbsp;&nbsp;</span><span class=\"short_url\"><a target='_blank' href='$base_path/s.php?action=gen' title='".$msg["short_url_generate"]."'>".$msg["short_url_generate"]."</a></span>";
+	
 	//Etendre
-	if ($opac_allow_external_search) print "&nbsp;&nbsp;<span class=\"search_bt_external\"><a href='$base_path/index.php?search_type_asked=external_search&mode_aff=aff_simple_search&external_type=simple'>".$msg["connecteurs_external_search_sources"]."</a></span>";
+	if ($opac_allow_external_search) print "<span class=\"espaceResultSearch\">&nbsp;&nbsp;<span class=\"search_bt_external\"><a href='$base_path/index.php?search_type_asked=external_search&mode_aff=aff_simple_search&external_type=simple' title='".$msg["connecteurs_external_search_sources"]."'>".$msg["connecteurs_external_search_sources"]."</a></span>";
 	//fin etendre
 	
 	if ($opac_show_suggest) {
-		$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class=\"search_bt_sugg\"><a href=# ";
+		$bt_sugg = "<span class=\"espaceResultSearch\">&nbsp;&nbsp;&nbsp;</span><span class=\"search_bt_sugg\"><a href=# ";
 		if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=500,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 		else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-		$bt_sugg.= " >".$msg[empr_bt_make_sugg]."</a></span>";
+		$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg[empr_bt_make_sugg]."</a></span>";
 		print $bt_sugg;
 	}
 	
 	$search_terms = unserialize(stripslashes($search_terms));
 	
-	print "<blockquote>";
-	print aff_notice(-1);
-	$nb=0;
-	$recherche_ajax_mode=0;
-
-	for ($i =0 ; $i<count($notices);$i++){
-		if($i>4)$recherche_ajax_mode=1;
-		print pmb_bidi(aff_notice($notices[$i], 0, 1, 0, "", "", 0, 0, $recherche_ajax_mode));
-	}	
+	//on suis le flag filtre/compare
+	facettes::session_filtre_compare();
 	
-	print aff_notice(-2);
+	print "<blockquote>";
+	if($filtre_compare=='compare'){
+		//on valide la variable session qui comprend les critères de comparaisons
+		facette_search_compare::session_facette_compare();
+		//affichage comparateur
+		//les parametres nécéssaires
+		global $pmb_compare_notice_template;
+		global $pmb_compare_notice_nb;
+	
+		$facette_compare= new facette_search_compare($pmb_compare_notice_template,$pmb_compare_notice_nb);
+		$compare=$facette_compare->compare($searcher);
+		if($compare===true){
+			print $facette_compare->display_compare();
+		}else{
+			print $msg[$compare];
+		}
+	}else{
+		//si demande de réinitialisation
+		if($reinit_compare==1){
+			facette_search_compare::session_facette_compare(null,$reinit_compare);
+		}
+		print aff_notice(-1);
+		$nb=0;
+		$recherche_ajax_mode=0;
+	
+		for ($i =0 ; $i<count($notices);$i++){
+			if($i>4)$recherche_ajax_mode=1;
+			print pmb_bidi(aff_notice($notices[$i], 0, 1, 0, "", "", 0, 0, $recherche_ajax_mode));
+		}	
+		
+		print aff_notice(-2);
+	}
 	print "</blockquote>";
 	print "
 	</div></div>";
-	if($opac_allow_affiliate_search) print $catal_navbar;
-	else print "</div>";
+	if($filtre_compare=='compare'){
+		print "<div id='navbar'><hr></div>";
+		$catal_navbar="";
+	}
+	if($opac_allow_affiliate_search){
+		print $catal_navbar;
+	}else{
+		print "</div>";
+	}
 }else{
 	if($tab == "affiliate"){
 		//l'onglet source affiliées est actif, il faut son contenu...
@@ -155,7 +208,7 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 	}
 	print "
 	</div>
-	<div class='row'>&nbsp;</div>";
+	<div class='row'><span class=\"espaceResultSearch\">&nbsp;</span></div>";
 	//Enregistrement des stats
 	if($pmb_logs_activate){
 		global $nb_results_tab;

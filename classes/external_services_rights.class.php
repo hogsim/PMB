@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: external_services_rights.class.php,v 1.2 2010-01-30 14:34:52 erwanmartin Exp $
+// $Id: external_services_rights.class.php,v 1.3 2015-04-03 11:16:19 jpermanne Exp $
 
 //Gestion des droits des services externes
 
@@ -41,8 +41,8 @@ class external_services_rights extends es_base {
 		$this->es=$external_services;
 		
 		//Récupération des droits des utilisateurs
-		$resultat=mysql_query("select * from users");
-		while ($r=mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query("select * from users");
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			$this->users[$r->userid]= clone $r;
 		}
 		
@@ -66,10 +66,10 @@ class external_services_rights extends es_base {
 		if (((!$method)&&($this->es->group_exists($group)))||($this->es->method_exists($group,$method))) {
 			$es_r=new es_rights($group,$method);
 			$requete="select available, num_user, anonymous from es_methods, es_methods_users where groupe='".addslashes($group)."' and method='".addslashes($method)."' and id_method=num_method";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			if ($resultat) {
 				$first=true;
-				while ($r=mysql_fetch_object($resultat)) {
+				while ($r=pmb_mysql_fetch_object($resultat)) {
 					if ($first) $es_r->available=$r->available;
 					if ($r->anonymous) 
 						$es_r->anonymous_user=$r->num_user;
@@ -123,29 +123,29 @@ class external_services_rights extends es_base {
 		//La méthode est-elle disponible
 		//Recherche de la disponibilité du groupe
 		$requete="select available from es_methods where groupe='".addslashes($group)."' and available=0";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) 
-			$available=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) 
+			$available=pmb_mysql_result($resultat,0,0);
 		else {
 			 $requete="select available from es_methods where groupe='".addslashes($group)."' and method='".addslashes($method)."'";
-			 $resultat=mysql_query($requete);
-			 if (mysql_num_rows($resultat)) 
-				$available=mysql_result($resultat,0,0);
+			 $resultat=pmb_mysql_query($requete);
+			 if (pmb_mysql_num_rows($resultat)) 
+				$available=pmb_mysql_result($resultat,0,0);
 		}
 		
 		//Si user est vide, on recherche l'utilisateur anonyme
 		if ($user=="") {
 			//Recherche de l'anonyme de la méthode
 			$requete="select num_user from es_methods, es_methods_users where groupe='".addslashes($group)."' and method='".addslashes($method)."' and num_method=id_method and anonymous=1";
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$user_u=mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$user_u=pmb_mysql_result($resultat,0,0);
 			} else {
 				//Si il n'y en a pas, on recherche celui du groupe
 				$requete="select num_user from es_methods, es_methods_users where groupe='".addslashes($group)."' and num_method=id_method and anonymous=1";
-				$resultat=mysql_query($requete);
-				if (mysql_num_rows($resultat)) {
-					$user_u=mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat)) {
+					$user_u=pmb_mysql_result($resultat,0,0);
 				} else {
 					return false;
 				}
@@ -155,15 +155,15 @@ class external_services_rights extends es_base {
 			
 			//Voyons si il a les accès complet au groupe directement
 			$sql = "SELECT COUNT(1) FROM es_methods_users LEFT JOIN es_methods ON (es_methods_users.num_method = id_method) WHERE groupe = '".addslashes($group)."' AND method = '' AND available = 1 AND num_user = ".$user;
-			$res = mysql_query($sql);
-			$full_group_allowed = mysql_result($res,0,0);
+			$res = pmb_mysql_query($sql);
+			$full_group_allowed = pmb_mysql_result($res,0,0);
 			if ($full_group_allowed)
 				$user_u = $user;
 			else {
 				//Voyons si il a les accès à la méthode
 				$sql = "SELECT COUNT(1) FROM es_methods_users LEFT JOIN es_methods ON (es_methods_users.num_method = id_method) WHERE groupe = '".addslashes($group)."' AND method = '".addslashes($method)."' AND available = 1 AND num_user = ".$user;
-				$res = mysql_query($sql);
-				$method_allowed = mysql_result($res,0,0);
+				$res = pmb_mysql_query($sql);
+				$method_allowed = pmb_mysql_result($res,0,0);
 				if ($method_allowed)
 					$user_u = $user;
 			}
@@ -197,22 +197,22 @@ class external_services_rights extends es_base {
 				//Recherche de l'ancien id
 				$id_method=0;
 				$requete="select id_method from es_methods where groupe='".addslashes($es_r->group)."' and method='".addslashes($es_r->method)."'";
-				$resultat=mysql_query($requete);
-				if (mysql_num_rows($resultat)) $id_method=mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat)) $id_method=pmb_mysql_result($resultat,0,0);
 				if ($id_method) {
 					$requete="delete from es_methods where groupe='".addslashes($es_r->group)."' and method='".addslashes($es_r->method)."'";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 					$requete="delete from es_methods_users where num_method=$id_method";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				//Insertion maintenant
 				$requete="insert into es_methods (groupe,method,available) values('".addslashes($es_r->group)."','".addslashes($es_r->method)."',".$es_r->available.")";
-				mysql_query($requete);
-				$id_method=mysql_insert_id();
-				if ($es_r->anonymous_user) mysql_query("insert into es_methods_users (num_method,num_user,anonymous) values($id_method,$es_r->anonymous_user,1)");
+				pmb_mysql_query($requete);
+				$id_method=pmb_mysql_insert_id();
+				if ($es_r->anonymous_user) pmb_mysql_query("insert into es_methods_users (num_method,num_user,anonymous) values($id_method,$es_r->anonymous_user,1)");
 				for ($i=0; $i<count($es_r->users); $i++) {
 					if ($es_r->users[$i]!=$es_r->anonymous_user) {
-						mysql_query("insert into es_methods_users (num_method,num_user,anonymous) values($id_method,".$es_r->users[$i].",0)");
+						pmb_mysql_query("insert into es_methods_users (num_method,num_user,anonymous) values($id_method,".$es_r->users[$i].",0)");
 					}
 				}
 				return true;

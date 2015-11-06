@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: misc.inc.php,v 1.118.2.7 2015-08-26 13:09:48 jpermanne Exp $
+// $Id: misc.inc.php,v 1.128 2015-07-07 12:30:59 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -12,10 +12,10 @@ function get_vignette($notice_id) {
 	global $opac_url_base;
 	
 	$requete="select code,thumbnail_url from notices where notice_id=$notice_id";
-	$res=mysql_query($requete);
+	$res=pmb_mysql_query($requete);
 	
 	if ($res) {
-		$notice=mysql_fetch_object($res);
+		$notice=pmb_mysql_fetch_object($res);
 		if ($notice->code || $notice->thumbnail_url) {
 			if ($notice->thumbnail_url) 
 				$url_image_ok=$notice->thumbnail_url;
@@ -263,9 +263,9 @@ function formatdate($date_a_convertir, $with_hour=0) {
 	global $msg;
 	global $dbh;
 
-	if ($with_hour) $resultatdate=mysql_query("select date_format('".$date_a_convertir."', '".$msg["format_date_heure"]."') as date_conv ");
-		else $resultatdate=mysql_query("select date_format('".$date_a_convertir."', '".$msg["format_date"]."') as date_conv ");
-	$date_conv=mysql_result($resultatdate,0,0);
+	if ($with_hour) $resultatdate=pmb_mysql_query("select date_format('".$date_a_convertir."', '".$msg["format_date_heure"]."') as date_conv ");
+		else $resultatdate=pmb_mysql_query("select date_format('".$date_a_convertir."', '".$msg["format_date"]."') as date_conv ");
+	$date_conv=pmb_mysql_result($resultatdate,0,0);
 	return $date_conv ;
 }
 
@@ -274,9 +274,9 @@ function formatdate_input($date_a_convertir, $with_hour=0) {
 	global $msg;
 	global $dbh;
 
-	if ($with_hour) $resultatdate=mysql_query("select date_format('".$date_a_convertir."', '".$msg["format_date_heure"]."') as date_conv ");
-	else $resultatdate=mysql_query("select date_format('".$date_a_convertir."', '".$msg["format_date_input_model"]."') as date_conv ");
-	$date_conv=mysql_result($resultatdate,0,0);
+	if ($with_hour) $resultatdate=pmb_mysql_query("select date_format('".$date_a_convertir."', '".$msg["format_date_heure"]."') as date_conv ");
+	else $resultatdate=pmb_mysql_query("select date_format('".$date_a_convertir."', '".$msg["format_date_input_model"]."') as date_conv ");
+	$date_conv=pmb_mysql_result($resultatdate,0,0);
 	return $date_conv ;
 }
 
@@ -317,26 +317,43 @@ function detectFormatDate($date_a_convertir,$compl="01"){
 		$format = str_replace ($msg["format_date_input_separator"],"",$format);
 		list($date[substr($format,0,1)],$date[substr($format,1,1)],$date[substr($format,2,1)]) = sscanf($date_a_convertir,$msg["format_date_short_input"]);
 		if ($date['Y'] && $date['m']){
-			if ($compl == "min") {
-				$date = sprintf("%04d-%02d-%02s",$date['Y'],$date['m'],"01");
-			} elseif ($compl == "max") {
-				$date = sprintf("%04d-%02d-%02s",$date['Y'],$date['m'],date("t",mktime( 0, 0, 0, $date['m'], 1, $date['Y'] )));
-			} else{
-				 $date = sprintf("%04d-%02d-%02s",$date['Y'],$date['m'],$compl);
-			}		
+		 $date = sprintf("%04d-%02d-%02s",$date['Y'],$date['m'],$compl);		
 		}else{
 			$date = "0000-00-00";
 		}
 	}elseif(preg_match(getDatePattern("year"),$date_a_convertir,$matches)){
-		if ($compl == "min") {
-			$date = $matches[0]."-01-01";
-		} elseif ($compl == "max") {
-			$date = $matches[0]."-12-31";
-		} else{
-			$date = $matches[0]."-".$compl."-".$compl;
-		}
+		$date = $matches[0]."-".$compl."-".$compl;
 	}else{
-		$date = "0000-00-00";
+		$format = str_replace ("%",".",$msg["format_date"]);
+		$format = str_replace ("-","",$format);
+		$format = str_replace ("/","",$format);
+		$format = str_replace ("\\","",$format);
+		$format = str_replace (".","",$format);
+		$format = str_replace (" ","",$format);
+		$pattern= array();
+		for($i=0 ; $i< strlen($format) ; $i++){
+			switch($format[$i]){
+				case "m" :
+				case "d" :
+					$pattern[$i] =  '\d{1,2}';
+					break;
+				case "Y" :
+					$pattern[$i] =  '(\d{2})';
+					break;
+			}
+		}
+		if(preg_match("#".implode($pattern,".")."#", $date_a_convertir,$matches)){
+			if(substr(date("Y"),2,2) < $matches['1']){
+				$correct_year = ((substr(date("Y"),0,2)*1)-1).$matches[1];
+			}else{
+				$correct_year = substr(date("Y"),0,2).$matches[1];
+			}
+			if(substr($format,-1) == "Y"){
+				$date = detectFormatDate(substr($date_a_convertir,0,-2).$correct_year,compl);
+			}
+		}else{
+			$date = "0000-00-00";
+		}
 	}
 
 	return $date;
@@ -435,12 +452,12 @@ function gen_liste ($requete, $champ_code, $champ_info, $nom, $on_change, $selec
 	
 	global $dbh, $charset ;
 	
-	$resultat_liste=mysql_query($requete, $dbh) or die ($requete);
+	$resultat_liste=pmb_mysql_query($requete, $dbh) or die ($requete);
 	$renvoi="<select name=\"$nom\" id=\"$nom\" onChange=\"$on_change\" ";
 	if ($multiple) $renvoi.="multiple ";
 	if ($attr) $renvoi.="$attr ";
 	$renvoi.=">\n";
-	$nb_liste=mysql_num_rows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$renvoi.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n";
 	} else {
@@ -451,9 +468,9 @@ function gen_liste ($requete, $champ_code, $champ_info, $nom, $on_change, $selec
 		}
 		$i=0;
 		while ($i<$nb_liste) {
-			$renvoi.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" ";
-			if ($selected==mysql_result($resultat_liste,$i,$champ_code)) $renvoi.="selected=\"selected\"";
-			$renvoi.=">".htmlentities(mysql_result($resultat_liste,$i,$champ_info),ENT_QUOTES, $charset)."</option>\n";
+			$renvoi.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" ";
+			if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) $renvoi.="selected=\"selected\"";
+			$renvoi.=">".htmlentities(pmb_mysql_result($resultat_liste,$i,$champ_info),ENT_QUOTES, $charset)."</option>\n";
 			$i++;
 		}
 	}
@@ -466,8 +483,8 @@ function gen_liste ($requete, $champ_code, $champ_info, $nom, $on_change, $selec
 //	fonction gen_liste_multiple qui genere des combo_box super sympas avec selection multiple
 // ----------------------------------------------------------------------------
 function gen_liste_multiple ($requete, $champ_code, $champ_info, $champ_selected, $nom, $on_change, $selected, $liste_vide_code, $liste_vide_info,$option_premier_code,$option_premier_info,$multiple=0) {
-	$resultat_liste=mysql_query($requete) or die ($requete);
-	$nb_liste=mysql_num_rows($resultat_liste);
+	$resultat_liste=pmb_mysql_query($requete) or die ($requete);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($multiple && $nb_liste) {
 		if ($nb_liste < $multiple) $size = $nb_liste+1;
 			else $size = $multiple; 
@@ -485,9 +502,9 @@ function gen_liste_multiple ($requete, $champ_code, $champ_info, $champ_selected
 		}
 		$i=0;
 		while ($i<$nb_liste) {
-			$renvoi.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" ";
-			if ($selected==mysql_result($resultat_liste,$i,$champ_selected)) $renvoi.="selected=\"selected\"";
-			$renvoi.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n";
+			$renvoi.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" ";
+			if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_selected)) $renvoi.="selected=\"selected\"";
+			$renvoi.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n";
 			$i++;
 		}
 	}
@@ -513,15 +530,15 @@ function do_selector($table, $name='mySelector', $value=0) {
 		return '';
 
 	$requete = "SELECT * FROM $table order by 2";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 
-	$nbr_lignes = mysql_num_rows($result);
+	$nbr_lignes = pmb_mysql_num_rows($result);
 
 	if(!$nbr_lignes)
 		return '';			
 
 	$selector = "<select name='$name' id='$name'>";
-	while($line = mysql_fetch_row($result)) {
+	while($line = pmb_mysql_fetch_row($result)) {
 		$selector .= "<option value='${line[0]}'";
 		$line[0] == $value ? $selector .= ' selected=\'selected\'>' : $selector .= '>';
  		$selector .= htmlentities($line[1],ENT_QUOTES, $charset).'</option>';
@@ -869,11 +886,11 @@ function pmb_substr_replace($string,$replacement,$start,$length=null) {
 	if ($charset != 'utf-8'){
 		return substr_replace($string, $replacement, $start,$length);
 	}else{
-		$result  = mb_substr ($string, 0, $start, 'UTF-8');
+		$result  = mb_substr ($string, 0, $start, $charset);
 	    $result .= $replacement;
 	    if ($length > 0)
 	    {
-	        $result .= mb_substr($string, ($start + $length), null, 'UTF-8');
+	        $result .= mb_substr($string, ($start + $length), null, $charset);
 	    }
 	    return $result;
 	}
@@ -935,8 +952,8 @@ function pmb_bidi($string) {
 //  pmb_sql_value($string) : renvoie la valeur de l'unique colonne (ou uniquement de la premiere) de la requete $rqt 
 // ------------------------------------------------------------------
 function pmb_sql_value($rqt) {
-	if($result=mysql_query($rqt))
-		if($row = mysql_fetch_row($result))	return $row[0];
+	if($result=pmb_mysql_query($rqt))
+		if($row = pmb_mysql_fetch_row($result))	return $row[0];
 	return '';
 }
 
@@ -1008,9 +1025,9 @@ if (strtolower(substr(trim($requete),0,6))!='select') return true;
 
 	global $dbh,$erreur_explain_rqt;
 	$requete = "explain ".$requete;
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	if(!$result) return false;
-	$nbr_lignes = mysql_num_rows($result);
+	$nbr_lignes = pmb_mysql_num_rows($result);
 
 	if (!$nbr_lignes) return false;			
 	/*
@@ -1030,7 +1047,7 @@ if (strtolower(substr(trim($requete),0,6))!='select') return true;
 	$numligne=0;
 	$erreur_explain_rqt="";
 	$table_davant="";
-	while ($ligne = mysql_fetch_object($result)) {
+	while ($ligne = pmb_mysql_fetch_object($result)) {
 		$numligne++;
 		/*
 		echo "<tr>";
@@ -1106,7 +1123,7 @@ function clean_nbsp($input) {
 // permet d'éviter une déconnection mysql
 function mysql_set_wait_timeout($val_second=120) {
 	$sql = "set wait_timeout = $val_second";
-	mysql_query($sql);	
+	pmb_mysql_query($sql);	
 }
 
 
@@ -1198,7 +1215,7 @@ function clean_string_to_base($string){
 
 function go_first_tab(){
 	global $value_deflt_module;
-	
+
 	if(!SESSrights){
 		print "<SCRIPT>document.location='taberror.php';</SCRIPT>";
 		exit;
@@ -1271,4 +1288,75 @@ function go_first_tab(){
 	}
 	print "<SCRIPT>document.location='taberror.php';</SCRIPT>";
 	exit;
+}
+
+function get_msg_to_display($message) {
+	global $msg;
+	
+	if (substr($message, 0, 4) == "msg:") {
+		return $msg[substr($message, 4)];
+	} else {
+		return $message;
+	}
+}
+function pmb_utf8_decode($elem){
+	if(is_array($elem)){
+		foreach ($elem as $key =>$value){
+			$elem[$key] = pmb_utf8_decode($value);
+		}
+	}else if(is_object($elem)){
+		$elem = pmb_obj2array($elem);
+		$elem = pmb_utf8_decode($elem);
+	}else{
+		$elem = utf8_decode($elem);
+	}
+	return $elem;
+}
+
+function pmb_utf8_encode($elem){
+	if(is_array($elem)){
+		foreach ($elem as $key =>$value){
+			$elem[$key] = pmb_utf8_encode($value);
+		}
+	}else if(is_object($elem)){
+		$elem = pmb_obj2array($elem);
+		$elem = pmb_utf8_encode($elem);
+	}else{
+		$elem = utf8_encode($elem);
+	}
+
+	return $elem;
+}
+
+function pmb_utf8_array_encode($elem){
+	global $charset;
+	if($charset != "utf-8"){
+		return pmb_utf8_encode($elem);
+	}else{
+		return $elem;
+	}
+}
+
+function pmb_utf8_array_decode($elem){
+	global $charset;
+	if($charset != "utf-8"){
+		return pmb_utf8_decode($elem);
+	}else{
+		return $elem;
+	}
+}
+
+function pmb_obj2array($obj){
+	$array = array();
+	if(is_object($obj)){
+		foreach($obj as $key => $value){
+			if(is_object($value)){
+				$value = pmb_obj2array($value);
+			}
+			$array[$key] = $value;
+		}
+	}else{
+		$array = $obj;
+	}
+	return $array;
 }

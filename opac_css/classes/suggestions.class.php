@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions.class.php,v 1.17.6.4 2015-10-08 10:25:44 jpermanne Exp $
+// $Id: suggestions.class.php,v 1.20 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -50,8 +50,8 @@ class suggestions{
 		global $dbh;
 		
 		$q = "select * from suggestions left join explnum_doc_sugg on num_suggestion=id_suggestion where id_suggestion = '".$this->id_suggestion."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->titre = $obj->titre;
 		$this->editeur = $obj->editeur;
 		$this->auteur = $obj->auteur;
@@ -99,7 +99,7 @@ class suggestions{
 			$q.= "date_publication = '".$this->date_publi."', ";
 			$q.= "sugg_source = '".$this->sugg_src."' ";
 			$q.= "where id_suggestion = '".$this->id_suggestion."' ";
-			mysql_query($q, $dbh);
+			pmb_mysql_query($q, $dbh);
 			
 		} else {
 			$q = "insert into suggestions set titre = '".addslashes($this->titre)."', editeur = '".addslashes($this->editeur)."', ";
@@ -113,8 +113,8 @@ class suggestions{
 			$q.= "sugg_location = '".$this->sugg_location."', ";
 			$q.= "date_publication = '".$this->date_publi."', ";
 			$q.= "sugg_source = '".$this->sugg_src."' "; 			
-			mysql_query($q, $dbh);
-			$this->id_suggestion = mysql_insert_id($dbh);
+			pmb_mysql_query($q, $dbh);
+			$this->id_suggestion = pmb_mysql_insert_id($dbh);
 		
 		}
 		
@@ -123,7 +123,7 @@ class suggestions{
 			$req = "insert into explnum_doc_sugg set 
 				num_explnum_doc='".$explnum_doc->explnum_doc_id."',
 				num_suggestion='".$this->id_suggestion."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 
@@ -133,15 +133,10 @@ class suggestions{
 
 		global $dbh;
 		
-		//suggestions identiques autorisées si complètement anonyme : pas identifié ou pas d'email saisi
-		if(!trim($origine)){
-			return 0;
-		}
-		
 		$q = "select count(1) from suggestions_origine, suggestions where origine = '".$origine."' and titre = '".$titre."' and id_suggestion = num_suggestion and auteur='".$auteur."' and editeur = '".$editeur."' and code = '".$isbn."' ";
 		$q.= "and statut in (1,2,8) ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 
 	}
 
@@ -154,7 +149,7 @@ class suggestions{
 		if(!$id_suggestion) $id_suggestion = $this->id_suggestion; 	
 
 		$q = "delete from suggestions where id_suggestion = '".$id_suggestion."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -187,8 +182,8 @@ class suggestions{
 		} else {
 			$q = $aq->get_query_count("suggestions","concat(titre,' ',editeur,' ',auteur,' ',commentaires)","index_suggestion", "id_suggestion", $filtre1." and ".$filtre2." and ".$filtre3 );
 		}
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0); 
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0); 
 			
 	}
 	
@@ -260,10 +255,10 @@ class suggestions{
 		$tab_orig=array();
 		if (!$id_suggestion) $id_suggestion = $this->id_suggestion;
 		$q = "select * from suggestions_origine where num_suggestion=$id_suggestion order by date_suggestion, type_origine ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 			
-		for($i=0;$i<mysql_num_rows($r);$i++) {
-			$tab_orig[] = mysql_fetch_array($r,MYSQL_ASSOC); 
+		for($i=0;$i<pmb_mysql_num_rows($r);$i++) {
+			$tab_orig[] = pmb_mysql_fetch_array($r,MYSQL_ASSOC); 
 		}
 		return $tab_orig;
 	}
@@ -274,7 +269,7 @@ class suggestions{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE suggestions', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE suggestions', $dbh);
 		return $opt;
 				
 	}
@@ -285,9 +280,9 @@ class suggestions{
 		global $dbh;
 		
 		$req = "select * from explnum_doc join explnum_doc_sugg on num_explnum_doc=id_explnum_doc where num_suggestion='".$this->id_suggestion."'";
-		$res= mysql_query($req,$dbh);
-		if(mysql_num_rows($res)){
-			$tab = mysql_fetch_array($res);
+		$res= pmb_mysql_query($req,$dbh);
+		if(pmb_mysql_num_rows($res)){
+			$tab = pmb_mysql_fetch_array($res);
 			switch($champ){				
 				case 'id':
 					return $tab['id_explnum_doc'];
@@ -357,10 +352,6 @@ class suggestions{
 		<tr>
 			<td >".htmlentities($msg["empr_sugg_datepubli"], ENT_QUOTES, $charset)."</td>
 			<td>".htmlentities($this->date_publi, ENT_QUOTES, $charset)."</td>
-		</tr>
-		<tr>
-			<td >".htmlentities($msg["empr_sugg_qte"], ENT_QUOTES, $charset)."</td>
-			<td>".htmlentities($this->nb, ENT_QUOTES, $charset)."</td>
 		</tr>";
 		$source = new suggestion_source($this->sugg_src);
 		$table.= "
@@ -392,9 +383,9 @@ class suggestions{
 		if($typeEmpr==1){
 			//Abonné
 			$query="SELECT empr_prenom, empr_nom, empr_cb, empr_mail, empr_tel1, empr_tel2, empr_cp, empr_ville, location_libelle FROM empr, docs_location WHERE id_empr='$userIdOrEmail' and empr_location=idlocation";
-			$result = @mysql_query($query, $dbh);
-			if($result && mysql_num_rows($result)){
-				$row=mysql_fetch_object($result);
+			$result = @pmb_mysql_query($query, $dbh);
+			if($result && pmb_mysql_num_rows($result)){
+				$row=pmb_mysql_fetch_object($result);
 				$empr .= "<strong>".$row->empr_prenom." ".$row->empr_nom."</strong>
 					<br /><i>".$row->empr_mail." / ".$row->empr_tel1." / ".$row->empr_tel2."</i>";
 				if ($row->empr_cp || $row->empr_ville) $empr .= "<br /><u>".$row->empr_cp." ".$row->empr_ville."</u>";
@@ -411,9 +402,9 @@ class suggestions{
 		if($sugg_location_id){
 			$query.=" AND idlocation=".$sugg_location_id;
 		}
-		$result = @mysql_query($query, $dbh);
-		if($result && mysql_num_rows($result)){
-			while($row=mysql_fetch_object($result)){
+		$result = @pmb_mysql_query($query, $dbh);
+		if($result && pmb_mysql_num_rows($result)){
+			while($row=pmb_mysql_fetch_object($result)){
 				$PMBuseremail="";
 				$PMBusernom = $row->location_libelle ;
 				$PMBuserprenom = '' ;

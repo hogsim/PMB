@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.inc.php,v 1.17 2013-03-20 18:21:23 mbertin Exp $
+// $Id: category.inc.php,v 1.18 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,9 +18,9 @@ require_once("$class_path/categories.class.php");
 //	global $lot;
 //	
 //	$res = noeuds::listChilds($id_noeud, 0);
-//	$total = mysql_num_rows ($res);
+//	$total = pmb_mysql_num_rows($res);
 //	if ($total) {
-//		while ($row = mysql_fetch_object ($res)) {
+//		while ($row = pmb_mysql_fetch_object($res)) {
 //			// la categorie a des filles qu'on va traiter
 //			process_categ ($row->id_noeud);
 //		}
@@ -61,7 +61,7 @@ foreach($list_thesaurus as $id_thesaurus=>$libelle_thesaurus) {
 	$thes = new thesaurus($id_thesaurus);
 	$noeud_rac =  $thes->num_noeud_racine;
 	$r = noeuds::listChilds($noeud_rac, 0);
-	while($row = mysql_fetch_object($r)){
+	while($row = pmb_mysql_fetch_object($r)){
 		noeuds::process_categ($row->id_noeud);
 	}
 }	
@@ -71,7 +71,7 @@ noeuds::delete_autority_sources();
 
 $spec = $spec - CLEAN_CATEGORIES;
 //TODO non repris >> Utilité ???
-//	$delete = mysql_query("delete from categories where categ_libelle='#deleted#'");
+//	$delete = pmb_mysql_query("delete from categories where categ_libelle='#deleted#'");
 
 $v_state .= "<br /><img src=../../images/d.gif hspace=3>".htmlentities($msg["nettoyage_suppr_categories"], ENT_QUOTES, $charset)." : ";
 $v_state .= $deleted." ".htmlentities($msg["nettoyage_res_suppr_categories"], ENT_QUOTES, $charset);

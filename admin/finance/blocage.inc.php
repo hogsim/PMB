@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: blocage.inc.php,v 1.2 2007-03-10 08:32:25 touraine37 Exp $
+// $Id: blocage.inc.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -59,13 +59,13 @@ switch ($action) {
 	case 'update':
 		//Mise à jour !!
 		$requete="update parametres set valeur_param='".$blocage_abt."' where type_param='finance' and sstype_param='blocage_abt'";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		$finance_blocage_abt=stripslashes($blocage_abt);
 		$requete="update parametres set valeur_param='".$blocage_pret."' where type_param='finance' and sstype_param='blocage_pret'";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		$finance_blocage_pret=stripslashes($blocage_pret);
 		$requete="update parametres set valeur_param='".$blocage_amende."' where type_param='finance' and sstype_param='blocage_amende'";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		$finance_blocage_amende=stripslashes($blocage_amende);
 		show_blocage_parameters();
 		break;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_pmb.inc.php,v 1.4 2013-11-28 09:12:24 mbertin Exp $
+// $Id: func_pmb.inc.php,v 1.5 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -106,11 +106,11 @@ function renseigne_cp($val,$notice_id,$type="notices"){
 	}
 	//on va chercher les informations sur le champs
 	$rqt = "SELECT idchamp, type, datatype FROM ".$type."_custom WHERE name='" . addslashes(trim($nom)) . "'";
-	$res = mysql_query($rqt);
-	if (!mysql_num_rows($res))
+	$res = pmb_mysql_query($rqt);
+	if (!pmb_mysql_num_rows($res))
 		return false;
 	
-	$cp=mysql_fetch_object($res);
+	$cp=pmb_mysql_fetch_object($res);
 	
 	if($cp->type != $val["t"]){
 		return false;
@@ -123,45 +123,45 @@ function renseigne_cp($val,$notice_id,$type="notices"){
 			switch ($cp->datatype) {
 				case "integer":
 					$requete="select ".$type."_custom_list_value from ".$type."_custom_lists where ".$type."_custom_list_lib='".addslashes(trim($valeur))."' and ".$type."_custom_champ='".$cp->idchamp."' ";
-					$resultat=mysql_query($requete);
-					if (mysql_num_rows($resultat)) {
-						$value2=mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($resultat)) {
+						$value2=pmb_mysql_result($resultat,0,0);
 					} else {
 						$requete="select max(".$type."_custom_list_value*1) from ".$type."_custom_lists where ".$type."_custom_champ='".$cp->idchamp."' ";
-						$resultat=mysql_query($requete);
-						$max=@mysql_result($resultat,0,0);
+						$resultat=pmb_mysql_query($requete);
+						$max=@pmb_mysql_result($resultat,0,0);
 						$n=$max+1;
 						$requete="insert into ".$type."_custom_lists (".$type."_custom_champ,".$type."_custom_list_value,".$type."_custom_list_lib) values('".$cp->idchamp."',$n,'".addslashes(trim($valeur))."')";
-						if(!mysql_query($requete)) return false;
+						if(!pmb_mysql_query($requete)) return false;
 						$value2=$n;
 					}
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_integer) values('".$cp->idchamp."','".$notice_id."','".$value2."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 				default:
 					$requete="select ".$type."_custom_list_value from ".$type."_custom_lists where ".$type."_custom_list_lib='".addslashes(trim($valeur))."' and ".$type."_custom_champ='".$cp->idchamp."' ";
-					$resultat=mysql_query($requete);
-					if (mysql_num_rows($resultat)) {
-						$value2=mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					if (pmb_mysql_num_rows($resultat)) {
+						$value2=pmb_mysql_result($resultat,0,0);
 					} else {
 						$requete="insert into ".$type."_custom_lists (".$type."_custom_champ,".$type."_custom_list_value,".$type."_custom_list_lib) values('".$cp->idchamp."','".addslashes(trim($valeur))."','".addslashes($valeur)."')";
-						if(!mysql_query($requete)) return false;
+						if(!pmb_mysql_query($requete)) return false;
 						$value2=trim($valeur);
 					}
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_".$cp->datatype.") values('".$cp->idchamp."','".$notice_id."','".$value2."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 			}
 			break;
 		case "url":
 			$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_".$cp->datatype.") values('".$cp->idchamp."','".$notice_id."','".addslashes(trim($val["c"]))."')";
-			if(!mysql_query($requete)) return false;
+			if(!pmb_mysql_query($requete)) return false;
 			break;
 		case "resolve":
 			$mes_pp= new parametres_perso($type);
 			if($mes_pp->get_formatted_output(array($val["c"]),$cp->idchamp) == $val["b"]){
 				$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_".$cp->datatype.") values('".$cp->idchamp."','".$notice_id."','".addslashes($val["c"])."')";
-				if(!mysql_query($requete)) return false;
+				if(!pmb_mysql_query($requete)) return false;
 			}else{
 				return false;
 			}
@@ -171,7 +171,7 @@ function renseigne_cp($val,$notice_id,$type="notices"){
 			$mes_pp= new parametres_perso($type);
 			if($mes_pp->get_formatted_output(array($val["c"]),$cp->idchamp) == $valeur){
 				$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_".$cp->datatype.") values('".$cp->idchamp."','".$notice_id."','".addslashes($val["c"])."')";
-				if(!mysql_query($requete)) return false;
+				if(!pmb_mysql_query($requete)) return false;
 			}else{
 				return false;
 			}
@@ -180,20 +180,20 @@ function renseigne_cp($val,$notice_id,$type="notices"){
 			switch ($cp->datatype) {
 				case "small_text":
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_small_text) values('".$cp->idchamp."','".$notice_id."','".addslashes(trim($valeur))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 				case "int":
 				case "integer":
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_integer) values('".$cp->idchamp."','".$notice_id."','".addslashes(trim($valeur))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 				case "text":
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_text) values('".$cp->idchamp."','".$notice_id."','".addslashes(trim($valeur))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 				case "date":
 					$requete="insert into ".$type."_custom_values (".$type."_custom_champ,".$type."_custom_origine,".$type."_custom_date) values('".$cp->idchamp."','".$notice_id."','".addslashes(decoupe_date(trim($valeur)))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					break;
 			}
 			break;
@@ -232,8 +232,8 @@ function import_new_notice_suite() {
 	if(trim($info_100[0])){
 		$date=decoupe_date(substr($info_100[0], 0, 8));
 		$requete="update notices set create_date = '".addslashes($date)."' where notice_id='".$notice_id."' ";
-		mysql_query($requete);
-		/*if(!mysql_query($requete)){
+		pmb_mysql_query($requete);
+		/*if(!pmb_mysql_query($requete)){
 			echo "requete echoué : ".$requete."<br>";
 		}*/
 	}
@@ -259,7 +259,7 @@ function import_new_notice_suite() {
 							//echo "ou la : ".$info_606[$i]["a"]."<br>";
 							// ajout de l'indexation à la notice dans la table notices_categories
 							$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$categ->num_noeud."', ordre_categorie='".$incr_categ."' " ;
-							$res_ajout = @mysql_query($rqt_ajout);
+							$res_ajout = @pmb_mysql_query($rqt_ajout);
 							$incr_categ++;
 							$trouve=true;
 						}
@@ -269,13 +269,13 @@ function import_new_notice_suite() {
 				if(!$trouve){
 					//Je regarde si il y a une autre catégorie avec ce libellé dans les thésaurus
 					$q="SELECT id_noeud from noeuds JOIN categories ON noeuds.id_noeud = categories.num_noeud WHERE categories.libelle_categorie = '".addslashes($libelle)."'";
-					$res=mysql_query($q);
+					$res=pmb_mysql_query($q);
 					if($res){
-						if(mysql_num_rows($res) == 1){
-							$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".mysql_result($res,0,0)."', ordre_categorie='".$incr_categ."' " ;
-							$res_ajout = @mysql_query($rqt_ajout);
+						if(pmb_mysql_num_rows($res) == 1){
+							$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".pmb_mysql_result($res,0,0)."', ordre_categorie='".$incr_categ."' " ;
+							$res_ajout = @pmb_mysql_query($rqt_ajout);
 							$incr_categ++;
-						}elseif(mysql_num_rows($res) > 1){
+						}elseif(pmb_mysql_num_rows($res) > 1){
 							$mon_msg= "Catégorie non reprise car elle est présente plusieurs fois dans les thésaurus de PMB: ".$libelle;
 							affiche_mes_erreurs($mon_msg);
 						}else{
@@ -288,7 +288,7 @@ function import_new_notice_suite() {
 							$c->libelle_categorie=$libelle;
 							$c->save();
 							$rqt_ajout = "insert into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$id_n."', ordre_categorie='".$incr_categ."' " ;
-							$res_ajout = @mysql_query($rqt_ajout);
+							$res_ajout = @pmb_mysql_query($rqt_ajout);
 							$incr_categ++;
 							$mon_msg= "Catégorie créée à la racine du thésaurus par défaut: ".$libelle;
 							affiche_mes_erreurs($mon_msg);
@@ -308,17 +308,17 @@ function import_new_notice_suite() {
 				continue;
    			}
 			$requete="SELECT archempla_id FROM arch_emplacement WHERE archempla_libelle='".addslashes($value["c"])."'";
-			$res=mysql_query($requete);
-			if(mysql_num_rows($res)){
-				$id_empl=mysql_result($res,0,0);
+			$res=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res)){
+				$id_empl=pmb_mysql_result($res,0,0);
 			}else{
 				$requete="INSERT INTO arch_emplacement(archempla_libelle) VALUES('".addslashes($value["c"])."')";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					$mon_msg= "Etat de collection non importé problème avec la requête: ".$requete;
 					affiche_mes_erreurs($mon_msg);
 					continue;
 				}else{
-					$id_empl=mysql_insert_id();
+					$id_empl=pmb_mysql_insert_id();
 				}
 			}
    			
@@ -329,17 +329,17 @@ function import_new_notice_suite() {
 				continue;
    			}
 			$requete="SELECT archstatut_id FROM arch_statut WHERE archstatut_gestion_libelle='".addslashes($value["k"])."' AND  archstatut_opac_libelle='".addslashes($value["h"])."'";
-			$res=mysql_query($requete);
-			if(mysql_num_rows($res)){
-				$id_statut=mysql_result($res,0,0);
+			$res=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res)){
+				$id_statut=pmb_mysql_result($res,0,0);
 			}else{
 				$requete="INSERT INTO arch_statut(archstatut_gestion_libelle,archstatut_opac_libelle) VALUES('".addslashes($value["k"])."','".addslashes($value["h"])."')";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					$mon_msg= "Etat de collection non importé problème avec la requête: ".$requete;
 					affiche_mes_erreurs($mon_msg);
 					continue;
 				}else{
-					$id_statut=mysql_insert_id();
+					$id_statut=pmb_mysql_insert_id();
 				}
 			}
 			
@@ -350,17 +350,17 @@ function import_new_notice_suite() {
 				continue;
    			}
 			$requete="SELECT archtype_id FROM arch_type WHERE archtype_libelle='".addslashes($value["d"])."'";
-			$res=mysql_query($requete);
-			if(mysql_num_rows($res)){
-				$id_support=mysql_result($res,0,0);
+			$res=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res)){
+				$id_support=pmb_mysql_result($res,0,0);
 			}else{
 				$requete="INSERT INTO arch_type(archtype_libelle) VALUES('".addslashes($value["d"])."')";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					$mon_msg= "Etat de collection non importé problème avec la requête: ".$requete;
 					affiche_mes_erreurs($mon_msg);
 					continue;
 				}else{
-					$id_support=mysql_insert_id();
+					$id_support=pmb_mysql_insert_id();
 				}
 			}
 			
@@ -371,17 +371,17 @@ function import_new_notice_suite() {
 				continue;
    			}
 			$requete="SELECT idlocation FROM docs_location WHERE location_libelle='".addslashes($value["a"])."'";
-			$res=mysql_query($requete);
-			if(mysql_num_rows($res)){
-				$id_loc=mysql_result($res,0,0);
+			$res=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res)){
+				$id_loc=pmb_mysql_result($res,0,0);
 			}else{
 				$requete="INSERT INTO docs_location(location_libelle) VALUES('".addslashes($value["a"])."')";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					$mon_msg= "Etat de collection non importé problème avec la requête: ".$requete;
 					affiche_mes_erreurs($mon_msg);
 					continue;
 				}else{
-					$id_loc=mysql_insert_id();
+					$id_loc=pmb_mysql_insert_id();
 				}
 			}
 			
@@ -395,12 +395,12 @@ function import_new_notice_suite() {
    			$requete="insert into collections_state(id_serial,location_id,state_collections,collstate_emplacement,collstate_type,collstate_origine,collstate_cote,collstate_archive,collstate_statut,collstate_lacune,collstate_note) values (" .
 				"'".$notice_id."','".$id_loc."','".addslashes($stat)."','".$id_empl."','".$id_support."','".addslashes($origine)."','".addslashes($cote)."','".addslashes($archive)."','".$id_statut."','".addslashes($lacune)."','".addslashes($note)."'" .
 				")";
-			if(!mysql_query($requete)){
+			if(!pmb_mysql_query($requete)){
 				$mon_msg= "Etat de collection non importé problème avec la requete: ".$requete;
 				affiche_mes_erreurs($mon_msg);
 				continue;
 			}else{
-				$id_coll_stat=mysql_insert_id();
+				$id_coll_stat=pmb_mysql_insert_id();
 				if(count($info_951)){
 					foreach ( $info_951 as $cle => $val ) {
 		       			if($val["f"] == $id_coll_stat){
@@ -464,8 +464,8 @@ function traite_exemplaires () {
 		//Propriétaire
 		if($tmp=trim($exemplaires[$nb_expl]["lender_libelle"])){
 			$requete="SELECT idlender FROM lenders WHERE lender_libelle LIKE '".addslashes($tmp)."'";
-			$res=mysql_query($requete);
-			if(mysql_num_rows($res) && $id=mysql_result($res,0,0)){
+			$res=pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($res) && $id=pmb_mysql_result($res,0,0)){
 				$local_book_lender_id=$id;
 			}else{
 				$local_book_lender_id=$book_lender_id;
@@ -486,8 +486,8 @@ function traite_exemplaires () {
 		$expl['cb']=$cbarre;
 		while ($pb==1) {
 			$q = "SELECT expl_cb FROM exemplaires WHERE expl_cb='".addslashes($expl['cb'])."' LIMIT 1 ";
-			$r = mysql_query($q);
-			$nb = mysql_num_rows($r);
+			$r = pmb_mysql_query($q);
+			$nb = pmb_mysql_num_rows($r);
 			if ($nb) {
 				$expl['cb'] =$cbarre."-".$num_login ;
 				$num_login++;
@@ -514,8 +514,8 @@ function traite_exemplaires () {
 		//if (!$data_doc['tdoc_libelle']) $data_doc['tdoc_libelle'] = "Indéterminé" ;
 		
 		$requete="SELECT idtyp_doc FROM docs_type WHERE tdoc_libelle LIKE '".addslashes($data_doc['tdoc_libelle'])."'";
-		$res=mysql_query($requete);
-		if(($data_doc['tdoc_libelle']) && mysql_num_rows($res) && ($id=mysql_result($res,0,0))){
+		$res=pmb_mysql_query($requete);
+		if(($data_doc['tdoc_libelle']) && pmb_mysql_num_rows($res) && ($id=pmb_mysql_result($res,0,0))){
 			$expl['typdoc'] = $id;
 		}else{
 			$data_doc['duree_pret'] = 0 ; /* valeur par défaut */
@@ -533,8 +533,8 @@ function traite_exemplaires () {
 		$data_doc['section_libelle'] = $exemplaires[$nb_expl]["section_libelle"];
 			
 		$requete="SELECT idsection FROM docs_section WHERE section_libelle LIKE '".addslashes($data_doc['section_libelle'])."'";
-		$res=mysql_query($requete);
-		if(($data_doc['section_libelle']) && mysql_num_rows($res) && ($id=mysql_result($res,0,0)) ){
+		$res=pmb_mysql_query($requete);
+		if(($data_doc['section_libelle']) && pmb_mysql_num_rows($res) && ($id=pmb_mysql_result($res,0,0)) ){
 			$expl['section'] = $id;
 		}else{
 			$data_doc['sdoc_codage_import'] = $exemplaires[$nb_expl]["sdoc_codage_import"];
@@ -548,8 +548,8 @@ function traite_exemplaires () {
 		$data_doc['statut_libelle'] = $exemplaires[$nb_expl]["statut_libelle"];
 		
 		$requete="SELECT  idstatut FROM docs_statut WHERE statut_libelle LIKE '".addslashes($data_doc['statut_libelle'])."'";
-		$res=mysql_query($requete);
-		if(($data_doc['statut_libelle']) && mysql_num_rows($res) && ($id=mysql_result($res,0,0)) ){
+		$res=pmb_mysql_query($requete);
+		if(($data_doc['statut_libelle']) && pmb_mysql_num_rows($res) && ($id=pmb_mysql_result($res,0,0)) ){
 			$expl['statut'] = $id;
 		}elseif($exemplaires[$nb_expl]["statusdoc_codage_import"]){
 			$data_doc['pret_flag'] = 1 ; 
@@ -563,8 +563,8 @@ function traite_exemplaires () {
 		
 		//Localisation
 		$requete="SELECT idlocation FROM docs_location WHERE location_libelle LIKE '".addslashes($exemplaires[$nb_expl]["location_libelle"])."'";
-		$res=mysql_query($requete);
-		if(mysql_num_rows($res) && $id=mysql_result($res,0,0)){
+		$res=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res) && $id=pmb_mysql_result($res,0,0)){
 			$expl['location'] = $id;
 		}else{
 			$expl['location'] = $book_location_id;
@@ -575,8 +575,8 @@ function traite_exemplaires () {
 		$data_doc['codestat_libelle'] = $exemplaires[$nb_expl]["codestat_libelle"];
 		
 		$requete="SELECT idcode FROM docs_codestat WHERE codestat_libelle  LIKE '".addslashes($data_doc['codestat_libelle'])."'";
-		$res=mysql_query($requete);
-		if(($data_doc['codestat_libelle']) && mysql_num_rows($res) && ($id=mysql_result($res,0,0))){
+		$res=pmb_mysql_query($requete);
+		if(($data_doc['codestat_libelle']) && pmb_mysql_num_rows($res) && ($id=pmb_mysql_result($res,0,0))){
 			$expl['codestat'] = $id;
 		}else{
 			$data_doc['statisdoc_codage_import'] = $exemplaires[$nb_expl]["statisdoc_codage_import"];
@@ -655,6 +655,6 @@ function affiche_mes_erreurs($mon_msg,$affiche=true,$log=true){
 		echo $mon_msg."<br>";
 	}
 	if($log){
-		mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".addslashes($mon_msg)."') ") ;
+		pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".addslashes($mon_msg)."') ") ;
 	}
 }	

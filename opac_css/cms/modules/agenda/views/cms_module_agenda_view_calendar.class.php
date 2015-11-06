@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_agenda_view_calendar.class.php,v 1.8.4.2 2015-03-12 11:02:50 mbertin Exp $
+// $Id: cms_module_agenda_view_calendar.class.php,v 1.11 2015-03-12 11:12:33 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -51,9 +51,9 @@ class cms_module_agenda_view_calendar extends cms_module_common_view{
 		return parent::save_form();
 	}
 	
-	public function get_headers(){
+	public function get_headers($datas=array()){
 		global $lang;
-		$headers = parent::get_headers();
+		$headers = parent::get_headers($datas);
 		$headers[] = "
 		<script type='text/javascript'>
 			require(['dijit/dijit']);
@@ -109,12 +109,12 @@ class cms_module_agenda_view_calendar extends cms_module_common_view{
 		if(is_array($styles) && count($styles)){
 			foreach($styles as $id =>$color){
 				$html_to_display.="
-					#".$this->get_module_dom_id()." td.cms_module_agenda_event_".$id." {
-						background : ".$color.";		
-					}
-					#".$this->get_module_dom_id()." .cms_module_agenda_view_calendar_eventslist .cms_module_agenda_event_".$id." {
-						color : ".$color.";		
-					}
+						#".$this->get_module_dom_id()." td.cms_module_agenda_event_".$id." {
+							background : ".$color.";
+						}
+						#".$this->get_module_dom_id()." .cms_module_agenda_view_calendar_eventslist .cms_module_agenda_event_".$id." {
+							color : ".$color.";
+						}
 				";
 			}
 		}

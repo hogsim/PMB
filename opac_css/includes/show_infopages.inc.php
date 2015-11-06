@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: show_infopages.inc.php,v 1.5 2012-09-10 13:34:03 ngantier Exp $
+// $Id: show_infopages.inc.php,v 1.6 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,8 +15,8 @@ function show_infopages($infopagesid="") {
 	$t_infopagesid=explode(",",$infopagesid);
 	$t_infopageslues=array();
 	$requete="select id_infopage, content_infopage, restrict_infopage from infopages where id_infopage in($infopagesid) and valid_infopage=1";
-	$resultat=mysql_query($requete);
-	while ($res=mysql_fetch_object($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	while ($res=pmb_mysql_fetch_object($resultat)) {
 		//seulement si l'infopage est accessible...
 		if(!$res->restrict_infopage || ($res->restrict_infopage && $_SESSION['id_empr_session']))
 			$t_infopageslues[$res->id_infopage]=$res->content_infopage;

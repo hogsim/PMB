@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rss.php,v 1.9.6.1 2014-07-17 13:24:06 dgoron Exp $
+// $Id: rss.php,v 1.12 2015-03-13 15:37:26 apetithomme Exp $
 
 $base_path=".";
 $include_path=$base_path."/includes";
@@ -22,6 +22,8 @@ $liens_opac['lien_rech_motcle'] 		= "./index.php?lvl=more_results&mode=keyword&u
 $liens_opac['lien_rech_categ'] 			= "./index.php?lvl=categ_see&id=!!id!!";
 $liens_opac['lien_rech_perio'] 			= "./index.php?lvl=notice_display&id=!!id!!";
 $liens_opac['lien_rech_bulletin'] 		= "./index.php?lvl=bulletin_display&id=!!id!!";
+$liens_opac['lien_rech_concept'] 		= "./index.php?lvl=concept_see&id=!!id!!";
+$liens_opac['lien_rech_authperso'] 		= "./index.php?lvl=authperso_see&id=!!id!!";
 */
 
 // paramètres :
@@ -41,16 +43,16 @@ if (!$flux->contenu_du_flux) {
 	$flux->items_notices() ;
 	$flux->xmlfile() ;
 	$flux->contenu_du_flux = str_replace ("!!items!!",$flux->notices,$flux->envoi);
-	if($charset=='utf-8') {
+	if($charset=='utf-8') { 
 		$flux->contenu_du_flux = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]'.
-				'|[\x00-\x7F][\x80-\xBF]+'.
-				'|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*'.
-				'|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})'.
-				'|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
-				'', $flux->contenu_du_flux );
+			'|[\x00-\x7F][\x80-\xBF]+'.
+			'|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*'.
+			'|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})'.
+			'|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
+			'', $flux->contenu_du_flux );
 	} else {
 		$flux->contenu_du_flux = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]/S',
-				'', $flux->contenu_du_flux );
+			'', $flux->contenu_du_flux );
 	}
 	$flux->stocke_cache() ;
 } 

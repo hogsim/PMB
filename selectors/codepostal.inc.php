@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: codepostal.inc.php,v 1.6 2013-11-04 08:09:21 dgoron Exp $
+// $Id: codepostal.inc.php,v 1.7 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -53,8 +53,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 	} else {
 		$requete = "SELECT empr_cp, empr_ville FROM empr where empr_cp like '$user_input%' group by empr_cp, empr_ville ";
 	}
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_num_rows($res);
 
 	if(!$page) $page=1;
 	$debut =($page-1)*$nb_per_page;
@@ -65,14 +65,14 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			$requete = "SELECT empr_cp, empr_ville, count(id_empr) as nbre FROM empr group by empr_cp, empr_ville ORDER BY empr_cp, empr_ville LIMIT $debut,$nb_per_page ";
 		else 
 			$requete = "SELECT empr_cp, empr_ville, count(id_empr) as nbre  FROM empr where empr_cp like '$user_input%' group by empr_cp, empr_ville ORDER BY empr_cp, empr_ville LIMIT $debut,$nb_per_page ";
-		$res = mysql_query($requete, $dbh);
-		while(($cp_ville=mysql_fetch_object($res))) {
+		$res = pmb_mysql_query($requete, $dbh);
+		while(($cp_ville=pmb_mysql_fetch_object($res))) {
 			print "<div class='row'>";
 			print pmb_bidi("<a href='#' onclick=\"set_parent('$caller', '".htmlentities(addslashes($cp_ville->empr_ville),ENT_QUOTES, $charset)."', '".htmlentities(addslashes($cp_ville->empr_cp),ENT_QUOTES, $charset)."')\">$cp_ville->empr_cp - $cp_ville->empr_ville : $cp_ville->nbre</a>");
 			print "</div>";
 
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);

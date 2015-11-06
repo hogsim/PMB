@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: external_services.class.php,v 1.11 2013-02-20 16:09:28 mbertin Exp $
+// $Id: external_services.class.php,v 1.13 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -524,9 +524,9 @@ class external_services_api_class {
 				$where = "notice_id in (".implode(",",$tabl_notices).") AND";
 				$query = "select distinct notice_id from notices join notice_statut on notices.statut= id_notice_statut where ".$where." ".$filter;
 				$tabl_notices=array();
-				$res=mysql_query($query);
-				if(mysql_num_rows($res)){
-					while ($ligne=mysql_fetch_object($res)) {
+				$res=pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($res)){
+					while ($ligne=pmb_mysql_fetch_object($res)) {
 						$tabl_notices[]=$ligne->notice_id;
 					}
 				}
@@ -543,19 +543,19 @@ class external_services_api_class {
 	function filter_tabl_bulletins($tabl_bulletins,$for="notices"){
 		
 		$requete="SELECT DISTINCT bulletin_notice FROM bulletins WHERE bulletin_id IN (".implode(",",$tabl_bulletins).")";
-		$res=mysql_query($requete);
-		if(mysql_num_rows($res)){
+		$res=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)){
 			$notice_ids=array();
-			while ($ligne=mysql_fetch_object($res)) {
+			while ($ligne=pmb_mysql_fetch_object($res)) {
 				$notice_ids[]=$ligne->bulletin_notice;
 			}
 			$notice_ids=$this->filter_tabl_notices($notice_ids,$for);
 			if(count($notice_ids)){
 				$requete="SELECT DISTINCT bulletin_id FROM bulletins WHERE bulletin_id IN (".implode(",",$tabl_bulletins).") AND bulletin_notice IN (".implode(",",$notice_ids).")";
-				$res=mysql_query($requete);
+				$res=pmb_mysql_query($requete);
 				$tabl_bulletins=array();
-				if(mysql_num_rows($res)){
-					while ($ligne=mysql_fetch_object($res)) {
+				if(pmb_mysql_num_rows($res)){
+					while ($ligne=pmb_mysql_fetch_object($res)) {
 						$tabl_bulletins[]=$ligne->bulletin_id;
 					}
 				}else{
@@ -585,12 +585,32 @@ class external_services_api_class {
 			$requete="SELECT expl_id FROM exemplaires JOIN docs_location ON expl_location=idlocation JOIN docs_section ON expl_section=idsection JOIN docs_statut ON expl_statut=idstatut $opac_sur_location_join WHERE ";
 			$requete.=" expl_id='".$expl_id."' ";
 			$requete.=" AND location_visible_opac=1 AND section_visible_opac=1 AND statut_visible_opac=1 ";
-			$res=mysql_query($requete);
-			if(!mysql_num_rows($res)){
+			$res=pmb_mysql_query($requete);
+			if(!pmb_mysql_num_rows($res)){
 				$visible=false;
 			}
 		}
 		return $visible;
+	}
+	
+	//Filtrage sur les documents numériques
+	function filter_tabl_explnum(){
+		global $gestion_acces_active, $gestion_acces_empr_docnum;
+
+		$filter = "";
+		if($this->proxy_parent->isOPAC){
+			//Vérifions que l'emprunteur a bien le droit de voir les documents numériques
+			if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+				$ac= new acces();
+				$dom_3= $ac->setDomain(3);
+				$filter = $dom_3->getJoin($this->proxy_parent->idEmpr,16,"explnum_id");
+			}else{
+				//On contrôle les statuts de documents numériques si pas de gestion de droit
+				$filter="join explnum_statut on explnum_docnum_statut=id_explnum_statut and (explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($this->proxy_parent->idEmpr?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"");
+			}
+		}else{//Si je ne viens pas de OPACAnonymous ou OPACEmpr
+		}
+		return $filter;
 	}
 	
 }
@@ -859,7 +879,7 @@ class es_proxy extends es_base {
 	function save_persistent($group_name,$uniqueid,$message) {
 		//Sauvegarde de manière persistente 
 		$requete="insert into external_persist (group_name,uniqueid,message) values('".addslashes($group_name)."','".addslashes($uniqueid)."','".addslashes($message)."')";
-		$r=mysql_query($requete);
+		$r=pmb_mysql_query($requete);
 		if ($r) return true; else return false;
 	}
 	

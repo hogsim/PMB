@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sauv_sauvegarde.class.php,v 1.7 2009-05-16 11:21:58 dbellamy Exp $
+// $Id: sauv_sauvegarde.class.php,v 1.8 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -70,8 +70,8 @@ class sauv_sauvegarde {
 		global $msg;
 		
 		$requete="select sauv_sauvegarde_id from sauv_sauvegardes where sauv_sauvegarde_nom='".$this->sauv_sauvegarde_nom."'";
-		$resultat=mysql_query($requete) or die(mysql_error());
-		if (mysql_num_rows($resultat)!=0) {
+		$resultat=pmb_mysql_query($requete) or die(pmb_mysql_error());
+		if (pmb_mysql_num_rows($resultat)!=0) {
 			echo "<script>alert(\"".$msg["sauv_sauvegardes_valid_form_error_name"]."\"); history.go(-1);</script>";
 			exit();
 		}
@@ -139,20 +139,20 @@ class sauv_sauvegarde {
 				if ($this -> sauv_sauvegarde_id == "") {
 					$this->verifName();
 					$requete = "insert into sauv_sauvegardes (sauv_sauvegarde_nom) values('')";
-					mysql_query($requete) or die(mysql_error());
-					$this -> sauv_sauvegarde_id = mysql_insert_id();
+					pmb_mysql_query($requete) or die(pmb_mysql_error());
+					$this -> sauv_sauvegarde_id = pmb_mysql_insert_id();
 					$first="";
 					$this->sauv_sauvegarde_erase_keys=1;
 				}
 				//Update avec les données reçues
 				$requete = $this->makeUpdateQuery();
-				mysql_query($requete) or die(mysql_error());
+				pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$first="";
 				break;
 				//Supprimer
 			case "delete" :
 				$requete = "delete from sauv_sauvegardes where sauv_sauvegarde_id=".$this -> sauv_sauvegarde_id;
-				mysql_query($requete) or die(mysql_error());
+				pmb_mysql_query($requete) or die(pmb_mysql_error());
 				$this -> sauv_sauvegarde_id = "";
 				$first = 0;
 				break;
@@ -172,8 +172,8 @@ class sauv_sauvegarde {
 		$select="<select name=\"".$select_name."[]\" multiple>\n";
 		$tValues=explode(",",$values);
 		$requete="select $id_field,$name_field from $table";
-		$resultat=mysql_query($requete) or die(mysql_error());
-		while (list($id,$nom)=mysql_fetch_row($resultat)) {
+		$resultat=pmb_mysql_query($requete) or die(pmb_mysql_error());
+		while (list($id,$nom)=pmb_mysql_fetch_row($resultat)) {
 			$select.="<option value=\"".$id."\"";
 			$as=array_search($id,$tValues);
 			if (($as!==false)&&($as!==null)) {
@@ -200,9 +200,9 @@ class sauv_sauvegarde {
 			if ($this -> sauv_sauvegarde_id) {
 				//Récupération des données de la fiche
 				$requete="select sauv_sauvegarde_nom,sauv_sauvegarde_file_prefix,sauv_sauvegarde_tables,sauv_sauvegarde_lieux,sauv_sauvegarde_users,sauv_sauvegarde_compress,sauv_sauvegarde_compress_command,sauv_sauvegarde_crypt,sauv_sauvegarde_key1,sauv_sauvegarde_key2 from sauv_sauvegardes where sauv_sauvegarde_id=".$this -> sauv_sauvegarde_id;
-				$resultat = mysql_query($requete);
-				if (mysql_num_rows($resultat) != 0)
-					$r = mysql_fetch_object($resultat);
+				$resultat = pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat) != 0)
+					$r = pmb_mysql_fetch_object($resultat);
 				//$form = "<center><b>".$r -> sauv_sauvegarde_nom."</b></center>".$form;
 				$form = str_replace("!!quel_proc!!", $r -> sauv_sauvegarde_nom, $form);
 				$form = str_replace("!!delete!!", "<input type=\"submit\" value=\"".$msg["sauv_supprimer"]."\" onClick=\"if (confirm('".$msg["sauv_sauvegardes_confirm_delete"]."')) { this.form.act.value='delete'; return true; } else { return false; }\" class=\"bouton\">", $form);
@@ -274,8 +274,8 @@ class sauv_sauvegarde {
 		$tree.= "<th class='brd' <center>".$msg["sauv_sauvegardes_tree_title"]."</center></th>\n";
 		//Récupération de la liste
 		$requete = "select sauv_sauvegarde_id, sauv_sauvegarde_nom from sauv_sauvegardes order by sauv_sauvegarde_nom";
-		$resultat = mysql_query($requete, $dbh) or die(mysql_error());
-		while ($res = mysql_fetch_object($resultat)) {
+		$resultat = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error());
+		while ($res = pmb_mysql_fetch_object($resultat)) {
 			$tree.= "<tr><td class='nobrd'>";
 			$tree.= "<img src=\"images/file.png\" border=0 align=center>&nbsp;";
 			if ($linkToForm == true) {

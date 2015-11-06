@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titre_uniforme.inc.php,v 1.7 2013-12-27 09:27:30 dgoron Exp $
+// $Id: titre_uniforme.inc.php,v 1.9 2015-04-23 13:00:54 mhoestlandt Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "inc.php")) die("no access");
 
@@ -87,8 +87,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			}
 			$requete=$aq->get_query_count("titres_uniformes","tu_name,","index_tu","tu_id","tu_id!='$no_display'");
 		}
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = @mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	} else {
 		$nbr_lignes=1;
 	}
@@ -107,16 +107,16 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 		} else {
 			$requete="select * from titres_uniformes where tu_id='".$id."'";
 		}
-		$res = @mysql_query($requete, $dbh);
-		while(($titre_uniforme=mysql_fetch_object($res))) {
-			$name = $titre_uniforme->tu_name;
-
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($titre_uniforme=pmb_mysql_fetch_object($res))) {
+			$tu = new titre_uniforme($titre_uniforme->tu_id);
+			$titre_uniforme_entry = $tu->display;
 			print "<div class='row'>";
-			print pmb_bidi("<a href='#' onclick=\"set_parent('$caller', '$titre_uniforme->tu_id', '".htmlentities(addslashes($name),ENT_QUOTES, $charset)."','$callback')\">$name</a>");
+			print pmb_bidi("<a href='#' onclick=\"set_parent('$caller', '$titre_uniforme->tu_id', '".htmlentities(addslashes($titre_uniforme_entry),ENT_QUOTES, $charset)."','$callback')\">$titre_uniforme_entry</a>");
 			print "</div>";
 
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);

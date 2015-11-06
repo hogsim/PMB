@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: support.inc.php,v 1.1 2009-03-10 08:29:07 ngantier Exp $
+// $Id: support.inc.php,v 1.2 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -32,13 +32,13 @@ function show_support($dbh) {
 	// affichage du tableau des supports
 
 	$requete = "SELECT * FROM arch_type ORDER BY archtype_libelle ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 		} else {
@@ -75,18 +75,18 @@ switch($action) {
 	case 'update':
 		// vérification validité des données fournies.
 		$requete = " SELECT count(1) FROM arch_type WHERE (archtype_libelle='$form_libelle' AND archtype_id!='$id' )  LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 			error_form_message($form_libelle.$msg["support_label_already_used"]);
 		} else {
 			// O.K.,  now if item already exists UPDATE else INSERT
 			if($id != 0) {
 				$requete = "UPDATE arch_type SET archtype_libelle='$form_libelle' WHERE archtype_id=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				$requete = "INSERT INTO arch_type (archtype_id,archtype_libelle) VALUES (0, '$form_libelle') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}
 		}
 		show_support($dbh);
@@ -101,9 +101,9 @@ switch($action) {
 	case 'modif':
 		if($id!=""){
 			$requete = "SELECT archtype_libelle FROM arch_type WHERE archtype_id=$id ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				support_form($row->archtype_libelle, $id);
 			} else {
 				show_support($dbh);
@@ -114,10 +114,10 @@ switch($action) {
 		break;
 	case 'del':
 		if($id!="") {			
-			$total = mysql_num_rows (mysql_query("select 1 from collections_state where collstate_type='".$id."' limit 0,1", $dbh));
+			$total = pmb_mysql_num_rows(pmb_mysql_query("select 1 from collections_state where collstate_type='".$id."' limit 0,1", $dbh));
 			if ($total==0) {
 				$requete = "DELETE FROM arch_type WHERE archtype_id=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_support($dbh);
 			} else {
 				error_message(	$msg[294], $msg["collstate_support_used"], 1, 'admin.php?categ=support&sub=support&action=');

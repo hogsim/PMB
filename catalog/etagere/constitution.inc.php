@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: constitution.inc.php,v 1.6 2007-03-10 09:03:18 touraine37 Exp $
+// $Id: constitution.inc.php,v 1.7 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,7 +19,7 @@ switch ($action) {
 		$myEtagere = new etagere($idetagere);
 		// suppression
 		$rqt = "delete from etagere_caddie where etagere_id='".$idetagere."' ";
-		$res = mysql_query ($rqt, $dbh) ;
+		$res = pmb_mysql_query($rqt, $dbh) ;
 		for ($i=0 ; $i < sizeof($idcaddie) ; $i++) {
 			if (verif_droit_caddie($idcaddie[$i])) $myEtagere->add_panier($idcaddie[$i]) ;
 			}

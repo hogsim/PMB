@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage.phototheque.class.php,v 1.25.2.1 2014-07-29 10:35:18 mbertin Exp $
+// $Id: notice_affichage.phototheque.class.php,v 1.30 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -18,7 +18,7 @@ class notice_affichage_custom_mixte_photos extends notice_affichage
 {
 	
 	// generation du header----------------------------------------------------
-	function do_header() {
+	function do_header($id_tpl=0) {
 		global $opac_notice_reduit_format ;
 		
 		$type_reduit = substr($opac_notice_reduit_format,0,1);
@@ -90,22 +90,22 @@ class notice_affichage_custom_mixte_photos extends notice_affichage
 		//In
 		//Recherche des notices parentes
 		$requete="select linked_notice, relation_type, rank from notices_relations where num_notice=".$this->notice_id." order by relation_type,rank";
-		$result_linked=mysql_query($requete,$dbh);
+		$result_linked=pmb_mysql_query($requete,$dbh);
 		//Si il y en a, on prépare l'affichage
-		if (mysql_num_rows($result_linked)) {
+		if (pmb_mysql_num_rows($result_linked)) {
 			global $relation_listup ;
 			if (!$relation_listup) $relation_listup=new marc_list("relationtypeup");
 		}
 		$r_type=array();
 		$ul_opened=false;
 		//Pour toutes les notices liées
-		while (($r_rel=mysql_fetch_object($result_linked))) {
+		while (($r_rel=pmb_mysql_fetch_object($result_linked))) {
 			$parent_notice=new notice_affichage($r_rel->linked_notice,$this->liens,1,$this->to_print);
 			$parent_notice->visu_expl = 0 ;
 			$parent_notice->visu_explnum = 0 ;
 			$parent_notice->do_header();
 			//Presentation differente si il y en a un ou plusieurs
-			if (mysql_num_rows($result_linked)==1) {
+			if (pmb_mysql_num_rows($result_linked)==1) {
 				$this->notice_isbd.="<br /><b>".$relation_listup->table[$r_rel->relation_type]."</b> <a href='".str_replace("!!id!!",$r_rel->linked_notice,$this->lien_rech_notice)."&seule=1'>".$parent_notice->notice_header."</a><br /><br />";
 			} else {
 				if (!$r_type[$r_rel->relation_type]) {
@@ -116,7 +116,7 @@ class notice_affichage_custom_mixte_photos extends notice_affichage
 				}
 				$this->notice_isbd.="<li><a href='".str_replace("!!id!!",$r_rel->linked_notice,$this->lien_rech_notice)."&seule=1'>".$parent_notice->notice_header."</a></li>\n";
 			}
-			if (mysql_num_rows($result_linked)>1) $this->notice_isbd.="</ul>\n";
+			if (pmb_mysql_num_rows($result_linked)>1) $this->notice_isbd.="</ul>\n";
 		}
 		
 		// constitution de la mention de titre
@@ -247,6 +247,12 @@ class notice_affichage_custom_mixte_photos extends notice_affichage
 		// Categories
 		if($this->categories_toutes) $ret .= "<tr><td align='right' class='bg-grey'><b>".$msg['categories_start']."</b></td><td>".$this->categories_toutes."</td></tr>";
 				
+		// Concepts
+		$concepts_list = new skos_concepts_list();
+		if ($concepts_list->set_concepts_from_object(TYPE_NOTICE, $this->notice_id)) {
+			$ret .= "<tr><td align='right' class='bg-grey'><b>".$msg['concepts_start']."</b></td><td>".skos_view_concepts::get_list_in_notice($concepts_list)."</td></tr>";
+		}
+				
 		// indexation libre
 		$mots_cles = $this->do_mots_cle() ;
 		if($mots_cles) $ret .= "<tr><td align='right' class='bg-grey'><b>".$msg['motscle_start']."</b></td><td>".$mots_cles."</td></tr>";
@@ -309,7 +315,7 @@ class notice_affichage_custom_mixte_photos extends notice_affichage
 			if ($resa_check) {
 				// deplace dans le IF, si pas visible : pas de bouton resa 
 				$requete_resa = "SELECT count(1) FROM resa WHERE resa_idnotice='$this->notice_id'";
-				$nb_resa_encours = mysql_result(mysql_query($requete_resa,$dbh), 0, 0) ;
+				$nb_resa_encours = pmb_mysql_result(pmb_mysql_query($requete_resa,$dbh), 0, 0) ;
 				if ($nb_resa_encours) $message_nbresa = str_replace("!!nbresa!!", $nb_resa_encours, $msg["resa_nb_deja_resa"]) ;
 				if (($this->notice->niveau_biblio=="m") && ($_SESSION["user_code"] && $allow_book) && $opac_resa && !$popup_resa) {
 					//$ret .= "<h3>".$msg["bulletin_display_resa"]."</h3>";
@@ -350,7 +356,7 @@ class notice_affichage_custom_mixte_photos extends notice_affichage
 
 		
 // fonction de generation du tableau des exemplaires
-function expl_list($type,$id,$bull_id=0) {	
+function expl_list($type,$id,$bull_id=0,$build_ifempty=1) {	
 	global $dbh;
 	global $msg, $charset;
 	global $expl_list_header, $expl_list_footer, $opac_url_base;
@@ -374,23 +380,23 @@ function expl_list($type,$id,$bull_id=0) {
 		$requete .= " AND exemplaires.expl_statut=docs_statut.idstatut ";
 		$requete .= " AND exemplaires.expl_typdoc=docs_type. idtyp_doc ";
 		// recuperation du nombre d'exemplaires
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		
     
 		$expl_liste="";
 		$requete_resa = "SELECT count(1) from resa where resa_idnotice='$id' ";
-		$nb_resa = mysql_result(mysql_query($requete_resa, $dbh),0,0);
+		$nb_resa = pmb_mysql_result(pmb_mysql_query($requete_resa, $dbh),0,0);
 		$compteur=0;
-		while(($expl = mysql_fetch_object($res))) {
+		while(($expl = pmb_mysql_fetch_object($res))) {
 			$compteur = $compteur+1;
 			$expl_liste .= "<tr><th>$msg[barcode]</th><th>$msg[cotation]</th><th>$msg[typdoc_support]</th><th>$msg[statut]</th></tr>";
 			$expl_liste .= "<tr><td>".$expl->expl_cb."</td><td><strong>".$expl->expl_cote."</strong></td>
 				<td>".$expl->tdoc_libelle."</td>";
 			
 			$requete_resa = "SELECT count(1) from resa where resa_cb='$expl->expl_cb' ";
-			$flag_resa = mysql_result(mysql_query($requete_resa, $dbh),0,0);
+			$flag_resa = pmb_mysql_result(pmb_mysql_query($requete_resa, $dbh),0,0);
 			$requete_resa = "SELECT count(1) from resa_ranger where resa_cb='$expl->expl_cb' ";
-			$flag_resa = $flag_resa + mysql_result(mysql_query($requete_resa, $dbh),0,0);
+			$flag_resa = $flag_resa + pmb_mysql_result(pmb_mysql_query($requete_resa, $dbh),0,0);
 			$situation = "";
 			if ($expl->statut_libelle_opac != "") $situation .= $expl->statut_libelle_opac."<br />";
 			if ($flag_resa) {
@@ -502,14 +508,14 @@ function genere_simple($depliable=1, $what='ISBD') {
 			$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_data, explnum_vignette, explnum_nomfichier, explnum_extfichier FROM explnum WHERE ";
 			$requete .= "explnum_notice='$no_notice' ";
 			$requete .= " order by explnum_id LIMIT 1";
-			$res = mysql_query($requete, $dbh) or die ($requete." ".mysql_error());
-			$nb_ex = mysql_num_rows($res);
+			$res = pmb_mysql_query($requete, $dbh) or die ($requete." ".pmb_mysql_error());
+			$nb_ex = pmb_mysql_num_rows($res);
 		}
 		
 		if($nb_ex) {
 			// on recupere les donnees des exemplaires
 			$i = 1 ;
-			while (($expl = mysql_fetch_object($res))) {
+			while (($expl = pmb_mysql_fetch_object($res))) {
 				$ligne="!!1!!" ;
 				if ($link_expl) {
 					$tlink = str_replace("!!explnum_id!!", $expl->explnum_id, $link_expl);

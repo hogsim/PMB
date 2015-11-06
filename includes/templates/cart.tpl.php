@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart.tpl.php,v 1.45 2013-03-25 10:32:40 mbertin Exp $
+// $Id: cart.tpl.php,v 1.49 2015-06-19 09:23:03 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -21,6 +21,14 @@ function test_form(form)
 		return false;
 	}
 	return true;
+}
+
+function show_hide_acces_rapide(selected_value) {
+	if (selected_value == 'NOTI') {
+		document.getElementById('div_acces_rapide').style.visibility='visible';
+	} else {
+		document.getElementById('div_acces_rapide').style.visibility='hidden';
+	}
 }
 </script>
 
@@ -54,7 +62,18 @@ function test_form(form)
 	</div>
 <div class='row'>
 	!!autorisations_users!!
-	</div>
+</div>
+<div class='row'>
+	<label class='etiquette' for='form_type'>".$msg['caddie_classement_list']."</label>
+</div>
+<div class='row'>
+	<select data-dojo-type='dijit/form/ComboBox' id='classementGen_!!object_type!!' name='classementGen_!!object_type!!'>
+		!!classements_liste!!
+	</select>
+</div>
+<div id='div_acces_rapide' class='row'>
+	<label class='etiquette' for='form_type'>".$msg["caddie_fast_access"]."</label>&nbsp;<input type='checkbox' name='acces_rapide' >
+</div>
 </div>
 <!--	boutons	-->
 <div class='row'>
@@ -110,9 +129,21 @@ function test_form(form)
 	</div>
 <div class='row'>
 	!!autorisations_users!!
-	</div>
+</div>
+<div class='row'>
+	<label class='etiquette' for='form_type'>".$msg['caddie_classement_list']."</label>
+</div>
+<div class='row'>
+	<select data-dojo-type='dijit/form/ComboBox' id='classementGen_!!object_type!!' name='classementGen_!!object_type!!'>
+		!!classements_liste!!
+	</select>
+</div>
+<div id='acces_rapide' class='row'>
+	!!acces_rapide!!
+</div>
 </div>
 <!--	boutons	-->
+<!-- liaisons --> 
 <div class='row'>
 	<div class='left'>
 		<input type='button' class='bouton' value='$msg[76]' onClick=\"document.location='!!formulaire_annuler!!';\">&nbsp;
@@ -129,6 +160,18 @@ function test_form(form)
 		document.forms['cart_form'].elements['cart_name'].focus();
 </script>
 ";
+
+$liaison_tpl = "
+<div id='el0Parent' class='parent' >
+<h3>
+<img src='./images/plus.gif' class='img_plus' align='bottom' name='imEx' id='el0Img' title='$msg[caddie_used_in]' border='0' onClick=\"expandBase('el0', true); return false;\" />
+$msg[caddie_used_in]
+</h3>
+</div>
+<div id='el0Child' class='child'>
+<!-- info_liaisons -->
+</div>
+<div class='row'>&nbsp;</div>";
 
 // $expl_cb_caddie_tmpl : template pour le form de saisie code-barre
 if ($pmb_rfid_activate==1 && $pmb_rfid_serveur_url ) {
@@ -629,3 +672,14 @@ function confirm() {
 </script>
 
 ";
+
+$cart_action_selector = "<div data-dojo-type='dijit/form/DropDownButton'>
+				<span>!!lib_action!!</span>
+			    <div data-dojo-type='dijit/TooltipDialog' id='cart_action_selector_!!object_id!!'>
+			    	<label class='etiquette'>!!msg_object_action!!</label>
+			   		<br />
+					<select  id='cart_action_selector_!!object_type!!_!!object_id!!' name='cart_action_selector_!!object_type!!_!!object_id!!' onChange='window.location.href=this.options[this.selectedIndex].value;'>
+						!!actions_liste!!
+					</select>
+			    </div>
+			</div>";

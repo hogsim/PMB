@@ -77,10 +77,10 @@ function show_list_sug($id_bibli=0) {
 	
 	//Affichage du filtre par source
 	$req = "select * from suggestions_source order by libelle_source";
-	$res= mysql_query($req,$dbh);
+	$res= pmb_mysql_query($req,$dbh);
 	$selected ="";
 	$option = "<option value='0'>".htmlentities($msg['acquisition_sugg_all_sources'],ENT_QUOTES,$charset)."</option>";
-	while(($src=mysql_fetch_object($res))){
+	while(($src=pmb_mysql_fetch_object($res))){
 		($src->id_source == $filtre_src) ? $selected = "selected" : $selected="";
 		$option .= "<option value='".$src->id_source."' $selected>".htmlentities($src->libelle_source,ENT_QUOTES,$charset)."</option>";
 	}
@@ -89,8 +89,8 @@ function show_list_sug($id_bibli=0) {
 	$user_name = $user_txt;
 	if(!$user_txt && $user_id){
 		$req = "select concat(empr_nom,', ',empr_prenom) as nom from empr where id_empr='".$user_id."'";
-		$res = mysql_query($req,$dbh);
-		$empr = mysql_fetch_object($res);
+		$res = pmb_mysql_query($req,$dbh);
+		$empr = pmb_mysql_fetch_object($res);
 		$user_name = $empr->nom;
 	}
 	$sug_search_form = str_replace('!!user_txt!!',htmlentities($user_name,ENT_QUOTES,$charset), $sug_search_form); 
@@ -160,14 +160,14 @@ function show_list_sug($id_bibli=0) {
 		} else {
 			$q = suggestions::listSuggestions($id_bibli, $statut, $num_categ, $mask, $debut, $nb_per_page, $aq,'',$sugg_location_id, $user_input, $filtre_src, $user_id, $user_statut);
 		}
-		$res = mysql_query($q, $dbh);
+		$res = pmb_mysql_query($q, $dbh);
 		//echo "Requete : ".$q."<br>";
 		//Affichage liste des suggestions
-		$nbr = mysql_num_rows($res);
+		$nbr = pmb_mysql_num_rows($res);
 		$aff_row="";
 		$parity=1;
 		for($i=0;$i<$nbr;$i++) {
-			$row=mysql_fetch_object($res);
+			$row=pmb_mysql_fetch_object($res);
 			
 			$lib_statut=$sug_map->getHtmlComment($row->statut);
 			
@@ -189,10 +189,10 @@ function show_list_sug($id_bibli=0) {
 				$aff_row.="<td ".$dn_javascript." ></td>";
 			} else {
 				$req_ana = "select analysis_bulletin as bull , analysis_notice as noti from analysis where analysis_notice ='".$row->num_notice."'";	
-				$res_ana = mysql_query($req_ana,$dbh);
-				$num_rows_ana = mysql_num_rows($res_ana);			
+				$res_ana = pmb_mysql_query($req_ana,$dbh);
+				$num_rows_ana = pmb_mysql_num_rows($res_ana);			
 				if($num_rows_ana){
-					$ana = mysql_fetch_object($res_ana);
+					$ana = pmb_mysql_fetch_object($res_ana);
 					$url_view = "catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=$ana->bull&art_to_show=".$ana->noti;
 				} else $url_view = "./catalog.php?categ=isbd&id=".$row->num_notice;
 				$aff_row.="<td style='text-align:center;'><a href=\"".$url_view."\"><img border=\"0\" align=\"middle\" title=\"".$msg['acquisition_sug_view_not']."\" alt=\"".$msg['acquisition_sug_view_not']."\" src=\"./images/notice.gif\" /></a></td>";
@@ -207,11 +207,11 @@ function show_list_sug($id_bibli=0) {
 			$aff_row .="<td ".$dn_javascript." ><i>".htmlentities($source->libelle_source, ENT_QUOTES, $charset)."</i></td>";
 			//Pondération
 			$q = suggestions_origine::listOccurences($row->id_suggestion);
-			$list_orig = mysql_query($q, $dbh);
+			$list_orig = pmb_mysql_query($q, $dbh);
 			$orig = 0;
 			$poids_tot = 0;
 			$users = array();
-			while(($row_orig = mysql_fetch_object($list_orig))) {
+			while(($row_orig = pmb_mysql_fetch_object($list_orig))) {
 				if (!$orig) {
 					$orig = $row_orig->origine;
 					$typ = $row_orig->type_origine;
@@ -233,8 +233,8 @@ function show_list_sug($id_bibli=0) {
 					default:
 					case '0' :
 					 	$requete_user = "SELECT userid, nom, prenom FROM users where userid = '".$orig."'";
-						$res_user = mysql_query($requete_user, $dbh);
-						$row_user=mysql_fetch_row($res_user);
+						$res_user = pmb_mysql_query($requete_user, $dbh);
+						$row_user=pmb_mysql_fetch_row($res_user);
 						$lib_orig = $row_user[1];
 						if ($row_user[2]) $lib_orig.= ", ".$row_user[2];					
 						if($list_user) $list_user.="\n";
@@ -242,8 +242,8 @@ function show_list_sug($id_bibli=0) {
 						break;
 					case '1' :
 					 	$requete_empr = "SELECT id_empr, empr_nom, empr_prenom FROM empr where id_empr = '".$orig."'";
-						$res_empr = mysql_query($requete_empr, $dbh);
-						$row_empr=mysql_fetch_row($res_empr);
+						$res_empr = pmb_mysql_query($requete_empr, $dbh);
+						$row_empr=pmb_mysql_fetch_row($res_empr);
 						$lib_orig = $row_empr[1];
 						if ($row_empr[2]) $lib_orig.= ", ".$row_empr[2];
 						if($list_user) $list_user.="\n";
@@ -372,8 +372,8 @@ function show_form_sug($update_action) {
 		
 		//Récupération de l'utilisateur
 	 	$requete_user = "SELECT userid, nom, prenom FROM users where username='".SESSlogin."' limit 1 ";
-		$res_user = mysql_query($requete_user, $dbh);
-		$row_user=mysql_fetch_row($res_user);
+		$res_user = pmb_mysql_query($requete_user, $dbh);
+		$row_user=pmb_mysql_fetch_row($res_user);
 		$orig = $row_user[0];
 		$lib_orig = $row_user[1];
 		if ($row_user[2]) $lib_orig.= $row_user[2].", ".$row_user[1];
@@ -457,10 +457,10 @@ function show_form_sug($update_action) {
 		
 		//Affichage du selecteur de source
 		$req = "select * from suggestions_source order by libelle_source";
-		$res= mysql_query($req,$dbh);
+		$res= pmb_mysql_query($req,$dbh);
 		
 		$option = "<option value='0' selected>".htmlentities($msg['acquisition_sugg_no_src'],ENT_QUOTES,$charset)."</option>";
-		while(($src=mysql_fetch_object($res))){
+		while(($src=pmb_mysql_fetch_object($res))){
 			$option .= "<option value='".$src->id_source."' $selected >".htmlentities($src->libelle_source,ENT_QUOTES,$charset)."</option>";
 			$selected="";
 		}
@@ -479,12 +479,12 @@ function show_form_sug($update_action) {
 
 		$sug = new suggestions($id_sug);
 		$q = suggestions_origine::listOccurences($id_sug);
-		$list_orig = mysql_query($q, $dbh);
+		$list_orig = pmb_mysql_query($q, $dbh);
 		
 		$orig = 0;
 		$poids_tot = 0;
 		$users = array();
-		while(($row_orig = mysql_fetch_object($list_orig))) {
+		while(($row_orig = pmb_mysql_fetch_object($list_orig))) {
 			if (!$orig) {
 				$orig = $row_orig->origine;
 				$typ = $row_orig->type_origine;
@@ -505,8 +505,8 @@ function show_form_sug($update_action) {
 				default:
 				case '0' :
 				 	$requete_user = "SELECT userid, nom, prenom FROM users where userid = '".$orig."'";
-					$res_user = mysql_query($requete_user, $dbh);
-					$row_user=mysql_fetch_row($res_user);
+					$res_user = pmb_mysql_query($requete_user, $dbh);
+					$row_user=pmb_mysql_fetch_row($res_user);
 					$lib_orig = $row_user[1];
 					if ($row_user[2]) $lib_orig.= ", ".$row_user[2];					
 					if(empty($premier_user) || !isset($premier_user)) $premier_user = $lib_orig;
@@ -514,8 +514,8 @@ function show_form_sug($update_action) {
 					break;
 				case '1' :
 				 	$requete_empr = "SELECT id_empr, empr_nom, empr_prenom FROM empr where id_empr = '".$orig."'";
-					$res_empr = mysql_query($requete_empr, $dbh);
-					$row_empr=mysql_fetch_row($res_empr);
+					$res_empr = pmb_mysql_query($requete_empr, $dbh);
+					$row_empr=pmb_mysql_fetch_row($res_empr);
 					$lib_orig = $row_empr[1];
 					if ($row_empr[2]) $lib_orig.= ", ".$row_empr[2];
 					if(empty($premier_user) || !isset($premier_user)) $premier_user = $lib_orig;
@@ -603,10 +603,10 @@ function show_form_sug($update_action) {
 		
 		if($sug->num_notice && $sug->num_notice !=0){
 			$req_ana = "select analysis_bulletin as bull , analysis_notice as noti from analysis where analysis_notice ='".$sug->num_notice."'";	
-			$res_ana = mysql_query($req_ana,$dbh);
-			$num_rows_ana = mysql_num_rows($res_ana);			
+			$res_ana = pmb_mysql_query($req_ana,$dbh);
+			$num_rows_ana = pmb_mysql_num_rows($res_ana);			
 			if($num_rows_ana){
-				$ana = mysql_fetch_object($res_ana);
+				$ana = pmb_mysql_fetch_object($res_ana);
 				$url_view = "catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=$ana->bull&art_to_show=".$ana->noti;
 			} else $url_view = "./catalog.php?categ=isbd&id=".$sug->num_notice;
 			$lien = "<a href='$url_view'> ".$msg['acquisition_sug_view_not']."</a>";
@@ -623,10 +623,10 @@ function show_form_sug($update_action) {
 		$form = str_replace('!!com_gestion!!', htmlentities($sug->commentaires_gestion, ENT_QUOTES, $charset), $form);
 		
 		$req = "select * from suggestions_source order by libelle_source";
-		$res= mysql_query($req,$dbh);
+		$res= pmb_mysql_query($req,$dbh);
 		$selected = "";
 		$option = "<option value='0' selected>".htmlentities($msg['acquisition_sugg_no_src'],ENT_QUOTES,$charset)."</option>";
-		while(($src=mysql_fetch_object($res))){
+		while(($src=pmb_mysql_fetch_object($res))){
 			 ($src->id_source == $sug->sugg_src ? $selected = " selected ": $selected ="");
 			$option .= "<option value='".$src->id_source."' $selected>".htmlentities($src->libelle_source,ENT_QUOTES,$charset)."</option>";
 		}

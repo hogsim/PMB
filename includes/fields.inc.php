@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fields.inc.php,v 1.19 2013-04-11 08:18:38 mbertin Exp $
+// $Id: fields.inc.php,v 1.20 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 global $aff_list;
@@ -167,10 +167,10 @@ function val_file_box($field) {
 		} else {
 			if ($field [OPTIONS][0][DATA_TYPE][0][value]=="1") $data_type="varchar(255)"; else $data_type="integer";
 			$requete="create temporary table ".$field[OPTIONS][0][TEMP_TABLE_NAME][0][value]." (val $data_type, INDEX (val)) ENGINE=MyISAM ";
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 			while (list($key,$value)=each($val)) {
 				$requete="insert into ".$field[OPTIONS][0][TEMP_TABLE_NAME][0][value]." values('".addslashes($value)."')";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 			}
 			return $field[OPTIONS][0][TEMP_TABLE_NAME][0][value];
 		}
@@ -349,8 +349,8 @@ function aff_query_list($field,&$check_scripts) {
 	if (($options[UNSELECT_ITEM][0][VALUE]!="")||($options[UNSELECT_ITEM][0][value]!="")) {
 		$ret.="<option value=\"".htmlentities($options[UNSELECT_ITEM][0][VALUE],ENT_QUOTES,$charset)."\">".htmlentities($options[UNSELECT_ITEM][0][value],ENT_QUOTES,$charset)."</option>\n";
 	}
-	$resultat=mysql_query($options[QUERY][0][value]);
-	while (($r=mysql_fetch_row($resultat))) {
+	$resultat=pmb_mysql_query($options[QUERY][0][value]);
+	while (($r=pmb_mysql_fetch_row($resultat))) {
 		$ret.="<option value=\"".htmlentities($r[0],ENT_QUOTES,$charset)."\" ".($sel_param[$r[0]] == $r[0] ? "selected" : "").">".htmlentities($r[1],ENT_QUOTES,$charset)."</option>\n";
 	}
 	$ret.= "</select>\n";

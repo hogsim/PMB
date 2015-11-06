@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mail-relance-adhesion.inc.php,v 1.22 2011-10-26 15:08:52 dgoron Exp $
+// $Id: mail-relance-adhesion.inc.php,v 1.23 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -49,9 +49,9 @@ if ($action=="print_all") {
 	$requete .= " and empr_statut=idstatut";
 	$requete .= " ORDER BY empr_nom, empr_prenom ";
 	
-	$res = @mysql_query($requete, $dbh);
+	$res = @pmb_mysql_query($requete, $dbh);
 	
-	while(($empr=mysql_fetch_object($res))) {
+	while(($empr=pmb_mysql_fetch_object($res))) {
 		// mettre ici le texte 
 		$coords = new emprunteur($empr->id_empr,'', FALSE, 0);
 		$texte_mail='';
@@ -73,7 +73,7 @@ if ($action=="print_all") {
 		if ($res_envoi) echo "<center><h3>".sprintf($msg["mail_retard_succeed"],$coords->mail)."</h3><br /><a href=\"\" onClick=\"self.close(); return false;\">".$msg["mail_retard_close"]."</a></center><br /><br />".nl2br($texte_relance);
 			else echo "<center><h3>".sprintf($msg["mail_retard_failed"],$coords->mail)."</h3><br /><a href=\"\" onClick=\"self.close(); return false;\">".$msg["mail_retard_close"]."</a></center>";
 	}
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 } else {
 	// mettre ici le texte 
 	$coords = new emprunteur($id_empr,'', FALSE, 0);

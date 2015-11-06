@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: wikipedia.class.php,v 1.8 2012-12-04 13:17:28 mbertin Exp $
+// $Id: wikipedia.class.php,v 1.9 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -145,9 +145,9 @@ class wikipedia extends connector {
 		}else{
 			//on va chercher l'auteur principal...
 			$query = "select responsability_author from responsability where responsability_notice =".$notice_id." and responsability_type=0";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$author_id = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$author_id = pmb_mysql_result($result,0,0);
 				$author_class = new auteur($author_id);
 				$author = ($author_class->rejete!= ""? $author_class->rejete." ":"").$author_class->name;
 			}
@@ -221,9 +221,9 @@ class wikipedia extends connector {
 			$titre = $enrich_params['label'];
 		}else{
 			$rqt = "select tit1 from notices where notice_id='$notice_id'";
-			$res =mysql_query($rqt);
-			if(mysql_num_rows($res)){
-				$titre = mysql_result($res,0,0);
+			$res =pmb_mysql_query($rqt);
+			if(pmb_mysql_num_rows($res)){
+				$titre = pmb_mysql_result($res,0,0);
 			}
 		}
 		$curl = new Curl();

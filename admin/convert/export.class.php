@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export.class.php,v 1.72 2013-11-26 09:21:22 mbertin Exp $
+// $Id: export.class.php,v 1.73 2015-04-03 11:16:22 jpermanne Exp $
 
 //Export d'une notice PMB en XML PMB MARC
 
@@ -39,8 +39,8 @@ class export {
 				$this -> notice_list[] = $l_idnotices;
 			} else {
 				$requete = "select distinct notice_id from notices";
-				$resultat = mysql_query($requete);
-				while (($res = mysql_fetch_object($resultat))) {
+				$resultat = pmb_mysql_query($requete);
+				while (($res = pmb_mysql_fetch_object($resultat))) {
 					$this -> notice_list[] = $res -> notice_id;
 				}
 			}
@@ -144,7 +144,7 @@ class export {
 		
 		if (!$is_expl_caddie)  {
 			$requete_panier="select count(*) from expl_cart_id";
-			$res_panier=@mysql_query($requete_panier);
+			$res_panier=@pmb_mysql_query($requete_panier);
 			if ($res_panier) $is_expl_caddie=2; else $is_expl_caddie=1;
 		}
 		unset($this->xml_array);
@@ -161,8 +161,8 @@ class export {
 		if ($this -> current_notice != -1) {
 			//Recuperation des infos de la notice
 			$requete = "select * from notices where notice_id=".$this -> notice_list[$this -> current_notice];
-			$resultat = mysql_query($requete);
-			$res = mysql_fetch_object($resultat);
+			$resultat = pmb_mysql_query($requete);
+			$res = pmb_mysql_fetch_object($resultat);
 			
 			if (!$res)
 				return false;
@@ -194,8 +194,8 @@ class export {
 			
 			if($res->niveau_biblio == 'b' && $res->niveau_hierar == '2'){
 				$req_bulletin = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero from bulletins WHERE num_notice=".$res->notice_id;
-				$result_bull = mysql_query($req_bulletin);
-				while(($bull=mysql_fetch_object($result_bull))){
+				$result_bull = pmb_mysql_query($req_bulletin);
+				while(($bull=pmb_mysql_fetch_object($result_bull))){
 					$subfields["h"] = $bull -> bulletin_numero;
 					$subfields["i"] = $bull -> bulletin_titre;
 					$subfields["9"] = "id:".$bull->bulletin_id ;
@@ -205,9 +205,9 @@ class export {
 			
 			//Titres Uniformes
 			$rqt_tu = "select * from notices_titres_uniformes,titres_uniformes where tu_id =ntu_num_tu and ntu_num_notice = '".$this->notice_list[$this->current_notice]."' order by ntu_ordre";
-			$result_tu = mysql_query($rqt_tu);
-			if(mysql_num_rows($result_tu)){		
-				while($row_tu = mysql_fetch_object($result_tu)){
+			$result_tu = pmb_mysql_query($rqt_tu);
+			if(pmb_mysql_num_rows($result_tu)){		
+				while($row_tu = pmb_mysql_fetch_object($result_tu)){
 					$subfields = array();
 					$subfields["9"] = "id:".$row_tu->tu_id;
 					$subfields["a"] = $row_tu->tu_name;
@@ -220,23 +220,23 @@ class export {
 					$subfields["q"] = $row_tu->ntu_version;
 					$subfields["w"] = $row_tu->ntu_mention;
 					$rqt_tucomp="SELECT * FROM tu_distrib WHERE distrib_num_tu='".$row_tu->tu_id."' ORDER BY distrib_ordre,distrib_name";
-					$result_tucomp = mysql_query($rqt_tucomp);
-					if(mysql_num_rows($result_tucomp)){		
-						while($row_tucomp = mysql_fetch_object($result_tucomp)){
+					$result_tucomp = pmb_mysql_query($rqt_tucomp);
+					if(pmb_mysql_num_rows($result_tucomp)){		
+						while($row_tucomp = pmb_mysql_fetch_object($result_tucomp)){
 							$subfields["r"][] = $row_tucomp->distrib_name;
 						}
 					}
 					$rqt_tucomp="SELECT * FROM tu_ref WHERE ref_num_tu='".$row_tu->tu_id."' ORDER BY ref_ordre,ref_name";
-					$result_tucomp = mysql_query($rqt_tucomp);
-					if(mysql_num_rows($result_tucomp)){		
-						while($row_tucomp = mysql_fetch_object($result_tucomp)){
+					$result_tucomp = pmb_mysql_query($rqt_tucomp);
+					if(pmb_mysql_num_rows($result_tucomp)){		
+						while($row_tucomp = pmb_mysql_fetch_object($result_tucomp)){
 							$subfields["s"][] = $row_tucomp->ref_name;
 						}
 					}
 					$rqt_tucomp="SELECT * FROM tu_subdiv WHERE subdiv_num_tu='".$row_tu->tu_id."' ORDER BY subdiv_ordre,subdiv_name";
-					$result_tucomp = mysql_query($rqt_tucomp);
-					if(mysql_num_rows($result_tucomp)){		
-						while($row_tucomp = mysql_fetch_object($result_tucomp)){
+					$result_tucomp = pmb_mysql_query($rqt_tucomp);
+					if(pmb_mysql_num_rows($result_tucomp)){		
+						while($row_tucomp = pmb_mysql_fetch_object($result_tucomp)){
 							$subfields["j"][] = $row_tucomp->subdiv_name;
 						}
 					}
@@ -249,8 +249,8 @@ class export {
 			$subfields=array();
 			if($res->niveau_biblio == 'b' && $res->niveau_hierar == '2'){				
 				$req_bulletin = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero, tit1 as titre from bulletins, notices WHERE bulletin_notice=notice_id AND num_notice=".$res->notice_id;
-				$result_bull = mysql_query($req_bulletin);
-				while(($bull=mysql_fetch_object($result_bull))){
+				$result_bull = pmb_mysql_query($req_bulletin);
+				while(($bull=pmb_mysql_fetch_object($result_bull))){
 					$subfields["a"] = $bull->titre;
 				}				
 			}
@@ -260,8 +260,8 @@ class export {
 			$subfields=array();
 			if($res->niveau_biblio == 'b' && $res->niveau_hierar == '2'){				
 				$req_bulletin = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero from bulletins WHERE num_notice=".$res->notice_id;
-				$result_bull = mysql_query($req_bulletin);
-				while(($bull=mysql_fetch_object($result_bull))){
+				$result_bull = pmb_mysql_query($req_bulletin);
+				while(($bull=pmb_mysql_fetch_object($result_bull))){
 					$subfields["h"] = $bull->date_date;
 					$subfields["d"] = $bull->mention_date;
 				}				
@@ -282,10 +282,10 @@ class export {
 
 			//Langage
 			$rqttmp_lang = "select type_langue,code_langue from notices_langues where num_notice='$res->notice_id' order by ordre_langue ";
-			$restmp_lang = mysql_query($rqttmp_lang);
+			$restmp_lang = pmb_mysql_query($rqttmp_lang);
 			$ind="0 ";
 			$subfields_101 = array();
-			while (($tmp_lang = mysql_fetch_object($restmp_lang))) {
+			while (($tmp_lang = pmb_mysql_fetch_object($restmp_lang))) {
 				if($tmp_lang->type_langue){
 					$ind="1 ";
 					$subfields_101['c'][]=$tmp_lang->code_langue;
@@ -324,9 +324,9 @@ class export {
 			$requete = "select author_id, author_type, author_name, author_rejete, author_date, responsability_fonction, responsability_type 
 			,author_subdivision, author_lieu,author_ville, author_pays,author_numero,author_web, author_comment
 			from authors, responsability where responsability_notice=".$res->notice_id." and responsability_author=author_id order by responsability_ordre asc";
-			$resultat = mysql_query($requete) or die(mysql_error()."<br />".$requete);
+			$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error()."<br />".$requete);
 	
-			while (($auth=mysql_fetch_object($resultat))) {				
+			while (($auth=pmb_mysql_fetch_object($resultat))) {				
 				//Si c'est un 70 (individuel) alors on l'exporte
 				$subfields = array();
 				$attrs = array();
@@ -391,12 +391,12 @@ class export {
 			//Editeurs et date de la notice
 			$c102_export=false;//Le champ 102 n'est pas répétable
 			$requete = "select * from publishers where ed_id =".$res -> ed1_id;
-			$resultat = mysql_query($requete);
+			$resultat = pmb_mysql_query($requete);
 			$subfields = array();
 			$attrs = array();
 			if ($params["include_authorite_ids"])
 				$attrs["id"] = $res->ed1_id;
-			if (($ed1 = mysql_fetch_object($resultat))) {
+			if (($ed1 = pmb_mysql_fetch_object($resultat))) {
 				$subfields["a"] = $ed1 -> ed_ville;
 				$subfields["b"] = trim($ed1 -> ed_adr1."\n".$ed1 -> ed_adr2."\n".$ed1 -> ed_cp."\n".$ed1 -> ed_ville."\n".$ed1 -> ed_pays);
 				$subfields["c"] = $ed1 -> ed_name;
@@ -424,12 +424,12 @@ class export {
 			$this -> add_field("210", "  ", $subfields, "", $attrs);
 
 			$requete = "select * from publishers where ed_id =".$res -> ed2_id;
-			$resultat = mysql_query($requete);
+			$resultat = pmb_mysql_query($requete);
 			$subfields = array();
 			$attrs = array();
 			if ($params["include_authorite_ids"])
 				$attrs["id"] = $res->ed2_id;
-			if (($ed1 = mysql_fetch_object($resultat))) {
+			if (($ed1 = pmb_mysql_fetch_object($resultat))) {
 				$subfields["a"] = $ed1 -> ed_ville;
 				$subfields["b"] = trim($ed1 -> ed_adr1."\n".$ed1 -> ed_adr2."\n".$ed1 -> ed_cp."\n".$ed1 -> ed_ville."\n".$ed1 -> ed_pays);
 				$subfields["c"] = $ed1 -> ed_name;
@@ -455,7 +455,7 @@ class export {
 
 			//Collections
 			$requete = "select * from collections where collection_id=".$res -> coll_id;
-			$resultat = mysql_query($requete);
+			$resultat = pmb_mysql_query($requete);
 			$subfields = array();
 			$subfields_410 = array();
 			$subfields_411 = array();
@@ -463,7 +463,7 @@ class export {
 			$attrs = array();
 			if ($params["include_authorite_ids"])
 				$attrs["id"] = $res->coll_id;
-			if (($col = mysql_fetch_object($resultat))) {
+			if (($col = pmb_mysql_fetch_object($resultat))) {
 				$subfields["a"] = $col -> collection_name;
 				$subfields_410["t"] = $col -> collection_name;
 				$subfields["v"] = $res -> nocoll;
@@ -475,8 +475,8 @@ class export {
 			}			
 			//Recherche des sous collections
 			$requete = "select * from sub_collections where sub_coll_id=".$res -> subcoll_id;
-			$resultat = mysql_query($requete);
-			if (($subcol = mysql_fetch_object($resultat))) {
+			$resultat = pmb_mysql_query($requete);
+			if (($subcol = pmb_mysql_fetch_object($resultat))) {
 				$subfields_s["i"] = $subcol -> sub_coll_name;
 				$subfields_411["t"] = $subcol -> sub_coll_name;
 				$subfields_s["x"] = $subcol -> sub_coll_issn;
@@ -493,10 +493,10 @@ class export {
 			$this -> add_field("411", " 0", $subfields_411, "", $attrs2);
 
 			$requete = "select * from series where serie_id=".$res -> tparent_id;
-			$resultat = mysql_query($requete);
+			$resultat = pmb_mysql_query($requete);
 			$subfields = array();
 			$attrs = array();
-			if (($serie = mysql_fetch_object($resultat))) {
+			if (($serie = pmb_mysql_fetch_object($resultat))) {
 				$subfields["t"] = $serie -> serie_name;
 				$subfields["v"] = $res -> tnvol;
 				if ($params["include_authorite_ids"]){
@@ -509,8 +509,8 @@ class export {
 			$subfields = array();
 			//Recher du code dewey
 			$requete = "select * from indexint where indexint_id=".$res -> indexint;
-			$resultat = mysql_query($requete);
-			if (($code_dewey=mysql_fetch_object($resultat))) {
+			$resultat = pmb_mysql_query($requete);
+			if (($code_dewey=pmb_mysql_fetch_object($resultat))) {
 				$subfields["a"] = $code_dewey -> indexint_name;
 				$subfields["l"] = $code_dewey -> indexint_comment;
 				$subfields["9"] = "id:".$code_dewey -> indexint_id;
@@ -528,9 +528,9 @@ class export {
 			if ($keep_expl) {
 				if($res->niveau_biblio == 'b' && $res->niveau_hierar == '2'){//Si c'est une notice de bulletin
 					$requete="SELECT bulletin_id FROM bulletins WHERE num_notice='".$res -> notice_id."'";
-					$res_bull=mysql_query($requete);
-					if(mysql_num_rows($res_bull)){
-						$id_bull=mysql_result($res_bull,0,0);
+					$res_bull=pmb_mysql_query($requete);
+					if(pmb_mysql_num_rows($res_bull)){
+						$id_bull=pmb_mysql_result($res_bull,0,0);
 						if((array_search($id_bull,$this->bulletins_exporte)===false) && (array_search($id_bull,$this->expl_bulletin_a_exporter)===false)){
 					    	//Si on exporte les exemplaires on garde l'ID du bulletin pour exporter ses exemplaires
 					    	$this->expl_bulletin_a_exporter[]=$id_bull;
@@ -550,14 +550,14 @@ class export {
 
 			//Descripteurs
 			$requete="SELECT libelle_categorie,categories.num_noeud,categories.langue,categories.num_thesaurus FROM categories, notices_categories WHERE notcateg_notice=".$res->notice_id." and categories.num_noeud = notices_categories.num_noeud ORDER BY ordre_categorie";
-            $resultat=mysql_query($requete);
-            if (mysql_num_rows($resultat)) {
-                  for ($i=0; $i<mysql_num_rows($resultat); $i++) {
+            $resultat=pmb_mysql_query($requete);
+            if (pmb_mysql_num_rows($resultat)) {
+                  for ($i=0; $i<pmb_mysql_num_rows($resultat); $i++) {
                       $subfields=array();
-                      $subfields["9"][]="id:".mysql_result($resultat,$i,1);
-                      $subfields["9"][]="lang:".mysql_result($resultat,$i,2);
-                      $subfields["9"][]="idthes:".mysql_result($resultat,$i,3);
-                      $subfields["a"]=mysql_result($resultat,$i,0);
+                      $subfields["9"][]="id:".pmb_mysql_result($resultat,$i,1);
+                      $subfields["9"][]="lang:".pmb_mysql_result($resultat,$i,2);
+                      $subfields["9"][]="idthes:".pmb_mysql_result($resultat,$i,3);
+                      $subfields["a"]=pmb_mysql_result($resultat,$i,0);
                       $this -> add_field("606"," 1",$subfields);
                 }
             }
@@ -570,11 +570,11 @@ class export {
 				//On choisit d'exporter les notices mères
 				if($params["mere"]){
 					$requete="SELECT num_notice, linked_notice, relation_type, rank from notices_relations where num_notice=".$res->notice_id." order by num_notice, rank asc";
-					$resultat=mysql_query($requete);
-					while(($notice_fille=mysql_fetch_object($resultat))) {						
+					$resultat=pmb_mysql_query($requete);
+					while(($notice_fille=pmb_mysql_fetch_object($resultat))) {						
 						$requete_mere="SELECT * FROM notices WHERE notice_id=".$notice_fille->linked_notice;
-						$resultat_mere=mysql_query($requete_mere);
-						while(($notice_mere=mysql_fetch_object($resultat_mere))) {
+						$resultat_mere=pmb_mysql_query($requete_mere);
+						while(($notice_mere=pmb_mysql_fetch_object($resultat_mere))) {
 							$subfields = array();	
 							$list_titre = array();
 							$list_auteurs = array();
@@ -584,9 +584,9 @@ class export {
 							$list_titre[] = ($notice_mere->tit1) ? $notice_mere->tit1 : " ";
 							//auteur
 							$rqt_aut = "select author_name, author_rejete from responsability join authors on author_id = responsability_author and responsability_notice=".$notice_mere->notice_id." where responsability_type != 2 order by responsability_type,responsability_ordre";
-							$res_aut=mysql_query($rqt_aut);
+							$res_aut=pmb_mysql_query($rqt_aut);
 							$mere_aut = array();
-							while(($mere_aut=mysql_fetch_object($res_aut))) {
+							while(($mere_aut=pmb_mysql_fetch_object($res_aut))) {
 								$list_auteurs[] = $mere_aut->author_name.($mere_aut->author_rejete ? ", ".$mere_aut->author_rejete : "");
 							}
 							$list_options[] = "bl:".$notice_mere->niveau_biblio.$notice_mere->niveau_hierar;
@@ -609,8 +609,8 @@ class export {
 							//Relation avec articles 
 							if($notice_mere->niveau_biblio == 'a' && $notice_mere->niveau_hierar == '2'){
 								$req_art = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero, tit1, code from analysis join bulletins on bulletin_id=analysis_bulletin join notices on bulletin_notice=notice_id where analysis_notice=".$notice_mere->notice_id;
-								$result_art=mysql_query($req_art);
-								while(($notice_art=mysql_fetch_object($result_art))){
+								$result_art=pmb_mysql_query($req_art);
+								while(($notice_art=pmb_mysql_fetch_object($result_art))){
 									$subfields["d"] = $notice_art->date_date;
 									$subfields["e"] = $notice_art->mention_date;
 									$subfields["v"] = $notice_art->bulletin_numero;
@@ -627,8 +627,8 @@ class export {
 							//Relation avec bulletins
 							if($notice_mere->niveau_biblio == 'b' && $notice_mere->niveau_hierar == '2'){
 								$req_bull = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero, tit1, code from bulletins join notices on bulletin_notice=notice_id  WHERE num_notice=".$notice_mere->notice_id;
-								$result_bull=mysql_query($req_bull);
-								while(($notice_bull=mysql_fetch_object($result_bull))){
+								$result_bull=pmb_mysql_query($req_bull);
+								while(($notice_bull=pmb_mysql_fetch_object($result_bull))){
 									$subfields["d"] = $notice_bull->date_date;
 									$subfields["e"] = $notice_bull->mention_date;
 									$subfields["v"] = $notice_bull->bulletin_numero;
@@ -660,11 +660,11 @@ class export {
 				//On choisit d'exporter les notices filles
 				if($params["fille"]){
 					$requete="SELECT num_notice, linked_notice, relation_type, rank from notices_relations where linked_notice=".$res->notice_id." order by num_notice, rank asc";
-					$resultat=mysql_query($requete);
-					while(($notice_mere=mysql_fetch_object($resultat))) {						
+					$resultat=pmb_mysql_query($requete);
+					while(($notice_mere=pmb_mysql_fetch_object($resultat))) {						
 						$requete_fille="SELECT * FROM notices WHERE notice_id=".$notice_mere->num_notice;
-						$resultat_fille=mysql_query($requete_fille);
-						while(($notice_fille=mysql_fetch_object($resultat_fille))) {
+						$resultat_fille=pmb_mysql_query($requete_fille);
+						while(($notice_fille=pmb_mysql_fetch_object($resultat_fille))) {
 							$subfields = array();
 							$list_titre = array();
 							$list_options = array();
@@ -690,8 +690,8 @@ class export {
 							//Relation avec articles 
 							if($notice_fille->niveau_biblio == 'a' && $notice_fille->niveau_hierar == '2'){
 								$req_art = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero, tit1, code from analysis join bulletins on bulletin_id=analysis_bulletin join notices on bulletin_notice=notice_id where analysis_notice=".$notice_fille->notice_id;
-								$result_art=mysql_query($req_art);
-								while(($notice_art=mysql_fetch_object($result_art))){
+								$result_art=pmb_mysql_query($req_art);
+								while(($notice_art=pmb_mysql_fetch_object($result_art))){
 									$subfields["d"] = $notice_art->date_date;
 									$subfields["e"] = $notice_art->mention_date;
 									$subfields["v"] = $notice_art->bulletin_numero;
@@ -708,8 +708,8 @@ class export {
 							//Relation avec bulletins
 							if($notice_fille->niveau_biblio == 'b' && $notice_fille->niveau_hierar == '2'){
 								$req_bull = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero, tit1, code from bulletins join notices on bulletin_notice=notice_id  WHERE num_notice=".$notice_fille->notice_id;
-								$result_bull=mysql_query($req_bull);
-								while(($notice_bull=mysql_fetch_object($result_bull))){
+								$result_bull=pmb_mysql_query($req_bull);
+								while(($notice_bull=pmb_mysql_fetch_object($result_bull))){
 									$subfields["d"] = $notice_bull->date_date;
 									$subfields["e"] = $notice_bull->mention_date;
 									$subfields["v"] = $notice_bull->bulletin_numero;
@@ -742,8 +742,8 @@ class export {
 				//On choisit d'exporter les liens vers les périodiques pour les notices d'article
 				if($params["perio_link"]){
 					$req_perio_link = "SELECT notice_id, tit1, code from bulletins,analysis,notices WHERE bulletin_notice=notice_id and bulletin_id=analysis_bulletin and analysis_notice=".$res->notice_id;
-					$result_perio_link=mysql_query($req_perio_link);
-					while(($notice_perio_link=mysql_fetch_object($result_perio_link))){
+					$result_perio_link=pmb_mysql_query($req_perio_link);
+					while(($notice_perio_link=pmb_mysql_fetch_object($result_perio_link))){
 						$subfields_461=array();
 						$list_options=array();
 						if($params["notice_perio"]) $subfields_461["0"] = $notice_perio_link->notice_id;
@@ -764,8 +764,8 @@ class export {
 				//On génère le bulletinage pour les notices de pério
 				if($params["bulletinage"]){					
 					$req_bulletinage = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero from bulletins, notices WHERE bulletin_notice = notice_id AND notice_id=".$res->notice_id;
-					$result_bulletinage=mysql_query($req_bulletinage);					
-					while(($notice_bulletinage=mysql_fetch_object($result_bulletinage))){
+					$result_bulletinage=pmb_mysql_query($req_bulletinage);					
+					while(($notice_bulletinage=pmb_mysql_fetch_object($result_bulletinage))){
 						$subfields_462=array();
 						$list_options=array();
 						$attrs = array("id" => $notice_bulletinage->bulletin_id);
@@ -787,8 +787,8 @@ class export {
 				//On choisit d'exporter les liens vers les bulletins pour les notices d'article
 				if($params["bull_link"]){
 					$req_bull_link = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero from bulletins, analysis WHERE bulletin_id=analysis_bulletin and analysis_notice=".$res->notice_id;
-					$result_bull_link=mysql_query($req_bull_link);						
-					while(($notice_bull_link=mysql_fetch_object($result_bull_link))){
+					$result_bull_link=pmb_mysql_query($req_bull_link);						
+					while(($notice_bull_link=pmb_mysql_fetch_object($result_bull_link))){
 						$subfields_463 = array();
 						$list_options = array();
 						$attrs = array("id" => $notice_bull_link->bulletin_id);
@@ -810,8 +810,8 @@ class export {
 				//On choisit d'exporter les liens vers les articles pour les notices de pério
 				if($params["art_link"]){
 					$req_art_link = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, analysis_notice, a.tit1 as titre, a.npages as page from notices p left join bulletins on bulletin_notice=p.notice_id left join analysis on analysis_bulletin=bulletin_id join notices a on a.notice_id=analysis_notice WHERE p.notice_id=".$res->notice_id;
-					$result_art_link=mysql_query($req_art_link);					
-					while(($notice_art_link=mysql_fetch_object($result_art_link))){
+					$result_art_link=pmb_mysql_query($req_art_link);					
+					while(($notice_art_link=pmb_mysql_fetch_object($result_art_link))){
 						$subfields_464=array();
 						$tab_titre=array();
 						$list_options=array();
@@ -849,9 +849,9 @@ class export {
 						"LEFT JOIN arch_statut ON archstatut_id=collstate_statut " .
 						"LEFT JOIN docs_location ON idlocation=location_id " .
 						"WHERE id_serial='".$res->notice_id."'";
-				$res_etat=mysql_query($req);
-				if($res_etat && mysql_num_rows($res_etat)){
-					while ($etat = mysql_fetch_object($res_etat)) {
+				$res_etat=pmb_mysql_query($req);
+				if($res_etat && pmb_mysql_num_rows($res_etat)){
+					while ($etat = pmb_mysql_fetch_object($res_etat)) {
 						$subfields = array();
 						$attrs = array();
 						$subfields["9"]="id:".$etat->collstate_id;
@@ -880,9 +880,9 @@ class export {
 				$q = "select explnum_id from explnum where explnum_notice='".$res->notice_id."' ";
 				$q.= "union ";
 				$q.= "select explnum_id from explnum, bulletins where bulletin_id = explnum_bulletin and bulletins.num_notice='".$res->notice_id."' ";
-				$r = mysql_query($q, $dbh);
-				if(mysql_num_rows($r)) {
-					while ($row=mysql_fetch_object($r)) {
+				$r = pmb_mysql_query($q, $dbh);
+				if(pmb_mysql_num_rows($r)) {
+					while ($row=pmb_mysql_fetch_object($r)) {
 						$subfields_897 = array();
 						$dn = new explnum($row->explnum_id);
 						if($dn->isURL()) {					//URL
@@ -960,14 +960,14 @@ class export {
 		
 		//On regarde si on a des exemplaires pour ce bulletin
 		$requete="select expl_id from exemplaires where expl_bulletin='".$id_bulletin."'";
-		$res=mysql_query($requete);
+		$res=pmb_mysql_query($requete);
 		
-		if(mysql_num_rows($res)){
+		if(pmb_mysql_num_rows($res)){
 			//Si le bulletin a des exemplaires on créer une notice d'article bidon pour créer les exemplaires
 
 			if (!$is_expl_caddie)  {
 				$requete_panier="select count(*) from expl_cart_id";
-				$res_panier=@mysql_query($requete_panier);
+				$res_panier=@pmb_mysql_query($requete_panier);
 				if ($res_panier) $is_expl_caddie=2; else $is_expl_caddie=1;
 			}
 			
@@ -993,8 +993,8 @@ class export {
 			
 			//Lien vers le bulletin et le perio pour recreer l'exemplaire
 			$req_art = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero, tit1, code, notice_id from bulletins join notices on bulletin_notice=notice_id where bulletin_id=".$id_bulletin;
-			$result_art=mysql_query($req_art);
-			while(($notice_art=mysql_fetch_object($result_art))){
+			$result_art=pmb_mysql_query($req_art);
+			while(($notice_art=pmb_mysql_fetch_object($result_art))){
 				//Pour le cas ou l'article est récupéré en temps que monographie
 				$subfields=array();
 				$subfields["a"] = $notice_art->bulletin_titre ? $notice_art->bulletin_titre.", ".$notice_art->mention_date : $notice_art->mention_date;
@@ -1050,9 +1050,9 @@ class export {
 			$requete.= " and expl_typdoc in (".implode(",", $td).")";
 		if (count($sd) != 0)
 			$requete.= " and expl_statut in (".implode(",", $sd).")";
-		$resultat = mysql_query($requete);
+		$resultat = pmb_mysql_query($requete);
 		
-		while (($ex = mysql_fetch_object($resultat))) {
+		while (($ex = pmb_mysql_fetch_object($resultat))) {
 			if ( (!is_array($params['export_only_expl_ids'])) ||  (!count($params['export_only_expl_ids']))  ||  (in_array($ex->expl_id,$params['export_only_expl_ids'])) ) {
 				$subfields = array();
 				global $export996 ;

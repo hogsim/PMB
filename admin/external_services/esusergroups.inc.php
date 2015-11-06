@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: esusergroups.inc.php,v 1.2 2009-07-15 14:17:11 erwanmartin Exp $
+// $Id: esusergroups.inc.php,v 1.3 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -26,11 +26,11 @@ function list_groups() {
 	//Ajoutons le groupe anonyme
 	$pair_impair = "odd";
 	$ano_sql = "SELECT CONCAT(users.username, ' (', users.nom, ' ', users.prenom,')') AS pmbusercaption FROM `es_esgroups` LEFT JOIN users ON (users.userid = es_esgroups.esgroup_pmbusernum) WHERE `esgroup_id` = -1";
-	$ano_res = mysql_query($ano_sql, $dbh);
-	if (!mysql_numrows($ano_res))
-		$ano_pmbusercaption = mysql_result(mysql_query("SELECT CONCAT(users.username, ' (', users.nom, ' ', users.prenom,')') FROM users WHERE userid = 1", $dbh), 0, 0);
+	$ano_res = pmb_mysql_query($ano_sql, $dbh);
+	if (!pmb_mysql_num_rows($ano_res))
+		$ano_pmbusercaption = pmb_mysql_result(pmb_mysql_query("SELECT CONCAT(users.username, ' (', users.nom, ' ', users.prenom,')') FROM users WHERE userid = 1", $dbh), 0, 0);
 	else 
-		$ano_pmbusercaption = mysql_result($ano_res, 0, 0);
+		$ano_pmbusercaption = pmb_mysql_result($ano_res, 0, 0);
 	$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./admin.php?categ=external_services&sub=esusergroups&action=editanonymous'\" ";
 	print "		<tr style='cursor: pointer' class='$pair_impair' $tr_javascript>
 					<td>&lt;".$msg["admin_connecteurs_outauth_anonymgroupname"]."&gt;</td>
@@ -85,9 +85,9 @@ function show_esgroup_form($id=0, $esg_name='', $esg_fullname="", $esg_pmbuserid
 			</div>';
 
 	$pmbusers_sql = "SELECT userid, username, nom, prenom FROM users";
-	$pmbusers_res = mysql_query($pmbusers_sql, $dbh);
+	$pmbusers_res = pmb_mysql_query($pmbusers_sql, $dbh);
 	$pmbusers = array();
-	while($pmbusers_row = mysql_fetch_assoc($pmbusers_res)) {
+	while($pmbusers_row = pmb_mysql_fetch_assoc($pmbusers_res)) {
 		$pmbusers[] = $pmbusers_row;
 	}
 	
@@ -111,8 +111,8 @@ function show_esgroup_form($id=0, $esg_name='', $esg_fullname="", $esg_pmbuserid
 	//empr_groups
 	$pmbemprgroups = array();
 	$pmbemprgroup_sql = "SELECT id_groupe, libelle_groupe FROM groupe";
-	$pmbemprgroup_res = mysql_query($pmbemprgroup_sql, $dbh);
-	while($row=mysql_fetch_assoc($pmbemprgroup_res))
+	$pmbemprgroup_res = pmb_mysql_query($pmbemprgroup_sql, $dbh);
+	while($row=pmb_mysql_fetch_assoc($pmbemprgroup_res))
 		$pmbemprgroups[] = $row;
 
 	print '<div class=row><label class="etiquette" for="es_group_emprgroupe">'.$msg["es_group_emprgroupe"].'</label><br />';
@@ -163,18 +163,18 @@ function show_esgroup_form_anonymous() {
 	print '</div>';
 
 	$pmbusers_sql = "SELECT userid, username, nom, prenom FROM users";
-	$pmbusers_res = mysql_query($pmbusers_sql, $dbh);
+	$pmbusers_res = pmb_mysql_query($pmbusers_sql, $dbh);
 	$pmbusers = array();
-	while($pmbusers_row = mysql_fetch_assoc($pmbusers_res)) {
+	while($pmbusers_row = pmb_mysql_fetch_assoc($pmbusers_res)) {
 		$pmbusers[] = $pmbusers_row;
 	}
 	
 	$sql = "SELECT esgroup_pmbusernum FROM es_esgroups WHERE esgroup_id = -1";
-	$res = mysql_query($sql, $dbh);
-	if (!mysql_numrows($res))
+	$res = pmb_mysql_query($sql, $dbh);
+	if (!pmb_mysql_num_rows($res))
 		 $esg_pmbuserid = 1;
 	else
-		$esg_pmbuserid = mysql_result($res, 0, 0);
+		$esg_pmbuserid = pmb_mysql_result($res, 0, 0);
 	
 	//pmbuser
 	print '<div class=row><label class="etiquette" for="es_group_pmbuserid">'.$msg["es_group_pmbuserid"].'</label><br />';
@@ -276,7 +276,7 @@ switch ($action) {
 		if ($es_group_pmbuserid) {
 			$es_group_pmbuserid += 0;
 			$sql = "REPLACE INTO es_esgroups SET esgroup_id = -1, esgroup_name = '".$msg["admin_connecteurs_outauth_anonymgroupname"]."', esgroup_fullname = '".$msg["admin_connecteurs_outauth_anonymgroupfullname"]."', esgroup_pmbusernum = ".$es_group_pmbuserid;
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 		}
 		list_groups();
 		break;

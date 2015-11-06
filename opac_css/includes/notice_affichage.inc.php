@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage.inc.php,v 1.42.2.1 2014-07-29 10:35:18 mbertin Exp $
+// $Id: notice_affichage.inc.php,v 1.48 2015-06-04 08:49:16 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -12,6 +12,8 @@ require_once($class_path."/notice_affichage.class.php");
 require_once($class_path."/notice_affichage.ext.class.php");
 require_once($class_path."/serial_affichage_unimarc.class.php");
 require_once($class_path."/notice_onglet.class.php");
+require_once($class_path."/record_display.class.php");
+require_once($class_path."/record_display_modes.class.php");
 
 //afin d'inclure les fichiers contenant les fonctions particulières d'affichage
 // require_once($include_path."/func_phototheque.inc.php"); EST REMPLACE PAR LE CODE CI-DESSOUS
@@ -26,14 +28,41 @@ if ($opac_notice_groupe_fonction) {
 	}
 }
 
+global $opac_notices_display_modes;
+//on utilise le système de choix des modes d'affichage
+if($opac_notices_display_modes){
+	//le selecteur de mode d'affichage
+	global $recordmodes;
+	$recordmodes = new record_display_modes();
+	if($user_current_mode || $user_current_mode==='0'){
+		//Si on a dans le post la variable $user_current_mode qui determine un choix utilisateur (envoyé par les formulaires)
+		$recordmodes->set_user_current_mode($user_current_mode);
+	}
+}
+
 function get_aff_function() {
 	global $l_typdoc;
 	global $opac_notice_groupe_fonction;
 	global $aff_notice_fonction;
 	global $class_path,$include_path;
 	global $is_aff_notice_fonction;
+	global $recordmodes;
+	global $opac_notices_display_modes;
 	
 	if (!$is_aff_notice_fonction) {
+		
+		//on utilise le système de choix des modes d'affichage
+		if($opac_notices_display_modes && $recordmodes){
+			if($mode_id=$recordmodes->get_current_mode()){
+				$aff_notice_fonction=$recordmodes->get_aff_function($mode_id);
+				
+				if($aff_notice_fonction){
+					$is_aff_notice_fonction=true;
+					return $aff_notice_fonction;
+				}
+			}
+		}
+		
 		$couples=explode(";",$opac_notice_groupe_fonction);
 		for ($i=0; $i<count($couples); $i++) {
 			$c=explode(" ",trim($couples[$i]));
@@ -70,7 +99,7 @@ function get_aff_function() {
 	return $aff_notice_fonction;
 }
 
-function aff_notice($id, $nocart=0, $gen_header=1, $use_cache=0, $mode_aff_notice="", $depliable="", $nodocnum=0, $enrichment=1, $recherche_ajax_mode=0) {
+function aff_notice($id, $nocart=0, $gen_header=1, $use_cache=0, $mode_aff_notice="", $depliable="", $nodocnum=0, $enrichment=1, $recherche_ajax_mode=0, $show_map=1) {
 
 	global $liens_opac;
 	global $opac_notices_format;
@@ -81,6 +110,9 @@ function aff_notice($id, $nocart=0, $gen_header=1, $use_cache=0, $mode_aff_notic
 	global $opac_notice_enrichment;
 	global $opac_recherche_ajax_mode;
 	global $opac_notices_format_onglets;
+	global $lvl;
+	global $record_css_already_included; // Pour pas inclure la css 10 fois
+	global $recordmodes;
 	
 	if ((($opac_cart_allow)&&(!$opac_cart_only_for_subscriber))||(($opac_cart_allow)&&($_SESSION["user_code"]))) {
 		$cart=1; 
@@ -90,26 +122,36 @@ function aff_notice($id, $nocart=0, $gen_header=1, $use_cache=0, $mode_aff_notic
 	if ($nocart) $cart=0;
 	$id+=0;	
 	//Recherche des fonctions d'affichage
+	$entete='';
+	if($recordmodes && $id==-1){
+		$entete.=$recordmodes->show_mode_selector();
+	}
+	
 	$f=get_aff_function();
-	if ($f) return $f($id,$cart);
+	if ($f) return $entete.$f($id,$cart,$gen_header,$use_cache,$mode_aff_notice,$depliable,$nodocnum,$enrichment,$recherche_ajax_mode,$show_map,$recordmodes);
 	
 	if ($id>0) {
-		$header_only=0;
-		if($recherche_ajax_mode && $opac_recherche_ajax_mode){
-			//Si ajax, on ne charge pas tout
-			$header_only=1;
-		}
-		$current = new $opac_notice_affichage_class($id,$liens_opac,$cart,0,$header_only,!$gen_header);
-		if($nodocnum) $current->docnum_allowed = 0;
-		
-		if ($depliable === "") $depliable=$opac_notices_depliable;
-		if ($gen_header) $current->do_header();
 		if ($mode_aff_notice !== "") $type_aff=$mode_aff_notice;
 		else $type_aff=$opac_notices_format;
-		if(!$current->visu_notice){
-			return "";
+		
+		if ($depliable === "") $depliable=$opac_notices_depliable;
+
+		if ($type_aff != AFF_ETA_NOTICES_TEMPLATE_DJANGO) {
+			$header_only=0;
+			if($recherche_ajax_mode && $opac_recherche_ajax_mode){
+				//Si ajax, on ne charge pas tout
+				$header_only=1;
+			}
+			$current = new $opac_notice_affichage_class($id,$liens_opac,$cart,0,$header_only,!$gen_header, $show_map);
+			if($nodocnum) $current->docnum_allowed = 0;
+			
+			if ($gen_header) $current->do_header();
+		
+			if(!$current->visu_notice){
+				return "";
+			}
 		}
-		if($opac_recherche_ajax_mode && $recherche_ajax_mode && $depliable && $type_aff!=AFF_ETA_NOTICES_REDUIT){
+		if($opac_recherche_ajax_mode && $recherche_ajax_mode && $depliable && $type_aff!=AFF_ETA_NOTICES_REDUIT && $type_aff!=AFF_ETA_NOTICES_TEMPLATE_DJANGO){
 			$current->genere_ajax($type_aff,0) ;
 			$retour_aff .= $current->result ;
 		}else{
@@ -139,6 +181,30 @@ function aff_notice($id, $nocart=0, $gen_header=1, $use_cache=0, $mode_aff_notic
 					$current->genere_double($depliable, 'ISBD') ;
 					$retour_aff .= $current->result ;
 					break ;
+				case AFF_ETA_NOTICES_TEMPLATE_DJANGO :
+					global $include_path;
+					global $opac_notices_format_django_directory;
+					
+					if (!$opac_notices_format_django_directory) $opac_notices_format_django_directory = "common";
+					
+					if (!$record_css_already_included) {
+						if (file_exists($include_path."/templates/record/".$opac_notices_format_django_directory."/styles/style.css")) {
+							$retour_aff .= "<link type='text/css' href='./includes/templates/record/".$opac_notices_format_django_directory."/styles/style.css' rel='stylesheet'></link>";
+						}
+						$record_css_already_included = true;
+					}
+					switch ($lvl) {
+						case 'notice_display' :
+						case 'bulletin_display' :
+						case 'resa' :
+							$retour_aff .= record_display::get_display_extended($id);
+							break;
+						case 'more_result' :
+						default :
+							$retour_aff .= record_display::get_display_in_result($id);
+							break;
+					}
+					break;
 				default:
 					$current->do_isbd();
 					$current->do_public();					
@@ -180,7 +246,7 @@ function aff_notice($id, $nocart=0, $gen_header=1, $use_cache=0, $mode_aff_notic
 			}
 		}
 	}	
-	return $retour_aff;
+	return $entete.$retour_aff;
 }
 
 function aff_notice_unimarc($id,$nocart=0, $entrepots_localisations=array()) {

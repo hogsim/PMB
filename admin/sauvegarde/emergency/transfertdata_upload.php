@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: transfertdata_upload.php,v 1.4 2009-05-16 11:12:02 dbellamy Exp $
+// $Id: transfertdata_upload.php,v 1.5 2015-04-03 11:16:24 jpermanne Exp $
 
 //Restauration d'urgence
 
@@ -24,8 +24,8 @@ if ($_tableau_databases[1] && $base_title) {
 	$database_window_title=$_libelle_databases[array_search(LOCATION,$_tableau_databases)].": ";
 } else $database_window_title="" ; 
 
-@$link=mysql_connect($_POST["host"], $_POST["db_user"], $_POST["db_password"]) or die("Impossible de se connecter au serveur MySql en tant qu'admin USER_NAME "); // Le @ ordonne a php de ne pas afficher de message d'erreur
-@mysql_select_db($_POST["db"]) or die("Impossible de se connecter à la base de données $dbnamedbhost");
+@$link=pmb_mysql_connect($_POST["host"], $_POST["db_user"], $_POST["db_password"]) or die("Impossible de se connecter au serveur MySql en tant qu'admin USER_NAME "); // Le @ ordonne a php de ne pas afficher de message d'erreur
+@pmb_mysql_select_db($_POST["db"]) or die("Impossible de se connecter à la base de données $dbnamedbhost");
 
 
 ##### Faire saisir le nom de la bdd, les mots de passe pour securite... et se connecter ensuite. faire quand meme un include db_include pour savoir le charset destination.
@@ -43,7 +43,7 @@ function restore($src) {
 			// open source file
 			$SQL = preg_split('/;\s*\n|;\n/m', $buffer_sql);
 			for($i=0; $i < sizeof($SQL); $i++) {
-				if($SQL[$i]) $result = mysql_query($SQL[$i], $link);
+				if($SQL[$i]) $result = pmb_mysql_query($SQL[$i], $link);
 			}
 		} else {
 			die("can't open file $src to restore");

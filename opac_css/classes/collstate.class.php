@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collstate.class.php,v 1.15.2.3 2015-10-29 09:41:03 jpermanne Exp $
+// $Id: collstate.class.php,v 1.18 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -57,8 +57,8 @@ class collstate {
 		global $dbh;
 		global $opac_sur_location_activate;
 		
-		$myQuery = mysql_query("SELECT * FROM collections_state WHERE collstate_id='".$this->id."' LIMIT 1", $dbh);
-		$mycoll= mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("SELECT * FROM collections_state WHERE collstate_id='".$this->id."' LIMIT 1", $dbh);
+		$mycoll= pmb_mysql_fetch_object($myQuery);
 		
 		$this->serial_id=$mycoll->id_serial;
 		$this->location_id=$mycoll->location_id;
@@ -72,17 +72,17 @@ class collstate {
 		$this->lacune=$mycoll->collstate_lacune;
 		$this->statut=$mycoll->collstate_statut;
 		
-		$myQuery = mysql_query("SELECT * FROM arch_emplacement WHERE archempla_id='".$this->emplacement."' LIMIT 1", $dbh);
-		$myempl= mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("SELECT * FROM arch_emplacement WHERE archempla_id='".$this->emplacement."' LIMIT 1", $dbh);
+		$myempl= pmb_mysql_fetch_object($myQuery);
 		$this->emplacement_libelle=$myempl->archempla_libelle;	
 	
-		$myQuery = mysql_query("SELECT * FROM arch_type WHERE archtype_id='".$this->type."' LIMIT 1", $dbh);
-		$mytype= mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("SELECT * FROM arch_type WHERE archtype_id='".$this->type."' LIMIT 1", $dbh);
+		$mytype= pmb_mysql_fetch_object($myQuery);
 		$this->type_libelle=$mytype->archtype_libelle;	
 		
 		// Lecture des statuts
-		$myQuery = mysql_query("SELECT * FROM arch_statut WHERE archstatut_id='".$this->statut."' LIMIT 1", $dbh);
-		$mystatut= mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("SELECT * FROM arch_statut WHERE archstatut_id='".$this->statut."' LIMIT 1", $dbh);
+		$mystatut= pmb_mysql_fetch_object($myQuery);
 		$this->statut_gestion_libelle=$mystatut->archstatut_gestion_libelle;	
 		$this->statut_opac_libelle=$mystatut->archstatut_opac_libelle;
 		$this->statut_visible_opac=$mystatut->archstatut_visible_opac;	
@@ -90,15 +90,15 @@ class collstate {
 		$this->statut_visible_gestion=$mystatut->archstatut_visible_gestion; 	
 		$this->statut_class_html=$mystatut->archstatut_class_html;
 		
-		$myQuery = mysql_query("select location_libelle, num_infopage, surloc_num from docs_location where idlocation='".$this->location_id."' LIMIT 1", $dbh);
-		$mylocation= mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("select location_libelle, num_infopage, surloc_num from docs_location where idlocation='".$this->location_id."' LIMIT 1", $dbh);
+		$mylocation= pmb_mysql_fetch_object($myQuery);
 		$this->location_libelle=$mylocation->location_libelle;
 		$this->num_infopage=$mylocation->num_infopage;
 		
 		if ($opac_sur_location_activate) {
 			$this->surloc_id = $mylocation->surloc_num;
-			$myQuery = mysql_query("select surloc_libelle from sur_location where surloc_id='".$this->surloc_id."' LIMIT 1", $dbh);
-			$mysurloc = mysql_fetch_object($myQuery);
+			$myQuery = pmb_mysql_query("select surloc_libelle from sur_location where surloc_id='".$this->surloc_id."' LIMIT 1", $dbh);
+			$mysurloc = pmb_mysql_fetch_object($myQuery);
 			$this->surloc_libelle=$mysurloc->surloc_libelle;
 		}		
 	}
@@ -109,7 +109,6 @@ class collstate {
 		global $opac_sur_location_activate, $opac_view_filter_class;
 		global $collstate_list_header, $collstate_list_footer;
 		global $opac_collstate_data, $opac_collstate_order, $opac_url_base;
-		global $charset;
 		
 		$location=$filtre->location;	
 		if($opac_view_filter_class){
@@ -136,9 +135,9 @@ class collstate {
 			if ($opac_collstate_order) $req .= " ORDER BY ".$opac_collstate_order;	 
 			else $req .= " ORDER BY ".($type?"location_libelle, ":"")."archempla_libelle, collstate_cote";	
 		}
-		$myQuery = mysql_query($req, $dbh);
+		$myQuery = pmb_mysql_query($req, $dbh);
 		
-		if((!mysql_error() && ($this->nbr = mysql_num_rows($myQuery)))) {
+		if((!pmb_mysql_error() && ($this->nbr = pmb_mysql_num_rows($myQuery)))) {
 			
 			if ($opac_sur_location_activate) {
 				$tpl_collstate_liste[$type] = str_replace('<!-- surloc -->',$tpl_collstate_surloc_liste,$tpl_collstate_liste[$type]);
@@ -156,7 +155,7 @@ class collstate {
 				$collstate_list_header_deb.="</tr>";
 				$parity=1;
 				$liste="";
-				while(($coll = mysql_fetch_object($myQuery))) {
+				while(($coll = pmb_mysql_fetch_object($myQuery))) {
 					$my_collstate=new collstate($coll->collstate_id);
 					if ($parity++ % 2) $pair_impair = "even"; else $pair_impair = "odd";
 	 				$tr_surbrillance = "onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='".$pair_impair."'\" ";
@@ -178,7 +177,7 @@ class collstate {
 				$liste = $collstate_list_header.$collstate_list_header_deb.$liste.$collstate_list_footer;
 			} else {
 				$parity=1;
-				while(($coll = mysql_fetch_object($myQuery))) {
+				while(($coll = pmb_mysql_fetch_object($myQuery))) {
 					$my_collstate=new collstate($coll->collstate_id);
 					if ($parity++ % 2) $pair_impair = "even"; else $pair_impair = "odd";
 					$tr_javascript="  ";

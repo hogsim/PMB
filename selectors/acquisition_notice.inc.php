@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: acquisition_notice.inc.php,v 1.18.12.3 2015-02-12 15:33:33 jpermanne Exp $
+// $Id: acquisition_notice.inc.php,v 1.22 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "inc.php")) die("no access");
 
@@ -665,8 +665,8 @@ switch ($typ_query) {
 			$date_ech_query_lib=$msg['parperso_nodate'];
 		} elseif (!$date_ech_query) {
 			$q = "select date_add(curdate(), interval 1 month) ";
-			$r = mysql_query($q, $dbh);
-			$date_ech_query=mysql_result($r, 0, 0);
+			$r = pmb_mysql_query($q, $dbh);
+			$date_ech_query=pmb_mysql_result($r, 0, 0);
 			$date_ech_query_lib=format_date($date_ech_query);
 		} else {
 			$date_ech_query_lib=format_date($date_ech_query);

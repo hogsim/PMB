@@ -3,7 +3,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: mache_doc_group_to_html.xsl,v 1.2.6.1 2015-01-07 09:21:31 dbellamy Exp $ 
+$Id: mache_doc_group_to_html.xsl,v 1.3 2015-01-07 09:11:34 pmbs Exp $ 
 Conception: Erwan Martin:
 Design copié de la feuille de style wsdl-viewer.xsl, voir http://tomi.vanek.sk
 -->

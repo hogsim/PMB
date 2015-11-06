@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dailymotion.class.php,v 1.2 2012-02-17 09:17:37 arenou Exp $
+// $Id: dailymotion.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -208,15 +208,15 @@ class dailymotion extends connector {
 		$infos = array();
 		//on va chercher le titre de la notice...
 		$query = "select tit1 from notices where notice_id = ".$this->noticeToEnrich;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$infos['title'] = mysql_result($result,0,0);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$infos['title'] = pmb_mysql_result($result,0,0);
 		}
 		//on va chercher l'auteur principal...
 		$query = "select responsability_author from responsability where responsability_notice =".$this->noticeToEnrich." and responsability_type=0";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$author_id = mysql_result($result,0,0);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$author_id = pmb_mysql_result($result,0,0);
 			$author = new auteur($author_id);
 			$infos['author'] = $author->isbd_entry;
 		}

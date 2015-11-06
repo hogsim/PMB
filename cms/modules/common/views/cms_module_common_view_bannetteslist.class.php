@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_bannetteslist.class.php,v 1.1.2.3 2014-09-30 12:33:35 arenou Exp $
+// $Id: cms_module_common_view_bannetteslist.class.php,v 1.4 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -107,10 +107,10 @@ class cms_module_common_view_bannetteslist extends cms_module_common_view_django
 			}
 			$requete.= " ".$limitation;
 		
-			$resultat = mysql_query($requete, $dbh);
+			$resultat = pmb_mysql_query($requete, $dbh);
 			$cpt_record=0;
 			$datas["bannettes"][$i]['records']=array();
-			while ($r=mysql_fetch_object($resultat)) {	
+			while ($r=pmb_mysql_fetch_object($resultat)) {	
 				$content="";
 				if ($opac_show_book_pics=='1' && ($opac_book_pics_url || $r->thumbnail_url)) {
 					$code_chiffre = pmb_preg_replace('/-|\.| /', '', $r->code);
@@ -173,7 +173,7 @@ class cms_module_common_view_bannetteslist extends cms_module_common_view_django
 	
 	
 	public function get_format_data_structure(){
-		return array(
+		return array_merge(array(
 			array(
 				'var' => "bannettes",
 				'desc' => $this->msg['cms_module_bannetteslist_view_bannettes_desc'],
@@ -296,7 +296,7 @@ class cms_module_common_view_bannetteslist extends cms_module_common_view_django
 					)									
 				)
 			)
-		);
+		),parent::get_format_data_structure());
 		
 		
 	}

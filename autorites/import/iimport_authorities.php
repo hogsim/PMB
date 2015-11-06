@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: iimport_authorities.php,v 1.6 2013-03-21 10:28:55 mbertin Exp $
+// $Id: iimport_authorities.php,v 1.8 2015-04-18 13:01:51 dgoron Exp $
 
 // définition du minimum necessaire
 $base_path="../..";
@@ -15,7 +15,9 @@ require_once($class_path."/origin.class.php");
 require_once($include_path."/templates/import_authorities.tpl.php");
 require_once($class_path."/notice_authority.class.php");
 require_once($class_path."/notice_authority_serie.class.php");
-require_once($base_path."/autorites/import/classes/".$pmb_import_modele_authorities.".class.php");
+if (file_exists($base_path."/autorites/import/classes/".$pmb_import_modele_authorities.".class.php")) {
+	require_once($base_path."/autorites/import/classes/".$pmb_import_modele_authorities.".class.php");
+}
 
 switch($action){
 	// chargement du fichier
@@ -58,7 +60,7 @@ switch($action){
 			$form = str_replace("!!nb_notices_rejetees!!",0,$form);
 			//on vide la table des messages d'erreurs avant de commencer l'import
 			$sql = "DELETE FROM error_log WHERE error_origin LIKE 'iimport_authorities".addslashes(SESSid).".php' ";
-			$sql_result = mysql_query($sql) or die ("Couldn't delete error_log table !");
+			$sql_result = pmb_mysql_query($sql) or die ("Couldn't delete error_log table !");
 		}else{
 			$form = str_replace("!!file_submit!!",$file_submit,$authorities_import_preload_form);
 			$form = str_replace("!!reload!!","yes",$form);
@@ -82,17 +84,17 @@ switch($action){
 		printf ($msg[509], $from_file);
 		//on compte les notices qui restent...
 		$query = "select count(id_import) from import_marc where origine = '".addslashes(SESSid)."'";	
-		$result = mysql_query($query);
-		if(mysql_nums_rows){
-			$nb_notices_remanning = mysql_result($result,0,0);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_nums_rows($result)){
+			$nb_notices_remanning = pmb_mysql_result($result,0,0);
 			if(!$total){
 				$total= $nb_notices_remanning;
 			}
 		}
 		$query = "select notice, id_import from import_marc where origine='".addslashes(SESSid)."' ORDER BY id_import limit $pmb_import_limit_record_load ";
-		$res = mysql_query($query) or die ("Couldn't select import table !");
+		$res = pmb_mysql_query($query) or die ("Couldn't select import table !");
 
-		mysql_query("create table if not exists authorities_import_links (
+		pmb_mysql_query("create table if not exists authorities_import_links (
 			id_authority_import_links int unsigned not null auto_increment,
 			num_authority int unsigned not null default 0,
 			authority_type varchar(50) not null default '',
@@ -103,7 +105,7 @@ switch($action){
 			comment text not null , 
 			primary key (id_authority_import_links)
 		)");
-		mysql_query("create table if not exists authorities_import (
+		pmb_mysql_query("create table if not exists authorities_import (
 			id_authority_import int unsigned not null auto_increment,
 			num_authority int unsigned not null default 0,
 			authority_type varchar(50) not null default '',
@@ -111,8 +113,8 @@ switch($action){
 			primary key (id_authority_import)
 		)");
 
-        if(mysql_num_rows($res)){
-			while ($notobj = mysql_fetch_object($res)) {
+        if(pmb_mysql_num_rows($res)){
+			while ($notobj = pmb_mysql_fetch_object($res)) {
 	            $idnotice_import=$notobj->id_import ;
 	            $nb_notices++;
 	            //on la traite comme une notice d'autorités...
@@ -149,14 +151,14 @@ switch($action){
 	            		}
 	            		
 	            	}elseif(!$notice_authority->error){
-		            	$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('iimport_authorities".addslashes(SESSid).".php', '".addslashes($msg[import_authorite_bad_type].($notice_authority->type != "" ? $msg["import_authorities_type_".$notice_authority->type] : $msg["52"]))."') ") ;
+		            	$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('iimport_authorities".addslashes(SESSid).".php', '".addslashes($msg[import_authorite_bad_type].($notice_authority->type != "" ? $msg["import_authorities_type_".$notice_authority->type] : $msg["52"]))."') ") ;
 		            }
 	            }elseif(!$notice_authority->error){
-	            	$sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('iimport_authorities".addslashes(SESSid).".php', '".addslashes($msg[import_authorite_bad_type].($notice_authority->type != "" ? $msg["import_authorities_type_".$notice_authority->type] : $msg["52"]))."') ") ;
+	            	$sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('iimport_authorities".addslashes(SESSid).".php', '".addslashes($msg[import_authorite_bad_type].($notice_authority->type != "" ? $msg["import_authorities_type_".$notice_authority->type] : $msg["52"]))."') ") ;
 	            }
 				// la notice à été traitée, on la supprime de la table d'import...
 				$query = "delete from import_marc where id_import = ".$idnotice_import;
-				mysql_query($query);
+				pmb_mysql_query($query);
 			}
         }
         //on regarde si besoin d'une autre passe...
@@ -191,17 +193,17 @@ switch($action){
 				}
 			}
 			$gen_liste_log="";
-            $resultat_liste=mysql_query("SELECT error_origin, error_text, count(*) as nb_error FROM error_log where error_origin in ('iimport_authorities".addslashes(SESSid).".php') group by error_origin, error_text ORDER BY error_origin, error_text" );
-            $nb_liste=mysql_num_rows($resultat_liste);
+            $resultat_liste=pmb_mysql_query("SELECT error_origin, error_text, count(*) as nb_error FROM error_log where error_origin in ('iimport_authorities".addslashes(SESSid).".php') group by error_origin, error_text ORDER BY error_origin, error_text" );
+            $nb_liste=pmb_mysql_num_rows($resultat_liste);
             if ($nb_liste>0) {
                 $gen_liste_log = "<br /><br /><b>".$msg[538]."</b><br /><table border='1'>" ;
                 $gen_liste_log.="<tr><th>".$msg[539]."</th><th>".$msg[540]."</th><th>".$msg[541]."</th></tr>";
                 $i_log=0;
                 while ($i_log<$nb_liste) {
                     $gen_liste_log.="<tr>";
-                    $gen_liste_log.="<td>".htmlentities(mysql_result($resultat_liste,$i_log,"error_origin"),ENT_QUOTES,$charset)."</td>" ;
-                    $gen_liste_log.="<td><b>".htmlentities(mysql_result($resultat_liste,$i_log,"error_text"),ENT_QUOTES,$charset)."</b></td>" ;
-                    $gen_liste_log.="<td>".htmlentities(mysql_result($resultat_liste,$i_log,"nb_error"),ENT_QUOTES,$charset)."</td>" ;
+                    $gen_liste_log.="<td>".htmlentities(pmb_mysql_result($resultat_liste,$i_log,"error_origin"),ENT_QUOTES,$charset)."</td>" ;
+                    $gen_liste_log.="<td><b>".htmlentities(pmb_mysql_result($resultat_liste,$i_log,"error_text"),ENT_QUOTES,$charset)."</b></td>" ;
+                    $gen_liste_log.="<td>".htmlentities(pmb_mysql_result($resultat_liste,$i_log,"nb_error"),ENT_QUOTES,$charset)."</td>" ;
                     $gen_liste_log.="</tr>" ;
                     $i_log++;
                    }
@@ -209,8 +211,8 @@ switch($action){
             $gen_liste_str.="</table>\n" ;
             print $gen_liste_log;
 			//on supprime les tables d'import...
-			mysql_query("drop table authorities_import");
-			mysql_query("drop table authorities_import_links");
+			pmb_mysql_query("drop table authorities_import");
+			pmb_mysql_query("drop table authorities_import_links");
 		}
 		break;
 	// formulaire de base	
@@ -269,9 +271,9 @@ function loadfile_in_base(){
 	/* First load of the shot, let's empty the import table */
 	if ($reload=="") {
 		$sql = "DELETE FROM import_marc WHERE origine='".addslashes(SESSid)."' ";
-		$sql_result = mysql_query($sql) or die ("Couldn't delete import table !");
+		$sql_result = pmb_mysql_query($sql) or die ("Couldn't delete import table !");
 		$sql = "DELETE FROM error_log WHERE error_origin LIKE '%_".addslashes(SESSid).".%' ";
-		$sql_result = mysql_query($sql) or die ("Couldn't delete error_log table !");
+		$sql_result = pmb_mysql_query($sql) or die ("Couldn't delete error_log table !");
 	}
 	
 	/* The whole file is in $contents, let's read it */
@@ -292,7 +294,7 @@ function loadfile_in_base(){
 				$str_lu = $str_lu.$car_lu;
 				$j++;
 				$sql = "INSERT INTO import_marc (notice,origine) VALUES('".addslashes($str_lu)."','".addslashes(SESSid)."')";
-				$sql_result = mysql_query($sql) 
+				$sql_result = pmb_mysql_query($sql) 
 					or die ("Couldn't insert record!");
 				if ($j>=$pmb_import_limit_read_file && $i<strlen($contents)) {
 					/* let's rewrite the file with the remaing string  */

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_articleslist.class.php,v 1.9 2013-08-22 09:58:54 mbertin Exp $
+// $Id: cms_module_common_view_articleslist.class.php,v 1.11 2015-06-08 09:12:09 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -49,7 +49,7 @@ class cms_module_common_view_articleslist extends cms_module_common_view_django{
 		$render_datas['articles'] = array();
 		if(is_array($datas)){
 			foreach($datas as $article){
-				$cms_article = new cms_article($article);
+				$cms_article = cms_provider::get_instance("article",$article);
 				$infos= $cms_article->format_datas();
 				$infos['link'] = $this->get_constructed_link("article",$article);
 				$render_datas['articles'][]=$infos;
@@ -75,6 +75,7 @@ class cms_module_common_view_articleslist extends cms_module_common_view_django{
 			'desc'=> $this->msg['cms_module_common_view_article_link_desc']
 		);
 		$format[] = $sections;
+		$format = array_merge($format,parent::get_format_data_structure());
 		return $format;
 	}
 }

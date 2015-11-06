@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_ajax.inc.php,v 1.5.2.1 2014-03-25 10:18:54 apetithomme Exp $
+// $Id: explnum_ajax.inc.php,v 1.7 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -48,10 +48,10 @@ function existing_file($id,$id_repertoire){
 	
 	if(!$id){
 		$rqt = "select repertoire_path, explnum_path, repertoire_utf8, explnum_nomfichier as nom, explnum_extfichier as ext from explnum join upload_repertoire on explnum_repertoire=repertoire_id  where explnum_repertoire='$id_repertoire' and explnum_nomfichier ='$fichier'";
-		$res = mysql_query($rqt,$dbh);
+		$res = pmb_mysql_query($rqt,$dbh);
 		
-		if(mysql_num_rows($res)){
-			$expl = mysql_fetch_object($res);
+		if(pmb_mysql_num_rows($res)){
+			$expl = pmb_mysql_fetch_object($res);
 			$path = str_replace('//','/',$expl->repertoire_path.$expl->explnum_path);
 			if($expl->repertoire_utf8)
 				$path = utf8_encode($path);
@@ -88,43 +88,43 @@ function get_associate_js($explnum_id) {
 function update_associate_author($speaker_id, $author_id) {
 	global $dbh;
 	$query = 'update explnum_speakers set explnum_speaker_author = '.$author_id.' where explnum_speaker_id = '.$speaker_id;
-	mysql_query($query, $dbh);
+	pmb_mysql_query($query, $dbh);
 }
 
 function update_associate_speaker($segment_id, $speaker_id) {
 	global $dbh;
 	$query = 'update explnum_segments set explnum_segment_speaker_num = '.$speaker_id.' where explnum_segment_id = '.$segment_id;
-	mysql_query($query, $dbh);
+	pmb_mysql_query($query, $dbh);
 }
 
 function add_new_speaker($explnum_id) {
 	global $dbh;
 	$query = 'insert into explnum_speakers (explnum_speaker_explnum_num, explnum_speaker_speaker_num) values ('.$explnum_id.', "PMB")';
-	mysql_query($query, $dbh);
+	pmb_mysql_query($query, $dbh);
 }
 
 function delete_associate_speaker($speaker_id) {
 	global $dbh;
 	$query = 'delete from explnum_speakers where explnum_speaker_id = '.$speaker_id;
-	mysql_query($query, $dbh);
+	pmb_mysql_query($query, $dbh);
 }
 
 function add_new_segment($explnum_id, $speaker_id, $start, $end) {
 	global $dbh;
 	if (!$speaker_id) {
 		$query = 'insert into explnum_speakers (explnum_speaker_explnum_num, explnum_speaker_speaker_num) values ('.$explnum_id.', "PMB")';
-		mysql_query($query, $dbh);
-		$speaker_id = mysql_insert_id();
+		pmb_mysql_query($query, $dbh);
+		$speaker_id = pmb_mysql_insert_id();
 	}
 	$duration = $end - $start;
 	$query = 'insert into explnum_segments (explnum_segment_explnum_num, explnum_segment_speaker_num, explnum_segment_start, explnum_segment_duration, explnum_segment_end) value ('.$explnum_id.', '.$speaker_id.', '.$start.', '.$duration.', '.$end.')';
-	mysql_query($query, $dbh);
+	pmb_mysql_query($query, $dbh);
 }
 
 function delete_segments($segments_ids) {
 	global $dbh;
 	$query = 'delete from explnum_segments where explnum_segment_id in ('.$segments_ids.')';
-	mysql_query($query, $dbh);
+	pmb_mysql_query($query, $dbh);
 }
 
 function update_segment_time($segment_id, $start, $end) {
@@ -136,9 +136,9 @@ function update_segment_time($segment_id, $start, $end) {
 		$query .= 'explnum_segment_start = '.$start.', ';
 	} else {
 		$select = 'select explnum_segment_start from explnum_segments where explnum_segment_id = '.$segment_id;
-		$result = mysql_query($select, $dbh);
-		if ($result && mysql_num_rows($result)) {
-			if ($row = mysql_fetch_object($result)) {
+		$result = pmb_mysql_query($select, $dbh);
+		if ($result && pmb_mysql_num_rows($result)) {
+			if ($row = pmb_mysql_fetch_object($result)) {
 				$start = $row->explnum_segment_start;
 			}
 		}
@@ -148,9 +148,9 @@ function update_segment_time($segment_id, $start, $end) {
 		$query .= 'explnum_segment_end = '.$end.', ';
 	} else {
 		$select = 'select explnum_segment_end from explnum_segments where explnum_segment_id = '.$segment_id;
-		$result = mysql_query($select, $dbh);
-		if ($result && mysql_num_rows($result)) {
-			if ($row = mysql_fetch_object($result)) {
+		$result = pmb_mysql_query($select, $dbh);
+		if ($result && pmb_mysql_num_rows($result)) {
+			if ($row = pmb_mysql_fetch_object($result)) {
 				$end = $row->explnum_segment_end;
 			}
 		}
@@ -159,7 +159,7 @@ function update_segment_time($segment_id, $start, $end) {
 	$duration = $end - $start;
 	
 	$query .= 'explnum_segment_duration = '.$duration.' where explnum_segment_id = '.$segment_id;
-	mysql_query($query, $dbh);
+	pmb_mysql_query($query, $dbh);
 }
 
 ?>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_htmlcode_view_htmlcode_bycurl.class.php,v 1.1.2.3 2015-03-17 11:21:06 dbellamy Exp $
+// $Id: cms_module_htmlcode_view_htmlcode_bycurl.class.php,v 1.4 2015-03-17 11:14:41 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

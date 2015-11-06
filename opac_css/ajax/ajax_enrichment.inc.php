@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_enrichment.inc.php,v 1.4 2012-02-14 10:30:23 arenou Exp $
+// $Id: ajax_enrichment.inc.php,v 1.5 2015-04-03 11:16:27 jpermanne Exp $
 
 require_once($class_path."/enrichment.class.php");
 require_once($class_path."/parametres_perso.class.php");
@@ -18,9 +18,9 @@ if(!$id){
 	$return['error'] = "no input";
 }else{
 	$rqt= "select niveau_biblio, typdoc from notices where notice_id='".$id."'";
-	$res = mysql_query($rqt);
-	if(mysql_num_rows($res)){
-		$r = mysql_fetch_object($res);
+	$res = pmb_mysql_query($rqt);
+	if(pmb_mysql_num_rows($res)){
+		$r = pmb_mysql_fetch_object($res);
 		$enrichment = new enrichment($r->niveau_biblio, $r->typdoc);
 		switch($action){
 			case "gettype":

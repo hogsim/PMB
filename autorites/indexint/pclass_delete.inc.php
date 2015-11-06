@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pclass_delete.inc.php,v 1.4 2013-11-28 16:11:29 dgoron Exp $
+// $Id: pclass_delete.inc.php,v 1.5 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,8 +14,8 @@ if($id_pclass == 1){
 	exit;
 }	
 $requete = "SELECT indexint_id FROM indexint WHERE num_pclass='".$id_pclass."' " ;
-$result = mysql_query($requete, $dbh) or die ($requete."<br />".mysql_error());
-if(mysql_num_rows($result)) {
+$result = pmb_mysql_query($requete, $dbh) or die ($requete."<br />".pmb_mysql_error());
+if(pmb_mysql_num_rows($result)) {
 	// Il y a des enregistrements. Interdire l'effacement.
 	error_form_message($msg["pclassement_suppr_impossible"]);
 	exit;
@@ -23,6 +23,6 @@ if(mysql_num_rows($result)) {
 } else {
 	// effacement
 	$dummy = "delete FROM pclassement WHERE id_pclass='$id_pclass' ";
-	mysql_query($dummy, $dbh);		
+	pmb_mysql_query($dummy, $dbh);		
 }
 include('./autorites/indexint/pclass.inc.php');

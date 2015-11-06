@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liste-suggestions.inc.php,v 1.16.6.1 2015-04-13 15:59:03 mbertin Exp $
+// $Id: liste-suggestions.inc.php,v 1.18 2015-04-13 16:12:25 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -120,7 +120,7 @@ if ($acquisition_pdfsug_print) {
 		$aq=new analyse_query(stripslashes($user_input),0,0,0,0);
 		$q = suggestions::listSuggestions(0, $statut, $num_categ, $mask, 0, 0, $aq,'',$sugg_location_id, $user_input, 0, $origine_id, $type_origine);
 	}
-	$res = mysql_query($q, $dbh);
+	$res = pmb_mysql_query($q, $dbh);
 	
 	
 	$ourPDF->addPage();
@@ -144,9 +144,9 @@ if ($acquisition_pdfsug_print) {
 					}else{
 						$req = "select concat(prenom,' ',nom) as nom from users where userid='".$origine_id[$k]."'";
 					}
-					$res_empr = mysql_query($req,$dbh);
-					if($res_empr && mysql_num_rows($res_empr)){
-						$empr = mysql_fetch_object($res_empr);
+					$res_empr = pmb_mysql_query($req,$dbh);
+					if($res_empr && pmb_mysql_num_rows($res_empr)){
+						$empr = pmb_mysql_fetch_object($res_empr);
 						if($nom)$nom.=", ";
 						$nom.=$empr->nom;
 					}
@@ -161,9 +161,9 @@ if ($acquisition_pdfsug_print) {
 			}else{
 				$req = "select concat(prenom,' ',nom) as nom from users where userid='".$origine_id."'";
 			}
-		    $res_empr = mysql_query($req,$dbh);
-		    if($res_empr && mysql_num_rows($res_empr)){
-		   		$empr = mysql_fetch_object($res_empr);
+		    $res_empr = pmb_mysql_query($req,$dbh);
+		    if($res_empr && pmb_mysql_num_rows($res_empr)){
+		   		$empr = pmb_mysql_fetch_object($res_empr);
 		    	$titre =  sprintf($msg['acquisition_sug_list_origine'],$empr->nom);
 		    }
 		}
@@ -202,7 +202,7 @@ if ($acquisition_pdfsug_print) {
 	
 	printEntete();
 
-	while ($row = mysql_fetch_object($res)){
+	while ($row = pmb_mysql_fetch_object($res)){
 	$lib_statut = $sug_map->getPdfComment($row->statut);
 		
 	

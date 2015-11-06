@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_generic_portfolio_collection.class.php,v 1.1.2.2 2014-11-18 10:53:44 arenou Exp $
+// $Id: cms_module_common_selector_generic_portfolio_collection.class.php,v 1.1 2014-11-18 10:41:29 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");

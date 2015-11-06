@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: perio_a2z.class.php,v 1.50.2.7 2015-03-02 08:14:33 mbertin Exp $
+// $Id: perio_a2z.class.php,v 1.62 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -74,9 +74,9 @@ function getData() {
 	
 	$ongletInc=0;
 	$req=$this->getQuery();
-	$resultat=mysql_query($req);
-	if ($nb_notices=mysql_num_rows($resultat)) {
-		while($r=mysql_fetch_object($resultat)){
+	$resultat=pmb_mysql_query($req);
+	if ($nb_notices=pmb_mysql_num_rows($resultat)) {
+		while($r=pmb_mysql_fetch_object($resultat)){
 			if(pmb_substr($r->notice_id,0,pmb_strlen("es)"))=="es" &&  $filtre_select!=2){
 				// si cataloguée, on ne l'affiche pas. sauf si on filtre par fonds externe ($filtre_select!=2)
 				if ($this->get_doublon_ex($this->extract_external_id($r->notice_id))) continue;
@@ -149,9 +149,9 @@ function getDataAbc() {
 	$ongletInc=0;
 	
 	$req=$this->getQuery();
-	$resultat=mysql_query($req);
-	if ($nb_notices=mysql_num_rows($resultat)) {
-		while($r=mysql_fetch_object($resultat)){
+	$resultat=pmb_mysql_query($req);
+	if ($nb_notices=pmb_mysql_num_rows($resultat)) {
+		while($r=pmb_mysql_fetch_object($resultat)){
 			if(pmb_substr($r->notice_id,0,pmb_strlen("es)"))=="es" && $filtre_select!=2){
 				// si cataloguée, on ne l'affiche pas. sauf si on filtre par fonds externe ($filtre_select!=2)
 				if ($this->get_doublon_ex($this->extract_external_id($r->notice_id))) continue;
@@ -396,9 +396,9 @@ function filterSearch($start,$datas) {
 	if(count($titles)<20){
 		$aq=new analyse_query(stripslashes($datas."*"));
 		$query=$aq->get_query("notices", "index_sew", "index_sew", "notice_id", "niveau_biblio='s' AND niveau_hierar='1' AND notice_id IN (".implode(",",$listeId).")");
-		$result = mysql_query($query,$dbh);
+		$result = pmb_mysql_query($query,$dbh);
 		if ($result) {
-			while ($row = mysql_fetch_object($result)) {
+			while ($row = pmb_mysql_fetch_object($result)) {
 				foreach($this->titles as $title){
 					if($title["id"] == $row->notice_id){
 						if(!in_array($title,$titles)){
@@ -478,9 +478,9 @@ function get_form($onglet_sel='1_1',$flag_empty=0,$flag_ajax=0){
 								if ($filtre_select==2 || !$this->get_doublon_ex($this->extract_external_id($id))){
 									$elems = explode("_",$id);
 									$query = "select * from external_count where rid =".$elems[2];
-									$result = mysql_query($query);
-									if(mysql_num_rows($result)){
-										while($row = mysql_fetch_object($result)){
+									$result = pmb_mysql_query($query);
+									if(pmb_mysql_num_rows($result)){
+										while($row = pmb_mysql_fetch_object($result)){
 											$es_queries[]="(select '".$id."' as notice_id,entrepot_source_".$row->source_id.".value as tit1,entrepot_source_".$row->source_id.".i_value as index_sew from external_count join entrepot_source_".$row->source_id." on entrepot_source_".$row->source_id.".recid = external_count.rid where external_count.rid = '".$elems[2]."' and entrepot_source_".$row->source_id.".ufield = '200' and entrepot_source_".$row->source_id.".usubfield='a')";
 										}
 									}
@@ -505,9 +505,9 @@ function get_form($onglet_sel='1_1',$flag_empty=0,$flag_ajax=0){
 						}else if ($int_query){ 
 							$query = $int_query." order by index_sew";
 						}
-						$result = mysql_query($query,$dbh);
+						$result = pmb_mysql_query($query,$dbh);
 						if ($result) {
-							while ($notice = mysql_fetch_object($result)) {
+							while ($notice = pmb_mysql_fetch_object($result)) {
 								if(!$perio_id_list)$perio_id_list="'".$notice->notice_id."'";else	$perio_id_list.=",'".$notice->notice_id."'";
 								$perio = $a2z_perio;
 								
@@ -518,8 +518,8 @@ function get_form($onglet_sel='1_1',$flag_empty=0,$flag_ajax=0){
 									$perio = str_replace('!!abt_actif!!',$this->get_external_icon($notice->notice_id), $perio);
 								}else{
 									$req = "select abt_id from abts_abts  where num_notice=".$notice->notice_id." and date_fin >= CURDATE() ";
-									$res = mysql_query($req);
-									if (mysql_num_rows($res)) {
+									$res = pmb_mysql_query($req);
+									if (pmb_mysql_num_rows($res)) {
 										$perio = str_replace('!!abt_actif!!',"<img src='./images/check.png'>", $perio);									
 									}else{
 										$perio = str_replace('!!abt_actif!!',"", $perio);	
@@ -612,12 +612,12 @@ function get_onglet($onglet_sel='1_1'){
 							if ($this->get_doublon_ex($this->extract_external_id($id_brute))) continue;
 						}
 						$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($this->extract_external_id($id_brute));
-						$myQuery = mysql_query($requete, $dbh);
-						$source_id = mysql_result($myQuery, 0, 0);		
+						$myQuery = pmb_mysql_query($requete, $dbh);
+						$source_id = pmb_mysql_result($myQuery, 0, 0);		
 						$query="select ufield,value from entrepot_source_$source_id where recid='".addslashes($this->extract_external_id($id_brute))."' and ((ufield='200' and usubfield='a') or (ufield='461' and usubfield='t') or (ufield='bl') or (ufield='hl')) ";						
-						$result = mysql_query($query,$dbh);
+						$result = pmb_mysql_query($query,$dbh);
 						if ($result) {
-							while($row= mysql_fetch_object($result)){
+							while($row= pmb_mysql_fetch_object($result)){
 								$infos[$row->ufield] = $row->value;
 							}
 							switch($infos['bl'].$infos['hl']){
@@ -645,17 +645,17 @@ function get_onglet($onglet_sel='1_1'){
 					}else{
 						$query = "select notice_id,tit1 from notices where notice_id =$id_brute";
 						//print $query."<br>";
-						$result = mysql_query($query,$dbh);
+						$result = pmb_mysql_query($query,$dbh);
 						if ($result) {
-							if ($notice = mysql_fetch_object($result)) {
+							if ($notice = pmb_mysql_fetch_object($result)) {
 								$perio = $a2z_perio;
 						
 								$perio = str_replace('!!id!!',$notice->notice_id, $perio);
 								$perio = str_replace('!!perio_title!!',$notice->tit1, $perio);
 						
 								$req = "select abt_id from abts_abts  where num_notice=".$notice->notice_id." and date_fin >= CURDATE() ";
-								$res = mysql_query($req);
-								if (mysql_num_rows($res)) {
+								$res = pmb_mysql_query($req);
+								if (pmb_mysql_num_rows($res)) {
 									$perio = str_replace('!!abt_actif!!',"<img src='./images/check.png'>", $perio);
 								}else{
 									$perio = str_replace('!!abt_actif!!',"", $perio);
@@ -683,20 +683,20 @@ function get_onglet($onglet_sel='1_1'){
 function get_doublon_ex($id){
 	global $dbh;
 	$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($id);
-	$myQuery = mysql_query($requete, $dbh);
-	$source_id = mysql_result($myQuery, 0, 0);		
+	$myQuery = pmb_mysql_query($requete, $dbh);
+	$source_id = pmb_mysql_result($myQuery, 0, 0);		
 	
 	$rqt = "select value from entrepot_source_".$source_id." where recid='".addslashes($id)."' and ufield='011' and usubfield='a'";
-	$res=mysql_query($rqt);
+	$res=pmb_mysql_query($rqt);
 
-	if(mysql_num_rows($res)){
-		if($r = mysql_fetch_object($res)) {			
+	if(pmb_mysql_num_rows($res)){
+		if($r = pmb_mysql_fetch_object($res)) {			
 			$code=$r->value;
 			$rqt = "select notice_id from notices where code='$code'";
-			$res_notice=mysql_query($rqt);
+			$res_notice=pmb_mysql_query($rqt);
 			
-			if(mysql_num_rows($res_notice)){
-				if($r_notice = mysql_fetch_object($res_notice)) {
+			if(pmb_mysql_num_rows($res_notice)){
+				if($r_notice = pmb_mysql_fetch_object($res_notice)) {
 					return $r_notice->notice_id;					
 				}
 			}
@@ -742,16 +742,16 @@ function get_bulletin_retard($serial_id){
 		from perio_relance, abts_abts, docs_location
 		where  location_id=idlocation and rel_abt_num=abt_id and num_notice=$serial_id and rel_comment_opac!='' group by rel_abt_num,rel_date_parution,	rel_libelle_numero order by rel_nb desc";		
 
-	$result = mysql_query($req);
-	if(mysql_num_rows($result)){
+	$result = pmb_mysql_query($req);
+	if(pmb_mysql_num_rows($result)){
 		$tr_class="";
-		while($r = mysql_fetch_object($result)) {	
+		while($r = pmb_mysql_fetch_object($result)) {	
 			$surloc_libelle="";
 			if($opac_sur_location_activate && $r->surloc_num ){
 				$req="select surloc_libelle from sur_location where surloc_id = ".$r->surloc_num;
-				$res_surloc = mysql_query($req);
-				if(mysql_num_rows($res_surloc)){
-					$surloc= mysql_fetch_object($res_surloc);
+				$res_surloc = pmb_mysql_query($req);
+				if(pmb_mysql_num_rows($res_surloc)){
+					$surloc= pmb_mysql_fetch_object($res_surloc);
 					$surloc_libelle=$surloc->surloc_libelle." / ";
 				}
 			}			
@@ -795,8 +795,8 @@ function get_perio($id) {
 	$resultat_aff .= $notice->result;	
 	*/
 	$requete = "SELECT notice_id, niveau_biblio,typdoc,opac_visible_bulletinage FROM notices WHERE notice_id='$id'  and (opac_visible_bulletinage&0x1) LIMIT 1";	
-	$res = @mysql_query($requete, $dbh);
-	if (($obj=mysql_fetch_object($res))) {
+	$res = @pmb_mysql_query($requete, $dbh);
+	if (($obj=pmb_mysql_fetch_object($res))) {
 		//Recherche dans les numéros	
 		$start_num = $bull_num_deb;
 		if($f_bull_deb_id){
@@ -883,7 +883,7 @@ function get_perio($id) {
 		GROUP BY bulletins.bulletin_id ";
 		
 		//MAINTENANT
-		global $gestion_acces_active, $gestion_acces_empr_notice, $opac_show_links_invisible_docnums;
+		global $gestion_acces_active, $gestion_acces_empr_notice, $gestion_acces_empr_docnum, $opac_show_links_invisible_docnums;
 		$join_docnum_noti = $join_docnum_bull = "";
 		if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1) {
 			$ac = new acces();
@@ -902,21 +902,31 @@ function get_perio($id) {
 				$join_docnum_bull = "join notices on bulletins.bulletin_notice = notices.notice_id join notice_statut on notices.statut = notice_statut.id_notice_statut AND ((explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
 			}	
 		}
-		$requete_docnum_noti = "select bulletin_id, count(explnum_id) as nbexplnum from explnum join bulletins on explnum_bulletin = bulletin_id and explnum_notice = 0 ".$join_docnum_noti." where bulletin_notice = ".$id." group by bulletin_id";
-		$requete_docnum_bull = "select bulletin_id, count(explnum_id) as nbexplnum from explnum join bulletins on explnum_bulletin = bulletin_id and explnum_notice = 0 ".$join_docnum_bull." where bulletin_notice = ".$id." group by bulletin_id";
+		$join_docnum_explnum = "";
+		if(!$opac_show_links_invisible_docnums) {
+			if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+				$ac = new acces();
+				$dom_3= $ac->setDomain(3);
+				$join_docnum_explnum = $dom_3->getJoin($_SESSION["id_empr_session"],16,"explnum_id");
+			}else{
+				$join_docnum_explnum = "join explnum_statut on explnum_docnum_statut=id_explnum_statut and ((explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($_SESSION["user_code"]?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
+			}
+		}
+		$requete_docnum_noti = "select bulletin_id, count(explnum_id) as nbexplnum from explnum join bulletins on explnum_bulletin = bulletin_id and explnum_notice = 0 ".$join_docnum_explnum." where bulletin_notice = ".$id." and explnum_bulletin in (select bulletin_id from bulletins ".$join_docnum_noti." where bulletin_notice = ".$id.") group by bulletin_id";
+		$requete_docnum_bull = "select bulletin_id, count(explnum_id) as nbexplnum from explnum join bulletins on explnum_bulletin = bulletin_id and explnum_notice = 0 ".$join_docnum_explnum." where bulletin_notice = ".$id." and explnum_bulletin in (select bulletin_id from bulletins ".$join_docnum_bull." where bulletin_notice = ".$id.") group by bulletin_id";
 		$requete_noti = "select bulletins.*,ifnull(nbexplnum,0) as nbexplnum from bulletins ".$join_noti." left join ($requete_docnum_noti) as docnum_noti on bulletins.bulletin_id = docnum_noti.bulletin_id where bulletins.num_notice != 0 and bulletin_notice = ".$id." $restrict_num $restrict_date GROUP BY bulletins.bulletin_id";
 		$requete_bull = "select bulletins.*,ifnull(nbexplnum,0) as nbexplnum from bulletins ".$join_bull." left join ($requete_docnum_bull) as docnum_bull on bulletins.bulletin_id = docnum_bull.bulletin_id where bulletins.num_notice = 0 and bulletin_notice = ".$id." $restrict_num $restrict_date GROUP BY bulletins.bulletin_id";
 		
 		$requete = "select * from (".$requete_noti." union ".$requete_bull.") as uni where 1 ".$restrict_num." ".$restrict_date;
-		$rescount1=mysql_query($requete);
-		$count1=mysql_num_rows($rescount1);
+		$rescount1=pmb_mysql_query($requete);
+		$count1=pmb_mysql_num_rows($rescount1);
 					
 		//si on recherche par date ou par numéro, le résultat sera trié par ordre croissant
 		if (($restrict_num)||($restrict_date)) $requete.=" ORDER BY date_date, bulletin_numero*1 ";
 		else $requete.=" ORDER BY date_date DESC, bulletin_numero*1 DESC";
 		$requete.=$limiter;
-		$res = @mysql_query($requete, $dbh);
-		$count=mysql_num_rows($res);
+		$res = @pmb_mysql_query($requete, $dbh);
+		$count=pmb_mysql_num_rows($res);
 		if ($count) {
 			ob_start();
 			if ($opac_fonction_affichage_liste_bull) eval("\$opac_fonction_affichage_liste_bull (\$res);");
@@ -964,9 +974,9 @@ function get_external_sources_list(){
 	global $dbh;
 	$es_list = array();
 	$query = "select source_id,parameters from connectors_sources where id_connector = 'es_list'";
-	$result = mysql_query($query,$dbh);
-	if(mysql_num_rows($result)){
-		while($row = mysql_fetch_object($result)){
+	$result = pmb_mysql_query($query,$dbh);
+	if(pmb_mysql_num_rows($result)){
+		while($row = pmb_mysql_fetch_object($result)){
 			$source_params = unserialize($row->parameters);
 			if($source_params['use_in_a2z']){
 				$es_list[$row->source_id]=$source_params['es_selected'];
@@ -984,17 +994,17 @@ function get_external_icon($id){
 	$infos = explode("_",$id);
 	$query = "select ico_notice,parameters from connectors_sources where source_id = ".$infos[1];
 	$icon = "";
-	$result =mysql_query($query);
-	if(mysql_num_rows($result)){
-		$row =mysql_fetch_object($result);
+	$result =pmb_mysql_query($query);
+	if(pmb_mysql_num_rows($result)){
+		$row =pmb_mysql_fetch_object($result);
 		$params = unserialize($row->parameters);
 		if($params['source_as_origine'] == 0){
 			$icon = "<img src='./images/".$row->ico_notice."'/>";
 		}else{
 			$query="select ico_notice,name from connectors_sources join external_count on connectors_sources.source_id = external_count.source_id where rid = ".$infos[2];
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$icon = "<img src='./images/".$row->ico_notice."'/>";
 			}
 		}

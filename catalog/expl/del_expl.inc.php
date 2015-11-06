@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: del_expl.inc.php,v 1.15.6.1 2014-06-05 15:01:46 dgoron Exp $
+// $Id: del_expl.inc.php,v 1.18 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -12,16 +12,16 @@ print "<div class=\"row\"><h1>${msg[313]}</h1></div>";
 //Récupération de l'ID de l'exemplaire
 if (!$expl_id || !$cb) {
 	$requete = "select expl_id, expl_cb from exemplaires where expl_cb='$cb' or expl_id='$expl_id'";
-	$result=@mysql_query($requete);
-	if (mysql_num_rows($result)) {
-		$expl_id=mysql_result($result,0,0);
-		$cb=mysql_result($result,0,1);
+	$result=@pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($result)) {
+		$expl_id=pmb_mysql_result($result,0,0);
+		$cb=pmb_mysql_result($result,0,1);
 	}
 }
 
 $requete = "select 1 from pret where pret_idexpl='$expl_id' ";
-$result=@mysql_query($requete);
-if (mysql_num_rows($result)) {
+$result=@pmb_mysql_query($requete);
+if (pmb_mysql_num_rows($result)) {
 	// gestion erreur prêt en cours
 	error_message($msg[416], $msg[impossible_expl_del_pret], 1, "./catalog.php?categ=isbd&id=$id");
 } else {
@@ -31,17 +31,17 @@ if (mysql_num_rows($result)) {
 	}
 	// nettoyage doc. à ranger
 	$requete_suppr = "delete from resa_ranger where resa_cb in (select expl_cb from exemplaires where expl_id='".$expl_id."') ";
-	$result_suppr = mysql_query ($requete_suppr, $dbh);
+	$result_suppr = pmb_mysql_query($requete_suppr, $dbh);
 	
 	$requete = "DELETE FROM exemplaires WHERE expl_cb='$cb' or expl_id='$expl_id'";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	audit::delete_audit (AUDIT_EXPL, $expl_id) ;
 	
 	$query_caddie = "select caddie_id from caddie_content, caddie where type='EXPL' and object_id ='$expl_id' and caddie_id=idcaddie ";
-	$result_caddie = @mysql_query($query_caddie, $dbh);
-	while($cad = mysql_fetch_object($result_caddie)) {
+	$result_caddie = @pmb_mysql_query($query_caddie, $dbh);
+	while($cad = pmb_mysql_fetch_object($result_caddie)) {
 		$req_suppr_caddie="delete from caddie_content where caddie_id = '$cad->caddie_id' and object_id ='$expl_id' " ;
-		@mysql_query($req_suppr_caddie, $dbh);
+		@pmb_mysql_query($req_suppr_caddie, $dbh);
 	}
 
 	//Supression des champs perso
@@ -52,7 +52,13 @@ if (mysql_num_rows($result)) {
 	
 	// nettoyage transfert
 	$requete_suppr = "delete from transferts_demande where num_expl='$expl_id'";
-	$result_suppr = mysql_query($requete_suppr);
+	$result_suppr = pmb_mysql_query($requete_suppr);
+	
+	// nettoyage indexation concepts
+	if ($expl_id) {
+		$index_concept = new index_concept($expl_id, TYPE_EXPL);
+		$index_concept->delete();
+	}
 	
 	print "<div class='row'><div class='msg-perio'>".$msg[maj_encours]."</div></div>";
 	$id_form = md5(microtime());

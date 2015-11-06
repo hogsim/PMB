@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: default.inc.php,v 1.41.2.2 2014-07-24 09:03:28 dgoron Exp $
+// $Id: default.inc.php,v 1.45 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -122,8 +122,8 @@ if ($id_thes == -1) { //on affiche la liste des thesaurus
 	if (!$last_param) $requete.= "and noeuds.num_parent = '".$parent."' ";
 	if ($last_param)
 		$requete .= $limit_param;
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 
 	if(!$page) $page=1;
 	$debut =($page-1)*$nb_per_page;	
@@ -151,16 +151,16 @@ if ($id_thes == -1) { //on affiche la liste des thesaurus
 			$requete.= "limit ".$debut.",".$nb_per_page." ";
 		}
 	}
-	$result = mysql_query($requete, $dbh);
+	$result = pmb_mysql_query($requete, $dbh);
 		
-	if(mysql_num_rows($result)) {
+	if(pmb_mysql_num_rows($result)) {
 		
 		$browser_top = "<a href='./autorites.php?categ=categories&sub=&parent=0&id=0'>";
 		$browser_top.= "<img src='./images/top.gif' border='0' hspace='3' align='middle'></a>";
 		
 		if (!$last_param) {
 			// récupération de la 1ère entrée et création du header
-			$cat = mysql_fetch_row($result);
+			$cat = pmb_mysql_fetch_row($result);
 			$tcateg =  new category($cat[0]);
 			if(sizeof($tcateg->path_table)) {
 				for($i=0; $i < sizeof($tcateg->path_table) - 1; $i++){
@@ -186,15 +186,15 @@ if ($id_thes == -1) { //on affiche la liste des thesaurus
 		
 		$num_auth_present=false;
 		$req="SELECT id_authority_source FROM authorities_sources WHERE authority_type='category' AND TRIM(authority_number) !='' LIMIT 1";
-		$res_aut=mysql_query($req,$dbh);
-		if($res_aut && mysql_num_rows($res_aut)){
+		$res_aut=pmb_mysql_query($req,$dbh);
+		if($res_aut && pmb_mysql_num_rows($res_aut)){
 			$browser_content=str_replace("<!--!!col_num_autorite!!-->","<th>".$msg["authorities_number"]."</th>",$browser_content);
 			$num_auth_present=true;
 		}
 	
 		$odd_even=0;
-		mysql_data_seek($result, 0);
-		while($cat = mysql_fetch_row($result)) {
+		pmb_mysql_data_seek($result, 0);
+		while($cat = pmb_mysql_fetch_row($result)) {
 			$tcateg =  new category($cat[0]);
 			if ($odd_even==0) {
 				$browser_content .= "	<tr class='odd'>";
@@ -231,11 +231,11 @@ if ($id_thes == -1) { //on affiche la liste des thesaurus
 			//Numéros d'autorite
 			if($num_auth_present){
 				$requete="SELECT authority_number,origin_authorities_name, origin_authorities_country FROM authorities_sources JOIN origin_authorities ON num_origin_authority=id_origin_authorities WHERE authority_type='category' AND num_authority='".$tcateg->id."' AND TRIM(authority_number) !='' GROUP BY authority_number,origin_authorities_name,origin_authorities_country ORDER BY authority_favorite DESC, origin_authorities_name";
-				$res_aut=mysql_query($requete,$dbh);
-				if($res_aut && mysql_num_rows($res_aut)){
+				$res_aut=pmb_mysql_query($requete,$dbh);
+				if($res_aut && pmb_mysql_num_rows($res_aut)){
 					$browser_content .= "<td>";
 					$first=true;
-					while ($aut = mysql_fetch_object($res_aut)) {
+					while ($aut = pmb_mysql_fetch_object($res_aut)) {
 						if(!$first)$browser_content .=", ";
 						$browser_content .=htmlentities($aut->authority_number,ENT_QUOTES,$charset);
 						if($tmp=trim($aut->origin_authorities_name)){
@@ -260,7 +260,7 @@ if ($id_thes == -1) { //on affiche la liste des thesaurus
 }	
 	
 	//Barre de navigation
-	$url_base=$PHP_SELF."?categ=categories&sub=&id_thes=".$id_thes."&parent=".$parent;
+	$url_base="./autorites.php?categ=categories&sub=&id_thes=".$id_thes."&parent=".$parent;
 	if (!$last_param && $pagine)
 		$nav_bar = aff_pagination ($url_base, $nbr_lignes, $nb_per_page, $page, 10, false, true) ;
 	else $nav_bar = "";

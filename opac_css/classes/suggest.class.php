@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggest.class.php,v 1.7.2.2 2015-09-16 11:12:10 jpermanne Exp $
+// $Id: suggest.class.php,v 1.9 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");
@@ -118,10 +118,6 @@ class suggest {
 	function findWords() {
 		$this->cleanInputString = $this->cleanString($this->inputString);
 		$this->arrayWords = str_word_count($this->cleanInputString,1);
-		//on nettoie les doublons éventuels
-		$this->arrayWords = array_values(array_unique($this->arrayWords));
-		//on limite le nombre de mots cherchés
-		$this->arrayWords = array_slice($this->arrayWords,0,5);
 		if(count($this->arrayWords)){
 			$this->findAndPermuteSimilars();
 		}
@@ -170,11 +166,11 @@ class suggest {
 								ORDER BY levenshtein('".addslashes($word)."',word) ASC
 							) as R1
 						LIMIT ".$maxSimilars;
-				$res=mysql_query($query,$dbh);
+				$res=pmb_mysql_query($query,$dbh);
 				$count=1;
-				if($res && mysql_num_rows($res)){
-					$nbRows=mysql_num_rows($res);
-					while($row=mysql_fetch_object($res)){
+				if($res && pmb_mysql_num_rows($res)){
+					$nbRows=pmb_mysql_num_rows($res);
+					while($row=pmb_mysql_fetch_object($res)){
 						$this->arraySimilarsByWord[$key][] = $row->id_word;
 						$this->arraySimilars[$row->id_word]["word"] = $row->word;
 						$this->arraySimilars[$row->id_word]["pond"] = $count/$nbRows;
@@ -269,9 +265,9 @@ class suggest {
 						$query.=" AND code_champ NOT IN (12,13,14)";
 					}
 					$query.=" ORDER BY 4 LIMIT 0,".$this->maxResultsByPermutation;
-					$res=mysql_query($query,$dbh) or die();
-					if(mysql_num_rows($res)){				
-						while($row=mysql_fetch_object($res)){
+					$res=pmb_mysql_query($query,$dbh) or die();
+					if(pmb_mysql_num_rows($res)){				
+						while($row=pmb_mysql_fetch_object($res)){
 							$key=$row->id_notice."_".$row->code_champ."_".$row->code_ss_champ."_".$row->field_position."_".$itemPermutation[0];
 							$arrayResults[$key]=$row->field_position*$this->arraySimilars[$itemPermutation[0]]["pond"];
 						}
@@ -307,9 +303,9 @@ class suggest {
 						}
 					}
 					$query="SELECT ".$select." FROM ".$from." WHERE ".$where;
-					$res=mysql_query($query,$dbh) or die();
-					if(mysql_num_rows($res)){
-						while($row=mysql_fetch_object($res)){
+					$res=pmb_mysql_query($query,$dbh) or die();
+					if(pmb_mysql_num_rows($res)){
+						while($row=pmb_mysql_fetch_object($res)){
 							$key=$row->id_notice."_".$row->code_champ."_".$row->code_ss_champ."_".$row->field_position."_".implode("_",$itemPermutation);
 							$arrayResults[$key]=$row->distance*$ponderation;
 						}
@@ -325,8 +321,8 @@ class suggest {
 						WHERE id_notice=".$tmpArray[0]." 
 						AND code_champ=".$tmpArray[1]." 
 						AND code_ss_champ=".$tmpArray[2];
-				$res=mysql_query($query,$dbh) or die();
-				$row=mysql_fetch_object($res);
+				$res=pmb_mysql_query($query,$dbh) or die();
+				$row=pmb_mysql_fetch_object($res);
 				$creeElement=true;
 				if(count($this->arrayResults)){
 					foreach($this->arrayResults as $key2=>$value2){
@@ -370,16 +366,14 @@ class suggest {
 				}
 				$this->arrayResults=array_merge($tmpArray,$this->arrayResults);	
 				//limitation des résultats et gestion de l'affichage
-				$arrayUniqueAffiche=array();
 				foreach($this->arrayResults as $key=>$value){
-					if (count($arrayUniqueAffiche)<$this->maxSuggestions && !in_array($value["field_content"],$arrayUniqueAffiche)) {
-						//champ dans lequel la valeur a été trouvée : 27/08/2015 on n'affiche plus le champs
-						//$this->arrayResults[$key]["field_name"]=$this->tbChampBase[$value["field_subfield"]];
+					if ($key<$this->maxSuggestions) {
+						//champ dans lequel la valeur a été trouvée
+						$this->arrayResults[$key]["field_name"]=$this->tbChampBase[$value["field_subfield"]];
 						//passage en gras des mots
 						$this->arrayResults[$key]["field_content"]=$this->markBold($value["field_content"],implode("|",$search));
 						//pour les occurences trop longues, juste les mots en gras
 						$this->arrayResults[$key]["field_content_search"]=$this->listFoundWords($this->arrayResults[$key]["field_content"]);
-						$arrayUniqueAffiche[]=$value["field_content"];
 					} else {
 						unset($this->arrayResults[$key]);
 					}

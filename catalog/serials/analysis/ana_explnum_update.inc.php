@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ana_explnum_update.inc.php,v 1.12 2009-07-03 09:35:43 kantin Exp $
+// $Id: ana_explnum_update.inc.php,v 1.14 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,8 +19,8 @@ if ($gestion_acces_active==1 && $gestion_acces_user_notice==1) {
 	$dom_1= $ac->setDomain(1);
 	$acces_j = $dom_1->getJoin($PMBuserid,8,'bulletin_notice');
 	$q = "select count(1) from bulletins $acces_j where bulletin_id=".$bul_id;
-	$r = mysql_query($q, $dbh);
-	if(mysql_result($r,0,0)==0) {
+	$r = pmb_mysql_query($q, $dbh);
+	if(pmb_mysql_result($r,0,0)==0) {
 		$acces_m=0;
 	}
 }
@@ -36,6 +36,6 @@ if ($acces_m==0) {
 	
 	$retour = "./catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=$bul_id";
 	$explnum = new explnum($f_explnum_id);
-	$explnum->mise_a_jour($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk);	
+	$explnum->mise_a_jour($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk, $f_explnum_statut);	
 }
 ?>

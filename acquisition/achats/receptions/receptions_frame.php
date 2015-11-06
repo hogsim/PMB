@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: receptions_frame.php,v 1.8 2013-04-16 08:16:41 mbertin Exp $
+// $Id: receptions_frame.php,v 1.10 2015-04-03 11:16:26 jpermanne Exp $
 
 // définition du minimum nécessaire
 $base_path="./../../..";
@@ -342,6 +342,8 @@ function add_expl() {
 
 function do_explnum_form() {
 	global $recept_deliv_form_explnum;
+	global $deflt_explnum_statut;
+	$recept_deliv_form_explnum = str_replace('!!statut_list!!', gen_liste_multiple ("select id_explnum_statut, gestion_libelle from explnum_statut order by 2", "id_explnum_statut", "gestion_libelle", "id_explnum_statut", "f_explnum_statut", "", $deflt_explnum_statut, "", "","","",0), $recept_deliv_form_explnum);
 	return $recept_deliv_form_explnum;
 }
 
@@ -365,16 +367,16 @@ function do_sugg_form($id_suggestion) {
 				default:
 				case '0' :
 				 	$q_user = "SELECT userid, nom, prenom FROM users where userid = '".$orig['origine']."'";
-					$r_user = mysql_query($q_user, $dbh);
-					$row_user=mysql_fetch_row($r_user);
+					$r_user = pmb_mysql_query($q_user, $dbh);
+					$row_user=pmb_mysql_fetch_row($r_user);
 					$list_orig = htmlentities($row_user[1], ENT_QUOTES, $charset);
 					if ($row_user[2]) $list_orig.= ", ".htmlentities($row_user[2], ENT_QUOTES, $charset);					
 					$list_orig .= "<br />";
 					break;
 				case '1' :
 				 	$q_empr = "SELECT id_empr, empr_nom, empr_prenom FROM empr where id_empr = '".$orig['origine']."'";
-					$r_empr = mysql_query($q_empr, $dbh);
-					$row_empr=mysql_fetch_row($r_empr);
+					$r_empr = pmb_mysql_query($q_empr, $dbh);
+					$row_empr=pmb_mysql_fetch_row($r_empr);
 					$list_orig.= htmlentities($row_empr[1], ENT_QUOTES, $charset);
 					if ($row_empr[2]) $list_orig.= ", ".htmlentities($row_empr[2], ENT_QUOTES, $charset);
 					$list_orig .= "<br />";
@@ -401,7 +403,7 @@ function do_sugg_form($id_suggestion) {
 function upload_file() {
 	
 	global $f_fichier, $id_lig, $typ_lig, $id_prod, $no, $base_path;
-	global $id_rep, $path, $up_place, $f_fichier, $f_url, $deflt_upload_repertoire, $pmb_indexation_docnum, $pmb_indexation_docnum_default,$ck_index ;
+	global $id_rep, $path, $up_place, $f_fichier, $f_url, $f_explnum_statut, $deflt_upload_repertoire, $pmb_indexation_docnum, $pmb_indexation_docnum_default,$ck_index ;
 
 	switch($typ_lig) {
 		case '1': //notice
@@ -433,7 +435,7 @@ function upload_file() {
 		if ($pmb_indexation_docnum && $pmb_indexation_docnum_default) $ck_index=1;
 		$explnum = new explnum();
 		$retour = $base_path.'/acquisition/achats/receptions/receptions_frame.php?action=delivery&no='.$no.'&id_lig='.$id_lig.'&typ_lig='.$typ_lig.'&id_prod='.$id_prod;
-		$explnum->mise_a_jour($f_notice, $f_bulletin, '', $f_url, $retour,0,0);
+		$explnum->mise_a_jour($f_notice, $f_bulletin, '', $f_url, $retour,0,0, $f_explnum_statut);
 	}
 	return;
 }
@@ -510,12 +512,12 @@ function update() {
 	//La commande est-elle soldée
 	$tab_cde = actes::getLignes($id_cde);
 	$solde = true;
-	while (($row_cde = mysql_fetch_object($tab_cde))) {
+	while (($row_cde = pmb_mysql_fetch_object($tab_cde))) {
 		
 		if ($row_cde->type_ligne != 3) {	// Frais, non livrables
 			$tab_liv = lignes_actes::getLivraisons($row_cde->id_ligne);
 			$nb_rec = 0;
-			while (($row_liv = mysql_fetch_object($tab_liv))) {
+			while (($row_liv = pmb_mysql_fetch_object($tab_liv))) {
 				$nb_rec = $nb_rec + $row_liv->nb;
 			}
 			if ($row_cde->nb > $nb_rec) {
@@ -582,7 +584,7 @@ function undo() {
 	
 	$lg_liv->delete();
 	$r = actes::getLignes($lg_liv->num_acte);
-	if (mysql_num_rows($r)==0) {
+	if (pmb_mysql_num_rows($r)==0) {
 		$liv->delete();
 	}
 	

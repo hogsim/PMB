@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesPublishers.class.php,v 1.5 2013-02-20 16:09:28 mbertin Exp $
+// $Id: pmbesPublishers.class.php,v 1.6 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,9 +37,9 @@ class pmbesPublishers extends external_services_api_class {
 			
 		$requete  = "SELECT notice_id FROM notices WHERE (ed1_id='$publisher_id' or ed2_id='$publisher_id')"; 
 			
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		if ($res)
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = $row["notice_id"];
 			}
 	
@@ -59,10 +59,10 @@ class pmbesPublishers extends external_services_api_class {
 			throw new Exception("Missing parameter: publisher_id");
 			
 		$sql = "SELECT * FROM publishers WHERE ed_id = ".$publisher_id;
-		$res = mysql_query($sql);
+		$res = pmb_mysql_query($sql);
 		if (!$res)
 			throw new Exception("Not found: publisher_id = ".$publisher_id);
-		$row = mysql_fetch_assoc($res);
+		$row = pmb_mysql_fetch_assoc($res);
 
 		$result = array(
 			"publisher_id" => $row["ed_id"],

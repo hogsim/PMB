@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serial_view.inc.php,v 1.10.12.1 2014-04-17 08:06:25 dgoron Exp $
+// $Id: serial_view.inc.php,v 1.12 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -24,10 +24,10 @@ if ($acces_l==0) {
 	error_message('', htmlentities($dom_1->getComment('view_seri_error'), ENT_QUOTES, $charset), 1, '');
 } else {
 	if($serial_id) {
-		$myQuery = mysql_query("SELECT * FROM notices WHERE notice_id=$serial_id ", $dbh);
+		$myQuery = pmb_mysql_query("SELECT * FROM notices WHERE notice_id=$serial_id ", $dbh);
 	}
 	
-	if($serial_id && mysql_num_rows($myQuery)) {
+	if($serial_id && pmb_mysql_num_rows($myQuery)) {
 		$sort_children = 1;
 		show_serial_info($serial_id, $page, $nbr_lignes);
 	} else {

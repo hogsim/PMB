@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: acces.inc.php,v 1.2 2009-07-28 17:01:08 dbellamy Exp $
+// $Id: acces.inc.php,v 1.3 2014-09-17 13:52:38 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -21,6 +21,11 @@ if ($gestion_acces_active==1 && $gestion_acces_user_notice==1 && $dom_id==1) {
 //droits d'acces emprunteur/notice
 if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1 && $dom_id==2) {
 	$dom= $ac->setDomain(2);
+}
+
+//droits d'acces emprunteur/docnums
+if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1 && $dom_id==3) {
+	$dom= $ac->setDomain(3);
 }
 
 if (is_object($dom)) {

@@ -2,9 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bul_expl_update.inc.php,v 1.27.2.3 2015-04-16 11:42:47 jpermanne Exp $
+// $Id: bul_expl_update.inc.php,v 1.33 2015-04-16 11:39:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
+
+require_once("$class_path/serialcirc_diff.class.php");
+require_once($class_path."/serialcirc.class.php");
 
 // mise a jour de l'entete de page
 if(!$expl_id) {
@@ -23,8 +26,8 @@ if ($gestion_acces_active==1 && $gestion_acces_user_notice==1) {
 	$dom_1= $ac->setDomain(1);
 	$acces_j = $dom_1->getJoin($PMBuserid,8,'bulletin_notice');
 	$q = "select count(1) from bulletins $acces_j where bulletin_id=".$expl_bulletin;
-	$r = mysql_query($q, $dbh);
-	if(mysql_result($r,0,0)==0) {
+	$r = pmb_mysql_query($q, $dbh);
+	if(pmb_mysql_result($r,0,0)==0) {
 		$acces_m=0;
 	}
 }
@@ -71,8 +74,8 @@ if ($acces_m==0) {
 		// si le nouveau code-barre est deja utilise, on reste sur l'ancien
 		$requete = "SELECT expl_id FROM exemplaires WHERE expl_cb='$f_ex_cb'";
 		
-		$myQuery = mysql_query($requete, $dbh);
-		if(!($result=mysql_result($myQuery, 0, 0))) {
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(!($result=pmb_mysql_result($myQuery, 0, 0))) {
 			$expl_cb = $f_ex_cb;
 		} else {
 			// Verif si expl_id est celui poste
@@ -100,8 +103,8 @@ if ($acces_m==0) {
 	$transfert_origine="";
 	if($expl_id){
 		$rqt = "SELECT id_transfert FROM transferts, transferts_demande WHERE num_transfert=id_transfert and etat_transfert=0 AND num_expl='".$expl_id."' " ;
-		$res = mysql_query ( $rqt );
-		if (!mysql_num_rows($res)){
+		$res = pmb_mysql_query( $rqt );
+		if (!pmb_mysql_num_rows($res)){
 			// pas de transfert en cours, on met à jour transfert_location_origine
 			$transfert_origine= ", transfert_location_origine='$expl_location', transfert_statut_origine='$expl_statut', transfert_section_origine='$expl_section' ";
 		}
@@ -132,7 +135,7 @@ if ($acces_m==0) {
 		$values .= ", type_antivol='$type_antivol'";
 		$values .= ", expl_nbparts='$f_ex_nbparts'";
 		$requete = "UPDATE exemplaires SET $values WHERE expl_id=$expl_id AND expl_notice=0 LIMIT 1";
-		$myQuery = mysql_query($requete, $dbh);		
+		$myQuery = pmb_mysql_query($requete, $dbh);		
 		$audit->get_new_infos("SELECT expl_statut, expl_location, transfert_location_origine, transfert_statut_origine, transfert_section_origine, expl_owner FROM exemplaires WHERE expl_cb='$expl_cb' ");
 		$audit->save_info_modif(AUDIT_EXPL, $expl_id,"bul_expl_update.inc.php");
 		
@@ -154,9 +157,22 @@ if ($acces_m==0) {
 		$values .= ", type_antivol='$type_antivol'";
 		$values .= ", expl_nbparts='$f_ex_nbparts'";
 		$requete = "INSERT INTO exemplaires set $values , create_date=sysdate() ";
-		$myQuery = mysql_query($requete, $dbh);
-		$expl_id=mysql_insert_id();
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		$expl_id=pmb_mysql_insert_id();
 		audit::insert_creation(AUDIT_EXPL, $expl_id) ;
+	}
+	
+	if($abt_id && $serial_circ_add)		
+	$serialcirc_diff=new serialcirc_diff(0,$abt_id);
+		// Si c'est à faire circuler
+	if($serialcirc_diff->id){ 
+		$serialcirc_diff->add_circ_expl($expl_id);
+	}
+	
+	// traitement des concepts
+	if($thesaurus_concepts_active == 1){
+		$index_concept = new index_concept($expl_id, TYPE_EXPL);
+		$index_concept->save();
 	}
 	
 	//Insertion des champs personalises
@@ -164,10 +180,10 @@ if ($acces_m==0) {
 	
 	// Mise a jour de la table notices_mots_global_index pour toutes les notices en relation avec l'exemplaire
 	$req_maj="SELECT bulletin_notice,num_notice, analysis_notice FROM bulletins LEFT JOIN analysis ON analysis_bulletin=bulletin_id WHERE bulletin_id='".$expl_bulletin."'";
-	$res_maj=mysql_query($req_maj);
-	if($res_maj && mysql_num_rows($res_maj)){
+	$res_maj=pmb_mysql_query($req_maj);
+	if($res_maj && pmb_mysql_num_rows($res_maj)){
 		$first=true;//Pour la premiere ligne de résultat on doit indexer aussi la notice de périodique et de bulletin au besoin
-		while ( $ligne=mysql_fetch_object($res_maj) ) {
+		while ( $ligne=pmb_mysql_fetch_object($res_maj) ) {
 			if($first){
 				if($ligne->bulletin_notice){
 					notice::majNoticesMotsGlobalIndex($ligne->bulletin_notice,'expl');

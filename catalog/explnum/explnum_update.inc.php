@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_update.inc.php,v 1.15 2012-09-04 15:46:47 dbellamy Exp $
+// $Id: explnum_update.inc.php,v 1.16 2014-09-17 07:28:54 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -27,5 +27,5 @@ if ($acces_m==0) {
 	$retour = "./catalog.php?categ=isbd&id=$f_notice";
 	
 	$explnum = new explnum($f_explnum_id);
-	$explnum->mise_a_jour($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk);	
+	$explnum->mise_a_jour($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk, $f_explnum_statut);	
 }

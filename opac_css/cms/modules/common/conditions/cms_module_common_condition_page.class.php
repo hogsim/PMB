@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_condition_page.class.php,v 1.4 2012-05-26 15:42:04 arenou Exp $
+// $Id: cms_module_common_condition_page.class.php,v 1.5 2014-11-20 15:19:39 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -43,12 +43,14 @@ class cms_module_common_condition_page extends cms_module_common_condition{
 		global $lvl,$pageid;
 		
 		$selector = $this->get_selected_selector();
-		$value = $selector->get_value();
+		$values = $selector->get_value();
 		//on regarde si on est sur la bonne page...
-		if($lvl == "cmspage" && $pageid == $value){
-			return true;
-		}else{
-			return false;
-		}
+		foreach($values as $value){
+			if($lvl == "cmspage" && $pageid == $value){
+				return true;
+			}
+		}	
+		return false;
+		
 	}
 }

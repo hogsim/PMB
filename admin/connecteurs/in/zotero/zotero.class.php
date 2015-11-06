@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: zotero.class.php,v 1.1 2014-01-30 16:28:16 dbellamy Exp $
+// $Id: zotero.class.php,v 1.2 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -261,7 +261,7 @@ class zotero extends connector {
 				if ($ref) {
 					//Suppression anciennes notices
 					$q="delete from entrepot_source_".$this->source_id." where ref='".addslashes($ref)."'";
-					@mysql_query($q,$dbh);
+					@pmb_mysql_query($q,$dbh);
 
 					//Insertion de l'entête
 					$n_header["rs"]=$rec_uni_dom->get_value("unimarc/notice/rs");
@@ -273,14 +273,14 @@ class zotero extends connector {
 		
 					//Récupération d'un ID
 					$requete="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$this->source_id." ".$ref)."', ".$this->source_id.")";
-					$rid=mysql_query($requete);
-					if ($rid) $recid=mysql_insert_id();
+					$rid=pmb_mysql_query($requete);
+					if ($rid) $recid=pmb_mysql_insert_id();
 		
 					foreach($n_header as $hc=>$code) {
 						$requete="insert into entrepot_source_".$this->source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid) values(
 						'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 						'".$hc."','',-1,0,'".addslashes($code)."','',$recid)";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}
 		
 					for ($i=0; $i<count($fs); $i++) {
@@ -296,7 +296,7 @@ class zotero extends connector {
 								'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 								'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 								' ".addslashes(strip_empty_words($value))." ',$recid)";
-								mysql_query($requete);
+								pmb_mysql_query($requete);
 							}
 						} else {
 							$value=$rec_uni_dom->get_datas($fs[$i]);
@@ -304,7 +304,7 @@ class zotero extends connector {
 							'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 							'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 							' ".addslashes(strip_empty_words($value))." ',$recid)";
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 						}
 					}
 				}
@@ -428,13 +428,13 @@ class zotero extends connector {
 		}
 		if($str_sync_items) {
 			$q = "delete from entrepot_source_".$this->source_id." where ref not in (\"".$str_sync_items."\")";
-			mysql_query($q,$dbh);
+			pmb_mysql_query($q,$dbh);
 		} else {
 			$q = "delete from entrepot_source_".$this->source_id;
-			mysql_query($q,$dbh);
+			pmb_mysql_query($q,$dbh);
 		}
 		$q = "delete from external_count where source_id=".$this->source_id." and rid not in (select distinct recid from entrepot_source_".$this->source_id." )";
-		mysql_query($q,$dbh);
+		pmb_mysql_query($q,$dbh);
 		
 		return $this->n_recu;
 	}

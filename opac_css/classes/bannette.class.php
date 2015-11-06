@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette.class.php,v 1.36.6.2 2014-12-03 17:04:17 dbellamy Exp $
+// $Id: bannette.class.php,v 1.39 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -111,9 +111,9 @@ function getData() {
 			$requete .= "proprio_bannette,bannette_auto,periodicite,diffusion_email, nb_notices_diff, categorie_lecteurs, groupe_lecteurs, update_type, entete_mail, num_panier, ";
 			$requete .= "limite_type, limite_nombre, typeexport, prefixe_fichier ";
 			$requete .= "FROM bannettes WHERE id_bannette='".$this->id_bannette."' " ;
-			$result = mysql_query($requete, $dbh) or die ($requete."<br /> in bannette.class.php : ".mysql_error());
-			if(mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);
+			$result = pmb_mysql_query($requete, $dbh) or die ($requete."<br /> in bannette.class.php : ".pmb_mysql_error());
+			if(pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);
 			 	$this->id_bannette			= $temp->id_bannette ;
 			 	$this->num_classement 		= $temp->num_classement ;
 				$this->nom_bannette			= $temp->nom_bannette ;
@@ -140,8 +140,8 @@ function getData() {
 				$this->compte_elements();
 				
 				$requete = "SELECt nom_classement FROM classements WHERE id_classement='".$this->num_classement."'" ;
-				$resultclass = mysql_query($requete, $dbh) or die ($requete."<br /> in bannette.class.php : ".mysql_error());
-				 if ($temp = mysql_fetch_object($resultclass)) $this->nom_classement = $temp->nom_classement ;
+				$resultclass = pmb_mysql_query($requete, $dbh) or die ($requete."<br /> in bannette.class.php : ".pmb_mysql_error());
+				 if ($temp = pmb_mysql_fetch_object($resultclass)) $this->nom_classement = $temp->nom_classement ;
 				 	else $this->nom_classement = "" ;
 				
 				} else {
@@ -186,7 +186,7 @@ function vider() {
 	if (!$this->id_bannette) return $msg[dsi_ban_no_access]; // impossible d'accéder à cette bannette
 
 	$requete = "delete from bannette_contenu WHERE num_bannette='$this->id_bannette'";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	
 	$this->compte_elements() ;
 	
@@ -215,15 +215,15 @@ function remplir() {
 		$search->unserialize_search($equ->requete) ;
 		$table = $search->make_search() ;
 		$temp_requete = "insert into bannette_contenu (num_bannette, num_notice) (select ".$this->id_bannette." , notices.notice_id from $table , notices, notice_statut where notices.$colonne_update_create>='".$this->date_last_envoi."' and $table.notice_id=notices.notice_id and statut=id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0) or (notice_visible_opac_abon=1 and notice_visible_opac=1)) limit 300) " ;
-		$res = @mysql_query($temp_requete, $dbh);
+		$res = @pmb_mysql_query($temp_requete, $dbh);
 		$res_affichage .= "<li>".$equ->human_query."</li>" ;
 	    $temp_requete = "drop table $table " ;
-		$res = @mysql_query($temp_requete, $dbh);
+		$res = @pmb_mysql_query($temp_requete, $dbh);
 	    }
 	$res_affichage .= "</ul>" ;
 	$this->compte_elements() ;
 	$temp_requete = "update bannettes set date_last_remplissage=sysdate() where id_bannette='".$this->id_bannette."' " ;
-	$res = @mysql_query($temp_requete, $dbh);
+	$res = @pmb_mysql_query($temp_requete, $dbh);
 
 	//purge pour les bannettes privees des notices ne devant pas etre diffusees 
 	if ($this->proprio_bannette && $gestion_acces_active==1 && $gestion_acces_empr_notice==1){
@@ -232,7 +232,7 @@ function remplir() {
 		$acces_j = $dom_2->getJoin($this->proprio_bannette,'4=0','num_notice');
 		
 		$q="delete from bannette_contenu using bannette_contenu $acces_j WHERE num_bannette='$this->id_bannette' ";
-		mysql_query($q,$dbh);
+		pmb_mysql_query($q,$dbh);
 	}
 
 	return $res_affichage ;
@@ -267,8 +267,8 @@ function diffuser($texte="") {
 	
 	// paramétrage OPAC: choix du nom de la bibliothèque comme expéditeur
 	$requete = "select location_libelle, email from empr, docs_location where empr_location=idlocation and id_empr='$id_empr' ";
-	$res = mysql_query($requete, $dbh);
-	$loc=mysql_fetch_object($res) ;
+	$res = pmb_mysql_query($requete, $dbh);
+	$loc=pmb_mysql_fetch_object($res) ;
 	
 	$PMBusernom = $loc->location_libelle ;
 	$PMBuserprenom = "" ;
@@ -297,8 +297,8 @@ function diffuser($texte="") {
 		$requete = "select id_empr, empr_mail, empr_nom, empr_prenom, empr_login, empr_password from empr, bannette_abon ";
 		$requete .= "where num_bannette='".$this->id_bannette."' and empr_date_expiration>=sysdate() and num_empr=id_empr ";
 		$requete .= "order by empr_nom, empr_prenom ";
-		$res = mysql_query($requete, $dbh);
-		while($empr=mysql_fetch_object($res)) {
+		$res = pmb_mysql_query($requete, $dbh);
+		while($empr=pmb_mysql_fetch_object($res)) {
 			$emaildest = $empr->empr_mail;
 			$texte = $texte_base ; 
 			if ($emaildest) // $res_envoi=@mail("$emaildest",$this->comment_public,$texte." ","From: ".$PMBuserprenom." ".$PMBusernom." <".$PMBuseremail.">\r\n".$headers);
@@ -306,7 +306,7 @@ function diffuser($texte="") {
 			}
 		/* A commenter pour tests */ 
 		$temp_requete = "update bannettes set date_last_envoi=sysdate() where id_bannette='".$this->id_bannette."' " ;
-		$res = mysql_query($temp_requete, $dbh);
+		$res = pmb_mysql_query($temp_requete, $dbh);
 	} 
 	return $res_envoi ;
 }
@@ -321,8 +321,8 @@ function get_equations() {
 	if (!$this->id_bannette) return $msg[dsi_ban_no_access]; // impossible d'accéder à cette bannette
 
 	$requete = "select num_equation from bannette_equation, equations WHERE num_bannette='$this->id_bannette' and id_equation=num_equation ";
-	$res = mysql_query($requete, $dbh);
-	while($equ=mysql_fetch_object($res)) {
+	$res = pmb_mysql_query($requete, $dbh);
+	while($equ=pmb_mysql_fetch_object($res)) {
 		$tab_equ[] = $equ->num_equation ;
 		}
 	return $tab_equ ;
@@ -341,7 +341,7 @@ function construit_contenu_HTML ($use_limit=1) {
 	
 	if ($this->nb_notices_diff && $use_limit) $limitation = " LIMIT $this->nb_notices_diff " ;
 	$requete = "select num_notice from bannette_contenu, notices where num_bannette='".$this->id_bannette."' and notice_id=num_notice order by index_serie, tnvol, index_sew $limitation ";
-	$resultat = mysql_query($requete, $dbh);
+	$resultat = pmb_mysql_query($requete, $dbh);
 
 	// paramétrage :
 	$environement["short"] = 6 ;
@@ -353,7 +353,7 @@ function construit_contenu_HTML ($use_limit=1) {
 	$resultat_aff .= "<hr />";
 	$resultat_aff .= sprintf($msg["dsi_diff_n_notices"],$nb_envoyees, $this->nb_notices);
 	$resultat_aff .= "<hr />";
-	while ($r=mysql_fetch_object($resultat)) {
+	while ($r=pmb_mysql_fetch_object($resultat)) {
 		// afin de ne pas afficher les liens pour réservation de doc dans le mail :
 		global $opac_resa ;
 		$opac_resa = 0 ;
@@ -414,8 +414,8 @@ function construit_liens_HTML($texte="") {
 		</style>";
 	
 	$req = "select empr_login from empr where id_empr=$this->proprio_bannette";
-	$res = mysql_query($req,$dbh);
-	$empr = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req,$dbh);
+	$empr = pmb_mysql_fetch_object($res);
 	$date_today = formatdate(today()) ;
 	$date = time();
 	$login = $empr->empr_login;
@@ -438,22 +438,22 @@ function compte_elements() {
 	global $dbh ;
 	
 	$req_nb = "SELECT num_notice from bannette_contenu WHERE num_bannette='".$this->id_bannette."' " ;
-	$res_nb = mysql_query($req_nb, $dbh) or die ($req_nb."<br /> in bannette.class.php : ".mysql_error());
-	$this->nb_notices = mysql_num_rows($res_nb);
+	$res_nb = pmb_mysql_query($req_nb, $dbh) or die ($req_nb."<br /> in bannette.class.php : ".pmb_mysql_error());
+	$this->nb_notices = pmb_mysql_num_rows($res_nb);
 	//initialisation du tableau à chaque fois que cette fonction est appelée pour éviter un mauvais cumul
 	$this->liste_id_notice = array();
-	while ($res = mysql_fetch_object($res_nb)) {
+	while ($res = pmb_mysql_fetch_object($res_nb)) {
 		$this->liste_id_notice[]=$res->num_notice ;
 	}
 	
 	$req_nb = "SELECT count(1) as nb_abonnes from bannette_abon WHERE num_bannette='".$this->id_bannette."' " ;
-	$res_nb = mysql_query($req_nb, $dbh) or die ($req_nb."<br /> in bannette.class.php : ".mysql_error());
-	$res = mysql_fetch_object($res_nb);
+	$res_nb = pmb_mysql_query($req_nb, $dbh) or die ($req_nb."<br /> in bannette.class.php : ".pmb_mysql_error());
+	$res = pmb_mysql_fetch_object($res_nb);
 	$this->nb_abonnes = $res->nb_abonnes ;
 	$requete = "SELECt if(date_last_remplissage>date_last_envoi,1,0) as alert_diff ";
 	$requete .= "FROM bannettes WHERE id_bannette='".$this->id_bannette."' " ;
-	$result = mysql_query($requete, $dbh) or die ($requete."<br /> in bannette.class.php : ".mysql_error());
-	$temp = mysql_fetch_object($result);
+	$result = pmb_mysql_query($requete, $dbh) or die ($requete."<br /> in bannette.class.php : ".pmb_mysql_error());
+	$temp = pmb_mysql_fetch_object($result);
 	$this->alert_diff = $temp->alert_diff ; 
 			
 	}

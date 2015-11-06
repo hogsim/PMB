@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ? 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: import_ldap.inc.php,v 1.14.12.1 2015-04-01 12:14:21 mbertin Exp $
+// $Id: import_ldap.inc.php,v 1.15 2015-04-01 12:22:01 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

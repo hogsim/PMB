@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials_manq.inc.php,v 1.9.16.1 2015-06-14 11:19:35 Alexandre Exp $
+// $Id: serials_manq.inc.php,v 1.11 2015-06-14 11:47:07 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,7 +14,7 @@ require_once("./catalog/serials/serial_func.inc.php");
 $base_url = "./catalog.php?categ=serials&sub=search&user_query=$user_query";
 
 if (!$user_query) $user_query ="*" ;
-$user_query = str_replace("*","%",$user_query );
+$user_query = str_replace("*","%",$user_query ); 
 
 
 $serial_edit_access = str_replace('!!message!!',$msg[1914] , $serial_edit_access);
@@ -28,14 +28,14 @@ if ($nb_per_page_empr != "") $nb_per_page = $nb_per_page_empr ;
 
 
 // comptage du nombre de résultats
-$count_query = mysql_query("SELECT COUNT(notice_id) FROM notices WHERE index_sew like '".$user_query."' AND niveau_biblio='s' AND niveau_hierar='1'");
-$nbr_lignes = mysql_result($count_query, 0, 0);
+$count_query = pmb_mysql_query("SELECT COUNT(notice_id) FROM notices WHERE index_sew like '".$user_query."' AND niveau_biblio='s' AND niveau_hierar='1'");
+$nbr_lignes = pmb_mysql_result($count_query, 0, 0);
 
 if(!$page) $page=1;
 $debut =($page-1)*$nb_per_page;
 
 if($nbr_lignes) {
-	$myQuery = mysql_query(" SELECT notices.notice_id, notices.tit1, notices.ed1_id, bulletins.bulletin_id, bulletins.mention_date, bulletins.date_date, bulletins.bulletin_numero, exemplaires.expl_id, publishers.ed_name, publishers.ed_pays
+	$myQuery = pmb_mysql_query(" SELECT notices.notice_id, notices.tit1, notices.ed1_id, bulletins.bulletin_id, bulletins.mention_date, bulletins.date_date, bulletins.bulletin_numero, exemplaires.expl_id, publishers.ed_name, publishers.ed_pays
 		FROM notices, publishers
 		LEFT JOIN bulletins ON bulletins.bulletin_notice = notices.notice_id
 		LEFT JOIN exemplaires ON bulletins.bulletin_id = exemplaires.expl_bulletin
@@ -55,7 +55,7 @@ if($nbr_lignes) {
 	$nbexemplaires = 0;
 	$cpt_notice = 1;
 
-	while($serial=mysql_fetch_object($myQuery)) {
+	while($serial=pmb_mysql_fetch_object($myQuery)) {
 			if ($parity % 2) {
 			$pair_impair = "even";
 			} else {

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: visionneuse.php,v 1.25.2.6 2014-06-02 08:03:10 arenou Exp $
+// $Id: visionneuse.php,v 1.32 2015-04-03 11:16:25 jpermanne Exp $
 $base_path = ".";
 $include_path ="$base_path/includes";
 $class_path ="$base_path/classes";
@@ -175,9 +175,9 @@ if($lvl == "" || $lvl == "visionneuse"){
 			$q.= 'select typdoc from explnum join bulletins on explnum_bulletin=bulletin_id and explnum_id='.$explnum_id.' join notices on num_notice=notice_id ';
 			$q.= 'union ';
 			$q.= 'select typdoc from explnum join bulletins on explnum_bulletin=bulletin_id and explnum_id='.$explnum_id.' join notices on bulletin_notice=notice_id';
-			$r = mysql_query($q,$dbh);
-			if (mysql_num_rows($r)) {
-				$typdoc = mysql_result($r,0,0);
+			$r = pmb_mysql_query($q,$dbh);
+			if (pmb_mysql_num_rows($r)) {
+				$typdoc = pmb_mysql_result($r,0,0);
 				if (is_array($t_opac_visionneuse_alert_doctype) && in_array($typdoc,$t_opac_visionneuse_alert_doctype)) {
 					$confirm_alert=true;
 				}

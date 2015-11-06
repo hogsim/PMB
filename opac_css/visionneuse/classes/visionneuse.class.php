@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: visionneuse.class.php,v 1.12.4.1 2014-10-30 10:30:39 mbertin Exp $
+// $Id: visionneuse.class.php,v 1.15 2015-04-03 11:16:28 jpermanne Exp $
 
 require_once($visionneuse_path."/api/params.interface.php");
 require_once($visionneuse_path."/classes/docNum.class.php");
@@ -60,9 +60,15 @@ class visionneuse {
 			//on insère le contenu propre au document;
 			$docNum = new docNum($this->classParam->getCurrentDoc(),$this->classParam);
 			$this->do_stat_opac($docNum->id);
-			$url_download_explnum =$this->classParam->getDocumentUrl($docNum->id);
-			$visionneuse = str_replace("!!expnum_download!!",$url_download_explnum,$visionneuse);
-			$visionneuse = str_replace("!!expnum_download_lib!!",htmlentities($this->message->table['download_doc'],ENT_QUOTES,$charset),$visionneuse);
+ 			if($this->classParam->is_downloadable($docNum->id)) {
+ 				$link= "<div id='visio_current_download'><a href='!!expnum_download!!' target='_blank'>!!expnum_download_lib!!</a></div>";
+ 				$url_download_explnum =$this->classParam->getDocumentUrl($docNum->id);
+ 				$link = str_replace("!!expnum_download!!",$url_download_explnum,$link);
+ 				$link = str_replace("!!expnum_download_lib!!",htmlentities($this->message->table['download_doc'],ENT_QUOTES,$charset),$link);
+ 			}else{
+ 				$link ="";
+ 			}
+ 			$visionneuse = str_replace("!!download!!",$link,$visionneuse);
 			$docToDisplay = $docNum->fetchDisplay();
 			foreach($docToDisplay as $key => $value){
 				//le cas ou le document n'est pas autorisé!
@@ -122,8 +128,8 @@ class visionneuse {
 				LEFT JOIN docs_location dl ON ex_l.num_location= dl.idlocation
 				LEFT JOIN upload_repertoire rep ON ex_n.explnum_repertoire= rep.repertoire_id
 				where explnum_id='".$id_explnum."'";
-			$res_explnum=mysql_query($rqt_explnum);
-			while(($explnum = mysql_fetch_array($res_explnum,MYSQL_ASSOC))){
+			$res_explnum=pmb_mysql_query($rqt_explnum);
+			while(($explnum = pmb_mysql_fetch_array($res_explnum,MYSQL_ASSOC))){
 				$infos_explnum[]=$explnum;
 			}
 			
@@ -139,9 +145,9 @@ class visionneuse {
 					left join pret on e.id_empr=pret_idempr
 					where e.empr_login='".addslashes($_SESSION['user_code'])."'
 					group by resa_idempr, pret_idempr";	
-			$res=mysql_query($rqt);
+			$res=pmb_mysql_query($rqt);
 			if($res){
-				$empr_carac = mysql_fetch_array($res);
+				$empr_carac = pmb_mysql_fetch_array($res);
 				$log->add_log('empr',$empr_carac);
 			}
 		
@@ -154,19 +160,19 @@ class visionneuse {
 				$id_notice_droit=$infos_explnum[0]["explnum_notice"];
 			}else{
 				$requete="SELECT bulletin_notice, num_notice FROM bulletins WHERE bulletin_id='".$infos_explnum[0]["explnum_bulletin"]."'";
-				$res=mysql_query($requete);
-				if($res && mysql_num_rows($res)){
-					if($id_noti_bull=mysql_result($res,0,1)){
+				$res=pmb_mysql_query($requete);
+				if($res && pmb_mysql_num_rows($res)){
+					if($id_noti_bull=pmb_mysql_result($res,0,1)){
 						$id_notice_droit=$id_noti_bull;
 					}else{
-						$id_notice_droit=mysql_result($res,0,0);
+						$id_notice_droit=pmb_mysql_result($res,0,0);
 					}
 				}
 			}
 			if($id_notice_droit){
 				$req_restriction_abo = "SELECT explnum_visible_opac, explnum_visible_opac_abon FROM notices,notice_statut WHERE notice_id='".$id_notice_droit."' AND statut=id_notice_statut ";
-				$result=mysql_query($req_restriction_abo);
-				$expl_num=mysql_fetch_array($result,MYSQL_ASSOC);
+				$result=pmb_mysql_query($req_restriction_abo);
+				$expl_num=pmb_mysql_fetch_array($result,MYSQL_ASSOC);
 				$infos_restriction_abo = array();
 				foreach ($expl_num as $key=>$value) {
 					$infos_restriction_abo[$key] = $value;

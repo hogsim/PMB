@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mailing.inc.php,v 1.4 2013-01-03 16:04:33 dgoron Exp $
+// $Id: mailing.inc.php,v 1.5 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -124,8 +124,8 @@ function m_liste_prets($destinataire) {
 	$requete.= " FROM (((exemplaires LEFT JOIN notices AS notices_m ON expl_notice = notices_m.notice_id ) LEFT JOIN bulletins ON expl_bulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id), docs_type, docs_section, docs_location, pret ";
 	$requete.= " WHERE pret_idempr='".$destinataire->id_empr."' and expl_typdoc = idtyp_doc and expl_section = idsection and expl_location = idlocation and pret_idexpl = expl_id  ";
 
-	$req = mysql_query($requete) or die($msg['err_sql'].'<br />'.$requete.'<br />'.mysql_error()); 
-	while ($expl = mysql_fetch_object($req)) {
+	$req = pmb_mysql_query($requete) or die($msg['err_sql'].'<br />'.$requete.'<br />'.pmb_mysql_error()); 
+	while ($expl = pmb_mysql_fetch_object($req)) {
 		
 		$responsabilites = get_notice_authors(($expl->m_id+$expl->s_id)) ;
 		$as = array_search ("0", $responsabilites["responsabilites"]) ;
@@ -165,9 +165,9 @@ function m_liste_prets($destinataire) {
 function m_liste_resas($destinataire) {
 	global $dbh, $msg;
 	$rqt = "select resa_idnotice, resa_idbulletin from resa where resa_idempr='".$destinataire->id_empr."' " ;
-	$req = mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error()); 
+	$req = pmb_mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error()); 
 	$all_resa="";
-	while ($data = mysql_fetch_array($req)) {
+	while ($data = pmb_mysql_fetch_array($req)) {
 		$all_resa.=m_not_bull_info_resa ($destinataire->id_empr, $data['resa_idnotice'],$data['resa_idbulletin']);
 	}
 	return $all_resa ;
@@ -188,11 +188,11 @@ function m_not_bull_info_resa ($id_empr, $notice, $bulletin) {
 			$requete.= "WHERE resa_idbulletin='$bulletin' and resa_idbulletin = bulletins.bulletin_id and bulletin_notice = notice_id order by resa_date ";
 			}
 			
-	$res = mysql_query($requete) or die ("<br />".mysql_error());
-	$nb_resa = mysql_num_rows($res) ;
+	$res = pmb_mysql_query($requete) or die ("<br />".pmb_mysql_error());
+	$nb_resa = pmb_mysql_num_rows($res) ;
 	
 	for ($j=0 ; $j<$nb_resa ; $j++ ) {
-		$resa = mysql_fetch_object($res);
+		$resa = pmb_mysql_fetch_object($res);
 		if ($resa->resa_idempr == $id_empr) {
 			$responsabilites = get_notice_authors($resa->notice_id) ;
 			$as = array_search ("0", $responsabilites["responsabilites"]) ;

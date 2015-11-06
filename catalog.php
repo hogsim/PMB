@@ -2,12 +2,13 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: catalog.php,v 1.20.2.1 2015-07-07 11:49:46 jpermanne Exp $
+// $Id: catalog.php,v 1.23 2015-07-07 11:52:51 jpermanne Exp $
 
 // définition du minimum nécéssaire
 $base_path=".";
 $base_auth = "CATALOGAGE_AUTH";
 $base_title = "\$msg[6]";
+$base_use_dojo = 1;
 require_once ("$base_path/includes/init.inc.php");
 
 // pour droit UNIQUE d'ajout de notices
@@ -46,4 +47,4 @@ print $catalog_layout_end;
 print $footer;
 
 // deconnection MYSql
-mysql_close($dbh);
+pmb_mysql_close($dbh);

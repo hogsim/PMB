@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts_abonnements.tpl.php,v 1.22 2013-08-01 16:11:36 dgoron Exp $
+// $Id: abts_abonnements.tpl.php,v 1.25 2015-03-19 09:24:38 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -53,13 +53,13 @@ $abonnement_view = "
 			<td>
 				".$msg["abonnements_nombre_de_horsseries"].": !!nombre_de_horsseries!!
 			</td>
-		</tr>
-		<tr>
-			<td>!!commentaire!!</td>
-		</tr>
+		</tr>		
+		!!commentaire!!
+		!!serialcirc_empr_list!! 
+		
 	</table>			
 	<input type='button' class='bouton' value='".$msg["serialcirc_diffusion_gestion_button"]."' onClick=\"document.location='./catalog.php?categ=serialcirc_diff&sub=view&num_abt=!!id_abonnement!!';\"/>&nbsp;
-	
+	!!serialcirc_export_list_bt!!	
 </div>
 ";
 
@@ -93,7 +93,7 @@ function test_form(form)
 	}
 	!!test_liste_modele!!
 	return true;
-} 
+}
 </script>
 ";
 
@@ -340,5 +340,28 @@ $tpl_calendrier = "
 	</div>
 	<div class='row'></div>
 </form>
-";		
+";
+
+$abonnement_serialcirc_empr_list_empr = "
+<br />
+<div class='row'><a href='!!empr_view_link!!'>!!empr_name!!</a></div>
+";
+
+$abonnement_serialcirc_empr_list_group = "
+<br />
+<div class='row' >				
+	<div id='group_circ!!id_diff!!' >
+    	<img src='./images/plus.gif' class='img_plus' name='imEx' id='group_circ!!id_diff!!Img' title='".addslashes($msg['plus_detail'])."' border='0' onClick=\"expandBase('group_circ!!id_diff!!', true); recalc_recept();return false;\" hspace='3'>				
+	    <a href='#' >!!empr_name!!</a>					
+	</div>
+	<div id='group_circ!!id_diff!!Child' class='notice-child' style='margin-bottom:6px;display:none;'>
+		!!empr_list!!
+	</div>
+</div>
+";
+
+$abonnement_serialcirc_empr_list_group_elt="
+<br />
+<div class='row'>!!empr_libelle!!</div>
+";
 ?>

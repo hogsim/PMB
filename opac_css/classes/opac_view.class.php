@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: opac_view.class.php,v 1.14.2.1 2015-06-05 09:25:51 dbellamy Exp $
+// $Id: opac_view.class.php,v 1.16 2015-06-05 09:27:04 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -60,9 +60,9 @@ class opac_view {
 			$this->id = $this->view_list_empr_default;
 		}
 		if($this->id && $this->check_right()){
-			$myQuery_defaut = mysql_query("SELECT * FROM opac_views WHERE opac_view_id=".$this->id, $dbh);
-			if(mysql_num_rows($myQuery_defaut)){
-				$r_defaut= mysql_fetch_object($myQuery_defaut);
+			$myQuery_defaut = pmb_mysql_query("SELECT * FROM opac_views WHERE opac_view_id=".$this->id, $dbh);
+			if(pmb_mysql_num_rows($myQuery_defaut)){
+				$r_defaut= pmb_mysql_fetch_object($myQuery_defaut);
 				$this->id=	$r_defaut->opac_view_id;
 				$this->name=$r_defaut->opac_view_name;
 				$this->requete=$r_defaut->opac_view_query;
@@ -84,14 +84,14 @@ class opac_view {
 		global $dbh;
 		if ($this->id && !$this->opac_view_wo_query) {
 			$q = "select if((unix_timestamp(now()) - ifnull(unix_timestamp(opac_view_last_gen),0) - opac_view_ttl)>0,1,0) as opac_view_valid from opac_views where opac_view_id=".$this->id." ";
-			$r = mysql_query($q, $dbh);
-			if (mysql_result($r,0,0)==1) {
+			$r = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_result($r,0,0)==1) {
 
 				$q="update opac_views set opac_view_last_gen=now() where opac_view_id=".$this->id." ";
-				mysql_query($q, $dbh);
+				pmb_mysql_query($q, $dbh);
 
 				$q="truncate table opac_view_notices_".$this->id;
-				mysql_query($q, $dbh);
+				pmb_mysql_query($q, $dbh);
 
 				$this->search_class = new search("search_fields_gestion");
 				$this->search_class->push();
@@ -100,8 +100,8 @@ class opac_view {
 				$this->search_class->destroy_global_env();
 				$this->search_class->pull();
 				$q="INSERT ignore INTO opac_view_notices_".$this->id." (opac_view_num_notice) select notice_id from $table ";
-				mysql_query($q, $dbh);
-				mysql_query("drop table $table");
+				pmb_mysql_query($q, $dbh);
+				pmb_mysql_query("drop table $table");
 
 			}
 		}
@@ -121,18 +121,18 @@ class opac_view {
 		//on reprend...
 		if ($this->id_empr){
 			$req="SELECT * FROM opac_views, opac_views_empr  where opac_view_visible!=0 and emprview_view_num=opac_view_id and emprview_empr_num=".$this->id_empr;
-			$myQuery = mysql_query($req, $dbh);
-			if(mysql_num_rows($myQuery)){
-				while($r = mysql_fetch_object($myQuery)){
+			$myQuery = pmb_mysql_query($req, $dbh);
+			if(pmb_mysql_num_rows($myQuery)){
+				while($r = pmb_mysql_fetch_object($myQuery)){
 					if($r->emprview_default) $this->view_list_empr_default=$r->opac_view_id;
 					$this->opac_views_list[] = $r->opac_view_id;
 				}
 			}
 			//on regarde l'OPAC classique
 			$query = "select emprview_view_num,emprview_default from opac_views_empr where emprview_view_num = 0 and emprview_empr_num = ".$this->id_empr;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$r = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$r = pmb_mysql_fetch_object($result);
 				$this->opac_views_list[] = 0;
 				if($r->emprview_default) $this->view_list_empr_default=0;
 			}
@@ -157,9 +157,9 @@ class opac_view {
 			}else if(!$this->id_empr){
 				$this->opac_views_list[] = 0;
 				$req="SELECT * FROM opac_views where opac_view_visible=1";
-				$myQuery = mysql_query($req, $dbh);
-				if(mysql_num_rows($myQuery)){
-					while($r = mysql_fetch_object($myQuery)){
+				$myQuery = pmb_mysql_query($req, $dbh);
+				if(pmb_mysql_num_rows($myQuery)){
+					while($r = pmb_mysql_fetch_object($myQuery)){
 						if($r->emprview_default) $this->view_list_empr_default=$r->opac_view_id;
 						/*else if(!$this->id_empr && !$this->view_list_empr_default){
 							//si pas d'emprunteur, on met la première vue trouvée par défaut
@@ -192,12 +192,12 @@ class opac_view {
 
 	function get_list($name='', $value_selected=0) {
 		global $dbh,$charset;
-		if ($this->id_empr) $myQuery = mysql_query("SELECT * FROM opac_views left join opac_views_empr on (emprview_view_num=opac_view_id and emprview_empr_num=$this->id_empr) where opac_view_visible!=0 order by opac_view_name ", $dbh);
-		else $myQuery = mysql_query("SELECT * FROM opac_views where opac_view_visible=1 order by opac_view_name ", $dbh);
+		if ($this->id_empr) $myQuery = pmb_mysql_query("SELECT * FROM opac_views left join opac_views_empr on (emprview_view_num=opac_view_id and emprview_empr_num=$this->id_empr) where opac_view_visible!=0 order by opac_view_name ", $dbh);
+		else $myQuery = pmb_mysql_query("SELECT * FROM opac_views where opac_view_visible=1 order by opac_view_name ", $dbh);
 
 		$selector = "<select name='$name' id='$name'>";
-		if(mysql_num_rows($myQuery)){
-			while(($r=mysql_fetch_object($myQuery))) {
+		if(pmb_mysql_num_rows($myQuery)){
+			while(($r=pmb_mysql_fetch_object($myQuery))) {
 				$selector .= "<option value='".$r->opac_view_id."'";
 				$r->opac_view_id == $value_selected ? $selector .= " selected='selected'>" : $selector .= ">";
 		 		$selector .= htmlentities($r->opac_view_name,ENT_QUOTES, $charset)."</option>";

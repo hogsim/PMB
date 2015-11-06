@@ -2,12 +2,13 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: admin.php,v 1.42 2014-01-13 08:07:15 arenou Exp $
+// $Id: admin.php,v 1.49 2015-06-26 13:15:12 dgoron Exp $
 
 // définition du minimum nécessaire 
 $base_path=".";                            
 $base_auth = "ADMINISTRATION_AUTH";  
-$base_title = "\$msg[7]";    
+$base_title = "\$msg[7]"; 
+$base_use_dojo = 1;   
 require_once ("$base_path/includes/init.inc.php");  
 
 // les requis par admin.php ou ses sous modules
@@ -188,7 +189,31 @@ switch($categ) {
 		$admin_layout = str_replace ( '!!menu_contextuel!!', $admin_menu_cms_editorial, $admin_layout );	
 		include ("./admin/cms/editorial/main.inc.php");	
 		break;
-	default:
+	case 'faq':
+		$admin_layout = str_replace ( '!!menu_contextuel!!', $admin_menu_faq, $admin_layout );
+		include("./admin/faq/main.inc.php");
+		break;
+	case 'family':
+		$admin_layout = str_replace ( '!!menu_contextuel!!', $admin_menu_nomenclature, $admin_layout );
+		include("./admin/nomenclature/main.inc.php");
+		break;
+	case 'formation':
+		$admin_layout = str_replace ( '!!menu_contextuel!!', $admin_menu_formation, $admin_layout );
+		include("./admin/nomenclature/main.inc.php");
+		break;
+	case 'voice':
+		$admin_layout = str_replace ( '!!menu_contextuel!!', $admin_menu_voice, $admin_layout );
+		include("./admin/nomenclature/main.inc.php");
+		break;
+	case 'instrument':
+		$admin_layout = str_replace ( '!!menu_contextuel!!', $admin_menu_instrument, $admin_layout );
+		include("./admin/nomenclature/main.inc.php");
+		break;
+	case 'loans':
+		$admin_layout = str_replace('!!menu_contextuel!!', $admin_menu_loans, $admin_layout);
+		include("./admin/loans/main.inc.php");
+		break;
+default:
 		$admin_layout = str_replace('!!menu_contextuel!!', "", $admin_layout);
 		$admin_layout = str_replace('!!menu_sous_rub!!', "", $admin_layout);
 		print $admin_layout;
@@ -201,4 +226,4 @@ print $admin_layout_end;
 print $footer;
 
 // deconnection MYSql
-mysql_close($dbh);
+pmb_mysql_close($dbh);

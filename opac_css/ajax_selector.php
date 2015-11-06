@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_selector.php,v 1.40.2.2 2015-10-26 15:21:19 jpermanne Exp $
+// $Id: ajax_selector.php,v 1.42 2015-05-20 11:32:55 jpermanne Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -128,8 +128,8 @@ switch($completion):
 			}
 			$requete1.=" order by pert desc,num_thesaurus, categ_libelle";
 		} else $requete1="";
-		$res = @mysql_query($requete, $dbh);
-		while(($categ=mysql_fetch_object($res)) && (count($array_selector) < 20)) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($categ=pmb_mysql_fetch_object($res)) && (count($array_selector) < 20)) {
 			$display_temp = "" ;
 			$display_temp_prefix = "" ;
 			$lib_simple="";
@@ -180,8 +180,8 @@ switch($completion):
 			
 		} // fin while
 		if ($requete1  && (count($array_selector) < 20)) {
-			$res1 = @mysql_query($requete1, $dbh);
-			while(($categ=mysql_fetch_object($res1)) && (count($array_selector) <= 20)) {
+			$res1 = @pmb_mysql_query($requete1, $dbh);
+			while(($categ=pmb_mysql_fetch_object($res1)) && (count($array_selector) <= 20)) {
 				$display_temp = "" ;
 				$display_temp_prefix="";
 				$lib_simple="";
@@ -263,8 +263,8 @@ switch($completion):
 		
 		$requete="select * from (".$requete_langue." union ".$requete_defaut.") as sub1 group by categ_id order by pert desc,num_thesaurus, index_categorie limit 20";
 
-		$res = @mysql_query($requete, $dbh);
-		while(($categ=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($categ=pmb_mysql_fetch_object($res))) {
 			$display_temp = "" ;
 			$lib_simple="";
 			$tab_lib_categ="";
@@ -425,15 +425,11 @@ switch($completion):
 		require_once($class_path.'/suggest.class.php');
 		$suggestion = new suggest($start);
 		$array_selector=array();
-		if(count($suggestion->arrayResults)){
-			foreach($suggestion->arrayResults as $v){
-				if(str_word_count($v["field_content"])>10){
-					//$array_selector[]=array($v["field_content"]." <small>dans <i>".$v["field_name"]."</i></small>"=>implode(" ",$v["field_content_search"]));
-					$array_selector[]=array($v["field_content"]." <small></small>"=>implode(" ",$v["field_content_search"]));
-				}else{
-					//$array_selector[]=array($v["field_content"]." <small>dans <i>".$v["field_name"]."</i></small>"=>$v["field_clean_content"]);
-					$array_selector[]=array($v["field_content"]." <small></small>"=>$v["field_clean_content"]);
-				}
+		foreach($suggestion->arrayResults as $v){
+			if(str_word_count($v["field_content"])>10){
+				$array_selector[]=array($v["field_content"]." <small>dans <i>".$v["field_name"]."</i></small>"=>implode(" ",$v["field_content_search"]));
+			}else{
+				$array_selector[]=array($v["field_content"]." <small>dans <i>".$v["field_name"]."</i></small>"=>$v["field_clean_content"]);
 			}
 		}
 		$origine='ARRAY';
@@ -444,12 +440,12 @@ endswitch;
 
 switch ($origine):
 	case 'SQL':
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat) > 0) {
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat) > 0) {
 			$i=1;
-			while($r=@mysql_fetch_array($resultat)) {
+			while($r=@pmb_mysql_fetch_array($resultat)) {
 				if($r[2])
-					echo "<div id='c".$id."_".$i."' style='display:none' autid='".$r[1]."'>".$r[2]."</div>";
+					echo "<div id="."c".$id."_".$i." style='display:none' autid='".$r[1]."'>".$r[2]."</div>";
 				echo "<div id='l".$id."_".$i."'";
 				if ($autfield) echo " autid='".$r[1]."'";
 				echo " style='cursor:default;font-family:arial,helvetica;font-size:".$fontsize.";width:100%'";
@@ -496,7 +492,7 @@ switch ($origine):
 				if(is_array($value)){
 					foreach($value as $k=>$v){
 						$lib_liste = $k;
-						echo "<div id='c".$id."_".$i."' style='display:none' thesid='".$thesid."' autid='".$index."'>$v</div>";
+						echo "<div id="."c".$id."_".$i." style='display:none' thesid='".$thesid."' autid='".$index."'>$v</div>";
 					}
 				} else $lib_liste=$value;
 				echo " <".($prefix?"span":"div")." id='l".$id."_".$i."'";

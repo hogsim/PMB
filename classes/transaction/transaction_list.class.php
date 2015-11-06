@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: transaction_list.class.php,v 1.1.2.1 2014-06-11 14:08:52 ngantier Exp $
+// $Id: transaction_list.class.php,v 1.3 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -19,10 +19,10 @@ class transactype_list {
 		// les data...	
 		$this->transactype_list=array();	
 		$rqt = "select * from transactype order by transactype_name";
-		$res = mysql_query($rqt);
+		$res = pmb_mysql_query($rqt);
 		$i=0;
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){
 				$this->transactype_list[$i]['id'] = $row->transactype_id;
 				$this->transactype_list[$i]['name'] = $row->transactype_name;
 				$this->transactype_list[$i]['unit_price'] = $row->transactype_unit_price;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_diff.inc.php,v 1.13 2012-06-20 14:29:20 dgoron Exp $
+// $Id: func_diff.inc.php,v 1.14 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -27,18 +27,18 @@ if ($id_classement===0) $clause.= " and num_classement=0 ";
 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM bannettes $clause ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 	}
 
 if($nbr_lignes) {
 
 		// on lance la vraie requête
 		$requete = "SELECT id_bannette, proprio_bannette FROM bannettes $clause ORDER BY nom_bannette, id_bannette ";
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 
 		$parity = 0;
-		$ban_trouvees =  mysql_num_rows($res) ;
+		$ban_trouvees =  pmb_mysql_num_rows($res) ;
 
 		$bann_list .= "<tr >";
 		$bann_list .= "
@@ -60,7 +60,7 @@ if($nbr_lignes) {
 					</th>";
 		$bann_list .= "</tr>";
 		$id_check_list='';
-		while(($bann=mysql_fetch_object($res))) {
+		while(($bann=pmb_mysql_fetch_object($res))) {
 			$id_check="auto_".$bannette->id_bannette;
 			if($id_check_list)$id_check_list.='|';
 			$id_check_list.=$id_check;
@@ -92,7 +92,7 @@ if($nbr_lignes) {
 			$parity += 1;
 		}
 		$bann_list.="<input type='hidden' id='auto_id_list' name='auto_id_list' value='$id_check_list' >";	
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		if ($auto==1) $dsi_ban_list_diff = str_replace("!!titre!!", $msg[dsi_diff_ban_auto_found], $dsi_ban_list_diff);
 			else $dsi_ban_list_diff = str_replace("!!titre!!", $msg[dsi_diff_ban_manu_found], $dsi_ban_list_diff);
@@ -116,18 +116,18 @@ $clause = "WHERE (DATE_ADD(date_last_envoi, INTERVAL periodicite DAY) <= sysdate
 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM bannettes $clause ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 	}
 
 if($nbr_lignes) {
 
 		// on lance la vraie requête
 		$requete = "SELECT id_bannette, proprio_bannette FROM bannettes $clause ORDER BY nom_bannette, id_bannette ";
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 
 		$parity = 0;
-		$ban_trouvees =  mysql_num_rows($res) ;
+		$ban_trouvees =  pmb_mysql_num_rows($res) ;
 
 		$bann_list .= "<tr >";
 		$bann_list .= "
@@ -149,7 +149,7 @@ if($nbr_lignes) {
 					</th>";
 		$bann_list .= "</tr>";
 		$id_check_list='';
-		while(($bann=mysql_fetch_object($res))) {
+		while(($bann=pmb_mysql_fetch_object($res))) {
 			$id_check="auto_".$bannette->id_bannette;
 			if($id_check_list)$id_check_list.='|';
 			$id_check_list.=$id_check;
@@ -182,7 +182,7 @@ if($nbr_lignes) {
 			$parity += 1;
 		}
 		$bann_list.="<input type='hidden' id='auto_id_list' name='auto_id_list' value='$id_check_list' >";	
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		$dsi_ban_list_diff = str_replace("!!titre!!", $msg[dsi_diff_ban_auto_found], $dsi_ban_list_diff);
 		$dsi_ban_list_diff = str_replace("!!cle!!", "", $dsi_ban_list_diff);

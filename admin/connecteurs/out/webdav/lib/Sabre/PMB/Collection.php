@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: Collection.php,v 1.19.6.1 2015-05-11 12:21:53 jpermanne Exp $
+// $Id: Collection.php,v 1.23 2015-05-11 12:19:36 jpermanne Exp $
 namespace Sabre\PMB;
 
 use Sabre\DAV;
@@ -105,9 +105,9 @@ class Collection extends DAV\Collection {
 		
 		
 		$query = "select notice_id from notices where tit1 = '".addslashes($title)."'";
-		$result= mysql_query($query);
-		if(mysql_num_rows($result)){
-			$notice_id = mysql_result($result,0,0);
+		$result= pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$notice_id = pmb_mysql_result($result,0,0);
 		}
 		if(!$notice_id){
 			//en cas d'une leture moyenne des infos, on s'assure d'avoir au moins un titre....
@@ -141,10 +141,10 @@ class Collection extends DAV\Collection {
 				($thumbnail_content ? "thumbnail_url = 'data:image/png;base64,".base64_encode($thumbnail_content)."',":"").
 				"create_date = sysdate(), 
 				update_date = sysdate()";
-			mysql_query($query);
-			$notice_id = mysql_insert_id();
+			pmb_mysql_query($query);
+			$notice_id = pmb_mysql_insert_id();
 			$sign = new \notice_doublon();
-			mysql_query("update notices set signature = '".$sign->gen_signature($notice_id)."' where notice_id = ".$notice_id);
+			pmb_mysql_query("update notices set signature = '".$sign->gen_signature($notice_id)."' where notice_id = ".$notice_id);
 			
 			//traitement audit 
 			if ($pmb_type_audit) {
@@ -154,7 +154,7 @@ class Collection extends DAV\Collection {
 				$query .= "user_id='$webdav_current_user_id', ";
 				$query .= "user_name='$webdav_current_user_name', ";
 				$query .= "type_modif=1 ";
-				$result = @mysql_query($query);	
+				$result = @pmb_mysql_query($query);	
 			}
 			
 			if(count($authors)){
@@ -181,7 +181,7 @@ class Collection extends DAV\Collection {
 							responsability_author = '".$aut_id."',
 							responsability_notice = '".$notice_id."',
 							responsability_type = '0'";
-						mysql_query($query);
+						pmb_mysql_query($query);
 						$i++;
 					}
 				}
@@ -210,7 +210,7 @@ class Collection extends DAV\Collection {
 							responsability_notice = '".$notice_id."',
 							responsability_type = '0',
 							repsonsability_ordre = '".$i."'";
-						mysql_query($query);
+						pmb_mysql_query($query);
 						$i++;
 					}
 				}
@@ -255,18 +255,18 @@ class Collection extends DAV\Collection {
 				break;
 			case "statut" :
 				$query = "select id_notice_statut from notice_statut";
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					while($row = mysql_fetch_object($result)){
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					while($row = pmb_mysql_fetch_object($result)){
 						$children[] = new PMB\Statut("(S".$row->id_notice_statut.")",$this->config);
 					}
 				}
 				break;
 			case "indexint" :
 				$query = "select * from indexint where indexint_id not in (select child.indexint_id from indexint join indexint as child on child.indexint_name like concat(indexint.indexint_name,'%') and indexint.indexint_id != child.indexint_id group by child.indexint_id) order by indexint_name";
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					while($row = mysql_fetch_object($result)){
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					while($row = pmb_mysql_fetch_object($result)){
 						$children[] = new PMB\Indexint("(I".$row->indexint_id.")",$this->config);
 					}
 				}	
@@ -325,9 +325,9 @@ class Collection extends DAV\Collection {
 					//document numériques d'une notice de bulletin
 					$query.= "union select distinct explnum_id,notice_id from explnum join bulletins on explnum_notice = 0 and explnum_bulletin = bulletin_id join notices on num_notice != 0 and num_notice = notice_id where explnum_nomfichier = '".addslashes($name)."' and explnum_mimetype != 'URL'";
 					//$query = $this->filterExplnums($query);
-					$result  = mysql_query($query);
-					if(mysql_num_rows($result)){
-						$row = mysql_fetch_object($result);
+					$result  = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						$row = pmb_mysql_fetch_object($result);
 						$child = new PMB\Explnum("(E".$row->explnum_id.")");
 					}else{
 						throw new DAV\Exception\FileNotFound('File not found: ' . $name);
@@ -367,8 +367,8 @@ class Collection extends DAV\Collection {
 					}
 				}else{
 					$query = "select distinct explnum_id from explnum where explnum_nomfichier = '".addslashes($name)."'";
-					$result  = mysql_query($query);
-					if(mysql_num_rows($result)){
+					$result  = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
 						return true;
 					}else{
 						return false;
@@ -413,14 +413,14 @@ class Collection extends DAV\Collection {
 			$this->update_notice($notice_id);
 
 			$query = "SELECT CONCAT(niveau_biblio, niveau_hierar) AS niveau FROM notices WHERE notice_id = ".$notice_id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				if ($row->niveau == "b2") {
 					$query = "SELECT bulletin_id FROM bulletins WHERE num_notice = ".$notice_id;
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						$row = mysql_fetch_object($result);
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						$row = pmb_mysql_fetch_object($result);
 						$notice_id = 0;
 						$bulletin_id = $row->bulletin_id;
 					}
@@ -429,6 +429,7 @@ class Collection extends DAV\Collection {
 			$explnum = new \explnum(0, $notice_id, $bulletin_id);
 			$id_rep = $this->config['upload_rep'];
 			$explnum->get_file_from_temp($filename,$name,$this->config['up_place']);
+			$explnum->params['explnum_statut'] = $this->config['default_docnum_statut'];
 			$explnum->update();
 			if(file_exists($filename)){
 				unlink($filename);
@@ -461,7 +462,7 @@ class Collection extends DAV\Collection {
 			$query .= "user_id='$webdav_current_user_id', ";
 			$query .= "user_name='$webdav_current_user_name', ";
 			$query .= "type_modif=2 ";
-			$result = @mysql_query($query);	
+			$result = @pmb_mysql_query($query);	
 		}
 		
 		\notice::majNoticesGlobalIndex($notice_id);
@@ -498,7 +499,7 @@ class Collection extends DAV\Collection {
     		$parent->getNotices();
     	}
     	
-    	global $gestion_acces_active,$gestion_acces_user_notice,$gestion_acces_empr_notice;
+    	global $gestion_acces_active,$gestion_acces_user_notice,$gestion_acces_empr_notice,$gestion_acces_empr_docnum;
 		global $webdav_current_user_id;
  		switch($this->config['authentication']){
 			case "gestion" :
@@ -537,6 +538,7 @@ class Collection extends DAV\Collection {
 				}
 				break;
 			case "anonymous" :
+				//on doit regarder 
 				//droit d'accès ou statut
 				if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1) {
 					$ac= new \acces();
@@ -558,9 +560,47 @@ class Collection extends DAV\Collection {
 				break;
 		}	
 		$this->notices =array();
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+
+		//vérification des droits sur les documents numériques
+		switch($this->config['authentication']){
+			case "opac" :
+				if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+					$ac= new \acces();
+					$dom_3= $ac->setDomain(3);
+					$acces_j = $dom_3->getJoin($webdav_current_user_id,16,'explnum_id');
+					$explnum_notice_query = "select explnum_notice as notice_id from explnum $acces_j where explnum_notice in ($query)";
+					$explnum_bull_query = "select num_notice as notice_id from bulletins join explnum on explnum_notice=0 and explnum_bulletin != 0 and explnum_bulletin = bulletin_id $acces_j";
+					$query = "select distinct uni.notice_id from (($explnum_notice_query) union ($explnum_bull_query)) as uni ";
+				}else{
+					// vérification du statut de chaque document
+					$explnum_notice_query = "select explnum_notice as notice_id from explnum join explnum_statut on id_explnum_statut = explnum_docnum_statut where explnum_visible_opac=1 and explnum_notice in ($query)";
+					$explnum_bull_query = "select num_notice as notice_id from bulletins join explnum on explnum_notice=0 and explnum_bulletin = bulletin_id join explnum_statut on id_explnum_statut = explnum_docnum_statut where explnum_visible_opac=1 and num_notice in ($query)";
+				}
+				$query = "select distinct uni.notice_id from (($explnum_notice_query) union ($explnum_bull_query)) as uni ";
+				break;
+			case "anonymous" :
+				//on doit requeter les droits d'accès propre à chaque document
+				if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
+					$ac= new \acces();
+					$dom_3= $ac->setDomain(3);
+					$acces_j = $dom_3->getJoin(0,16,'explnum_id');
+					$explnum_notice_query = "select explnum_notice as notice_id from explnum $acces_j where explnum_notice in ($query)";
+					$explnum_bull_query = "select num_notice as notice_id from bulletins join explnum on explnum_notice=0 and explnum_bulletin != 0 and explnum_bulletin = bulletin_id $acces_j";
+				}else{
+					// vérification du statut de chaque document
+					$explnum_notice_query = "select explnum_notice as notice_id from explnum join explnum_statut on id_explnum_statut = explnum_docnum_statut where explnum_visible_opac=1 and explnum_visible_opac_abon=0 and explnum_notice in ($query)";
+					$explnum_bull_query = "select num_notice as notice_id from bulletins join explnum on explnum_notice=0 and explnum_bulletin = bulletin_id join explnum_statut on id_explnum_statut = explnum_docnum_statut where explnum_visible_opac=1 and explnum_visible_opac_abon=0 and num_notice in ($query)";
+				}
+				$query = "select distinct uni.notice_id from (($explnum_notice_query) union ($explnum_bull_query)) as uni ";
+				break;
+			case "gestion" :
+			default :
+				//en gestion ca ne change rien...
+				break;
+		}
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->notices[] = $row->notice_id;
 			}
 		}else{//Si j'ai plus de notice dans cette branche il faut le garde en mémoire sinon dans la branche du dessous on repart avec toute les notices
@@ -570,41 +610,35 @@ class Collection extends DAV\Collection {
     }
     
     function filterExplnums($query){
-    	global $gestion_acces_active,$gestion_acces_user_notice,$gestion_acces_empr_notice;
+    	global $gestion_acces_active,$gestion_acces_empr_docnum;
 		global $webdav_current_user_id;
+		
  		switch($this->config['authentication']){
 			case "gestion" :
-				$acces_j='';
-				//soit les droits d'accès sont activés et il est possible que la notice ne soit pas visible pour certaines personnes
-				//soit c'est la requete de base
-				if ($gestion_acces_active==1 && $gestion_acces_user_notice==1) {
-					$ac= new \acces();
-					$dom_1= $ac->setDomain(1);
-					$acces_j = $dom_1->getJoin($webdav_current_user_id,3,'notice_id');
-					$query = "select distinct explnum_id, notice_id from (".$query.") as uni ".$acces_j;
-				} 
+				//pas de controle particulier de ce coté là... 
 				break;
 			case "opac" :
 				$acces_j='';
-				//droit d'accès ou statut
-				if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1) {
+ 				//droit d'accès ou statut
+				if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
 					$ac= new \acces();
-					$dom_1= $ac->setDomain(2);
-					$acces_j = $dom_1->getJoin($webdav_current_user_id,16,'notice_id');
-					$query = "select distinct explnum_id, notice_id from (".$query.") as uni ".$acces_j;
+					$dom_3= $ac->setDomain(3);
+					$acces_j = $dom_3->getJoin($webdav_current_user_id,16,'explnum_id');
+					$query = "select distinct explnum_id from (".$query.") as uni ".$acces_j;
 				}else{
-					$query = "select distinct explnum_id, uni.notice_id from (".$query.") as uni join notices on notices.notice_id = uni.notice_id join notice_statut on notices.statut= id_notice_statut where ((explnum_visible_opac=1 and explnum_visible_opac_abon=0)".($webdav_current_user_id ?" or (explnum_visible_opac_abon=1 and explnum_visible_opac=1)":"").")";
+					$query = "select distinct uni.explnum_id from (".$query.") as uni join explnum on uni.explnum_id = explnum.explnum_id join explnum_statut on explnum.explnum_docnum_statut = id_explnum_statut where explnum_visible_opac=1";
 				}
 				break;
 			case "anonymous" :
+				$acces_j='';
 				//droit d'accès ou statut
-				if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1) {
+				if ($gestion_acces_active==1 && $gestion_acces_empr_docnum==1) {
 					$ac= new \acces();
-					$dom_1= $ac->setDomain(2);
-					$acces_j = $dom_1->getJoin(0,16,'notice_id');
-					$query = "select distinct explnum_id, notice_id from (".$query.") as uni ".$acces_j;
+					$dom_3= $ac->setDomain(3);
+					$acces_j = $dom_3->getJoin(0,16,'explnum_id');
+					$query = "select distinct explnum_id from (".$query.") as uni ".$acces_j;
 				}else{
-					$query = "select distinct explnum_id, uni.notice_id from (".$query.") as uni join notices on notices.notice_id = uni.notice_id join notice_statut on notices.statut= id_notice_statut where explnum_visible_opac=1 and explnum_visible_opac_abon=0";
+					$query = "select distinct uni.explnum_id from (".$query.") as uni join explnum on uni.explnum_id = explnum.explnum_id join explnum_statut on explnum.explnum_docnum_statut = id_explnum_statut where explnum_visible_opac=1 and explnum_visible_opac_abon=0";
 				}
 				break;
 		}
@@ -637,9 +671,9 @@ class Collection extends DAV\Collection {
     			return true;
     		}elseif($query != ""){
     			//on doit s'assurer que la personne connectée est dispose des droits...
-    			$result = mysql_query($query);
-    			if(mysql_num_rows($result)){
-    				if(in_array(mysql_result($result,0,0),$tab)){
+    			$result = pmb_mysql_query($query);
+    			if(pmb_mysql_num_rows($result)){
+    				if(in_array(pmb_mysql_result($result,0,0),$tab)){
     					return true;
     				}
     			}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: frais.class.php,v 1.11 2013-11-28 14:18:52 dgoron Exp $
+// $Id: frais.class.php,v 1.12 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -34,8 +34,8 @@ class frais{
 		global $dbh;
 		
 		$q = "select * from frais where id_frais = '".$this->id_frais."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->libelle = $obj->libelle;
 		$this->condition_frais = $obj->condition_frais;
 		$this->montant = $obj->montant;
@@ -58,14 +58,14 @@ class frais{
 			$q.= "montant = '".$this->montant."', num_cp_compta = '".$this->num_cp_compta."', ";
 			$q.= "num_tva_achat = '".$this->num_tva_achat."', index_libelle = ' ".strip_empty_words($this->libelle)." ' ";
 			$q.= "where id_frais = '".$this->id_frais."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 	
 		} else {
 		
 			$q = "insert into frais set libelle = '".$this->libelle."', condition_frais =  '".$this->condition_frais."', ";
 			$q.= "montant = '".$this->montant."', num_cp_compta = '".$this->num_cp_compta."', num_tva_achat = '".$this->num_tva_achat."', index_libelle = ' ".strip_empty_words($this->libelle)." ' ";
-			$r = mysql_query($q, $dbh);
-			$this->id_frais = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_frais = pmb_mysql_insert_id($dbh);
 		
 		}
 	
@@ -80,7 +80,7 @@ class frais{
 		if(!$id_frais) return; 	
 
 		$q = "delete from frais where id_frais = '".$id_frais."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -91,7 +91,7 @@ class frais{
 		global $dbh;
 
 		$q = "select * from frais order by libelle ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r;
 				
 	}
@@ -102,8 +102,8 @@ class frais{
 		
 		global $dbh;
 		$q = "select count(1) from frais where id_frais = '".$id_frais."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 	
@@ -114,8 +114,8 @@ class frais{
 		global $dbh;
 		$q = "select count(1) from frais where libelle = '".$libelle."' ";
 		if ($id_frais) $q.= "and id_frais != '".$id_frais."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -126,8 +126,8 @@ class frais{
 		global $dbh;
 		if (!$id_frais) return 0;
 		$q = "select count(1) from entites where num_frais = '".$id_frais."' and type_entite = '0'";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -137,7 +137,7 @@ class frais{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE frais', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE frais', $dbh);
 		return $opt;
 				
 	}

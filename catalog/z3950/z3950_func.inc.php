@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: z3950_func.inc.php,v 1.16 2008-11-24 15:23:32 kantin Exp $
+// $Id: z3950_func.inc.php,v 1.17 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -17,9 +17,9 @@ function z_gen_combo_box ( $selected , $nom ) {
 	$option_premier_code="";
 	$option_premier_info="";
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete);
+	$resultat_liste=pmb_mysql_query($requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\">\n" ;
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 		} else {
@@ -30,11 +30,11 @@ function z_gen_combo_box ( $selected , $nom ) {
 				}
 			$i=0;
 			while ($i<$nb_liste) {
-				$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-				if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+				$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+				if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 					$gen_liste_str.="selected" ;
 					}
-				$gen_liste_str.=">".$msg["z3950_".mysql_result($resultat_liste,$i,$champ_info)]."</option>\n" ;
+				$gen_liste_str.=">".$msg["z3950_".pmb_mysql_result($resultat_liste,$i,$champ_info)]."</option>\n" ;
 				$i++;
 				}
 			}
@@ -126,11 +126,11 @@ function create_expl($f_ex_cb, $id, $f_ex_typdoc, $f_ex_cote, $f_ex_section, $f_
 	$new_expl = 0;
 	$expl_retour = 0;
 	$requete = "SELECT expl_id FROM exemplaires WHERE expl_cb='$f_ex_cb' ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_num_rows($res);
 	if ($nbr_lignes) {
 		$valid_requete = 0 ;
-		$lu=mysql_fetch_array($res);
+		$lu=pmb_mysql_fetch_array($res);
 		$expl_retour = $lu['expl_id'];
 		} else {
 			$valid_requete = 1;
@@ -149,8 +149,8 @@ function create_expl($f_ex_cb, $id, $f_ex_typdoc, $f_ex_cote, $f_ex_section, $f_
 		$requete .= ", expl_comment='".${f_ex_comment}."'";
 		$requete .= ", expl_prix='${f_ex_prix}'";
 		$requete .= ", expl_owner='${f_ex_owner}'";
-		$result = mysql_query($requete, $dbh);
-		$expl_retour = mysql_insert_id();
+		$result = pmb_mysql_query($requete, $dbh);
+		$expl_retour = pmb_mysql_insert_id();
 		audit::insert_creation(AUDIT_EXPL,$expl_retour) ;
 		$new_expl=1;
 		}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- $Id: fr_FR.xml,v 1.4.6.6 2015-03-11 14:50:04 jpermanne Exp $ -->
+<!-- $Id: fr_FR.xml,v 1.17 2015-04-14 10:08:43 dgoron Exp $ -->
 <XMLlist>
 <!-- Types de page  -->
 <entry code="1">Recherche</entry>
@@ -30,6 +30,7 @@
 <entry code="26">Script étendu personnalisé</entry>
 <entry code="27">Résultats de documents numériques</entry>
 <entry code="28">Accueil</entry>
+<entry code="29">Requête AJAX</entry>
 
 <!-- Sous-Types de page  -->
 <entry code="101">Recherche simple</entry>
@@ -39,18 +40,23 @@
 <entry code="105">Recherche par tags</entry>
 <entry code="106">Recherche prédéfinie</entry>
 <entry code="107">Recherche sur page d'accueil</entry>
-<entry code="201">Résultats d'une recherche simple</entry>
-<entry code="202">Résultats d'une recherche multi-critères</entry>
-<entry code="203">Résultats d'une recherche par termes</entry>
-<entry code="204">Résultats d'une recherche externe</entry>
-<entry code="205">Résultats d'une recherche par tags</entry>
-<entry code="206">Résultats d'une recherche prédéfinie</entry>
-<entry code="207">Resultats d'une recherche sur la page d'accueil</entry>
+<entry code="108">Recherche sur navigateur de périodiques</entry>
+<entry code="201">Résultat intermédiaire d'une recherche simple</entry>
+<entry code="202">Résultat intermédiaire d'une recherche multi-critères</entry>
+<entry code="203">Résultat intermédiaire d'une recherche par termes</entry>
+<entry code="204">Résultat intermédiaire d'une recherche externe</entry>
+<entry code="205">Résultat intermédiaire d'une recherche par tags</entry>
+<entry code="206">Résultat intermédiaire d'une recherche prédéfinie</entry>
+<entry code="207">Résultat intermédiaire d'une recherche sur la page d'accueil</entry>
 <entry code="301">Résultats d'une recherche par titre</entry>
 <entry code="302">Résultats d'une recherche tous les champs</entry>
 <entry code="303">Résultats d'une recherche sur les documents numériques</entry>
 <entry code="304">Résultats d'une recherche multi-critères</entry>
 <entry code="305">Résultats d'une recherche externe</entry>
+<entry code="306">Résultats d'une recherche affiliée</entry>
+<entry code="307">Ajout facette sur résultat de recherche</entry>
+<entry code="308">Suppression facette sur résultat de recherche</entry>
+<entry code="309">Résultats d'une recherche par tags</entry>
 <entry code="401">Résultats d'une recherche par auteur</entry>
 <entry code="402">Résultats d'une recherche par éditeur</entry>
 <entry code="403">Résultats d'une recherche par catégorie</entry>
@@ -68,12 +74,13 @@
 <entry code="506">Fiche sous-collection</entry>
 <entry code="507">Fiche indexation décimale</entry>
 <entry code="508">Fiche série</entry>
+<entry code="509">Fiche Concept</entry>
 <entry code="601">Affichage d'une monographie</entry>
 <entry code="602">Affichage d'un périodique</entry>
 <entry code="603">Affichage d'un bulletin</entry>
 <entry code="604">Affichage d'un article</entry>
 <entry code="701">Prêt en retard</entry>
-<entry code="702">Prêt en cours</entry>
+<entry code="702">Prêt en cours / Réservation</entry>
 <entry code="703">Réservation</entry>
 <entry code="704">Modification du mot de passe</entry>
 <entry code="705">Validation du mot de passe</entry>
@@ -97,10 +104,16 @@
 <entry code="723">Transformer les éléments du panier en suggestion multiple</entry>
 <entry code="724">Prévision</entry>
 <entry code="725">Mon compte</entry>
-<entry code="801">Panier</entry>
+<entry code="801">Affichage du panier</entry>
 <entry code="802">Impression d'un panier</entry>
 <entry code="803">Export d'un panier</entry>
 <entry code="804">Réservation à partir d'un panier</entry>
+<entry code="805">Vider le panier</entry>
+<entry code="806">Vider du panier les notices cochées</entry>
+<entry code="807">Impression non aboutie d'un panier</entry>
+<entry code="808">Tri d'un panier</entry>
+<entry code="809">Transformer les éléments du panier en suggestion multiple</entry>
+<entry code="810">Transformer les éléments du panier en liste de lecture</entry>
 <entry code="901">Historique</entry>
 <entry code="1001">Etagères</entry>
 <entry code="1002">Liste d'étagères</entry>
@@ -124,4 +137,8 @@
 <entry code="2500">Page du portail</entry>
 <entry code="2601">Script étendu personnalisé</entry>
 <entry code="2801">Page d'accueil</entry>
+<entry code="2901">Affichage d'une monographie dans un résultat de recherche</entry>
+<entry code="2902">Affichage d'un périodique dans un résultat de recherche</entry>
+<entry code="2903">Affichage d'un bulletin dans un résultat de recherche</entry>
+<entry code="2904">Affichage d'un article dans un résultat de recherche</entry>
 </XMLlist>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_portfolio.class.php,v 1.1.4.2 2014-11-18 17:21:38 arenou Exp $
+// $Id: cms_module_common_datasource_portfolio.class.php,v 1.4 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -53,10 +53,10 @@ class cms_module_common_datasource_portfolio extends cms_module_common_datasourc
 			if(($docs['num_object'] == $valid[0]) && is_array($docs['ids'])){
 				if($this->parameters['sort_by']){
 					$query = "select id_document from cms_documents where id_document in (".implode(",",$docs['ids']).") order by ".$this->parameters['sort_by']." ".$this->parameters['sort_order'];
-					$result = mysql_query($query,$dbh);
-					if(mysql_num_rows($result)){
+					$result = pmb_mysql_query($query,$dbh);
+					if(pmb_mysql_num_rows($result)){
 						$docs['ids'] = array();
-						while($row = mysql_fetch_object($result)){
+						while($row = pmb_mysql_fetch_object($result)){
 							$docs['ids'][] = $row->id_document;
 						}
 					}

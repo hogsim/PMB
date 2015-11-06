@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: backup.inc.php,v 1.11 2009-05-16 11:11:52 dbellamy Exp $
+// $Id: backup.inc.php,v 1.12 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -25,8 +25,8 @@ if(!empty($file)) {
 	$separator = "# ------------------------------------$crlf";
 	
 	// construction du dump
-	$tables = mysql_list_tables($db);
-	$num_tables = @mysql_num_rows($tables);
+	$tables = pmb_mysql_list_tables($db);
+	$num_tables = @pmb_mysql_num_rows($tables);
 	
 	// en-tête
 	$dump_buffer .= "$separator# pmb MySQL-Dump$crlf";
@@ -35,16 +35,16 @@ if(!empty($file)) {
 	$dump_buffer .= $separator.$crlf;
 	
 	$i = 0;
-	while($i < mysql_num_rows($tables)) {
-		$table[$i] = mysql_tablename($tables, $i);
+	while($i < pmb_mysql_num_rows($tables)) {
+		$table[$i] = pmb_mysql_tablename($tables, $i);
 		$i++;
 	}
 	
 	while(list($cle, $valeur)=each($table)) {
 	
 		$requete = "SHOW CREATE TABLE $valeur";
-		$result = mysql_query($requete, $dbh);
-		$create = mysql_fetch_row($result);
+		$result = pmb_mysql_query($requete, $dbh);
+		$create = pmb_mysql_fetch_row($result);
 	
 		// écriture de la méthode de création
 		$dump_buffer .= "$crlf$separator# structure de la table $valeur$crlf$separator$crlf";
@@ -54,18 +54,18 @@ if(!empty($file)) {
 	
 		// écriture des données
 	    $requete = "SELECT * FROM $valeur";
-		$result = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_num_rows($result);
+		$result = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_num_rows($result);
 	
 		$field_set = "";
 		$field = "";
 	
 		for($i = 0; $i < $nbr_lignes; $i++) {
-			$row = mysql_fetch_row($result);
+			$row = pmb_mysql_fetch_row($result);
 			// on regarde si le champ est un entier
-			for ($j=0; $j < mysql_num_fields($result); $j++) {
-				$field_set[$j] = mysql_field_name($result, $j);
-				$type = mysql_field_type($result, $j);
+			for ($j=0; $j < pmb_mysql_num_fields($result); $j++) {
+				$field_set[$j] = pmb_mysql_field_name($result, $j);
+				$type = pmb_mysql_field_type($result, $j);
 				if ($type=='tinyint'||$type=='smallint'||$type=='mediumint'||$type=='int'||$type=='bigint'||$type=='timestamp') {
 					$field[$j] = $row[$j];
 				} else {

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mysql.inc.php,v 1.14 2009-05-16 11:11:52 dbellamy Exp $
+// $Id: mysql.inc.php,v 1.15 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -17,10 +17,10 @@ switch ($info) {
 		$pb="";
 		foreach ($tabindexref as $table=>$key_names) {
 			$rqti="show index from $table";
-			$resi=mysql_query($rqti) or die(mysql_error()."<br />".$rqti);
-				for ($i=0;$i<mysql_num_rows($resi);$i++) {
-					$key_name=mysql_result($resi,$i,'Key_name');
-					$col_name=mysql_result($resi,$i,'Column_name');
+			$resi=pmb_mysql_query($rqti) or die(pmb_mysql_error()."<br />".$rqti);
+				for ($i=0;$i<pmb_mysql_num_rows($resi);$i++) {
+					$key_name=pmb_mysql_result($resi,$i,'Key_name');
+					$col_name=pmb_mysql_result($resi,$i,'Column_name');
 					$cles_reelles[$key_name][]=$col_name;
 				}
 			foreach ($key_names as $key_name=>$col_names) {
@@ -78,43 +78,43 @@ switch ($info) {
 				<label class='etiquette' >MySQL Server Information</label>
 				</div>
 			  <div class='row'>
-					".mysql_get_server_info()."
+					".pmb_mysql_get_server_info()."
 					</div><hr />" ;
 
 		echo "<div class='row'>
 				<label class='etiquette' >MySQL Client Information</label>
 				</div>
 			  <div class='row'>
-					".mysql_get_client_info()."
+					".pmb_mysql_get_client_info()."
 					</div><hr />" ;
 
 		echo "<div class='row'>
 				<label class='etiquette' >MySQL Host Information</label>
 				</div>
 			  <div class='row'>
-					".mysql_get_host_info()."
+					".pmb_mysql_get_host_info()."
 					</div><hr />" ;
 
 		echo "<div class='row'>
 				<label class='etiquette' >MySQL Protocol Information</label>
 				</div>
 			  <div class='row'>
-					".mysql_get_proto_info()."
+					".pmb_mysql_get_proto_info()."
 					</div><hr />" ;
 
 		echo "<div class='row'>
 				<label class='etiquette' >MySQL Stat. Information</label>
 				</div>
 			  <div class='row'>
-					".str_replace('  ','<br />',mysql_stat())."</div><hr />";
+					".str_replace('  ','<br />',pmb_mysql_stat())."</div><hr />";
 		
 		echo "<div class='row'>
 				<label class='etiquette' >MySQL Variables</label>
 				</div>
 			  <div class='row'><table>" ;
-		$result = mysql_query('SHOW VARIABLES', $dbh);
+		$result = pmb_mysql_query('SHOW VARIABLES', $dbh);
 		$parity=0 ;
-		while ($row = mysql_fetch_assoc($result)) {
+		while ($row = pmb_mysql_fetch_assoc($result)) {
 			if ($parity % 2) $pair_impair = "even";
 				else $pair_impair = "odd";
 			$parity+=1;
@@ -152,31 +152,31 @@ if($action) {
 
 	@set_time_limit($pmb_set_time_limit);
 	$db = DATA_BASE;
-	$tables = mysql_list_tables($db);
-	$num_tables = @mysql_num_rows($tables);
+	$tables = pmb_mysql_list_tables($db);
+	$num_tables = @pmb_mysql_num_rows($tables);
 
 	$i = 0;
 	while($i < $num_tables) {
-		$table[$i] = mysql_tablename($tables, $i);
+		$table[$i] = pmb_mysql_tablename($tables, $i);
 		$i++;
 	}
 
 	echo "<table >";
 	while(list($cle, $valeur) = each($table)) {
 		$requete = $action." TABLE ".$valeur." ";
-		$res = @mysql_query($requete, $dbh);
-		$nbr_lignes = @mysql_num_rows($res);
-		$nbr_champs = @mysql_num_fields($res);
+		$res = @pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = @pmb_mysql_num_rows($res);
+		$nbr_champs = @pmb_mysql_num_fields($res);
 
 		if($nbr_lignes) {
 			if(!$cle) {
 				for($i=0; $i < $nbr_champs; $i++) {
-					printf("<th>%s</th>", mysql_field_name($res, $i));
+					printf("<th>%s</th>", pmb_mysql_field_name($res, $i));
 				}
 			}
 
 			for($i=0; $i < $nbr_lignes; $i++) {
-				$row = mysql_fetch_row($res);
+				$row = pmb_mysql_fetch_row($res);
 				echo "<tr>";
 				foreach($row as $dummykey=>$col) {
 					if(!$col) $col="&nbsp;";

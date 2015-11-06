@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: es_list.class.php,v 1.3.2.4 2014-04-09 08:23:43 arenou Exp $
+// $Id: es_list.class.php,v 1.8 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -109,9 +109,9 @@ class es_list extends connector {
 		
 		// on regarde les connecteurs existants !
 		$query = "select source_id, name from connectors_sources where id_connector != 'es_list' order by name";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$form.="
 					<option value='".htmlentities($row->source_id,ENT_QUOTES,$charset)."'".(in_array($row->source_id,$es_selected) ? " selected='selected'" : "").">".htmlentities($row->name,ENT_QUOTES,$charset)."</option>";
 			}
@@ -206,21 +206,21 @@ class es_list extends connector {
 			case "external" :
 			default :
 				$rqt="select code from notices where notice_id = '$notice_id'";
-				$res=mysql_query($rqt);
+				$res=pmb_mysql_query($rqt);
 				$es_source_id = $source_id;
 				$nb_result = 0;
-				if(mysql_num_rows($res)){
-					$code = mysql_result($res,0,0);
+				if(pmb_mysql_num_rows($res)){
+					$code = pmb_mysql_result($res,0,0);
 					if($code){
 						$queries = array();
 						for($i=0 ; $i<count($es_selected) ; $i++){
 							$queries[] = "select recid,source_id from entrepot_source_".$es_selected[$i]." where (ufield = '011' or ufield ='010')  and usubfield = 'a' and value = '".addslashes($code)."'";
 						}
 						$query = "select recid,source_id from ((".implode(") union (",$queries).")) as subs";
-						$result = mysql_query($query);
-						$nb_result = mysql_num_rows($result);
-						if(mysql_num_rows($result)){
-							while($row = mysql_fetch_object($result)){
+						$result = pmb_mysql_query($query);
+						$nb_result = pmb_mysql_num_rows($result);
+						if(pmb_mysql_num_rows($result)){
+							while($row = pmb_mysql_fetch_object($result)){
 								$es_source_id = $row->source_id;
 								$enrichment[$type]['content'].= aff_notice_unimarc($row->recid);
 							}
@@ -242,9 +242,9 @@ class es_list extends connector {
 				//source de la notice
 				case 1 :
 					$query="select name from connectors_sources where source_id=".$es_source_id."";
-					$result =mysql_query($query);
-					if(mysql_num_rows($result)){
-						$name = mysql_result($result,0,0);
+					$result =pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						$name = pmb_mysql_result($result,0,0);
 					}else{
 						$name = $params['NAME'];
 					}						

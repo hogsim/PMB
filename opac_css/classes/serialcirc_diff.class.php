@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff.class.php,v 1.2 2011-11-28 14:18:56 arenou Exp $
+// $Id: serialcirc_diff.class.php,v 1.3 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -24,9 +24,9 @@ class serialcirc_diff {
 	private function _fetch_data(){
 		$this->serialcirc = new serialcirc($this->num_serialcirc);
 		$query = "select id_serialcirc_diff from serialcirc_diff where num_serialcirc_diff_serialcirc = ".$this->num_serialcirc." order by num_serialcirc_diff_serialcirc,serialcirc_diff_order asc";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->list[] = new serialcirc_diff_dest($row->id_serialcirc_diff);
 			}
 		}
@@ -110,9 +110,9 @@ class serialcirc_diff_dest {
 	
 	protected function _fetch_data(){
 		$query = "select * from serialcirc_diff where id_serialcirc_diff = ".$this->id_serialcirc_diff;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			$this->type = $row->serialcirc_diff_empr_type;
 			$this->type_diff = $row->serialcirc_diff_type_diff;
 			$this->num_empr = $row->num_serialcirc_diff_empr;
@@ -159,9 +159,9 @@ class serialcirc_diff_dest {
 		$mail = array();
 		if($this->type == 0){
 			$query = "select empr_nom, empr_prenom, empr_mail from empr where id_empr = ".$this->num_empr;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$mail['dest'] = array(
 					'name' => $row->empr_nom.($row->empr_prenom ? " ".$row->empr_prenom : ""),
 					'mail' => $row->empr_mail

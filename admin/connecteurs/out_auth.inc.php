@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: out_auth.inc.php,v 1.2 2009-07-15 14:16:38 erwanmartin Exp $
+// $Id: out_auth.inc.php,v 1.3 2015-04-03 11:16:23 jpermanne Exp $
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once($class_path."/external_services_esusers.class.php");
@@ -19,7 +19,7 @@ function list_esgroups() {
 	
 	//Ajoutons l'utilisateur anonyme
 	$sql = "SELECT COUNT(1) FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_esgroupnum = -1";
-	$anonymous_count = mysql_result(mysql_query($sql, $dbh), 0, 0);
+	$anonymous_count = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 	$pair_impair = "odd";
 	$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./admin.php?categ=connecteurs&sub=out_auth&action=editanonymous'\" ";
 	print "		<tr style='cursor: pointer' class='$pair_impair' $tr_javascript>
@@ -32,7 +32,7 @@ function list_esgroups() {
 	foreach($esgroups->groups as &$aesgroup) {
 		//Récupérons le nombre de sources autorisées dans le groupe
 		$sql = "SELECT COUNT(1) FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_esgroupnum = ".$aesgroup->esgroup_id;
-		$count = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$count = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 
 		$pair_impair = $parity++ % 2 ? 'even' : 'odd';
 		$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./admin.php?categ=connecteurs&sub=out_auth&action=edit&id=$aesgroup->esgroup_id';\" ";
@@ -74,16 +74,16 @@ function show_auth_edit_form($group_id) {
 
 	$current_sources=array();
 	$current_sql = "SELECT connectors_out_source_esgroup_sourcenum FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_esgroupnum = ".$group_id;
-	$current_res = mysql_query($current_sql, $dbh);
-	while($row = mysql_fetch_assoc($current_res)) {
+	$current_res = pmb_mysql_query($current_sql, $dbh);
+	while($row = pmb_mysql_fetch_assoc($current_res)) {
 		$current_sources[] = $row["connectors_out_source_esgroup_sourcenum"];
 	}
 	
 	$data_sql = "SELECT connectors_out_sources_connectornum, connectors_out_source_id, connectors_out_source_name, EXISTS(SELECT 1 FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_sourcenum = connectors_out_source_id AND connectors_out_source_esgroup_esgroupnum = ".$group_id.") AS authorized FROM connectors_out_sources ORDER BY connectors_out_sources_connectornum";
-	$data_res = mysql_query($data_sql, $dbh);
+	$data_res = pmb_mysql_query($data_sql, $dbh);
 	$current_connid = 0;
 	print '<div class=row><label class="etiquette">'.$msg["admin_connecteurs_outauth_usesource"].'</label><br />';
-	while($asource=mysql_fetch_assoc($data_res)) {
+	while($asource=pmb_mysql_fetch_assoc($data_res)) {
 		if ($current_connid != $asource["connectors_out_sources_connectornum"]) {
 			if ($current_connid) 
 				print '<br />';
@@ -127,16 +127,16 @@ function show_auth_edit_form_anonymous() {
 
 	$current_sources=array();
 	$current_sql = "SELECT connectors_out_source_esgroup_sourcenum FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_esgroupnum = -1";
-	$current_res = mysql_query($current_sql, $dbh);
-	while($row = mysql_fetch_assoc($current_res)) {
+	$current_res = pmb_mysql_query($current_sql, $dbh);
+	while($row = pmb_mysql_fetch_assoc($current_res)) {
 		$current_sources[] = $row["connectors_out_source_esgroup_sourcenum"];
 	}
 	
 	$data_sql = "SELECT connectors_out_sources_connectornum, connectors_out_source_id, connectors_out_source_name, EXISTS(SELECT 1 FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_sourcenum = connectors_out_source_id AND connectors_out_source_esgroup_esgroupnum = -1) AS authorized FROM connectors_out_sources ORDER BY connectors_out_sources_connectornum";
-	$data_res = mysql_query($data_sql, $dbh);
+	$data_res = pmb_mysql_query($data_sql, $dbh);
 	$current_connid = 0;
 	print '<div class=row><label class="etiquette">'.$msg["admin_connecteurs_outauth_usesource"].'</label><br />';
-	while($asource=mysql_fetch_assoc($data_res)) {
+	while($asource=pmb_mysql_fetch_assoc($data_res)) {
 		if ($current_connid != $asource["connectors_out_sources_connectornum"]) {
 			if ($current_connid) 
 				print '<br />';
@@ -179,9 +179,9 @@ switch ($action) {
 			//Croisons ce que l'on nous propose avec ce qui existe vraiment dans la base
 			//Vérifions que les sources existents
 			$sql = "SELECT connectors_out_source_id FROM connectors_out_sources WHERE connectors_out_source_id IN (".implode(",", $authorized_sources).')';
-			$res = mysql_query($sql, $dbh);
+			$res = pmb_mysql_query($sql, $dbh);
 			$final_authorized_sources = array();
-			while ($row=mysql_fetch_assoc($res))
+			while ($row=pmb_mysql_fetch_assoc($res))
 				$final_authorized_sources[] = $row["connectors_out_source_id"];
 
 			//Vérifions que le groupe existe
@@ -192,7 +192,7 @@ switch ($action) {
 			
 			//On vire ce qui existe déjà:
 			$sql = "DELETE FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_esgroupnum = ".$id;
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 			
 			//Tout est bon? On insert
 			$values = array();
@@ -201,7 +201,7 @@ switch ($action) {
 				$values[] = '('.$an_authorized_source.','.$id.')';
 			}
 			$insert_sql .= implode(",", $values);
-			mysql_query($insert_sql, $dbh);
+			pmb_mysql_query($insert_sql, $dbh);
 		}
 		list_esgroups();
 		break;
@@ -213,16 +213,16 @@ switch ($action) {
 			//Croisons ce que l'on nous propose avec ce qui existe vraiment dans la base
 			//Vérifions que les sources existents
 			$sql = "SELECT connectors_out_source_id FROM connectors_out_sources WHERE connectors_out_source_id IN (".implode(",", $authorized_sources).')';
-			$res = mysql_query($sql, $dbh);
+			$res = pmb_mysql_query($sql, $dbh);
 			$final_authorized_sources = array();
-			while ($row=mysql_fetch_assoc($res))
+			while ($row=pmb_mysql_fetch_assoc($res))
 				$final_authorized_sources[] = $row["connectors_out_source_id"];
 			
 		}
 
 		//On vire ce qui existe déjà:
 		$sql = "DELETE FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_esgroupnum = -1";
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 		//Tout est bon? On insert
 		$values = array();
@@ -231,7 +231,7 @@ switch ($action) {
 			$values[] = '('.$an_authorized_source.', -1)';
 		}
 		$insert_sql .= implode(",", $values);
-		mysql_query($insert_sql, $dbh);
+		pmb_mysql_query($insert_sql, $dbh);
 
 		list_esgroups();
 		break;

@@ -61,11 +61,11 @@ class lastfmApiDatabase {
 	 * @return void
 	 */
 	private function connectToDb () {
-		if (!$this->dbConn = @mysql_connect($this->host, $this->dbUser, $this->dbPass)) {
+		if (!$this->dbConn = @pmb_mysql_connect($this->host, $this->dbUser, $this->dbPass)) {
 			$this->handleError();
 			return false;
 		}
-		else if ( !@mysql_select_db($this->dbName, $this->dbConn) ) {
+		else if ( !@pmb_mysql_select_db($this->dbName, $this->dbConn) ) {
 			$this->handleError();
 			return false;
 		}
@@ -76,7 +76,7 @@ class lastfmApiDatabase {
 	 * @return void
 	 */
 	private function handleError () {
-		$this->error = mysql_error($this->dbConn);
+		$this->error = pmb_mysql_error($this->dbConn);
 	}
 	
 	/**
@@ -86,8 +86,8 @@ class lastfmApiDatabase {
 	 * @uses lastfmApiDatabase_result
 	 */
 	public function query($sql) {
-		if ( !$queryResource = mysql_query($sql, $this->dbConn) ) {
-			echo mysql_error();
+		if ( !$queryResource = pmb_mysql_query($sql, $this->dbConn) ) {
+			echo pmb_mysql_error();
 			$this->handleError();
 			return false;
 		}
@@ -130,11 +130,11 @@ class lastfmApiDatabase_result {
 	 * @return array
 	 */
 	public function fetch () {
-		if ( $row = mysql_fetch_array($this->query) ) {
+		if ( $row = pmb_mysql_fetch_array($this->query) ) {
 			return $row;
 		}
 		else if ( $this->size() > 0 ) {
-			mysql_data_seek($this->query,0);
+			pmb_mysql_data_seek($this->query,0);
 			return false;
 		}
 		else {
@@ -148,7 +148,7 @@ class lastfmApiDatabase_result {
 	 */
 	function fetchAll() {
 		$result = array();
-		while ( $row = mysql_fetch_array($this->query) ) {
+		while ( $row = pmb_mysql_fetch_array($this->query) ) {
 			$result[] =$row;
 		}
 		return $result;
@@ -159,7 +159,7 @@ class lastfmApiDatabase_result {
 	 * @return integer
 	 */
 	function size () {
-		return mysql_num_rows($this->query);
+		return pmb_mysql_num_rows($this->query);
 	}
 }
 ?>

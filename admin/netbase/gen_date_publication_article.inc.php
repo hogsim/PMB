@@ -2,17 +2,17 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: gen_date_publication_article.inc.php,v 1.3 2009-05-16 11:11:53 dbellamy Exp $
+// $Id: gen_date_publication_article.inc.php,v 1.4 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 $req="select date_date,analysis_notice from analysis,bulletins where analysis_bulletin=bulletin_id";	
-$res=mysql_query($req,$dbh);	
-if(mysql_num_rows($res))while (($row = mysql_fetch_object ($res))) {
+$res=pmb_mysql_query($req,$dbh);	
+if(pmb_mysql_num_rows($res))while (($row = pmb_mysql_fetch_object($res))) {
 	$year=substr($row->date_date,0,4);
 	if($year) {
 		$req="UPDATE notices SET year='$year' where notice_id=".$row->analysis_notice;
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	}		
 } 
 

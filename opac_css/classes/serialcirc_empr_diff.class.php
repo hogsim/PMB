@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_empr_diff.class.php,v 1.2 2011-11-22 14:30:47 arenou Exp $
+// $Id: serialcirc_empr_diff.class.php,v 1.3 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 require_once($include_path."/mail.inc.php");
@@ -35,9 +35,9 @@ class serialcirc_empr_diff {
 		$query_alone = "select serialcirc_expl_state_circ, serialcirc_expl_bulletine_date, serialcirc_duration_before_send, num_serialcirc_abt, num_serialcirc_expl_id, serialcirc_virtual, serialcirc_expl_start_date, serialcirc_checked, num_serialcirc_expl_current_empr from serialcirc_diff join serialcirc on num_serialcirc_diff_serialcirc = id_serialcirc left join serialcirc_expl on num_serialcirc_expl_serialcirc = id_serialcirc where num_serialcirc_diff_serialcirc=".$this->id_serialcirc." and num_serialcirc_diff_empr =".$this->empr_id.($this->expl_id !=0 ? " and num_serialcirc_expl_id=".$this->expl_id : "");
 		$query_grp =   "select serialcirc_expl_state_circ, serialcirc_expl_bulletine_date, serialcirc_duration_before_send,num_serialcirc_abt, num_serialcirc_expl_id, serialcirc_virtual, serialcirc_expl_start_date, serialcirc_checked, num_serialcirc_expl_current_empr from serialcirc_diff join serialcirc_group on id_serialcirc_diff = num_serialcirc_group_diff join serialcirc on num_serialcirc_diff_serialcirc = id_serialcirc left join serialcirc_expl on num_serialcirc_expl_serialcirc = id_serialcirc where num_serialcirc_diff_serialcirc=".$this->id_serialcirc." and num_serialcirc_group_empr = ".$this->empr_id.($this->expl_id !=0 ? " and num_serialcirc_expl_id=".$this->expl_id : "");
 		$query = $query_alone." union ".$query_grp;
-		$res=mysql_query($query);
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){
+		$res=pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){
 				$this->state = $row->serialcirc_expl_state_circ;
 				$this->virtual = $row->serialcirc_virtual;
 				$this->check_activate = $row->serialcirc_checked;
@@ -58,22 +58,22 @@ class serialcirc_empr_diff {
 	public function get_rank(){
 		if($this->state == SERIALCIRC_EXPL_STATE_CIRC_inprogress){
 			$start_rank = "select 1 from serialcirc_expl where num_serialcirc_expl_id =".$this->expl_id." and serialcirc_expl_start_date!=0 ";
-			$res = mysql_query($start_rank); 
-			if(mysql_num_rows($res)){
+			$res = pmb_mysql_query($start_rank); 
+			if(pmb_mysql_num_rows($res)){
 				$rank=0;
 			}else $rank =1;
 			//on va chercher toutes les lignes...
 			$diff = "select * from serialcirc_diff left join serialcirc_expl on num_serialcirc_expl_serialcirc = num_serialcirc_diff_serialcirc where num_serialcirc_diff_serialcirc = ".$this->id_serialcirc." and num_serialcirc_expl_id = ".$this->expl_id." order by serialcirc_diff_order asc";
-			$res_diff = mysql_query($diff);
+			$res_diff = pmb_mysql_query($diff);
 			$empr_found = false;
-			if(mysql_num_rows($res_diff)){
-				while($row_diff = mysql_fetch_object($res_diff)){
+			if(pmb_mysql_num_rows($res_diff)){
+				while($row_diff = pmb_mysql_fetch_object($res_diff)){
 					//highlight_string(print_r($row_diff,true));
 					if($row_diff->serialcirc_diff_empr_type == 0){
 						if($this->empr_is_subscribe($row_diff->num_serialcirc_diff_empr)){
 							$pointed = "select 1 from serialcirc_circ where num_serialcirc_circ_expl = ".$this->expl_id." and num_serialcirc_circ_empr = ".$row_diff->num_serialcirc_diff_empr." and num_serialcirc_circ_serialcirc = ".$row_diff->num_serialcirc_diff_serialcirc." and serialcirc_circ_pointed_date != 0";
-							$res_pointed = mysql_query($pointed);
-							if(mysql_num_rows($res_pointed)){
+							$res_pointed = pmb_mysql_query($pointed);
+							if(pmb_mysql_num_rows($res_pointed)){
 								$rank = 0;
 								$empr_found = false;
 							}
@@ -86,13 +86,13 @@ class serialcirc_empr_diff {
 					}else{
 						if($row_diff->serialcirc_diff_type_diff == 1){
 							$gp = "select * from serialcirc_group where num_serialcirc_group_diff = ".$row_diff->id_serialcirc_diff." order by serialcirc_group_order asc" ;
-							$res_gp = mysql_query($gp);
-							if(mysql_num_rows($res_gp)){
-								while($row_gp = mysql_fetch_object($res_gp)){
+							$res_gp = pmb_mysql_query($gp);
+							if(pmb_mysql_num_rows($res_gp)){
+								while($row_gp = pmb_mysql_fetch_object($res_gp)){
 									if($this->empr_is_subscribe($row_gp->num_serialcirc_group_empr)){
 										$pointed = "select 1 from serialcirc_circ where num_serialcirc_circ_expl = ".$this->expl_id." and num_serialcirc_circ_empr = ".$row_gp->num_serialcirc_group_empr." and num_serialcirc_circ_serialcirc = ".$row_diff->num_serialcirc_diff_serialcirc." and serialcirc_circ_pointed_date != 0";
-										$res_pointed = mysql_query($pointed);
-										if(mysql_num_rows($res_pointed)){
+										$res_pointed = pmb_mysql_query($pointed);
+										if(pmb_mysql_num_rows($res_pointed)){
 											$rank = 0;
 											$empr_found = false;
 										}
@@ -122,9 +122,9 @@ class serialcirc_empr_diff {
 		$is_subscribe = false;
 		if($this->virtual){
 			$query = "select serialcirc_circ_subscription from serialcirc_circ where num_serialcirc_circ_expl = ".$this->expl_id." and num_serialcirc_circ_empr = ".$empr_id." and num_serialcirc_circ_serialcirc = ".$this->id_serialcirc;
-			$res = mysql_query($query);
-			if(mysql_num_rows($res)){
-				$subscription = mysql_result($res,0,0);
+			$res = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($res)){
+				$subscription = pmb_mysql_result($res,0,0);
 				if($subscription) $is_subscribe =true;
 			}
 		}else{
@@ -138,9 +138,9 @@ class serialcirc_empr_diff {
 		$this->expl_infos = array();
 		if($this->expl_id != 0){
 			$query = "select expl_id,expl_cb,bulletin_titre,mention_date,bulletin_numero from exemplaires join bulletins on bulletin_id = expl_bulletin where expl_id =".$this->expl_id;
-			$res = mysql_query($query);
-			if(mysql_num_rows($res)){
-				$infos = mysql_fetch_object($res);
+			$res = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($res)){
+				$infos = pmb_mysql_fetch_object($res);
 			}
 			$this->expl_infos['issue'] = $infos->bulletin_numero;
 			if($infos->mention_date) $this->expl_infos['issue'].=" ".$infos->mention_date;
@@ -152,9 +152,9 @@ class serialcirc_empr_diff {
 	public function get_serial_infos(){
 		$this->serial_infos = array();
 		$query = "select tit1 from notices join abts_abts on num_notice = notice_id where abt_id = ".$this->num_abt;
-		$res = mysql_query($query);
-		if(mysql_num_rows($res)){
-			$infos = mysql_fetch_object($res);
+		$res = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($res)){
+			$infos = pmb_mysql_fetch_object($res);
 		}
 		$this->serial_infos['title'] = $infos->tit1;
 	}
@@ -166,8 +166,8 @@ class serialcirc_empr_diff {
 		if($this->check_activate){
 			if($this->expl_id!=0){
 				$query ="select serialcirc_circ_trans_asked, serialcirc_circ_trans_doc_asked, serialcirc_circ_ret_asked, serialcirc_circ_subscription from serialcirc_circ join serialcirc_expl on num_serialcirc_circ_empr = num_serialcirc_expl_current_empr where num_serialcirc_circ_expl = ".$this->expl_id;
-				$res = mysql_query($query);
-				$circ_infos = mysql_fetch_object($res);
+				$res = pmb_mysql_query($query);
+				$circ_infos = pmb_mysql_fetch_object($res);
 //				print $query."<br>";
 //				highlight_string(print_r($circ_infos,true));
 				$form="
@@ -175,9 +175,9 @@ class serialcirc_empr_diff {
 						<input type='hidden' name='expl_id' value='".htmlentities($this->expl_id,ENT_QUOTES,$charset)."'/>
 						<input type='hidden' name='actions_form_submit' value ='1' />";
 				$query = "select * from serialcirc_expl where num_serialcirc_expl_id = ".$this->expl_id;
-				$res= mysql_query($query);
-				if(mysql_num_rows($res)){
-					$infos = mysql_fetch_object($res);
+				$res= pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($res)){
+					$infos = pmb_mysql_fetch_object($res);
 					//si on a l'utilisateur courant
 					if($this->rank == 0){
 						//retour demandé
@@ -217,13 +217,13 @@ class serialcirc_empr_diff {
 				}
 				if($this->virtual && $this->state == SERIALCIRC_EXPL_STATE_CIRC_pending){
 				$query = "select date_add('".$this->bulletine_date."', interval ".$this->duration_before_start." day)";
-				$res = mysql_query($query);
-				if(mysql_num_rows($res)){
-					$end_subscription = mysql_result($res,0,0);
+				$res = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($res)){
+					$end_subscription = pmb_mysql_result($res,0,0);
 					$query = "select datediff('".$end_subscription."',now())";
-					$res = mysql_query($query);
-					if(mysql_num_rows($res)){
-						$test = mysql_result($res,0,0);
+					$res = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($res)){
+						$test = pmb_mysql_result($res,0,0);
 					}else $test = -1;
 					if($test >=0 && !$circ_infos->serialcirc_circ_subscription){
 						$form.="

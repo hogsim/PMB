@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export.inc.php,v 1.7 2013-04-17 08:37:34 mbertin Exp $
+// $Id: export.inc.php,v 1.8 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -13,8 +13,8 @@ require_once($class_path."/parametres_perso.class.php");
 function _export_($id,$keep_expl=0) {
 	global $charset;
 	$requete="select * from notices where notice_id=$id";
-	$resultat=mysql_query($requete);
-	$rn=mysql_fetch_object($resultat);
+	$resultat=pmb_mysql_query($requete);
+	$rn=pmb_mysql_fetch_object($resultat);
 	
 	$dt=$rn->typdoc;
 	$bl=$rn->niveau_biblio;
@@ -38,11 +38,11 @@ function _export_($id,$keep_expl=0) {
 	
 	//Langage
 	$rqttmp_lang = "select type_langue,code_langue from notices_langues where num_notice='$id' order by ordre_langue ";
-	$restmp_lang = mysql_query($rqttmp_lang);
-	if(mysql_num_rows($restmp_lang)) {
+	$restmp_lang = pmb_mysql_query($rqttmp_lang);
+	if(pmb_mysql_num_rows($restmp_lang)) {
 		$ind="0 ";
 		$notice_langue_temp="";
-		while (($tmp_lang = mysql_fetch_object($restmp_lang))) {
+		while (($tmp_lang = pmb_mysql_fetch_object($restmp_lang))) {
 			if($tmp_lang->type_langue) {
 				$ind="1 ";
 				$notice_langue_temp.="    <s c='c'>".htmlspecialchars($tmp_lang->code_langue,ENT_QUOTES,$charset)."</s>\n";
@@ -81,8 +81,8 @@ function _export_($id,$keep_expl=0) {
 	//Editeurs
 	if ($rn->ed1_id) {
 	    $requete="select * from publishers where ed_id=".$rn->ed1_id;
-		$resultat=mysql_query($requete);
-		$red=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		$red=pmb_mysql_fetch_object($resultat);
 		$notice.="  <f c='210' ind='  '>\n";
 		$notice.="    <s c='c'>".htmlspecialchars($red->ed_name,ENT_QUOTES,$charset)."</s>\n";
 		if ($red->ed_ville!='') $notice.="    <s c='a'>".htmlspecialchars($red->ed_ville,ENT_QUOTES,$charset)."</s>\n";
@@ -91,8 +91,8 @@ function _export_($id,$keep_expl=0) {
 	}
 	if ($rn->ed2_id) {
 	    $requete="select * from publishers where ed_id=".$rn->ed2_id;
-		$resultat=mysql_query($requete);
-		$red=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		$red=pmb_mysql_fetch_object($resultat);
 		$notice.="  <f c='210' ind='  '>\n";
 		$notice.="    <s c='c'>".htmlspecialchars($red->ed_name,ENT_QUOTES,$charset)."</s>\n";
 		if ($red->ed_ville!='') $notice.="    <s c='a'>".htmlspecialchars($red->ed_ville,ENT_QUOTES,$charset)."</s>\n";
@@ -113,8 +113,8 @@ function _export_($id,$keep_expl=0) {
 	//Collection
 	if ($rn->coll_id) {
 		$requete="select * from collections where collection_id=".$rn->coll_id;
-		$resultat=mysql_query($requete);
-		if (($col = mysql_fetch_object($resultat))) {
+		$resultat=pmb_mysql_query($requete);
+		if (($col = pmb_mysql_fetch_object($resultat))) {
 			$notice.="  <f c='225' ind='2 '>\n";
 			$notice.="    <s c='a'>".htmlspecialchars($col->collection_name,ENT_QUOTES,$charset)."</s>\n";
 			if ($rn->nocoll!='') $notice.="    <s c='v'>".htmlspecialchars($rn->nocoll,ENT_QUOTES,$charset)."</s>\n";
@@ -124,8 +124,8 @@ function _export_($id,$keep_expl=0) {
 		//sous-collection
 		if ($rn->subcoll_id){
 			$requete="select * from sub_collections where sub_coll_id=".$rn->subcoll_id;
-			$resultat=mysql_query($requete);		    
-			if (($subcol = mysql_fetch_object($resultat))) {
+			$resultat=pmb_mysql_query($requete);		    
+			if (($subcol = pmb_mysql_fetch_object($resultat))) {
 				$notice.="    <s c='i'>".htmlspecialchars($subcol->sub_coll_name,ENT_QUOTES,$charset)."</s>\n";
 			}
 		}
@@ -156,8 +156,8 @@ function _export_($id,$keep_expl=0) {
 	$serie="";
 	if ($rn->tparent_id!=0 || $rn->tnvol!='') {
 		$requete="select serie_name from series where serie_id=".$rn->tparent_id;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) $serie=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) $serie=pmb_mysql_result($resultat,0,0);
 		$notice.="  <f c='461' ind=' 0'>\n";
 		if ($serie!='') $notice.="    <s c='t'>".htmlspecialchars($serie,ENT_QUOTES,$charset)."</s>\n";
 		if ($rn->tnvol) $notice.="    <s c='v'>".htmlspecialchars($rn->tnvol,ENT_QUOTES,$charset)."</s>\n";
@@ -169,9 +169,9 @@ function _export_($id,$keep_expl=0) {
 		$req_link = "SELECT notice_id, tit1, code ";
 		$req_link.= "bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero ";
 		$req_link.= "from analysis,bulletins,notices WHERE analysis_notice=".$id." and bulletin_id=analysis_bulletin and bulletin_notice=notice_id ";
-		$result_link=mysql_query($req_link);
-		if (mysql_num_rows($result_link)) { 
-			$row=mysql_fetch_object($result_link);
+		$result_link=pmb_mysql_query($req_link);
+		if (pmb_mysql_num_rows($result_link)) { 
+			$row=pmb_mysql_fetch_object($result_link);
 			$notice.="  <f c='461' ind='  '>\n";
 			$notice.="    <s c='t'>".htmlspecialchars($row->tit1,ENT_QUOTES,$charset)."</s>\n";
 			$notice.="    <s c='9'>lnk:perio</s>\n";
@@ -188,9 +188,9 @@ function _export_($id,$keep_expl=0) {
 
 	//Descripteurs
 	$requete="SELECT libelle_categorie FROM categories, notices_categories WHERE notcateg_notice=".$id." and categories.num_noeud = notices_categories.num_noeud ORDER BY ordre_categorie";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-		while (($row=mysql_fetch_object($resultat))) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+		while (($row=pmb_mysql_fetch_object($resultat))) {
 			$notice.="  <f c='606' ind=' 1'>\n";
 			$notice.="    <s c='a'>".htmlspecialchars($row->libelle_categorie,ENT_QUOTES,$charset)."</s>\n";
 			$notice.="  </f>\n";
@@ -202,9 +202,9 @@ function _export_($id,$keep_expl=0) {
 	$requete = "select author_type, author_name, author_rejete, author_date, responsability_fonction, responsability_type 
 	,author_subdivision, author_lieu,author_ville, author_pays,author_numero,author_web
 	from authors, responsability where responsability_notice=".$id." and responsability_author=author_id";
-	$resultat = mysql_query($requete);
+	$resultat = pmb_mysql_query($requete);
 
-	while (($auth=mysql_fetch_object($resultat))) {				
+	while (($auth=pmb_mysql_fetch_object($resultat))) {				
 		//Si c'est un 70 (individuel) alors on l'exporte
 		if ($auth->author_type == "70") {
 			// Personne physique

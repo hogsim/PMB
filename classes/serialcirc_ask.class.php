@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_ask.class.php,v 1.6 2012-11-27 16:23:53 ngantier Exp $
+// $Id: serialcirc_ask.class.php,v 1.7 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,9 +23,9 @@ class serialcirc_ask {
 	function fetch_data() {
 		$this->ask_info=array();
 		$req="select * from serialcirc_ask where id_serialcirc_ask=".$this->id;
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {			
-			if($r=mysql_fetch_object($resultat)){					
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {			
+			if($r=pmb_mysql_fetch_object($resultat)){					
 				$this->ask_info['id']=$r->id_serialcirc_ask;
 				$this->ask_info['num_perio']=$r->num_serialcirc_ask_perio;
 				$this->ask_info['num_serialcirc']=$r->num_serialcirc_ask_serialcirc;
@@ -52,10 +52,10 @@ class serialcirc_ask {
 					$this->ask_info['abts']=array();
 					if(!$this->ask_info['num_abt_diff']) {				
 						$req_abt="select * from abts_abts where num_notice=".$this->ask_info['num_perio'];
-						$resultat_abt=mysql_query($req_abt);		
+						$resultat_abt=pmb_mysql_query($req_abt);		
 						$i=0;						
-						if (mysql_num_rows($resultat_abt)) {
-							while($r_abt=mysql_fetch_object($resultat_abt)){							
+						if (pmb_mysql_num_rows($resultat_abt)) {
+							while($r_abt=pmb_mysql_fetch_object($resultat_abt)){							
 								$this->ask_info['abts'][$i]['id']=$r_abt->abt_id;							
 								$this->ask_info['abts'][$i]['name']=$r_abt->abt_name;							
 								$this->ask_info['abts'][$i]['link_diff']="./catalog.php?categ=serialcirc_diff&sub=view&num_abt=".$r_abt->abt_id.
@@ -67,10 +67,10 @@ class serialcirc_ask {
 					}else{
 						// déjà abonné
 						$req_abt="select * from abts_abts where abt_id=".$this->ask_info['num_abt_diff'];
-						$resultat_abt=mysql_query($req_abt);		
+						$resultat_abt=pmb_mysql_query($req_abt);		
 						$i=0;						
-						if (mysql_num_rows($resultat_abt)) {
-							$r_abt=mysql_fetch_object($resultat_abt);						
+						if (pmb_mysql_num_rows($resultat_abt)) {
+							$r_abt=pmb_mysql_fetch_object($resultat_abt);						
 							$this->ask_info['abts'][$i]['id']=$r_abt->abt_id;							
 							$this->ask_info['abts'][$i]['name']=$r_abt->abt_name;							
 							$this->ask_info['abts'][$i]['link_diff']="./catalog.php?categ=serialcirc_diff&sub=view&num_abt=".$r_abt->abt_id;				
@@ -91,9 +91,9 @@ class serialcirc_ask {
 		$req="select abt_id,id_serialcirc_diff from serialcirc_diff,serialcirc, abts_abts 
 		where num_serialcirc_diff_serialcirc=id_serialcirc and num_serialcirc_abt=abt_id and  num_notice=$id_perio 
 		and num_serialcirc_diff_empr=$id_empr";
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			if($r=mysql_fetch_object($resultat)){			
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			if($r=pmb_mysql_fetch_object($resultat)){			
 				return $r->abt_id;	
 			}		
 		}	
@@ -110,7 +110,7 @@ class serialcirc_ask {
 	function accept(){
 		global $serialcirc_inscription_accepted_mail,$serialcirc_inscription_end_mail,$msg;
 		$req="update serialcirc_ask set serialcirc_ask_statut=1 where id_serialcirc_ask=".$this->id;
-		$resultat=mysql_query($req);	
+		$resultat=pmb_mysql_query($req);	
 		// send mail
 		if($this->ask_info['type']) $this->ask_send_mail($this->ask_info['num_empr'],$msg["serialcirc_circ_title"],$serialcirc_inscription_end_mail);
 		else $this->ask_send_mail($this->ask_info['num_empr'],$msg["serialcirc_circ_title"],$serialcirc_inscription_accepted_mail);
@@ -119,7 +119,7 @@ class serialcirc_ask {
 	function refus(){
 		global $serialcirc_inscription_no_mail,$msg;
 		$req="update serialcirc_ask set serialcirc_ask_statut=2 where id_serialcirc_ask=".$this->id;
-		$resultat=mysql_query($req);	
+		$resultat=pmb_mysql_query($req);	
 		// send mail
 		$this->ask_send_mail($this->ask_info['num_empr'],$msg["serialcirc_circ_title"],$serialcirc_inscription_no_mail);		
 	}
@@ -127,7 +127,7 @@ class serialcirc_ask {
 	function set_inscription($id_perio,$id_empr,$id_serialcirc=0){
 		if($id_serialcirc)$circ= ", num_serialcirc_ask_serialcirc= $id_serialcirc ";
 		$req="update serialcirc_ask set serialcirc_ask_statut=3 $circ where num_serialcirc_ask_perio=$id_perio and num_serialcirc_ask_empr=$id_empr";
-		$resultat=mysql_query($req);	
+		$resultat=pmb_mysql_query($req);	
 		// send mail
 		
 	}
@@ -135,12 +135,12 @@ class serialcirc_ask {
 	function delete(){
 		if($this->ask_info['statut']==0) return; //pas accepté ou refusée
 		$req="delete from serialcirc_ask where id_serialcirc_ask=".$this->id;
-		mysql_query($req);	
+		pmb_mysql_query($req);	
 			
 		// le supprimé de la list de diff si demande de désabonnement
 		if($this->ask_info['type']==1){
 			$req=" DELETE from serialcirc_diff WHERE num_serialcirc_diff_serialcirc=".$this->ask_info['num_serialcirc']." and num_serialcirc_diff_empr=".$this->ask_info['num_empr'];
-			mysql_query($req);	
+			pmb_mysql_query($req);	
 			
 			// et dans le groupe
 			$req=" select id_serialcirc_group from serialcirc_group, serialcirc_diff WHERE 
@@ -149,10 +149,10 @@ class serialcirc_ask {
 			and num_serialcirc_diff_serialcirc=".$this->ask_info['num_serialcirc']." 			
 			and num_serialcirc_group_empr=".$this->ask_info['num_empr'];
 			
-			$resultat=mysql_query($req);	
-			while($r=mysql_fetch_object($resultat)){					
+			$resultat=pmb_mysql_query($req);	
+			while($r=pmb_mysql_fetch_object($resultat)){					
 				$req=" DELETE from serialcirc_group	where id_serialcirc_group=$r->id_serialcirc_group";
-				mysql_query($req);					
+				pmb_mysql_query($req);					
 			}
 		}
 		
@@ -162,8 +162,8 @@ class serialcirc_ask {
 		global $dbh;
 		$info=array();
 		$req="select empr_cb, empr_nom ,  empr_prenom, empr_mail from empr where id_empr=".$id;
-		$res_empr=mysql_query($req);
-		if ($empr=mysql_fetch_object($res_empr)) {			
+		$res_empr=pmb_mysql_query($req);
+		if ($empr=pmb_mysql_fetch_object($res_empr)) {			
 			$info['cb'] = $empr->empr_cb;
 			$info['nom'] = $empr->empr_nom; 
 			$info['prenom'] = $empr->empr_prenom;  
@@ -208,10 +208,10 @@ class serialcirc_asklist {
 		}		
 		$req="select * from serialcirc_ask $filter_table $filter ";
 		//print $req;
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
 			$i=0;
-			while($r=mysql_fetch_object($resultat)){	
+			while($r=pmb_mysql_fetch_object($resultat)){	
 				$ask =new serialcirc_ask($r->id_serialcirc_ask);				
 				$this->asklist[$i]=$ask->ask_info;				
 				

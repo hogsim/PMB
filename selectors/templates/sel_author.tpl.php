@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sel_author.tpl.php,v 1.21.2.1 2014-08-05 12:26:19 apetithomme Exp $
+// $Id: sel_author.tpl.php,v 1.22 2014-08-05 12:33:43 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 

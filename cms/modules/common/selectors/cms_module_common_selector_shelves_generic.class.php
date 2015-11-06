@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_shelves_generic.class.php,v 1.3 2013-09-05 07:48:30 apetithomme Exp $
+// $Id: cms_module_common_selector_shelves_generic.class.php,v 1.4 2014-12-05 09:57:16 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");
@@ -18,7 +18,9 @@ class cms_module_common_selector_shelves_generic extends cms_module_common_selec
 		return array(
 			"cms_module_common_selector_shelves",
 			"cms_module_common_selector_type_section",
-			"cms_module_common_selector_type_article"
+			"cms_module_common_selector_type_article",
+			"cms_module_common_selector_type_article_generic",
+			"cms_module_common_selector_type_section_generic"
 		);
 	}
 

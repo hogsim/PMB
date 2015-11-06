@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette_facettes.class.php,v 1.14.2.3 2014-09-26 09:11:40 mbertin Exp $
+// $Id: bannette_facettes.class.php,v 1.21 2015-05-13 14:59:57 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -17,6 +17,9 @@ class bannette_facettes{
 	var $facettes=array(); // facettes associées à la bannette
 	var $environement=array(); // affichage des notices
 	var $noti_tpl_document=0; // template de notice
+	var $bannette_display_notice_in_every_group=0;
+	var $bannette_document_group=0;
+	var $sommaires=array(); // donnée du document à générer par un templatze
 	
 	function bannette_facettes($id) {  // $id bannette
 		$this->id=$id+0;		
@@ -47,15 +50,26 @@ class bannette_facettes{
 	function fetch_data() {		
 		global $msg,$dbh,$charset;
 		$this->facettes=array();
-		$req="select * from bannette_facettes where num_ban_facette=". $this->id." order by ban_facette_order";
-		$res = mysql_query($req,$dbh);
+		$req="select bannette_facettes.*,bannettes.display_notice_in_every_group,bannettes.document_group from bannette_facettes
+		JOIN bannettes ON id_bannette=num_ban_facette
+		where num_ban_facette=". $this->id." order by ban_facette_order";
+		$res = pmb_mysql_query($req,$dbh);
 		$i=0;
-		if (mysql_num_rows($res)) {
-			while($r=mysql_fetch_object($res)){
+		if (pmb_mysql_num_rows($res)) {
+			while($r=pmb_mysql_fetch_object($res)){
 				$this->facettes[$i] = new stdClass();
 				$this->facettes[$i]->critere=$r->ban_facette_critere;
 				$this->facettes[$i]->ss_critere= $r->ban_facette_ss_critere;
 				$this->facettes[$i]->order_sort= $r->ban_facette_order;
+				
+				if(!$this->bannette_display_notice_in_every_group){
+					$this->bannette_display_notice_in_every_group=$r->display_notice_in_every_group;
+				}
+				
+				if(!$this->bannette_document_group){
+					$this->bannette_document_group=$r->document_group;
+				}
+				
 				$i++;
 			}
 		}
@@ -107,9 +121,9 @@ class bannette_facettes{
 				$array_subfields[$isbd[0]['ID']+0]=$msg['facette_isbd'];
 			}
 		}else{
-			$req= mysql_query("select idchamp,titre from notices_custom order by titre asc");
+			$req= pmb_mysql_query("select idchamp,titre from notices_custom order by titre asc");
 			$j=0;
-			while($rslt=mysql_fetch_object($req)){
+			while($rslt=pmb_mysql_fetch_object($req)){
 				$array_subfields[$rslt->idchamp+0] = $rslt->titre;
 				$j++;
 			}
@@ -119,7 +133,7 @@ class bannette_facettes{
 	
 	function delete(){
 		$del = "delete from bannette_facettes where num_ban_facette = '".$this->id."'";
-		mysql_query($del);
+		pmb_mysql_query($del);
 	}
 	
 	function save(){
@@ -136,7 +150,7 @@ class bannette_facettes{
 				global $$ss_critere;
 								
 				$rqt = "insert into bannette_facettes set num_ban_facette = '".$this->id."', ban_facette_critere = '".$$critere."', ban_facette_ss_critere='".$$ss_critere."', ban_facette_order='".$order."' ";
-				mysql_query($rqt);
+				pmb_mysql_query($rqt);
 				$order++;				
 			}			
 		}		
@@ -229,7 +243,7 @@ class bannette_facettes{
 		return $tpls;
 	}
 	
-	function build_document($notice_ids,$notice_tpl="",$gen_summary=0){
+	function build_document($notice_ids,$notice_tpl="",$gen_summary=0,$gen_document=0){
 		
 		if($notice_tpl){
 			$this->noti_tpl_document=new notice_tpl_gen($notice_tpl);
@@ -245,7 +259,7 @@ class bannette_facettes{
 		$this->index=0;
 		
 		$res_notice_ids=$this->filter_facettes_search($facettes_list,$notice_ids);
-		$resultat_aff=$this->filter_facettes_print($res_notice_ids);
+		$resultat_aff=$this->filter_facettes_print($res_notice_ids,1,array(),$gen_document);
 		
 		if($this->gen_summary) $resultat_aff="<A NAME='SUMMARY'></A><div class='summary'><br />".$this->summary."</div>".$resultat_aff;
 		
@@ -261,7 +275,7 @@ class bannette_facettes{
 			$tpl_document=$this->noti_tpl_document->build_notice($notice_id,$deflt2docs_location);
 		}
 		if(!$tpl_document) {
-			$n=mysql_fetch_object(@mysql_query("select * from notices where notice_id=".$notice_id));
+			$n=pmb_mysql_fetch_object(@pmb_mysql_query("select * from notices where notice_id=".$notice_id));
 			if ($n->niveau_biblio == 'm'|| $n->niveau_biblio == 'b') {
 				$mono=new mono_display($n,$this->environement["short"],"",$this->environement["ex"],"","","",0,1,$this->environement["exnum"],0,"",0,true,false);
 				$tpl_document.= "<a href='".$url_base_opac.$n->notice_id."&code=!!code!!&emprlogin=!!login!!&date_conex=!!date_conex!!'><b>".$mono->header."</b></a><br /><br />\r\n";
@@ -304,9 +318,9 @@ class bannette_facettes{
 		}	
 		
 		//		print $req."<br>";
-		$res = mysql_query($req,$dbh);
-		if (mysql_num_rows($res)) {
-			while($r=mysql_fetch_object($res)){
+		$res = pmb_mysql_query($req,$dbh);
+		if (pmb_mysql_num_rows($res)) {
+			while($r=pmb_mysql_fetch_object($res)){
 				$res_notice_ids["folder"][$r->value]["values"][]= $r->id_notice;
 				$res_notice_ids["memo"][]= $r->id_notice;
 			}
@@ -334,12 +348,10 @@ class bannette_facettes{
 		return $res_notice_ids;
 	}
 	
-		
-	function filter_facettes_print($res_notice_ids, $rang=1,$notfound=array()){
+	function filter_facettes_print($res_notice_ids, $rang=1,$notfound=array(),$gen_document=0,&$already_printed=array()){
 		global $dbh, $msg, $charset;
 		global $lang;
-		//$notfound=array();	
-		//printr($res_notice_ids);
+		
 		if(count($res_notice_ids["notfound"])){
 			$tpl.="<p$rang class='dsi_notices_no_class_rang_$rang'>";
 			foreach($res_notice_ids["notfound"] as $notice_id){
@@ -351,39 +363,169 @@ class bannette_facettes{
 		}	
 		
 		if(is_array($res_notice_ids["folder"])){
-			foreach($res_notice_ids["folder"] as $folder => $contens){			
+			
+			foreach($res_notice_ids["folder"] as $folder => $contens){
+				
+				if((!$gen_document && $this->bannette_display_notice_in_every_group) || ($gen_document && $this->bannette_display_notice_in_every_group  && $this->bannette_document_group)){
+					//on vide $already_printed pour afficher systèmatiquement la notice dans chaque groupe
+					$already_printed=array();
+				}
+				
+				if(!sizeof($already_printed) || sizeof(array_diff($contens["values"],$already_printed))){
+
 					if($this->gen_summary && $rang==1){
 						$this->index++;
 						$this->summary.="<a href='#[".$this->index."]' class='summary_elt'>".htmlentities($this->index." - ".$folder,ENT_QUOTES,$charset)."</a><br />";
-						$tpl.="<a name='[".$this->index."]'></a><h$rang class='dsi_rang_$rang'>".htmlentities($folder,ENT_QUOTES,$charset)."</h$rang>
-						<p$rang class='dsi_notices_rang_$rang'>";
+							
+						if(!$gen_document || ($gen_document && $this->bannette_document_group)){
+							$tpl.="<a name='[".$this->index."]'></a><h1><h$rang class='dsi_rang_$rang'>".htmlentities($folder,ENT_QUOTES,$charset)."</h$rang>";
+						}
 					}else{
-						$tpl.="<h$rang class='dsi_rang_$rang'>".htmlentities($folder,ENT_QUOTES,$charset)."</h$rang>
-						<p$rang class='dsi_notices_rang_$rang'>";
+						if(!$gen_document || ($gen_document && $this->bannette_document_group)){
+							$tpl.="<h$rang class='dsi_rang_$rang'>".htmlentities($folder,ENT_QUOTES,$charset)."</h$rang>";
+						}
 					}
+					
+					$tpl.="<p$rang class='dsi_notices_rang_$rang'>";
+					
 					foreach($contens["values"] as $notice_id){
-						$tpl.=$this->build_notice($notice_id)."<br />" ;
+						if(!in_array($notice_id,$already_printed)){
+							$tpl.=$this->build_notice($notice_id)."<br />" ;
+							if($gen_document && !$this->bannette_document_group){
+								$tpl.="<div class='hr'><hr /></div>\r\n";
+							}
+							$already_printed[]=$notice_id;
+						}
 					}
-					if(count($contens["notfound"]))
-					foreach($contens["notfound"] as $notice_id){
-						if( !in_array($notice_id, $notfound) )
-							$tpl.=$this->build_notice($notice_id)."<br />" ;						
-							$notfound[]=$notice_id;
+					if(count($contens["notfound"])){
+						foreach($contens["notfound"] as $notice_id){
+							if( !in_array($notice_id, $notfound) )
+								$tpl.=$this->build_notice($notice_id)."<br />" ;						
+								$notfound[]=$notice_id;
+						}
 					}
+					
 					$tpl.="</p$rang>";
 					
 					//printr($contens["folder"]);
 					if(count($contens["folder"])){
 						$rang++;
 						// c'est une arborescence. Construction du titre
-						$tpl.=$this->filter_facettes_print($contens,$rang,$notfound);
+						$tpl.=$this->filter_facettes_print($contens,$rang,$notfound,$gen_document,$already_printed);
 						$rang--;
 					}	
+				}elseif(count($contens["folder"])){
+					
+					foreach($contens['folder'] as $folder2=>$values2){
+						if(!sizeof($already_printed) || sizeof(array_diff($values2["values"],$already_printed))){
+							if($this->gen_summary && $rang==1){
+								$this->index++;
+								$this->summary.="<a href='#[".$this->index."]' class='summary_elt'>".htmlentities($this->index." - ".$folder,ENT_QUOTES,$charset)."</a><br />";
+									
+								if(!$gen_document || ($gen_document && $this->bannette_document_group)){
+									$tpl.="<a name='[".$this->index."]'></a><h$rang class='dsi_rang_$rang'>".htmlentities($folder,ENT_QUOTES,$charset)."</h$rang>";
+								}
+							}else{
+								if(!$gen_document || ($gen_document && $this->bannette_document_group)){
+									$tpl.="<h$rang class='dsi_rang_$rang'>".htmlentities($folder,ENT_QUOTES,$charset)."</h$rang>";
+								}
+							}
+							break;
+						}
+					}
+					
+					$rang++;
+					// c'est une arborescence. Construction du titre
+					$tpl.=$this->filter_facettes_print($contens,$rang,$notfound,$gen_document,$already_printed);
+					$rang--;
+
+				}	
 			}	
 		}			
 		//print $tpl;
 		return $tpl;
 	}
 	
+	function build_document_data($notice_ids,$notice_tpl=""){
+		$this->sommaires=array();
+		if($notice_tpl){
+			$this->noti_tpl_document=new notice_tpl_gen($notice_tpl);
+		} else $this->noti_tpl_document="";
+		// paramétrage :
+		$this->environement["short"] = 6 ;
+		$this->environement["ex"] = 0 ;
+		$this->environement["exnum"] = 1 ;
+	
+		$facettes_list=$this->facettes;
+		$this->index=0;
+	
+		$res_notice_ids=$this->filter_facettes_search($facettes_list,$notice_ids);
+		$resultat_aff=$this->filter_facettes_data($res_notice_ids,1,array());
+		return $this->sommaires;
+	}
+	
+	function filter_facettes_data($res_notice_ids, $rang=1,$notfound=array(),$gen_document=0,&$already_printed=array()){
+		global $dbh, $msg, $charset;
+		global $lang;
+	
+		if(count($res_notice_ids["notfound"])){
+			$this->sommaires[$this->index]['level']=$rang;
+			foreach($res_notice_ids["notfound"] as $notice_id){
+				if( !in_array($notice_id, $notfound) )					
+					$this->sommaires[$this->index]['records'][]['render']=$charset!= "utf-8" ? utf8_encode($this->build_notice($notice_id)) : $this->build_notice($notice_id);				
+				$notfound[]=$notice_id;
+			}
+		}	
+		if(is_array($res_notice_ids["folder"])){				
+			foreach($res_notice_ids["folder"] as $folder => $contens){
+	
+				if((!$gen_document && $this->bannette_display_notice_in_every_group) || ($gen_document && $this->bannette_display_notice_in_every_group  && $this->bannette_document_group)){
+					//on vide $already_printed pour afficher systèmatiquement la notice dans chaque groupe
+					$already_printed=array();
+				}	
+				if(!sizeof($already_printed) || sizeof(array_diff($contens["values"],$already_printed))){					
+					$this->index++;
+					$this->sommaires[$this->index]['title']=$charset!= "utf-8" ? utf8_encode($folder) : $folder;
+					$this->sommaires[$this->index]['level']=$rang;												
+					foreach($contens["values"] as $notice_id){
+						if(!in_array($notice_id,$already_printed)){
+							$this->sommaires[$this->index]['records'][]['render']=$charset!= "utf-8" ? utf8_encode($this->build_notice($notice_id)) : $this->build_notice($notice_id);
+							$already_printed[]=$notice_id;
+						}
+					}
+					if(count($contens["notfound"])){
+						foreach($contens["notfound"] as $notice_id){
+							if( !in_array($notice_id, $notfound) )
+							$this->sommaires[$this->index]['records'][]['render']=$charset!= "utf-8" ? utf8_encode($this->build_notice($notice_id)) : $this->build_notice($notice_id);
+							$notfound[]=$notice_id;
+						}
+					}											
+					//printr($contens["folder"]);
+					if(count($contens["folder"])){
+						$rang++;
+						// c'est une arborescence. Construction du titre
+						$this->filter_facettes_data($contens,$rang,$notfound,$gen_document,$already_printed);
+						$rang--;
+					}
+				}elseif(count($contens["folder"])){
+						
+					foreach($contens['folder'] as $folder2=>$values2){
+						if(!sizeof($already_printed) || sizeof(array_diff($values2["values"],$already_printed))){
+							$this->index++;
+							$this->sommaires[$this->index]['title']=$charset!= "utf-8" ? utf8_encode($folder) : $folder;
+							$this->sommaires[$this->index]['level']=$rang;						
+							break;
+						}
+					}						
+					$rang++;
+					// c'est une arborescence. Construction du titre
+					$this->filter_facettes_data($contens,$rang,$notfound,$gen_document,$already_printed);
+					$rang--;
+	
+				}
+			}
+		}
+		return 0;
+	}	
 		
 }// end class

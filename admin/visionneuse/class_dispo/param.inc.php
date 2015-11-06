@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: param.inc.php,v 1.5 2013-04-24 08:39:02 apetithomme Exp $
+// $Id: param.inc.php,v 1.6 2015-04-03 11:16:28 jpermanne Exp $
 
 require_once($visionneuse_path."/classes/mimetypes/$quoi/$quoi.class.php");	
 
@@ -28,9 +28,9 @@ function show_form($action=''){
 	//on récup les infos déjà existantes
 	$params = array();
 	$rqt = "SELECT visionneuse_params_parameters FROM visionneuse_params WHERE visionneuse_params_class LIKE '$quoi'";
-	if($res=mysql_query($rqt)){
-		if(mysql_num_rows($res))
-		$paramToUnserialize= htmlspecialchars_decode(mysql_result($res,0,0));
+	if($res=pmb_mysql_query($rqt)){
+		if(pmb_mysql_num_rows($res))
+		$paramToUnserialize= htmlspecialchars_decode(pmb_mysql_result($res,0,0));
 		$params_values=$current_class->unserializeParams($paramToUnserialize);
 		$current_class->getTabParam();
 	}
@@ -86,12 +86,12 @@ function update_params(){
 	}
 	$serializedParams = $current_class->serializeParams($paramsToSerialize);
 	$rqt = "SELECT visionneuse_params_class FROM visionneuse_params WHERE visionneuse_params_class LIKE '$quoi'";
-	if($res=mysql_query($rqt)){
-		if(mysql_num_rows($res))
+	if($res=pmb_mysql_query($rqt)){
+		if(pmb_mysql_num_rows($res))
 			$requete = "UPDATE visionneuse_params SET visionneuse_params_parameters='".htmlspecialchars($serializedParams,ENT_QUOTES,$charset)."' WHERE visionneuse_params_class='$quoi'";
 		else $requete= "INSERT INTO visionneuse_params SET visionneuse_params_class='$quoi', visionneuse_params_parameters='".htmlspecialchars($serializedParams,ENT_QUOTES,$charset)."'";
 	}
-	$res = mysql_query($requete);
+	$res = pmb_mysql_query($requete);
 }
 
 ?>

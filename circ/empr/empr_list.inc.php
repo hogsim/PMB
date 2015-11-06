@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_list.inc.php,v 1.53.4.1 2015-01-28 14:43:11 mbertin Exp $
+// $Id: empr_list.inc.php,v 1.56 2015-04-24 14:20:58 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -23,26 +23,26 @@ function iconepanier($id_emprunteur) {
 	return $img_ajout_empr_caddie;
 }
 
-function get_nbpret($id_emprunteur){	
+function get_nbpret($id_emprunteur){
 	global $dbh, $msg;
-	
+
 	$rqt = "select count(pret_idexpl) as prets from empr left join pret on pret_idempr=id_empr where id_empr='".$id_emprunteur."' group by id_empr";
-	$res = mysql_query($rqt,$dbh);
-	$nb = mysql_fetch_object($res);
-	
+	$res = pmb_mysql_query($rqt,$dbh);
+	$nb = pmb_mysql_fetch_object($res);
+
 	return "<td>".$msg['empr_nb_pret']." : ".$nb->prets."</td>";
 }
 
 // nombre de références par pages
 if ($nb_per_page_empr != "")
 	$nb_per_page = $nb_per_page_empr ;
-else 
+else
 	$nb_per_page = 10;
 
 switch ($sub) {
 	case "launch":
 		$sc=new search(true,"search_fields_empr");
-		
+
 		if ((string)$page=="") {
 			$_SESSION["CURRENT"]=count($_SESSION["session_history"]);
 			$_SESSION["session_history"][$_SESSION["CURRENT"]]["QUERY"]["URI"]="./circ.php?categ=search";
@@ -66,41 +66,41 @@ switch ($sub) {
 		}
 
 		$table=$sc->get_results("./circ.php?categ=search&sub=launch","./circ.php?categ=search",true);
-		
+
 		$sc->link ='./circ.php?categ=empr_saisie&id=!!id!!';
 		$url = "./circ.php?categ=search&sub=launch";
 		$url_to_search_form = "./circ.php?categ=search";
 		$search_target="";
-		
+
 		if (!$page) $page=1;
 		$debut =($page-1)*$nb_per_page;
-	    
-	    $requete="select count(1) from $table"; 
-	    $res = 	mysql_query($requete);
+
+	    $requete="select count(1) from $table";
+	    $res = 	pmb_mysql_query($requete);
 	    if($res)
-	    	$nbr_lignes=mysql_result($res,0,0);
+	    	$nbr_lignes=pmb_mysql_result($res,0,0);
 	    else $nbr_lignes=0;
-	    
+
 	    if ($nbr_lignes) {
-    		$requete="select $table.* from ".$table.", empr where empr.id_empr=$table.id_empr";  
+    		$requete="select $table.* from ".$table.", empr where empr.id_empr=$table.id_empr";
 
 			//Y-a-t-il une erreur lors de la recherche ?
 		    if ($sc->error_message) {
 		    	error_message_history("", $sc->error_message, 1);
 		    	exit();
 		    }
-		    
+
 		    print $sc->make_hidden_search_form($url,"form_filters");
-		
-		    $res=mysql_query($requete,$dbh);
+
+		    $res=pmb_mysql_query($requete,$dbh);
 		    $human_requete = $sc->make_human_query();
-		
+
 		    print "<strong>".$msg["search_search_emprunteur"]."</strong> : ".$human_requete ;
-		
+
 			if ($nbr_lignes) {
 				print " => ".$nbr_lignes." ".$msg["search_empr_nb_result"]."<br />\n";
 				$tab_id_empr=array();
-				while ($row = mysql_fetch_object($res)) {
+				while ($row = pmb_mysql_fetch_object($res)) {
 					$tab_id_empr[] = $row->id_empr;
 				}
 				$clause = "WHERE id_empr in('".implode("','",$tab_id_empr)."')";
@@ -111,41 +111,40 @@ switch ($sub) {
 		if ($form_cb) {
 			$clause = "WHERE empr_nom like '".str_replace("*", "%", $form_cb)."%' " ;
 		}
-		if ($empr_location_id && $pmb_lecteurs_localises) 
+		if ($empr_location_id && $pmb_lecteurs_localises)
 			$clause .= " and empr_location='$empr_location_id'" ;
-		
+
 		// on récupére le nombre de lignes qui vont bien
 		if (!$nbr_lignes) {
 			$requete = "SELECT COUNT(1) FROM empr $clause ";
-			$res = mysql_query($requete, $dbh);
-			$nbr_lignes = @mysql_result($res, 0, 0);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 		}
 		break;
 }
 
 if (!$page) $page=1;
 $debut =($page-1)*$nb_per_page;
-		
+
 if ($nbr_lignes == 1) {
 	// on lance la vraie requête
 	$requete = "SELECT id_empr as id FROM empr $clause ";
-	$res = @mysql_query($requete, $dbh);
+	$res = @pmb_mysql_query($requete, $dbh);
 
-	$id = @mysql_result($res, '0', 'id');
+	$id = @pmb_mysql_result($res, '0', 'id');
 	if ($id) {
 		$erreur_affichage="<table border='0' cellpadding='1' >
 		<tr><td width='33'>&nbsp;<span>&nbsp;</span></td>
 				<td width='100%'>";
 		$erreur_affichage.="&nbsp;<span>&nbsp;</span>";
 		$erreur_affichage.="</td></tr></table>";
-		if ($id_notice) {
+		if ($id_notice || $id_bulletin) {
 			//type_resa : on est en prévision
-			if ($type_resa)
-				echo "<script> parent.location.href='./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id&groupID=$groupID&id_notice=$id_notice'; </script>";
-			else 
-				echo "<script> parent.location.href='./circ.php?categ=resa&id_empr=$id&groupID=$groupID&id_notice=$id_notice'; </script>";
-		} elseif($id_bulletin) {
-			echo "<script> parent.location.href='./circ.php?categ=resa&id_empr=$id&groupID=$groupID&id_bulletin=$id_bulletin'; </script>";
+			if ($type_resa) {
+				echo "<script type='text/javascript'> parent.location.href='./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin'; </script>";
+			} else {
+				echo "<script type='text/javascript'> parent.location.href='./circ.php?categ=resa&id_empr=$id&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin'; </script>";
+			}
 		} else {
 			$empr = new emprunteur($id, $erreur_affichage, FALSE, 1);
 			$affichage = $empr->fiche;
@@ -155,7 +154,7 @@ if ($nbr_lignes == 1) {
 	if ($empr_location_id && $pmb_lecteurs_localises) {
 		$docs_location=new docs_location($empr_location_id);
 		$where_intitule=$msg["empr_location_intitule"]. " \"".$docs_location->libelle."\"";
-	} else 
+	} else
 		$where_intitule="";
 
 	if ($empr_show_caddie) {
@@ -189,7 +188,7 @@ if ($nbr_lignes == 1) {
 				$$lo=$tableau;
 			}
 		}
-		$requete = "SELECT id_empr,empr_cb,empr_nom,empr_prenom,empr_adr1,empr_ville,empr_year FROM empr $clause group by id_empr ORDER BY empr_nom, empr_prenom "; 
+		$requete = "SELECT id_empr,empr_cb,empr_nom,empr_prenom,empr_adr1,empr_ville,empr_year FROM empr $clause group by id_empr ORDER BY empr_nom, empr_prenom ";
 		$filter->original_query=$requete;
 		$filter->page=$page;
 		$filter->nb_per_page=$nb_per_page;
@@ -205,10 +204,11 @@ if ($nbr_lignes == 1) {
 		// si on est en résa on a un id de notice ou de bulletin
 		if ($id_notice || $id_bulletin) {
 			//type_resa : on est en prévision
-			if ($type_resa)
-				$t["row"]["onmousedown"]="document.location=\"./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=!!id_empr!!&groupID=$groupID&id_notice=$id_notice\";";	
-			else
-				$t["row"]["onmousedown"]="document.location=\"./circ.php?categ=resa&id_empr=!!id_empr!!&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin\";";	
+			if ($type_resa) {
+				$t["row"]["onmousedown"]="document.location=\"./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=!!id_empr!!&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin\";";
+			} else {
+				$t["row"]["onmousedown"]="document.location=\"./circ.php?categ=resa&id_empr=!!id_empr!!&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin\";";
+			}
 		} else {
 			$t["row"]["onmousedown"]="document.location=\"./circ.php?categ=pret&form_cb=!!b!!\";";
 		}
@@ -224,14 +224,14 @@ if ($nbr_lignes == 1) {
 			switch ($sub) {
 				case "launch":
 					$url_base = "./circ.php?categ=search&sub=launch";
-					$aff_filters.="<input type='button' class='bouton' onClick=\"document.form_filters.action='$url_to_search_form'; document.form_filters.target='$search_target'; document.form_filters.submit(); return false;\" value=\"".$msg["search_back"]."\"/>";		
+					$aff_filters.="<input type='button' class='bouton' onClick=\"document.form_filters.action='$url_to_search_form'; document.form_filters.target='$search_target'; document.form_filters.submit(); return false;\" value=\"".$msg["search_back"]."\"/>";
 					if ($empr_show_caddie)
 						 $aff_filters.="&nbsp;&nbsp;<input type='button' class='bouton' value='".$msg["add_empr_cart"]."' onClick=\"popCaddie(document.forms['AddToCaddie']); return false;\">";
-					
+
 					break;
 				default:
 					if ($empr_location_id == -1) $empr_location_id = 0;
-					$url_base = "./circ.php?categ=pret&form_cb=".rawurlencode($form_cb)."&id_notice=$id_notice"."&id_bulletin=$id_bulletin&empr_location_id=$empr_location_id";	
+					$url_base = "./circ.php?categ=pret&form_cb=".rawurlencode($form_cb)."&id_notice=$id_notice"."&id_bulletin=$id_bulletin&empr_location_id=$empr_location_id";
 					$aff_filters.="<form class='form-$current_module' id='form_filters' name='form_filters' method='post' action='".$url_base."&nb_per_page=$nb_per_page' onSubmit='this.page.value=\"1\";'><h3>".$msg["filters_tris"]."</h3>";
 					$aff_filters.="<div class='form-contenu'><input type='hidden' name='page' value='$page'>
 									<div id=\"el1Parent\" class=\"notice-parent\"><img src=\"./images/plus.gif\" class=\"img_plus\" name=\"imEx\" id=\"el1Img\" title=\"".$msg['admin_param_detail']."\" border=\"0\" onClick=\"expandBase('el1', true); return false;\">
@@ -257,13 +257,13 @@ if ($nbr_lignes == 1) {
 	} else {
 		// on lance la vraie requête
 		$requete = "SELECT *, count(pret_idexpl) as nb_pret FROM empr left join pret on id_empr=pret_idempr $clause group by id_empr ORDER BY empr_nom, empr_prenom LIMIT $debut,$nb_per_page ";
-		$res = @mysql_query($requete, $dbh);
-//		$nbr_lignes = mysql_num_rows($res);
+		$res = @pmb_mysql_query($requete, $dbh);
+//		$nbr_lignes = pmb_mysql_num_rows($res);
 		$parity = 0;
 		switch ($sub) {
 			case "launch":
 				$url_base = "./circ.php?categ=search&sub=launch";
-				$aff_filters.="<input type='button' class='bouton' onClick=\"document.form_filters.action='$url_to_search_form'; document.form_filters.target='$search_target'; document.form_filters.submit(); return false;\" value=\"".$msg["search_back"]."\"/>";		
+				$aff_filters.="<input type='button' class='bouton' onClick=\"document.form_filters.action='$url_to_search_form'; document.form_filters.target='$search_target'; document.form_filters.submit(); return false;\" value=\"".$msg["search_back"]."\"/>";
 				if ($empr_show_caddie) {
 					$script_filters = str_replace("!!filtered_query_hidden!!","", $script_filters);
 					$aff_filters.="&nbsp;&nbsp;<input type='button' class='bouton' value='".$msg["add_empr_cart"]."' onClick=\"popCaddie(document.forms['AddToCaddie']); return false;\">";
@@ -279,10 +279,10 @@ if ($nbr_lignes == 1) {
 				break;
 		}
 		$empr_list .= "<table border='0' width='100%'>";
-		while(($empr=mysql_fetch_object($res))) {
-			$recherche_groupe=@mysql_query("SELECT libelle_groupe FROM empr_groupe, groupe WHERE empr_id=".$empr->id_empr." AND groupe_id=id_groupe ORDER BY libelle_groupe");
+		while(($empr=pmb_mysql_fetch_object($res))) {
+			$recherche_groupe=@pmb_mysql_query("SELECT libelle_groupe FROM empr_groupe, groupe WHERE empr_id=".$empr->id_empr." AND groupe_id=id_groupe ORDER BY libelle_groupe");
 			$grp=array();
-			while ($gr=mysql_fetch_object($recherche_groupe)) {
+			while ($gr=pmb_mysql_fetch_object($recherche_groupe)) {
 				$grp[]=$gr->libelle_groupe;
 			}
 			if ($parity % 2) {
@@ -293,16 +293,17 @@ if ($nbr_lignes == 1) {
 			// si on est en résa on a un id de notice ou de bulletin
 			if ($id_notice || $id_bulletin) {
 				//type_resa : on est en prévision
-				if ($type_resa)
-					$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$empr->id_empr&groupID=$groupID&id_notice=$id_notice';\" ";
-				else
+				if ($type_resa) {
+					$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$empr->id_empr&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin';\" ";
+				} else {
 					$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./circ.php?categ=resa&id_empr=$empr->id_empr&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin';\" ";
+				}
 			} else {
 				$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./circ.php?categ=pret&form_cb=".rawurlencode($empr->empr_cb)."';\" ";
 			}
 			// **************** ajout icône ajout panier
 			$img_ajout_empr_caddie = iconepanier($empr->id_empr);
-			
+
 			$empr_list .= "<tr class='$pair_impair' $tr_javascript style='cursor: pointer'>";
 			$empr_list .= "
 				<td>
@@ -322,7 +323,7 @@ if ($nbr_lignes == 1) {
 				</td>
 				<td>
 					$empr->empr_year
-				</td>	
+				</td>
 				<td> $msg[empr_nb_pret]"." : "."
 					$empr->nb_pret
 				</td>
@@ -330,15 +331,16 @@ if ($nbr_lignes == 1) {
 				</tr>";
 			$parity += 1;
 			}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 		$empr_list .= "</table>";
 		// si on est en résa on a un id de notice ou de bulletin
 		if ($id_notice || $id_bulletin) {
 			//type_resa : on est en prévision
-			if ($type_resa)
-				$url_base = "./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id&groupID=$groupID&id_notice=$id_notice";
-			else
-				$url_base = "./circ.php?categ=resa&id_empr=$id&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin";	
+			if ($type_resa) {
+				$url_base = "./circ.php?categ=resa_planning&resa_action=add_resa&id_empr=$id&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin";
+			} else {
+				$url_base = "./circ.php?categ=resa&id_empr=$id&groupID=$groupID&id_notice=$id_notice&id_bulletin=$id_bulletin";
+			}
 		} else {
 			$url_base = "./circ.php?categ=pret&nbr_lignes=$nbr_lignes&form_cb=".rawurlencode($form_cb)."&empr_location_id=$empr_location_id";
 		}
@@ -353,21 +355,22 @@ if ($nbr_lignes == 1) {
 			$human_requete = $sc->make_human_query();
 		    print "<strong>".$msg["search_search_emprunteur"]."</strong> : ".$human_requete ;
 		    print $sc->make_hidden_search_form($url,"form_filters");
-			print "<br />".$msg[1915]."<input type='button' class='bouton' onClick=\"document.form_filters.action='$url_to_search_form'; document.form_filters.target='$search_target'; document.form_filters.submit(); return false;\" value=\"".$msg["search_back"]."\"/>";		
+			print "<br />".$msg[1915]."<input type='button' class='bouton' onClick=\"document.form_filters.action='$url_to_search_form'; document.form_filters.target='$search_target'; document.form_filters.submit(); return false;\" value=\"".$msg["search_back"]."\"/>";
 			break;
 		default:
 			// la requête de recherche d'emprunteur n'a produit aucun résultat
 			// si on est en résa on a un id de notice ou de bulletin
 			if ($id_notice || $id_bulletin) {
 				//type_resa : on est en prévision
-				if ($type_resa)
-					get_cb( $msg['prevision_doc'], $msg[34], $msg[circ_tit_form_cb_empr], "./circ.php?categ=pret&id_notice=".$id_notice."&type_resa=1", 0);
-				else
-					get_cb( $msg['reserv_doc'], $msg[34], $msg[circ_tit_form_cb_empr], "./circ.php?categ=pret&id_notice=".$id_notice."&id_bulletin=$id_bulletin", 0);
+				if ($type_resa) {
+					get_cb( $msg['prevision_doc'], $msg[34], $msg['circ_tit_form_cb_empr'], "./circ.php?categ=pret&id_notice=$id_notice&id_bulletin=$id_bulletin&type_resa=1", 0);
+				} else {
+					get_cb( $msg['reserv_doc'], $msg[34], $msg['circ_tit_form_cb_empr'], "./circ.php?categ=pret&id_notice=$id_notice&id_bulletin=$id_bulletin", 0);
+				}
 			} else {
-				get_cb(	$msg[13], $msg[34], $msg[circ_tit_form_cb_empr], "./circ.php?categ=pret", 0, 0);
+				get_cb(	$msg[13], $msg[34], $msg['circ_tit_form_cb_empr'], "./circ.php?categ=pret", 0, 0);
 			}
 			error_message($msg[46], str_replace('!!form_cb!!', $form_cb, $msg[47]), 0, './circ.php');
-			break;		
+			break;
 	}
 }

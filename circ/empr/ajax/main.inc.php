@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.3 2013-09-17 14:11:18 dbellamy Exp $
+// $Id: main.inc.php,v 1.4 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,9 +14,9 @@ $empr_grille_location+=0;
 //champs persos
 $nb_cp=0;
 $q_cp = "select name from empr_custom order by ordre ";
-$r_cp = mysql_query($q_cp, $dbh);
-if (!mysql_errno($dbh)) {
-	$nb_cp = mysql_num_rows($r_cp);
+$r_cp = pmb_mysql_query($q_cp, $dbh);
+if (!pmb_mysql_errno($dbh)) {
+	$nb_cp = pmb_mysql_num_rows($r_cp);
 }
 
 $empr_grille_default="
@@ -80,33 +80,33 @@ switch ($sub) {
 	case 'get_empr_grille' :
 		//format pour la categorie et la localisation demandee ? 
 		$q = "select empr_grille_format from empr_grilles where empr_grille_categ='".$empr_grille_categ."' and empr_grille_location='".$empr_grille_location."' ";
-		$r = mysql_query($q, $dbh);
-		if (!mysql_error($dbh) && mysql_num_rows($r)) {
-			$row=mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if (!pmb_mysql_error($dbh) && pmb_mysql_num_rows($r)) {
+			$row=pmb_mysql_fetch_object($r);
 			ajax_http_send_response($row->empr_grille_format,"text/xml");
 			break;
 		}
 		//format pour la categorie demandee et toutes les localisations ?
 		$q="select empr_grille_format from empr_grilles where empr_grille_categ='".$empr_grille_categ."' and empr_grille_location='0' ";
-		$r = mysql_query($q, $dbh);
-		if (!mysql_error($dbh) && mysql_num_rows($r)) {
-			$row=mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if (!pmb_mysql_error($dbh) && pmb_mysql_num_rows($r)) {
+			$row=pmb_mysql_fetch_object($r);
 			ajax_http_send_response($row->empr_grille_format,"text/xml");
 			break;
 		}
 		//format pour la localisation demandee et toutes les categories ?
 		$q="select empr_grille_format from empr_grilles where empr_grille_categ='0' and empr_grille_location='".$empr_grille_location."' ";
-		$r = mysql_query($q, $dbh);
-		if (!mysql_error($dbh) && mysql_num_rows($r)) {
-			$row=mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if (!pmb_mysql_error($dbh) && pmb_mysql_num_rows($r)) {
+			$row=pmb_mysql_fetch_object($r);
 			ajax_http_send_response($row->empr_grille_format,"text/xml");
 			break;
 		}
 		//format pour toutes les localisations et toutes les categories
 		$q="select empr_grille_format from empr_grilles where empr_grille_categ='0' and empr_grille_location='0' ";
-		$r = mysql_query($q, $dbh);
-		if (!mysql_error($dbh) && mysql_num_rows($r)) {
-			$row=mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		if (!pmb_mysql_error($dbh) && pmb_mysql_num_rows($r)) {
+			$row=pmb_mysql_fetch_object($r);
 			ajax_http_send_response($row->empr_grille_format,"text/xml");
 			break;
 		}
@@ -116,9 +116,9 @@ switch ($sub) {
 	
 	case 'set_empr_grille' :
 		$q = "delete from empr_grilles where empr_grille_categ='".$empr_grille_categ."' and empr_grille_location='".$empr_grille_location."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		$q1 = "insert into empr_grilles set empr_grille_categ='".$empr_grille_categ."', empr_grille_location='".$empr_grille_location."', empr_grille_format='".$empr_grille_format."' ";
-		mysql_query($q1, $dbh);
+		pmb_mysql_query($q1, $dbh);
 		break;
 		
 	default :

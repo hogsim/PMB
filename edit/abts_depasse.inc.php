@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts_depasse.inc.php,v 1.2 2012-02-10 15:03:41 dgoron Exp $
+// $Id: abts_depasse.inc.php,v 1.3 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -63,12 +63,12 @@ $requete = "SELECT abt_id,abt_name,tit1,num_notice, date_fin
 			and notice_id= num_notice";
 if ($location_view) $requete .= " and location_id='$location_view'";
 $requete .= " ORDER BY date_fin,abt_name";		
-$resultat = mysql_query($requete);
-if (($nb_abts_retard=mysql_num_rows($resultat)) != 0) {
+$resultat = pmb_mysql_query($requete);
+if (($nb_abts_retard=pmb_mysql_num_rows($resultat)) != 0) {
 	$titre=$msg["abts_print_depasse"]." ( $nb_abts_retard )";					
 	bulletinage_titre ($titre,10,25+$offsety,$dbh, 1, 80);				
 				
-	while ($r = mysql_fetch_object($resultat)) {
+	while ($r = pmb_mysql_fetch_object($resultat)) {
 		$fiche["date"]=$r->date_fin;
 		$fiche["tit1"]=$r->tit1;
 		$fiche["abt_name"]=$r->abt_name;

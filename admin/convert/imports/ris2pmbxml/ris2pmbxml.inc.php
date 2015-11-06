@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ris2pmbxml.inc.php,v 1.7.6.2 2014-11-03 09:00:36 mbertin Exp $
+// $Id: ris2pmbxml.inc.php,v 1.9 2014-11-03 09:02:50 mbertin Exp $
 
 require_once("$class_path/marc_table.class.php");
 require_once("$include_path/isbn.inc.php");

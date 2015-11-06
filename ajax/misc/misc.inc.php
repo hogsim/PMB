@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: misc.inc.php,v 1.9 2007-09-13 16:10:27 jlesaint Exp $
+// $Id: misc.inc.php,v 1.10 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -24,8 +24,8 @@ function ajax_verif_date() {
 	global $msg,$p1;
 	$mysql_date= extraitdate($p1);
 	$rqt= "SELECT DATE_ADD('" .$mysql_date. "', INTERVAL 0 DAY)";
-	if($result=mysql_query($rqt))
-		if($row = mysql_fetch_row($result))	
+	if($result=pmb_mysql_query($rqt))
+		if($row = pmb_mysql_fetch_row($result))	
 			if($row[0]){
 				ajax_http_send_response($row[0]);
 				return;

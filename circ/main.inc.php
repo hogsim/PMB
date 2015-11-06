@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.76.6.2 2015-05-11 10:15:50 jpermanne Exp $
+// $Id: main.inc.php,v 1.82 2015-06-02 13:24:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -33,11 +33,11 @@ require_once("$class_path/docs_location.class.php");
 require_once("$class_path/bannette.class.php");
 
 if (($categ=='pretrestrict') && ($form_login) && ($form_password)) {
-	$query = "select id_empr, empr_cb from empr where empr_login='$form_login' and empr_password='$form_password' " ; 
-	$result = mysql_query($query, $dbh);
-	$id_empr = @mysql_result($result, '0', 'id_empr');
-	$form_cb = @mysql_result($result, '0', 'empr_cb');
-	if (($id_empr) && ($form_cb)) $categ='pret' ;	
+	$query = "select id_empr, empr_cb from empr where empr_login='$form_login' and empr_password='".emprunteur::get_hashed_password($form_login,$form_password)."' " ;
+	$result = pmb_mysql_query($query, $dbh);
+	$id_empr = @pmb_mysql_result($result, '0', 'id_empr');
+	$form_cb = @pmb_mysql_result($result, '0', 'empr_cb');
+	if (($id_empr) && ($form_cb)) $categ='pret' ;
 }
 if (SESSrights & RESTRICTCIRC_AUTH) $sub="" ;
 
@@ -52,8 +52,8 @@ switch($categ) {
 				if ($id_bloc) {
 					include('./circ/prolongation.inc.php');
 					$query_empr="select id_empr from empr where empr_cb='$form_cb'";
-					$result_empr=mysql_query($query_empr);
-					$id_empr=mysql_result($result_empr,0,'id_empr');
+					$result_empr=pmb_mysql_query($query_empr);
+					$id_empr=pmb_mysql_result($result_empr,0,'id_empr');
 					$bloc_prolongation=0;
 					if ($id_empr) {
 						require_once("$class_path/emprunteur.class.php");
@@ -85,15 +85,15 @@ switch($categ) {
 				}
 				if ($id_bloc) {
 					require_once("./circ/prolongation.inc.php");
-				
+
 					$ids=explode("  ",$id_bloc);
 					$date_retour=$date_retbloc;
 					$query_empr="select id_empr from empr where empr_cb='$form_cb'";
-					$result_empr=mysql_query($query_empr);
-					$id_empr=mysql_result($result_empr,0,'id_empr');				
+					$result_empr=pmb_mysql_query($query_empr);
+					$id_empr=pmb_mysql_result($result_empr,0,'id_empr');
 					$temp="";
 					$bloc_prolongation=1;
-					
+
 					if (($id_empr)&&(count($ids)>0)) {
 						require_once("$class_path/emprunteur.class.php");
 						foreach ($ids as $dummykey=>$id){
@@ -120,8 +120,8 @@ switch($categ) {
 				$pe_isbn=traite_code_isbn(stripslashes($pe_isbn));
 				$suite_rqt="";
 				$requete_idexpl = "select expl_id from exemplaires where expl_cb='".addslashes($pe_excb)."'";
-				$result = mysql_query($requete_idexpl, $dbh);
-				if(mysql_num_rows($result)==0) {
+				$result = pmb_mysql_query($requete_idexpl, $dbh);
+				if(pmb_mysql_num_rows($result)==0) {
 					if (isISBN($pe_isbn)) {
 						if (strlen($pe_isbn)==13)
 							$suite_rqt=" or code='".formatISBN($pe_isbn,13)."' ";
@@ -129,50 +129,50 @@ switch($categ) {
 					}
 					$acreer = 1 ;
 					if ($pe_isbn) {
-						$requete = "select notice_id from notices where code='".addslashes($pe_isbn)."' ".$suite_rqt." and niveau_biblio='m' and niveau_hierar='0' ";	
-						$result = mysql_query($requete, $dbh);
-						if ($tmp_not = mysql_fetch_object($result)) {
+						$requete = "select notice_id from notices where code='".addslashes($pe_isbn)."' ".$suite_rqt." and niveau_biblio='m' and niveau_hierar='0' ";
+						$result = pmb_mysql_query($requete, $dbh);
+						if ($tmp_not = pmb_mysql_fetch_object($result)) {
 							$id_notice=$tmp_not->notice_id;
 							$acreer = 0 ;
 						}
 					}
 					if ($acreer) {
-						$requete = "INSERT INTO notices SET code='".addslashes($pe_isbn)."', tit1='$pe_titre', statut='$pmb_pret_express_statut', niveau_biblio='m', niveau_hierar='0', create_date=sysdate() ";	
-						$result = mysql_query($requete, $dbh);
+						$requete = "INSERT INTO notices SET code='".addslashes($pe_isbn)."', tit1='$pe_titre', statut='$pmb_pret_express_statut', niveau_biblio='m', niveau_hierar='0', create_date=sysdate() ";
+						$result = pmb_mysql_query($requete, $dbh);
 						if (!$result) die ('ERROR PE: insert into notice');
-						$id_notice=mysql_insert_id();
-						
+						$id_notice=pmb_mysql_insert_id();
+
 						audit::insert_creation (AUDIT_NOTICE, $id_notice) ;
 						notice::majNotices($id_notice);
 						notice::majNoticesGlobalIndex($id_notice,1);
 						notice::majNoticesMotsGlobalIndex($id_notice);
-						
+
 						if ($gestion_acces_active==1) {
 							require_once("$class_path/acces.class.php");
 							$ac= new acces();
-							
+
 							//traitement des droits acces user_notice
-							if ($gestion_acces_user_notice==1) {			
+							if ($gestion_acces_user_notice==1) {
 								$dom_1= $ac->setDomain(1);
 								$dom_1->storeUserRights(0, $id_notice);
 							}
 							//traitement des droits acces empr_notice
-							if ($gestion_acces_empr_notice==1) {			
+							if ($gestion_acces_empr_notice==1) {
 								$dom_2= $ac->setDomain(2);
 								$dom_2->storeUserRights(0, $id_notice);
 							}
-						}						
-						
+						}
+
 					}
 					if (!$id_notice) die ('ERROR PE: aucun id_notice pour exemplaire...');
-					
+
 					// exemplaire express
 					if ($pe_excb=="") $pe_excb='PE'.rand(0,100000);
-					
-					$requete = "INSERT INTO exemplaires 
-								SET expl_cb='$pe_excb', 
-									expl_notice='$id_notice', 
-									expl_typdoc='$pe_tdoc', 
+
+					$requete = "INSERT INTO exemplaires
+								SET expl_cb='$pe_excb',
+									expl_notice='$id_notice',
+									expl_typdoc='$pe_tdoc',
 									expl_location='$deflt_docs_location',
 									expl_section='$deflt_docs_section',
 									expl_statut='$deflt_docs_statut',
@@ -180,26 +180,27 @@ switch($categ) {
 									expl_owner='$deflt_lenders',
 									create_date=CURRENT_TIMESTAMP()
 									";
-					$result = mysql_query($requete, $dbh);
+					$result = pmb_mysql_query($requete, $dbh);
 					if (!$result) {
 						error_message($msg[350], $msg['pecb_already_exist'], 1 ,'');
 						exit();
 					}
-					$id_expl= mysql_insert_id();
-					
+					$id_expl= pmb_mysql_insert_id();
+					audit::insert_creation (AUDIT_EXPL, $id_expl) ;
+
 					if (preg_match('/^PE/',$pe_excb)) {
-						//redefine exemplaires.expl_cb if $pe_excb is random  
+						//redefine exemplaires.expl_cb if $pe_excb is random
 						$pe_excb='PE'.$id_expl;
 						$requete = "UPDATE exemplaires SET expl_cb='$pe_excb' WHERE expl_id='$id_expl'";
-						$result = mysql_query($requete, $dbh);
+						$result = pmb_mysql_query($requete, $dbh);
 						if (!$result) die ('ERROR PE: update exemplaires');
 					}
-					$cb_doc=$pe_excb;		
-					$rqtstatut = "select gestion_libelle from notice_statut where id_notice_statut='$pmb_pret_express_statut' ";	
-					$resstatut = mysql_fetch_object(mysql_query($rqtstatut, $dbh));
+					$cb_doc=$pe_excb;
+					$rqtstatut = "select gestion_libelle from notice_statut where id_notice_statut='$pmb_pret_express_statut' ";
+					$resstatut = pmb_mysql_fetch_object(pmb_mysql_query($rqtstatut, $dbh));
 					$noteexpress = addslashes($resstatut->gestion_libelle) ;
 					$requete = "UPDATE exemplaires SET expl_note='$noteexpress' WHERE expl_id='$id_expl'";
-					$result = mysql_query($requete, $dbh);
+					$result = pmb_mysql_query($requete, $dbh);
 					include("./circ/pret.inc.php");
 				} else error_message($msg[350], $msg['pecb_already_exist'], 1 ,'');
 				break;
@@ -210,10 +211,10 @@ switch($categ) {
 			case 'suppr_resa_planning_from_fiche' :
 				include("./circ/resa_planning/main.inc.php");
 				include("./circ/pret.inc.php");
-				break;	
+				break;
 			case 'show_late':
 				include("./circ/show_late.inc.php");
-				break;		
+				break;
 			default:
 				include("./circ/pret.inc.php");
 				break;
@@ -253,14 +254,15 @@ switch($categ) {
 		include("./circ/empr/delete.inc.php");
 		break;
 	case 'empr_saisie':
+		if($pmb_javascript_office_editor) print $pmb_javascript_office_editor;
 		// affichage formulaire de saisie d'un emprunteur
 		include("./circ/empr/empr_saisie.inc.php");
 		break;
 	case 'empr_duplicate':
 		echo window_title($database_window_title.$msg["empr_duplicate"].$msg[1003].$msg[1001]);
 		$rqt = "select max(id_empr+1) as max_id from empr ";
-		$res = mysql_query($rqt, $dbh);
-		$id_initial = mysql_fetch_object($res);
+		$res = pmb_mysql_query($rqt, $dbh);
+		$id_initial = pmb_mysql_fetch_object($res);
 		$id_a_creer = (string)$id_initial->max_id;
 		// modif pour nouvelle méthode d'incrémentation	*********************************************************************
 		$pmb_num_carte_auto_array=array();
@@ -268,22 +270,23 @@ switch($categ) {
 
 		if ($pmb_num_carte_auto_array[0] == "1" ) {
 			$rqt = "select max(empr_cb+1) as max_cb from empr ";
-			$res = mysql_query($rqt, $dbh);
-			$cb_initial = mysql_fetch_object($res);
+			$res = pmb_mysql_query($rqt, $dbh);
+			$cb_initial = pmb_mysql_fetch_object($res);
 			$cb_a_creer = (string)$cb_initial->max_cb;
 		} elseif ($pmb_num_carte_auto_array[0] == "2" ) {
 			$long_prefixe = $pmb_num_carte_auto_array[1];
 			$nb_chiffres = $pmb_num_carte_auto_array[2];
 			$prefix = $pmb_num_carte_auto_array[3];
 		    $rqt =  "SELECT CAST(SUBSTRING(empr_cb,".($long_prefixe+1).") AS UNSIGNED) AS max_cb, SUBSTRING(empr_cb,1,".($long_prefixe*1).") AS prefixdb FROM empr ORDER BY max_cb DESC limit 0,1" ; // modif f cerovetti pour sortir dernier code barre tri par ASCII
-			$res = mysql_query($rqt, $dbh);
-			$cb_initial = mysql_fetch_object($res);
+			$res = pmb_mysql_query($rqt, $dbh);
+			$cb_initial = pmb_mysql_fetch_object($res);
 			$cb_a_creer = ($cb_initial->max_cb*1)+1;
 			if (!$nb_chiffres) $nb_chiffres=strlen($cb_a_creer);
 			if (!$prefix) $prefix = $cb_initial->prefixdb;
 			$cb_a_creer = $prefix.substr((string)str_pad($cb_a_creer, $nb_chiffres, "0", STR_PAD_LEFT),-$nb_chiffres);
-			// fin modif pour nouvelle méthode d'incrémentation*******************************************************************			
+			// fin modif pour nouvelle méthode d'incrémentation*******************************************************************
 		} else $cb_a_creer="";
+		if($pmb_javascript_office_editor) print $pmb_javascript_office_editor;
 		show_empr_form("./circ.php?categ=empr_update","./circ.php?categ=empr_create",$dbh, $id, (string)$cb_a_creer,(string)$id_a_creer);
 		break;
 	case 'visu_ex':
@@ -320,16 +323,19 @@ switch($categ) {
 		echo window_title($database_window_title.$msg["5"]." : ".$msg["acquisition_sug_do"]);
 		//Création de suggestion
 		include("./circ/suggestions/make_sug.inc.php");
-		break;		
+		break;
 	case 'resa_from_catal' :
 		// on est en pose de résa en arrivant avec un id_notice ou bulletin mais sans emprunteur
-		if ($id_notice) get_cb( $msg['reserv_doc'], $msg[34], $msg[circ_tit_form_cb_empr], './circ.php?categ=pret&id_notice='.$id_notice, 0);
-		elseif ($id_bulletin) get_cb( $msg['reserv_doc'], $msg[34], $msg[circ_tit_form_cb_empr], './circ.php?categ=pret&id_bulletin='.$id_bulletin, 0);
+		if ($id_notice || $id_bulletin) {
+			get_cb( $msg['reserv_doc'], $msg[34], $msg['circ_tit_form_cb_empr'], './circ.php?categ=pret&id_notice='.$id_notice.'&id_bulletin='.$id_bulletin, 0);
+		}
 		break;
 	case 'resa_planning_from_catal' :
 		// on est en pose de prévision en arrivant avec un id_notice mais sans emprunteur
-		if ($id_notice) get_cb( $msg['prevision_doc'], $msg[34], $msg[circ_tit_form_cb_empr], './circ.php?categ=pret&id_notice='.$id_notice.'&type_resa=1', 0);
-		break;		
+		if ($id_notice || $id_bulletin) {
+			get_cb( $msg['prevision_doc'], $msg[34], $msg['circ_tit_form_cb_empr'], './circ.php?categ=pret&id_notice='.$id_notice.'&id_bulletin='.$id_bulletin.'&type_resa=1', 0);
+		}
+		break;
 	case 'trans' :
 		// Transferts entre bibliothèques
 		include("./circ/transferts/main.inc.php");
@@ -338,25 +344,25 @@ switch($categ) {
 		echo window_title($database_window_title.$msg["5"]." : ".$msg["circ_menu_rfid"]." ".$msg["circ_menu_rfid_programmer"]);
 		// programmer les étiquettes rfid en masse
 		include("./circ/rfid/rfid_prog.inc.php");
-		break;	
+		break;
 	case 'rfid_del' :
 		echo window_title($database_window_title.$msg["5"]." : ".$msg["circ_menu_rfid"]." ".$msg["circ_menu_rfid_effacer"]);
-		// effacer les étiquettes rfid en masse	
+		// effacer les étiquettes rfid en masse
 		include("./circ/rfid/rfid_del.inc.php");
-		break;				
+		break;
 	case 'rfid_read' :
 		echo window_title($database_window_title.$msg["5"]." : ".$msg["circ_menu_rfid"]." ".$msg["circ_menu_rfid_lire"]);
 		// lire les étiquettes rfid en masse
 		include("./circ/rfid/rfid_read.inc.php");
-		break;	
+		break;
 	case 'rfid_gates' :
 		// programmer les étiquettes rfid en masse
 		include("./circ/rfid/rfid_gates.inc.php");
-		break;	
+		break;
 	case 'rfid_readers' :
 		// programmer les étiquettes rfid en masse
 		include("./circ/rfid/rfid_readers.inc.php");
-		break;	
+		break;
 	case 'ret_todo' :
 		echo window_title($database_window_title.$msg["5"]." : ".$msg["circ_doc_a_traiter"]);
 		// voir les exemplaires qui nécessitent un traitement non effectué lors d'un retour
@@ -371,17 +377,17 @@ switch($categ) {
 				break;
 			default:
 				include('./circ/empr/search.inc.php');
-				break;	
+				break;
 		}
-		break;	
+		break;
 	case 'serialcirc' :
 		echo window_title($database_window_title.$msg["5"]." : ".$msg["serialcirc_circ_menu"]);
 		// voir les exemplaires qui nécessitent un traitement non effectué lors d'un retour
 		include("./circ/serialcirc/serialcirc.inc.php");
-		break;		
+		break;
 	case 'groupexpl' :
 		include("./circ/groupexpl/main.inc.php");
-		break;		
+		break;
 	default:
 		echo window_title($database_window_title.$msg["5"]." : ".$msg["13"]);
 		if (SESSrights & RESTRICTCIRC_AUTH) get_login_empr_pret ( $msg[13], $msg[34], $msg[circ_tit_form_cb_empr], './circ.php?categ=pretrestrict', 0);

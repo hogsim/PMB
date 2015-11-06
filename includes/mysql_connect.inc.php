@@ -2,11 +2,11 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mysql_connect.inc.php,v 1.10.12.1 2015-01-21 09:17:29 mbertin Exp $
+// $Id: mysql_connect.inc.php,v 1.13 2015-04-07 08:58:21 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
-// attention : on oublie pas le mysql_close() dans le script PHP appelant !
+// attention : on oublie pas le pmb_mysql_close() dans le script PHP appelant !
 
 	// connection MySQL et sélection base
 	// aucun paramètre n'est obligatoire :
@@ -24,31 +24,34 @@ if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 // 4ème paramètre : active ou désactive le retour d'erreur qui coupe
 // le script quand la base n'est pas valide
 
+//inclusion du fichier des fonctions mysql
+include_once($include_path."/mysql_functions.inc.php");
+
 function connection_mysql($er_connec=1, $my_bd='', $bd=1, $er_bd=1) {
 	global $__erreur_cnx_base__, $pmb_nb_documents, $pmb_opac_url, $pmb_bdd_version;
 	global $charset, $SQL_MOTOR_TYPE, $time_zone, $time_zone_mysql;
 	if(isset($time_zone) && trim($time_zone)) date_default_timezone_set($time_zone);//Pour l'heure PHP
-	$my_connec = @mysql_connect(SQL_SERVER, USER_NAME, USER_PASS);
+	$my_connec = @pmb_mysql_connect(SQL_SERVER, USER_NAME, USER_PASS);
 	if($my_connec==0 && $er_connec==1) {
-		$__erreur_cnx_base__ =  'erreur '.mysql_errno().' : '.mysql_error().'<br />';
+		$__erreur_cnx_base__ =  'erreur '.pmb_mysql_errno().' : '.pmb_mysql_error().'<br />';
 		return 0 ;
 		}
 	if($bd) {
 		$my_bd == '' ? $my_bd=DATA_BASE : $my_bd;
-		if( mysql_select_db($my_bd)==0 && $er_bd==1 ) {
-			$__erreur_cnx_base__ = 'erreur '.mysql_errno().' : '.mysql_error().'<br />';
+		if( pmb_mysql_select_db($my_bd, $my_connec)==0 && $er_bd==1 ) {
+			$__erreur_cnx_base__ = 'erreur '.pmb_mysql_errno().' : '.pmb_mysql_error().'<br />';
 			return 0 ;
 			}
 		}
-	$pmb_nb_documents=(@mysql_result(mysql_query("select count(*) from notices"),0,0))*1;
-	$pmb_opac_url=(@mysql_result(mysql_query("select valeur_param from parametres where type_param='pmb' and sstype_param='opac_url'"),0,0));
-	$pmb_bdd_version=(@mysql_result(mysql_query("select valeur_param from parametres where type_param='pmb' and sstype_param='bdd_version'"),0,0));
+	$pmb_nb_documents=(@pmb_mysql_result(pmb_mysql_query("select count(*) from notices",$my_connec),0,0))*1;
+	$pmb_opac_url=(@pmb_mysql_result(pmb_mysql_query("select valeur_param from parametres where type_param='pmb' and sstype_param='opac_url'",$my_connec),0,0));
+	$pmb_bdd_version=(@pmb_mysql_result(pmb_mysql_query("select valeur_param from parametres where type_param='pmb' and sstype_param='bdd_version'",$my_connec),0,0));
 
-	if ($charset=='utf-8') mysql_query("set names utf8 ", $my_connec);
-	else mysql_query("set names latin1 ", $my_connec);
+	if ($charset=='utf-8') pmb_mysql_query("set names utf8 ", $my_connec);
+	else pmb_mysql_query("set names latin1 ", $my_connec);
 	
-	if ($SQL_MOTOR_TYPE) mysql_query("set storage_engine=$SQL_MOTOR_TYPE", $my_connec);
-	if (isset($time_zone_mysql) && trim($time_zone_mysql)) mysql_query("SET time_zone = $time_zone_mysql",$my_connec);//Pour l'heure MySQL
+	if ($SQL_MOTOR_TYPE) pmb_mysql_query("set storage_engine=$SQL_MOTOR_TYPE", $my_connec);
+	if (isset($time_zone_mysql) && trim($time_zone_mysql)) pmb_mysql_query("SET time_zone = $time_zone_mysql",$my_connec);//Pour l'heure MySQL
 	return $my_connec;
 }
 
@@ -59,8 +62,8 @@ function connection_mysql($er_connec=1, $my_bd='', $bd=1, $er_bd=1) {
 // contenant le numéro et la description de la dernière
 // erreur MySQL.
 function my_error($echo=1) {
-	if(!mysql_errno()) return "";
-	$erreur = 'erreur '.mysql_errno().' : '.mysql_error().'<br />';
+	if(!pmb_mysql_errno()) return "";
+	$erreur = 'erreur '.pmb_mysql_errno().' : '.pmb_mysql_error().'<br />';
 	if($echo) echo $erreur;
 		else {
 			trigger_error($erreur, E_USER_ERROR);

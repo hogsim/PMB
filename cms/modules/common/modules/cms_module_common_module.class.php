@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_module.class.php,v 1.56.2.2 2014-11-18 12:03:54 dgoron Exp $
+// $Id: cms_module_common_module.class.php,v 1.65 2015-06-15 15:52:15 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -40,16 +40,32 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public static function read_manifest(){
-		global $base_path;
+		global $base_path, $lang;
 		$informations = array();
 		@ini_set("zend.ze1_compatibility_mode", "0");
 		$manifest = new domDocument();
 		$module_path = realpath(dirname($base_path."/cms/modules/".str_replace("cms_module_","",get_called_class())."/".get_called_class().".class.php"));
 		
 		$manifest->load($module_path."/manifest.xml");
+		
+		// on récupère la langue par défaut du module...
+		$informations['informations']['default_language'] = self::get_module_default_language($manifest);
+		
 		//on récupère le nom
-		$name = $manifest->getElementsByTagName("name")->item(0);
-		$informations['informations']['name']= cms_module_root::charset_normalize($name->nodeValue,"utf-8");
+		$names = $manifest->getElementsByTagName("name");
+		$name = array();
+		for ($i = 0; $i < $names->length; $i++) {
+			if ($names->item($i)->parentNode->nodeName == "manifest") {
+				if ($names->item($i)->attributes->getNamedItem('lang')->nodeValue == $lang) {
+					$name[$lang] = $names->item($i)->nodeValue;
+					break;
+				} else if (!$names->item($i)->attributes->getNamedItem('lang') || ($names->item($i)->attributes->getNamedItem('lang') == $informations['informations']['default_language'])) {
+					$name['default'] = $names->item($i)->nodeValue;
+				}
+			}
+		}
+		$informations['informations']['name']= cms_module_root::charset_normalize($name[$lang] ? $name[$lang] : $name['default'],"utf-8");
+		
 		//on récupère le(les) auteur(s)
 		$informations['informations']['author'] = array();
 		$authors = $manifest->getElementsByTagName("author");
@@ -76,9 +92,6 @@ class cms_module_common_module extends cms_module_root{
 		$version = $manifest->getElementsByTagName("version")->item(0);
 		$informations['informations']['version']= cms_module_root::charset_normalize($version->nodeValue,"utf-8");
 		
-		// on récupère la langue par défaut du module...
-		$informations['informations']['default_language'] = self::get_module_default_language($manifest);
-		
 		// administrable?
 		$informations['informations']['managed'] = ($manifest->getElementsByTagName("managed") && $manifest->getElementsByTagName("managed")->item(0)->nodeValue == "true" ? true : false);
 		
@@ -95,13 +108,14 @@ class cms_module_common_module extends cms_module_root{
 	}
 		
 	protected function fetch_datas(){
+		global $dbh;
 		if($this->id){
 			$this->classement_list=array();
 			//on va cherches les infos du cadres...
 			$query = "select * from cms_cadres where id_cadre = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->id = $row->id_cadre+0;
 				$this->hash = $row->cadre_hash;
 				$this->name = $row->cadre_name;
@@ -114,9 +128,9 @@ class cms_module_common_module extends cms_module_root{
 				$this->classement = $row->cadre_classement;	
 				$this->modcache = $row->cadre_modcache;
 				$query = "select id_cadre_content,cadre_content_object,cadre_content_type from cms_cadre_content where cadre_content_num_cadre = ".$this->id;
-				$result = mysql_query($query);
-				if($result && mysql_num_rows($result)){
-					while ($ligne=mysql_fetch_object($result)) {
+				$result = pmb_mysql_query($query,$dbh);
+				if($result && pmb_mysql_num_rows($result)){
+					while ($ligne=pmb_mysql_fetch_object($result)) {
 						switch ($ligne->cadre_content_type) {
 							case "datasource":
 					$this->datasource = array(
@@ -141,7 +155,7 @@ class cms_module_common_module extends cms_module_root{
 									'id' => $ligne->id_cadre_content+0,
 									'name' => $ligne->cadre_content_object
 						);
-														break;
+								break;
 							default:
 								break;
 						}
@@ -386,6 +400,7 @@ class cms_module_common_module extends cms_module_root{
 					<input type='button' class='bouton' value='".$this->msg['cms_module_common_module_delete']."' onclick=\"if(confirm('".addslashes($this->msg['cms_module_common_module_confirm_delete'])."')) {cms_module_delete()}\"/>
 				</div>
 			</div>
+			<div class='row'></div>
 		</form>
 		<script type='text/javacript'>
 			function cms_module_load_elem_form(elem,id,dom_id){
@@ -395,6 +410,9 @@ class cms_module_common_module extends cms_module_root{
 					handelAs : 'text/html',
 					load : function(data){
 						dijit.byId(dom_id).set('content',data);
+						if(typeof(initIt) == 'function'){
+						//	initIt();
+						}
 					}
 				});		
 			}
@@ -498,9 +516,9 @@ class cms_module_common_module extends cms_module_root{
 		
 		if($id){
 			$query = "select cadre_modcache from cms_cadres where id_cadre = ".$id;
-			$result = mysql_query($query,$dbh);
-			if(mysql_num_rows($result)){
-				$mode = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$mode = pmb_mysql_result($result,0,0);
 			}else{
 				$mode = "get_post";
 			}
@@ -546,6 +564,7 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public function save_form(){
+		global $dbh;
 		global $datasource_choice;
 		global $view_choice;
 		global $filter_choice;
@@ -578,10 +597,10 @@ class cms_module_common_module extends cms_module_root{
 			cadre_modcache ='".addslashes($cms_module_common_module_modcache)."'		
 			".$clause;
 		
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query,$dbh);
 		if($result){
 			if(!$this->id){
-				$this->id = mysql_insert_id();
+				$this->id = pmb_mysql_insert_id();
 			} 
 			
 			//les Conditions
@@ -648,22 +667,18 @@ class cms_module_common_module extends cms_module_root{
 						));
 					}else{
 						//	sauvegarde de la vue ratée, on supprime le cadre...
-						$this->debug(sprintf($this->msg['cms_module_commom_module_view_save_error'],$view_choice),CMS_DEBUG_MODE_FILE);
 						$this->delete();
 					}
 				}else{
 					//sauvegarde de la source de donnée ratée, on supprime le cadre...
-					$this->debug(sprintf($this->msg['cms_module_commom_module_datasource_save_error'],$datasource_choice),CMS_DEBUG_MODE_FILE);
 					$this->delete();
 				}
 			}else{
 				//sauvegarde des conditions ratée, on supprime le cadre...
-				$this->debug($this->msg['cms_module_commom_module_conditions_save_error'],CMS_DEBUG_MODE_FILE);
 				$this->delete();
 			}
 		}else{
 			//création du cadre ratée, on supprime le hash de la table...
-			$this->debug(sprintf($this->msg['cms_module_commom_module_cadre_save_error'],$this->cadre_name),CMS_DEBUG_MODE_FILE);
 			$this->delete_hash();
 		}
 		return false;
@@ -706,7 +721,7 @@ class cms_module_common_module extends cms_module_root{
 		}
 		$form.="	
 				</div>
-			</div>
+			</div> 
 			<script type='text/javascript'>
 				dojo.require('dojox.layout.ContentPane');
 				function load_condition_form(condition){
@@ -761,17 +776,18 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public function delete(){
+		global $dbh;
 		$dom_id = $this->get_dom_id();
 		//on commence par supprimer la définition dans le portail...
 		$query = "delete from cms_build where build_obj = '".$dom_id."'";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 		
 		//on élimine tous les éléments associés directement au cadre...
 		$query = "select id_cadre_content, cadre_content_object from cms_cadre_content where cadre_content_num_cadre = ".$this->id." and cadre_content_num_cadre_content = 0";
-		$result=mysql_query($query);
-		if(mysql_num_rows($result)){
+		$result=pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
 			//pour éviter tout problème, on ne supprime pas directement les élements de la table, on appelle la méthode de suppression de l'objet...
-			while($row = mysql_fetch_object($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$elem = new $row->cadre_content_object($row->id_cadre_content);
 				$success = $elem->delete();
 				if(!$success){
@@ -782,7 +798,7 @@ class cms_module_common_module extends cms_module_root{
 		}
 		//il ne peut en rester qu'un, et c'est perdu pour celui-ci...
 		$query = "delete from cms_cadres where id_cadre = ".$this->id;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query,$dbh);
 		if($result){
 			$this->delete_hash();
 			return array('dom_id' =>$dom_id);
@@ -854,11 +870,12 @@ class cms_module_common_module extends cms_module_root{
 		return $headers;
 	}
 	
-	protected function fetch_managed_datas(){
+	protected function fetch_managed_datas($type=""){
+		global $dbh;
 		$query = "select managed_module_box from cms_managed_modules where managed_module_name = '".$this->class_name."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$this->managed_datas = unserialize(mysql_result($result,0,0));
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$this->managed_datas = unserialize(pmb_mysql_result($result,0,0));
 		}
 	}
 	
@@ -880,7 +897,7 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public function save_manage_forms(){
-		global $quoi,$elem;
+		global $dbh,$quoi,$elem;
 			
 		//on sauvegarde les infos modifiées
 		switch ($quoi){
@@ -894,7 +911,7 @@ class cms_module_common_module extends cms_module_root{
 				break;		
 		}
 		$query = "replace into cms_managed_modules set managed_module_name = '".$this->class_name."', managed_module_box = '".$this->addslashes(serialize($this->managed_datas))."'";
-		return mysql_query($query);
+		return pmb_mysql_query($query,$dbh);
 	}
 	
 	public function get_manage_menu(){
@@ -1027,10 +1044,11 @@ class cms_module_common_module extends cms_module_root{
 	
 	
 	public function get_extension_form($type,$type_elem,$num_elem){
+		global $dbh;
 		$query = "select extension_datas_datas from cms_modules_extensions_datas where extension_datas_module = '".$this->class_name."' and extension_datas_type = '".$type."' and extension_datas_type_element = '".$type_elem."' and extension_datas_num_element = '".$num_elem."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$this->extension_datas = unserialize(mysql_result($result,0,0));
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$this->extension_datas = unserialize(pmb_mysql_result($result,0,0));
 		}
 		//on var chercher les données pour l'élément courant
 		return $this->get_hash_form();
@@ -1038,9 +1056,10 @@ class cms_module_common_module extends cms_module_root{
 	
 	
 	protected function save_extension_form($type,$type_elem,$num_elem){
+		global $dbh;
 		//on supprime ceux d'avant...
 		$query = "delete from cms_modules_extensions_datas where extension_datas_module = '".$this->class_name."' and extension_datas_type = '".$type."' and extension_datas_type_element = '".$type_elem."' and extension_datas_num_element = '".$num_elem."'";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 		
 		$query = "insert into cms_modules_extensions_datas set 
 			extension_datas_module = '".$this->class_name."',
@@ -1048,7 +1067,7 @@ class cms_module_common_module extends cms_module_root{
 			extension_datas_num_element = '".$num_elem."',
 			extension_datas_type = '".$type."',
 			extension_datas_datas = '".addslashes(serialize($this->extension_datas))."'";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 	}
 	
 

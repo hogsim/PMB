@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: api.inc.php,v 1.14.6.2 2015-02-24 12:44:50 jpermanne Exp $
+// $Id: api.inc.php,v 1.17 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,7 +35,7 @@ function connectFtp($url="", $user="", $password="", $chemin, &$msg_) {
 function abort($msg_,$logid) {
 	global $msg;
 	$requete="update sauv_log set sauv_log_messages=concat(sauv_log_messages,'Abort : ".addslashes($msg_)."') where sauv_log_id=".$logid;
-	@mysql_query($requete);
+	@pmb_mysql_query($requete);
 	echo sprintf($msg["sauv_api_failed_cancel"],$msg_);
 	exit();
 }
@@ -45,14 +45,14 @@ Plus tard pour Dimitri & le planificateur des tâches
 function stop($msg_,$logid) {
 	global $msg;
 	$requete="update sauv_log set sauv_log_messages=concat(sauv_log_messages,'Abort : ".addslashes($msg_)."') where sauv_log_id=".$logid;
-	@mysql_query($requete);
+	@pmb_mysql_query($requete);
 	return sprintf($msg["sauv_api_failed_cancel"],$msg_);
 }
 */
 function abort_copy($msg_,$logid) {
 	global $msg;
 	$requete="update sauv_log set sauv_log_messages=concat(sauv_log_messages,'Abort Copy : ".addslashes($msg_)."') where sauv_log_id=".$logid;
-	@mysql_query($requete);
+	@pmb_mysql_query($requete);
 	echo sprintf($msg["sauv_api_copy_failed_cancel"],$msg_);
 	exit();
 }
@@ -62,22 +62,22 @@ Plus tard pour Dimitri & le planificateur des tâches
 function stop_copy($msg_,$logid) {
 	global $msg;
 	$requete="update sauv_log set sauv_log_messages=concat(sauv_log_messages,'Abort Copy : ".addslashes($msg_)."') where sauv_log_id=".$logid;
-	@mysql_query($requete);
+	@pmb_mysql_query($requete);
 	return sprintf($msg["sauv_api_copy_failed_cancel"],$msg_);
 }
 */
 function write_log($msg_,$logid) {
 	$requete="update sauv_log set sauv_log_messages=concat(sauv_log_messages,'Log : ".addslashes($msg_)."\n') where sauv_log_id=".$logid;
-	@mysql_query($requete);
+	@pmb_mysql_query($requete);
 }
 
 function create_statement($table) {
 	
 	global $dbh;
 	$requete = "SHOW CREATE TABLE $table";
-	$result = mysql_query($requete, $dbh);
+	$result = pmb_mysql_query($requete, $dbh);
 	if ($result) {
-		$create = mysql_fetch_row($result);
+		$create = pmb_mysql_fetch_row($result);
 		$create[1] = str_replace("\r"," ", $create[1]);
 		$create[1] = str_replace("\n"," ", $create[1]);
 		$create[1] .= ";";
@@ -102,19 +102,19 @@ function table_dump($table_name,$fp) {
 
 		$update_a_faire=0; /* permet de gérer les id auto_increment qui auraient pour valeur 0 */
 		//parse the field info first
-		$res2=mysql_query("select * from ${table_name} order by 1 ",$dbh);
+		$res2=pmb_mysql_query("select * from ${table_name} order by 1 ",$dbh);
 		if ($res2) {
-			$nf=mysql_num_fields($res2);
-			$nr=mysql_num_rows($res2);
+			$nf=pmb_mysql_num_fields($res2);
+			$nr=pmb_mysql_num_rows($res2);
 		}
 		$fields = '';
 		$values = '';
 		if ($nf) {
 			for ($b=0;$b<$nf;$b++) {
-				$fn=mysql_field_name($res2,$b);
-			    $ft=mysql_fieldtype($res2,$b);
-				$fs=mysql_field_len($res2,$b);
-				$ff=mysql_field_flags($res2,$b);
+				$fn=pmb_mysql_field_name($res2,$b);
+			    $ft=pmb_mysql_field_type($res2,$b);
+				$fs=pmb_mysql_field_len($res2,$b);
+				$ff=pmb_mysql_field_flags($res2,$b);
 				$is_numeric=false;
 				switch(strtolower($ft))
 					{
@@ -183,14 +183,14 @@ function table_dump($table_name,$fp) {
 		//parse out the table's data and generate the SQL INSERT statements in order to replicate the data itself...
 		if ($nr) {
 			for ($c=0;$c<$nr;$c++) {
-				$row=mysql_fetch_row($res2);
+				$row=pmb_mysql_fetch_row($res2);
 				$values = '';
 				for ($d=0;$d<$nf;$d++) {
 					$data=strval($row[$d]);
 					if ($ina[$d]==true) {
 						((string)$values!="")? $values.= ', '.floatval($data) : $values.= floatval($data);
 					} else {
-						((string)$values!="")? $values.=", \"".mysql_escape_string($data)."\"" : $values.="\"".mysql_escape_string($data)."\"";
+						((string)$values!="")? $values.=", \"".pmb_mysql_escape_string($data)."\"" : $values.="\"".pmb_mysql_escape_string($data)."\"";
 					}
 				}
 				fwrite($fp,"insert into $table_name ($fields) values ($values);\r\n");
@@ -200,7 +200,7 @@ function table_dump($table_name,$fp) {
 				}
 			}
 		}
-		if ($res2) mysql_free_result($res2);
+		if ($res2) pmb_mysql_free_result($res2);
 }
 
 function read_infos($filename) {

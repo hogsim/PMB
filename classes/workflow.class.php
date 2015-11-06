@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: workflow.class.php,v 1.1 2009-10-01 13:29:24 kantin Exp $
+// $Id: workflow.class.php,v 1.3 2014-04-01 10:09:29 abacarisse Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -62,12 +62,16 @@ class workflow {
 		for($i=0;$i<count($this->object['STATES'][0]['STATE']);$i++){
 			$this->object_states_by_id[$this->object['STATES'][0]['STATE'][$i]['ID']] = $this->object['STATES'][0]['STATE'][$i]['NAME'];
 			$this->object_states[$this->object['STATES'][0]['STATE'][$i]['NAME']]['ID'] = $this->object['STATES'][0]['STATE'][$i]['ID'];
+			$this->object_states[$this->object['STATES'][0]['STATE'][$i]['NAME']]['DEFAULT'] = $this->object['STATES'][0]['STATE'][$i]['DEFAULT'];
+			$this->object_states[$this->object['STATES'][0]['STATE'][$i]['NAME']]['IMAGE'] = $this->object['STATES'][0]['STATE'][$i]['IMAGE'];
 			$this->object_states[$this->object['STATES'][0]['STATE'][$i]['NAME']]['COMMENT'] = $this->getStateCommentById($this->object['STATES'][0]['STATE'][$i]['ID']);
 		}	
 		//Types
 		for($i=0;$i<count($this->object['TYPES'][0]['TYPE']);$i++){
 			$this->object_types_by_id[$this->object['TYPES'][0]['TYPE'][$i]['ID']] = $this->object['TYPES'][0]['TYPE'][$i]['NAME'];
 			$this->object_types[$this->object['TYPES'][0]['TYPE'][$i]['NAME']]['ID'] = $this->object['TYPES'][0]['TYPE'][$i]['ID'];
+			$this->object_types[$this->object['TYPES'][0]['TYPE'][$i]['NAME']]['DEFAULT'] = $this->object['TYPES'][0]['TYPE'][$i]['DEFAULT'];
+			$this->object_types[$this->object['TYPES'][0]['TYPE'][$i]['NAME']]['IMAGE'] = $this->object['TYPES'][0]['TYPE'][$i]['IMAGE'];
 			$this->object_types[$this->object['TYPES'][0]['TYPE'][$i]['NAME']]['COMMENT']= $this->object['TYPES'][0]['TYPE'][$i]['COMMENT'];
 		}	
 		//Workflow
@@ -128,12 +132,24 @@ class workflow {
 			foreach($this->object_states as $key=>$value){
 				$i++;
 				$state_list[$i]['id'] = $value['ID'];
+				if($value['DEFAULT']){
+					$state_list[$i]['default'] = $value['DEFAULT'];
+				}
+				if($value['IMAGE']){
+					$state_list[$i]['image'] = $value['image'];
+				}
 				$state_list[$i]['comment'] = $value['COMMENT'];
 			}
 		} else {
 			$nom = $this->getStatesById($state_id);
 			for($i=0;$i<count($this->object_transitions[$nom]);$i++){
 				$state_list[$i]['id'] = $this->object_states[$this->object_transitions[$nom][$i]]['ID'];
+				if( $this->object_states[$this->object_transitions[$nom][$i]]['DEFAULT']){
+					$state_list[$i]['default'] = $this->object_states[$this->object_transitions[$nom][$i]]['DEFAULT'];
+				}
+				if( $this->object_states[$this->object_transitions[$nom][$i]]['IMAGE']){
+					$state_list[$i]['image'] = $this->object_states[$this->object_transitions[$nom][$i]]['IMAGE'];
+				}
 				$state_list[$i]['comment'] = $this->getStateCommentById($this->object_states[$this->object_transitions[$nom][$i]]['ID']);
 			}
 		}
@@ -153,6 +169,12 @@ class workflow {
 		foreach($this->object_types as $key=>$value){
 			$i++;
 			$type_list[$i]['id'] = $value['ID'];
+			if( $value['DEFAULT']){
+				$type_list[$i]['default'] = $value['DEFAULT'];
+			}
+			if( $value['IMAGE']){
+				$type_list[$i]['image'] = $value['IMAGE'];
+			}
 			$message = explode(':',$value['COMMENT']);
 			$type_list[$i]['comment'] = $msg[$message[1]];
 		}

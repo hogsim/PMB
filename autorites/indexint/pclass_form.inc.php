@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pclass_form.inc.php,v 1.3 2007-07-31 09:23:03 ngantier Exp $
+// $Id: pclass_form.inc.php,v 1.4 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,9 +19,9 @@ if($id_pclass) {	//modification
 		
 	// on récupère les données
 	$q = "select id_pclass,name_pclass,typedoc from pclassement where id_pclass='$id_pclass' ";
-	$r = mysql_query($q, $dbh);
+	$r = pmb_mysql_query($q, $dbh);
 	
-	if ($row = mysql_fetch_object($r)) {
+	if ($row = pmb_mysql_fetch_object($r)) {
 		$identifiant = "<div class='row'><label class='etiquette' >".$msg[38]."</label></div>";
 		$identifiant.= "<div class='row'>".$id_pclass."</div>";
 		$libelle = $row->name_pclass;	

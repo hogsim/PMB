@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: stats.class.php,v 1.3 2012-07-31 10:12:14 dgoron Exp $
+// $Id: stats.class.php,v 1.4 2015-04-03 11:16:29 jpermanne Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -36,15 +36,15 @@ class stats extends tache {
 		$date_ech = $param["date_ech"];
 		
 		$requete = "SELECT id_vue, date_consolidation, nom_vue, comment FROM statopac_vues";
-		$res = mysql_query($requete, $dbh);
-		$nb_rows = mysql_num_rows($res);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nb_rows = pmb_mysql_num_rows($res);
 		//taille du selecteur
 		if ($nb_rows < 3) $nb=3;
 		else if ($nb_rows > 10) $nb=10;
 		else $nb = $nb_rows;
 		
 		$select_view = "<select id='list_view' class='saisie-50em' name='list_view[]' size='".$nb."' multiple>";
-		while($row = mysql_fetch_object($res)) {
+		while($row = pmb_mysql_fetch_object($res)) {
 			$select_view .="<option id='".$row->id_vue."' value='".$row->id_vue."' ".($liste_views[$row->id_vue] == $row->id_vue ? "selected" : "").">".htmlentities($row->nom_vue,ENT_QUOTES,$charset)."</option>";
 		}
 		$select_view .= "</select>";
@@ -133,10 +133,10 @@ class stats extends tache {
 			if ($parameters["list_view"]) {
 				$ids_view = implode(",", $parameters["list_view"]);
 				$rqt = "select id_vue, nom_vue FROM statopac_vues where id_vue in (".$ids_view.")";
-				$res = mysql_query($rqt, $dbh);
+				$res = pmb_mysql_query($rqt, $dbh);
 				$list_id_view = array();
 				$list_name_view = array();
-				while ($row = mysql_fetch_object($res)) {
+				while ($row = pmb_mysql_fetch_object($res)) {
 					$list_id_view[] = $row->id_vue;
 					$list_name_view[] = $row->nom_vue;	
 				}

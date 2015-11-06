@@ -2,17 +2,28 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes_ajax.inc.php,v 1.5 2010-02-23 16:27:22 kantin Exp $
+// $Id: demandes_ajax.inc.php,v 1.9 2015-05-20 14:39:30 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 require_once("$class_path/mono_display.class.php");
+require_once("$class_path/demandes.class.php");
+require_once("$include_path/templates/demandes_actions.tpl.php");
 
 switch($quoifaire){
 	
+	case 'show_list_action':
+		$demande=new demandes($id_demande,false);
+		ajax_http_send_response(demandes_actions::show_list_actions($demande->actions,$id_demande,0,false,true));
+		break;
 	case 'show_notice':
 		show_notice($idnotice);	
-	break;
+		break;
+	case 'change_read_dmde':
+		$demande=new demandes($id_demande,false);
+		demandes::change_read($demande);
+		ajax_http_send_response(demandes::dmde_propageLu($id_demande));
+		break;
 
 }
 

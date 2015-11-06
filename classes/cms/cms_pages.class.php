@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_pages.class.php,v 1.3 2012-11-13 16:17:16 ngantier Exp $
+// $Id: cms_pages.class.php,v 1.4 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -24,9 +24,9 @@ class cms_pages {
 		$this->data = array();
 		$this->pages_classement_list=array();
 		$requete = "select id_page from cms_pages order by page_name ";
-		$res = mysql_query($requete, $dbh);
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){
+		$res = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){
 				$this->list[]=$row->id_page;
 				$this->data[$row->id_page]['id']=$row->id_page;
 				$page=new cms_page($row->id_page);
@@ -115,9 +115,9 @@ class cms_page {
 		if(!$this->id)	return false;					
 		// les infos base...	
 		$rqt = "select * from cms_pages where id_page ='".$this->id."'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$row = mysql_fetch_object($res);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$row = pmb_mysql_fetch_object($res);
 			$this->hash = $row->page_hash;
 			$this->name = $row->page_name;
 			$this->description = $row->page_description;
@@ -125,10 +125,10 @@ class cms_page {
 		}		
 		// Variables d'environnement
 		$rqt = "select * from cms_vars where var_num_page ='".$this->id."' order by var_name";
-		$res = mysql_query($rqt);	
+		$res = pmb_mysql_query($rqt);	
 		$i=0;	
-		if(mysql_num_rows($res)){					
-			while($row = mysql_fetch_object($res)){
+		if(pmb_mysql_num_rows($res)){					
+			while($row = pmb_mysql_fetch_object($res)){
 				$this->vars[$i]['id']=$row->id_var;
 				$this->vars[$i]['name']=$row->var_name;
 				$this->vars[$i]['comment']=$row->var_comment;
@@ -211,7 +211,7 @@ class cms_page {
 	public function save_page_classement($id_page,$classement){		
 		$id_cadre+=0;
 		$query = "update cms_pages set page_classement='$classement' where id_cadre = ".$id_page;
-		mysql_query($query);
+		pmb_mysql_query($query);
 	}	
 	
 	public function save(){
@@ -227,12 +227,12 @@ class cms_page {
 		page_name = '".addslashes($this->name)."', 
 		page_description = '".addslashes($this->description)."'
 		$clause";
-		mysql_query($save);
+		pmb_mysql_query($save);
 		if(!$this->id){
-			$this->id = mysql_insert_id();
+			$this->id = pmb_mysql_insert_id();
 			$hash=cms_hash_new("cms_pages",$this->id);
 			$req="update cms_pages set page_hash = '".addslashes($hash)."' where id_page = '".$this->id."'";
-			mysql_query($req);
+			pmb_mysql_query($req);
 		}
 		$this->delete_vars();
 		foreach($this->vars as $var ){
@@ -241,7 +241,7 @@ class cms_page {
 				var_name = '".addslashes($var['name'])."', 
 				var_comment = '".addslashes($var['comment'])."'
 			";
-			mysql_query($req);
+			pmb_mysql_query($req);
 		}	
 		$this->fetch_data();			
 	}	
@@ -252,7 +252,7 @@ class cms_page {
 		
 		$this->delete_vars();
 		$del = "delete from cms_pages where id_page='".$this->id."'";
-		mysql_query($del);
+		pmb_mysql_query($del);
 		cms_hash_del($this->hash);		
 		$this->id=0;		
 		return 0;
@@ -263,7 +263,7 @@ class cms_page {
 		global $charset;
 		
 		$del = "delete from cms_vars where var_num_page='".$this->id."'";
-		mysql_query($del);
+		pmb_mysql_query($del);
 		return 0;
 	}
 	

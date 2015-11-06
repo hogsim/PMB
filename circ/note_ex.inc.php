@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: note_ex.inc.php,v 1.9 2009-09-02 13:38:02 kantin Exp $
+// $Id: note_ex.inc.php,v 1.10 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -28,7 +28,7 @@ if(!$action) {
 } else {
 	// action définie : mettre à jour le message pour l'exemplaire
 	$query = "UPDATE exemplaires SET expl_note='$message_content', expl_comment='$f_ex_comment' WHERE expl_id=$id ";
-	$result = mysql_query($query, $dbh); 
+	$result = pmb_mysql_query($query, $dbh); 
 	$form_cb_expl=$cb;
 	include('./circ/visu_ex.inc.php');
 }

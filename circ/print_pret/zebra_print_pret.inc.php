@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: zebra_print_pret.inc.php,v 1.6.2.2 2014-08-11 15:34:02 dbellamy Exp $
+// $Id: zebra_print_pret.inc.php,v 1.9 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -26,22 +26,22 @@ switch($sub) {
 	case 'one':
 		$r=$printer->print_pret($id_empr,$cb_doc,$ticket_tpl);
 		ajax_http_send_response($r);
-		break;
-	case 'get_script':	
+	break;
+	case 'get_script':
 		$r = $printer->get_script();
 		ajax_http_send_response($r);
-		break;
+	break;
 	case 'all':			
 		$r=$printer->print_all_pret($id_empr,$ticket_tpl);
 		ajax_http_send_response($r);
-		break;
+	break;
 	case 'transacash_ticket':			
 		$r=$printer->transacash_ticket($transacash_id,$ticket_tpl);
 		ajax_http_send_response($r);
-		break;
+	break;
 	default:
 		ajax_http_send_error('400',"commande inconnue");
-		break;		
+	break;		
 }
 
 
@@ -94,9 +94,9 @@ switch($sub):
 		
 		$ticket_pret.=""."Liste des prêts:"."\n\n";
 		$query = "select expl_cb from pret,exemplaires  where pret_idempr=$id_empr and expl_id=pret_idexpl ";		
-		$result = mysql_query($query, $dbh);
+		$result = pmb_mysql_query($query, $dbh);
 		$first=0;
-		while (($r= mysql_fetch_array($result))) {
+		while (($r= pmb_mysql_fetch_array($result))) {
 			if($first)$ticket_pret.="\n ______________________________________\n\n";
 			$ticket_pret.=print_expl( $r['expl_cb']);
 			

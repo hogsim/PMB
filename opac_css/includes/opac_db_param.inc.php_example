@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: opac_db_param.inc.php,v 1.7.14.1 2015-01-21 09:17:38 mbertin Exp $
+// $Id: opac_db_param.inc.php,v 1.8 2015-01-21 09:40:42 mbertin Exp $
 // paramètres d'accès à la base MySQL
 
 // prevents direct script access

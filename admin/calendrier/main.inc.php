@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.11 2011-11-03 13:49:13 dgoron Exp $
+// $Id: main.inc.php,v 1.12 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -16,38 +16,38 @@ if (($faire=="ouvrir" || $faire=="fermer") && $loc!="") {
 		else $ouverture=0 ; 
 
 	$rqt_date = "select if(TO_DAYS('".$date_fin."')>=TO_DAYS('".$date_deb."'),1,0) as OK";
-	$resultatdate=mysql_query($rqt_date);
-	$res=mysql_fetch_object($resultatdate) ;
+	$resultatdate=pmb_mysql_query($rqt_date);
+	$res=pmb_mysql_fetch_object($resultatdate) ;
 	$date_courante = $date_deb ; 
 	while ($res->OK) { 
 		$rqt_date = "select dayofweek('".$date_courante."') as jour";
-		$resultatdate=mysql_query($rqt_date);
-		$res=mysql_fetch_object($resultatdate) ;
+		$resultatdate=pmb_mysql_query($rqt_date);
+		$res=pmb_mysql_fetch_object($resultatdate) ;
 		$jour = "j".$res->jour ;
 		// OK : traitement
 		if ($$jour) {
 			$rqt_date = "update ouvertures set ouvert=$ouverture, commentaire='$commentaire' where date_ouverture='$date_courante' and num_location=$loc ";
-			$resultatdate=mysql_query($rqt_date);
-			if (!mysql_affected_rows()) {
+			$resultatdate=pmb_mysql_query($rqt_date);
+			if (!pmb_mysql_affected_rows()) {
 				$rqt_date = "insert into ouvertures set ouvert=$ouverture, date_ouverture='$date_courante', commentaire='$commentaire', num_location=$loc ";
-				$resultatdate=mysql_query($rqt_date);
-				if (!mysql_affected_rows()) die ("insert into ouvertures failes") ;	
+				$resultatdate=pmb_mysql_query($rqt_date);
+				if (!pmb_mysql_affected_rows()) die ("insert into ouvertures failes") ;	
 			}
 			if (is_array($duplicate_locs)) {
 				foreach ($duplicate_locs as $duplicate_loc) {
 					$rqt_date = "update ouvertures set ouvert=$ouverture, commentaire='$commentaire' where date_ouverture='$date_courante' and num_location=$duplicate_loc ";
-					$resultatdate=mysql_query($rqt_date);
-					if (!mysql_affected_rows()) {
+					$resultatdate=pmb_mysql_query($rqt_date);
+					if (!pmb_mysql_affected_rows()) {
 						$rqt_date = "insert into ouvertures set ouvert=$ouverture, date_ouverture='$date_courante', commentaire='$commentaire', num_location=$duplicate_loc ";
-						$resultatdate=mysql_query($rqt_date);
-						if (!mysql_affected_rows()) die ("insert into ouvertures failes") ;	
+						$resultatdate=pmb_mysql_query($rqt_date);
+						if (!pmb_mysql_affected_rows()) die ("insert into ouvertures failes") ;	
 					}
 				}
 			}
 		}
 		$rqt_date = "select if(to_days(date_add('".$date_courante."', INTERVAL 1 DAY))<=TO_DAYS('".$date_fin."'),1,0) as OK, date_add('".$date_courante."', INTERVAL 1 DAY) as date_courante, dayofweek(date_add('".$date_courante."', INTERVAL 1 DAY)) as jour";
-		$resultatdate=mysql_query($rqt_date);
-		$res=mysql_fetch_object($resultatdate) ;
+		$resultatdate=pmb_mysql_query($rqt_date);
+		$res=pmb_mysql_fetch_object($resultatdate) ;
 		$date_courante=$res->date_courante ;
 	}
 }
@@ -60,20 +60,20 @@ if ($faire=="commentaire" && $annee_mois && ($loc!="")) {
 		if ($commentaire) {
 			$date_courante = $annee_mois."-".$i_2;
 			$rqt_date = "update ouvertures set commentaire='$commentaire' where date_ouverture='$date_courante' and num_location=$loc";
-			$resultatdate=mysql_query($rqt_date);
-			if (!mysql_affected_rows()) {
+			$resultatdate=pmb_mysql_query($rqt_date);
+			if (!pmb_mysql_affected_rows()) {
 				$rqt_date = "insert into ouvertures set ouvert=0, date_ouverture='$date_courante', commentaire='$commentaire', num_location=$loc ";
-				$resultatdate=mysql_query($rqt_date);
-				if (!mysql_affected_rows()) die ("insert into ouvertures failed") ;	
+				$resultatdate=pmb_mysql_query($rqt_date);
+				if (!pmb_mysql_affected_rows()) die ("insert into ouvertures failed") ;	
 			}
 			if (is_array($duplicate_locs)) {
 				foreach ($duplicate_locs as $duplicate_loc) {
 					$rqt_date = "update ouvertures set commentaire='$commentaire' where date_ouverture='$date_courante' and num_location=$duplicate_loc";
-					$resultatdate=mysql_query($rqt_date);
-					if (!mysql_affected_rows()) {
+					$resultatdate=pmb_mysql_query($rqt_date);
+					if (!pmb_mysql_affected_rows()) {
 						$rqt_date = "insert into ouvertures set ouvert=0, date_ouverture='$date_courante', commentaire='$commentaire', num_location=$duplicate_loc ";
-						$resultatdate=mysql_query($rqt_date);
-						if (!mysql_affected_rows()) die ("insert into ouvertures failed") ;	
+						$resultatdate=pmb_mysql_query($rqt_date);
+						if (!pmb_mysql_affected_rows()) die ("insert into ouvertures failed") ;	
 					}
 				}
 			}
@@ -83,11 +83,11 @@ if ($faire=="commentaire" && $annee_mois && ($loc!="")) {
 
 if (($action=="O" || $action=="F") && $date && $loc!="") {
 	$rqt_date = "update ouvertures set ouvert=if(ouvert=0, 1, 0) where date_ouverture='$date' and num_location=$loc ";
-	$resultatdate=mysql_query($rqt_date);
-	if (!mysql_affected_rows()) {
+	$resultatdate=pmb_mysql_query($rqt_date);
+	if (!pmb_mysql_affected_rows()) {
 		$rqt_date = "insert into ouvertures set ouvert=if('".$action."'='O', 1, 0), date_ouverture='$date', commentaire='', num_location=$loc ";
-		$resultatdate=mysql_query($rqt_date);
-		if (!mysql_affected_rows()) die ("insert into ouvertures failes") ;	
+		$resultatdate=pmb_mysql_query($rqt_date);
+		if (!pmb_mysql_affected_rows()) die ("insert into ouvertures failes") ;	
 	}
 }
 
@@ -122,10 +122,10 @@ switch ($sub) {
 				</div>
 			</div>
 			</form>";
-		$result=mysql_query("select location_libelle,name from docs_location where idlocation=$loc",$dbh);
-		if(mysql_num_rows($result) == 1) {
-			$admin_calendrier_form=str_replace('!!biblio_name!!',mysql_result($result,0,"name"),$admin_calendrier_form);
-			$admin_calendrier_form=str_replace('!!localisation!!',$msg[empr_location].' : '.mysql_result($result,0,"location_libelle"),$admin_calendrier_form);
+		$result=pmb_mysql_query("select location_libelle,name from docs_location where idlocation=$loc",$dbh);
+		if(pmb_mysql_num_rows($result) == 1) {
+			$admin_calendrier_form=str_replace('!!biblio_name!!',pmb_mysql_result($result,0,"name"),$admin_calendrier_form);
+			$admin_calendrier_form=str_replace('!!localisation!!',$msg[empr_location].' : '.pmb_mysql_result($result,0,"location_libelle"),$admin_calendrier_form);
 			$admin_calendrier_form=str_replace('!!book_location_id!!',$loc,$admin_calendrier_form);
 		}
 		else {
@@ -134,8 +134,8 @@ switch ($sub) {
 			$admin_calendrier_form=str_replace('!!book_location_id!!','',$admin_calendrier_form);
 		}
 		
-		$result=mysql_query("select idlocation, location_libelle from docs_location where idlocation not in($loc)",$dbh);
-		while ($row = mysql_fetch_object($result)) {
+		$result=pmb_mysql_query("select idlocation, location_libelle from docs_location where idlocation not in($loc)",$dbh);
+		while ($row = pmb_mysql_fetch_object($result)) {
 			$duplicate_form .= "<input id='dup_".$row->idlocation."'type='checkbox' name='duplicate_locs[]' value='".$row->idlocation."' /><label class='etiquette' for='dup_".$row->idlocation."'>".$row->location_libelle."</label>";
 		}
 		$admin_calendrier_form = str_replace("!!duplicate_location!!", $duplicate_form, $admin_calendrier_form);
@@ -143,8 +143,8 @@ switch ($sub) {
 		if (!$annee) {
 			if (!$date) {
 				$rqt_date = "select date_format(CURDATE(),'%Y') as annee ";
-				$resultatdate=mysql_query($rqt_date);
-				$resdate=mysql_fetch_object($resultatdate);
+				$resultatdate=pmb_mysql_query($rqt_date);
+				$resdate=pmb_mysql_fetch_object($resultatdate);
 				$annee = $resdate->annee ;
 			} else $annee = substr($date, 0,4);
 		} 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_module.class.php,v 1.34.2.3 2014-11-27 10:13:14 arenou Exp $
+// $Id: cms_module_common_module.class.php,v 1.44 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,73 +23,88 @@ class cms_module_common_module extends cms_module_root{
 	public $fixed = false;
 	protected $extension_datas = array();
 	protected $modcache = "get_post_view";
+	protected $selected_datasource = "";
+	protected $selected_view = "";
 	
 	public function __construct($id=0){
 		$this->id = $id+0;
-		$this->read_manifest();
+		$infos = self::read_manifest();
+		$this->informations = $infos['informations'];
+		$this->elements_used = $infos['elements_used'];
 		parent::__construct();
 		//on va chercher le contenu de la boite noire...
 		$this->fetch_managed_datas();
 	}
 	
-	public function read_manifest(){
+	public static function get_informations(){
+		$infos = self::read_manifest();
+		return $infos['informations'];
+	}
+	
+	public static function read_manifest(){
+		global $base_path;
+		$informations = array();
 		@ini_set("zend.ze1_compatibility_mode", "0");
-		$this->manifest = new domDocument();
-		$this->manifest->load($this->module_path."manifest.xml");
+		$manifest = new domDocument();
+		$module_path = realpath(dirname($base_path."/cms/modules/".str_replace("cms_module_","",get_called_class())."/".get_called_class().".class.php"));
+		
+		$manifest->load($module_path."/manifest.xml");
 		//on récupère le nom
-		$name = $this->manifest->getElementsByTagName("name")->item(0);
-		$this->informations['name']= $this->charset_normalize($name->nodeValue,"utf-8");
+		$name = $manifest->getElementsByTagName("name")->item(0);
+		$informations['informations']['name']= cms_module_root::charset_normalize($name->nodeValue,"utf-8");
 		//on récupère le(les) auteur(s)
-		$this->informations['author'] = array();
-		$authors = $this->manifest->getElementsByTagName("author");
+		$informations['informations']['author'] = array();
+		$authors = $manifest->getElementsByTagName("author");
 		for($i=0 ; $i<$authors->length ; $i++){
 			$author = array();
 			//on récupère son nom
-			$author['name'] = $this->charset_normalize($authors->item($i)->getElementsByTagName('name')->item(0)->nodeValue,"utf-8");
+			$author['name'] = cms_module_root::charset_normalize($authors->item($i)->getElementsByTagName('name')->item(0)->nodeValue,"utf-8");
 			//on récupère son organisation
 			$organisation = $authors->item($i)->getElementsByTagName("organisation");
 			if($organisation->length>0){
-				$author['organisation'] = $this->charset_normalize($organisation->item(0)->nodeValue,"utf-8");
+				$author['organisation'] = cms_module_root::charset_normalize($organisation->item(0)->nodeValue,"utf-8");
 			}
-			$this->informations['author'][] = $author;
+			$informations['informations']['author'][] = $author;
 		}
 		
 		//on récupère les dates
-		$created_date = $this->manifest->getElementsByTagName("created_date")->item(0);
-		$this->informations['created_date']= $this->charset_normalize($created_date->nodeValue,"utf-8");
-		$updated_date = $this->manifest->getElementsByTagName("updated_date");
+		$created_date = $manifest->getElementsByTagName("created_date")->item(0);
+		$informations['informations']['created_date']= cms_module_root::charset_normalize($created_date->nodeValue,"utf-8");
+		$updated_date = $manifest->getElementsByTagName("updated_date");
 		if($updated_date->length>0){
-			$this->informations['updated_date'] = $this->charset_normalize($updated_date->item(0)->nodeValue,"utf-8");
+			$informations['informations']['updated_date'] = cms_module_root::charset_normalize($updated_date->item(0)->nodeValue,"utf-8");
 		}
 		//on récupère la version
-		$version = $this->manifest->getElementsByTagName("version")->item(0);
-		$this->informations['version']= $this->charset_normalize($version->nodeValue,"utf-8");
+		$version = $manifest->getElementsByTagName("version")->item(0);
+		$informations['informations']['version']= cms_module_root::charset_normalize($version->nodeValue,"utf-8");
 		
 		// on récupère la langue par défaut du module...
-		$this->informations['default_language'] = self::get_module_default_language($this->manifest);
+		$informations['informations']['default_language'] = self::get_module_default_language($manifest);
 		
 		// administrable?
-		$this->informations['managed'] = ($this->manifest->getElementsByTagName("managed") && $this->manifest->getElementsByTagName("managed")->item(0)->nodeValue == "true" ? true : false);
+		$informations['informations']['managed'] = ($manifest->getElementsByTagName("managed") && $manifest->getElementsByTagName("managed")->item(0)->nodeValue == "true" ? true : false);
 		
 		//fournisseur de liens?
-		$this->informations['extension_form'] = ($this->manifest->getElementsByTagName("extension_form") && $this->manifest->getElementsByTagName("extension_form")->item(0)->nodeValue == "true" ? true : false);
+		$informations['informations']['extension_form'] = ($manifest->getElementsByTagName("extension_form") && $manifest->getElementsByTagName("extension_form")->item(0)->nodeValue == "true" ? true : false);
 		
 		
 		@ini_set("zend.ze1_compatibility_mode", "0");
 		//on récupère la listes des éléments utilisés par le module...
-		$use = $this->manifest->getElementsbyTagName("use")->item(0);
-		$this->elements_used = self::read_elements_used($use);
+		$use = $manifest->getElementsbyTagName("use")->item(0);
+		$informations['elements_used'] = self::read_elements_used($use);
 		@ini_set("zend.ze1_compatibility_mode", "1");
+		return $informations;
 	}
 		
 	protected function fetch_datas(){
+		global $dbh;
 		if($this->id){
 			$this->classement_list=array();
 			//on va cherches les infos du cadres...
 			$query = "select * from cms_cadres where id_cadre = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->id = $row->id_cadre+0;
 				$this->hash = $row->cadre_hash;
 				$this->name = $row->cadre_name;
@@ -102,9 +117,9 @@ class cms_module_common_module extends cms_module_root{
 				$this->classement = $row->cadre_classement;	
 				$this->modcache = $row->cadre_modcache;
 				$query = "select id_cadre_content,cadre_content_object,cadre_content_type from cms_cadre_content where cadre_content_num_cadre = ".$this->id;
-				$result = mysql_query($query);
-				if($result && mysql_num_rows($result)){
-					while ($ligne=mysql_fetch_object($result)) {
+				$result = pmb_mysql_query($query,$dbh);
+				if($result && pmb_mysql_num_rows($result)){
+					while ($ligne=pmb_mysql_fetch_object($result)) {
 						switch ($ligne->cadre_content_type) {
 							case "datasource":
 					$this->datasource = array(
@@ -374,6 +389,7 @@ class cms_module_common_module extends cms_module_root{
 					<input type='button' class='bouton' value='".$this->msg['cms_module_common_module_delete']."' onclick=\"if(confirm('".addslashes($this->msg['cms_module_common_module_confirm_delete'])."')) {cms_module_delete()}\"/>
 				</div>
 			</div>
+			<div class='row'></div>
 		</form>
 		<script type='text/javacript'>
 			function cms_module_load_elem_form(elem,id,dom_id){
@@ -486,9 +502,9 @@ class cms_module_common_module extends cms_module_root{
 		
 		if($id){
 			$query = "select cadre_modcache from cms_cadres where id_cadre = ".$id;
-			$result = mysql_query($query,$dbh);
-			if(mysql_num_rows($result)){
-				$mode = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$mode = pmb_mysql_result($result,0,0);
 			}else{
 				$mode = "get_post";
 			}
@@ -534,6 +550,7 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public function save_form(){
+		global $dbh;
 		global $datasource_choice;
 		global $view_choice;
 		global $filter_choice;
@@ -566,10 +583,10 @@ class cms_module_common_module extends cms_module_root{
 			cadre_modcache ='".addslashes($cms_module_common_module_modcache)."'		
 			".$clause;
 		
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query,$dbh);
 		if($result){
 			if(!$this->id){
-				$this->id = mysql_insert_id();
+				$this->id = pmb_mysql_insert_id();
 			} 
 			
 			//les Conditions
@@ -745,17 +762,18 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public function delete(){
+		global $dbh;
 		$dom_id = $this->get_dom_id();
 		//on commence par supprimer la définition dans le portail...
 		$query = "delete from cms_build where build_obj = '".$dom_id."'";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 		
 		//on élimine tous les éléments associés directement au cadre...
 		$query = "select id_cadre_content, cadre_content_object from cms_cadre_content where cadre_content_num_cadre = ".$this->id." and cadre_content_num_cadre_content = 0";
-		$result=mysql_query($query);
-		if(mysql_num_rows($result)){
+		$result=pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
 			//pour éviter tout problème, on ne supprime pas directement les élements de la table, on appelle la méthode de suppression de l'objet...
-			while($row = mysql_fetch_object($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$elem = new $row->cadre_content_object($row->id_cadre_content);
 				$success = $elem->delete();
 				if(!$success){
@@ -766,7 +784,7 @@ class cms_module_common_module extends cms_module_root{
 		}
 		//il ne peut en rester qu'un, et c'est perdu pour celui-ci...
 		$query = "delete from cms_cadres where id_cadre = ".$this->id;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query,$dbh);
 		if($result){
 			$this->delete_hash();
 			return array('dom_id' =>$dom_id);
@@ -789,19 +807,12 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public function show_cadre(){
-		if($this->datasource['id']!= 0){
-			$datasource = new $this->datasource['name']($this->datasource['id']);	
-			if($this->filter['id']!= 0){
-				$filter = new $this->filter['name']($this->filter['id']);
-				$datasource->set_filter($filter);
+ 		if($this->get_selected_datasource()){
+			if($this->get_selected_view()){
+				return "<div id='".$this->get_dom_id()."' class='".$this->class_name." cms_module'>".$this->selected_view->render($this->selected_datasource->get_datas())."</div>";
 			}
-			$datas = $datasource->get_datas();
-			if($this->view['id'] != 0){
-				$view = new $this->view['name']($this->view['id']);
-				return "<div id='".$this->get_dom_id()."' class='".$this->class_name." cms_module'>".$view->render($datas)."</div>";
-			}
-		}
-		return "";
+ 		}
+ 		return "";
 	}
 	
 	public function get_dom_id(){
@@ -823,26 +834,56 @@ class cms_module_common_module extends cms_module_root{
 	}
 
 	public function get_headers(){
-		$headers=array();
-		$datasource = new $this->datasource['name']($this->datasource['id']);
-		$headers = array_merge($headers,$datasource->get_headers());
-		$headers = array_unique($headers);
-		$view = new $this->view['name']($this->view['id']);
-		$headers = array_merge($headers,$view->get_headers());
-		$headers = array_unique($headers);
+		$headers=array(
+			'add' => array(),
+			'replace' => array()
+		);
+		if($this->get_selected_datasource()){
+			$datasource_headers = $this->selected_datasource->get_headers();
+			if(isset($datasource_headers['add']) || isset($datasource_headers['replace']) ){
+				$headers['add'] = array_merge($headers['add'],$datasource_headers['add']);
+				$headers['replace'] = array_merge($headers['replace'],$datasource_headers['replace']);
+			}else{
+				$headers['add'] = array_merge($headers['add'],$datasource_headers);
+			}
+			$datasource_headers = array();
+			$headers['add'] = array_unique($headers['add']);
+			$headers['replace'] = array_unique($headers['replace']);
+		}
+		if($this->get_selected_view()){
+			$view_headers = $this->selected_view->get_headers($this->selected_datasource->get_datas());
+			if(isset($view_headers['add']) || isset($view_headers['replace']) ){
+				$headers['add'] = array_merge($headers['add'],$view_headers['add']);
+				$headers['replace'] = array_merge($headers['replace'],$view_headers['replace']);
+			}else{
+				$headers['add'] = array_merge($headers['add'],$view_headers);
+			}	
+			$view_headers = array();
+			$headers['add'] = array_unique($headers['add']);
+			$headers['replace'] = array_unique($headers['replace']);
+		}
 		for($i=0 ; $i<count($this->conditions) ; $i++){
 			$condition = new $this->conditions[$i]['name']($this->conditions[$i]['id']);
-			$headers = array_merge($headers,$condition->get_headers());
-			$headers = array_unique($headers);
-		}		
+			$condition_headers = $condition->get_headers();		
+			if(isset($condition_headers['add']) || isset($condition_headers['replace']) ){
+				$headers['add'] = array_merge($headers['add'],$condition_headers['add']);
+				$headers['replace'] = array_merge($headers['replace'],$condition_headers['replace']);
+			}else{
+				$headers['add'] = array_merge($headers['add'],$condition_headers);
+			}
+			$condition_headers = array();
+			$headers['add'] = array_unique($headers['add']);
+			$headers['replace'] = array_unique($headers['replace']);
+		}
 		return $headers;
 	}
 	
-	protected function fetch_managed_datas(){
+	protected function fetch_managed_datas($type=""){
+		global $dbh;
 		$query = "select managed_module_box from cms_managed_modules where managed_module_name = '".$this->class_name."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$this->managed_datas = unserialize(mysql_result($result,0,0));
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$this->managed_datas = unserialize(pmb_mysql_result($result,0,0));
 		}
 	}
 	
@@ -864,7 +905,7 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public function save_manage_forms(){
-		global $quoi,$elem;
+		global $dbh,$quoi,$elem;
 			
 		//on sauvegarde les infos modifiées
 		switch ($quoi){
@@ -878,7 +919,7 @@ class cms_module_common_module extends cms_module_root{
 				break;		
 		}
 		$query = "replace into cms_managed_modules set managed_module_name = '".$this->class_name."', managed_module_box = '".$this->addslashes(serialize($this->managed_datas))."'";
-		return mysql_query($query);
+		return pmb_mysql_query($query,$dbh);
 	}
 	
 	public function get_manage_menu(){
@@ -1010,19 +1051,21 @@ class cms_module_common_module extends cms_module_root{
 	}
 	
 	public function get_extension_form($type,$type_elem,$num_elem){
+		global $dbh;
 		$query = "select extension_datas_datas from cms_modules_extensions_datas where extension_datas_module = '".$this->class_name."' and extension_datas_type = '".$type."' and extension_datas_type_element = '".$type_elem."' and extension_datas_num_element = '".$num_elem."'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$this->extension_datas = unserialize(mysql_result($result,0,0));
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			$this->extension_datas = unserialize(pmb_mysql_result($result,0,0));
 		}
 		//on var chercher les données pour l'élément courant
 		return $this->get_hash_form();
 	}
 	
 	protected function save_extension_form($type,$type_elem,$num_elem){
+		global $dbh;
 		//on supprime ceux d'avant...
 		$query = "delete from cms_modules_extensions_datas where extension_datas_module = '".$this->class_name."' and extension_datas_type = '".$type."' and extension_datas_type_element = '".$type_elem."' and extension_datas_num_element = '".$num_elem."'";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 		
 		$query = "insert into cms_modules_extensions_datas set 
 			extension_datas_module = '".$this->class_name."',
@@ -1030,7 +1073,7 @@ class cms_module_common_module extends cms_module_root{
 			extension_datas_num_element = '".$num_elem."',
 			extension_datas_type = '".$type."',
 			extension_datas_datas = '".addslashes(serialize($this->extension_datas))."'";
-		mysql_query($query);
+		pmb_mysql_query($query,$dbh);
 	}
 	
 	//on parcours les conditions pour savoir si rien n'empeche la mise en cache du cadre!
@@ -1044,5 +1087,31 @@ class cms_module_common_module extends cms_module_root{
 			}
 		}
 		return true;		
+	}
+	
+	public function get_selected_datasource(){
+		if(!$this->selected_datasource){
+			if($this->datasource['id']!= 0){
+				$this->selected_datasource = new $this->datasource['name']($this->datasource['id']);
+				if($this->filter['id']!= 0){
+					$filter = new $this->filter['name']($this->filter['id']);
+					$this->selected_datasource->set_filter($filter);
+				}
+			}else{
+				return false;
+			}
+		}
+		return $this->selected_datasource;
+	}
+
+	public function get_selected_view(){
+		if(!$this->selected_view){
+			if($this->view['id'] != 0){
+				$this->selected_view = new $this->view['name']($this->view['id']);
+			}else{
+				return false;
+			}
+		}
+		return $this->selected_view;
 	}
 }

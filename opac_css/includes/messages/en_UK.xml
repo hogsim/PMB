@@ -2,7 +2,7 @@
 <!DOCTYPE XMLlist SYSTEM "../XMLlist.dtd" [<!ENTITY nbsp "&amp;nbsp;">]>
 
 <!-- messages localises en anglais pour l'OPAC de PMB
-$Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
+$Id: en_UK.xml,v 1.341 2015-07-17 14:04:46 jpermanne Exp $ -->
 
 <XMLlist>
 <entry code="not_allowed">Operation not allowed</entry>
@@ -538,10 +538,10 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="onglet_empr_compte">My Account</entry>
 <entry code="avis_doit_etre_abon">You must be logged in to give your opinion:</entry>
 <entry code="tag_doit_etre_abon">You must be logged in to add a tag:</entry>
-<entry code="command_phototeque_need_name">Surname &amp; first name are mandatory!</entry>
+<entry code="command_phototeque_need_name">Last name &amp; first name are mandatory!</entry>
 <entry code="command_phototeque_need_phone">Telephone number or email is mandatory!</entry>
 <entry code="command_phototeque_coord">Enter your personal information</entry>
-<entry code="command_phototeque_name">Your surname &amp; first name</entry>
+<entry code="command_phototeque_name">Your last name &amp; first name</entry>
 <entry code="command_phototeque_phone">Your telephone number</entry>
 <entry code="command_phototeque_email">Your email</entry>
 <entry code="command_phototeque_nbre">Number of copies</entry>
@@ -678,7 +678,7 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="subs_intro_services"><![CDATA[<h1><span>If you join, you can use more features.</span></h1>Create an account to get alerts for new items or to write reviews... <em>This registration is not required if you already are a borrower.</em>]]></entry>
 <entry code="subs_intro_explication"><![CDATA[<h1>How to join?</h1>Fill in this form and confirm. You will get an email to confirm your subscription.<br />You will have to confirm your registration within the next !!nb_h_valid!! hours. <em>The <b>bold</b> fields are mandatory.</em><br /><br />]]></entry>
 <entry code="subs_titre_form">Personal information: </entry>
-<entry code="subs_f_nom">Surname: </entry>
+<entry code="subs_f_nom">Last name: </entry>
 <entry code="subs_f_prenom">First name: </entry>
 <entry code="subs_f_email">Email: </entry>
 <entry code="subs_f_login">User name: </entry>
@@ -912,7 +912,7 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="empr_sugg_datepubli">Published date</entry>
 <entry code="transform_caddie_to_multisugg">Create multiple-suggestions from basket</entry>
 <entry code="transform_list_to_multisugg">Change multiple-suggestions from reading list</entry>
-<entry code="empr_sugg_no_src">Aucune source</entry>
+<entry code="empr_sugg_no_src">No source</entry>
 <entry code="n_collation">Collation : </entry>
 <entry code="n_titre_de_forme">Form title : </entry>
 <entry code="list_lecture_motif_refus">Reason of refusal</entry>
@@ -930,7 +930,7 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="demandes_etat">State</entry>
 <entry code="demandes_date_prevue">Expected date</entry>
 <entry code="demandes_date_dmde">Date of the request</entry>
-<entry code="demandes_demandeur">Pattron</entry>
+<entry code="demandes_demandeur">Patron</entry>
 <entry code="demandes_user">Assigned to</entry>
 <entry code="demandes_progression">Progress</entry>
 <entry code="demandes_liste_vide">No request in this state.</entry>
@@ -960,7 +960,7 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="demandes_actions">Related actions</entry>
 <entry code="empr_no_allow_dema">You're not allowed to record requests.</entry>
 <entry code="demandes_note_mail_reponse">answered to the note %s in the action %s of the request %s</entry>
-<entry code="demandes_note_mail_new">posted a note in the action %s of the request %s</entry>
+<entry code="demandes_note_mail_new">Hi, %s posted a note in the action %s - of the request %s</entry>
 <entry code="demandes_note_mail_new_object">A new note has been created</entry>
 <entry code="demandes_note_mail_reponse_object">Answer to the note %s</entry>
 <entry code="list_lecture_intro_mail">Dear %s</entry>
@@ -998,12 +998,12 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="confirm_resa">Do you really want to place a hold on this document ?</entry>
 <entry code="sugg_no_field_fill">Please add a new line to record a multiple-suggestion</entry>
 <entry code="empr_tel2_separateur"> / </entry>
-<entry code="empr_mail">Mail</entry>
+<entry code="empr_mail">E-Mail</entry>
 <entry code="resa_liste_titre"></entry>
 <entry code="resa_liste_rank"></entry>
 <entry code="resa_liste_del"></entry>
 <entry code="info_bulle_icon">!!niveau_biblio!!: !!typdoc!!</entry>
-<entry code="empr_adresse">Adress</entry>
+<entry code="empr_adresse">Address</entry>
 <entry code="empr_adr_separateur"> / </entry>
 <entry code="empr_tel_titre">Phone</entry>
 <entry code="empr_format_adhesion">Subscription available from  !!date_adhesion!! to  !!date_expiration!! </entry>
@@ -1019,10 +1019,10 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="demandes_see_notice">See record</entry>
 <entry code="demandes_actions_new">New</entry>
 <entry code="demandes_notes_question_form">Enter your answer</entry>
-<entry code="explnum_bulletin">Electronics documents of an issue</entry>
+<entry code="explnum_bulletin">Electronic documents of an issue</entry>
 <entry code="rechercher_in_serial">Search in serial</entry>
 <entry code="result_to_phototeque">Display into picture library</entry>
-<entry code="see_docnum_bull">See electronics documents linked to issues</entry>
+<entry code="see_docnum_bull">See electronic documents linked to the issues</entry>
 <entry code="navigopac_aut">Authors list</entry>
 <entry code="navigopac_ss_aut">No author</entry>
 <entry code="navigopac_aut_com_par">Author starting with</entry>
@@ -1149,210 +1149,210 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="324">Keywords</entry>
 <entry code="137">Sub-series</entry>
 <entry code="print_vignette">Print Cover</entry>
-<entry code="opac_titre_champ_nb_prolongation">Prolongation</entry>
-<entry code="show_cart_empty_title">Vider le panier</entry>
-<entry code="show_cart_del_checked_title">Vider du panier les notices cochées</entry>
-<entry code="show_cart_print_title">Imprimer...</entry>
-<entry code="list_lecture_transform_caddie_title">Transformer le panier en liste de lecture</entry>
-<entry code="list_lecture_transform_checked_title">Transformer les notices cochées en liste de lecture</entry>
-<entry code="list_lecture_cart_checked_all_title">Tout cocher</entry>
-<entry code="transform_caddie_to_multisugg_title">Transformer le panier en suggestion multiple</entry>
-<entry code="transform_list_to_multisugg_title">Transformer la liste en suggestion multiple</entry>
+<entry code="opac_titre_champ_nb_prolongation">Extension</entry>
+<entry code="show_cart_empty_title">Empty the basket</entry>
+<entry code="show_cart_del_checked_title">Removed checked records from the basket</entry>
+<entry code="show_cart_print_title">Print...</entry>
+<entry code="list_lecture_transform_caddie_title">Transform the basket into a list</entry>
+<entry code="list_lecture_transform_checked_title">Transform the checked records into a list</entry>
+<entry code="list_lecture_cart_checked_all_title">Check all</entry>
+<entry code="transform_caddie_to_multisugg_title">Transform the basket into a multiple suggestion</entry>
+<entry code="transform_list_to_multisugg_title">Transform the list into a multiple suggestion</entry>
 <entry code="Public_info">Public</entry>
 <entry code="ISBD_info">ISBD</entry>
-<entry code="empr_menu_serialcirc">Mes abonnements</entry>
-<entry code="serialcirc_list_abo">Listes des abonnements</entry>
-<entry code="serialcirc_list_asked_abo">Abonnements sur demande</entry>
-<entry code="serialcirc_pointer">Pointer</entry>
-<entry code="serialcirc_add_resa">Solliciter une réservation</entry>
-<entry code="serialcirc_ask_copy">Demander une reproduction</entry>
-<entry code="serialcirc_serial_name">Nom du périodique</entry>
-<entry code="serialcirc_circ_mode">Mode de Circulation</entry>
-<entry code="serialcirc_start_date">Date de départ</entry>
-<entry code="serialcirc_cb">Code-barres</entry>
-<entry code="serialcirc_nb">Rang</entry>
-<entry code="serialcirc_actions">Action(s) possible(s)</entry>
-<entry code="serialcirc_ret_asked">Renvoi demandé</entry>
-<entry code="serialcirc_trans_asked">Transmission demandée</entry>
-<entry code="serialcirc_trans_doc_asked">Transmission demandée par le centre le doc</entry>
-<entry code="serialcirc_report_late">Signaler un retard</entry>
-<entry code="serialcirc_late_reported">Retard signalé</entry>
-<entry code="serialcirc_ask_transmission">Demander la transmission</entry>
-<entry code="serialcirc_asking_transmission">Demande de transmission</entry>
-<entry code="serialcirc_transmission_asked">Demande de transmission envoyée</entry>
-<entry code="serialcirc_subscribe_list">Demander avant le %s</entry>
-<entry code="serialcirc_unsubscribe_checked">Demander le désabonnement des périodiques cochés</entry>
+<entry code="empr_menu_serialcirc">My subscriptions</entry>
+<entry code="serialcirc_list_abo">Lists of subscriptions</entry>
+<entry code="serialcirc_list_asked_abo">Subscriptions asked</entry>
+<entry code="serialcirc_pointer">Check off</entry>
+<entry code="serialcirc_add_resa">Request a reservation</entry>
+<entry code="serialcirc_ask_copy">Ask for a copy</entry>
+<entry code="serialcirc_serial_name">Periodical name</entry>
+<entry code="serialcirc_circ_mode">Circulation mode</entry>
+<entry code="serialcirc_start_date">Date of start</entry>
+<entry code="serialcirc_cb">Barcode</entry>
+<entry code="serialcirc_nb">Rank</entry>
+<entry code="serialcirc_actions">Possible action(s)</entry>
+<entry code="serialcirc_ret_asked">Return asked</entry>
+<entry code="serialcirc_trans_asked">Transmission asked</entry>
+<entry code="serialcirc_trans_doc_asked">Transmission asked by the resource centre</entry>
+<entry code="serialcirc_report_late">Report overdue</entry>
+<entry code="serialcirc_late_reported">Overdue reported</entry>
+<entry code="serialcirc_ask_transmission">Ask for the transmission</entry>
+<entry code="serialcirc_asking_transmission">Transmission request</entry>
+<entry code="serialcirc_transmission_asked">Transmission request sent</entry>
+<entry code="serialcirc_subscribe_list">Ask before the %s</entry>
+<entry code="serialcirc_unsubscribe_checked">Ask for the cancellation of your subscription to the checked periodicals</entry>
 <entry code="serialcirc_virtual_mode_0"></entry>
-<entry code="serialcirc_virtual_mode_1">Sur demande</entry>
-<entry code="serialcirc_checkpoint">Pointer un exemplaire</entry>
-<entry code="serialcirc_codebarre">Code-barres de l'exemplaire</entry>
-<entry code="serialcirc_point_expl">Pointer l'exemplaire</entry>
-<entry code="serialcirc_point_wrong_expl">Code-barres inconnu</entry>
-<entry code="serialcirc_point_back_to_list">Retour à la liste</entry>
-<entry code="serialcirc_expl_pointed">merci d'avoir pointé le document!</entry>
-<entry code="serialcirc_point_expl_not_in_list">Cet exemplaire ne fait pas partie de la circulation!</entry>
-<entry code="sql_error">Erreur SQL</entry>
-<entry code="serialcirc_transmission_accepted">Demande de transmission prise en compte</entry>
-<entry code="serialcirc_no_expl_in_circulation">Pas de nouveau numéro</entry>
-<entry code="serialcirc_hold_expl">Demander une réservation pour cet exemplaire</entry>
-<entry code="serialcirc_expl_not_in_circ">Cet exemplaire ne fait pas partie d'un abonnement</entry>
-<entry code="serialcirc_holding_not_allowed">Vous ne pouvez pas réserver ce document</entry>
-<entry code="serialcirc_holded">La demande de réservation est prise en compte</entry>
-<entry code="serialcirc_report_late_mail">Circulation tardive...</entry>
-<entry code="serialcirc_hold_mail">Demande de réservation</entry>
-<entry code="serialcirc_ask_comment">Ajouter un commentaire :</entry>
-<entry code="serialcirc_ask_submit_button">Envoyer votre demande</entry>
-<entry code="serialcirc_ask_analysis">Un(Des) dépouillement(s) spécifique(s) : </entry>
-<entry code="serialcirc_ask_copy_title">Demande de reproduction pour :</entry>
-<entry code="serialcirc_copy_statut_0">En Attente</entry>
-<entry code="serialcirc_copy_statut_1">Acceptée</entry>
-<entry code="serialcirc_copy_statut_2">Refusée</entry>
-<entry code="serialcirc_cant_point_expl">Vous ne pouvez pas pointer cet exemplaire</entry>
-<entry code="serialcirc_cant_copy_expl">La demande de copie n'est pas autorisée pour cet exemplaire</entry>
-<entry code="serialcirc_cant_point_expl_twice">Vous avez déjà pointé cet exemplaire!</entry>
-<entry code="serialcirc_ask_subscribtion">Demander l'abonnement à la liste de circulation</entry>
-<entry code="serialcirc_ask_type">Type de demande</entry>
-<entry code="serialcirc_ask_type_0">Inscription</entry>
-<entry code="serialcirc_ask_type_1">Désinscription</entry>
-<entry code="serialcirc_ask_statut">Statut</entry>
-<entry code="serialcirc_ask_statut_0">En Attente</entry>
-<entry code="serialcirc_ask_statut_1">Acceptée</entry>
-<entry code="serialcirc_ask_statut_2">Refusée</entry>
-<entry code="serialcirc_ask_msg">Commentaire</entry>
+<entry code="serialcirc_virtual_mode_1">On demand</entry>
+<entry code="serialcirc_checkpoint">Check a copy off</entry>
+<entry code="serialcirc_codebarre">Barcode of the copy</entry>
+<entry code="serialcirc_point_expl">Check the copy off</entry>
+<entry code="serialcirc_point_wrong_expl">Unknown barcode</entry>
+<entry code="serialcirc_point_back_to_list">Back to the list</entry>
+<entry code="serialcirc_expl_pointed">Thanks for checking your copy off!</entry>
+<entry code="serialcirc_point_expl_not_in_list">This copy is not in circulation!</entry>
+<entry code="sql_error">SQL Error</entry>
+<entry code="serialcirc_transmission_accepted">Transmission request acknowledged</entry>
+<entry code="serialcirc_no_expl_in_circulation">No new copy in circulation</entry>
+<entry code="serialcirc_hold_expl">Place a hold on this copy</entry>
+<entry code="serialcirc_expl_not_in_circ">This copy is not part of a subscription</entry>
+<entry code="serialcirc_holding_not_allowed">You can not place this document on hold</entry>
+<entry code="serialcirc_holded">Your reservation request is acknowledged</entry>
+<entry code="serialcirc_report_late_mail">Late circulation...</entry>
+<entry code="serialcirc_hold_mail">Reservation request</entry>
+<entry code="serialcirc_ask_comment">Add a comment :</entry>
+<entry code="serialcirc_ask_submit_button">Submit your request</entry>
+<entry code="serialcirc_ask_analysis">Specific examination(s) : </entry>
+<entry code="serialcirc_ask_copy_title">Request of a copy of :</entry>
+<entry code="serialcirc_copy_statut_0">Pending</entry>
+<entry code="serialcirc_copy_statut_1">Accepted</entry>
+<entry code="serialcirc_copy_statut_2">Rejected</entry>
+<entry code="serialcirc_cant_point_expl">You can not check this copy off</entry>
+<entry code="serialcirc_cant_copy_expl">The copy request is not allowed for this copy</entry>
+<entry code="serialcirc_cant_point_expl_twice">You have already checked this copy off!</entry>
+<entry code="serialcirc_ask_subscribtion">Ask for a subscription to the circulation list</entry>
+<entry code="serialcirc_ask_type">Type of request</entry>
+<entry code="serialcirc_ask_type_0">Subscription</entry>
+<entry code="serialcirc_ask_type_1">Cancellation of subscription</entry>
+<entry code="serialcirc_ask_statut">Status</entry>
+<entry code="serialcirc_ask_statut_0">Pending</entry>
+<entry code="serialcirc_ask_statut_1">Accepted</entry>
+<entry code="serialcirc_ask_statut_2">Rejected</entry>
+<entry code="serialcirc_ask_msg">Comment</entry>
 <entry code="serialcirc_ask_date">Date</entry>
-<entry code="serialcirc_ask_menu">Suivre les demandes d'inscription</entry>
-<entry code="serialcirc_ret_accepted">Demande de retour acceptée</entry>
-<entry code="serialcirc_expected_date">Date attendue</entry>
-<entry code="filing_date">Date de dépôt</entry>
-<entry code="return_date">Date de retour</entry>
-<entry code="simili_search">Peut-être aimerez-vous</entry>
+<entry code="serialcirc_ask_menu">Follow subscription requests</entry>
+<entry code="serialcirc_ret_accepted">Return request accepted</entry>
+<entry code="serialcirc_expected_date">Expected date</entry>
+<entry code="filing_date">Filing date</entry>
+<entry code="return_date">Return date</entry>
+<entry code="simili_search">You may also like this</entry>
 <entry code='serialcirc_ask_copy_msg'>Message</entry>
-<entry code='serialcirc_ask_copy_analysis'>	Dépouillement(s) Spécifique(s)</entry>
-<entry code='serialcirc_ask_copy_issue'>Bulletin</entry>
+<entry code='serialcirc_ask_copy_analysis'>	Special examination(s)</entry>
+<entry code='serialcirc_ask_copy_issue'>Issue</entry>
 <entry code='serialcirc_ask_copy_date'>Date</entry>
-<entry code='serialcirc_transmission_date'>Date de transmission</entry>
-<entry code="source_enrichment_extract_audio">Extraits Sonores</entry>
-<entry code="source_enrichment_critique">Critiques</entry>
-<entry code="source_enrichment_citation">Citations</entry>
-<entry code="date_publication_or_annee_edition">Date de publication ou année d'édition</entry>
-<entry code="mail_obj_demande_added">Nouvelle demande ajoutée dans l'OPAC</entry>
-<entry code="mail_content_demande_theme">Thème de la demande :</entry>
-<entry code="mail_content_demande_type">Type de la demande :</entry>
-<entry code="mail_content_demande_date_fin">Date d'échéance :</entry>
-<entry code="empr_group_late">Prêts en retard du groupe %s:</entry>
-<entry code="empr_group_loans">Prêts en cours du groupe %s:</entry>
-<entry code="dsi_archive_last">Dernière diffusion</entry>
-<entry code="dsi_archive_other">Diffusion du %s</entry>
-<entry code='forbidden_docnum'>Vous ne pouvez pas accéder à ce document.</entry>
-<entry code="need_auth">Veuillez vous identifier</entry>
-<entry code="auth_failed">Login ou mot de passe incorrect</entry>
-<entry code="recherche_type_auteur">Type d'auteur</entry>
-<entry code="indexint_select">Sélection d'une indexation décimale</entry>
-<entry code="indexint_search_index">Recherche sur l'index</entry>
-<entry code="indexint_search_comment">Recherche sur le commentaire</entry>
-<entry code="download">Télécharger</entry>
-<entry code="aut_link">Autorités liées</entry>
-<entry code="term_search_info">Saisissez les termes à rechercher dans la case ci-dessus</entry>
-<entry code="expl_voisin_search">Dans le même rayon</entry>
-<entry code="cms_module_common_datasource_desc_id_article">Identifiant de l'article</entry>
-<entry code="cms_module_common_datasource_desc_id_section">Identifiant de la rubrique</entry>
-<entry code="cms_module_common_datasource_desc_title">Titre</entry>
-<entry code="cms_module_common_datasource_desc_parent">Informations de la rubrique parente</entry>
-<entry code="cms_module_common_datasource_desc_num_parent">Indentifiant de la rubrique parente</entry>
-<entry code="cms_module_common_datasource_desc_resume">Résumé</entry>
-<entry code="cms_module_common_datasource_desc_content">Contenu de l'article</entry>
+<entry code='serialcirc_transmission_date'>Transmission date</entry>
+<entry code="source_enrichment_extract_audio">Audio extracts</entry>
+<entry code="source_enrichment_critique">Critiques/Customer reviews</entry>
+<entry code="source_enrichment_citation">Quotes</entry>
+<entry code="date_publication_or_annee_edition">Publication date or year of edition</entry>
+<entry code="mail_obj_demande_added">New request added to the OPAC</entry>
+<entry code="mail_content_demande_theme">Theme of the request :</entry>
+<entry code="mail_content_demande_type">Type of the request :</entry>
+<entry code="mail_content_demande_date_fin">Due date :</entry>
+<entry code="empr_group_late">Overdues of the group %s:</entry>
+<entry code="empr_group_loans">Current loans of the group %s:</entry>
+<entry code="dsi_archive_last">Last dissemination</entry>
+<entry code="dsi_archive_other">Dissemination of the %s</entry>
+<entry code='forbidden_docnum'>You can not access this document.</entry>
+<entry code="need_auth">You need to authentify yourself</entry>
+<entry code="auth_failed">Incorrect login or password</entry>
+<entry code="recherche_type_auteur">Type of author</entry>
+<entry code="indexint_select">Selection of a decimal indexation</entry>
+<entry code="indexint_search_index">Search the index</entry>
+<entry code="indexint_search_comment">Search in the comment</entry>
+<entry code="download">Download</entry>
+<entry code="aut_link">Linked authorities</entry>
+<entry code="term_search_info">Type in the words to search for in the field above</entry>
+<entry code="expl_voisin_search">In the same radius</entry>
+<entry code="cms_module_common_datasource_desc_id_article">Article identifier</entry>
+<entry code="cms_module_common_datasource_desc_id_section">Rubric identifier</entry>
+<entry code="cms_module_common_datasource_desc_title">Title</entry>
+<entry code="cms_module_common_datasource_desc_parent">Informations of the parent rubric</entry>
+<entry code="cms_module_common_datasource_desc_num_parent">Identifier of the parent rubric</entry>
+<entry code="cms_module_common_datasource_desc_resume">Recap</entry>
+<entry code="cms_module_common_datasource_desc_content">Content of the article</entry>
 <entry code="cms_module_common_datasource_desc_logo">Logos</entry>
 <entry code="cms_module_common_datasource_desc_small_vign">16x16</entry>
 <entry code="cms_module_common_datasource_desc_vign">100x100</entry>
-<entry code="cms_module_common_datasource_desc_large">Taille réelle</entry>
-<entry code="cms_module_common_datasource_desc_publication_state">Statut de publication</entry>
-<entry code="cms_module_common_datasource_desc_start_date">Date de publication</entry>
-<entry code="cms_module_common_datasource_desc_end_date">Date de fin de publication</entry>
-<entry code="cms_module_common_datasource_desc_descriptors">Tableau des identifiants des catégories</entry>
-<entry code="cms_module_common_datasource_desc_type_article">Type de contenu de l'article</entry>
-<entry code="cms_module_common_datasource_desc_type_section">Type de contenu de la rubrique</entry>
-<entry code="cms_module_common_datasource_desc_fields_type_article">Tableau associatif(la clé correspond au libellé informatique du champ) de tableaux des champs associé au type de contenu de l'article</entry>
-<entry code="cms_module_common_datasource_desc_fields_type_section">Tableau associatif(la clé correspond au libellé informatique du champ) de tableaux des champs associé au type de contenu de la rubrique</entry>
-<entry code="cms_module_common_datasource_desc_fields_type_id">Identifiant du champ</entry>
-<entry code="cms_module_common_datasource_desc_fields_type_label">Libellé du champ</entry>
-<entry code="cms_module_common_datasource_desc_fields_type_values">Tableau de tableaux des valeurs (pour chaque valeur un tableau de la valeur brute et formatée)</entry>
-<entry code="cms_module_common_datasource_desc_fields_type_values_format_value">Valeur formatée du champ</entry>
-<entry code="cms_module_common_datasource_desc_fields_type_values_value">Valeur brute du champ</entry>
-<entry code="cms_module_common_datasource_desc_create_date">Date de création</entry>	
-<entry code="cms_module_common_datasource_main_fields">Champs principaux</entry>	
-<entry code="cms_module_common_datasource_types">Types de contenus</entry>
-<entry code="cms_module_common_datasource_desc_types">Valeur de fields_type en fonction du type de contenu</entry>
-<entry code="cms_editorial_desc_children">Tableau des sous-rubriques</entry>
-<entry code="cms_editorial_desc_articles">Tableau des articles de la rubrique</entry>
-<entry code="index_title">Titre indexé</entry>
-<entry code="parperso_nodate">Aucune date</entry>
-<entry code="editorial_content_type_fieldslist_article_generic_label">Champs communs à tous les articles</entry>
-<entry code="editorial_content_type_fieldslist_section_generic_label">Champs communs à toutes les rubriques</entry>
+<entry code="cms_module_common_datasource_desc_large">Full size</entry>
+<entry code="cms_module_common_datasource_desc_publication_state">Publication state</entry>
+<entry code="cms_module_common_datasource_desc_start_date">Publication date</entry>
+<entry code="cms_module_common_datasource_desc_end_date">End of publication date</entry>
+<entry code="cms_module_common_datasource_desc_descriptors">Table of identifiers of the categories</entry>
+<entry code="cms_module_common_datasource_desc_type_article">Type of content of the article</entry>
+<entry code="cms_module_common_datasource_desc_type_section">Type of content of the rubric</entry>
+<entry code="cms_module_common_datasource_desc_fields_type_article">Collective table (the key is the label of the field) of the tables of the fields related to the article's content</entry>
+<entry code="cms_module_common_datasource_desc_fields_type_section">Collective table (the key is the label of the field) of the table of the fields related to the rubric's content</entry>
+<entry code="cms_module_common_datasource_desc_fields_type_id">Field identifier</entry>
+<entry code="cms_module_common_datasource_desc_fields_type_label">Field label</entry>
+<entry code="cms_module_common_datasource_desc_fields_type_values">Table of tables of the values (for each value a table of the gross and the formatted value)</entry>
+<entry code="cms_module_common_datasource_desc_fields_type_values_format_value">Formatted value of the field</entry>
+<entry code="cms_module_common_datasource_desc_fields_type_values_value">Gross value of the field</entry>
+<entry code="cms_module_common_datasource_desc_create_date">Creation date</entry>	
+<entry code="cms_module_common_datasource_main_fields">Main fields</entry>	
+<entry code="cms_module_common_datasource_types">Content types</entry>
+<entry code="cms_module_common_datasource_desc_types">fields_type value depending on the content type</entry>
+<entry code="cms_editorial_desc_children">Sub-rubrics table</entry>
+<entry code="cms_editorial_desc_articles">Table of the articles of the rubric</entry>
+<entry code="index_title">Indexed title</entry>
+<entry code="parperso_nodate">No date</entry>
+<entry code="editorial_content_type_fieldslist_article_generic_label">Fields common to all the articles</entry>
+<entry code="editorial_content_type_fieldslist_section_generic_label">Fields common to all the rubrics</entry>
 <entry code="ordinal_1">1st</entry>
 <entry code="ordinal_2">2nd</entry>
 <entry code="ordinal_3">3rd</entry>
-<entry code="ordinal_4">4st</entry>
+<entry code="ordinal_4">4th</entry>
 <entry code="ordinal_s_1">first</entry>
 <entry code="ordinal_s_2">second</entry>
 <entry code="ordinal_s_3">third</entry>
 <entry code="ordinal_s_4">fourth</entry>
 <entry code="facette_plus_link">...</entry>
-<entry code="print_export_get_form_bt">Exporter</entry>
-<entry code="print_export_form_title">Exporter</entry>
-<entry code="print_export_form_print_onglet">Imprimer</entry>
-<entry code="print_export_form_export_onglet">Exporter</entry>
-<entry code="print_export_form_pdf_onglet">Documents numériques</entry>
-<entry code="print_output_docnum">Electronics documents</entry>
-<entry code="print_output_docnum_list">Electronics documents</entry>
+<entry code="print_export_get_form_bt">Export</entry>
+<entry code="print_export_form_title">Export</entry>
+<entry code="print_export_form_print_onglet">Print</entry>
+<entry code="print_export_form_export_onglet">Export</entry>
+<entry code="print_export_form_pdf_onglet">Digital documents</entry>
+<entry code="print_output_docnum">Digital documents</entry>
+<entry code="print_output_docnum_list">List of documents</entry>
 <entry code="print_output_docnum_list_no_file">No document.</entry>
 <entry code="list_docnum_checked_all">Select all</entry>
 <entry code="list_docnum_unchecked_all">Unselect all</entry>
 <entry code="pagination_start">Pagination</entry>
-<entry code="sujets_start">Sujets</entry>
-<entry code="entreprise_start">Entreprise</entry>
-<entry code="lieu_start">Lieu</entry>
-<entry code="editeurs_start">Editeur(s)</entry>
+<entry code="sujets_start">Subjects</entry>
+<entry code="entreprise_start">Company</entry>
+<entry code="lieu_start">Place</entry>
+<entry code="editeurs_start">Editor(s)</entry>
 <entry code="description_start">Description</entry>
-<entry code="cote_start">Cote :</entry>
-<entry code="tnvol_start">Partie :</entry>
-<entry code="date_update_sort">Date de mise à jour</entry>
-<entry code="subs_f_web">Site web</entry>
-<entry code="facette_uniformtitle_aut_titre_uniforme_form_tonalite">Tonalité (pour la musique)</entry>
-<entry code="facette_uniformtitle_catal_titre_uniforme_titre_section">Titre de section ou de partie</entry>
-<entry code="facette_uniformtitle_catal_titre_uniforme_sous_vedette">Sous-vedette de forme</entry>
-<entry code="facette_uniformtitle_catal_titre_uniforme_version">Version (ou date d'une version)</entry>
-<entry code="facette_uniformtitle_catal_titre_uniforme_mention">Mention d'arrangement (pour la musique)</entry>
+<entry code="cote_start">Call number :</entry>
+<entry code="tnvol_start">Part :</entry>
+<entry code="date_update_sort">Date of update</entry>
+<entry code="subs_f_web">Website</entry>
+<entry code="facette_uniformtitle_aut_titre_uniforme_form_tonalite">(Music) Key</entry>
+<entry code="facette_uniformtitle_catal_titre_uniforme_titre_section">Title of the section or part</entry>
+<entry code="facette_uniformtitle_catal_titre_uniforme_sous_vedette">Index form sub-heading</entry>
+<entry code="facette_uniformtitle_catal_titre_uniforme_version">Version (or date of a version)</entry>
+<entry code="facette_uniformtitle_catal_titre_uniforme_mention">Arrangement mention (for the music)</entry>
 <entry code="facette_author_713">Dates</entry>
-<entry code="isbd_editeur">Editeur</entry>
-<entry code="isbd_indexint">Indexation décimale</entry>
+<entry code="isbd_editeur">Editor</entry>
+<entry code="isbd_indexint">Decimal indexation</entry>
 <entry code="isbd_collection">Collection</entry>
-<entry code="isbd_serie">Série</entry>
-<entry code="isbd_subcollection">Sous-collection</entry>
-<entry code="isbd_categories">Catégorie</entry>
-<entry code="isbd_titre_uniforme">Titre uniforme</entry>
-<entry code="isbd_author">Auteur</entry>
-<entry code="dans_start">Dans</entry>
+<entry code="isbd_serie">Serie</entry>
+<entry code="isbd_subcollection">Sub-collection</entry>
+<entry code="isbd_categories">Category</entry>
+<entry code="isbd_titre_uniforme">Uniform title</entry>
+<entry code="isbd_author">Author</entry>
+<entry code="dans_start">In</entry>
 <entry code="facette_suggest">Suggestions</entry>
-<entry code="facette_filtre">Filtrer</entry>
-<entry code="abo_revue_ligne_start">Abonnement à la revue en ligne</entry>
-<entry code="old_title_start">Ancien(s) titre(s)</entry>
-<entry code="new_title_start">Nouveau(x) titre(s)</entry>
-<entry code="periodicite_start">Périodicité</entry>
-<entry code="commentaires_start">Commentaires</entry>
-<entry code="empr_bt_show_resa_planning">Afficher le planning des réservations</entry>
-<entry code='empr_tpl_date_fin_blocage'>Date de fin de blocage</entry>
-<entry code="empr_tpl_blocage_pret">Le prêt est bloqué jusqu'au !!date_fin_blocage!!</entry>
-<entry code="atoz_rechercher">Rechercher</entry>
+<entry code="facette_filtre">Filter</entry>
+<entry code="abo_revue_ligne_start">Subscription to the online periodical</entry>
+<entry code="old_title_start">Old title(s)</entry>
+<entry code="new_title_start">New title(s)</entry>
+<entry code="periodicite_start">Periodicity</entry>
+<entry code="commentaires_start">Comments</entry>
+<entry code="empr_bt_show_resa_planning">Show the reservations planning</entry>
+<entry code='empr_tpl_date_fin_blocage'>Date of the end of the blockage</entry>
+<entry code="empr_tpl_blocage_pret">Loan blocked until the !!date_fin_blocage!!</entry>
+<entry code="atoz_rechercher">Search</entry>
 <entry code="autolevel1_search">Search</entry>
-<entry code="cms_module_common_datasource_desc_logo_exists">Existence du logo</entry>
-<entry code="empr_sugg_already_exist">Vous avez déjà effectué cette suggestion</entry>
-<entry code="avis_detail_aucun_auth_ajt">Aucun avis, veuillez vous identifier pour ajouter le vôtre !</entry>
-<entry code="avis_detail_nb_auth_ajt">!!nb_avis!! avis, veuillez vous identifier pour ajouter le vôtre !</entry>
-<entry code="subs_pb_empr_categ">Aucune catégorie de lecteur n'a été définie pour les inscriptions via l'OPAC.</entry>
-<entry code="subs_pb_empr_codestat">Aucun code statistique de lecteur n'a été défini pour les inscriptions via l'OPAC.</entry>
-<entry code="subs_alert_user_mail_obj">Inscription via l'OPAC de !!empr_first_name!! !!empr_name!!</entry>
-<entry code="subs_alert_user_mail_corps"><![CDATA[Bonjour,<br /><br />Inscription d'un nouveau lecteur via l'OPAC à !!biblio_name!! : !!empr_first_name!! !!empr_name!!.<br /><br />!!empr_link!!<br /><br />]]></entry>
-<entry code="subs_alert_user_mail_empr_link"><![CDATA[Pour accéder à la fiche lecteur, cliquez <a href='!!pmb_url_base!!circ.php?categ=pret&form_cb=!!empr_cb!!'>ici</a>]]></entry>
+<entry code="cms_module_common_datasource_desc_logo_exists">Existence of the logo</entry>
+<entry code="empr_sugg_already_exist">You have already made this suggestion</entry>
+<entry code="avis_detail_aucun_auth_ajt">No feedback, please connect to add yours !</entry>
+<entry code="avis_detail_nb_auth_ajt">!!nb_avis!! feedbacks, please connect to add yours !</entry>
+<entry code="subs_pb_empr_categ">No reader category has been set for the OPAC .</entry>
+<entry code="subs_pb_empr_codestat">No reader statistical code has been set for the subscriptions made with the OPAC.</entry>
+<entry code="subs_alert_user_mail_obj">Subscription via the OPAC of !!empr_first_name!! !!empr_name!!</entry>
+<entry code="subs_alert_user_mail_corps"><![CDATA[Hello,<br /><br />Subscription of a new reader via the OPAC to !!biblio_name!! : !!empr_first_name!! !!empr_name!!.<br /><br />!!empr_link!!<br /><br />]]></entry>
+<entry code="subs_alert_user_mail_empr_link"><![CDATA[To access the reader form, click <a href='!!pmb_url_base!!circ.php?categ=pret&form_cb=!!empr_cb!!'>here</a>]]></entry>
 <entry code="search_date_pub_date">Publication date</entry>
 <entry code="search_date_pub_choix">Select an option</entry>
 <entry code="search_date_pub_exacte">Exact date</entry>
@@ -1363,105 +1363,363 @@ $Id: en_UK.xml,v 1.286.2.9 2015-09-28 13:15:40 jpermanne Exp $ -->
 <entry code="search_date_pub_res_entre">Published between %s and %s</entry>
 <entry code="search_date_pub_res_sup">Published after</entry>
 <entry code="search_date_pub_res_inf">Published before</entry>
-<entry code="search_loc_all_site">Tous sites</entry>
-<entry code="search_loc_mpba_bib">Bibliothèque</entry>
-<entry code="perio_a2z_fonds_propre">Fonds propre</entry>
-<entry code="perio_a2z_fonds_externe">Externe</entry>
+<entry code="search_loc_all_site">All sites</entry>
+<entry code="search_loc_mpba_bib">Library</entry>
+<entry code="perio_a2z_fonds_propre">Holdings</entry>
+<entry code="perio_a2z_fonds_externe">External</entry>
 <entry code="perio_a2z_filtre">Sources</entry>
 <entry code="perio_a2z_filtre_all">--</entry>
 
-<entry code="author_see_explnum_associate">Documents numériques associés</entry>
+<entry code="author_see_explnum_associate">Linked digital documents</entry>
 
-<entry code="extexplnum_name">Titre</entry>
+<entry code="extexplnum_name">Title</entry>
 <entry code="extexplnum_minetype">Mimetype</entry>
 <entry code="extexplnum_url">Url</entry>
-<entry code="extexplnum_extfichier">Nom du fichier</entry>
-<entry code="admin_opac_facette_annee_saisie">Année (saisie libre)</entry>
-<entry code="admin_opac_facette_annee_calculee">Année (format calculé = aaaa)</entry>
-<entry code="accueil_bannette_privee">Mon information personnalisée</entry>
-<entry code="accueil_bannette_publique">Mon information</entry>
+<entry code="extexplnum_extfichier">Name of the file</entry>
+<entry code="admin_opac_facette_annee_saisie">Year (free input)</entry>
+<entry code="admin_opac_facette_annee_calculee">Year (calculated format = yyyy)</entry>
+<entry code="accueil_bannette_privee">My personal information</entry>
+<entry code="accueil_bannette_publique">My information</entry>
 
-<entry code="show_cart_reserve">Réserver le contenu du panier</entry>
-<entry code="show_cart_reserve_title">Réserver le contenu du panier</entry>
-<entry code="show_cart_reserve_checked">Réserver les notices cochés</entry>
-<entry code="show_cart_reserve_checked_title">Réserver les notices cochés</entry>
+<entry code="show_cart_reserve">Place the content of the basket on hold</entry>
+<entry code="show_cart_reserve_title">Place the content of the basket on hold</entry>
+<entry code="show_cart_reserve_checked">Place the checked records on hold</entry>
+<entry code="show_cart_reserve_checked_title">Place the checked records on hold</entry>
 
-<entry code="resa_no_create">Impossible de créer la réservation.</entry>
-<entry code="resa_ajoutee">Réservation ajoutée.</entry>
-<entry code="resa_no_expl_inlocation_transferable">Réservation: Ce document n'est pas réservable car non transférable </entry>
-<entry code="resa_no_expl_in_location">Réservation: Ce document n'est pas réservable à !!loc_liste!! </entry>
-<entry code="resa_no_suppr">Impossible de supprimer la réservation.</entry>
-<entry code="resa_supprimee">Réservation supprimée.</entry>
-<entry code="resa_dispo_suivant">Ce document est maintenant disponible pour vous </entry>
-<entry code="resa_no_empr">Réservation : vous n'existez pas.</entry>
-<entry code="resa_no_doc">Réservation : ce document n'existe pas.</entry>
-<entry code="resa_deja_resa">Réservation : vous avez déjà réservé ce document.</entry>
-<entry code="resa_deja_doc">Réservation : vous êtes déjà en possession de ce document.</entry>
-<entry code="resa">Réservation</entry>
-<entry code="resa_no_doc_selected">Veuillez cocher au moins un document.</entry>
-<entry code="accueil_bannette_privee">Mon information personnalisée</entry>
-<entry code="accueil_bannette_publique">Mon information</entry>
+<entry code="resa_no_create">Could not create the reservation.</entry>
+<entry code="resa_ajoutee">Reservation added.</entry>
+<entry code="resa_no_expl_inlocation_transferable">Reservation: You can't put this document on hold because it is not available for transfer </entry>
+<entry code="resa_no_expl_in_location">Reservation: This document can not be placed on hold at !!loc_liste!! </entry>
+<entry code="resa_no_suppr">Could not delete the reservation.</entry>
+<entry code="resa_supprimee">Reservation deleted.</entry>
+<entry code="resa_dispo_suivant">This document is now available for you </entry>
+<entry code="resa_no_empr">Reservation : You don't exist.</entry>
+<entry code="resa_no_doc">Reservation : this document does not exist.</entry>
+<entry code="resa_deja_resa">Reservation : you already placed this document on hold.</entry>
+<entry code="resa_deja_doc">Reservation : you are already in possession of this document.</entry>
+<entry code="resa">Reservation</entry>
+<entry code="resa_no_doc_selected">Please check at least one document.</entry>
+<entry code="accueil_bannette_privee">My personal information</entry>
+<entry code="accueil_bannette_publique">My information</entry>
 
 <entry code="explnum_associate_minutes">minutes</entry>
-<entry code="explnum_associate_no_author">Aucun auteur associé</entry>
+<entry code="explnum_associate_no_author">No author linked</entry>
 
-<entry code="aut_oeuvre_form_forme">Forme de l'oeuvre</entry>
-<entry code="aut_oeuvre_form_date">Date de l'oeuvre</entry>
-<entry code="aut_oeuvre_form_sujet">Sujet de l'oeuvre</entry>
-<entry code="aut_oeuvre_form_lieu">Lieu d'origine de l'oeuvre</entry>
-<entry code="aut_oeuvre_form_histoire">Histoire de l'oeuvre</entry>
-<entry code="aut_oeuvre_form_caracteristique">Autres caractéristiques distinctives</entry>
-<entry code="aut_oeuvre_form_completude">Complétude visée</entry>
-<entry code="aut_oeuvre_form_public">Public visé</entry>
-<entry code="aut_oeuvre_form_contexte">Contexte de l'oeuvre</entry>
-<entry code="aut_oeuvre_form_coordonnees">Coordonnées (oeuvre cartographique)</entry>
-<entry code="aut_oeuvre_form_equinoxe">Equinoxe (oeuvre cartographique)</entry>
-<entry code="aut_oeuvre_form_auteur">Auteur de l'oeuvre</entry>
-<entry code="tu_dont_del_author">Cet auteur est utilisé dans des titres uniformes. Impossible de le supprimer.</entry>
-<entry code="isbd_oeuvre">Oeuvre</entry>
+<entry code="aut_oeuvre_form_forme">Form of the work (Saisie Libre)</entry>
+<entry code="aut_oeuvre_form_date">Date of the work</entry>
+<entry code="aut_oeuvre_form_sujet">Subject of the work</entry>
+<entry code="aut_oeuvre_form_lieu">Origin of the work</entry>
+<entry code="aut_oeuvre_form_histoire">Story of the work</entry>
+<entry code="aut_oeuvre_form_caracteristique">Other distinctive features</entry>
+<entry code="aut_oeuvre_form_completude">Targeted completeness</entry>
+<entry code="aut_oeuvre_form_public">Target audience</entry>
+<entry code="aut_oeuvre_form_contexte">Context of the work</entry>
+<entry code="aut_oeuvre_form_coordonnees">Coordinate system (cartographic work)</entry>
+<entry code="aut_oeuvre_form_equinoxe">Equinox (cartographic work)</entry>
+<entry code="aut_oeuvre_form_auteur">Author of the work</entry>
+<entry code="tu_dont_del_author">This author is used in uniform titles. Impossible to delete it.</entry>
+<entry code="isbd_oeuvre">Work</entry>
 
-<entry code="accueil_bannette_public">Alerte(s) disponible(s)</entry>
-<entry code="bannette_see_nothing_to_see">Aucune information à afficher</entry>
+<entry code="accueil_bannette_public">Available alert(s)</entry>
+<entry code="bannette_see_nothing_to_see">No information to display</entry>
 
-<entry code="bannette_abonn">S'abonner</entry>
-<entry code='websubscribe_label'>S'inscrire</entry>
-<entry code='websubscribe_resa_action'>Vous alliez faire une réservation pour  :</entry>
-<entry code='websubscribe_bannette_action'>Vous alliez vous abonner à :</entry>
-<entry code="bannette_doit_etre_abon">Vous devez vous authentifier pour vous abonner à une alerte :</entry>
-<entry code="categ_see_synonyme">Synonymes</entry>
-<entry code="categ_see_renvoi_voir">Voir aussi</entry>
+<entry code="audit_lecteur">Opac reader</entry>
 
-<entry code="search_bull_exact">le</entry>
-<entry code="collstate_header_emplacement_libelle">Emplacement</entry>
+<entry code="etat_todo">Waiting for validation</entry>
+<entry code="etat_validate">Validated</entry>
+<entry code="etat_refused">Refused</entry>
+<entry code="etat_finished">Finished</entry>
+<entry code="etat_givenup">Cancelled</entry>
+<entry code="etat_classified">Classified</entry>
+<entry code="etat_opened">Opened</entry>
+<entry code="etat_awaiting">Awaiting</entry>
+<entry code="etat_closed">Closed</entry>
+<entry code="type_question">Question/Answer</entry>
+<entry code="type_info">Further information</entry>
+<entry code="type_search">Search</entry>
+<entry code="type_rdv">Appointment</entry>
+<entry code="demandes_action_sujet">Subject</entry>
+<entry code="demandes_action_type">Action type</entry>
+<entry code="demandes_action_statut">Action status</entry>
+<entry code="demandes_action_detail">Detail</entry>
+<entry code="demandes_action_progression">Progression</entry>
+<entry code="demandes_action_cout">Cost</entry>
+<entry code="demandes_action_date">Beginning date</entry>
+<entry code="demandes_action_date_butoir">Due date</entry>
+<entry code="demandes_action_time_elapsed">Elapsed time</entry>
+<entry code="demandes_action_liste">List of actions</entry>
+<entry code="demandes_action_nbnotes">Notes linked</entry>
+<entry code="demandes_attribution">Assigned to</entry>
+<entry code="demandes_retour">Return</entry>
+<entry code="demandes_action_createur">Creator</entry>
+<entry code="demandes_action_privacy">Private</entry>
+<entry code="39">No</entry>
+<entry code="40">Yes</entry>
+<entry code="demandes_note_privacy">Private</entry>
+<entry code="demandes_note_no_list">There is no note linked to this action</entry>
+<entry code="demandes_note_vue">Mark as read</entry>
+<entry code="demandes_note_add">Add a note</entry>
+<entry code="demandes_note_liste">List of notes</entry>
+<entry code="demandes_action_liste_vide">No action is linked to this request.</entry>
+<entry code="demandes_add">Add a request</entry>
+<entry code="demandes_action_type_add">Add an action of this type</entry>
+<entry code="76">Cancel</entry>
+<entry code="77">Save</entry>
+<entry code="demandes_modify">Modify</entry>
+
+<entry code="faq_question_no_question">No question</entry>
+<entry code="faq_question_no_answer">No answer</entry>
+<entry code="faq_question_page_title">%d Question(s)</entry>
+<entry code="faq_filter_themes">Theme</entry>
+<entry code="faq_filter_types">Type</entry>
+<entry code="faq_filter_descriptors">Category</entry>
+<entry code="faq_filter_years">Year</entry>
+<entry code="faq_facette_no_date">Indeterminate</entry>
+
+<entry code="demandes_see_last_note">See the last publication</entry>
+
+<entry code="faq_filter_user_query">Search the FAQ</entry>
+<entry code="faq_facettes_actives">Active filter(s)</entry>
+
+<entry code="bannette_abonn">Subscribe</entry>
+<entry code='websubscribe_label'>Subscribe</entry>
+<entry code='websubscribe_resa_action'>You were going to make a reservation for :</entry>
+<entry code='websubscribe_bannette_action'>You were going to subscribe to :</entry>
+<entry code="bannette_doit_etre_abon">You have to authentify to subscribe for an alert :</entry>
+
+<entry code="facette_list_compare_crit">Compare between</entry>
+<entry code="facette_list_groupby_crit">Regroup by</entry>
+<entry code="facette_compare">Compare</entry>
+<entry code="facette_compare_not_selected">No comparison standard.</entry>
+<entry code="facettes_not_grouped">No groups</entry>
+<entry code="facette_compare_too_more_result">This comparison brought too much results</entry>
+<entry code="facette_compare_no_result">This comparison did not bring any results</entry>
+<entry code="facette_compare_remove">Remove the standard</entry>
+<entry code="facette_compare_groupby">Group by</entry>
+<entry code="facette_compare_search_result">Back to the result</entry>
+<entry code="facette_compare_search_compare">Show the comparison tool</entry>
+<entry code="facette_compare_reinit">Reset the standards</entry>
+<entry code="facette_list_compare">Refine or compare</entry>
+<entry code="facette_compare_helper">Help with the use of facets</entry>
+<entry code="facette_compare_helper_message"><![CDATA[To refine your list of results, check the standards you want and then click on \"Filter\". You can also click on standards one by one.<br />To get a result comparison table, check the wanted standards and then click on \"Comparer\". You can then regroup them by clicking on the regrouping icon.<br />Use the red crosses to delete selected standards.]]></entry>
+
+<entry code="authperso_see_title">Authorities details</entry>
+<entry code="authperso_doc_auth_title">Available documents</entry>
+<entry code="authperso_multi_search_title">Custom authorities</entry>
+<entry code="categ_see_synonyme">Synonyms</entry>
+<entry code="categ_see_renvoi_voir">See also</entry>
+
+<entry code="search_bull_exact">the</entry>
+<entry code="collstate_header_emplacement_libelle">Place</entry>
 <entry code="collstate_header_type_libelle">Support</entry>
-<entry code="collstate_header_origine">Origine</entry>
+<entry code="collstate_header_origine">Origin</entry>
 <entry code="collstate_header_note">Note</entry>
-<entry code="collstate_header_cote">Cote</entry>
+<entry code="collstate_header_cote">Call number</entry>
 <entry code="collstate_header_archive">Archive</entry>
-<entry code="collstate_header_lacune">Lacunes</entry>
-<entry code="collstate_header_statut_opac_libelle">Statut</entry>
-<entry code="collstate_header_location_libelle">Localisation</entry>
-<entry code="collstate_header_surloc_libelle">Sur localisation</entry>
+<entry code="collstate_header_lacune">Gaps</entry>
+<entry code="collstate_header_statut_opac_libelle">Status</entry>
+<entry code="collstate_header_location_libelle">Location</entry>
+<entry code="collstate_header_surloc_libelle">Over-location</entry>
 <entry code="collstate_header_state_collections">Collection</entry>
 <entry code="categ_see_aut_link">Relation(s) </entry>
-<entry code="cms_module_common_datasource_desc_nb_documents">Nombre de documents attachés</entry>
+<entry code="statut_explnum_sort">Digital document status</entry>
+
+<entry code="authperso_multi_search_by_field_title">Authority</entry>
+<entry code="authperso_multi_search_tous_champs_title">All fields</entry>
+<entry code="cms_module_common_datasource_desc_nb_documents">Number of documents attached</entry>
 <entry code="cms_module_common_datasource_desc_documents">Documents</entry>
 
-<entry code="mail_sugg_non_empr">Visiteur non authentifié</entry>
-<entry code="mail_sugg_obj">Nouvelle suggestion</entry>
+<entry code="cms_module_common_datasource_desc_small">140x140</entry>
+<entry code="cms_module_common_datasource_desc_medium">300x300</entry>
+<entry code="cms_module_common_datasource_desc_big">600x600</entry>
+<entry code="cms_module_common_datasource_desc_custom">Size to set manually (concatenate with a number. ex : {{logo.custom}}150)</entry>
+<entry code="map_notice_echelle">Scale : </entry>
+<entry code="map_notice_projection">Projection : </entry>
+<entry code="map_notice_ref">Reference : </entry>
+<entry code="map_notice_equinoxe">Equinox : </entry>
+<entry code="map_notice_transcription">Zone : </entry>
+<entry code="map_notice_map">Map : </entry>
+<entry code="search_map">Geolocation</entry>
+<entry code="search_by_map">Geolocation</entry>
+<entry code="categ_map_title">Map</entry>
 
-<entry code="resa_no_expl_in_location_transferable">Réservation: Ce document n'est pas réservable car non transférable </entry>
+<entry code="map_echelle">Scale</entry>
+<entry code="map_projection">System of projection of the document</entry>
+<entry code="map_ref">Reference system of coordinates of the map</entry>
+<entry code="map_equinoxe">Equinox</entry>
+<entry code="map_echelle_vide">No scale</entry>
+<entry code="map_projection_vide">No projection</entry>
+<entry code="map_ref_vide">No reference</entry>
+<entry code="map_search">Map</entry> 
+<entry code="map_emprise">Zone</entry>
+<entry code="map_emprises_query">Zones</entry>
+<entry code="map_multisearch_aerainf">Inferior surface area</entry>
+<entry code="map_multisearch_aerasup">Superior surface area</entry>
+<entry code="map_multisearch_intersects">Intersects</entry>
+<entry code="map_history_emprises"> Geolocation : Zones </entry>
+
+<entry code="mail_sugg_non_empr">Unauthenticated visitor</entry>
+<entry code="mail_sugg_obj">New suggestion</entry>
+<entry code="demandes_mail_new_demande">Hello, !!nom!! publicated a new request: !!titre_demande!!</entry>
+<entry code="demandes_mail_new_demande_object">A new request has been added !</entry>
+
+<entry code="onto_common_definition">Definition</entry>
+<entry code="onto_common_altlabel">Alternative label</entry>
+<entry code="onto_common_scopenote">Scope note</entry>
+<entry code="onto_common_inscheme">In the schemas</entry>
+<entry code="onto_common_topconceptof">Base concept in schemas</entry>
+<entry code="onto_common_hiddenlabel">Hidden label</entry>
+<entry code="onto_common_notation">Notation</entry>
+<entry code="onto_common_note">Notes</entry>
+<entry code="onto_common_changenote">Note modified</entry>
+<entry code="onto_common_editorialnote">Editorial note</entry>
+<entry code="onto_common_historynote">History note</entry>
+<entry code="onto_common_semanticrelation">In semantic relation with</entry>
+<entry code="onto_common_broader">Generic terms</entry>
+<entry code="onto_common_broadertransitive">Generic terms by transitivity</entry>
+<entry code="onto_common_narrower">Specific terms</entry>
+<entry code="onto_common_related">Associative relationships</entry>
+<entry code="onto_common_narrowertransitive">Specific terms by transitivity</entry>
+<entry code="onto_common_mappingrelation">Equivalence relations</entry>
+<entry code="onto_common_broadmatch">Partial generic terms</entry>
+<entry code="onto_common_narrowmatch">Partial specific terms</entry>
+<entry code="onto_common_exactmatch">Equivalent terms</entry>
+<entry code="onto_common_relatedmatch">Related terms</entry>
+<entry code="onto_common_closematch">Closed terms</entry>
+<entry code="onto_common_hastopconcept">Top of the hierarchy</entry>
+<entry code="onto_common_member">Contains</entry>
+<entry code="onto_common_concept">Concepts</entry>
+<entry code="onto_common_conceptscheme">Schemas</entry>
+<entry code="onto_common_collection">Collections</entry>
+<entry code="onto_common_orderedcollection">Ordered collections</entry>
+
+<entry code="concepts_start">Concepts :</entry>
+<entry code="skos_view_concepts_concepts">Concepts</entry>
+<entry code="skos_view_concept_no_scheme">No schema</entry>
+<entry code="skos_view_concepts_composed_concepts">Composed concepts</entry>
+<entry code="vedette_subdivision_tete">Head</entry>
+<entry code="vedette_subdivision_sujet">Subject</entry>
+<entry code="vedette_subdivision_geo">Geographic</entry>
+<entry code="vedette_subdivision_chrono">Chronological</entry>
+<entry code="vedette_subdivision_forme">Form</entry>
+<entry code="skos_view_concept_composition">Composition</entry>
+<entry code="map_coord_format">!!degres!!°!!minutes!!'!!secondes!!''</entry>
+
+<entry code="opac_print_no_expl_checked">Please select at least one digital document.</entry>
+
+<entry code="concepts_found">Concepts found for the research</entry>
+<entry code="skos_concept">Concept</entry>
+<entry code="concepts_search">Concepts</entry>
+
+<entry code="resa_no_expl_in_location_transferable">Reservation: This document can not be placed on hold be cause it is not available for transfer </entry>
+<entry js="carto" code="carto_sexagesimal_degrees">Sexagesimal degrees</entry>
+<entry js="carto" code="carto_decimal_degrees">Decimal degrees</entry>
+<entry js="carto" code="carto_lon_abbr">Long</entry>
+<entry js="carto" code="carto_lat_abbr">Lat</entry>
+<entry js="carto" code="carto_ok_popup">OK</entry>
+<entry js="carto" code="carto_btn_affiner">Refine</entry>
+<entry js="carto" code="carto_popup_linked_records">Linked records</entry>
+<entry js="carto" code="carto_control_rectangle">Rectangle</entry>
+<entry js="carto" code="carto_control_circle">Circle</entry>
+<entry js="carto" code="carto_control_triangle">Triangle</entry>
+<entry js="carto" code="carto_control_polygon">Polygon</entry>
+<entry js="carto" code="carto_control_path">Line</entry>
+<entry js="carto" code="carto_control_point">Point</entry>
+<entry js="carto" code="carto_control_regular_polygon">Regular polygon</entry>
+<entry js="carto" code="carto_point_label">Point</entry>
+<entry js="carto" code="carto_show_points_label">Show the points</entry>
+<entry js="carto" code="carto_show_point_label">Show the point</entry>
+<entry js="carto" code="carto_polygon_form_label">Precise modification of the points of a polygon</entry>
+<entry js="carto" code="carto_path_form_label">Precise modification of the points of a line</entry>
+<entry js="carto" code="carto_point_form_label">Precise modification of the position of a point</entry>
+<entry js="carto" code="carto_polygon_nb_pt">The polygon is composed of %s points</entry>
+<entry js="carto" code="carto_path_nb_pt">The line is composed of %s points</entry>
+<entry js="carto" code="carto_points_label">points</entry>
+<entry js="carto" code="carto_warning_not_enough_points">You did not fill enough points</entry>
+<entry js="carto" code="carto_warning_no_feature_selected">No zone selected</entry>
+<entry js="carto" code="carto_wkt_import_label">WKT import</entry>
+<entry js="carto" code="carto_wkt_export_label">WKT export</entry>
+<entry js="carto" code="carto_wkt_import_placeholder">Type in a WKT string here</entry>
+<entry js="carto" code="carto_validate_label">Validate</entry>
+<entry js="carto" code="carto_warning_invalid_wkt_string">The WKT string %s is invalid</entry>
+<entry js="carto" code="carto_select_record">Select zone</entry>
+<entry js="carto" code="carto_draw_label">Draw</entry>
+<entry js="carto" code="carto_delete_label">Delete</entry>
+<entry js="carto" code="carto_warning_delete">You are about to delete this zone. Are you sure you want to continue ?</entry>
+<entry js="carto" code="carto_control_edit_label">Modify</entry>
+<entry js="carto" code="carto_control_resize_label">Resize</entry>
+<entry js="carto" code="carto_control_move_label">Move</entry>
+<entry js="carto" code="carto_refinement_popup">Would you like to refine this zone ?</entry>
+<entry js="carto" code="carto_control_clustering">Clustering</entry>
+<entry js="carto" code="carto_warning_edit_form">WARNING /!\ if you modify your zone directly on the map, this form will disappear</entry>
+<entry js="carto" code="carto_label_new_point">New point</entry>
+<entry js="carto" code="carto_warning_point_delete_number">Are you sure you want to delete the point n°:%s ?</entry>
+<entry js="carto" code="carto_warning_point_delete">Are you sure you want to delete the point ?</entry>
+<entry js="carto" code="carto_warning_point_misinformed">Point n°:%s misinformed.</entry>
+<entry js="carto" code="carto_warning_new_point_misinformed">New point n°:%s misinformed.</entry>
+<entry js="carto" code="carto_label_new_regular_polygon">Creation of a regular polygon</entry>
+<entry js="carto" code="carto_label_shape_choosing">Choose the shape</entry>
+<entry js="carto" code="carto_label_cancel_modifications">Cancel the modifications</entry>
+<entry js="carto" code="carto_label_cancel_last_modification">Cancel last modification</entry>
+<entry js="carto" code="carto_label_regular">Regular</entry>
+<entry js="carto" code="carto_create_form_point">Creation of a point</entry>
+<entry js="carto" code="carto_create_form_polygon">Creation of a polygon</entry>
+<entry js="carto" code="carto_create_form_path">Creation of a line</entry>
+
+<entry code="script_analytics_content">Cookies are necessary for our services to work well; By using our services, you accept the use of cookies.</entry>
+<entry code="script_analytics_inform_ask_opposite">Refuse</entry>
+<entry code="script_analytics_inform_ask_accept">Accept</entry>
+<entry code="accessibility_font_size_small">Reduce the text</entry>
+<entry code="accessibility_font_size_normal">Reset the size of the text</entry>
+<entry code="accessibility_font_size_big">Widen the text</entry>
+<entry code="empr_quick_access">Quick access</entry>
+<entry code="empr_my_loans">My loans</entry>
+<entry code="empr_my_resas">My reservations</entry>
+<entry code="histo_print">Print...</entry>
+<entry code="short_url_generate">Generate the RSS feed of the search</entry>
+<entry code="newrecord_rss_flux_name">What's new</entry>
+<entry code="notice_title_basket_exist">This record is already in your basket !</entry>
+
+<entry code="record_display_permalink_label">Link to the record</entry>
+<entry code="record_display_expl_unavailable">Unavailable</entry>
+<entry code="record_display_expl_out">Back on the </entry>
+<entry code="record_display_expl_reserve">Place on hold</entry>
+<entry code="record_display_new">New</entry>
+<entry code="record_display_add_to_cart">Add to the basket</entry>
+<entry code="print_output_pdf">Pdf</entry>
+<entry code="docnum_download_checked">Download the digital documents of the checked records</entry>
+<entry code="docnum_download_caddie">Download the digital documents of the basket</entry>
+<entry code="docnum_download_no_ck">Please check at least one record !</entry>
+<entry code="resa_planning_date_debut">Début : </entry>
+<entry code="resa_planning_date_fin">Fin : </entry>
+<entry code="resa_planning_unknown_record">Notice ou bulletin inconnu</entry>
+<entry code="resa_planning_no_item_available">Aucun exemplaire n'est réservable.</entry>
+<entry code="resa_planning_loc_retrait">Localisation retrait</entry>
+<entry code="resa_planning_qty_requested">Quantité à réserver</entry>
+<entry code="resa_planning_qty">Qté</entry>
+<entry code="resa_planning_alert_qty">Quantité nulle ou erronée.</entry>
+<entry code="resa_planning_alert_date">La date de fin doit être supérieure à la date de début</entry>
+<entry code="resa_planning_title">Titre</entry>
+<entry code="resa_planning_dates">Dates</entry>
+<entry code="resa_planning_current">Mes réservations sur ce document</entry>
+<entry code="resa_planning_overtime">(Périmée)</entry>
+<entry code="resa_planning_attente_validation">(En attente de validation)</entry>
+<entry code="script_analytics_content_link_more">More</entry>
+<entry code="notice_is_new_search">New records</entry>
+<entry code="notice_is_not_new_search">Older documentary resources</entry>
+
+<entry code="aut_oeuvre_form_distribution">Distribution (oeuvre musicale)</entry>
+<entry code="aut_oeuvre_form_reference">Référence (oeuvre musicale)</entry>
+<entry code="aut_oeuvre_form_tonalite">Tonalité (Saisie Libre)</entry>
+<entry code="aut_oeuvre_form_tonalite_list">Tonalité</entry>
+<entry code="aut_oeuvre_form_subdivision">Subdivision de forme</entry>
+<entry code="aut_oeuvre_form_forme_list">Forme de l'oeuvre</entry>
+<entry code="empr_my_dmde">Mes demandes</entry>
+
+<entry code="print_loans_bt">Export excel</entry>
 
 <entry code="show_cart_check_all">Tout cocher</entry>
 <entry code="show_cart_uncheck_all">Tout décocher</entry>
 
-<entry code="bbcode_button_label_b"> B </entry>
-<entry code="bbcode_button_label_i"> I </entry>
-<entry code="bbcode_button_label_u"> U </entry>
-<entry code="bbcode_button_label_http"> http:// </entry>
-<entry code="bbcode_button_label_img"> Img </entry>
-<entry code="bbcode_button_label_code"> Code </entry>
-<entry code="bbcode_button_label_quote"> Quote </entry>
-<entry code="bbcode_button_label_red"> Red </entry>
-<entry code="bbcode_button_label_list"> List </entry>
+<entry code="avis_aucun_popup">Aucun avis sur cette notice.</entry>
 </XMLlist>

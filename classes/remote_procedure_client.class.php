@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: remote_procedure_client.class.php,v 1.4.8.1 2014-06-19 07:25:09 mbertin Exp $
+// $Id: remote_procedure_client.class.php,v 1.5 2014-06-19 07:27:03 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

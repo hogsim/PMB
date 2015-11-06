@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesSelfServices.class.php,v 1.6 2013-01-16 10:26:00 mbertin Exp $
+// $Id: pmbesSelfServices.class.php,v 1.17 2015-07-03 08:27:45 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,7 +33,7 @@ class pmbesSelfServices extends external_services_api_class{
 		
 	}
 	
-	function self_checkout($expl_cb,$id_empr,$PMBUserId=-1) {
+	function self_checkout($expl_cb,$id_empr=0,$empr_cb="",$confirm=1, $PMBUserId=-1) {
 		global $msg;
 		global $charset;	
 		global $selfservice_pret_carte_invalide_msg;
@@ -43,8 +43,8 @@ class pmbesSelfServices extends external_services_api_class{
 		global $selfservice_pret_quota_bloc_msg;
 		global $selfservice_pret_non_pretable_msg;
 		global $selfservice_pret_expl_inconnu_msg;
-					
-		$titre=$expl_cb;
+		
+		$titre="";
 		$due_date="";
 		$ret["message_expl_comment"]="";
 		$ret["message_quota"]="";
@@ -53,6 +53,9 @@ class pmbesSelfServices extends external_services_api_class{
 		$ret["title"]="";
 		$ret["transaction_date"]="";
 		$ret["due_date"]="";
+		$ret["expl_cb"]=$expl_cb;
+			
+		$ret["error"]="";	
 		//Recherche de l'exemplaire
 		$requete = "SELECT exemplaires.*, pret.*, docs_location.*, docs_section.*, docs_statut.*, tdoc_libelle, ";
 		$requete .= " date_format(pret_date, '".$msg["format_date"]."') as aff_pret_date, ";
@@ -65,10 +68,10 @@ class pmbesSelfServices extends external_services_api_class{
 		$requete .= " left join docs_type on exemplaires.expl_typdoc=docs_type.idtyp_doc  ";
 		$requete .= " WHERE expl_cb='".addslashes($expl_cb)."' ";
 		$requete .= " order by location_libelle, section_libelle, expl_cote, expl_cb ";
-		$resultat=mysql_query($requete);
-		
-		if (mysql_num_rows($resultat)) {
-			$expl = mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+
+			$expl = pmb_mysql_fetch_object($resultat);
 			if ($expl->expl_bulletin) {
 				$isbd = new bulletinage_display($expl->expl_bulletin);
 				$titre=$isbd->display;
@@ -76,15 +79,27 @@ class pmbesSelfServices extends external_services_api_class{
 				$isbd= new mono_display($expl->expl_notice, 1);
 				$titre= $isbd->header_texte;
 			}
+
+			if($empr_cb){
+				$req_empr="select id_empr from empr where empr_cb='$empr_cb'";
+				$res_empr=pmb_mysql_query($req_empr);
+
+				if (pmb_mysql_num_rows($res_empr)) {
+					$row_empr = pmb_mysql_fetch_object($res_empr);
+					$id_empr=$row_empr->id_empr;
+				}
+			}	
+			$ret["empr_cb"]=$empr_cb;				
 			//Recherche de l'emprunteur
-			$requete="select empr_cb id_empr from empr where id_empr='$id_empr'";
-			$resultat=mysql_query($requete);
-			if (!mysql_num_rows($resultat)) {
+			$req_empr="select empr_cb from empr where id_empr='$id_empr'";
+
+			$res_empr=pmb_mysql_query($req_empr);
+			if (!pmb_mysql_num_rows($res_empr)) {
 				$error=true;
-				$error_message=$selfservice_pret_carte_invalide_msg;
+				$error_message=$selfservice_pret_carte_invalide_msg. " ".$requete;
 				$ok=0;
 			} else {
-				$empr_cb=mysql_result($resultat,0,0);
+				$empr_cb=pmb_mysql_result($res_empr,0,0);
 				$empr=new emprunteur($id_empr,'','',1);
 				$pret=($empr->blocage_retard||$empr->blocage_amendes||$empr->blocage_abt||(!$empr->allow_loan)?false:true);
 				if (!$pret) {
@@ -92,16 +107,15 @@ class pmbesSelfServices extends external_services_api_class{
 					$error=true;
 					$error_message=$selfservice_pret_pret_interdit_msg;
 				} else {
-					if ($expl->pret_flag) {
-						
+					if ($expl->pret_flag) {						
 						if($expl->pret_retour) {
 							$error=true;
 							$error_message=$selfservice_pret_deja_prete_msg;
 							$ok=0;
 						} else {
 							// tester si réservé
-							$result_resa = mysql_query("select 1 from resa where resa_cb='".addslashes($expl->expl_cb)."' and resa_idempr!='".addslashes($id_empr)."'");
-							$reserve = @mysql_num_rows($result_resa);
+							$result_resa = pmb_mysql_query("select 1 from resa where resa_cb='".addslashes($expl->expl_cb)."' and resa_idempr!='".addslashes($id_empr)."'");
+							$reserve = @pmb_mysql_num_rows($result_resa);
 							if ($reserve) {
 								$error=true;
 								$error_message=$selfservice_pret_deja_reserve_msg;
@@ -110,18 +124,27 @@ class pmbesSelfServices extends external_services_api_class{
 								//On fait le prêt
 								$pret=new do_pret();
 								$pret->check_pieges($empr_cb, 0,$expl_cb, 0,0);
+
 								if($pret->expl_comment){
 									$ret["message_expl_comment"]=$pret->expl_comment;
 								}
 								if (!$pret->status) {
 									$ok=1;
+									if(!$confirm){
+										$ret["status"]=$ok;
+										$ret["message"]=$error_message;
+										$ret["transaction_date"]=date("Ymd    His",time());
+										if($charset != "utf-8")$ret["title"]=utf8_encode($titre);
+										else $ret["title"]=$titre;
+										return $ret;
+									}
 									$pret->confirm_pret($id_empr, $expl->expl_id);
 									//Recherche de la date de retour
 									$requete="select date_format(pret_retour, '".$msg["format_date"]."') as retour from pret where pret_idexpl=".$expl->expl_id;
-									$resultat=mysql_query($requete);
+									$resultat=pmb_mysql_query($requete);
 									$error=true;
-									$error_message="Retour le : ".@mysql_result($resultat,0,0);
-									$due_date=@mysql_result($resultat,0,0);
+									$error_message="Retour le : ".@pmb_mysql_result($resultat,0,0);
+									$due_date=@pmb_mysql_result($resultat,0,0);
 								} else {
 									$ok=0;
 									$error=true;
@@ -140,7 +163,7 @@ class pmbesSelfServices extends external_services_api_class{
 		} else {
 			$error=true;
 			$error_message=$selfservice_pret_expl_inconnu_msg;
-			$titre=$expl_cb;
+			$titre="";
 			$ok=0;
 		}
 		if ($charset!= "utf-8") $error_message=utf8_encode($error_message);
@@ -154,6 +177,22 @@ class pmbesSelfServices extends external_services_api_class{
 		$ret["due_date"]=$due_date;
 		
 	
+		return $ret;
+	}
+	
+	function self_del_temp_pret($expl_cb) {
+
+		$requete="select expl_id,expl_bulletin,expl_notice,type_antivol,empr_cb from exemplaires join pret on (expl_id=pret_idexpl) join empr on (pret_idempr=id_empr) where expl_cb='".addslashes($expl_cb)."' and pret_temp != ''";
+		$resultat=pmb_mysql_query($requete);
+		if (!$resultat) {
+			$ok=0;
+		}else{
+			$expl=pmb_mysql_fetch_object($resultat);	
+			$pret=new do_pret();
+			$pret->del_pret($expl->expl_id);
+			$ok=1;
+		}
+		$ret["status"]=$ok;
 		return $ret;
 	}
 	
@@ -174,16 +213,30 @@ class pmbesSelfServices extends external_services_api_class{
 		$ret["transaction_date"]="";
 		$ret["message_expl_comment"]="";
 		$ret["message_expl_note"]="";
-		
+		$ret["expl_cb"]=$expl_cb;
+		$ret["warning_message"]="";		
+		$ret["status"]=$ok;	
+	
 		$requete="select expl_id,expl_bulletin,expl_notice,type_antivol,empr_cb from exemplaires join pret on (expl_id=pret_idexpl) join empr on (pret_idempr=id_empr) where expl_cb='".addslashes($expl_cb)."'";
-		$resultat=mysql_query($requete);
-		if (!$resultat) {
+		$resultat=pmb_mysql_query($requete);
+		if (!$resultat) {			
 			$ok=0;
 			if($charset != "utf-8")	$ret["message"]=utf8_encode($selfservice_pret_expl_inconnu_msg);
 			else $ret["message"]=$selfservice_pret_expl_inconnu_msg;
 		} else {
-			$expl=mysql_fetch_object($resultat);
-			$empr_cb=$expl->empr_cb;
+			$expl=pmb_mysql_fetch_object($resultat);
+			
+			$req_pret="select pret_idempr from pret where pret_idexpl=".$expl->expl_id;
+			$res_pret=pmb_mysql_query($req_pret);
+			if (!pmb_mysql_num_rows($res_pret)) {
+				$ret["status"]="0";
+				$ret["warning_message"]="Ce document n'est pas en prêt";
+		 		if($charset != "utf-8"){
+		 			$ret["warning_message"]=utf8_encode($ret["warning_message"]);
+		 		}
+				return $ret;
+			}			
+			
 			if ($expl->expl_bulletin) {
 				$isbd = new bulletinage_display($expl->expl_bulletin);
 				$titre=$isbd->display;
@@ -221,7 +274,9 @@ class pmbesSelfServices extends external_services_api_class{
 				$ret["message_expl_note"]=utf8_encode($retour->expl->expl_note);	
 	 		}
 		}
-		
+		if($ret["message_loc"] || $ret["message_resa"] || $ret["message_retard"] || $ret["message_amende"] || $ret["message_blocage"] || $ret["message_expl_comment"] || $ret["message_expl_note"]){
+			$ret["warning_message"]=$ret["message_loc"] ." ". $ret["message_resa"] ." ". $ret["message_retard"] ." ". $ret["message_amende"] ." ". $ret["message_blocage"]." ". $ret["message_expl_comment"]." ". $ret["message_expl_note"];
+		}	
 		$ret["status"]=$ok;
 		$ret["transaction_date"]=date("Ymd    His",time());
 		if($charset != "utf-8")$ret["title"]=utf8_encode($titre);
@@ -241,18 +296,18 @@ class pmbesSelfServices extends external_services_api_class{
 		if($opac_pret_prolongation){		
 			$prolongation = TRUE;
 			$requete="select expl_id,id_empr, expl_bulletin,expl_notice,type_antivol,empr_cb from exemplaires join pret on (expl_id=pret_idexpl) join empr on (pret_idempr=id_empr) where expl_cb='".addslashes($expl_cb)."'";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			if (!$resultat) {
 				$error_message="Le document n'existe pas ou n'est pas en prêt!";	
 			} else {	
-				$expl=mysql_fetch_object($resultat);
+				$expl=pmb_mysql_fetch_object($resultat);
 				$expl_id=$expl->expl_id;
 				$id_empr=$expl->id_empr;	
 				
 				//on recupere les informations du pret 
 				$query = "select cpt_prolongation, retour_initial, pret_date, pret_retour from pret where pret_idexpl=".$expl_id." limit 1";
-				$result = mysql_query($query, $dbh);
-				$data = mysql_fetch_array($result);
+				$result = pmb_mysql_query($query, $dbh);
+				$data = pmb_mysql_fetch_array($result);
 				$cpt_prolongation = $data['cpt_prolongation']; 
 				$retour_initial =  $data['retour_initial'];
 				$cpt_prolongation++;
@@ -294,8 +349,8 @@ class pmbesSelfServices extends external_services_api_class{
 				}
 				// Recherche de la nouvelle date de retour
 				$req_date_calendrier = "select date_ouverture from ouvertures where ouvert=1 and num_location='".$data['expl_location']."' order by date_ouverture asc";
-				$res_date_calendrier = mysql_query($req_date_calendrier);
-				while(($date_calendrier = mysql_fetch_object($res_date_calendrier))){
+				$res_date_calendrier = pmb_mysql_query($req_date_calendrier);
+				while(($date_calendrier = pmb_mysql_fetch_object($res_date_calendrier))){
 					$ecart = sql_value("SELECT DATEDIFF('$date_calendrier->date_ouverture','$date_prolongation')");
 					if($ecart >= 0 ){
 						$date_prolongation = $date_calendrier->date_ouverture;
@@ -305,10 +360,10 @@ class pmbesSelfServices extends external_services_api_class{
 				if($prolongation==TRUE)	{					
 					// Memorisation de la nouvelle date de prolongation	
 					$query = "update pret set cpt_prolongation='".$cpt_prolongation."', pret_retour='".$date_prolongation."' where pret_idexpl=".$expl_id;
-					$result = mysql_query($query, $dbh);
+					$result = pmb_mysql_query($query, $dbh);
 					$due_date=$date_prolongation;
 					$due_date=sql_value("select date_format('$date_prolongation', '".$msg["format_date"]."')");
-					//$due_date=@mysql_result($resultat,0,0);
+					//$due_date=@pmb_mysql_result($resultat,0,0);
 				} else {
 					$ok=0;
 					$error_message="$selfservice_pret_prolonge_non_msg";						
@@ -329,8 +384,8 @@ class pmbesSelfServices extends external_services_api_class{
 		return $ret;
 	}
 	function sql_value($rqt) {
-		if(($result=mysql_query($rqt))) {
-			if(($row = mysql_fetch_row($result)))	return $row[0];
+		if(($result=pmb_mysql_query($rqt))) {
+			if(($row = pmb_mysql_fetch_row($result)))	return $row[0];
 		}	
 		return '';
 	}	

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // � 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: integre_notices.inc.php,v 1.8.2.3 2015-06-23 11:11:23 jpermanne Exp $
+// $Id: integre_notices.inc.php,v 1.12 2015-06-23 11:12:48 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -52,8 +52,8 @@ if (is_array($external_notice_to_integer) && count($external_notice_to_integer) 
 				$sign = new notice_doublon(true,$infos['source_id']);
 				$signature = $sign->gen_signature($external_notice);
 				$requete="select signature, niveau_biblio ,niveau_hierar ,notice_id from notices where signature='$signature'";
-				$result = mysql_query($requete);
-				if ($dbls=mysql_num_rows($result)) {
+				$result = pmb_mysql_query($requete);
+				if ($dbls=pmb_mysql_num_rows($result)) {
 					//affichage de l'erreur, en passant tous les param postes (serialise) pour l'eventuel forcage 	
 					require_once("$class_path/mono_display.class.php");
 					print "
@@ -81,7 +81,7 @@ if (is_array($external_notice_to_integer) && count($external_notice_to_integer) 
 					}
 					$enCours=1;
 					while($enCours<=$maxAffiche){
-						$r=mysql_fetch_object($result);
+						$r=pmb_mysql_fetch_object($result);
 						if (($notice->niveau_biblio =='s' || $r->niveau_biblio =='a') && ($r->niveau_hierar== 1 || $r->niveau_hierar== 2)) {
 							$link_serial = './catalog.php?categ=serials&sub=view&serial_id=!!id!!';
 							$link_analysis = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=!!bul_id!!&art_to_show=!!id!!';
@@ -97,8 +97,8 @@ if (is_array($external_notice_to_integer) && count($external_notice_to_integer) 
 							$notice_display = pmb_bidi($display->result);
 				        } elseif ($r->niveau_biblio=='b' && $r->niveau_hierar==2) { // on est face a une notice de bulletin
 				        	$requete_suite = "SELECT bulletin_id, bulletin_notice FROM bulletins where num_notice='".$r->notice_id."'";
-				        	$result_suite = mysql_query($requete_suite, $dbh) or die("<br /><br />".mysql_error()."<br /><br />");
-				        	$notice_suite = mysql_fetch_object($result_suite);
+				        	$result_suite = pmb_mysql_query($requete_suite, $dbh) or die("<br /><br />".pmb_mysql_error()."<br /><br />");
+				        	$notice_suite = pmb_mysql_fetch_object($result_suite);
 				        	$r->bulletin_id=$notice_suite->bulletin_id;
 				        	$r->bulletin_notice=$notice_suite->bulletin_notice;
 							$link_bulletin = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id='.$r->bulletin_id;
@@ -124,10 +124,10 @@ if (is_array($external_notice_to_integer) && count($external_notice_to_integer) 
 			$ret=$z->insert_in_database();
 			$id_notice = $ret[1];
 			$rqt = "select recid from external_count where rid = '$external_notice'";
-			$res = mysql_query($rqt);
-			if(mysql_num_rows($res)) $recid = mysql_result($res,0,0);
+			$res = pmb_mysql_query($rqt);
+			if(pmb_mysql_num_rows($res)) $recid = pmb_mysql_result($res,0,0);
 			$req= "insert into notices_externes set num_notice = '".$id_notice."', recid = '".$recid."'";
-			mysql_query($req);
+			pmb_mysql_query($req);
 			if ($ret[0]) {
 				if($z->bull_id && $z->perio_id){
 					$notice_display=new serial_display($ret[1],6);

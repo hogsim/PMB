@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cod_stat.inc.php,v 1.16 2013-11-29 13:55:10 dgoron Exp $
+// $Id: cod_stat.inc.php,v 1.17 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -31,13 +31,13 @@ function show_codstat($dbh) {
 	</tr>";
 
 	$requete = "SELECT idcode, codestat_libelle, statisdoc_codage_import, statisdoc_owner, lender_libelle FROM docs_codestat left join lenders on statisdoc_owner=idlender ORDER BY codestat_libelle ";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -79,18 +79,18 @@ switch($action) {
 	
 		// vérification validité des données fournies.
 		$requete = " SELECT count(1) FROM docs_codestat WHERE (codestat_libelle='$form_libelle' AND idcode!='$id' )  LIMIT 1 ";
-		$res = mysql_query($requete, $dbh);
-		$nbr = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_result($res, 0, 0);
 		if ($nbr > 0) {
 			error_form_message($form_libelle.$msg["docs_label_already_used"]);
 		} else {
 			// O.K.  if item already exists UPDATE else INSERT
 			if($id) {
 				$requete = "UPDATE docs_codestat SET codestat_libelle='$form_libelle', statisdoc_codage_import='$form_statisdoc_codage_import', statisdoc_owner='$form_statisdoc_owner' WHERE idcode=$id  ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				$requete = "INSERT INTO docs_codestat (idcode,codestat_libelle,statisdoc_codage_import,statisdoc_owner) VALUES ('', '$form_libelle','$form_statisdoc_codage_import','$form_statisdoc_owner') ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}
 		}
 		show_codstat($dbh);
@@ -105,9 +105,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT codestat_libelle, statisdoc_codage_import, statisdoc_owner FROM docs_codestat WHERE idcode=$id ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				codstat_form($row->codestat_libelle,$row->statisdoc_codage_import,$row->statisdoc_owner, $id);
 			} else {
 				show_codstat($dbh);
@@ -118,10 +118,10 @@ switch($action) {
 		break;
 	case 'del':
 		if($id) {
-			$total = mysql_result (mysql_query("select count(1) from exemplaires where expl_codestat ='".$id."' ", $dbh), 0, 0);
+			$total = pmb_mysql_result(pmb_mysql_query("select count(1) from exemplaires where expl_codestat ='".$id."' ", $dbh), 0, 0);
 			if ($total==0) {
 				$requete = "DELETE FROM docs_codestat WHERE idcode=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_codstat($dbh);
 			} else {
 				$msg_suppr_err = $admin_liste_jscript;

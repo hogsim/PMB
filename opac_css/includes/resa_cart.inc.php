@@ -44,25 +44,25 @@ if($_SESSION['user_code']){
 	
 			$loc_list=array();
 			$flag_transferable=0;
-			$res_loc_list = mysql_query($req_loc_list);
-			if(mysql_num_rows($res_loc_list)){
-				while ($r = mysql_fetch_object($res_loc_list)){
+			$res_loc_list = pmb_mysql_query($req_loc_list);
+			if(pmb_mysql_num_rows($res_loc_list)){
+				while ($r = pmb_mysql_fetch_object($res_loc_list)){
 					$loc_list[]=$r->expl_location;
 					// au moins un expl transférable
 					$flag_transferable=1;
 				}
 			}
-			$res = mysql_query($loc_req);$tmpHtml = "<form method='post' action='do_resa.php?lvl=".$lvl."&sub=".$sub."'>";
+			$res = pmb_mysql_query($loc_req);$tmpHtml = "<form method='post' action='do_resa.php?lvl=".$lvl."&sub=".$sub."'>";
 			$tmpHtml .= $msg["reservation_selection_localisation"]."<br /><select name='idloc'>";
 				
 			//on parcours la liste des localisations
-			while ($value = mysql_fetch_array($res)) {
+			while ($value = pmb_mysql_fetch_array($res)) {
 				if(!$flag_transferable){
 					// il y en a un ici?
 					$req= "select expl_id from exemplaires, docs_statut where expl_notice IN (".implode(",",$notices).") AND expl_bulletin='0' and expl_location = " . $value[0] . "
 						and expl_statut=idstatut and statut_allow_resa=1 ";
-					$res_expl = mysql_query($req);
-					if(!mysql_num_rows($res_expl)){
+					$res_expl = pmb_mysql_query($req);
+					if(!pmb_mysql_num_rows($res_expl)){
 						continue;
 					}
 				}
@@ -80,9 +80,9 @@ if($_SESSION['user_code']){
 				$bulletin_id=0;
 				//On vérifi si notre notice n'est pas une notice de bulletin.
 				$query='SELECT bulletin_id FROM bulletins WHERE num_notice='.$notice_id;
-				$result = mysql_query($query, $dbh);
-				if(mysql_num_rows($result)){
-					while($line=mysql_fetch_array($result,MYSQL_ASSOC)){
+				$result = pmb_mysql_query($query, $dbh);
+				if(pmb_mysql_num_rows($result)){
+					while($line=pmb_mysql_fetch_array($result,MYSQL_ASSOC)){
 						$bulletin_id=$line['bulletin_id'];
 					}
 				}
@@ -109,9 +109,9 @@ if($_SESSION['user_code']){
 			$bulletin_id=0;
 			//On vérifi si notre notice n'est pas une notice de bulletin.
 			$query='SELECT bulletin_id FROM bulletins WHERE num_notice='.$notice_id;
-			$result = mysql_query($query, $dbh);
-			if(mysql_num_rows($result)){
-				while($line=mysql_fetch_array($result,MYSQL_ASSOC)){
+			$result = pmb_mysql_query($query, $dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($line=pmb_mysql_fetch_array($result,MYSQL_ASSOC)){
 					$bulletin_id=$line['bulletin_id'];
 				}
 			}

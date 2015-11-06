@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_build.class.php,v 1.38 2013-01-07 11:24:26 ngantier Exp $
+// $Id: cms_build.class.php,v 1.43 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -10,6 +10,7 @@ require_once ("$include_path/cms/cms.inc.php");
 require_once ("$include_path/templates/cms/cms_build.tpl.php");  
 require_once($class_path."/autoloader.class.php");
 require_once($class_path."/cms/cms_pages.class.php");
+require_once("$class_path/param_subst.class.php");
 
 $autoloader = new autoloader();
 $autoloader->add_register("cms_modules",true);		
@@ -28,8 +29,9 @@ class cms_build{
 	var $pages;
 	var $dom;
 	var $id_version;
+	var $cms_id;
 	//Constructeur	 
-	function cms_build(){
+	function cms_build($cms_id=0){
 		global $include_path,$charset;
 		@ini_set("zend.ze1_compatibility_mode", "0");
 		$this->dom = new DomDocument();
@@ -43,10 +45,11 @@ class cms_build{
 		$this->name_list=array();
 		$this->versions=array();
 		$this->last_version_data=array();
+		$this->cms_id=$cms_id;
 		
 		$rqt = "select * from cms ";			    		
-		$res=mysql_query($rqt);					
-    	if(!mysql_num_rows($res)){	
+		$res=pmb_mysql_query($rqt);					
+    	if(!pmb_mysql_num_rows($res)){	
     		// on crée un cms par défaut
     		$this->id_version=$this->create_new_cms();
     	}
@@ -76,8 +79,8 @@ class cms_build{
     		//	print $cms_object->getElementsByTagName('parent')->item(0);      
      			$this->objets_att[$node_name]['fixed']=1;    
 	    		$rqt = "select * from cms_build where build_obj='".$node_name."'";			    		
-				$res=mysql_query($rqt);					
-	    		if(!mysql_num_rows($res)){	
+				$res=pmb_mysql_query($rqt);					
+	    		if(!pmb_mysql_num_rows($res)){	
 	    				    			
 	    			$placement = array();    		
 	    			if($cms_object->childNodes->length) {
@@ -94,7 +97,7 @@ class cms_build{
 						build_child_after='".$placement['child_after']."'
 					";	
 				//	print $rqt_insert."<br />";
-					mysql_query($rqt_insert);
+					pmb_mysql_query($rqt_insert);
 	    		}		
     		}
 		}
@@ -122,8 +125,8 @@ class cms_build{
 		$rqt_insert = "INSERT INTO cms SET 
 			cms_name='$name'
 		";			
-		mysql_query($rqt_insert);
-		$id_cms = mysql_insert_id();
+		pmb_mysql_query($rqt_insert);
+		$id_cms = pmb_mysql_insert_id();
 
 		$rqt_insert = "INSERT INTO cms_version SET 
 			version_cms_num = '$id_cms',
@@ -131,47 +134,60 @@ class cms_build{
 			version_comment = '".$msg["cms_build_version_cms_default_tag_name"]."',
 			version_user = $PMBuserid
 		";		
-		mysql_query($rqt_insert);
-		$id_version = mysql_insert_id();
+		pmb_mysql_query($rqt_insert);
+		$id_version = pmb_mysql_insert_id();
 		return 	$id_version;				
 	}
 	
 	function save_version_form($id_cms=0){
-		global $name, $comment,$opac_default;	
-		global $dbh,$msg,$PMBuserid;
+		global $name, $comment,$opac_default,$opac_view_num;	
+		global $dbh,$msg,$PMBuserid;		
+		global $pmb_opac_view_activate;
+		
 		if($id_cms){
-			$rqt="Update cms SET cms_name='$name',cms_comment='$comment',cms_opac_default='$opac_default' where id_cms=$id_cms ";
-			mysql_query($rqt);
+			$rqt="Update cms SET cms_name='$name',cms_comment='$comment',cms_opac_default='$opac_default', cms_opac_view_num='$opac_view_num' where id_cms=$id_cms ";
+			pmb_mysql_query($rqt);
 		}else{
 			$rqt.="	INSERT cms SET 
 				cms_name='$name',
 				cms_comment='$comment'	,
-				cms_opac_default='$opac_default'";
-			mysql_query($rqt);
-			$id_cms = mysql_insert_id();
+				cms_opac_default='$opac_default', 
+				cms_opac_view_num='$opac_view_num' ";
+			pmb_mysql_query($rqt);
+			$id_cms = pmb_mysql_insert_id();
 			
 			$rqt_insert = "INSERT INTO cms_version SET 
 				version_cms_num = '$id_cms',
 				version_date = now(),
-				version_comment = '".$msg["cms_build_version_cms_default_tag_name"]."'
+				version_comment = '".$msg["cms_build_version_cms_default_tag_name"]."',
 				version_user = $PMBuserid
 			";
-			mysql_query($rqt_insert);
-			$id_version = mysql_insert_id();
-		}	
+			pmb_mysql_query($rqt_insert);
+			$id_version = pmb_mysql_insert_id();
+		}
 		if($opac_default){
 			// on nettoie les autres opac_default
 			$rqt="Update cms SET cms_opac_default=0 where id_cms!=$id_cms ";
-			mysql_query($rqt);			
+			pmb_mysql_query($rqt);			
 			// Update du paramètre opac_cms permettant de le sélectionner par défaut				
 			$req="update parametres set valeur_param='".$id_cms."' where type_param = 'opac' and sstype_param='cms' ";
-			mysql_query($req, $dbh);
+			pmb_mysql_query($req, $dbh);
 		}
+		
+		if($pmb_opac_view_activate){
+			// surcharge du param opac_cms
+			$param_subst=new param_subst("opac","opac_view",$opac_view_num);
+			$param_subst->delete_param_value("cms",$id_cms);
+			if($opac_view_num){
+				$param_subst->save_param("cms",$id_cms,"id du CMS utilisé en OPAC");
+			}
+		}
+		
 		$rqt="select count(1) from cms where cms_opac_default!=0 ";
-		$res = mysql_query($rqt, $dbh);				
-		if(!mysql_result($res, 0, 0)){
+		$res = pmb_mysql_query($rqt, $dbh);				
+		if(!pmb_mysql_result($res, 0, 0)){
 			$req="update parametres set valeur_param=0 where type_param = 'opac' and sstype_param='cms' ";
-			mysql_query($req, $dbh);
+			pmb_mysql_query($req, $dbh);
 		}
 		$this->get_versions_list();
 	}
@@ -179,19 +195,21 @@ class cms_build{
 	function get_versions_list(){
 		global $dbh;
 		$this->versions=array();
+		
 		$requete = "select * from cms order by cms_name ";
-		$res = mysql_query($requete, $dbh);
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){				
+		$res = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){				
 				$this->versions[$row->id_cms]['id']=$row->id_cms;				
 				$this->versions[$row->id_cms]['name']=$row->cms_name;
 				$this->versions[$row->id_cms]['comment']=$row->cms_comment;
 				$this->versions[$row->id_cms]['selected']=$row->cms_selected;
 				$this->versions[$row->id_cms]['opac_default']=$row->cms_opac_default;
+				$this->versions[$row->id_cms]['opac_view_num']=$row->cms_opac_view_num;
 				$this->versions[$row->id_cms]['versions']=array();
 				$requete = "select * from cms_version where version_cms_num='".$row->id_cms."' order by version_date desc ";
-				$res_version = mysql_query($requete, $dbh);				
-				while($row_version = mysql_fetch_object($res_version)){			
+				$res_version = pmb_mysql_query($requete, $dbh);				
+				while($row_version = pmb_mysql_fetch_object($res_version)){			
 					$this->versions[$row->id_cms]['versions'][$row_version->id_version]['id']=$row_version->id_version;		
 					$this->versions[$row->id_cms]['versions'][$row_version->id_version]['date']=$row_version->version_date;	
 					$this->versions[$row->id_cms]['versions'][$row_version->id_version]['comment']=$row_version->version_comment;			
@@ -206,27 +224,27 @@ class cms_build{
 	
 	function get_version_default(){
 		global $dbh;
-		if($_SESSION["cms_in_use"]) $sel= " and id_cms='".$_SESSION["cms_in_use"]."' ";
+		if ($this->cms_id)  $sel= " and id_cms='".$this->cms_id."' ";
+		else if($_SESSION["cms_in_use"]) $sel= " and id_cms='".$_SESSION["cms_in_use"]."' ";
 		// on prend la derniere version du cms utilisé 
 		$requete = "select * from cms_version, cms where 
 			id_cms=version_cms_num 
 			$sel
 			order by version_date desc 
-		";
-			
-		$res = mysql_query($requete, $dbh);				
-		if($row = mysql_fetch_object($res)){	
+		";		
+		$res = pmb_mysql_query($requete, $dbh);				
+		if($row = pmb_mysql_fetch_object($res)){	
 			$_SESSION["cms_in_use"]=$row->id_cms;
 			$_SESSION["cms_version"]=$row->id_version;
 			return $row->id_version;
-		}
+		}		
 		// si pas trouvé on prend le premier venu
 		$requete = "select * from cms_version, cms where 
 			id_cms=version_cms_num 
 			order by version_date desc 
 		";
-		$res = mysql_query($requete, $dbh);				
-		if($row = mysql_fetch_object($res)){	
+		$res = pmb_mysql_query($requete, $dbh);				
+		if($row = pmb_mysql_fetch_object($res)){	
 			$_SESSION["cms_in_use"]=$row->id_cms;
 			$_SESSION["cms_version"]=$row->id_version;
 			return $row->id_version;
@@ -236,9 +254,9 @@ class cms_build{
 	function version_delete($id_version){
 		global $dbh;
 		$req = "delete from cms_version where id_version= $id_version ";		
-		$res = mysql_query($req, $dbh);	
+		$res = pmb_mysql_query($req, $dbh);	
 		$req = "delete from cms_build where build_version_num= $id_version ";			
-		$res = mysql_query($req, $dbh);	
+		$res = pmb_mysql_query($req, $dbh);	
 		$this->get_versions_list();
 	}
 	
@@ -246,15 +264,15 @@ class cms_build{
 		global $dbh;		
 		
 		$requete = "select * from cms_version where version_cms_num='".$id_cms."' ";
-		$res_version = mysql_query($requete, $dbh);				
-		while($row_version = mysql_fetch_object($res_version)){		
+		$res_version = pmb_mysql_query($requete, $dbh);				
+		while($row_version = pmb_mysql_fetch_object($res_version)){		
 			$req = "delete from cms_build where build_version_num='". $row_version->id_version."'  ";			
-			mysql_query($req, $dbh);	
+			pmb_mysql_query($req, $dbh);	
 		}
 		$req = "delete from cms_version where version_cms_num='$id_cms'  ";		
-		$res = mysql_query($req, $dbh);	
+		$res = pmb_mysql_query($req, $dbh);	
 		$req = "delete from cms where id_cms= $id_cms ";			
-		$res = mysql_query($req, $dbh);	
+		$res = pmb_mysql_query($req, $dbh);	
 		$this->get_versions_list();
 	}
 	
@@ -274,12 +292,12 @@ class cms_build{
 		
 		if($build_id_version){
 			$requete = "select * from cms_version where id_version =$build_id_version ";
-			$res = mysql_query($requete, $dbh);				
-			if($row = mysql_fetch_object($res)){	
+			$res = pmb_mysql_query($requete, $dbh);				
+			if($row = pmb_mysql_fetch_object($res)){	
 				$_SESSION["cms_in_use"]=$row->version_cms_num;
 				$_SESSION["cms_version"]=$row->id_version;					
 			}
-		}	
+		}
 		$tpl=$cms_build_block_tpl;
 		$javascript="";
 		if(count($this->contener_list))$javascript.="var cms_contener_list=new Array('".implode("','",$this->contener_list)."');";
@@ -298,9 +316,12 @@ class cms_build{
 		
 		$tpl=str_replace("!!cms_objet_modules!!", $this->build_modules_list(),$tpl);
 		$tpl=str_replace("!!id_version!!", $_SESSION["cms_version"],$tpl);
-
+		if(!($opac_view_num=$this->versions[$_SESSION["cms_in_use"]]['opac_view_num']))$opac_view_num=-1;
+		$tpl=str_replace("!!opac_view_id!!",$opac_view_num,$tpl);
+		
 		$tpl=str_replace("!!cadre_list_in_page!!", $this->build_cadres_list_in_page(),$tpl);
 		$tpl=str_replace("!!cadre_list_not_in_page!!", $this->build_cadres_list_not_in_page(),$tpl);
+		$tpl=str_replace("!!cadre_list_not_in_cms!!", $this->build_cadres_list_not_in_cms(),$tpl);
 		$tpl=str_replace("!!cms_objet_versions!!", $this->build_versions_list(),$tpl);
 		
 		return $tpl;
@@ -321,6 +342,7 @@ class cms_build{
 			
 			$item=str_replace("!!id!!", $infos['id'],$item);
 			$item=str_replace("!!name!!", $infos['name'],$item);
+			$item=str_replace("!!opac_view_id!!", $infos['opac_view_num'],$item);			
 			if($infos['opac_default'])	$item=str_replace("!!opac_default!!", $msg["cms_build_cms_opac_default_info"],$item);
 			else $item=str_replace("!!opac_default!!", "",$item);
 			$item=str_replace("!!odd_even!!", $pair,$item);
@@ -346,6 +368,7 @@ class cms_build{
 			
 			$item=str_replace("!!id!!", $infos['id'],$item);
 			$item=str_replace("!!name!!", $infos['name'],$item);
+			$item=str_replace("!!opac_view_id!!", $infos['opac_view_num'],$item); 			
 			if($infos['opac_default'])	$item=str_replace("!!opac_default!!", $msg["cms_build_cms_opac_default_info"],$item);
 			else $item=str_replace("!!opac_default!!", "",$item);
 			$item=str_replace("!!odd_even!!", $pair,$item);
@@ -362,13 +385,25 @@ class cms_build{
 		global $msg;
 		global $charset;
 		global $cms_build_version_form_tpl,$cms_build_version_form_ajax_tpl,$cms_build_version_del_button_tpl;
-		global $cms_build_version_tags_item;
+		global $cms_build_version_tags_item; 
+		global $pmb_opac_view_activate; 
 		
 		if($ajax)$tpl= $cms_build_version_form_ajax_tpl;	
 		else $tpl=$cms_build_version_form_tpl;	
 		
 		$tpl = str_replace("!!name!!",htmlentities($this->versions[$id_cms]['name'] ,ENT_QUOTES, $charset),$tpl);
 		$tpl = str_replace("!!comment!!",htmlentities($this->versions[$id_cms]['comment'] ,ENT_QUOTES, $charset),$tpl);
+		
+		if($pmb_opac_view_activate){			
+			$list=gen_liste ("SELECT opac_view_id,opac_view_name FROM opac_views order by opac_view_name ", 
+					"opac_view_id", 
+					"opac_view_name", 
+					"opac_view_num", "",$this->versions[$id_cms]['opac_view_num'],
+					0, $msg["cms_build_cms_opac_view_empty"],
+					0, $msg["cms_build_cms_opac_view_select"],0,'');		
+		}
+		$tpl = str_replace("!!opac_view!!",$list,$tpl);
+		
 		if($id_cms){
 			$tpl = str_replace("!!form_title!!",htmlentities($msg["cms_build_version_edit_bt"] ,ENT_QUOTES, $charset),$tpl);				
 			$tpl = str_replace("!!form_suppr!!",$cms_build_version_del_button_tpl,$tpl);
@@ -425,7 +460,7 @@ class cms_build{
 		
 		$id_cadre+=0;
 		$query = "update cms_cadres set cadre_classement='$classement' where id_cadre = ".$id_cadre;
-		mysql_query($query);
+		pmb_mysql_query($query);
 	}
 	
 	function get_classement_list($classement_selected=""){
@@ -489,8 +524,8 @@ class cms_build{
 		$pair='even';	
 		if(!$in_page)$in_page=array();	
 		$classement="";	
-		
 		foreach($this->cadres as $cadre => $infos){
+			if(!$this->cadre_is_in_cms($infos)) continue;
 			if(!in_array($infos->cadre_object."_".$infos->id_cadre,$in_page)){				
 				$item=$cms_build_cadre_tpl_not_in_page_item;
 				if($classement!=$infos->cadre_classement){
@@ -520,6 +555,60 @@ class cms_build{
 		$tpl=str_replace("!!items!!", $items_not_in_page, $tpl);
 		return $tpl;
 	}		
+	
+	public function cadre_is_in_cms($cadre){
+		$query = "select * from cms_build where build_obj='".$cadre->cadre_object."_".$cadre->id_cadre."' and build_version_num= '".$this->id_version."' ";
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			if($row = pmb_mysql_fetch_object($result)){
+				return true;
+			}
+		}	
+		return false;
+	}
+	
+	public function build_cadres_list_not_in_cms($in_page=""){
+		global $cms_build_cadres_not_in_cms_tpl;
+		global $cms_build_cadre_tpl_not_in_cms_item;
+		global $pmb_opac_url;
+
+		$tpl=$cms_build_cadres_not_in_cms_tpl;
+		$items="";
+		$items_not_in_cms="";
+		$pair='even';
+		if(!$in_page)$in_page=array();
+		$classement="";
+		foreach($this->cadres as $cadre => $infos){
+			
+			if($this->cadre_is_in_cms($infos)) continue;
+			if(in_array($infos->cadre_object."_".$infos->id_cadre,$in_page)) continue;
+			$item=$cms_build_cadre_tpl_not_in_cms_item;
+			if($classement!=$infos->cadre_classement){
+				$item="
+				<tr><td><h3>".$infos->cadre_classement."</h3></td></tr>".$item;
+				$classement=$infos->cadre_classement;
+			}
+			$classement_list= $this->get_classement_list($infos->cadre_classement);
+			if($pair=='odd')$pair="even"; else $pair="odd";
+
+			if($infos->cadre_url){
+				$item=str_replace("!!cadre_link!!","<a onclick=\"!!load_page_opac!!\" href='#' >!!cadre_name!!</a>",$item);
+				$item=str_replace("!!load_page_opac!!", "cms_load_opac_page('!!cadre_object!!_!!id_cadre!!','".$pmb_opac_url.$infos->cadre_url."');",$item);
+			}else{
+				$item=str_replace("!!cadre_link!!","!!cadre_name!!",$item);
+				$item=str_replace("!!load_page_opac!!","",$item);
+			}
+			$item=str_replace("!!cadre_object!!", $infos->cadre_object,$item);
+			$item=str_replace("!!id_cadre!!", $infos->id_cadre,$item);
+			$item=str_replace("!!cadre_name!!", $infos->cadre_name,$item);
+
+			$item=str_replace("!!classement_list!!", $classement_list,$item);
+			$item=str_replace("!!odd_even!!", $pair,$item);
+			$items_not_in_cms.=$item;
+		}
+		$tpl=str_replace("!!items!!", $items_not_in_cms, $tpl);
+		return $tpl;
+	}	
 	
 	function is_fixed($cadre){
 		if($this->objets_att[$cadre['name']]){
@@ -573,8 +662,10 @@ class cms_build{
 			version_date = now(),
 			version_user = $PMBuserid
 		";		
-		mysql_query($rqt_insert);
-		$id_version = mysql_insert_id();
+		pmb_mysql_query($rqt_insert);
+		$id_version = pmb_mysql_insert_id();
+		
+		$_SESSION["cms_version"]=$id_version;
 		return($id_version);
 	}
 	function get_last_version_data(){	
@@ -583,9 +674,9 @@ class cms_build{
 		$this->last_version_data=array();
 		if(!$id_version) return;
 		$query_css_zones = "select * from cms_build where  build_version_num= '".$id_version."' ";
-		$res = mysql_query($query_css_zones);
-		if(mysql_num_rows($res)){
-			while($r = mysql_fetch_object($res)){
+		$res = pmb_mysql_query($query_css_zones);
+		if(pmb_mysql_num_rows($res)){
+			while($r = pmb_mysql_fetch_object($res)){
 				$this->last_version_data[$r->build_obj]=$r;
 			}
 		}	
@@ -617,7 +708,7 @@ class cms_build{
 				build_css='".$zone_style."', 
 				build_div='".$build_div."' 		 						
 			";		
-			mysql_query($rqt);	
+			pmb_mysql_query($rqt);	
 			$zone_before=$zone_name;
 			$cadre_list[]=$zone_name;
 			$cadre_before="";
@@ -645,7 +736,7 @@ class cms_build{
 						build_css='".$style."', 
 						build_div='".$build_div."' 							
 					";		
-					mysql_query($rqt);
+					pmb_mysql_query($rqt);
 				}else{		
 					$rqt = "insert into cms_build SET 	
 						build_version_num= '$id_version',
@@ -658,7 +749,7 @@ class cms_build{
 						build_css='".$style."' , 
 						build_div='".$build_div."' 							
 					";				
-					mysql_query($rqt);
+					pmb_mysql_query($rqt);
 				}	
 				if($this->is_fixed($cadre)) $cadre_fixed_before=$cadre_name; 
 				$cadre_before=$cadre_name;
@@ -682,7 +773,7 @@ class cms_build{
 					build_css='".$this->last_version_data[$cadre_name]->build_css."', 
 					build_div='".$this->last_version_data[$cadre_name]->build_div."'									
 				";				
-				mysql_query($rqt);	
+				pmb_mysql_query($rqt);	
 			}
 		}	
 		return $id_version;
@@ -691,31 +782,31 @@ class cms_build{
 	
 	function clean_link($zone_name,$id_version){
 		$rqt = "select * from cms_build where build_parent='".$zone_name."' and  build_version_num= '$id_version' ";			    		
-		$res=mysql_query($rqt);					
-    	while($r=mysql_fetch_object($res)){
+		$res=pmb_mysql_query($rqt);					
+    	while($r=pmb_mysql_fetch_object($res)){
     		$cadre_name=$r->build_obj;
     		$cadre_before=$r->build_child_before;
     		$cadre_after=$r->build_child_after;
     		if($cadre_before){
     			$rqt = "select * from cms_build where build_version_num= '$id_version' and build_parent='".$zone_name."' and build_obj='$cadre_before'";	
-				$res_link=mysql_query($rqt);					
-	    		if(!mysql_num_rows($res_link)){		
+				$res_link=pmb_mysql_query($rqt);					
+	    		if(!pmb_mysql_num_rows($res_link)){		
 	    			$rqt = "update cms_build SET 	
 						build_child_before=''
 						WHERE build_obj='$cadre_name' and  build_version_num= '$id_version' 
 					";	
-					mysql_query($rqt);	
+					pmb_mysql_query($rqt);	
 	    		}
     		}
     		if($cadre_after){
     			$rqt = "select * from cms_build where  build_version_num= '$id_version' and build_parent='".$zone_name."' and build_obj='$cadre_after'";	
-				$res_link=mysql_query($rqt);					
-	    		if(!mysql_num_rows($res_link)){		
+				$res_link=pmb_mysql_query($rqt);					
+	    		if(!pmb_mysql_num_rows($res_link)){		
 	    			$rqt = "update cms_build SET 	
 						build_child_after=''
 						WHERE build_obj='$cadre_name' and  build_version_num= '$id_version' 
 					";	
-					mysql_query($rqt);	
+					pmb_mysql_query($rqt);	
 	    		}
     		}
     	}

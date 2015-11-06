@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tache_rapport.tpl.php,v 1.1.8.1 2014-10-03 15:13:08 dgoron Exp $
+// $Id: tache_rapport.tpl.php,v 1.2 2014-10-03 15:12:33 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

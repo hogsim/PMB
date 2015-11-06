@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: publishers_list.inc.php,v 1.27.6.1 2014-04-23 14:47:50 gueluneau Exp $
+// $Id: publishers_list.inc.php,v 1.29 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -58,8 +58,8 @@ if(!$nbr_lignes) {
 		}
 		$requete=$aq->get_query_count("publishers","ed_name","index_publisher","ed_id");
 	}
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = pmb_mysql_result($res, 0, 0);
 } else {
 	$aq=new analyse_query(stripslashes($user_input),0,0,1,1);
 }
@@ -86,10 +86,10 @@ if($nbr_lignes) {
 		$requete="select *,".$members["select"]." as pert from publishers where ".$members["where"]." group by ed_id order by pert desc, index_publisher limit $debut,$nb_per_page";
 	}
 	
-	$res = @mysql_query($requete, $dbh);
+	$res = @pmb_mysql_query($requete, $dbh);
 	$parity=1;
 	$url_base = "./autorites.php?categ=editeurs&sub=reach&user_input=".rawurlencode(stripslashes($user_input)) ;
-	while(($ed=mysql_fetch_object($res))) {
+	while(($ed=pmb_mysql_fetch_object($res))) {
 		if ($parity % 2) {
 			$pair_impair = "even";
 		} else {
@@ -98,9 +98,9 @@ if($nbr_lignes) {
 		$parity += 1;
 		
 		$notice_count_sql = "SELECT count(*) FROM notices WHERE ed1_id=".$ed->ed_id;
-		$notice_count1 = mysql_result(mysql_query($notice_count_sql), 0, 0);
+		$notice_count1 = pmb_mysql_result(pmb_mysql_query($notice_count_sql), 0, 0);
 		$notice_count_sql = "SELECT count(*) FROM notices WHERE ed2_id=".$ed->ed_id;
-		$notice_count = $notice_count1+mysql_result(mysql_query($notice_count_sql), 0, 0);
+		$notice_count = $notice_count1+pmb_mysql_result(pmb_mysql_query($notice_count_sql), 0, 0);
 		
 	    $tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" ";
         $ed_list.= "<tr class='$pair_impair' $tr_javascript style='cursor: pointer'>
@@ -135,7 +135,7 @@ if($nbr_lignes) {
 		$ed_list .= "</tr>";
 			
 	} // fin while
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 	
 	if (!$last_param) $nav_bar = aff_pagination ($url_base, $nbr_lignes, $nb_per_page, $page, 10, false, true) ;
 	else $nav_bar = "";

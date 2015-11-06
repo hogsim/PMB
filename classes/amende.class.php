@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: amende.class.php,v 1.18.6.2 2015-03-11 09:47:52 jpermanne Exp $
+// $Id: amende.class.php,v 1.21 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -21,27 +21,27 @@ class amende {
     	if (!$noreadcache) {
     		// lire en cache
     		$req="select data_amendes from cache_amendes where id_empr=$id_empr and cache_date=CURDATE()";
-	    	$resultat=mysql_query($req);
-	    	if (mysql_num_rows($resultat)) {
-	    		$r=mysql_fetch_object($resultat); 
+	    	$resultat=pmb_mysql_query($req);
+	    	if (pmb_mysql_num_rows($resultat)) {
+	    		$r=pmb_mysql_fetch_object($resultat); 
 	    		$this->t_id_expl=unserialize($r->data_amendes);	
 	    	} else {
 	    		$this->t_id_expl=$this->get_list_of_id_expl();
     		
 	    		// on fait le ménage des anciens caches
 	    		$req="delete from cache_amendes where cache_date<CURDATE() ";
-	    		mysql_query($req);
+	    		pmb_mysql_query($req);
 	    		$req="insert into cache_amendes set id_empr=$id_empr, cache_date=CURDATE(), data_amendes='".addslashes( serialize($this->t_id_expl))."'";
-	    		mysql_query($req);
+	    		pmb_mysql_query($req);
     		}
     	} else {
     		$this->t_id_expl=$this->get_list_of_id_expl();
     		
     		// on fait le ménage du cache de l'emprunteur
     		$req="delete from cache_amendes where cache_date<=CURDATE() and id_empr=$id_empr ";
-    		mysql_query($req);
+    		pmb_mysql_query($req);
     		$req="insert into cache_amendes set id_empr=$id_empr, cache_date=CURDATE(), data_amendes='".addslashes( serialize($this->t_id_expl))."'";
-    		mysql_query($req);
+    		pmb_mysql_query($req);
     	}
     	//progress bar utilisé pour le long calcul des relances (relance.inc.php)
     	if($progress_bar)$progress_bar->progress();    	
@@ -118,9 +118,9 @@ class amende {
     	$t_id_expl=array();
     	
     	$requete="select pret_idexpl, printed from pret where pret_idempr=".$this->id_empr." and CURDATE()>pret_retour";
-    	$resultat=mysql_query($requete);
-    	if (@mysql_num_rows($resultat)) {
-    		while ($r=mysql_fetch_object($resultat)) {
+    	$resultat=pmb_mysql_query($requete);
+    	if (@pmb_mysql_num_rows($resultat)) {
+    		while ($r=pmb_mysql_fetch_object($resultat)) {
     			$t=array();
     			$t["id_expl"]=$r->pret_idexpl;
     			$t["printed"]=$r->printed;
@@ -155,14 +155,14 @@ class amende {
     	global $pmb_amende_comptabilisation;
     	
     	$requete="select pret_date, pret_retour, niveau_relance, date_relance from pret where pret_idexpl=$id_expl";
-     	$resultat=mysql_query($requete);
+     	$resultat=pmb_mysql_query($requete);
     	$amende=array();
     	
     	$amende["valeur"]=0;
     	$amende["recouvrement"]=false;
     	
-    	if (@mysql_num_rows($resultat)) {
-    		$r=mysql_fetch_object($resultat);
+    	if (@pmb_mysql_num_rows($resultat)) {
+    		$r=pmb_mysql_fetch_object($resultat);
     		$dr=explode("-",$r->pret_retour);
 	    	//$calendar=new calendar();	
  		   	$njours=calendar::get_open_days($dr[2],$dr[1],$dr[0],date("d"),date("m"),date("Y"));

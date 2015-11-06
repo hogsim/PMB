@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: zebra_print_card.inc.php,v 1.1.2.1 2014-05-12 15:24:21 dbellamy Exp $
+// $Id: zebra_print_card.inc.php,v 1.2 2014-05-12 15:28:40 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: autoindex_record.class.php,v 1.9.2.2 2015-03-16 10:58:31 jpermanne Exp $
+// $Id: autoindex_record.class.php,v 1.11 2015-03-16 10:59:15 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

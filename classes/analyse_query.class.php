@@ -2,22 +2,24 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: analyse_query.class.php,v 1.48.6.2 2015-03-31 08:18:02 jpermanne Exp $
+// $Id: analyse_query.class.php,v 1.60 2015-06-09 14:28:50 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
+require_once($class_path."/stemming.class.php");
 //Structure de stockage d'un terme
 class term {
-	var $word; 		//mot (si pas sous expression)
-	var $operator;	//opérateur (and, or ou vide)
-	var $sub;		//sous expression = tableau de term
-	var $not;		//Négation du terme (not)
-	var $literal;	//Le terme est entier (il y avait des guillemets)
-	var $start_with; //L'expression doit commencer par
-	var $pound; 	//poids du terme
+	public $word; 		//mot (si pas sous expression)
+	public $operator;	//opérateur (and, or ou vide)
+	public $sub;		//sous expression = tableau de term
+	public $not;		//Négation du terme (not)
+	public $literal;	//Le terme est entier (il y avait des guillemets)
+	public $start_with; //L'expression doit commencer par
+	public $pound; 		//poids du terme
+	public $special_term;	//on spécifie si le terme particulier
 	
 	//Constructeur
-	function term($word,$literal,$not,$start_with,$operator,$sub,$pound=1) {
+	function term($word,$literal,$not,$start_with,$operator,$sub,$pound=1,$special_term='') {
 		$this->word=$word;
 		$this->operator=$operator;
 		$this->sub=$sub;	
@@ -25,41 +27,64 @@ class term {
 		$this->literal=$literal;
 		$this->start_with=$start_with;
 		$this->pound=$pound;
+		$this->special_term = $special_term;
 	}
 }
 
 //Classe d'analyse d'une requête booléenne
 class analyse_query {
-	var $current_car;		//Caractère courant analysé
-	var $parenthesis;		//Est-ce une sous expression d'une expression ?
-	var $operator="";		//Opérateur du terme en cours de traitement
-	var $neg=0;				//Négation appliquée au terme en cours de traitement
-	var $guillemet=0;		//Le terme en cours de traitement est-il entouré par des guillemets
-	var $start_with=0;		//Le terme en cours est-il à traiter avec commence par ?
-	var $input;				//Requete à analyser
-	var $term="";			//Terme courant
-	var $literal=0;			//Le termen en cours de traitement est-il litéral ?
-	var $tree=array();		//Arbre de résultat
-	var $error=0;			//Y-a-t-il eu un erreur pendant le traitement
-	var $error_message="";	//Message d'erreur
-	var $input_html="";		//Affichage html de la requête initiale (éventuellement avec erreur surlignée)
-	var $search_linked_words=1;	//rechercher les mots liés pour le mot
-	var $keep_empty;			//on garde les mots vides
+	public $current_car;		//Caractère courant analysé
+	public $parenthesis;		//Est-ce une sous expression d'une expression ?
+	public $operator="";		//Opérateur du terme en cours de traitement
+	public $neg=0;				//Négation appliquée au terme en cours de traitement
+	public $guillemet=0;		//Le terme en cours de traitement est-il entouré par des guillemets
+	public $start_with=0;		//Le terme en cours est-il à traiter avec commence par ?
+	public $input;				//Requete à analyser
+	public $term="";			//Terme courant
+	public $literal=0;			//Le terme en cours de traitement est-il litéral ?
+	public $tree=array();		//Arbre de résultat
+	public $error=0;			//Y-a-t-il eu un erreur pendant le traitement
+	public $error_message="";	//Message d'erreur
+	public $input_html="";		//Affichage html de la requête initiale (éventuellement avec erreur surlignée)
+	public $search_linked_words=1;	//rechercher les mots liés pour le mot
+	public $keep_empty;			//on garde les mots vides
+	public $positive_terms; 	//liste des termes positifs
+	public $empty_words;		//Liste des mots vides présents dans la recherche initiale
+	public $stemming;
+	protected $default_operator; 
+	protected $allow_term_troncat_search;
+	protected $exclude_fields;
+	protected $tmp_prefix = 'gestion_searcher_';
+	protected $search_relevant_with_frequency;
 	
 	//Constructeur
-    function analyse_query($input,$debut=0,$parenthesis=0,$search_linked_words=1,$keep_empty=0) {
+    function analyse_query($input,$debut=0,$parenthesis=0,$search_linked_words=1,$keep_empty=0,$stemming=false) {
     	// remplacement espace insécable 0xA0:	&nbsp;
     	global $empty_word;
+
+    	global $pmb_default_operator;
+    	global $search_allow_term_troncat_search;
+		global $search_exclude_fields;
+		global $pmb_search_relevant_with_frequency;
+		
+		$this->default_operator = $pmb_default_operator;
+    	$this->allow_term_troncat_search = $search_allow_term_troncat_search;
+    	$this->exclude_fields = $search_exclude_fields;
+    	$this->search_relevant_with_frequency = $pmb_search_relevant_with_frequency;
     	
-    	$input=clean_nbsp($input);
+		$input=clean_nbsp($input);
     	$this->parenthesis=$parenthesis;
 		$this->current_car=$debut;
 		$this->input=$input;
 		$this->keep_empty=$keep_empty;
+		$this->stemming = $stemming;
 		$this->search_linked_words=$search_linked_words;
-		$this->recurse_analyse();	
-		if($this->parenthesis==0){
+		$this->recurse_analyse();
+    	if($this->parenthesis==0){
 			$this->tree=$this->nettoyage_etoile($this->tree,false);
+		}
+		if($this->stemming){
+			$this->add_stemming();
 		}
 		// pour remonter les termes exacts, mais ne marche pas pour les autorités. A revoir
     	if(!$parenthesis) {
@@ -88,22 +113,23 @@ class analyse_query {
     			}
     		}
     	}
-    	
+    	 
     	return $tree_array;
     }
     
 	// Recherche les synonymes d'un mot  
     function get_synonymes($mot) {
+    	global $dbh;
 		$mot= addslashes($mot);
 		$rqt="select id_mot from mots where mot='".$mot."'";
-		$execute_query=mysql_query($rqt);
-		if (mysql_num_rows($execute_query)) {			
+		$execute_query=pmb_mysql_query($rqt,$dbh);
+		if (pmb_mysql_num_rows($execute_query)) {			
 			//constitution d'un tableau avec le mot et ses synonymes
-			$r=mysql_fetch_object($execute_query);
+			$r=pmb_mysql_fetch_object($execute_query);
 			$rqt1="select mot,ponderation from mots,linked_mots where type_lien=1 and num_mot=".$r->id_mot." and mots.id_mot=linked_mots.num_linked_mot";
-			$execute_query1=mysql_query($rqt1);			 			
-		 	if (mysql_num_rows($execute_query1)) {
-				while (($r1=mysql_fetch_object($execute_query1))) {
+			$execute_query1=pmb_mysql_query($rqt1,$dbh);			 			
+		 	if (pmb_mysql_num_rows($execute_query1)) {
+				while (($r1=pmb_mysql_fetch_object($execute_query1))) {
 					$synonymes[$r1->mot]=$r1->ponderation;					
 				}
 		 	}
@@ -236,7 +262,6 @@ class analyse_query {
 	 				// Nettoyage des caractères
 					$mot_clean = convert_diacrit($mots);					
 					$mot_clean = pmb_alphabetic('^a-z0-9\s\*', ' ',pmb_strtolower($mot_clean));		
-					
 					// Nettoyage des mots vides
 					$mot_clean_vide=$this->nettoyage_mot_vide($mot_clean);
 					
@@ -254,7 +279,6 @@ class analyse_query {
 					if(count($mot_clean_vide))foreach($mot_clean_vide as $word) {
 						$liste_mots[$word]=$t->pound;		
 					}
-
 						
 					if (!count($t->sub)) $op_sub=''; else $op_sub="or";		
 					if(count($liste_mots) > 1) {
@@ -362,6 +386,14 @@ class analyse_query {
 
 	//Construction récursive de la requête SQL
 	function get_query_r($tree,&$select,&$pcount,$table,$field_l,$field_i,$id_field,$neg_parent=0,$main=1) {
+		
+		// Variable globale permettant de choisir si l'on utilise ou non la troncature à droite du terme recherché
+		global $empty_word;
+		$troncat = "";
+		if ($this->allow_term_troncat_search) {
+			 $troncat = "%";
+		}
+		
 		$where="";
 		for ($i=0; $i<count($tree); $i++) {
 			
@@ -372,7 +404,22 @@ class analyse_query {
 				$clause.="like '";
 				if (!$tree[$i]->start_with) $clause.="%";
 				if (!$tree[$i]->literal) $clause.=" ";
+				
+				// Condition permettant de détecter si on a déjà une étoile dans le terme
+				// Si la recherche avec troncature à droite est activee dans l'administration 
+				// et qu'il n'y a pas d'étoiles ajout du '%' à droite du terme
+				if(strpos($tree[$i]->word,"*") === false) {
+					//Si c'est un mot vide, on ne troncature pas
+					if (in_array($tree[$i]->word,$empty_word)===false) {
+						$clause.=addslashes($tree[$i]->word.$troncat);
+					} else {
+						$clause.=addslashes($tree[$i]->word);
+					}
+				} else {
+					
 				$clause.=addslashes(str_replace("*","%",$tree[$i]->word));
+				}
+				
 				if (!$tree[$i]->literal) $clause.=" ";
 				$clause.="%'";
 				if($tree[$i]->literal!=2) $where.=$clause." ";
@@ -423,6 +470,246 @@ class analyse_query {
 		return $q;
 	}
 	
+	//Adaptation de la recherche pour notices_mots_global_index
+	function get_query_mot($field_id,$table_mot,$field_mot,$table_term,$field_term,$restrict=array(),$neg_restrict=false,$all_fields=false) {
+		if(count($this->tree)){
+			//return $this->get_query_r_mot($this->tree,$field_id,$table_mot,$field_mot,$table_term,$field_term,$restrict,$neg_restrict);
+			return $this->get_query_r_mot_with_table_tempo_all($this->tree,$field_id,$table_mot,$field_mot,$table_term,$field_term,$restrict,$neg_restrict,$all_fields);
+		}else{
+			return  "select $field_id from $table_mot where $field_id = 0";
+		}
+	}
+	
+	function get_query_r_mot_with_table_tempo_all($tree,$field_id,$table_mot,$field_mot,$table_term,$field_term,$restrict,$neg_restrict=false,$all_fields=false) {
+	// Variable globale permettant de choisir si l'on utilise ou non la troncature à droite du terme recherché
+		global $empty_word;
+		global $dbh;
+		$temporary_table = $last_table = "";
+		$troncat = "";
+		if ($this->allow_term_troncat_search) {
+			$troncat = "%";
+		}
+		$lang_restrict = $field_restrict = array();
+		for($i=0 ; $i<count($restrict) ; $i++){
+			if($restrict[$i]['field'] == "lang"){
+				$lang_restrict[] = $restrict[$i];
+			}else{
+				$field_restrict[] = $restrict[$i];
+			}
+		}
+		$restrict = $field_restrict;
+		for ($i=0; $i<count($tree); $i++) {
+			$elem_query ="";
+			if($tree[$i]->sub){
+				$elem_query = $this->get_query_r_mot_with_table_tempo_all($tree[$i]->sub,$field_id,$table_mot,$field_mot,$table_term,$field_term,$restrict,$neg_restrict,$all_fields);
+			}else{
+				if($tree[$i]->word !=  "*") {
+					if($tree[$i]->literal == 0){
+						// on commence...
+						//$elem_query = "select distinct $field_id from words straight_join $table_mot on num_word = id_word where ";
+						$elem_query = "select distinct $field_id from $table_mot where pond>0 and ";
+						$qw = "select distinct id_word from words where ".(count($lang_restrict)>0 ? $this->get_field_restrict($lang_restrict,$neg_restrict)." and ": "");
+						
+						//on applique la restriction si besoin
+						if($restrict){
+							$elem_query.= $this->get_field_restrict($restrict,$neg_restrict)." and ";
+						}
+						$table= $table_mot;
+						//on ajoute le terme
+						//$elem_query.= " words.".$field_mot." ";
+						$qw.= " words.".$field_mot." ";
+						if(strpos($tree[$i]->word, "*") !== false || $this->allow_term_troncat_search){
+							//						if($i==0 && $tree[$i]->not){
+							//							$elem_query.= "not ";
+							//						}
+							//$elem_query.="like '";
+							$qw.="like '";
+							if (strpos($tree[$i]->word,"*") === false) {
+								//Si c'est un mot vide, on ne troncature pas
+								if (in_array($tree[$i]->word,$empty_word)===false) {
+									//$elem_query.=addslashes($tree[$i]->word.$troncat);
+									$qw.=addslashes($tree[$i]->word.$troncat);
+								} else {
+									//$elem_query.=addslashes($tree[$i]->word);
+									$qw.=addslashes($tree[$i]->word);
+								}
+							} else {
+								//$elem_query.=addslashes(str_replace("*","%",$tree[$i]->word));
+								$qw.=addslashes(str_replace("*","%",$tree[$i]->word));
+							}
+							//$elem_query.="'";
+							$qw.="'";
+						}else{
+							//						if($i==0 && $tree[$i]->not){
+							//							$elem_query.= "!";
+							//						}
+							//$elem_query.="='".addslashes($tree[$i]->word)."'";
+							$qw.="='".addslashes($tree[$i]->word)."'";
+						}
+						
+						$tw = array();
+						$rw = pmb_mysql_query($qw,$dbh);
+						if(pmb_mysql_num_rows($rw)) {
+							while($o = pmb_mysql_fetch_object($rw) ) {
+								$tw[]=$o->id_word;
+							}
+						}
+						$sw=0;
+						if(count($tw)) {
+							$sw=implode(',',$tw);
+						}
+						
+						$elem_query.= "num_word in($sw)";
+
+						if($tree[$i]->start_with){
+							$elem_query.=" and position ='1'";
+						}
+					}else if ($tree[$i]->literal == 1){
+						// on commence...
+						$elem_query = "select distinct $field_id from $table_term where pond>0 and ";
+						//on applique la restriction si besoin
+						if($restrict){
+							$elem_query.= $this->get_field_restrict($restrict,$neg_restrict)." and ";
+						}
+						$table= $table_term;
+						//on ajoute le terme
+						$elem_query.= " ".$table.".".$field_term." ";
+						//					if($i==0 && $tree[$i]->not){
+						//						$elem_query.= "not ";
+						//					}
+						$elem_query.= "like '";
+						if(!$tree[$i]->start_with){
+							$elem_query.="%";
+						}
+						if (strpos($tree[$i]->word,"*") === false) {
+							//Si c'est un mot vide, on ne troncature pas
+							if (in_array($tree[$i]->word,$empty_word)===false) {
+								$elem_query.=addslashes($tree[$i]->word.$troncat);
+							} else {
+								$elem_query.=addslashes($tree[$i]->word);
+							}
+						} else {
+							$elem_query.=addslashes(str_replace("*","%",$tree[$i]->word));
+						}
+						$elem_query.="%'";
+					}
+	
+
+					if($table_mot == "notices_mots_global_index" && $all_fields && $this->exclude_fields!=""){
+						$elem_query.= " and code_champ not in (".$this->exclude_fields.")";
+					}
+				}else if(count($tree)==1){
+					$elem_query = "select distinct $field_id from $table_mot where 1";
+					if($restrict){
+						$elem_query.= " and ".$this->get_field_restrict($restrict,$neg_restrict)." ";
+					}
+					if($table_mot == "notices_mots_global_index" && $all_fields && $this->exclude_fields!=""){
+						$elem_query.= " and code_champ not in (".$this->exclude_fields.")";
+					}
+				}
+
+			}
+				
+			if($tree[$i]->literal!=2 && $elem_query!= ""){
+				$last_table = $temporary_table;
+				$temporary_table = $this->tmp_prefix.md5(microtime(true)."#".$this->keep_empty.$i);
+				switch($tree[$i]->operator){
+					case "and" :
+						//on créé la table tempo avec les résultats du critère...
+						$rqt = "create temporary table ".$temporary_table." ($field_id int, index using btree($field_id)) engine=memory $elem_query";
+						pmb_mysql_query($rqt,$dbh);
+						if($tree[$i]->not){
+							$rqt = "delete from ".$last_table." where ".$field_id." in (select ".$field_id." from ".$temporary_table.")";
+							pmb_mysql_query($rqt,$dbh);
+							pmb_mysql_query("drop table ".$temporary_table,$dbh);
+							$temporary_table = $last_table;
+							$last_table = "";
+						}else{
+							$new_temporary_table =$this->tmp_prefix.md5(microtime(true)."new_temporary_table".$this->keep_empty.$i);
+							$rqt = "create temporary table ".$new_temporary_table." ($field_id int, index using btree($field_id)) engine=memory select $last_table.$field_id from $last_table join $temporary_table on $last_table.$field_id = $temporary_table.$field_id";
+							pmb_mysql_query($rqt,$dbh);
+							pmb_mysql_query("drop table ".$temporary_table,$dbh);
+							pmb_mysql_query("drop table ".$last_table,$dbh);
+							$temporary_table=$new_temporary_table;
+						}
+						break;
+					case "or" :
+						$temporary_table = $last_table;
+						if($tree[$i]->not){
+							$rqt = "create temporary table tmp_".$temporary_table." ($field_id int, index using btree($field_id)) engine=memory $elem_query";
+							pmb_mysql_query($rqt,$dbh);
+							$rqt = "insert ignore into ".$temporary_table." select distinct $field_id from $table_term where ".$field_id." not in(select ".$field_id." from tmp_".$temporary_table.") and code_champ = 1";
+							pmb_mysql_query($rqt,$dbh);
+							pmb_mysql_query("drop table if exists tmp_".$temporary_table,$dbh);
+							$last_table= "";
+						}else{
+							$rqt = "insert ignore into ".$temporary_table." ".$elem_query;
+							$last_table= "";
+							pmb_mysql_query($rqt,$dbh);
+						}
+						break;
+					default :
+						if($tree[$i]->not){
+							$rqt = "create temporary table tmp_".$temporary_table." ($field_id int, index using btree($field_id)) engine=memory $elem_query";
+							pmb_mysql_query($rqt,$dbh);
+							$rqt = "create temporary table ".$temporary_table." ($field_id int, index using btree($field_id)) engine=memory select distinct $field_id from $table_term where ".$field_id." not in(select ".$field_id." from tmp_".$temporary_table.") and code_champ = 1";
+							pmb_mysql_query($rqt,$dbh);
+							pmb_mysql_query("drop table if exists tmp_".$temporary_table,$dbh);
+						}else{
+							$rqt = "create temporary table ".$temporary_table." ($field_id int, index using btree($field_id)) engine=memory $elem_query";
+						}
+						pmb_mysql_query($rqt,$dbh);
+						break;
+				}
+				$query = "select distinct $field_id from ".$temporary_table;
+				if($last_table != ""){
+					pmb_mysql_query("drop table if exists ".$last_table,$dbh);
+				}
+			}
+		}
+		return $query;
+	}
+	
+	
+	function get_field_restrict($restrict,$neg=false){
+		$is_multi=false;
+		$return = "";
+		$field_restrict = "";
+	
+		foreach($restrict as $field => $infos){
+			if ($return != "") $return.=" ".$infos['op']." ";
+			$return .= ($infos['not'] ? "not ":"")."(".$infos["field"];
+			if(is_array($infos['values'])){
+				$return .= " in ('".implode("','",$infos['values'])."')";
+			}else{
+				$return .= "='".$infos['values']."'";
+			}
+			if($infos['sub'] && is_array($infos['sub']) && count($infos['sub'])){
+				$sub ="";
+				
+				foreach($infos['sub'] as $subfield => $subinfos){
+					if ($sub != "") $sub .= " ".$subinfos['op'];
+					$sub .= " ".($subinfos['not'] ? "not ":"")."(".$subinfos["sub_field"];
+					if(is_array($subinfos['values'])){
+						$sub .= " in ('".implode("','",$subinfos['values'])."')";
+					}else{
+						$sub .= "='".$subinfos['values']."'";
+					}
+					$sub .= ")";
+				}
+				$return.= " and (".$sub.")";
+			}
+			$return .= ")";
+		}
+		if($neg){
+			$return = "not (".$return.")";
+		}else{
+			$return = "(".$return.")";
+		}
+//		print "<span style='color:green'>$return</span>";
+		return $return;
+	}	
+	
 	function get_query_full_text($table,$field_l,$field_i,$id_field) {
 		$q["select"]="(match($field_l) against ('".addslashes($this->input)."' in boolean mode))";
 		$q["where"]="(match($field_l) against ('".addslashes($this->input)."' in boolean mode))";
@@ -444,7 +731,7 @@ class analyse_query {
 	function recurse_analyse() {
 		global $msg;
 		global $charset;
-		global $pmb_default_operator;
+
 		$s="new_word";
 		$end=false;
 		
@@ -473,7 +760,7 @@ class analyse_query {
 					//affectation opérateur. Néanmoins, si c'est le premier terme on n'en tient pas compte
 					if ((($c=="+")||($c=="-" && $cprec == " ")||($c=="~"))&&($this->operator=="")&&(!$this->guillemet)&&(!$this->neg)&&(!$this->start_with)) {
 						if (($c=="+")&&(count($this->tree))) {
-							if ($pmb_default_operator == 1) {
+							if ($this->default_operator == 1) {
 								$this->operator="or";
 							} else {
 								$this->operator="and";
@@ -527,7 +814,7 @@ class analyse_query {
 					if (($c==" ")&&(!$this->guillemet)) break;
 					//Si une parentèse ouverte, alors analyse de la sous expression
 					if (($c=="(")&&(!$this->guillemet)) {
-						$sub_a=new analyse_query($this->input,$this->current_car,1,$this->search_linked_words);
+						$sub_a=new analyse_query($this->input,$this->current_car,1,$this->search_linked_words,$this->keep_empty,$this->stemming);
 						//Si erreur dans sous expression, erreur !
 						if ($sub_a->error) {
 							$this->error=1;
@@ -543,7 +830,7 @@ class analyse_query {
 							//opérateur par défaut
 							//if ((!$this->operator)&&(count($this->tree))) $this->operator="or";
 							if ((!$this->operator)&&(count($this->tree))){
-      							if ($pmb_default_operator == 1) {
+      							if ($this->default_operator == 1) {
       								$this->operator="and";
       							} else {
       								$this->operator="or";
@@ -566,7 +853,7 @@ class analyse_query {
 					//opérateur par défaut
 					//if ((!$this->operator)&&(count($this->tree))) $this->operator="or";
 					if ((!$this->operator)&&(count($this->tree))){
-						if ($pmb_default_operator == 1) {
+						if ($this->default_operator == 1) {
 							$this->operator="and";
 						} else {
 							$this->operator="or";
@@ -703,6 +990,250 @@ class analyse_query {
 		$this->input_html=str_replace("!!red!!","<font color='#DD0000'><b><u>",$this->input_html);
 		$this->input_html=str_replace("!!s_red!!","</u></b></font>",$this->input_html);
 	}
-}
 
+	function get_positive_terms($tree,$father_sign=0){
+		for($i=0;$i<(count($tree));$i++){
+			$term_obj = $tree[$i];
+			if($term_obj->word != "*"){
+				if($term_obj->word && ($term_obj->not == $father_sign))
+					$this->positive_terms[] = $term_obj->word;
+				else if($term_obj->sub){
+					$this->get_positive_terms($term_obj->sub,$term_obj->not);
+				}	
+			}
+		}
+		return $this->positive_terms;
+	}
+
+	function get_positive_terms_obj($tree,$father_sign=0){
+		for($i=0;$i<(count($tree));$i++){
+			$term_obj = $tree[$i];
+			if($term_obj->word && ($term_obj->not == $father_sign))
+				$this->positive_terms[] = $term_obj;
+			else if($term_obj->sub){
+				$this->get_positive_terms_obj($term_obj->sub,$term_obj->not);
+			}	
+		}
+		return $this->positive_terms;
+	}
+
+	//récupère la pertinence d'une liste de notices sur la recherche instanciée!
+	function get_pert($notices_ids,$restrict=array(),$neg_restrict=false,$with_explnum=false,$return_query = false,$all_fields=false){
+		return $this->get_objects_pert($notices_ids, "id_notice", "notices_mots_global_index", "word", "notices_fields_global_index", "value", "notice_id",$restrict,$neg_restrict,$with_explnum,$return_query,$all_fields);
+	}
+	
+	//généralisation du calcul de la pertinence
+	public function get_objects_pert($objects_ids,$field_id,$table_mot,$field_mot,$table_term,$field_term,$final_id,$restrict=array(),$neg_restrict=false,$with_explnum=false,$return_query = false,$all_fields=false){
+		global $empty_word;
+		global $dbh;
+		
+		$troncat = "";
+		if ($this->allow_term_troncat_search) {
+			$troncat = "%";
+		}
+		$terms = $this->get_positive_terms_obj($this->tree);
+		$words = array();
+		$literals = array();
+		$queries = array();
+		if(count($objects_ids)){
+			if(count($terms)){
+				foreach($terms as $term){
+					if(!$term->literal){
+						if(!in_array($term,$words)) {
+							$words[]=$term;
+						}
+					}else {
+						$literals[] = $term;
+					}
+				}
+			}
+			if($this->input !== "*"){
+				//pertinence sur documents numériques valable uniquement sur les notices
+ 				if($table_mot == "notices_mots_global_index" && $with_explnum && $this->input !== "*"){
+					$noti_members = $this->get_query_members("explnum","explnum_index_wew","explnum_index_sew","explnum_notice","",0,0,true);
+ 					$bull_members = $this->get_query_members("explnum","explnum_index_wew","explnum_index_sew","explnum_bulletin","",0,0,true);
+ 					$noti = "select distinct explnum_notice as notice_id, ".$noti_members['select']." as pert from explnum where explnum_notice in (".$objects_ids.")";
+ 					$bull = "select distinct num_notice as notice_id, ".$noti_members['select']." as pert from explnum join bulletins on explnum_bulletin = bulletin_id where num_notice in (".$objects_ids.")";
+ 					$queries[] = "select distinct notice_id, pert as pert from (($noti) union all ($bull)) as q1";
+ 				}
+				if(count($words)){
+					//si on veut nettoyer par rapport à la fréquence d'apparition, on compte le nombre total de lignes.
+					if($this->search_relevant_with_frequency){
+						$nb_lignes = 0;
+						//pour les grosses volumétrie, on essaye d'etre plus efficace
+						switch($table_mot){
+							case "notices_mots_global_index" :
+								$query =" select count(id_notice) from notices";
+								break;
+							default :
+								$query = "select count(distinct ".$field_id.") from ".$table_mot;
+								break;
+						}
+						$result = pmb_mysql_query($query,$dbh);
+						if(pmb_mysql_num_rows($result)){
+							$nb_lignes = pmb_mysql_result($result,0,0);
+						}
+					}
+					$pert_query_words = "select ".$field_id." as ".$final_id.", max(pond * (!!pert!!)) as pert from words straight_join ".$table_mot." on num_word = id_word where ";
+					$where = "";
+					foreach($words as $term){
+						if($term->word != "*"){
+							if($where !="") $where.= " or ";
+							$crit="word ";
+							if (strpos($term->word,"*")!==false || $this->allow_term_troncat_search){
+								if (strpos($term->word,"*") === false) {
+									//Si c'est un mot vide, on ne troncature pas
+									if (in_array($term->word,$empty_word)===false) {
+										if($term->not) $crit.= "not ";
+										$crit.= "like '".addslashes($term->word.$troncat)."'";
+									} else {
+										if($term->not) $crit.= "! ";
+										$crit.="= '".addslashes($term->word)."'";
+									}
+								} else {
+									if($term->not) $crit.= "not ";
+									$crit.= "like '".addslashes(str_replace("*","%",$term->word))."'";
+								}
+							}else{
+								if($term->not) $crit.= "!";
+								$crit.= "= '".addslashes($term->word)."'";
+							}
+							$where.= " ".$crit;
+							if (in_array($term->word,$empty_word)) $tpound=$term->pound/10; else $tpound=$term->pound;
+		
+							$query = "select id_word ";
+							if($this->search_relevant_with_frequency){
+								$query.=",count(distinct ".$field_id.") as freq, length(word)-length('".$term->word."') as dist ";
+								$dist = $freq = "case ";
+								$max_dist = 0;
+							}
+							$query.=" from words straight_join ".$table_mot." on id_word=num_word where $crit group by id_word";
+							$result = pmb_mysql_query($query,$dbh);
+							$ids_words = $subqueries = array();
+							$subwhere = "";
+							if(pmb_mysql_num_rows($result)){
+								while($row = pmb_mysql_fetch_object($result)){
+									if($this->search_relevant_with_frequency){
+										$freq.= " when id_word=".$row->id_word." then ".$row->freq;
+										$dist.= " when id_word=".$row->id_word." then ".$row->dist;
+										if($row->dist > $max_dist) $max_dist = $row->dist;
+									}
+									$ids_words[]= $row->id_word;
+								}
+									
+								if($this->search_relevant_with_frequency){
+									$ln_freq = "ln(1/(".$freq." end/".$nb_lignes."))";
+									$ln_dist = "ln(1/(".$dist." end/".$max_dist."))";
+									
+									$coeff = "if(".$dist." end != 0, ((".$ln_dist." + ".$ln_freq.")/2 ), ".$ln_freq.")";
+									$query_words = str_replace("!!pert!!",$coeff." * ".$tpound,$pert_query_words);
+								}else{
+									$query_words = str_replace("!!pert!!",$tpound,$pert_query_words);
+								}
+								$subwhere = "id_word in (".implode(",",$ids_words).")";
+								$subwhere.= (count($restrict) > 0? " and ".$this->get_field_restrict($restrict,$neg_restrict) : "");
+								if($table_mot == "notices_mots_global_index" && $all_fields && $this->exclude_fields!=""){
+									$subwhere.=" and code_champ not in (".$this->exclude_fields.")";
+								}
+								$queries[]= $query_words.$subwhere." group by ".$field_id." having pert > 0 ";
+							}
+						}else{
+							$query = "select distinct id_notice as notice_id, 100 from notices_mots_global_index where 1 ";
+							$subwhere.= (count($restrict) > 0? " and ".$this->get_field_restrict($restrict,$neg_restrict) : "");
+							if($all_fields && $opac_exclude_fields!= ""){
+								$subwhere.=" and code_champ not in (".$opac_exclude_fields.")";
+							}
+							$queries[] = $query;
+						}
+					}
+				}
+				
+				if(count($literals)){
+					$pert_query_literals = "select distinct ".$field_id." as ".$final_id.", sum(!!pert!!) as pert from ".$table_term." where ";
+					$where = "";
+					foreach($literals as $term){
+						//on n'ajoute pas une clause dans le where qui parcours toute la base...
+						if($where !="") $where.= " or ";
+						$crit = "value ";
+						if($term->not) $crit.= "not ";
+						$crit.= "like '".($term->start_with == 0 ? "%":"").addslashes(str_replace("*","%",$term->word))."%'";
+						$where.= " ".$crit;
+						$crit = str_replace("%%","%",$crit);
+						$pert_query_literals = str_replace("!!pert!!","((".$crit.") * pond *".$term->pound.")+!!pert!!",$pert_query_literals);
+					}
+					$where.= (count($restrict) > 0? " and ".$this->get_field_restrict($restrict,$neg_restrict) : "");
+					$pert_query_literals = str_replace("!!pert!!",0,$pert_query_literals);
+					if($table_mot == "notices_mots_global_index" && $all_fields && $this->exclude_fields!=""){
+						$where.=" and code_champ not in (".$this->exclude_fields.")";
+					}
+					$queries[]= $pert_query_literals.$where." group by ".$field_id." having pert > 0 ";
+				}
+				//aucun terme positif
+				if(!count($words) && !count($literals)){
+					$where= (count($restrict) > 0? $this->get_field_restrict($restrict,$neg_restrict) : "");
+					if($table_mot == "notices_mots_global_index" && $all_fields && $this->exclude_fields!=""){
+						if($where !="") $where.= " and";
+						$where.=" code_champ not in (".$this->exclude_fields.")";
+					}
+					$queries[]= "select distinct ".$field_id." as ".$final_id.",max(pond) as pert from ".$table_term." ".($where ? " where ".$where : "")." group by ".$field_id." ";
+				}
+				$query = "select distinct ".$final_id.", sum(pert) as pert from ((".implode(") union all (",$queries).")) as uni where ".$final_id." in (".$objects_ids.") group by ".$final_id."";
+			}else{
+				//Si recherche * alors la pondération est la même pour toutes les notices
+				//$query = "select * from(select id_notice as notice_id, sum(pond) as pert from notices_fields_global_index ".(count($restrict) > 0 ? "where ".$this->get_field_restrict($restrict,$neg_restrict) : "")." group by id_notice) as uni where notice_id in (".$notices_ids.")";
+				$query = "SELECT distinct(".$field_id.") as ".$final_id.", 100 as pert FROM ".$table_term." WHERE ".$field_id." in (".$objects_ids.")";
+			}
+		}
+		if($return_query){
+			return $query;
+		}else{
+			$table = "search_result".md5(microtime(true));
+			$rqt = "create temporary table ".$table." $query";
+			$res = pmb_mysql_query($rqt,$dbh);
+			pmb_mysql_query("alter table ".$table." add index i_id(".$final_id.")",$dbh);
+			return $table;
+		}		
+	}	
+	
+	public function add_stemming(){
+		if(!$tree) $tree = $this->tree;
+		for($i=0 ; $i<count($this->tree) ; $i++){
+			$this->tree[$i] = $this->_add_stemming($this->tree[$i]);
+		}
+	}
+	
+	protected function _add_stemming($term){
+		global $lang,$dbh;
+		if(!$term->literal && !$term->sub && !$term->not){
+			$sub = array();
+			//on perd pas le terme d'origine quand même...
+			$sub[]= new term($term->word,$term->literal,$term->not,$term->start_with,"",$term->sub,$term->pound);
+			//on cherche les mots de la base avec la même racine !
+			$stemming = new stemming($term->word);
+			$query = "select distinct word from words where stem like '".$stemming->stem."' and lang in ('','".$lang."') and word != '".addslashes($term->word)."'";
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				if(pmb_mysql_num_rows($result)>1){
+					$sub_stem = array();
+					$op = "";
+					while ($row = pmb_mysql_fetch_object($result)){
+						if(count($sub_stem)) $op = "or";
+						$sub_stem[] = new term($row->word,0,0,0,$op,null,$term->pound);
+					}
+					$sub[] = new term("",0,0,0,"or",$sub_stem,0.4,"stemming");
+				}else{
+					$row = pmb_mysql_fetch_object($result);
+					$sub[] = new term($row->word,0,0,0,"or",null,$term->pound*0.4,"stemming");
+				}
+			}
+			$term->word = "";
+			$term->sub = $sub;
+		}else if(!$term->literal && !$term->not){
+			for ($i=0 ; $i<count($term->sub) ; $i++){
+				$term->sub[$i] = $this->_add_stemming($term->sub[$i]);
+			}
+		}
+		return $term;		
+	}
+}
 ?>

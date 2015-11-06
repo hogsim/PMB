@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_menu_view_menu_django.class.php,v 1.4.4.1 2014-11-10 11:24:19 dbellamy Exp $
+// $Id: cms_module_menu_view_menu_django.class.php,v 1.6 2014-11-17 17:00:53 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -77,6 +77,7 @@ class cms_module_menu_view_menu_django extends cms_module_common_view_django{
 			'var' => "items[i].current",
 			'desc' => $this->msg['cms_module_menu_view_menu_django']
 		);
+		$format = array_merge($format,parent::get_format_data_structure());
 		return $format;
 	}
 }

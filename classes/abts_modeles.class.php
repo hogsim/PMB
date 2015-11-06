@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts_modeles.class.php,v 1.35 2012-09-28 07:36:00 dgoron Exp $
+// $Id: abts_modeles.class.php,v 1.36 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,9 +30,9 @@ class abts_modele {
 	function abts_modele($modele_id="") {
 		if ($modele_id) {
 			$requete="select * from abts_modeles where modele_id=".$modele_id;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);
 				$this->modele_id=$r->modele_id;
 				$this->modele_name=$r->modele_name;
 				$this->num_notice=$r->num_notice;
@@ -82,9 +82,9 @@ class abts_modele {
 	function getData() {
 	if ($this->modele_id) {
 			$requete="select * from abts_modeles where modele_id=".$this->modele_id;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);				
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);				
 				$this->modele_name=$r->modele_name;
 				$this->num_notice=$r->num_notice;
 				$this->num_periodicite=$r->num_periodicite;
@@ -133,9 +133,9 @@ class abts_modele {
 	function set_perio($num_notice) {
 		$this->num_notice=0;
 		$requete="select niveau_biblio from notices where notice_id=".$num_notice;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			if (mysql_result($resultat,0,0)=="s")
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			if (pmb_mysql_result($resultat,0,0)=="s")
 				$this->num_notice=$num_notice;
 		} else {
 			$this->error=true;
@@ -228,9 +228,9 @@ class abts_modele {
 		
 		//Périodicité
 		$requete="select periodicite_id,libelle from abts_periodicites";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		$liste_perio="<select name='num_periodicite'>\n<option value='0'>".$msg['abonnements_periodicite_manuel']."</option>\n";
-		while ($rp=mysql_fetch_object($resultat)) {
+		while ($rp=pmb_mysql_fetch_object($resultat)) {
 			$liste_perio.="<option value='".$rp->periodicite_id."' ".($this->num_periodicite==$rp->periodicite_id?"selected":"").">".htmlentities($rp->libelle,ENT_QUOTES,$charset)."</option>\n";
 		}
 		$liste_perio.="</select>";
@@ -642,7 +642,7 @@ ENDOFTEXT;
 		global $include_path;
 		if($this->modele_id) {
 			$dummy = "delete FROM abts_grille_modele WHERE num_modele='$this->modele_id' ";
-			mysql_query($dummy, $dbh);		
+			pmb_mysql_query($dummy, $dbh);		
 				
 			$date = construitdateheuremysql($this->date_debut);	
 			$date_fin = construitdateheuremysql($this->date_fin);		
@@ -650,8 +650,8 @@ ENDOFTEXT;
 			//Lire la périodicté
 			$duree=1;
 			$requete="select duree,unite from abts_periodicites where periodicite_id='$this->num_periodicite'";
-			$resultat=mysql_query($requete);
-			if($r=mysql_fetch_object($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			if($r=pmb_mysql_fetch_object($resultat)) {
 				$duree=$r->duree;
 				$unite=$r->unite;									
 				do {				
@@ -673,7 +673,7 @@ ENDOFTEXT;
 									if($this->days[$dayofweek-1]) {
 										//c'est un jour prévu de réception	
 										$requete = "INSERT INTO abts_grille_modele SET num_modele='$this->modele_id', date_parution ='$date', type_serie = '1'";
-										mysql_query($requete, $dbh);
+										pmb_mysql_query($requete, $dbh);
 									}							
 					// Calcul de la date suivante à analyser et la sortie du while					
 					if($unite==0) $sql_add="INTERVAL $duree DAY";
@@ -739,15 +739,15 @@ ENDOFTEXT;
 		if($this->modele_id) {
 			// update: s'assurer que le nom de modèle n'existe pas déjà
 			$dummy = "SELECT * FROM abts_modeles WHERE modele_name='".addslashes($this->modele_name)."' and num_notice='$this->num_notice' and modele_id!='$this->modele_id' ";
-			$check = mysql_query($dummy, $dbh);
-			if(mysql_num_rows($check)) {
+			$check = pmb_mysql_query($dummy, $dbh);
+			if(pmb_mysql_num_rows($check)) {
 				require_once("$include_path/user_error.inc.php");
 				warning($msg["abonnements_titre_creation_edition_modele"], $msg["abonnements_erreur_creation_doublon_modele"]." ($this->modele_name).");
 				return FALSE;
 			}			
 			$requete = 'UPDATE abts_modeles '.$requete;
 			$requete .= ' WHERE modele_id='.$this->modele_id.' LIMIT 1;';
-			if(mysql_query($requete, $dbh)) {
+			if(pmb_mysql_query($requete, $dbh)) {
 				
 				if($act=="gen") $this->gen_date();				
 				return TRUE;
@@ -760,16 +760,16 @@ ENDOFTEXT;
 				
 			// s'assurer que le modèle n'existe pas déjà
 			$dummy = "SELECT * FROM abts_modeles WHERE modele_name='".addslashes($this->modele_name)."' and num_notice='$this->num_notice'";
-			$check = mysql_query($dummy, $dbh);
-			if(mysql_num_rows($check)) {
+			$check = pmb_mysql_query($dummy, $dbh);
+			if(pmb_mysql_num_rows($check)) {
 				require_once("$include_path/user_error.inc.php");
 				warning($msg["abonnements_titre_creation_edition_modele"], $msg["abonnements_erreur_creation_doublon_modele"]." ($this->modele_name).");
 				return FALSE;
 			}
 			$requete = 'INSERT INTO abts_modeles '.$requete.';';
 		
-			if(mysql_query($requete, $dbh)) {
-				$this->modele_id=mysql_insert_id();
+			if(pmb_mysql_query($requete, $dbh)) {
+				$this->modele_id=pmb_mysql_insert_id();
 				
 				if($act=="gen") $this->gen_date();
 				return TRUE;
@@ -789,19 +789,19 @@ ENDOFTEXT;
 		
 		//Je supprime les abonnements liés au modèle
 		$requete="SELECT abt_id FROM abts_abts_modeles WHERE modele_id='".$this->modele_id."'";
-		$res=mysql_query($requete);
-		if(mysql_num_rows($res)){
-			while ($ligne=mysql_fetch_object($res)) {
+		$res=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)){
+			while ($ligne=pmb_mysql_fetch_object($res)) {
 				$mon_abt= new abts_abonnement($ligne->abt_id);
 				$mon_abt->delete();
 			}
 		}
 		
 		$dummy = "delete FROM abts_modeles WHERE modele_id='".$this->modele_id."' ";
-		$check = mysql_query($dummy, $dbh);	
+		$check = pmb_mysql_query($dummy, $dbh);	
 							
 		$dummy = "delete FROM abts_grille_modele WHERE num_modele='".$this->modele_id."' ";
-		$check = mysql_query($dummy, $dbh);			
+		$check = pmb_mysql_query($dummy, $dbh);			
 	}
 	
 	function proceed() {
@@ -894,7 +894,7 @@ ENDOFTEXT;
 			case 'copy':
 				// mise à jour modèle
 				$requete = "select type_serie, numero,date_parution,type_serie,nombre_recu from abts_grille_modele where num_modele='$this->modele_id'";
-				$resultat=mysql_query($requete);
+				$resultat=pmb_mysql_query($requete);
 				
 				//Création du nouveau modèle
 				$this->modele_id='';
@@ -903,17 +903,17 @@ ENDOFTEXT;
 				$serial_id=$new_serial_id;
 				$this->update();
 				$requete = "delete FROM abts_grille_modele WHERE num_modele='$this->modele_id'";
-				mysql_query($requete, $dbh);		
+				pmb_mysql_query($requete, $dbh);		
 				//recopie des infos du calendrier
-				if(mysql_num_rows($resultat)) { 
-					while(($r=mysql_fetch_object($resultat))){				
+				if(pmb_mysql_num_rows($resultat)) { 
+					while(($r=pmb_mysql_fetch_object($resultat))){				
 						$date_parution=$r->date_parution;
 						$type_serie=$r->type_serie;
 						$nombre_recu=$r->nombre_recu;
 						$numero=$r->numero;
 						
 						$requete = "INSERT INTO abts_grille_modele SET num_modele='$this->modele_id', date_parution ='$date_parution', type_serie = '$type_serie', nombre_recu= '$nombre_recu'";
-						mysql_query($requete, $dbh);
+						pmb_mysql_query($requete, $dbh);
 					}
 				}			
 				print $this->show_form();		
@@ -921,9 +921,9 @@ ENDOFTEXT;
 			case 'del':	
 				// Verif si abonnements associés
 				$requete="select abt_name,abts_abts.abt_id as ab_id from abts_abts_modeles,abts_abts where modele_id='$this->modele_id' and abts_abts.abt_id=abts_abts_modeles.abt_id";
-				$resultat=mysql_query($requete);
-				if (mysql_num_rows($resultat)) {	
-					while(($r=mysql_fetch_object($resultat))) {
+				$resultat=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat)) {	
+					while(($r=pmb_mysql_fetch_object($resultat))) {
 						$liste.="<a href=\"catalog.php?categ=serials&sub=abon&serial_id=".$this->num_notice."&abt_id=".$r->ab_id."\">".$r->abt_name."</a><br />";	
 					}
 					require_once("$include_path/user_error.inc.php");
@@ -962,8 +962,8 @@ class abts_modeles {
 	
     function abts_modeles($id_perio) {
     	$requete="select modele_id from abts_modeles where num_notice=$id_perio";
-    	$resultat=mysql_query($requete);
-    	while ($r=mysql_fetch_object($resultat)) {
+    	$resultat=pmb_mysql_query($requete);
+    	while ($r=pmb_mysql_fetch_object($resultat)) {
     		$modele=new abts_modele($r->modele_id);
     		if (!$modele->error) $this->modeles[]=$modele;
     	}
@@ -984,8 +984,8 @@ class abts_modeles {
 
 /*function sql_value($rqt)
 {
-	$result=mysql_query($rqt);
-	$row = mysql_fetch_row($result);
+	$result=pmb_mysql_query($rqt);
+	$row = pmb_mysql_fetch_row($result);
 	return $row[0];
 }*/
 ?>

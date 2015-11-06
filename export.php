@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export.php,v 1.4.6.2 2015-01-30 14:25:50 jpermanne Exp $
+// $Id: export.php,v 1.7 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -21,8 +21,8 @@ switch($quoi) {
 				header("Content-Disposition: atachement; filename=\"caddie_proc_".$id.".sql\"");
 				
 				$req="select type, name, requete, comment, autorisations, parameters from caddie_procs where idproc='$id' ";
-				$res = mysql_query($req,$dbh);
-				if ($p=mysql_fetch_object($res)) {
+				$res = pmb_mysql_query($req,$dbh);
+				if ($p=pmb_mysql_fetch_object($res)) {
 					$exp="INSERT INTO caddie_procs set type='".addslashes($p->type)."', name='".addslashes($p->name)."', requete='".addslashes($p->requete)."', comment='".addslashes($p->comment)."', autorisations='1', parameters='".addslashes($p->parameters)."' ";
 					//nettoyage de l'entête des paramètres, pour les anciennes procédures
 					if($charset=='utf-8'){
@@ -40,8 +40,8 @@ switch($quoi) {
 				header("Content-Disposition: atachement; filename=\"empr_caddie_proc_".$id.".sql\"");
 				
 				$req="select type, name, requete, comment, autorisations, parameters from empr_caddie_procs where idproc='$id' ";
-				$res = mysql_query($req,$dbh);
-				if ($p=mysql_fetch_object($res)) {
+				$res = pmb_mysql_query($req,$dbh);
+				if ($p=pmb_mysql_fetch_object($res)) {
 					$exp="INSERT INTO empr_caddie_procs set type='".addslashes($p->type)."', name='".addslashes($p->name)."', requete='".addslashes($p->requete)."', comment='".addslashes($p->comment)."', autorisations='1', parameters='".addslashes($p->parameters)."' ";
 					//nettoyage de l'entête des paramètres, pour les anciennes procédures
 					if($charset=='utf-8'){
@@ -59,8 +59,8 @@ switch($quoi) {
 				header("Content-Disposition: atachement; filename=\"admin_proc_".$id.".sql\"");
 				
 				$req="select name, requete, comment, autorisations, parameters from procs where idproc='$id' ";
-				$res = mysql_query($req,$dbh);
-				if ($p=mysql_fetch_object($res)) {
+				$res = pmb_mysql_query($req,$dbh);
+				if ($p=pmb_mysql_fetch_object($res)) {
 					$exp="INSERT INTO procs set name='".addslashes($p->name)."', requete='".addslashes($p->requete)."', comment='".addslashes($p->comment)."', autorisations='1', parameters='".addslashes($p->parameters)."' ";
 					//nettoyage de l'entête des paramètres, pour les anciennes procédures
 					if($charset=='utf-8'){
@@ -81,8 +81,8 @@ switch($quoi) {
 		header("Content-Disposition: atachement; filename=\"admin_stat_".$id_req.".sql\"");
 		
 		$req="SELECT * from statopac_request WHERE idproc='$id_req' ";
-		$res = mysql_query($req,$dbh);
-		if ($p=mysql_fetch_object($res)) {
+		$res = pmb_mysql_query($req,$dbh);
+		if ($p=pmb_mysql_fetch_object($res)) {
 			$requete=$p->requete;
 			$exp="INSERT INTO statopac_request set name='".addslashes($p->name)."', requete='".addslashes($requete)."', comment='".addslashes($p->comment)."', parameters='".addslashes($p->parameters)."' ";
 			//nettoyage de l'entête des paramètres, pour les anciennes procédures
@@ -93,8 +93,8 @@ switch($quoi) {
 			}
 			//Colonnes vue
 			$req2="SELECT nom_col, expression, filtre, datatype FROM statopac_vues_col WHERE num_vue=".$p->num_vue." ORDER BY LENGTH(nom_col) DESC";
-			$res2 = mysql_query($req2,$dbh);
-			while ($p2=mysql_fetch_object($res2)) {
+			$res2 = pmb_mysql_query($req2,$dbh);
+			while ($p2=pmb_mysql_fetch_object($res2)) {
 				if(preg_match('`[^a-zA-Z0-9\_]'.$p2->nom_col.'[^a-zA-Z0-9\_]`',$requete)){
 					$arrayTmp=array();
 					$arrayTmp[]=$p2->nom_col;
@@ -111,4 +111,4 @@ switch($quoi) {
 		break;
 	}
 	
-mysql_close($dbh);
+pmb_mysql_close($dbh);

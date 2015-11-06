@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: types_produits.inc.php,v 1.11 2009-05-16 10:52:44 dbellamy Exp $
+// $Id: types_produits.inc.php,v 1.12 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -42,9 +42,9 @@ function show_results($dbh, $nbr_lignes=0, $page=0) {
 	if($nbr_lignes) {
 		// on lance la vraie requête
 		$q = types_produits::listTypes($debut, $nb_per_page);
-		$res = mysql_query($q, $dbh);
+		$res = pmb_mysql_query($q, $dbh);
 
-		while($row=mysql_fetch_object($res)) {
+		while($row=pmb_mysql_fetch_object($res)) {
 				
 			$typ = $row->id_produit;
 			$lib_typ = $row->libelle;
@@ -62,7 +62,7 @@ function show_results($dbh, $nbr_lignes=0, $page=0) {
 			print "<br />";
 
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 

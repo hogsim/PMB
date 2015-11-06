@@ -2,13 +2,15 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes_actions.class.php,v 1.9 2010-08-27 14:25:08 mbertin Exp $
+// $Id: demandes_actions.class.php,v 1.37 2015-05-20 14:39:30 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($class_path."/demandes_notes.class.php");
+require_once($class_path."/demandes.class.php");
 require_once($class_path."/explnum_doc.class.php");
 require_once($class_path."/workflow.class.php");
+require_once($class_path."/audit.class.php");
 
 class demandes_actions{
 	
@@ -31,26 +33,38 @@ class demandes_actions{
 	var $list_type = array();
 	var $list_statut = array();
 	var $workflow = array();
+	var $notes = array();
+	var $actions_read_gestion = 0; // flag gestion sur la lecture de l'action par l'utilisateur
+	var $actions_read_opac = 0; // flag opac sur la lecture de l'action par l'utilisateur
+	var $last_modified=0;
 	/*
 	 * Constructeur
 	 */
-	function demandes_actions($id=0){
-		
+	function demandes_actions($id=0,$lazzy_load=true){
 		global $base_path, $dbh, $iddemande;
 		
-		$this->workflow = new workflow('ACTIONS');
+		$this->fetch_data($id,$lazzy_load);
+	}
+	
+	function fetch_data($id=0,$lazzy_load=true){
+		global $base_path, $dbh, $iddemande;
 		
-		$this->id_action = $id;
+		if($this->id_action && !$id){
+			$id=$this->id_action;
+		}elseif(!$this->id_action && $id){
+			$this->id_action=$id;
+		}
+		
 		if($this->id_action){
-			$req = "select id_action,type_action,statut_action, sujet_action, 
-			detail_action,date_action,deadline_action,temps_passe, cout, progression_action, prive_action, num_demande, titre_demande, 
-			actions_num_user,actions_type_user
-			from demandes_actions 
-			join demandes on num_demande=id_demande 
+			$req = "select id_action,type_action,statut_action, sujet_action,
+			detail_action,date_action,deadline_action,temps_passe, cout, progression_action, prive_action, num_demande, titre_demande,
+			actions_num_user,actions_type_user,actions_read_gestion,actions_read_opac  
+			from demandes_actions
+			join demandes on num_demande=id_demande
 			where id_action='".$this->id_action."'";
-			$res=mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$obj = mysql_fetch_object($res);
+			$res=pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$obj = pmb_mysql_fetch_object($res);
 				$this->type_action = $obj->type_action;
 				$this->date_action = $obj->date_action;
 				$this->deadline_action = $obj->deadline_action;
@@ -59,12 +73,14 @@ class demandes_actions{
 				$this->cout = $obj->cout;
 				$this->progression_action = $obj->progression_action;
 				$this->time_elapsed = $obj->temps_passe;
-				$this->num_demande = $obj->num_demande;	
-				$this->statut_action = $obj->statut_action;		
+				$this->num_demande = $obj->num_demande;
+				$this->statut_action = $obj->statut_action;
 				$this->libelle_demande = $obj->titre_demande;
 				$this->prive_action = $obj->prive_action;
 				$this->actions_num_user = $obj->actions_num_user;
 				$this->actions_type_user =  $obj->actions_type_user;
+				$this->actions_read_gestion =  $obj->actions_read_gestion;
+				$this->actions_read_opac =  $obj->actions_read_opac;
 			} else{
 				$this->id_action = 0;
 				$this->type_action = 0;
@@ -75,13 +91,15 @@ class demandes_actions{
 				$this->cout = 0;
 				$this->progression_action = 0;
 				$this->time_elapsed = 0;
-				$this->num_demande = 0;	
+				$this->num_demande = 0;
 				$this->statut_action =	0;
 				$this->libelle_demande = '';
 				$this->prive_action = 0;
 				$this->actions_num_user = 0;
 				$this->actions_type_user =  0;
-			}			
+				$this->actions_read_gestion =  0;
+				$this->actions_read_opac =  0;
+			}
 		} else {
 			$this->id_action = 0;
 			$this->type_action = 0;
@@ -92,26 +110,75 @@ class demandes_actions{
 			$this->cout = 0;
 			$this->progression_action = 0;
 			$this->time_elapsed = 0;
-			$this->num_demande = 0;	
-			$this->statut_action =	0;	
+			$this->num_demande = 0;
+			$this->statut_action =	0;
 			$this->libelle_demande = '';
 			$this->prive_action = 0;
 			$this->actions_num_user = 0;
 			$this->actions_type_user =  0;
+			$this->actions_read_gestion =  0;
+			$this->actions_read_opac =  0;
 		}
 		
-		$this->list_type = $this->workflow->getTypeList();
-		
-		$this->list_statut = $this->workflow->getStateList();
+		if(!sizeof($this->workflow)){
+			$this->workflow = new workflow('ACTIONS','INITIAL');
+			$this->list_type = $this->workflow->getTypeList();
+			$this->list_statut = $this->workflow->getStateList();
+		}
 		
 		if($iddemande) {
 			$this->num_demande = $iddemande;
 			$req = "select titre_demande from demandes where id_demande='".$iddemande."'";
-			$res = mysql_query($req,$dbh);
-			$this->libelle_demande = mysql_result($res,0,0);
+			$res = pmb_mysql_query($req,$dbh);
+			$this->libelle_demande = pmb_mysql_result($res,0,0);
+		}
+		
+		//On remonte les notes
+		if($this->id_action){
+			$this->notes=array();
+			//On charge la liste d'id des notes
+			$query='SELECT id_note,date_note FROM demandes_notes WHERE num_action='.$this->id_action.' ORDER BY id_note ASC';
+			$result=pmb_mysql_query($query);
+			
+			while($note=pmb_mysql_fetch_array($result,MYSQL_ASSOC)){
+				if($lazzy_load){
+					$this->notes[$note['id_note']]=new stdClass();
+					$this->notes[$note['id_note']]->id_note=$note['id_note'];
+					$this->notes[$note['id_note']]->date_note=$note['date_note'];
+					$this->notes[$note['id_note']]->id_action=$this->id_action;
+				}else{
+					$this->notes[$note['id_note']]=new demandes_notes($note['id_note'],$this->id_action);
+				}
+				
+				
+			}
+			$this->last_modified=self::get_last_modified_note($this->notes);
 		}
 	}
 	
+	/*
+	 * Cherche la note la plus récente grace à l'audit
+	 */
+	static function get_last_modified_note($notes){
+		$temp=0;
+		foreach($notes as $id_note=>$note){
+			//On cherche la derniere note modifiée
+			if(!$temp){
+				$temp=$note;
+			}
+			
+			$dateLast_modified= new DateTime($temp->date_note);
+			$dateNote= new DateTime($note->date_note);
+			
+			if($dateLast_modified->format('U') < $dateNote->format('U')){
+				$temp = $note;
+			}
+		}
+		
+		if($temp){
+			return $temp;
+		}
+	}
 	
 	/*
 	 * Affichage du formulaire de création/modification
@@ -194,9 +261,10 @@ class demandes_actions{
 	 */
 	function show_consultation_form(){
 		
-		global $form_consult_action, $form_see_docnum, $msg, $charset, $pmb_gestion_devise, $dbh;
+		global $form_consult_action, $form_see_docnum, $msg, $charset, $pmb_gestion_devise, $dbh, $pmb_type_audit;
 		
 		$form_consult_action = str_replace('!!form_title!!',htmlentities($this->sujet_action,ENT_QUOTES,$charset),$form_consult_action);
+		$form_consult_action = str_replace('!!idstatut!!',htmlentities($this->statut_action,ENT_QUOTES,$charset),$form_consult_action);
 		$form_consult_action = str_replace('!!type_action!!',htmlentities($this->workflow->getTypeCommentById($this->type_action),ENT_QUOTES,$charset),$form_consult_action);
 		$form_consult_action = str_replace('!!statut_action!!',htmlentities($this->workflow->getStateCommentById($this->statut_action),ENT_QUOTES,$charset),$form_consult_action);
 		$form_consult_action = str_replace('!!detail_action!!',htmlentities($this->detail_action,ENT_QUOTES,$charset),$form_consult_action);
@@ -215,19 +283,30 @@ class demandes_actions{
 		
 		$act_cancel = "document.location='./demandes.php?categ=gestion&act=see_dmde&iddemande=$this->num_demande'";
 		$form_consult_action = str_replace('!!cancel_action!!',$act_cancel,$form_consult_action);		
+
+		$states_btn = $this->getDisplayStateBtn($this->workflow->getStateList($this->statut_action));
+		$form_consult_action = str_replace('!!btn_etat!!',$states_btn,$form_consult_action);
+		
+		// bouton audit
+		if($pmb_type_audit){
+			$btn_audit = "&nbsp;<input class='bouton' type='button' onClick=\"openPopUp('./audit.php?type_obj=15&object_id=$this->id_action', 'audit_popup', 700, 500, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\" title=\"".$msg['audit_button']."\" value=\"".$msg['audit_button']."\" />&nbsp;";
+		} else {
+			$btn_audit = "";
+		}
+		$form_consult_action = str_replace('!!btn_audit!!',$btn_audit,$form_consult_action);
+		
 		print $form_consult_action;
 		
 		//Notes
-		$notes = new demandes_notes(0,$this->id_action);
-		$notes->show_list_notes($this->id_action);
+		print demandes_notes::show_dialog($this->notes,$this->id_action,$this->num_demande);
 		
 		//Documents Numériques
 		$req = "select * from explnum_doc join explnum_doc_actions on num_explnum_doc=id_explnum_doc 
 		where num_action='".$this->id_action."'";
-		$res = mysql_query($req,$dbh);
-		if(mysql_num_rows($res)){
+		$res = pmb_mysql_query($req,$dbh);
+		if(pmb_mysql_num_rows($res)){
 			$tab_docnum = array();
-			while(($docnums = mysql_fetch_array($res))){
+			while(($docnums = pmb_mysql_fetch_array($res))){
 				$tab_docnum[] = $docnums;
 			}
 			$explnum_doc = new explnum_doc();
@@ -239,7 +318,10 @@ class demandes_actions{
 		$form_see_docnum = str_replace('!!idaction!!',$this->id_action,$form_see_docnum);
 		print $form_see_docnum;
 		
-		
+		// Annulation de l'alerte sur l'action en cours après lecture des nouvelles notes si c'est la personne à laquelle est affectée l'action qui la lit
+		$this->actions_read_gestion = demandes_actions::action_read($this->id_action,true,"_gestion");
+		// Mise à jour de la demande dont est issue l'action
+		demandes_actions::action_majParentEnfant($this->id_action,$this->num_demande,"_gestion");
 	}
 	
 	/*
@@ -251,8 +333,8 @@ class demandes_actions{
 		
 		if($explnumdoc_id){
 			$rqt = "select prive, rapport from explnum_doc_actions where num_explnum_doc='".$explnumdoc_id."'";
-			$res = mysql_query($rqt, $dbh);
-			$expl = mysql_fetch_object($res);
+			$res = pmb_mysql_query($rqt, $dbh);
+			$expl = pmb_mysql_fetch_object($res);
 			$prive = $expl->prive;
 			$rapport = $expl->rapport;
 			
@@ -311,6 +393,26 @@ class demandes_actions{
 	}
 	
 	/*
+	 * Affiche la liste des boutons correspondants au statut en cours
+	*/
+	function getDisplayStateBtn($list_statut=array(),$multi=0){
+		global $charset,$msg;
+		
+		if($multi){
+			$message = $msg['demandes_action_change_checked_states'];
+		} else {
+			$message = $msg['demandes_action_change_state'];
+		}
+		$display = "<label class='etiquette'>".$message." : </label>";
+		
+		for($i=0;$i<count($list_statut);$i++){
+			$display .= "&nbsp;<input class='bouton' type='submit' name='btn_".$list_statut[$i]['id']."' value='".htmlentities($list_statut[$i]['comment'],ENT_QUOTES,$charset)."' onclick='this.form.idstatut.value=\"".$list_statut[$i]['id']."\"; this.form.act.value=\"change_statut\";'/>";
+		}
+	
+		return $display;
+	}
+	
+	/*
 	 * Retourne un sélecteur avec les statuts d'action
 	 */
 	function getStatutSelector($idstatut=0,$ajax=false){
@@ -329,81 +431,182 @@ class demandes_actions{
 		return $selector;
 	}
 	
-	/*
-	 * Insertion/Modification d'une action
-	 */
-	function save(){
-		global $dbh, $sujet, $idtype, $idstatut;
+	static function get_values_from_form(&$action){
+		global $idaction,$sujet, $idtype,$PMBuserid ,$idstatut;
 		global $date_debut, $date_fin, $detail;
-		global $time_elapsed, $progression,$cout,$iddemande, $ck_prive,$PMBuserid;
+		global $time_elapsed, $progression,$cout,$iddemande, $ck_prive, $pmb_type_audit;
 		
-		if($this->id_action){
-			//MODIFICATION
-			$req = "update demandes_actions set sujet_action='".$sujet."', 
-				type_action='".$idtype."', 
-				statut_action='".$idstatut."', 
-				detail_action='".$detail."', 
-				date_action='".$date_debut."', 
-				deadline_action='".$date_fin."', 
-				temps_passe='".$time_elapsed."',
-				cout='".$cout."',  
-				progression_action='".$progression."',
-				prive_action='".$ck_prive."',
-				num_demande='".$iddemande."' 	
-				where id_action='".$this->id_action."'";
-									
-			mysql_query($req,$dbh);
+		$action->id_action=$idaction;
+		$action->num_demande=$iddemande;
+		$action->sujet_action=$sujet;
+		$action->type_action=$idtype;
+		$action->statut_action=$idstatut;
+		$action->date_action=$date_debut;
+		$action->deadline_action=$date_fin;
+		$action->detail_action=$detail;
+		$action->time_elapsed=$time_elapsed;
+		$action->progression_action=$progression;
+		$action->cout=$cout;
+		$action->prive_action=$ck_prive;
+		$action->actions_type_user='0';
+		$action->actions_num_user=$PMBuserid;
+	}
+
+	static function get_docnum_values_from_form(&$explnum_doc) {
+		global $f_url,$f_nom,$ck_prive,$ck_rapport;
+		
+		if($f_url){
+			$explnum_doc->explnum_doc_url = stripslashes($f_url);
+			$explnum_doc->explnum_doc_mime = 'URL';
+			$explnum_doc->explnum_doc_nomfichier = stripslashes($f_nom ? $f_nom : $f_url);
 		} else {
-			//CREATION
-			$req = "insert into demandes_actions set sujet_action='".$sujet."', 
-			type_action='".$idtype."',
-			statut_action='".$idstatut."', 
-			detail_action='".$detail."', 
-			date_action='".$date_debut."', 
-			deadline_action='".$date_fin."', 
-			temps_passe='".$time_elapsed."',
-			cout='".$cout."', 
-			prive_action='".$ck_prive."',
-			progression_action='".$progression."',
-			num_demande='".$iddemande."',
-			actions_num_user='".$PMBuserid."',
-			actions_type_user='0'
-			"; 
+			if(!$_FILES['f_fichier']['error']){
+				$explnum_doc->load_file($_FILES['f_fichier']);
+				$explnum_doc->analyse_file();
+			}
+			if($f_nom){
+				$explnum_doc->setName($f_nom);
+			}
 			
-			mysql_query($req,$dbh);
-			$this->id_action = mysql_insert_id();
-			$this->actions_num_user = $PMBuserid;
-			$this->actions_type_user = 0;
 		}
 		
-			$this->sujet_action = stripslashes($sujet);
-			$this->type_action = $idtype;
-			$this->time_elapsed = ($time_elapsed ? $time_elapsed : 0);
-			$this->date_action = $date_debut;
-			$this->deadline_action = $date_fin;
-			$this->statut_action = $idstatut;
-			$this->detail_action = stripslashes($detail);
-			$this->cout = ($cout ? $cout : 0);
-			$this->progression_action = ($progression ? $progression : 0);
-			$this->num_demande = $iddemande;
-			$this->prive_action = $ck_prive;
+		if($ck_prive){
+			$explnum_doc->prive=1;
+		}else{
+			$explnum_doc->prive=0;
+		}
+		
+		if($ck_rapport){
+			$explnum_doc->rapport=1;
+		}else{
+			$explnum_doc->rapport=0;
+		}
 	}
+	
+	static function delete_docnum($explnum_doc){
+		global $dbh;
+		
+		$explnum_doc->delete();
+		$query = "DELETE FROM explnum_doc_actions WHERE num_explnum_doc='".$explnum_doc->explnum_doc_id."'";
+		pmb_mysql_query($query,$dbh);
+	}
+	
+	static function save_docnum($action,$explnum_doc){
+		global $dbh;
+		
+		$explnum_doc->save();
+		
+		$query = "REPLACE INTO explnum_doc_actions SET
+		num_explnum_doc='".$explnum_doc->explnum_doc_id."',
+		num_action='".$action->id_action."',
+		prive='".$explnum_doc->prive."',
+		rapport='".$explnum_doc->rapport."'";
+		
+		pmb_mysql_query($query,$dbh);
+	}
+	
+	
+	/*
+	 * Insertion/Modification d'une action
+	*/
+	static function save(&$action){
+		global $dbh, $pmb_type_audit;
+		
+		if($action->id_action){
+			//MODIFICATION
+			$query = "UPDATE demandes_actions SET
+			sujet_action='".$action->sujet_action."',
+			type_action='".$action->type_action."',
+			statut_action='".$action->statut_action."',
+			detail_action='".$action->detail_action."',
+			date_action='".$action->date_action."',
+			deadline_action='".$action->deadline_action."',
+			temps_passe='".$action->time_elapsed."',
+			cout='".$action->cout."',
+			progression_action='".$action->progression_action."',
+			prive_action='".$action->prive_action."',
+			num_demande='".$action->num_demande."',
+			actions_read_gestion='1',
+			actions_read_opac='1' 
+			WHERE id_action='".$action->id_action."'";
+			
+			pmb_mysql_query($query,$dbh);
+			//audit
+			if($pmb_type_audit) audit::insert_modif(AUDIT_ACTION,$action->id_action);
+				
+		} else {
+			//CREATION
+			$query = "INSERT INTO demandes_actions SET
+			sujet_action='".$action->sujet_action."',
+			type_action='".$action->type_action."',
+			statut_action='".$action->statut_action."',
+			detail_action='".$action->detail_action."',
+			date_action='".$action->date_action."',
+			deadline_action='".$action->deadline_action."',
+			temps_passe='".$action->time_elapsed."',
+			cout='".$action->cout."',
+			progression_action='".$action->progression_action."',
+			prive_action='".$action->prive_action."',
+			num_demande='".$action->num_demande."',
+			actions_num_user='".$action->actions_num_user."',
+			actions_type_user='".$action->actions_type_user."',
+			actions_read_gestion='1',
+			actions_read_opac='1'
+			";
+			pmb_mysql_query($query,$dbh);
+			$action->id_action = pmb_mysql_insert_id($dbh);
+			
+			// audit
+			if($pmb_type_audit) audit::insert_modif(AUDIT_ACTION,$action->id_action);
+				
+			//Création d'une note automatiquement
+			if($action->detail_action && $action->detail_action!==""){
+	
+				$note=new demandes_notes();
+				$note->num_action=$action->id_action;
+				$note->date_note=date("Y-m-d h:i:s",time());
+				$note->rapport=0;
+				$note->contenu=$action->detail_action;
+				$note->notes_num_user=$action->actions_num_user;
+				$note->notes_type_user=$action->actions_type_user;
+				demandes_notes::save($note);
+				
+			}
+		}
+	}
+
+	/*
+	 * Changement de statut d'une action
+	*/
+	static function change_statut($statut,$action){
+		global $dbh, $pmb_type_audit , $PMBuserid;
+	
+		$query = "update demandes_actions set statut_action=$statut where id_action='".$action->id_action."'";
+		pmb_mysql_query($query,$dbh);
+		
+		if($pmb_type_audit) audit::insert_modif(AUDIT_ACTION,$action->id_action);
+	}
+	
+	
 	
 	/*
 	 * Affichage de la liste des actions
 	 */
-	function show_list_actions($id_demande=0){
+	static function show_list_actions($actions,$id_demande,$last_modified=0,$allow_expand=true,$from_ajax=false){
+		global $dbh, $msg, $charset;
+		global $content_liste_action, $form_liste_action, $js_liste_action;
+		global $pmb_gestion_devise, $pmb_type_audit, $ck_vue;
 		
-		global $form_liste_action, $dbh,$msg, $pmb_gestion_devise;
-		
-		$req = "SELECT id_action, type_action, sujet_action, detail_action,statut_action, date_action, deadline_action, temps_passe, cout, 
-		progression_action, num_demande, count(id_note) as nb, actions_num_user, actions_type_user 
-		FROM demandes_actions a left join demandes_notes n ON n.num_action=a.id_action WHERE num_demande='".$id_demande."' group by id_action";
-		$res = mysql_query($req,$dbh); 
+		if($from_ajax) {
+			$list_actions = $content_liste_action;
+		} else {
+			$list_actions = $js_liste_action.$form_liste_action;
+		}
 		$liste ="";
-		if(mysql_num_rows($res)){
+		if(sizeof($actions)){
 			$parity=1;						
-			while(($actions = mysql_fetch_object($res))){
+			foreach($actions as $id_action=>$action){
+				
 				if ($parity % 2) {
 					$pair_impair = "even";
 				} else {
@@ -411,67 +614,132 @@ class demandes_actions{
 				}
 				$parity += 1;
 				$tr_javascript = "onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='".$pair_impair."'\" ";
-				$action = "onclick=document.location='./demandes.php?categ=action&act=see&idaction=".$actions->id_action."'";
+				$onclick = "onclick=\"document.location='./demandes.php?categ=action&act=see&idaction=".$action->id_action."#fin'\"";
 				
-				$liste .= "<tr class='".$pair_impair."' ".$tr_javascript." style='cursor: pointer'  >";
-				$liste .= "
-					<td $action>".htmlentities($this->workflow->getTypeCommentById($actions->type_action),ENT_QUOTES,$charset)."</td>
-					<td $action>".htmlentities($actions->sujet_action,ENT_QUOTES,$charset)."</td>
-					<td $action>".htmlentities($actions->detail_action,ENT_QUOTES,$charset)."</td>	
-					<td ><span id='statut_".$actions->id_action."' dynamics='demandes,statut' dynamics_params='selector'>".htmlentities($this->workflow->getStateCommentById($actions->statut_action),ENT_QUOTES,$charset)."</span></td>
-					<td $action>".htmlentities(formatdate($actions->date_action),ENT_QUOTES,$charset)."</td>
-					<td $action>".htmlentities(formatdate($actions->deadline_action),ENT_QUOTES,$charset)."</td>
-					<td $action>".htmlentities($this->getCreateur($actions->actions_num_user,$actions->actions_type_user),ENT_QUOTES,$charset)."</td>
-					<td ><span dynamics='demandes,temps' dynamics_params='text' id='temps_".$actions->id_action."'>".htmlentities($actions->temps_passe.$msg['demandes_action_time_unit'],ENT_QUOTES,$charset)."</span></td>
-					<td id='up_temps_".$actions->id_action."' style=\"display:none\"></td>
+				//On ouvre la derniere conversation
+				if($last_modified==$action->id_action){
+					$list_actions = str_replace('!!last_modified!!',$last_modified,$list_actions);
+				}
+				
+				// affichage en gras si nouveauté du côté des notes ou des actions + icone
+				$style =""; 
+				if($action->actions_read_gestion == 1){				
+					$style=" style='cursor: pointer; font-weight:bold'";									
+				} else {
+					$style=" style='cursor: pointer'";					
+				}
+				
+				$liste .= "<tr id='action".$action->id_action."' class='".$pair_impair."' ".$tr_javascript.$style."  >";
+				
+				if($allow_expand){
+					$list_actions = str_replace('!!expand_header!!',"<th></th>",$list_actions);
+					$liste .= "
+						<td><img hspace=\"3\" border=\"0\" onclick=\"expand_note('note".$action->id_action."','$action->id_action', true, 0); return false;\" title=\"\" id=\"note".$action->id_action."Img\" name=\"imEx\" class=\"img_plus\" src=\"./images/plus.gif\"></td>";
+						
+				}else{
+					$list_actions = str_replace('!!expand_header!!',"",$list_actions);
+				}
+				
+				$liste.="<td>";
+				if($action->actions_read_gestion == 1){
+					// remplacer $action le jour où on décide d'activer la modif d'état manuellement par //onclick=\"change_read_action('read".$action->id_action."','$action->id_action','$action->num_demande', true); return false;\"
+					$liste .= "<img hspace=\"3\" border=\"0\" title=\"\" ".$onclick." id=\"read".$action->id_action."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" style='display:none'>
+								<img hspace=\"3\" border=\"0\"  title=\"\" ".$onclick." id=\"read".$action->id_action."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\">";
+				} else {
+					// remplacer $action le jour où on décide d'activer la modif d'état manuellement par onclick=\"change_read_action('read".$action->id_action."','$action->id_action','$action->num_demande', true); return false;\"
+					$liste .= "<img hspace=\"3\" border=\"0\" title=\"\" ".$onclick." id=\"read".$action->id_action."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" >
+								<img hspace=\"3\" border=\"0\" title=\"\" ".$onclick." id=\"read".$action->id_action."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\" style='display:none'>";
+				}
+				$liste .= 	"</td>
+					<td $onclick>".htmlentities($action->workflow->getTypeCommentById($action->type_action),ENT_QUOTES,$charset)."</td>
+					<td $onclick>".htmlentities($action->sujet_action,ENT_QUOTES,$charset)."</td>
+					<td $onclick>".htmlentities($action->detail_action,ENT_QUOTES,$charset)."</td>	
+					<td ><span id='statut_".$action->id_action."' dynamics='demandes,statut' dynamics_params='selector'>".htmlentities($action->workflow->getStateCommentById($action->statut_action),ENT_QUOTES,$charset)."</span></td>
+					<td $onclick>".htmlentities(formatdate($action->date_action),ENT_QUOTES,$charset)."</td>
+					<td $onclick>".htmlentities(formatdate($action->deadline_action),ENT_QUOTES,$charset)."</td>
+					<td $onclick>".htmlentities($action->getCreateur($action->actions_num_user,$action->actions_type_user),ENT_QUOTES,$charset)."</td>
 					
-					<td><span dynamics='demandes,cout' dynamics_params='text' id='cout_".$actions->id_action."'>".htmlentities($actions->cout,ENT_QUOTES,$charset).$pmb_gestion_devise."</td>
-					<td id='up_cout_".$actions->id_action."' style=\"display:none\"></td>
+					<td ><span dynamics='demandes,temps' dynamics_params='text' id='temps_".$action->id_action."'>".htmlentities($action->time_elapsed.$msg['demandes_action_time_unit'],ENT_QUOTES,$charset)."</span></td>
+					<td id='up_temps_".$action->id_action."' style=\"display:none\"></td>
 					
-					<td><span dynamics='demandes,progression' dynamics_params='text' id='progression_".$actions->id_action."' >
-						<img src=\"./images/jauge.png\" height='15px' width=\"".$actions->progression_action."%\" title='".$actions->progression_action."%' />
+					<td><span dynamics='demandes,cout' dynamics_params='text' id='cout_".$action->id_action."'>".htmlentities($action->cout,ENT_QUOTES,$charset).$pmb_gestion_devise."</span></td>
+					<td id='up_cout_".$action->id_action."' style=\"display:none\"></td>
+					
+					<td><span dynamics='demandes,progression' dynamics_params='text' id='progression_".$action->id_action."' >
+						<img src=\"./images/jauge.png\" height='15px' width=\"".$action->progression_action."%\" title='".$action->progression_action."%' />
+						</span>
 					</td>
-					<td $action>".$actions->nb."</td>
+					<td $onclick>".sizeof($action->notes)."</td>
 					
-					<td><input type='checkbox' id='chk[".$actions->id_action."]' name='chk[]' value='".$actions->id_action."'</td>
+					<td><input type='checkbox' id='chk_action_".$id_demande."[".$action->id_action."]' name='chk_action_".$id_demande."[]' value='".$action->id_action."'/></td>
 				"; 
-				$liste .= "</tr>";	
+				$liste .= "</tr>";
+				
+				if($allow_expand){
+					//Le détail de l'action, contient les notes
+					$liste .="<tr id=\"note".$action->id_action."Child\" style=\"display:none\">
+					<td></td>
+					<td colspan=\"13\" id=\"note".$action->id_action."ChildTd\">";
+						
+					$liste .="</td>
+					</tr>";
+				}
 			}
-			$btn_suppr = "<input type='submit' class='bouton' value='$msg[63]' onclick='this.form.act.value=\"suppr_action\"; return verifChk();'/>";	
+			$btn_suppr = "<input type='submit' class='bouton' value='$msg[63]' onclick='!!change_action_form!! this.form.act.value=\"suppr_action\"; return verifChkAction(this.form.name,".$id_demande.");'/>";	
 		} else {
+			$list_actions = str_replace('!!expand_header!!',"",$list_actions);
 			$liste .= "<tr><td>".$msg['demandes_action_liste_vide']."</td></tr>";
 		}
-		$form_liste_action = str_replace('!!iddemande!!',$id_demande,$form_liste_action);
-		$form_liste_action = str_replace('!!btn_suppr!!',$btn_suppr,$form_liste_action);
-		$form_liste_action = str_replace('!!liste_action!!',$liste,$form_liste_action);
 		
-		print $form_liste_action;
+		if(!$last_modified){
+			$list_actions = str_replace('!!last_modified!!','',$list_actions);
+		}
+		
+		$list_actions = str_replace('!!iddemande!!',$id_demande,$list_actions);
+		$list_actions = str_replace('!!btn_suppr!!',$btn_suppr,$list_actions);
+		$list_actions = str_replace('!!liste_action!!',$liste,$list_actions);
+		
+		if($from_ajax) {
+			$list_actions = str_replace('!!change_action_form!!','this.form.action="./demandes.php?categ=action";',$list_actions);
+		} else {
+			$list_actions = str_replace('!!change_action_form!!','',$list_actions);
+		}
+		
+		if($allow_expand){
+			$script="
+				if(document.getElementById('last_modified').value!=0){
+					window.onload(expand_note('note'+document.getElementById('last_modified').value,document.getElementById('last_modified').value, true));
+				}
+			";
+		}
+		$list_actions = str_replace('!!script_expand!!',$script,$list_actions);
+		
+		return $list_actions;
 	}
+	
 	
 	/*
 	 * Suppression d'une action 
 	 */
-	function delete(){
+	static function delete(demandes_actions $action){
 		
 		global $dbh,$chk;
 		
-		if($this->id_action){
-			$req = "delete from demandes_actions where id_action='".$this->id_action."'"; 
-			mysql_query($req,$dbh);
-			$req = "delete from demandes_notes where num_action='".$this->id_action."'";
-			mysql_query($req,$dbh);
-			$q = "delete ed,eda from explnum_doc ed join explnum_doc_actions eda on ed.id_explnum_doc=eda.num_explnum_doc where eda.num_action=$this->id_action";
-			mysql_query($q, $dbh);
-		} elseif($chk){
-			for($i=0;$i<count($chk);$i++){
-				$req = "delete from demandes_actions where id_action='".$chk[$i]."'"; 
-				mysql_query($req,$dbh);
-				$req = "delete from demandes_notes where num_action='".$chk[$i]."'";
-				mysql_query($req,$dbh);
-				$q = "delete ed,eda from explnum_doc ed join explnum_doc_actions eda on ed.id_explnum_doc=eda.num_explnum_doc where eda.num_action=$chk[$i]";
-				mysql_query($q, $dbh);
+		if($action->id_action){
+			$action->fetch_data($action->id_action,false);
+			if(sizeof($action->notes)){
+				foreach($action->notes as $note){
+					demandes_notes::delete($note);
+				}
 			}
-		}		
+			
+			$req = "delete from demandes_actions where id_action='".$action->id_action."'"; 
+			pmb_mysql_query($req,$dbh);
+
+			$q = "delete ed,eda from explnum_doc ed join explnum_doc_actions eda on ed.id_explnum_doc=eda.num_explnum_doc where eda.num_action=$action->id_action";
+			pmb_mysql_query($q, $dbh);
+			audit::delete_audit(AUDIT_ACTION,$action->id_action);
+ 		}		
 	}
 	
 	/*
@@ -487,22 +755,22 @@ class demandes_actions{
 			and type_action=1 
 			and (statut_action=1 or statut_action=2)
 			and num_user='".SESSuserid."' group by id_demande";
-		$res_dmde=mysql_query($req_dmde,$dbh);
-		if(mysql_num_rows($res_dmde)){
-			while(($dmde=mysql_fetch_object($res_dmde))){
+		$res_dmde=pmb_mysql_query($req_dmde,$dbh);
+		if(pmb_mysql_num_rows($res_dmde)){
+			while(($dmde=pmb_mysql_fetch_object($res_dmde))){
 				$dmde_action = "onclick=document.location='./demandes.php?categ=gestion&act=see_dmde&iddemande=".$dmde->id_demande."'";
 				$list .= "<tr id='demande_$dmde->id_demande' $dmde_action style='cursor: pointer'>";
 				$list .= "<td colspan=8>".htmlentities($dmde->titre_demande,ENT_QUOTES,$charset)."</td>";
 				$list .= "</tr>";	
-				$req_act="select id_action, sujet_action,detail_action,date_action, deadline_action, temps_passe, cout, progression_action 
+				$req_act="select id_action, sujet_action,detail_action,date_action, deadline_action, temps_passe, cout, progression_action, actions_read_gestion 
 				from demandes_actions 
 				where num_demande='".$dmde->id_demande."'
 				and type_action=1 
 				and (statut_action=1 or statut_action=2)"; 
-				$res_act=mysql_query($req_act,$dbh);
-				if(mysql_num_rows($res_act)){						
+				$res_act=pmb_mysql_query($req_act,$dbh);
+				if(pmb_mysql_num_rows($res_act)){						
 					$parity=1;						
-					while(($com = mysql_fetch_object($res_act))){
+					while(($com = pmb_mysql_fetch_object($res_act))){
 						if ($parity % 2) {
 							$pair_impair = "even";
 						} else {
@@ -549,22 +817,22 @@ class demandes_actions{
 			and type_action=4 
 			and statut_action=1 
 			and num_user='".SESSuserid."' group by id_demande";
-		$res_dmde=mysql_query($req_dmde,$dbh);
-		if(mysql_num_rows($res_dmde)){
-			while(($dmde=mysql_fetch_object($res_dmde))){
+		$res_dmde=pmb_mysql_query($req_dmde,$dbh);
+		if(pmb_mysql_num_rows($res_dmde)){
+			while(($dmde=pmb_mysql_fetch_object($res_dmde))){
 				$dmde_action = "onclick=document.location='./demandes.php?categ=gestion&act=see_dmde&iddemande=".$dmde->id_demande."'";
 				$list .= "<tr id='demande_$dmde->id_demande' $dmde_action style='cursor: pointer'>";
 				$list .= "<td colspan=8>".htmlentities($dmde->titre_demande,ENT_QUOTES,$charset)."</td>";
 				$list .= "</tr>";	
-				$req_act="select id_action, sujet_action,detail_action,date_action, deadline_action, temps_passe, cout, progression_action 
+				$req_act="select id_action, sujet_action,detail_action,date_action, deadline_action, temps_passe, cout, progression_action, actions_read_gestion  
 				from demandes_actions 
 				where num_demande='".$dmde->id_demande."'
 				and type_action=4 
 				and statut_action=1"; 
-				$res_act=mysql_query($req_act,$dbh);
-				if(mysql_num_rows($res_act)){						
+				$res_act=pmb_mysql_query($req_act,$dbh);
+				if(pmb_mysql_num_rows($res_act)){						
 					$parity=1;						
-					while(($com = mysql_fetch_object($res_act))){
+					while(($com = pmb_mysql_fetch_object($res_act))){
 						if ($parity % 2) {
 							$pair_impair = "even";
 						} else {
@@ -608,22 +876,22 @@ class demandes_actions{
 			and type_action=4 
 			and statut_action=2 
 			and num_user='".SESSuserid."' group by id_demande";
-		$res_dmde=mysql_query($req_dmde,$dbh);
-		if(mysql_num_rows($res_dmde)){
-			while(($dmde=mysql_fetch_object($res_dmde))){
+		$res_dmde=pmb_mysql_query($req_dmde,$dbh);
+		if(pmb_mysql_num_rows($res_dmde)){
+			while(($dmde=pmb_mysql_fetch_object($res_dmde))){
 				$dmde_action = "onclick=document.location='./demandes.php?categ=gestion&act=see_dmde&iddemande=".$dmde->id_demande."'";
 				$list .= "<tr id='demande_$dmde->id_demande' $dmde_action style='cursor: pointer'>";
 				$list .= "<td colspan=8>".htmlentities($dmde->titre_demande,ENT_QUOTES,$charset)."</td>";
 				$list .= "</tr>";	
-				$req_act="select id_action, sujet_action,detail_action,date_action, deadline_action, temps_passe, cout, progression_action 
+				$req_act="select id_action, sujet_action,detail_action,date_action, deadline_action, temps_passe, cout, progression_action, actions_read_gestion 
 				from demandes_actions 
 				where num_demande='".$dmde->id_demande."'
 				and type_action=4 
 				and statut_action=2"; 
-				$res_act=mysql_query($req_act,$dbh);
-				if(mysql_num_rows($res_act)){						
+				$res_act=pmb_mysql_query($req_act,$dbh);
+				if(pmb_mysql_num_rows($res_act)){						
 					$parity=1;						
-					while(($com = mysql_fetch_object($res_act))){
+					while(($com = pmb_mysql_fetch_object($res_act))){
 						if ($parity % 2) {
 							$pair_impair = "even";
 						} else {
@@ -663,7 +931,7 @@ class demandes_actions{
 		
 		for($i=0;$i<count($chk);$i++){		
 			$req = "update demandes_actions set statut_action=3 where id_action='".$chk[$i]."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 	
@@ -675,7 +943,7 @@ class demandes_actions{
 		
 		for($i=0;$i<count($chk);$i++){		
 			$req = "update demandes_actions set statut_action=3 where id_action='".$chk[$i]."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 	
@@ -687,7 +955,7 @@ class demandes_actions{
 		
 		for($i=0;$i<count($chk);$i++){		
 			$req = "update demandes_actions set statut_action=1 where id_action='".$chk[$i]."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 	
@@ -702,13 +970,107 @@ class demandes_actions{
 		else 
 			$rqt = "select concat(empr_prenom,' ',empr_nom) as nom from empr where id_empr='".$id_createur."'";
 		
-		$res = mysql_query($rqt,$dbh);
-		if(mysql_num_rows($res)){		
-			$createur = mysql_fetch_object($res);			
+		$res = pmb_mysql_query($rqt,$dbh);
+		if(pmb_mysql_num_rows($res)){		
+			$createur = pmb_mysql_fetch_object($res);			
 			return (trim($createur->nom)  ? $createur->nom : $createur->username );
-		}
-		
+		}		
 		return "";
 	}
+	
+	/*
+	 * fonction qui renvoie un booléen indiquant si une action a été lue ou pas
+	*/
+	static function read($action,$side="_gestion"){
+		global $dbh;
+		$read  = false;
+		$query = "SELECT actions_read".$side." FROM demandes_actions WHERE id_action=".$action->id_action;
+		$result = pmb_mysql_query($query,$dbh);
+		if($result){
+			$tmp = pmb_mysql_result($result,0,0);
+			if($tmp == 0){
+				$read = true;
+			}
+		}
+		return $read;
+	}
+	
+	/*
+	 * Change l'alerte de l'action : si elle est lue, elle passe en non lue et inversement
+	*/
+	static function change_read($action,$side="_gestion"){
+		global $dbh;
+		
+		$read = demandes_actions::read($action,$side);
+		$value = "";
+		if($read){
+			$value = 1;
+		} else {
+			$value = 0;
+		}
+		$query = "UPDATE demandes_actions SET actions_read".$side."=".$value." WHERE id_action=".$action->id_action;
+		if(pmb_mysql_query($query,$dbh)){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/*
+	 * changement forcé de la mention "lue" ou "pas lue" de l'action
+	 * true => action est déjà lue doc pas d'alerte
+	 * false => alerte
+	*/
+	static function action_read($id_action,$booleen=true,$side="_gestion"){
+		global $dbh;
+		
+		$value = "";
+		if($booleen){
+			$value = 0;
+		} else {
+			$value = 1;
+		}
+		$query = "UPDATE demandes_actions SET actions_read".$side."=".$value." WHERE id_action=".$id_action;
+		if(pmb_mysql_query($query,$dbh)){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/*
+	 * Met à jour les alertes sur l'action et la demande dont dépend la note
+	*/
+	static function action_majParentEnfant($id_action,$id_demande,$side="_gestion"){
+		global $dbh;
+	
+		$ok = false;
+		if($id_action){
+				
+			$select = "SELECT actions_read".$side." FROM demandes_actions WHERE id_action=".$id_action;
+			$result  = pmb_mysql_query($select,$dbh);
+			$read = pmb_mysql_result($result,0,0);
+				
+			if($read == 1){
+				if(demandes::demande_read($id_demande,false)){
+					$ok = true;
+				}
+			} else {
+				// maj notes : si l'action est lue, on met à 0 toutes les notes
+				$query = "UPDATE demandes_notes SET notes_read".$side." = 0 WHERE num_action=".$id_action;			
+				if(pmb_mysql_query($query,$dbh)){
+					// maj demande : controle s'il existe des actions non lues pour la demande en cours
+					$query = "SELECT actions_read".$side." FROM demandes_actions WHERE num_demande=".$id_demande." AND id_action != ".$id_action." AND actions_read".$side."=1";
+					$result = pmb_mysql_query($query,$dbh);					
+					if(pmb_mysql_num_rows($result)){
+						$ok = demandes::demande_read($id_demande,false,$side);
+					} else {
+						$ok = demandes::demande_read($id_demande,true,$side);
+					}
+				} 
+			}
+		}		
+		return $ok;
+	}	
 }
 ?>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_persopac.class.php,v 1.21 2014-02-26 13:29:20 dgoron Exp $
+// $Id: search_persopac.class.php,v 1.22 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -38,8 +38,8 @@ class search_persopac {
 	function fetch_data() {
 		global $dbh;
 		
-		$myQuery = mysql_query("SELECT * FROM search_persopac WHERE search_id='".$this->id."' LIMIT 1", $dbh);
-		$myreq= mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("SELECT * FROM search_persopac WHERE search_id='".$this->id."' LIMIT 1", $dbh);
+		$myreq= pmb_mysql_fetch_object($myQuery);
 		
 		$this->name=$myreq->search_name;
 		$this->shortname=$myreq->search_shortname;
@@ -50,9 +50,9 @@ class search_persopac {
 		$this->empr_categ_restrict = array();
 		
 		$req  = "select id_categ_empr from search_persopac_empr_categ where id_search_persopac = ".$this->id;
-		$res = mysql_query($req);
-		if(mysql_num_rows($res)){
-			while ($obj = mysql_fetch_object($res)){
+		$res = pmb_mysql_query($req);
+		if(pmb_mysql_num_rows($res)){
+			while ($obj = pmb_mysql_fetch_object($res)){
 				$this->empr_categ_restrict[]=$obj->id_categ_empr;
 			}
 		}
@@ -60,12 +60,12 @@ class search_persopac {
 
 	function get_link() {
 		global $dbh;	
-		$myQuery = mysql_query("SELECT * FROM search_persopac order by search_name ", $dbh);
+		$myQuery = pmb_mysql_query("SELECT * FROM search_persopac order by search_name ", $dbh);
 		$this->search_persopac_list=array();
 		$link="";
-		if(mysql_num_rows($myQuery)){
+		if(pmb_mysql_num_rows($myQuery)){
 			$i=0;
-			while(($r=mysql_fetch_object($myQuery))) {
+			while(($r=pmb_mysql_fetch_object($myQuery))) {
 				$this->search_persopac_list[$i]= new stdClass();
 				$this->search_persopac_list[$i]->id=$r->search_id;
 				$this->search_persopac_list[$i]->name=$r->search_name;
@@ -92,7 +92,7 @@ class search_persopac {
 		}	
 		if($this->id) {
 			// modif
-			$no_erreur=mysql_query("UPDATE search_persopac SET $fields WHERE search_id=".$this->id, $dbh);	
+			$no_erreur=pmb_mysql_query("UPDATE search_persopac SET $fields WHERE search_id=".$this->id, $dbh);	
 			if(!$no_erreur) {
 				error_message($msg["search_persopac_form_edit"], $msg["search_persopac_form_add_error"],1);	
 				exit;
@@ -100,8 +100,8 @@ class search_persopac {
 			
 		} else {
 			// create
-			$no_erreur=mysql_query("INSERT INTO search_persopac SET $fields ", $dbh);
-			$this->id = mysql_insert_id($dbh);
+			$no_erreur=pmb_mysql_query("INSERT INTO search_persopac SET $fields ", $dbh);
+			$this->id = pmb_mysql_insert_id($dbh);
 			if(!$no_erreur) {
 				error_message($msg["search_persopac_form_add"], $msg["search_persopac_form_add_error"],1);
 				exit;
@@ -109,11 +109,11 @@ class search_persopac {
 		}	
 		//on s'occupe maintenant de la restriction par caégories de lecteur
 		$req = "delete from search_persopac_empr_categ where id_search_persopac = ".$this->id;
-		mysql_query($req);
+		pmb_mysql_query($req);
 		if(count($value->search_empr_restrict)>0){
 			foreach($value->search_empr_restrict as $id_categ_empr){
 				$req= "insert into search_persopac_empr_categ set id_search_persopac=".$this->id.", id_categ_empr=".$id_categ_empr;
-				mysql_query($req);
+				pmb_mysql_query($req);
 			}
 		}
 		
@@ -203,12 +203,12 @@ class search_persopac {
 		
 		//restriction aux catégories de lecteur
 		$requete = "SELECT id_categ_empr, libelle FROM empr_categ ORDER BY libelle ";
-		$res = mysql_query($requete);
-		if(mysql_num_rows($res)>0){
+		$res = pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)>0){
 			$categ = "
 			<label for='empr_restrict'>".$msg['search_perso_form_user_restrict']."</label><br />
 			<select id='empr_restrict' name='empr_restrict[]' multiple>";
-			while($obj = mysql_fetch_object($res)){
+			while($obj = pmb_mysql_fetch_object($res)){
 				$categ.="
 				<option value='".$obj->id_categ_empr."' ".(in_array($obj->id_categ_empr,$this->empr_categ_restrict) ? "selected=selected" : "") .">".$obj->libelle."</option>";
 			}
@@ -268,8 +268,8 @@ class search_persopac {
 		global $dbh,$search_persopac_link;
 		
 		if($this->id) {
-			mysql_query("DELETE from search_persopac WHERE search_id='".$this->id."' ", $dbh);
-			mysql_query("delete from search_persopac_empr_categ where id_search_persopac = ".$this->id);
+			pmb_mysql_query("DELETE from search_persopac WHERE search_id='".$this->id."' ", $dbh);
+			pmb_mysql_query("delete from search_persopac_empr_categ where id_search_persopac = ".$this->id);
 		}
 		$search_persopac_link=$this->get_link();	
 	}

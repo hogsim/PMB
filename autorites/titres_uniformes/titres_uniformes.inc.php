@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titres_uniformes.inc.php,v 1.6 2014-03-05 08:44:47 mhoestlandt Exp $
+// $Id: titres_uniformes.inc.php,v 1.7 2015-06-19 07:31:03 vtouchard Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -49,11 +49,13 @@ switch($sub) {
 		// mise à jour d'un auteur
 		$titre_uniforme_val = array(				
 				'name' 			=> $name,
-				'tonalite' 		=> $tonalite,			
+				'tonalite' 		=> $tonalite,
+				'tonalite_selector' => $form_tonalite_selector,
 				'comment'		=> $comment,
 				'import_denied'	=> $tu_import_denied,
 				'num_author' 	=> $form_author_id,
 				'form' 			=> $form,
+				'form_selector' => $form_form_selector,
 				'date' 			=> $date,
 				'subject' 		=> $subject,
 				'place' 		=> $place,

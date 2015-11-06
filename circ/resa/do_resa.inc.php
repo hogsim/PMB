@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: do_resa.inc.php,v 1.12 2008-06-04 14:54:25 ohennequin Exp $
+// $Id: do_resa.inc.php,v 1.13 2015-04-24 14:20:58 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,15 +18,18 @@ if($id_empr && ($id_notice || $id_bulletin)) {
 	// on teste si c'est une suppression
 	if(!$delete) {
 		// on tente d'effectuer la réservation
-		if($id_notice) $resa = new reservation($id_empr, $id_notice, 0);
-			else $resa = new reservation($id_empr, 0, $id_bulletin);
+		if($id_notice) {
+			$resa = new reservation($id_empr, $id_notice, 0);
+		} else {
+			$resa = new reservation($id_empr, 0, $id_bulletin);
+		}
 		$resa->add();
 		$erreur_affichage="<div class='row'><div class='colonne10'><img src='./images/info.png' /></div>
 					<div class='colonne-suite'>";
 		$erreur_affichage.="<span class='erreur'>".$resa->message."</span>";
 		$erreur_affichage.="</div>";
 		if ($resa->force) {
-			$erreur_affichage.="<input type='button' class='bouton' value='".$msg["resa_force"]."' onClick=\"document.location='circ.php?categ=resa&id_empr=$id_empr&id_notice=$id_notice&id_bulletin=$id_bulletin&quota_resa=1'\">";		
+			$erreur_affichage.="<input type='button' class='bouton' value='".$msg["resa_force"]."' onClick=\"document.location='circ.php?categ=resa&id_empr=$id_empr&id_notice=$id_notice&id_bulletin=$id_bulletin&quota_resa=1'\">";
 		}
 		$erreur_affichage.= "</div>\n";
 		$empr = new emprunteur($id_empr, $erreur_affichage, FALSE, 1, $resa->id);
@@ -34,10 +37,11 @@ if($id_empr && ($id_notice || $id_bulletin)) {
 
 	} else {
 		// c'est une suppression
-		if($id_notice)
+		if($id_notice) {
 			$resa = new reservation($id_empr, $id_notice);
-		else
+		} else {
 			$resa = new reservation($id_empr, 0, $id_bulletin);
+		}
 		$resa->delete();
 		$erreur_affichage="<table border='0' cellpadding='1' height='40' border='1'><tr><td width='33'><span><img src='./images/info.png' /></span></td>
 					<td width='100%'>";

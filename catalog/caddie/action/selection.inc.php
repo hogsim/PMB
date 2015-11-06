@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: selection.inc.php,v 1.17 2012-10-22 08:53:47 mbertin Exp $
+// $Id: selection.inc.php,v 1.18 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -39,17 +39,17 @@ if($idcaddie) {
 								$final_query=str_replace("CADDIE(NOTI)",$liste_flag[$icount],$hp->final_query);
 								$final_query=str_replace("CADDIE(EXPL)",$liste_flag[$icount],$final_query);
 								$final_query=str_replace("CADDIE(BULL)",$liste_flag[$icount],$final_query);
-								$result_selection_flag= @mysql_query($final_query, $dbh);
-								$nb_elts_traites = mysql_affected_rows($dbh) ;
+								$result_selection_flag= @pmb_mysql_query($final_query, $dbh);
+								$nb_elts_traites = pmb_mysql_affected_rows($dbh) ;
 								if ($nb_elts_traites>0) $nb_elements_flag+=$nb_elts_traites;
 							} // fin for
 						} else {
 							// autre procédure
 							$final_query=preg_replace("/CADDIE\(.*[^\)]\)/i",implode(",",$liste_flag),$hp->final_query);
-							$result_selection_flag= @mysql_query($final_query, $dbh);
+							$result_selection_flag= @pmb_mysql_query($final_query, $dbh);
 							if ($result_selection_flag) {
-								$nb_elements_flag=mysql_affected_rows($dbh);
-							} else $error_message_flag=mysql_error();
+								$nb_elements_flag=pmb_mysql_affected_rows($dbh);
+							} else $error_message_flag=pmb_mysql_error();
 						} // fin if autre procédure
 					}
 				}
@@ -62,17 +62,17 @@ if($idcaddie) {
 								$final_query=str_replace("CADDIE(NOTI)",$liste_no_flag[$icount],$hp->final_query);
 								$final_query=str_replace("CADDIE(EXPL)",$liste_no_flag[$icount],$final_query);
 								$final_query=str_replace("CADDIE(BULL)",$liste_no_flag[$icount],$final_query);
-								$result_selection_no_flag= @mysql_query($final_query, $dbh);
-								$nb_elts_traites = mysql_affected_rows($dbh) ;
+								$result_selection_no_flag= @pmb_mysql_query($final_query, $dbh);
+								$nb_elts_traites = pmb_mysql_affected_rows($dbh) ;
 								if ($nb_elts_traites>0) $nb_elements_no_flag+=$nb_elts_traites;
 							} // fin for
 						} else {
 							// autre procédure
 							$final_query=preg_replace("/CADDIE\(.*[^\)]\)/i",implode(",",$liste_no_flag),$hp->final_query);
-							$result_selection_no_flag= @mysql_query($final_query, $dbh);
+							$result_selection_no_flag= @pmb_mysql_query($final_query, $dbh);
 							if ($result_selection_no_flag) {
-								$nb_elements_no_flag=mysql_affected_rows($dbh);
-							} else $error_message_no_flag=mysql_error();
+								$nb_elements_no_flag=pmb_mysql_affected_rows($dbh);
+							} else $error_message_no_flag=pmb_mysql_error();
 						} // fin if autre procédure
 					}
 				}
@@ -121,13 +121,13 @@ function show_procs($idcaddie) {
 	// affichage du tableau des procédures
 	if ($PMBuserid!=1) $where=" and (autorisations='$PMBuserid' or autorisations like '$PMBuserid %' or autorisations like '% $PMBuserid %' or autorisations like '% $PMBuserid') ";
 	$requete = "SELECT idproc, type, name, requete, comment, autorisations, parameters FROM caddie_procs WHERE type='ACTION' $where ORDER BY name ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	$n_proc=0;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		$rqt_autorisation=explode(" ",$row[5]);
 		if ((array_search ($PMBuserid, $rqt_autorisation)!==FALSE || $PMBuserid == 1)&&(is_for_cart($row[3]))) {
 			$n_proc++;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes.tpl.php,v 1.10.6.1 2015-05-31 18:00:41 Alexandre Exp $
+// $Id: demandes.tpl.php,v 1.22 2015-05-31 18:17:24 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -18,13 +18,18 @@ $demandes_menu = "
 		<li><a href='./demandes.php?categ=list&idetat=4&iduser=".SESSuserid."'>".$msg['demandes_menu_fini']."</a></li>
 		<li><a href='./demandes.php?categ=list&idetat=5&iduser=".SESSuserid."'>".$msg['demandes_menu_abandon']."</a></li>
 		<li><a href='./demandes.php?categ=list&idetat=6&iduser=".SESSuserid."'>".$msg['demandes_menu_archive']."</a></li>
-		<li><a href='./demandes.php?categ=list&iduser=-1'>".$msg[demandes_menu_not_assigned]."</a></li>
-	</ul>
+		<li><a href='./demandes.php?categ=list&iduser=-1'>".$msg[demandes_menu_not_assigned]."</a></li>				
+	</ul>	
 	<h3 onclick='menuHide(this,event)'>".$msg['demandes_menu_action']."</h3>
 	<ul>
 		<li><a href='./demandes.php?categ=action&sub=com'>".$msg['demandes_menu_comm']."</a></li>
 		<li><a href='./demandes.php?categ=action&sub=rdv_plan'>".$msg['demandes_menu_rdv_planning']."</a></li>
 		<li><a href='./demandes.php?categ=action&sub=rdv_val'>".$msg['demandes_menu_rdv_a_valide']."</a></li>
+	</ul>
+	<h3 onclick='menuHide(this,event)'>".$msg['demandes_menu_faq']."</h3>
+	<ul>
+		<li><a href='./demandes.php?categ=faq&sub=question'>".$msg['demandes_menu_faq']."</a></li>
+
 	</ul>
 	<div id='div_alert' class='erreur'>$aff_alerte</div>
 </div>
@@ -49,9 +54,9 @@ $form_filtre_demande = "
  <script type='text/javascript'>
 	function filtrer_user(){
  		document.forms['search'].submit();
-	}
+	} 
 </script>
-<h1>".$msg['demandes_gestion']." : ".$msg['demandes_search_form']."</h1>
+<h1>".$msg['demandes_gestion']." : ".$msg['demandes_search_form']." !!etat_demandes!!</h1>
 <form class='form-".$current_module."' id='search' name='search' method='post' action=\"./demandes.php?categ=list\">
 	<h3>".$msg['demandes_search_filtre_form']."</h3>
 	<input type='hidden' name='act' id='act' />
@@ -87,7 +92,7 @@ $form_filtre_demande = "
 				!!periode!!
 			</div>
 		</div>
-		<div class='row'>
+		<div class='row'> 
 			<div class='colonne3'>
 				<label class='etiquette'>".$msg['demandes_affectation_filtre']."</label>
 			</div>
@@ -111,7 +116,7 @@ $form_filtre_demande = "
 		</div>";
 if($pmb_lecteurs_localises)
 $form_filtre_demande .="
-		<div class='row'>
+		<div class='row'> 
 			<div class='colonne3'>
 				<label class='etiquette'>".$msg['demandes_localisation_filtre']."</label>
 			</div>
@@ -122,7 +127,7 @@ $form_filtre_demande .="
 			</div>
 		</div>";
 $form_filtre_demande .="
-		<div class='row'></div>
+		<div class='row'></div>	
 	</div>
 	<div class='row'></div>
 	<div class='row'>
@@ -135,39 +140,42 @@ $form_filtre_demande .="
 
 $form_liste_demande ="
 <script src='./javascript/dynamic_element.js' type='text/javascript'></script>
+<script src='./javascript/demandes_form.js' type='text/javascript'></script>
 <script type='text/javascript'>
- function verifChk(txt) {
-
-	var elts = document.forms['liste'].elements['chk[]'];
-	var elts_cnt  = (typeof(elts.length) != 'undefined')
-              ? elts.length
-              : 0;
-	nb_chk = 0;
-	if (elts_cnt) {
-		for(var i=0; i < elts.length; i++) {
-			if (elts[i].checked) nb_chk++;
+	var msg_demandes_note_confirm_demande_end='".addslashes($msg['demandes_note_confirm_demande_end'])."'; 
+	var msg_demandes_actions_nocheck='".addslashes($msg['demandes_actions_nocheck'])."'; 
+	var msg_demandes_confirm_suppr = '".addslashes($msg['demandes_confirm_suppr'])."';
+	var msg_demandes_note_confirm_suppr = '".addslashes($msg['demandes_note_confirm_suppr'])."';
+</script>
+<script type='text/javascript'>
+	function alert_progressiondemande(){
+		alert(\"".$msg['demandes_progres_ko']."\");
+	}
+	function verifChk(txt) {
+		var elts = document.forms['liste'].elements['chk[]'];
+		var elts_cnt  = (typeof(elts.length) != 'undefined')
+	              ? elts.length
+	              : 0;
+		nb_chk = 0;
+		if (elts_cnt) {
+			for(var i=0; i < elts.length; i++) {
+				if (elts[i].checked) nb_chk++;
+			}
+		} else {
+			if (elts.checked) nb_chk++;
 		}
-	} else {
-		if (elts.checked) nb_chk++;
+		if (nb_chk == 0) {
+			alert(\"".$msg['demandes_nocheck']."\");
+			return false;	
+		}
+		
+		if(txt == 'suppr'){
+			var sup = confirm(\"".$msg['demandes_confirm_suppr']."\");
+			if(!sup) 
+				return false;
+			return true;
+		}
 	}
-	if (nb_chk == 0) {
-		alert(\"".$msg['demandes_nocheck']."\");
-		return false;
-	}
-
-	if(txt == 'suppr'){
-		var sup = confirm(\"".$msg['demandes_confirm_suppr']."\");
-		if(!sup)
-			return false;
-		return true;
-	}
-
-	return true;
-}
-
-function alert_progressiondemande(){
-	alert(\"".$msg['demandes_progres_ko']."\");
-}
 </script>
 <form class='form-".$current_module."' id='liste' name='liste' method='post' action=\"./demandes.php?categ=list\">
 	<input type='hidden' name='act' id='act' />
@@ -177,6 +185,8 @@ function alert_progressiondemande(){
 		<table>
 			<tbody>
 				<tr>
+					<th></th>
+					<th></th>
 					<th>".$msg['demandes_theme']."</th>
 					<th>".$msg['demandes_type']."</th>
 					<th>".$msg['demandes_titre']."</th>
@@ -187,10 +197,10 @@ function alert_progressiondemande(){
 					<th>".$msg['demandes_demandeur']."</th>
 					<th>".$msg['demandes_attribution']."</th>
 					<th>".$msg['demandes_progression']."</th>
-					<th>".$msg['demandes_notice']."</th>
+					<th>".$msg['demandes_notice']."</th>					
 					<th></th>
 				</tr>
-				!!liste_dmde!!
+				!!liste_dmde!!				
 			</tbody>
 		</table>
 	</div>
@@ -204,18 +214,18 @@ function alert_progressiondemande(){
 		</div>
 	</div>
 	<div class='row'></div>
-</form>
+</form>	
 <script>parse_dynamic_elts();</script>
 ";
 
 $form_modif_demande = "
 <script type='text/javascript'>
 	function confirm_delete(){
-
+		
 		var sup = confirm(\"".$msg['demandes_confirm_suppr']."\");
 		if(!sup)
 			return false;
-		return true;
+		return true;	
 	}
 </script>
 <h1>".$msg['demandes_gestion']." : ".$msg['admin_demandes']."</h1>
@@ -225,7 +235,7 @@ $form_modif_demande = "
 	<input type='hidden' id='iddemande' name='iddemande' value='!!iddemande!!'/>
 	<div class='form-contenu'>
 		<div class='row'>
-			<div class='colonne2'>
+			<div class='colonne2'>		
 				<label class='etiquette'>".$msg['demandes_theme']."</label>
 			</div>
 			<div class='colonne2'>
@@ -255,7 +265,7 @@ $form_modif_demande = "
 			<div class='colonne2'>
 				<input type='texte' class='saisie-10em' name='progression' id='progression' value='!!progression!!' />
 			</div>
-		</div>
+		</div>	
 		<div class='row'>
 			<label class='etiquette'>".$msg['demandes_titre']."</label>
 		</div>
@@ -305,16 +315,16 @@ $form_modif_demande = "
 		<div class='row'>
 			<div class='colonne3'>
 				<input type='hidden' id='idempr' name='idempr' value='!!idempr!!' />
-				<input type='text' id='empr_txt' name='empr_txt' class='saisie-20emr' value='!!empr_txt!!'/>
+				<input type='text' id='empr_txt' name='empr_txt' disabled class='saisie-20emr' value='!!empr_txt!!'/>
 				<input type='button' class='bouton_small' value='...' onclick=\"openPopUp('./select.php?what=origine&caller=modif_dmde&param1=idempr&param2=empr_txt&deb_rech='+".pmb_escape()."(this.form.empr_txt.value)+'&filtre=ONLY_EMPR', 'select_user', 400, 400, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\" />
-				<input type='button' class='bouton_small' value='X'	onclick=\"this.form.id_empr.value='0';this.form.empr_txt.value='';\"/>
+				<input type='button' class='bouton_small' value='X' onclick=\"this.form.idempr.value='0';this.form.empr_txt.value='';\"/>	
 			</div>
 			<div class='colonne3'>
 				!!select_user!!
 			</div>
 			<div class='colonne3'>&nbsp;</div>
-		</div>
-		<div class='row'></div>
+		</div>	
+		<div class='row'></div>	
 	</div>
 	<div class='row'>
 		<div class='left'>
@@ -329,7 +339,7 @@ $form_modif_demande = "
 </form>
 
 <script type='text/javascript'>
-	function test_form(form) {
+	function test_form(form) {	
 
 		if(isNaN(form.progression.value) || form.progression.value > 100){
 	    	alert(\"$msg[demandes_progres_ko]\");
@@ -338,17 +348,17 @@ $form_modif_demande = "
 		if((form.titre.value.length == 0) ||  (form.empr_txt.value.length == 0) || (form.date_debut.value.length == 0)||  (form.date_fin.value.length == 0)){
 			alert(\"$msg[demandes_create_ko]\");
 			return false;
-	    }
-
+	    } 
+	    
 	    var deb =form.date_debut.value;
 	    var fin = form.date_fin.value;
-
+	   
 	    if(deb>fin){
 	    	alert(\"$msg[demandes_date_ko]\");
 	    	return false;
 	    }
 		return true;
-
+			
 	}
 </script>
 ";
@@ -360,13 +370,13 @@ $form_consult_dmde = "
 <script src='./javascript/select.js' type='text/javascript'></script>
 <script type='text/javascript'>
 	function confirm_delete(){
-
+		
 		var sup = confirm(\"".$msg['demandes_confirm_suppr']."\");
 		if(!sup)
 			return false;
-		return true;
+		return true;	
 	}
-
+	
 	function alert_progressiondemande(){
 		alert(\"".$msg['demandes_progres_ko']."\");
 	}
@@ -382,7 +392,7 @@ $form_consult_dmde = "
 				<label class='etiquette'>".$msg['demandes_theme']." : </label>
 				!!theme_dmde!!
 			</div>
-			<div class='colonne3'>
+			<div class='colonne3'>		
 				<label class='etiquette'>".$msg['demandes_etat']." : </label>
 				!!etat_dmde!!
 			</div>
@@ -418,14 +428,14 @@ $form_consult_dmde = "
 				<label class='etiquette'>".$msg['demandes_date_butoir']." : </label>
 				!!date_butoir_dmde!!
 			</div>
-		</div>
-
+		</div>	
+		
 		<div class='row'>
 			<div class='colonne3'>
 				&nbsp;
-			</div>
+			</div>	
 			<div class='colonne3'>
-				&nbsp;
+				&nbsp;			
 			</div>
 			<div class='colonne3'>
 				<label class='etiquette' >".$msg['demandes_progression']." : </label>
@@ -439,12 +449,16 @@ $form_consult_dmde = "
 	</div>
 	<div class='row'>
 		<div class='left'>
-			<input type='button' class='bouton' value='".$msg['demandes_retour']."' onClick=\"document.location='./demandes.php?categ=list'\" />
-			<input type='submit' class='bouton' value='$msg[62]' onClick='this.form.act.value=\"modif\" ; ' />
+			<input type='button' class='bouton' value='".$msg['demandes_retour']."' onClick=\"document.location='./demandes.php?categ=list!!params_retour!!'\" />
+			<input type='submit' class='bouton' value='$msg[62]' onClick='this.form.act.value=\"modif\" ; ' />			
 			!!btns_notice!!
+			!!btn_audit!!
+			!!btn_repfinal!!
+			!!btn_faq!!
 		</div>
 		<div class='right'>
-			<input type='submit' class='bouton' value='$msg[63]' onClick='this.form.act.value=\"suppr_noti\" ; return confirm_delete();' />
+			!!btn_suppr_notice!!
+			<input type='submit' class='bouton' value='".$msg['demandes_delete']."' onClick='this.form.act.value=\"suppr_noti\" ; return confirm_delete();' />
 		</div>
 	</div>
 	<div class='row'></div>
@@ -458,13 +472,13 @@ $form_liste_docnum ="
 	<input type='hidden' id='iddemande' name='iddemande' value='!!iddemande!!'/>
 	<div class='form-contenu' >
 		<div class='row'>
-			!!liste_docnum!!
+			!!liste_docnum!!	
 		</div>
 	</div>
 	<div class='row'>
 		<div class='left'>
 			<input type='button' class='bouton' value='".$msg['demandes_retour']."' onClick=\"history.go(-1)\" />
-			!!btn_attach!!
+			!!btn_attach!!	
 		</div>
 		<div class='right'>
 			<input type='button' class='bouton' name='btn_chk' id='btn_chk' value='".$msg['tout_cocher_checkbox']."' onClick=\"check_all('liste_action','chk',true);\" />
@@ -472,7 +486,7 @@ $form_liste_docnum ="
 			<input type='button' class='bouton' name='btn_chk' id='btn_chk' value='".$msg['inverser_checkbox']."' onClick=\"inverser('liste_action','chk');\" />
 		</div>
 	</div>
-
+	
 </form>
 
 <script type='text/javascript'>
@@ -487,7 +501,7 @@ function check_all(the_form,the_objet,do_check){
 	if (elts_cnt) {
 		for (var i = 0; i < elts_cnt; i++) {
 			elts[i].checked = do_check;
-		}
+		} 
 	} else {
 		elts.checked = do_check;
 	}
@@ -505,13 +519,13 @@ function inverser(the_form,the_objet){
 		for (var i = 0; i < elts_cnt; i++) {
 			if(elts[i].checked == true) elts[i].checked = false;
 			else elts[i].checked = true;
-		}
-	}
+		} 
+	} 
 	return true;
 }
 
  function verifChk() {
-
+		
 	var elts = document.forms['liste_action'].elements['chk[]'];
 	var elts_cnt  = (typeof(elts.length) != 'undefined')
               ? elts.length
@@ -526,13 +540,85 @@ function inverser(the_form,the_objet){
 	}
 	if (nb_chk == 0) {
 		var sup = confirm(\"".$msg['demandes_confirm_attach_docnum']."\");
-		if(!sup)
+		if(!sup) 
 			return false;
 		return true;
 	}
-
+	
 	return true;
 }
 </script>
+";
+
+$form_reponse_final = "
+<h1>".$msg['demandes_gestion']." : ".$msg['admin_demandes']."</h1>
+<form class='form-".$current_module."' id='dmde' name='dmde' method='post' action=\"!!form_action!!\">
+	<h3>!!titre_dmde!!</h3>
+	<input type='hidden' id='iddemande' name='iddemande' value='!!iddemande!!'/>
+	<input type='hidden' id='act' name='act' />	
+	<div class='form-contenu'>
+		<div class='row'>
+			<div class='colonne3'>
+				<label class='etiquette'>".$msg['demandes_theme']." : </label>
+				!!theme_dmde!!
+			</div>			
+		</div>
+		<div class='row'>
+			<div class='colonne3'>
+				<label class='etiquette'>".$msg['demandes_sujet']." : </label>
+				!!sujet_dmde!!
+			</div>			
+		</div>
+		<div class='row'>
+			<div class='colonne3'>
+				<label class='etiquette'>".$msg['demandes_type']." : </label>
+				!!type_dmde!!
+			</div>			
+		</div>		
+		<div class='row'></div>
+	</div>	
+</form>
+<form class='form-".$current_module."' id='formrepfinale' name='formrepfinale' method='post' action=\"!!form_action!!\">
+	<h3>!!form_title!!</h3>
+	<input type='hidden' id='iddemande' name='iddemande' value='!!iddemande!!'/>
+	<input type='hidden' id='act' name='act' />	
+	<div class='form-contenu'>
+		
+	<div class='row'>
+		<textarea id='f_message' name='f_message' wrap='virtual' cols='55' rows='4' >!!reponse!!</textarea>
+	</div>
+	<div class='row'>
+		<div class='left'>			
+			<input type='button' class='bouton' value='$msg[76]' onClick=\"!!cancel_action!!\" />
+			<input type='submit' class='bouton' value='$msg[77]' onclick='this.form.act.value=\"save_repfinale\"'/>
+		</div>
+		<div class='right'>
+			!!btn_suppr!!
+		</div>
+	</div>					
+	<div class='row'></div>
+	</div>
+</form>
+";
+
+$reponse_finale = "
+<form class='form-".$current_module."' id='repfinale' name='formrepfinale' method='post' action=\"!!form_action!!\">
+	<h3>".htmlentities($msg['demandes_reponse_finale'],ENT_QUOTES,$charset)."</h3>
+		<input type='hidden' id='iddemande' name='iddemande' value='!!iddemande!!'/>
+		<input type='hidden' id='act' name='act' />	
+		<div class='form-contenu'>		
+			<div class='row'>!!repfinale!!</div>
+			<div class='row'></div>
+		</div>							
+		<div class='row'>
+			<div class='left'>			
+				<input type='submit' class='bouton' value='".$msg['demandes_repfinale_modif']."' onclick='this.form.act.value=\"final_response\" ; ' />&nbsp;
+			</div>
+			<div class='right'>	
+				<input type='submit' class='bouton' value='".$msg['demandes_repfinale_delete']."' onClick='this.form.act.value=\"suppr_repfinale\" ; return confirm_delete();' />	
+			</div>
+		</div>
+		<div class='row'></div>
+	</form>	
 ";
 ?>

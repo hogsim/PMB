@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: upload_folder_storage.class.php,v 1.1.4.1 2015-04-24 12:12:33 mbertin Exp $
+// $Id: upload_folder_storage.class.php,v 1.3 2015-04-24 13:00:11 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 require_once($class_path."/storages/storage.class.php");
@@ -30,11 +30,11 @@ class upload_folder_storage extends storage {
 		</div>
 		<div class='colonne_suite'>";
 		$req="select repertoire_id, repertoire_nom from upload_repertoire order by repertoire_nom";
-		$res = mysql_query($req);
-		if(mysql_num_rows($res)){
+		$res = pmb_mysql_query($req);
+		if(pmb_mysql_num_rows($res)){
 			$params_form.="
 			<select name='storage_params[id_rep]'>";
-			while ($row = mysql_fetch_object($res)){
+			while ($row = pmb_mysql_fetch_object($res)){
 				$params_form.="
 				<option value='".$row->repertoire_id."' ".($row->repertoire_id == $this->config['upload_rep'] ? "selected='selected'" : "").">".htmlentities($row->repertoire_nom,ENT_QUOTES,$charset)."</option>";
 			}

@@ -3,7 +3,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: workflow.xml,v 1.2 2010-02-23 16:27:22 kantin Exp $ -->
+$Id: workflow.xml,v 1.7 2014-04-03 12:30:51 abacarisse Exp $ -->
 
 <structure>
 	<!-- Liste des états applicables aux objets -->
@@ -24,7 +24,7 @@ $Id: workflow.xml,v 1.2 2010-02-23 16:27:22 kantin Exp $ -->
 		<!-- Définition de l'objet Demandes -->
 		<object  name="DEMANDES">
 			<states>
-				<state id="1" name="TODO"/>
+				<state id="1" default="true" name="TODO"/>
 				<state id="2" name="VALIDATE"/>
 				<state id="3" name="REFUSED"/>
 				<state id="4" name="FINISHED"/>
@@ -64,14 +64,31 @@ $Id: workflow.xml,v 1.2 2010-02-23 16:27:22 kantin Exp $ -->
 		<object  name="ACTIONS" >
 			<states>
 				<state id="2" name="AWAITING"/>
-				<state id="1" name="OPENED"/>				
+				<state id="1" default="true" name="OPENED"/>				
 				<state id="3" name="CLOSED"/>
 			</states>
+			
+			<workflow name="INITIAL">
+				<startstate>AWAITING</startstate>
+				<source name="AWAITING">
+					<target name="OPENED"/>
+				</source>
+				<source name="OPENED">
+					<target name="CLOSED"/>
+				</source>
+				<source name="CLOSED">
+					<target name="OPENED"/>
+				</source>
+			</workflow>
+			<workflow name="INIT">
+				<startstate name="AWAITING"/>
+			</workflow>
+			
 			<types>
-				<type id="1" name="QUERY" comment="msg:type_question"/>
-				<type id="2" name="SEARCH" comment="msg:type_search"/>
-				<type id="3" name="INFOS" comment="msg:type_info"/>
-				<type id="4" name="MEETING" comment="msg:type_rdv"/>	
+				<type id="1" name="QUERY" image="comments.png" default="true" comment="msg:type_question"/>
+				<type id="2" name="SEARCH" image="search.gif" comment="msg:type_search"/>
+				<type id="3" name="INFOS" image="quest.png" comment="msg:type_info"/>
+				<type id="4" name="MEETING" image="recycle.png" comment="msg:type_rdv"/>	
 			</types>
 		</object>
 	</objects>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: indexint.tpl.php,v 1.21 2014-01-23 13:52:36 ngantier Exp $
+// $Id: indexint.tpl.php,v 1.22 2014-07-30 09:54:05 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -10,6 +10,7 @@ $selector_prop = "toolbar=no, dependent=yes, resizable=yes, scrollbars=yes";
 
 // $indexint_form : form saisie titre de série
 $indexint_form = jscript_unload_question()."
+<script src='javascript/ajax.js'></script>
 <script type='text/javascript'>
 <!--
 	function test_form(form)
@@ -46,6 +47,7 @@ function confirm_delete() {
 <div class='row'>
 	<textarea id='indexint_comment' class='saisie-80em' name='indexint_comment' cols='62' rows='6' wrap='virtual'>!!indexint_comment!!</textarea>
 	</div>	
+!!concept_form!!
 !!aut_pperso!!
 <!-- aut_link -->
 </div>
@@ -69,6 +71,7 @@ function confirm_delete() {
 </form>
 <script type='text/javascript'>
 	document.forms['saisie_indexint'].elements['indexint_nom'].focus();
+	ajax_parse_dom();
 </script>
 ";
 

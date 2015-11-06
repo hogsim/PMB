@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestion_multi.class.php,v 1.12.2.1 2015-01-22 14:05:06 jpermanne Exp $
+// $Id: suggestion_multi.class.php,v 1.14 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -32,10 +32,10 @@ class suggestion_multi{
 		
 		//On charge la liste des sources
 		$req = "select * from suggestions_source order by libelle_source";
-			$res= mysql_query($req,$dbh);
+			$res= pmb_mysql_query($req,$dbh);
 		
 		$option = "<option value='0' selected>".htmlentities($msg['empr_sugg_no_src'],ENT_QUOTES,$charset)."</option>";
-		while(($src=mysql_fetch_object($res))){
+		while(($src=pmb_mysql_fetch_object($res))){
 			$option .= "<option value='".$src->id_source."' ".($sug_src==$src->id_source ? 'selected' : '').">".htmlentities($src->libelle_source,ENT_QUOTES,$charset)."</option>";
 		}
 		
@@ -70,8 +70,8 @@ class suggestion_multi{
 					$id_noti = str_replace('es','',$liste[$i]);			
 					$entrepots_localisations = array();
 					$entrepots_localisations_sql = "SELECT * FROM entrepots_localisations ORDER BY loc_visible DESC";
-					$res = mysql_query($entrepots_localisations_sql);
-					while ($row = mysql_fetch_array($res)) {
+					$res = pmb_mysql_query($entrepots_localisations_sql);
+					while ($row = pmb_mysql_fetch_array($res)) {
 						$entrepots_localisations[$row["loc_code"]] = array("libelle" => $row["loc_libelle"], "visible" => $row["loc_visible"]); 
 					}
 					
@@ -97,8 +97,8 @@ class suggestion_multi{
 					FROM notices LEFT JOIN responsability ON responsability_notice=notice_id 
 					LEFT JOIN authors ON responsability_author=author_id LEFT JOIN publishers ON ed1_id=ed_id
 					WHERE notice_id=".$liste[$i];
-					$result = mysql_query($requete,$dbh);
-					$sug = mysql_fetch_object($result);
+					$result = pmb_mysql_query($requete,$dbh);
+					$sug = pmb_mysql_fetch_object($result);
 					$titre = $sug->titre;
 					$auteur = $sug->auteur;
 					$editeur =$sug->editeur; 
@@ -188,8 +188,8 @@ class suggestion_multi{
 					if($$notice){
 						$req .= ", num_notice ='".$$notice."'";
 					}
-					mysql_query($req,$dbh);
-					$idSugg = mysql_insert_id();
+					pmb_mysql_query($req,$dbh);
+					$idSugg = pmb_mysql_insert_id();
 						
 					if (is_object($uni)) $uni->delete();
 					

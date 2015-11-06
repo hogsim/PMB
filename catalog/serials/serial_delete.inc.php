@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serial_delete.inc.php,v 1.24 2012-09-06 09:15:32 dbellamy Exp $
+// $Id: serial_delete.inc.php,v 1.25 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -25,8 +25,8 @@ if ($acces_m==0) {
 	print "<div class=\"row\"><div class=\"msg-perio\">".$msg['catalog_notices_suppression']."</div></div>";
 	$requete = "select 1 from pret, exemplaires, bulletins, notices where notice_id='$serial_id' and expl_notice=0 ";
 	$requete .="and pret_idexpl=expl_id and expl_bulletin=bulletin_id and bulletin_notice=notice_id";
-	$result=@mysql_query($requete);
-	if (mysql_num_rows($result)) {
+	$result=@pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($result)) {
 		// gestion erreur pret en cours
 		error_message($msg[416], $msg['impossible_perio_del_pret'], 1, "./catalog.php?categ=serials&sub=view&serial_id=$serial_id");
 	} else {

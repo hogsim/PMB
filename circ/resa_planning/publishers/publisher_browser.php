@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: publisher_browser.php,v 1.3 2009-05-16 11:11:54 dbellamy Exp $
+// $Id: publisher_browser.php,v 1.4 2015-04-03 11:16:24 jpermanne Exp $
 
 // page d'affichage du browser de collections
 
@@ -65,15 +65,15 @@ if($coll_parent) {
 	$requete .= " AND collections.collection_id=sub_collections.sub_coll_parent";
 	$requete .= " AND sub_collections.sub_coll_parent=$coll_parent";
 	$requete .= " ORDER BY sub_collections.sub_coll_name";
-	$result = mysql_query($requete, $dbh);
-	$item = mysql_fetch_object($result);
+	$result = pmb_mysql_query($requete, $dbh);
+	$item = pmb_mysql_fetch_object($result);
 	print "<a href='$browser_url&ed_parent=".$item->ed_id."'>$up_folder</a>...<br />";
 	print pmb_bidi($open_folder."<a href='#' onClick=\"".select('publisher', $item->ed_id)."\">".$item->ed_name."</a><br />");
 	print pmb_bidi("<div style='margin-left:18px'>$open_folder");
 	print pmb_bidi("<a href=\"\" onClick=\"".select('collection', $item->collection_id)."\">".$item->collection_name."</a></div>");
 	print "<div style='margin-left:36px'>$document";
 	print pmb_bidi("<a href=\"\" onClick=\"".select('subcoll', $item->sub_coll_id)."\">".$item->sub_coll_name."</a></div>");
-	while($item=mysql_fetch_object($result)) {
+	while($item=pmb_mysql_fetch_object($result)) {
 		print "<div style='margin-left:36px'>$document";
 		print pmb_bidi("<a href=\"\" onClick=\"".select('subcoll', $item->sub_coll_id)."\">".$item->sub_coll_name."</a></div>");
 	}
@@ -89,15 +89,15 @@ if($coll_parent) {
 		$requete .= " AND publishers.ed_id=$ed_parent";
 		$requete .= " ORDER BY collections.collection_name";
 
-		$result = mysql_query($requete, $dbh);
-		$item = mysql_fetch_object($result);
+		$result = pmb_mysql_query($requete, $dbh);
+		$item = pmb_mysql_fetch_object($result);
 		print pmb_bidi($open_folder."<a href='#' onClick=\"".select('publisher', $item->ed_id)."\">".$item->ed_name.'</a><br />');
 		if($item->sub_coll_id && $item->sub_coll_parent==$item->collection_id)
 			$image = "<a href='$browser_url&coll_parent=".$item->collection_id."'>$closed_folder</a>";
 		else
 			$image = $document;
 		print pmb_bidi("<div style='margin-left:18px'>".$image."<a href='#' onClick=\"".select('collection', $item->collection_id)."\">".$item->collection_name.'</a></div>');
-		while($item=mysql_fetch_object($result)) {
+		while($item=pmb_mysql_fetch_object($result)) {
 			if($item->sub_coll_id && $item->sub_coll_parent==$item->collection_id)
 				$image = "<a href='$browser_url&coll_parent=".$item->collection_id."'>$closed_folder</a>";
 			else
@@ -116,9 +116,9 @@ if($coll_parent) {
 		$requete .= " ON publishers.ed_id=collections.collection_parent";
 		$requete .= " GROUP BY ed_name ORDER BY ed_name $restriction ";
 
-		$result = mysql_query($requete, $dbh);
+		$result = pmb_mysql_query($requete, $dbh);
 
-		while($editeur=mysql_fetch_object($result)) {
+		while($editeur=pmb_mysql_fetch_object($result)) {
 			if($editeur->collection_id)
 				$image = "<a name='a".$editeur->ed_id."' href='$browser_url&ed_parent=".$editeur->ed_id."'>$closed_folder</a>";
 				else $image = $document;
@@ -130,7 +130,7 @@ if($coll_parent) {
 	} // fin clause ed_parent
 } // fin clause coll_parent
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 // affichage du footer
 print "</div></body></html>";

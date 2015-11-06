@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: input_txt.inc.php,v 1.8 2007-03-10 08:32:25 touraine37 Exp $
+// $Id: input_txt.inc.php,v 1.9 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -20,7 +20,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 			if ($en_cours) {
 				$n++;
 				$requete="insert into import_marc (no_notice, notice, origine) values($n,'".addslashes($notice)."','$origine')";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				$t=array();
 				$t["POS"]=$n;
 				$t["LENGHT"]=1;
@@ -37,7 +37,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 	if ($en_cours) {
 		$n++;
 		$requete="insert into import_marc (no_notice, notice, origine) values($n,'".addslashes($notice)."','$origine')";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		$t=array();
 		$t["POS"]=$n;
 		$t["LENGHT"]=1;

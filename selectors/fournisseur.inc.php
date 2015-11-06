@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fournisseur.inc.php,v 1.14 2011-06-06 08:04:27 dbellamy Exp $
+// $Id: fournisseur.inc.php,v 1.15 2015-04-03 11:16:20 jpermanne Exp $
 
 /*
  * caller	= nom du formulaire appelant
@@ -73,13 +73,13 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 				$res = entites::list_fournisseurs($id_bibli, $debut, $nb_per_page, $aq);
 			}
 
-		while(($row=mysql_fetch_object($res))) {
+		while(($row=pmb_mysql_fetch_object($res))) {
 			$entry = $row->raison_sociale;
 			$adresse = '';
 			if ($caller!='form_abonnement') {
 				$coord = entites::get_coordonnees($row->id_entite, '1');
-				if (mysql_num_rows($coord) != 0) {
-					$coord = mysql_fetch_object($coord);
+				if (pmb_mysql_num_rows($coord) != 0) {
+					$coord = pmb_mysql_fetch_object($coord);
 					if($coord->libelle != '') $adresse = htmlentities(addslashes($coord->libelle), ENT_QUOTES, $charset)."\\n";
 					if($coord->contact !='') $adresse.=  htmlentities(addslashes($coord->contact), ENT_QUOTES, $charset)."\\n";
 					if($coord->adr1 != '') $adresse.= htmlentities(addslashes($coord->adr1), ENT_QUOTES, $charset)."\\n";
@@ -93,7 +93,7 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			print "<br />";
 		
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);

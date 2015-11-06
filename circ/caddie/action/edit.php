@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: edit.php,v 1.3 2013-04-04 14:25:41 mbertin Exp $
+// $Id: edit.php,v 1.4 2015-04-03 11:16:28 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path="../../..";                            
@@ -61,4 +61,4 @@ switch($dest) {
 		break;
 	}
 	
-mysql_close($dbh);
+pmb_mysql_close($dbh);

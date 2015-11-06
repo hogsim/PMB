@@ -11,7 +11,7 @@ require_once("$class_path/facette_search_opac.class.php");
 switch($section){
 	case "lst_facette":
 		$facette = new facette_search();
-		print $facette->create_list_subfields($list_crit,$sub_field,$suffixe_id);
+		print $facette->create_list_subfields($list_crit,$sub_field,$suffixe_id,$no_label);
 		
 	break;
 }

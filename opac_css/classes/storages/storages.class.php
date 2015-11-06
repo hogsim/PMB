@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: storages.class.php,v 1.1 2013-07-04 12:55:50 arenou Exp $
+// $Id: storages.class.php,v 1.2 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -18,10 +18,10 @@ class storages {
 	
 	protected function fetch_datas(){
 		$query = "select * from storages order by storage_name";
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$this->defined_list = array();
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->defined_list[] = array(
 					'id' => $row->id_storage,
 	 				'name' => $row->storage_name,
@@ -89,9 +89,9 @@ class storages {
 	public static function get_storage_class($id){
 		global $base_path,$include_path,$class_path;
 		$query = "select storage_class from storages where id_storage = ".($id*1);
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			require_once($class_path."/storages/".$row->storage_class.".class.php");
 			$obj = new $row->storage_class($id);
 			return $obj;
@@ -112,9 +112,9 @@ class storages {
 		$row =array();
 		if($id){
 			$query ="select * from storages where storage_object_type = '".$type."' and storage_num_object = '".$id."'";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_assoc($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_assoc($result);
 			}
 		}
 
@@ -171,9 +171,9 @@ class storages {
 		$row =array();
 		if($id){
 			$query ="select * from storages where storage_object_type = '".$type."' and storage_num_object = '".$id."'";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_assoc($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_assoc($result);
 			}
 		}
 		
@@ -189,7 +189,7 @@ class storages {
 		}else if ($row['id_storage']){
 			$query ="delete from storages";
 		}
-		mysql_query($query.$clause);
+		pmb_mysql_query($query.$clause);
 	}
 	
 	public function get_params_form($class_name,$params=array()){

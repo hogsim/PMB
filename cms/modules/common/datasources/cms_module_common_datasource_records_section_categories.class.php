@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_records_section_categories.class.php,v 1.1.2.2 2014-12-02 09:24:07 arenou Exp $
+// $Id: cms_module_common_datasource_records_section_categories.class.php,v 1.2 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,11 +33,11 @@ class cms_module_common_datasource_records_section_categories extends cms_module
 				from notices join notices_categories on notice_id=notcateg_notice 
 				join cms_sections_descriptors on cms_sections_descriptors.num_noeud=notices_categories.num_noeud 
 				and num_section=".$selector->get_value();
-			$result = mysql_query($query,$dbh);
+			$result = pmb_mysql_query($query,$dbh);
 			$return = array();
-			if($result && (mysql_num_rows($result) > 0)){
+			if($result && (pmb_mysql_num_rows($result) > 0)){
 				$return["title"] = "Liste de notices";
-				while($row = mysql_fetch_object($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$return["records"][] = $row->notice_id;
 				}
 			}

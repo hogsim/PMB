@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: iimport_expl.php,v 1.70 2013-12-02 09:07:25 dbellamy Exp $
+// $Id: iimport_expl.php,v 1.71 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum necessaire
 $base_path="../..";
@@ -111,11 +111,11 @@ if ($sub == "import_expl") {
 	/* the name of the lender is read in the table */
 	if ($book_lender_id!="") {
 		$sql_rech="select lender_libelle from lenders where idlender = '".$book_lender_id."' ";
-		$sql_result_rech = mysql_query($sql_rech) or die ("Couldn't select lenders ! = ".$sql_rech);
-		if (mysql_num_rows($sql_result_rech)==0) {
+		$sql_result_rech = pmb_mysql_query($sql_rech) or die ("Couldn't select lenders ! = ".$sql_rech);
+		if (pmb_mysql_num_rows($sql_result_rech)==0) {
 			$book_lender_name = $msg[561];
 		} else {
-			$book_lender_name = mysql_result ($sql_result_rech,0,"lender_libelle");
+			$book_lender_name = pmb_mysql_result($sql_result_rech,0,"lender_libelle");
 		}
 	} else {
 		$book_lender_name = $msg[561];
@@ -524,8 +524,8 @@ switch ($action) {
 		printf ($msg[509], $from_file);
 		if ($nbtot_notice=="") {
 			$sql = "select count(1) from import_marc where origine='".addslashes(SESSid)."' ";
-			$sql_result = mysql_query($sql) or die ("Couldn't select count(1) from import table !");
-			$nbtot_notice=mysql_result($sql_result, 0, 0);
+			$sql_result = pmb_mysql_query($sql) or die ("Couldn't select count(1) from import table !");
+			$nbtot_notice=pmb_mysql_result($sql_result, 0, 0);
        	}
 		if ($sub == "import_expl") {
 			$section_995_=new marc_list("section_995");
@@ -540,15 +540,15 @@ switch ($action) {
 		}
 
         $sql = "select notice, id_import from import_marc where origine='".addslashes(SESSid)."' ORDER BY id_import limit $pmb_import_limit_record_load ";
-        $sql_result_import = mysql_query($sql) or die ("Couldn't select import table !");
-        $n_notice=mysql_num_rows($sql_result_import);
+        $sql_result_import = pmb_mysql_query($sql) or die ("Couldn't select import table !");
+        $n_notice=pmb_mysql_num_rows($sql_result_import);
         if ($notice_deja_presente=="") {
         	$notice_deja_presente=0;
         }
         $inotice=0;
         $txt="";
 
-		while (($notobj = mysql_fetch_object($sql_result_import))) {
+		while (($notobj = pmb_mysql_fetch_object($sql_result_import))) {
             $notice=$notobj->notice ;
             $idnotice_import=$notobj->id_import ;
             $inotice++;
@@ -628,22 +628,22 @@ switch ($action) {
 						// cas des EAN purs : constitution de la requête
 						$requete = "SELECT distinct notice_id FROM notices ";
 						$requete.= " WHERE notices.code in ('$code','$EAN'".($code10?",'$code10'":"").") limit 1";
-						$myQuery = mysql_query($requete, $dbh);
-						$trouvees=mysql_num_rows($myQuery);
+						$myQuery = pmb_mysql_query($requete, $dbh);
+						$trouvees=pmb_mysql_num_rows($myQuery);
 					} elseif ($isbn) {
 						// recherche d'un isbn
 						$requete = "SELECT distinct notice_id FROM notices ";
 						$requete.= " WHERE notices.code in ('$code'".($code10?",'$code10'":"").") limit 1";
-						$myQuery = mysql_query($requete, $dbh);
-						$trouvees=mysql_num_rows($myQuery);
+						$myQuery = pmb_mysql_query($requete, $dbh);
+						$trouvees=pmb_mysql_num_rows($myQuery);
 					} elseif ($code) {
 						// note : le code est recherché dans le champ code des notices
 						// (cas des code-barres disques qui échappent à l'EAN)
 						//
 						$requete = "SELECT notice_id FROM notices ";
 						$requete.= " WHERE notices.code like '$code' limit 10";
-						$myQuery = mysql_query($requete, $dbh);
-						$trouvees=mysql_num_rows($myQuery);
+						$myQuery = pmb_mysql_query($requete, $dbh);
+						$trouvees=pmb_mysql_num_rows($myQuery);
 					}
 
                     // dédoublonnage sur isbn
@@ -652,26 +652,26 @@ switch ($action) {
                             $new_notice=1;
                         } else {
                             $new_notice=0;
-                            $notice_id = mysql_result ($myQuery,0,"notice_id");
-                            $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".$msg[542]." $EAN  || $isbn || $code ".addslashes($tit[0]['a'])."') ") ;
+                            $notice_id = pmb_mysql_result($myQuery,0,"notice_id");
+                            $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".$msg[542]." $EAN  || $isbn || $code ".addslashes($tit[0]['a'])."') ") ;
                         }
                     } else {
                         if ($isbn_mandatory == 1) {
-                            $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[543]."') ") ;
+                            $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[543]."') ") ;
                         } else {
                             $new_notice = 1;
-                            $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[565]."') ") ;
+                            $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[565]."') ") ;
                         }
                     }
                 } else {
                     // pas de dédoublonnage
                     if ($isbn_mandatory == 1 && $isbn_OK=="") {
-                       $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[543]."') ") ;
+                       $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[543]."') ") ;
                     }elseif($isbn_OK){
                         $new_notice = 1;
                     }else{
                     	 $new_notice = 1;
-                         $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[565]."') ") ;
+                         $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[565]."') ") ;
                     }
                 }
                 /* the notice is new, we are going to import it... */
@@ -699,11 +699,11 @@ switch ($action) {
                 
             /* this has been succesfuly read, it can be deleted */
 	        $sql_del = "delete from import_marc where id_import = '".$idnotice_import."' ";
-            $sql_result_del = mysql_query($sql_del) or die ("Couldn't delete import_marc $idnotice_import !");
+            $sql_result_del = pmb_mysql_query($sql_del) or die ("Couldn't delete import_marc $idnotice_import !");
         } /* end while records in import table */
         $sql = "select count(1) as reste from import_marc where origine='".addslashes(SESSid)."'";
-        $sql_result = mysql_query($sql) or die ("Couldn't select count import table !");
-        $reste=mysql_result($sql_result,0,"reste");
+        $sql_result = pmb_mysql_query($sql) or die ("Couldn't select count import table !");
+        $reste=pmb_mysql_result($sql_result,0,"reste");
 
         if ($sub == "import_expl") {
             if ($reste > 0 ) {
@@ -770,17 +770,17 @@ switch ($action) {
                 printf ($msg[521], $nb_expl_ignores); /* ## exemplaire(s) ignoré(s) */
                 /* ajouter ici SELECT error_origin, error_text, count(*) FROM error_log group by error_origin, error_text */
                 $gen_liste_log="";
-                $resultat_liste=mysql_query("SELECT error_origin, error_text, count(*) as nb_error FROM error_log where error_origin in ('expl_".addslashes(SESSid).".class','import_expl_".addslashes(SESSid).".inc','iimport_expl_".addslashes(SESSid).".inc','import_".addslashes(SESSid).".inc.php','import_".addslashes(SESSid).".inc','import_func_".addslashes(SESSid).".inc.php') group by error_origin, error_text" );
-                $nb_liste=mysql_numrows($resultat_liste);
+                $resultat_liste=pmb_mysql_query("SELECT error_origin, error_text, count(*) as nb_error FROM error_log where error_origin in ('expl_".addslashes(SESSid).".class','import_expl_".addslashes(SESSid).".inc','iimport_expl_".addslashes(SESSid).".inc','import_".addslashes(SESSid).".inc.php','import_".addslashes(SESSid).".inc','import_func_".addslashes(SESSid).".inc.php') group by error_origin, error_text" );
+                $nb_liste=pmb_mysql_num_rows($resultat_liste);
                 if ($nb_liste>0) {
                     $gen_liste_log = "<br /><br /><b>".$msg[538]."</b><br /><table border='1'>" ;
                     $gen_liste_log.="<tr><th>".$msg[539]."</th><th>".$msg[540]."</th><th>".$msg[541]."</th></tr>";
                     $i_log=0;
                     while ($i_log<$nb_liste) {
                         $gen_liste_log.="<tr>";
-                        $gen_liste_log.="<td>".mysql_result($resultat_liste,$i_log,"error_origin")."</td>" ;
-                        $gen_liste_log.="<td><b>".mysql_result($resultat_liste,$i_log,"error_text")."</b></td>" ;
-                        $gen_liste_log.="<td>".mysql_result($resultat_liste,$i_log,"nb_error")."</td>" ;
+                        $gen_liste_log.="<td>".pmb_mysql_result($resultat_liste,$i_log,"error_origin")."</td>" ;
+                        $gen_liste_log.="<td><b>".pmb_mysql_result($resultat_liste,$i_log,"error_text")."</b></td>" ;
+                        $gen_liste_log.="<td>".pmb_mysql_result($resultat_liste,$i_log,"nb_error")."</td>" ;
                         $gen_liste_log.="</tr>" ;
                         $i_log++;
                        }
@@ -847,17 +847,17 @@ switch ($action) {
                 }
                 /* ajouter ici SELECT error_origin, error_text, count(*) FROM error_log group by error_origin, error_text */
                 $gen_liste_log="";
-                $resultat_liste=mysql_query("SELECT error_origin, error_text, count(*) as nb_error FROM error_log where error_origin in ('expl_".addslashes(SESSid).".class','import_expl_".addslashes(SESSid).".inc','iimport_expl_".addslashes(SESSid).".inc','import_".addslashes(SESSid).".inc.php', 'import_".addslashes(SESSid).".inc','import_func_".addslashes(SESSid).".inc.php') group by error_origin, error_text" );
-                $nb_liste=mysql_numrows($resultat_liste);
+                $resultat_liste=pmb_mysql_query("SELECT error_origin, error_text, count(*) as nb_error FROM error_log where error_origin in ('expl_".addslashes(SESSid).".class','import_expl_".addslashes(SESSid).".inc','iimport_expl_".addslashes(SESSid).".inc','import_".addslashes(SESSid).".inc.php', 'import_".addslashes(SESSid).".inc','import_func_".addslashes(SESSid).".inc.php') group by error_origin, error_text" );
+                $nb_liste=pmb_mysql_num_rows($resultat_liste);
                 if ($nb_liste>0) {
                     $gen_liste_log = "<br /><br /><b>".$msg[538]."</b><br /><table width=\"100%\"  border='1'>" ;
                     $gen_liste_log.="<tr><td>".$msg[539]."</td><td>".$msg[540]."</td><td>".$msg[541]."</td></tr>";
                     $i_log=0;
                     while ($i_log<$nb_liste) {
                         $gen_liste_log.="<tr>";
-                        $gen_liste_log.="<td>".mysql_result($resultat_liste,$i_log,"error_origin")."</td>" ;
-                        $gen_liste_log.="<td><b>".mysql_result($resultat_liste,$i_log,"error_text")."</b></td>" ;
-                        $gen_liste_log.="<td>".mysql_result($resultat_liste,$i_log,"nb_error")."</td>" ;
+                        $gen_liste_log.="<td>".pmb_mysql_result($resultat_liste,$i_log,"error_origin")."</td>" ;
+                        $gen_liste_log.="<td><b>".pmb_mysql_result($resultat_liste,$i_log,"error_text")."</b></td>" ;
+                        $gen_liste_log.="<td>".pmb_mysql_result($resultat_liste,$i_log,"nb_error")."</td>" ;
                         $gen_liste_log.="</tr>" ;
                         $i_log++;
                         }

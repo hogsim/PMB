@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: facette_search_opac.class.php,v 1.12.2.2 2014-09-23 08:21:07 arenou Exp $
+// $Id: facette_search_opac.class.php,v 1.17 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,6 +23,7 @@ class facette_search {
 	protected $order_sort;
 	protected $type_sort;
 	protected $limit_plus;
+	protected $opac_views_num;
 	
 	
 	function facette_search(){
@@ -91,11 +92,11 @@ class facette_search {
 	}
 	
 //liste liee => sous champs
-	function create_list_subfields($id,$id_ss_champs=0,$suffixe_id=0){
+	function create_list_subfields($id,$id_ss_champs=0,$suffixe_id=0,$no_label=0){
 		global $msg,$charset;
 		$array = $this->array_subfields($id);
 		$tab_ss_champs = array();
-		$select_ss_champs="<label>".$msg["facette_filtre_secondaire"]."</label></br>";
+		if(!$no_label)$select_ss_champs="<label>".$msg["facette_filtre_secondaire"]."</label></br>";
 		if($suffixe_id){
 			$name_ss_champs="list_ss_champs_".$suffixe_id;
 		}else{
@@ -121,7 +122,8 @@ class facette_search {
 	
 //formulaire MaJ ou de creation d'une facette	
 	function form_facette(){
-		global $tpl_form_facette, $msg,$charset;
+		global $tpl_form_facette, $msg,$charset,$dbh;
+		global $pmb_opac_view_activate;
 		
 		$list_champs = $this->create_list_fields();
 		
@@ -158,6 +160,26 @@ class facette_search {
 			else $tpl_form_facette = str_replace('!!defaut_check_type!!',htmlentities($msg['default_check_facette'],ENT_QUOTES,$charset),$tpl_form_facette);
 			
 		} 
+		if($pmb_opac_view_activate){
+			$liste_views = array();
+			if ($this->opac_views_num != "") {
+				$liste_views = explode(",", $this->opac_views_num);
+			}
+			$requete = "SELECT opac_view_id,opac_view_name FROM opac_views order by opac_view_name";
+			$res = pmb_mysql_query($requete,$dbh);
+			$select_view = "<select id='opac_views_num' name='opac_views_num[]' multiple>";
+			if (pmb_mysql_num_rows($res)) {
+				$select_view .="<option id='opac_view_num_all' value='' ".(!count($liste_views) ? "selected" : "").">".htmlentities($msg["admin_opac_facette_opac_view_select"],ENT_QUOTES,$charset)."</option>";
+				$select_view .="<option id='opac_view_num_0' value='0' ".(in_array(0,$liste_views) ? "selected" : "").">".htmlentities($msg["opac_view_classic_opac"],ENT_QUOTES,$charset)."</option>";
+				while($row = pmb_mysql_fetch_object($res)) {
+					$select_view .="<option id='opac_view_num_".$row->opac_view_id."' value='".$row->opac_view_id."' ".(in_array($row->opac_view_id,$liste_views) ? "selected" : "").">".htmlentities($row->opac_view_name,ENT_QUOTES,$charset)."</option>";
+				}
+			} else {
+				$select_view .="<option id='opac_view_num_empty' value=''>".htmlentities($msg["admin_opac_facette_opac_view_empty"],ENT_QUOTES,$charset)."</option>";
+			}
+			$select_view .= "</select>";
+			$tpl_form_facette = str_replace('!!list_opac_views!!', $select_view, $tpl_form_facette);
+		}
 		
 		$tpl_form_facette = str_replace('!!liste1!!', $list_champs, $tpl_form_facette);	
 		return $tpl_form_facette;
@@ -166,14 +188,15 @@ class facette_search {
 //enregistrement ou MaJ d une facette*
 	function save_form_facette(){
 		global $label_facette,$list_crit,$list_nb,$list_ss_champs,$visible,$hidden_form,$dbh,$type_sort,$order_sort,$limit_plus;
+		global $pmb_opac_view_activate,$opac_views_num;
 		$redirect_list = "<script language='javascript'>location.href='./admin.php?categ=opac&sub=facette_search_opac&section=facette'</script>";
 		
 		if($visible==true) $visible=1;
 		else $visible=0;
 		
 		$requete="select max(facette_order) as ordre from facettes ";
-		$resultat=mysql_query($requete);
-		$ordre_max=@mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		$ordre_max=@pmb_mysql_result($resultat,0,0);
 		$ordre_max++;
 		
 		$hidden_form+=0;
@@ -181,26 +204,45 @@ class facette_search {
 		$listNb+=0;
 		$list_crit+=0;
 		$limit_plus+=0;
+		$list_opac_views_num = "";
+		if ($pmb_opac_view_activate) {
+			if (is_array($opac_views_num) && count($opac_views_num)) {
+				if (!in_array("",$opac_views_num)) {
+					$list_opac_views_num = implode(",", $opac_views_num);
+				}
+			}
+		}
 		if((!empty($hidden_form)&&($hidden_form!="creation"))){
 			
 			$req="UPDATE facettes 
 					SET facette_name='".$label_facette."',facette_critere='".$list_crit."',
 						facette_ss_critere='".$list_ss_champs."',facette_nb_result='".$list_nb."',
 						facette_visible='".$visible."',facette_type_sort='".$type_sort."',facette_order_sort='".$order_sort."',
-						facette_limit_plus=$limit_plus
+						facette_limit_plus=$limit_plus,
+						facette_opac_views_num='".$list_opac_views_num."'
 					WHERE id_facette='".$hidden_form."'";
-			$rep = mysql_query($req,$dbh) or die(mysql_error()."<br>$req");
+			$rep = pmb_mysql_query($req,$dbh) or die(pmb_mysql_error()."<br>$req");
+			//sauvegarde dans les vues..
+			if ($pmb_opac_view_activate) {
+				$this->save_view_facette($hidden_form, $list_opac_views_num);
+			}
 		} else {
 			$req="INSERT INTO facettes				
 				SET facette_name='".$label_facette."',facette_critere='".$list_crit."',
 						facette_ss_critere='".$list_ss_champs."',facette_nb_result='".$list_nb."',
 						facette_visible='".$visible."',facette_type_sort='".$type_sort."',facette_order_sort='".$order_sort."',
 						facette_order=$ordre_max,
-						facette_limit_plus=$limit_plus
+						facette_limit_plus=$limit_plus,
+						facette_opac_views_num='".$list_opac_views_num."'
 				";
-			$rep = mysql_query($req,$dbh) or die(mysql_error()."<br>$req");
-			
-		} 
+			$rep = pmb_mysql_query($req,$dbh) or die(pmb_mysql_error()."<br>$req");
+			//sauvegarde dans les vues..
+			if ($pmb_opac_view_activate) {
+				$id = pmb_mysql_insert_id($dbh);
+				$this->save_view_facette($id, $list_opac_views_num);
+			}
+		}
+
 		return $redirect_list;
 	}
 	
@@ -209,14 +251,14 @@ class facette_search {
 		global $tpl_vue_facettes,$msg,$dbh,$charset;
 		
 		$req = "SELECT * FROM facettes  order by facette_order, facette_name";
-		$rq = mysql_query($req,$dbh) or die("Erreur SQL");
+		$rq = pmb_mysql_query($req,$dbh) or die("Erreur SQL");
 		$lst="";
 		$array = $this->array_sort();
 		$array_subfields = array();
 		
 		$i = 0;
 		
-		while($rslt = mysql_fetch_object($rq)){
+		while($rslt = pmb_mysql_fetch_object($rq)){
 			
 			$intit_crit = htmlentities($array[$rslt->facette_critere],ENT_QUOTES,$charset);
 			$array_subfields = $this->array_subfields($rslt->facette_critere);
@@ -269,48 +311,48 @@ class facette_search {
 	
 	function facette_up($idF){
 		$requete="select facette_order from facettes where id_facette=$idF";
-		$resultat=mysql_query($requete);
-		$ordre=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		$ordre=pmb_mysql_result($resultat,0,0);
 		$requete="select max(facette_order) as ordre from facettes where facette_order<$ordre";
-		$resultat=mysql_query($requete);
-		$ordre_max=@mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		$ordre_max=@pmb_mysql_result($resultat,0,0);
 		if ($ordre_max) {
 			$requete="select id_facette from facettes where facette_order=$ordre_max limit 1";
-			$resultat=mysql_query($requete);
-			$id_facette_max=mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete);
+			$id_facette_max=pmb_mysql_result($resultat,0,0);
 			$requete="update facettes set facette_order='".$ordre_max."' where id_facette=$idF";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$requete="update facettes set facette_order='".$ordre."' where id_facette=".$id_facette_max;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}		
 	}
 	
 	function facette_down($idF){
 		$requete="select facette_order from facettes where id_facette=$idF";
-		$resultat=mysql_query($requete);
-		$ordre=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		$ordre=pmb_mysql_result($resultat,0,0);
 		$requete="select min(facette_order) as ordre from facettes where facette_order>$ordre";
-		$resultat=mysql_query($requete);
-		$ordre_min=@mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		$ordre_min=@pmb_mysql_result($resultat,0,0);
 		if ($ordre_min) {
 			$requete="select id_facette from facettes where facette_order=$ordre_min limit 1";
-			$resultat=mysql_query($requete);
-			$id_facette_min=mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete);
+			$id_facette_min=pmb_mysql_result($resultat,0,0);
 			$requete="update facettes set facette_order='".$ordre_min."' where id_facette=$idF";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$requete="update facettes set facette_order='".$ordre."' where id_facette=".$id_facette_min;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}		
 	}
 	
 	function facette_order_by_name($idF){
 		global $dbh;
 		$req = "SELECT id_facette  FROM facettes order by facette_name";
-		$rq = mysql_query($req,$dbh);	
+		$rq = pmb_mysql_query($req,$dbh);	
 		$i=1;
-		while($res = mysql_fetch_object($rq)){
+		while($res = pmb_mysql_fetch_object($rq)){
 			$req="UPDATE facettes SET facette_order='".$i++."' where id_facette=".$res->id_facette;
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 	
@@ -320,9 +362,9 @@ class facette_search {
 		global $idF;
 		
 		$req = "SELECT * FROM facettes WHERE id_facette='".$idF."'";
-		$rep = mysql_query($req,$dbh) or die(mysql_error()."<br>$req");
+		$rep = pmb_mysql_query($req,$dbh) or die(pmb_mysql_error()."<br>$req");
 		
-		$rslt = mysql_fetch_object($rep);
+		$rslt = pmb_mysql_fetch_object($rep);
 		
 		$this->id = $rslt->id_facette;
 		$this->name = $rslt->facette_name;
@@ -333,6 +375,7 @@ class facette_search {
 		$this->visible = $rslt->facette_visible+0;
 		$this->order_sort = $rslt->facette_order_sort+0;
 		$this->type_sort = $rslt->facette_type_sort+0;
+		$this->opac_views_num = $rslt->facette_opac_views_num;
 						
 		$form_edit = $this->form_facette();
 		
@@ -386,9 +429,9 @@ class facette_search {
 				$array_subfields[$isbd[0]['ID']+0]=$msg['facette_isbd'];
 			}
 		}else{
-			$req= mysql_query("select idchamp,titre from notices_custom order by titre asc");
+			$req= pmb_mysql_query("select idchamp,titre from notices_custom order by titre asc");
 			$j=0;
-			while($rslt=mysql_fetch_object($req)){
+			while($rslt=pmb_mysql_fetch_object($req)){
 				$array_subfields[$rslt->idchamp+0] = $rslt->titre;
 				$j++;
 			}
@@ -401,10 +444,79 @@ class facette_search {
 		
 		$redirect_list = "<script language='javascript'>location.href='./admin.php?categ=opac&sub=facette_search_opac&section=facette'</script>";
 		$req = "DELETE FROM facettes WHERE id_facette='".$id."'";
-		$rep = mysql_query($req,$dbh) or die(mysql_error()."<br>$req");
+		$rep = pmb_mysql_query($req,$dbh) or die(pmb_mysql_error()."<br>$req");
 		
 		print $redirect_list; 	
 	}
 	
+//enregistrement ou MaJ des vues OPAC à partir d'une facette
+	function save_view_facette($idF,$list_opac_views_num=""){
+		global $dbh;
+		
+		$views = array();
+		$req = "select opac_view_id from opac_views";
+		$myQuery = pmb_mysql_query($req, $dbh);
+		if (pmb_mysql_num_rows($myQuery)) {
+			if ($list_opac_views_num == "") {
+				while ($row = pmb_mysql_fetch_object($myQuery)) {
+					$views["selected"][] = $row->opac_view_id;
+				}
+			} else {
+				$list_selected_views_num = explode(",",$list_opac_views_num);
+				$key_exists = array_search(0, $list_selected_views_num);
+				if ($key_exists !== false) {
+					array_splice($list_selected_views_num, $key_exists, 1);
+				}
+				while ($row = pmb_mysql_fetch_object($myQuery)) {
+					if (in_array($row->opac_view_id,$list_selected_views_num)) {
+						$views["selected"][] = $row->opac_view_id;
+					} else {
+						$views["unselected"][] = $row->opac_view_id;
+					}
+				}
+			}
+			if (count($views["selected"])) {
+				foreach ($views["selected"] as $view_selected) {
+					$query="select opac_filter_param FROM opac_filters where opac_filter_view_num=".$view_selected." and  opac_filter_path='facettes' ";
+					$myQuery = pmb_mysql_query($query, $dbh);
+					$param = array();
+					if ($myQuery && pmb_mysql_num_rows($myQuery)) {
+						while ($row = pmb_mysql_fetch_object($myQuery)) {
+							$param = unserialize($row->opac_filter_param);
+							if (!in_array($idF, $param["selected"])) {
+								$param["selected"][] = $idF;
+								$param=addslashes(serialize($param));
+								$requete="update opac_filters set opac_filter_param='$param' where opac_filter_view_num=".$view_selected." and opac_filter_path='facettes'";
+								pmb_mysql_query($requete, $dbh);
+							}
+						}
+					} else {
+						$param["selected"][] = $idF;
+						$param=addslashes(serialize($param));
+						$requete="insert into opac_filters set opac_filter_view_num=".$view_selected.",opac_filter_path='facettes', opac_filter_param='$param' ";
+						pmb_mysql_query($requete, $dbh);
+					}
+				}
+			}
+			if (count($views["unselected"])) {
+				foreach ($views["unselected"] as $view_unselected) {
+					$query="select opac_filter_param FROM opac_filters where opac_filter_view_num=".$view_unselected." and  opac_filter_path='facettes' ";
+					$myQuery = pmb_mysql_query($query, $dbh);
+					$param = array();
+					if ($myQuery && pmb_mysql_num_rows($myQuery)) {
+						while ($row = pmb_mysql_fetch_object($myQuery)) {
+							$param = unserialize($row->opac_filter_param);
+							if ($key = array_search($idF, $param["selected"])) {
+								array_splice($param["selected"], $key, 1);
+								$param=addslashes(serialize($param));
+								$requete="update opac_filters set opac_filter_param='$param' where opac_filter_view_num=".$view_unselected." and opac_filter_path='facettes'";
+								pmb_mysql_query($requete, $dbh);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 

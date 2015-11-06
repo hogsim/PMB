@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_drag_n_drop.js,v 1.6.4.1 2014-11-14 15:44:57 ngantier Exp $
+// $Id: cms_drag_n_drop.js,v 1.8 2014-11-19 08:17:09 ngantier Exp $
 
 
 /*
@@ -425,13 +425,14 @@ function cms_create_dragged(targ) {
 		/*var encx=current_drag.offsetWidth;
 		var ency=current_drag.offsetHeight;*/
 		var coords_orig=cms_findPos(targ);
+		current_drag.className='cms_drag';
 		current_drag.style.left=coords_orig[0]+"px";
 		current_drag.style.top=coords_orig[1]+"px";
 		current_drag.style.zIndex=2000;
 		current_drag.style.visibility="visible";
 		current_drag.style.cursor="move";		
 	//	current_drag.style.border="3px dashed red";		
-		current_drag.style.outline="2px solid red";
+	//	current_drag.style.outline="2px solid red"; 
 		
 		if(!parent.frames['opac_frame'].document.getElementById("cadre_depos")){
 			cadre_depos=parent.frames['opac_frame'].document.createElement("div");

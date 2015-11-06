@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: types_produits.class.php,v 1.13 2013-11-28 14:35:10 dgoron Exp $
+// $Id: types_produits.class.php,v 1.14 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -31,8 +31,8 @@ class types_produits{
 		global $dbh;
 		
 		$q = "select * from types_produits where id_produit = '".$this->id_produit."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->libelle = $obj->libelle;
 		$this->num_cp_compta = $obj->num_cp_compta;
 		$this->num_tva_achat = $obj->num_tva_achat;
@@ -52,14 +52,14 @@ class types_produits{
 			$q = "update types_produits set libelle ='".$this->libelle."', num_cp_compta = '".$this->num_cp_compta."', ";
 			$q.= "num_tva_achat = '".$this->num_tva_achat."' ";
 			$q.= "where id_produit = '".$this->id_produit."' ";
-			$r = mysql_query($q, $dbh);		
+			$r = pmb_mysql_query($q, $dbh);		
 		
 		} else {
 		
 			$q = "insert into types_produits set libelle = '".$this->libelle."', num_cp_compta = '".$this->num_cp_compta."', ";
 			$q.= " num_tva_achat = '".$this->num_tva_achat."' ";
-			$r = mysql_query($q, $dbh);
-			$this->id_produit = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_produit = pmb_mysql_insert_id($dbh);
 		
 		}
 	}
@@ -73,7 +73,7 @@ class types_produits{
 		if(!$id_produit) return; 	
 
 		$q = "delete from types_produits where id_produit = '".$id_produit."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -99,8 +99,8 @@ class types_produits{
 		global $dbh;
 
 		$q = "select count(1) from types_produits  ";
-		$r = mysql_query($q, $dbh);
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh);
+		return pmb_mysql_result($r, 0, 0);
 				
 	}
 
@@ -110,8 +110,8 @@ class types_produits{
 		
 		global $dbh;
 		$q = "select count(1) from types_produits where id_produit = '".$id_produit."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 	
@@ -122,8 +122,8 @@ class types_produits{
 		global $dbh;
 		$q = "select count(1) from types_produits where libelle = '".$libelle."' ";
 		if ($id_produit) $q.= "and id_produit != '".$id_produit."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -134,8 +134,8 @@ class types_produits{
 		global $dbh;
 		if (!$id_produit) return 0;
 		$q = "select count(1) from offres_remises where num_produit = '".$id_produit."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -146,8 +146,8 @@ class types_produits{
 		global $dbh;
 		if (!$id_produit) return 0;
 		$q = "select count(1) from suggestions where num_produit = '".$id_produit."' ";
-		$r = mysql_query($q, $dbh); 
-		return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		return pmb_mysql_result($r, 0, 0);
 		
 	}
 
@@ -157,7 +157,7 @@ class types_produits{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE types_produits', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE types_produits', $dbh);
 		return $opt;
 				
 	}

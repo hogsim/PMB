@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export_z3950_new.php,v 1.6 2012-09-06 07:45:00 ngantier Exp $
+// $Id: export_z3950_new.php,v 1.7 2015-04-03 11:16:22 jpermanne Exp $
 
 $base_path="../..";
 
@@ -46,8 +46,8 @@ function make_error($nerr,$err_message) {
 	exit();
 }
 
-if (!@mysql_connect(SQL_SERVER,USER_NAME,USER_PASS)) make_error(1,"Could'nt connect to database server");
-if (!@mysql_select_db(DATA_BASE)) make_error(2,"Database unknown");
+if (!@pmb_mysql_connect(SQL_SERVER,USER_NAME,USER_PASS)) make_error(1,"Could'nt connect to database server");
+if (!@pmb_mysql_select_db(DATA_BASE)) make_error(2,"Database unknown");
 
 //Commande envoyée
 $command=$_GET["command"];
@@ -144,10 +144,10 @@ switch ($command) {
 		$table=$s->make_search();
 		//print $s->make_human_query();
 		$sql_query="select notice_id from $table limit 100";
-		$resultat=@mysql_query($sql_query);
+		$resultat=@pmb_mysql_query($sql_query);
 		echo "0@No errors@";
-		echo @mysql_num_rows($resultat);
-		while (list($id)=@mysql_fetch_row($resultat)) {
+		echo @pmb_mysql_num_rows($resultat);
+		while (list($id)=@pmb_mysql_fetch_row($resultat)) {
 			echo "@$id";
 		}
 		break;

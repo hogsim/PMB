@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_info.class.php,v 1.31.2.3 2014-11-28 15:59:15 jpermanne Exp $
+// $Id: notice_info.class.php,v 1.39 2015-07-17 12:53:08 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -15,6 +15,10 @@ require_once("$class_path/subcollection.class.php");
 require_once($include_path."/notice_categories.inc.php");
 require_once($include_path."/explnum.inc.php");
 require_once($include_path."/interpreter/bbcode.inc.php");
+require_once("$class_path/authperso_notice.class.php");
+require_once("$class_path/map/map_objects_controler.class.php");
+require_once("$class_path/map_info.class.php");
+
 
 if (!sizeof($tdoc)) $tdoc = new marc_list('doctype');
 
@@ -22,7 +26,6 @@ if (!count($fonction_auteur)) {
 	$fonction_auteur = new marc_list('function');
 	$fonction_auteur = $fonction_auteur->table;
 }
-
 if (!count($langue_doc)) {
 	$langue_doc = new marc_list('lang');
 	$langue_doc = $langue_doc->table;
@@ -58,9 +61,9 @@ class notice_info {
 		if (($this->niveau_biblio=="a")&&($this->niveau_hierar==2)) {
 			$requete="select tit1,bulletin_numero,date_date,mention_date from analysis join bulletins on (analysis_bulletin=bulletin_id) join notices on (bulletin_notice=notice_id) where " .
 					"analysis_notice=".$this->notice_id;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);
 				$this->serial_title=$r->tit1;
 				$this->bulletin_numero=$r->bulletin_numero;
 				$this->bulletin_mention_date=$r->mention_date;
@@ -78,13 +81,14 @@ class notice_info {
 		global $opac_sur_location_activate;
 		global $fonction_auteur,$msg;
 		global $tdoc,$icon_doc,$biblio_doc;
+		global $opac_map_activate;
 		
 		if (!$this->notice_id) return false;
 		
 		//Recuperation des infos de la notice
 		$requete = "select * from notices where notice_id=".$this->notice_id;
-		$resultat = mysql_query($requete);
-		$res = mysql_fetch_object($resultat);
+		$resultat = pmb_mysql_query($requete);
+		$res = pmb_mysql_fetch_object($resultat);
 		$this->notice=$res;
 
 		$this->memo_isbn = $this->notice->code ;
@@ -110,8 +114,8 @@ class notice_info {
 		$this->memo_series[]=array();
 		if($res->tparent_id) {
 			$requete = "select * from series where serie_id=".$res->tparent_id;
-			$resultat = mysql_query($requete);
-			if (($serie = mysql_fetch_object($resultat))) {
+			$resultat = pmb_mysql_query($requete);
+			if (($serie = pmb_mysql_fetch_object($resultat))) {
 				$this->memo_series[]=$serie;
 				$this->memo_titre=$serie->serie_name;
 				$this->memo_titre_serie=$serie->serie_name;
@@ -142,14 +146,14 @@ class notice_info {
 		$this->memo_bulletin=new stdClass();
 		if ($res->niveau_biblio=='b') {
 			$rqt="select tit1, date_format(date_date, '".$msg["format_date"]."') as aff_date_date, bulletin_numero as num_bull,bulletin_notice from bulletins,notices where bulletins.num_notice='".$this->notice_id."' and notices.notice_id=bulletins.bulletin_notice";
-			$execute_query=mysql_query($rqt);
-			$row=mysql_fetch_object($execute_query);
+			$execute_query=pmb_mysql_query($rqt);
+			$row=pmb_mysql_fetch_object($execute_query);
 			$this->memo_titre.=" ".(!$row->aff_date_date?sprintf($msg["bul_titre_perio"],$row->tit1):sprintf($msg["bul_titre_perio"],$row->tit1.", ".$row->num_bull." [".$row->aff_date_date."]"));
 			
 			// recherche editeur de la notice de perio 
 			$rqt_perio="select * from notices where notice_id=".$row->bulletin_notice;
-			$execute_query_perio=mysql_query($rqt_perio);
-			$row_perio=mysql_fetch_object($execute_query_perio);
+			$execute_query_perio=pmb_mysql_query($rqt_perio);
+			$row_perio=pmb_mysql_fetch_object($execute_query_perio);
 			if (!$this->notice->ed1_id) {
 				$this->notice->ed1_id=$row_perio->ed1_id;
 			}
@@ -164,9 +168,9 @@ class notice_info {
 			$requete .= " AND c.bulletin_id=a.analysis_bulletin";
 			$requete .= " AND c.bulletin_notice=b.notice_id";
 			$requete .= " LIMIT 1";
-			$myQuery = mysql_query($requete);
-			if (mysql_num_rows($myQuery)) {		
-				$row_perio = mysql_fetch_object($myQuery);
+			$myQuery = pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($myQuery)) {		
+				$row_perio = pmb_mysql_fetch_object($myQuery);
 				if (!$this->notice->ed1_id) {			
 					$this->notice->ed1_id=$row_perio->ed1_id;
 				}
@@ -178,8 +182,8 @@ class notice_info {
 
 			//	info du bulletin de ce dépouillement			
 			$req_bulletin = "SELECT  c.* from analysis a, bulletins c WHERE c.bulletin_id=a.analysis_bulletin AND analysis_notice=".$res->notice_id;
-			$result_bull = mysql_query($req_bulletin);
-			if(($bull=mysql_fetch_object($result_bull))){				
+			$result_bull = pmb_mysql_query($req_bulletin);
+			if(($bull=pmb_mysql_fetch_object($result_bull))){				
 				$this->memo_bulletin=$bull;				
 				$this->memo_notice_bulletin=$bull;
 				$this->bulletin_mention_date=$bull->mention_date;
@@ -198,8 +202,8 @@ class notice_info {
 		//Titre du pério pour les notices de bulletin		
 		if($res->niveau_biblio == 'b' && $res->niveau_hierar == '2'){				
 			$req_bulletin = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero, tit1 as titre from bulletins, notices WHERE bulletin_notice=notice_id AND num_notice=".$res->notice_id;
-			$result_bull = mysql_query($req_bulletin);
-			while(($bull=mysql_fetch_object($result_bull))){
+			$result_bull = pmb_mysql_query($req_bulletin);
+			while(($bull=pmb_mysql_fetch_object($result_bull))){
 				$this->memo_notice_bulletin=$bull;
 				$this->memo_bulletin=$bull;
 				$this->serial_title=$bull->titre;
@@ -327,11 +331,35 @@ class notice_info {
 		if($collation)
 			$this->isbd .= ".&nbsp;-&nbsp;$collation";
 		$this->memo_collation=$collation;
-
+		
+		// map
+		$this->memo_map_isbd="";
+		$this->memo_map_id = 0;
+		$this->memo_map_echelle = "";
+		$this->memo_map_projection = "";
+		$this->memo_map_ref = "";
+		$this->memo_map_equinoxe = "";
+		$this->memo_map="";
+		if($opac_map_activate){
+			$ids[]=$this->notice_id;
+			$this->map=new map_objects_controler(TYPE_RECORD,$ids);
+			$this->map_info=new map_info($this->notice_id);
+				
+			$this->memo_map_isbd=$this->map_info->get_isbd();
+			if($this->memo_map_isbd)$this->isbd .=".&nbsp;-&nbsp;".$this->memo_map_isbd;
+				
+			$this->memo_map_id = $this->map_info->map['id'];
+			$this->memo_map_echelle = $this->map_info->map['echelle'];
+			$this->memo_map_projection = $this->map_info->map['projection'];
+			$this->memo_map_ref = $this->map_info->map['ref'];
+			$this->memo_map_equinoxe = $this->map_info->map['equinoxe'];
+			$this->memo_map=$this->map->get_map();
+		}
+		
 		//Recherche du code dewey
 		$requete = "select * from indexint where indexint_id=".$res -> indexint;
-		$resultat = mysql_query($requete);
-		if (($code_dewey=mysql_fetch_object($resultat))) {
+		$resultat = pmb_mysql_query($requete);
+		if (($code_dewey=pmb_mysql_fetch_object($resultat))) {
 			$this->memo_dewey=$code_dewey;
 		}
 		
@@ -368,8 +396,8 @@ class notice_info {
 		}
 		$requete.= "where bulletins.num_notice=".$res -> notice_id." and expl_bulletin=bulletin_id and expl_statut=idstatut and expl_typdoc=idtyp_doc and expl_section=idsection and expl_owner=idlender and expl_codestat=idcode ";
 		$requete.= "and expl_location=idlocation";
-		$resultat = mysql_query($requete);		
-		while (($ex = mysql_fetch_object($resultat))) {
+		$resultat = pmb_mysql_query($requete);		
+		while (($ex = pmb_mysql_fetch_object($resultat))) {
 			//Champs perso d'exemplaires			
 			$parametres_perso=array();
 			$mes_pp=new parametres_perso("expl");
@@ -389,12 +417,28 @@ class notice_info {
 		
 		//Descripteurs
 		$requete="SELECT libelle_categorie FROM categories, notices_categories WHERE notcateg_notice=".$res->notice_id." and categories.num_noeud = notices_categories.num_noeud ORDER BY ordre_categorie";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		$this->memo_categories=array();
-		while (($cat = mysql_fetch_object($resultat))) {
+		while (($cat = pmb_mysql_fetch_object($resultat))) {
 			$this->memo_categories[]=$cat;
 		}
-				
+		
+		$authperso = new authperso_notice($this->notice_id);
+		$this->memo_authperso_all_isbd .=$authperso->get_notice_display();
+		$this->memo_authperso_all_isbd_list=$authperso->get_notice_display_list();		
+		foreach ($authperso->auth_info as $fields) {
+			foreach ($fields["info_fields"] as $field) {
+				if(is_array($field["values"]) && count($field["values"])) {
+					$tvalues = array();
+					foreach ($field["values"] as $values) {
+						$tvalues[] = $values["format_value"];
+					}
+					$this->parametres_auth_perso[$field["name"]]["TITRE"][] = $field["label"];
+					$this->parametres_auth_perso[$field["name"]]["VALUE"][] = $tvalues;
+				}
+			}
+		}
+		
 		//Champs perso de notice traite par la table notice_custom
 		$mes_pp= new parametres_perso("notices");
 		$mes_pp->get_values($res->notice_id);
@@ -410,9 +454,9 @@ class notice_info {
 		//Notices liées, relations entre notices
 		//les notices mères
 		$requete="SELECT num_notice, linked_notice, relation_type, rank from notices_relations where num_notice=".$res->notice_id." order by num_notice, rank asc";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		$i=0;
-		while(($notice_fille=mysql_fetch_object($resultat))) {						
+		while(($notice_fille=pmb_mysql_fetch_object($resultat))) {						
 			$this->memo_notice_mere[$i]=$notice_fille->linked_notice;		
 			$this->memo_notice_mere_relation_type[$i]=$notice_fille->relation_type;
 			$i++;
@@ -420,9 +464,9 @@ class notice_info {
 	
 		// les notices filles	
 		$requete="SELECT num_notice, linked_notice, relation_type, rank from notices_relations where linked_notice=".$res->notice_id." order by num_notice, rank asc";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		$i=0;
-		while(($notice_mere=mysql_fetch_object($resultat))) {						
+		while(($notice_mere=pmb_mysql_fetch_object($resultat))) {						
 			$this->memo_notice_fille[$i]=$notice_mere->num_notice;	
 			$this->memo_notice_fille_relation_type[$i]=$notice_mere->relation_type;
 			$i++;
@@ -430,22 +474,22 @@ class notice_info {
 			
 		// liens vers les périodiques pour les notices d'article
 		$req_perio_link = "SELECT notice_id, tit1, code from bulletins,analysis,notices WHERE bulletin_notice=notice_id and bulletin_id=analysis_bulletin and analysis_notice=".$res->notice_id;
-		$result_perio_link=mysql_query($req_perio_link);
-		while(($notice_perio_link=mysql_fetch_object($result_perio_link))){
+		$result_perio_link=pmb_mysql_query($req_perio_link);
+		while(($notice_perio_link=pmb_mysql_fetch_object($result_perio_link))){
 			$this->memo_notice_article[]=$notice_perio_link->notice_id;
 		}		
 	
 		// bulletinage pour les notices de pério			
 		$req_bulletinage = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero from bulletins, notices WHERE bulletin_notice = notice_id AND notice_id=".$res->notice_id;
-		$result_bulletinage=mysql_query($req_bulletinage);					
-		while(($notice_bulletinage=mysql_fetch_object($result_bulletinage))){
+		$result_bulletinage=pmb_mysql_query($req_bulletinage);					
+		while(($notice_bulletinage=pmb_mysql_fetch_object($result_bulletinage))){
 			$this->memo_bulletinage[]=$notice_bulletinage->bulletin_id;
 		}					
 				
 		// liens vers les bulletins pour les notices d'article
 		$req_bull_link = "SELECT bulletin_id, bulletin_numero, date_date, mention_date, bulletin_titre, bulletin_numero from bulletins, analysis WHERE bulletin_id=analysis_bulletin and analysis_notice=".$res->notice_id;
-		$result_bull_link=mysql_query($req_bull_link);						
-		while(($notice_bull_link=mysql_fetch_object($result_bull_link))){
+		$result_bull_link=pmb_mysql_query($req_bull_link);						
+		while(($notice_bull_link=pmb_mysql_fetch_object($result_bull_link))){
 			$this->memo_article_bulletinage[]=$notice_bull_link->bulletin_id;
 		}			
 					
@@ -485,13 +529,35 @@ class notice_info {
 		$this->memo_avis=array();
 		$requete="SELECT id_avis,note,sujet,commentaire,DATE_FORMAT(dateajout,'".$msg['format_date']."') as ladate,empr_login,empr_nom, empr_prenom, valide
 		from avis left join empr on id_empr=num_empr where num_notice='".$res->notice_id."' and valide=1 order by avis_rank, dateajout desc";
-		$resultat = mysql_query($requete);
+		$resultat = pmb_mysql_query($requete);
 		if ($resultat) {
-			while (($avis = mysql_fetch_object($resultat))) {
+			while (($avis = pmb_mysql_fetch_object($resultat))) {
 				$avis->note_textuelle = $msg['avis_detail_note_'.$avis->note];
 				if($charset != "utf-8") $avis->commentaire=cp1252Toiso88591($avis->commentaire);
 				$avis->commentaire = do_bbcode($avis->commentaire);
 				$this->memo_avis[]=$avis;
+			}
+		}
+		
+		//Titres uniformes
+		$requete = "select * from notices_titres_uniformes where ntu_num_notice=".$res -> notice_id." order by ntu_ordre";
+		$resultat = pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			while(($tu=pmb_mysql_fetch_object($resultat))) {
+				$tu_memo = new titre_uniforme($tu->ntu_num_tu);
+				$tu_memo->parametres_perso=array();
+				
+				$mes_pp= new parametres_perso("tu");
+				$mes_pp->get_values($tu->ntu_num_tu);
+				$values = $mes_pp->values;
+				foreach ( $values as $field_id => $vals ) {
+					$tu_memo->parametres_perso[$mes_pp->t_fields[$field_id]["NAME"]]["TITRE"]=$mes_pp->t_fields[$field_id]["TITRE"];
+					foreach ( $vals as $value ) {
+						$tu_memo->parametres_perso[$mes_pp->t_fields[$field_id]["NAME"]]["VALUE"][]=$mes_pp->get_formatted_output(array($value),$field_id);
+					}
+				}
+				
+				$this->memo_tu[]=$tu_memo;
 			}
 		}
 		
@@ -502,10 +568,10 @@ class notice_info {
 		$info=array();
 		if($id){
 			$requete = "SELECT * FROM publishers WHERE ed_id=$id LIMIT 1 ";
-			$result = @mysql_query($requete);
-			if($result && mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);
-				mysql_free_result($result);
+			$result = @pmb_mysql_query($requete);
+			if($result && pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);
+				pmb_mysql_free_result($result);
 				$id		= $temp->ed_id;
 				$name		= $temp->ed_name;
 				$adr1		= $temp->ed_adr1;
@@ -581,9 +647,9 @@ class notice_info {
 			$q.= "where id_serial = '".$this->notice_id."' ";
 			//pour l'opac
 			$q.= "and ((archstatut_visible_opac=1 and archstatut_visible_opac_abon=0)".($_SESSION["user_code"]?" or (archstatut_visible_opac_abon=1 and archstatut_visible_opac=1)":"").")";		
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			if ($r) {
-				while (($cs = mysql_fetch_object($r))) {
+				while (($cs = pmb_mysql_fetch_object($r))) {
 					//Champs perso d'etats de collection		
 					$parametres_perso=array();
 					$pp=new parametres_perso("collstate");

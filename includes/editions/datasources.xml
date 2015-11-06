@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 
 <!-- sources de données pour les éditions
-$Id: datasources.xml,v 1.4.6.1 2014-10-28 17:44:26 mbertin Exp $ -->
+$Id: datasources.xml,v 1.5 2014-10-28 18:03:43 mbertin Exp $ -->
 
 <!-- DTD Rapide pour la formation du fichier
 datasources -> balise racine

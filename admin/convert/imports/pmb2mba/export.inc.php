@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export.inc.php,v 1.5 2013-03-05 16:33:24 arenou Exp $
+// $Id: export.inc.php,v 1.7 2015-04-24 14:20:58 dbellamy Exp $
 
 require_once($class_path."/serial_display.class.php");
 require_once($class_path."/mono_display.class.php");
@@ -12,30 +12,30 @@ function _export_($id,$keep_expl) {
 	global $charset,$msg;
 	if(!$id) return;
 	$requete = "select * from notices where notice_id=".$id;
-	$resultat = mysql_query($requete);
-	$res = mysql_fetch_object($resultat);
-	
+	$resultat = pmb_mysql_query($requete);
+	$res = pmb_mysql_fetch_object($resultat);
+
 	$environement["short"] = 1;
 	$environement["ex"] = 0;
-	$environement["exnum"] = 0;	
+	$environement["exnum"] = 0;
 	$environement["link"] = "" ;
 	$environement["link_analysis"] = "" ;
 	$environement["link_explnum"] = "" ;
 	$environement["link_bulletin"] = "" ;
-	
+
 	if($res->niveau_biblio != 's' && $res->niveau_biblio != 'a') {
 		$display = new mono_display($id, $environement["short"], $environement["link"], $environement["ex"], $environement["link_expl"], '', $environement["link_explnum"],0,1);
 		//récup des infos bulletins: bulletin_cb
 		$requete = "select * from bulletins where num_notice=".$id;
-		$resultat_bul = mysql_query($requete);	
-		if(mysql_num_rows($resultat_bul)){
-			$res_bul = mysql_fetch_object($resultat_bul);
+		$resultat_bul = pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($resultat_bul)){
+			$res_bul = pmb_mysql_fetch_object($resultat_bul);
 			$bulletin_cb=$res_bul->bulletin_cb;
 		}
 	} else {
 		// on a affaire à un périodique
 		$display = new serial_display($id, $environement["short"], $environement["link_serial"], $environement["link_analysis"], $environement["link_bulletin"], "", $environement["link_explnum"], 0, 0, 1, 1, true, 1);
-	}	
+	}
 
 	//Champs personalisés
 	$p_perso=new parametres_perso("notices");
@@ -45,15 +45,15 @@ function _export_($id,$keep_expl) {
 		for ($i=0; $i<count($perso_["FIELDS"]); $i++) {
 			$p=$perso_["FIELDS"][$i];
 			if ($p['OPAC_SHOW'] && $p["AFF"]) {
-				if($p["NAME"] == "t_d_f_titre")$titre=$p["AFF"];	
-				elseif($p["NAME"] == "t_d_f_lieu_etabl")$loc=$p["AFF"];									
-				elseif($p["NAME"] == "t_d_f_etablissement")$etablissement=$p["AFF"];					
-				elseif($p["NAME"] == "t_d_f_date")$date=$p["AFF"];	
-				
+				if($p["NAME"] == "t_d_f_titre")$titre=$p["AFF"];
+				elseif($p["NAME"] == "t_d_f_lieu_etabl")$loc=$p["AFF"];
+				elseif($p["NAME"] == "t_d_f_etablissement")$etablissement=$p["AFF"];
+				elseif($p["NAME"] == "t_d_f_date")$date=$p["AFF"];
+
 			}
 		}
 	}
-	
+
 	if($titre)$perso_aff=$titre;
 	if($perso_aff && $loc){
 		$loc = explode("/",$loc);
@@ -65,7 +65,7 @@ function _export_($id,$keep_expl) {
 	if ($perso_aff) {
 		$titre_de_forme = $msg["n_titre_de_forme"]."[".$perso_aff."] " ;
 	}
-	
+
 	// langues
 	$langues="";
 	if(count($display->langues)) {
@@ -76,12 +76,12 @@ function _export_($id,$keep_expl) {
 //	}
 	if($langues)	$langues="\n".$langues;
 
-	
-	$notice="<notice>\n";	
-	
+
+	$notice="<notice>\n";
+
 	//notice (ID)
-	$notice.="<ID>$id</ID>\n";	
-		
+	$notice.="<ID>$id</ID>\n";
+
 	//isbn (ISBN)
 	if ($display->isbn) {
 		$notice.="<ISBN>".htmlspecialchars($display->isbn,ENT_QUOTES,$charset)."</ISBN>\n";
@@ -103,9 +103,9 @@ function _export_($id,$keep_expl) {
 	$isbd=strip_tags($isbd);
 	$notice.="<ISBD>".htmlspecialchars(html_entity_decode($isbd,ENT_QUOTES,$charset),ENT_QUOTES,$charset)."</ISBD>\n";
 	//}
-			
+
 	$notice.="</notice>\n";
-	
+
 	return $notice;
 }
 
@@ -127,18 +127,18 @@ function mba_isbd($obj){
 	global $sort_children;
 	global $pmb_resa_planning;
 	global $pmb_etat_collections_localise,$pmb_droits_explr_localises,$explr_visible_mod ;
-	
+
 	if($obj->notice->niveau_biblio == "m"){
-		
+
 		// constitution de la mention de titre
 		if($obj->tit_serie) {
-			if ($obj->print_mode) $display_isbd = $obj->tit_serie; 
+			if ($obj->print_mode) $display_isbd = $obj->tit_serie;
 				else $display_isbd = $obj->tit_serie_lien_gestion;
 			if($obj->notice->tnvol)
 				$display_isbd .= ',&nbsp;'.$obj->notice->tnvol;
 		}
 		$display_isbd ? $display_isbd .= '.&nbsp;'.$obj->tit1 : $display_isbd = $obj->tit1;
-	
+
 		$tit2 = $obj->notice->tit2;
 		$tit3 = $obj->notice->tit3;
 		$tit4 = $obj->notice->tit4;
@@ -146,94 +146,94 @@ function mba_isbd($obj){
 		if($tit4) $display_isbd .= "&nbsp;: $tit4";
 		if($tit2) $display_isbd .= "&nbsp;; $tit2";
 		$display_isbd .= ' ['.$tdoc->table[$obj->notice->typdoc].']';
-		
+
 		$mention_resp = array() ;
-		
+
 		// constitution de la mention de responsabilité
 		//$obj->responsabilites
 		$as = array_search ("0", $obj->responsabilites["responsabilites"]) ;
 		if ($as!== FALSE && $as!== NULL) {
 			$auteur_0 = $obj->responsabilites["auteurs"][$as] ;
 			$auteur = new auteur($auteur_0["id"]);
-			if ($obj->print_mode) $mention_resp_lib = $auteur->isbd_entry; 
+			if ($obj->print_mode) $mention_resp_lib = $auteur->isbd_entry;
 			else $mention_resp_lib = $auteur->isbd_entry_lien_gestion;
 			if (!$obj->print_mode) $mention_resp_lib .= $auteur->author_web_link ;
 //			if ($auteur_0["fonction"]) $mention_resp_lib .= ", ".$fonction_auteur[$auteur_0["fonction"]];
 			$mention_resp[] = $mention_resp_lib ;
 		}
-		
+
 		$as = array_keys ($obj->responsabilites["responsabilites"], "1" ) ;
 		for ($i = 0 ; $i < count($as) ; $i++) {
 			$indice = $as[$i] ;
 			$auteur_1 = $obj->responsabilites["auteurs"][$indice] ;
 			$auteur = new auteur($auteur_1["id"]);
-			if ($obj->print_mode) $mention_resp_lib = $auteur->isbd_entry; 
+			if ($obj->print_mode) $mention_resp_lib = $auteur->isbd_entry;
 			else $mention_resp_lib = $auteur->isbd_entry_lien_gestion;
 			if (!$obj->print_mode) $mention_resp_lib .= $auteur->author_web_link ;
 //			if ($auteur_1["fonction"]) $mention_resp_lib .= ", ".$fonction_auteur[$auteur_1["fonction"]];
 			$mention_resp[] = $mention_resp_lib ;
 		}
-		
+
 		$as = array_keys ($obj->responsabilites["responsabilites"], "2" ) ;
 		for ($i = 0 ; $i < count($as) ; $i++) {
 			$indice = $as[$i] ;
 			$auteur_2 = $obj->responsabilites["auteurs"][$indice] ;
 			$auteur = new auteur($auteur_2["id"]);
-			if ($obj->print_mode) $mention_resp_lib = $auteur->isbd_entry; 
+			if ($obj->print_mode) $mention_resp_lib = $auteur->isbd_entry;
 			else $mention_resp_lib = $auteur->isbd_entry_lien_gestion;
 			if (!$obj->print_mode) $mention_resp_lib .= $auteur->author_web_link ;
 //			if ($auteur_2["fonction"]) $mention_resp_lib .= ", ".$fonction_auteur[$auteur_2["fonction"]];
 			$mention_resp[] = $mention_resp_lib ;
 		}
-			
+
 		$libelle_mention_resp = implode ("; ",$mention_resp) ;
 		if($libelle_mention_resp) $display_isbd .= "&nbsp;/ $libelle_mention_resp" ;
-	
+
 		// mention d'édition
 		if($obj->notice->mention_edition) $display_isbd .= ".&nbsp;-&nbsp;".$obj->notice->mention_edition;
-		
+
 		// zone de l'adresse
 		// on récupère la collection au passage, si besoin est
 		if($obj->notice->subcoll_id) {
 			$collection = new subcollection($obj->notice->subcoll_id);
 			$ed_obj = new editeur($collection->editeur) ;
 			if ($obj->print_mode) {
-				$editeurs .= $ed_obj->isbd_entry; 
+				$editeurs .= $ed_obj->isbd_entry;
 				$collections = $collection->isbd_entry;
 			} else {
-				$editeurs .= $ed_obj->isbd_entry_lien_gestion; 
+				$editeurs .= $ed_obj->isbd_entry_lien_gestion;
 				$collections = $collection->isbd_entry_lien_gestion;
 			}
 		} elseif ($obj->notice->coll_id) {
 			$collection = new collection($obj->notice->coll_id);
 			$ed_obj = new editeur($collection->parent) ;
 			if ($obj->print_mode) {
-				$editeurs .= $ed_obj->isbd_entry; 
+				$editeurs .= $ed_obj->isbd_entry;
 				$collections = $collection->isbd_entry;
 			} else {
-				$editeurs .= $ed_obj->isbd_entry_lien_gestion; 
+				$editeurs .= $ed_obj->isbd_entry_lien_gestion;
 				$collections = $collection->isbd_entry_lien_gestion;
 			}
 		} elseif ($obj->notice->ed1_id) {
 			$editeur = new editeur($obj->notice->ed1_id);
 			if ($obj->print_mode) $editeurs .= $editeur->isbd_entry;
-			else $editeurs .= $editeur->isbd_entry_lien_gestion; 
+			else $editeurs .= $editeur->isbd_entry_lien_gestion;
 		}
-		
+
 		if($obj->notice->ed2_id) {
 			$editeur = new editeur($obj->notice->ed2_id);
 			if ($obj->print_mode) $ed_isbd=$editeur->isbd_entry;
 			else $ed_isbd=$editeur->isbd_entry_lien_gestion;
 			$editeurs ? $editeurs .= '&nbsp;; '.$ed_isbd : $editeurs = $ed_isbd;
 			}
-	
+
 		if($obj->notice->year) $editeurs ? $editeurs .= ', '.$obj->notice->year : $editeurs = $obj->notice->year;
 		elseif ($obj->notice->niveau_biblio!='b') $editeurs ? $editeurs .= ', [s.d.]' : $editeurs = "[s.d.]";
-	
-	
+
+
 		if ($editeurs) $display_isbd .= ".&nbsp;-&nbsp;$editeurs";
-		
-		
+
+
 // 		// zone de la collation (ne concerne que a2)
 // 		if($obj->notice->npages)
 // 			$collation = $obj->notice->npages;
@@ -243,11 +243,11 @@ function mba_isbd($obj){
 // 			$collation .= '; '.$obj->notice->size;
 // 		if($obj->notice->accomp)
 // 			$collation .= '+ '.$obj->notice->accomp;
-			
+
 // 		if($collation)
 // 			$display_isbd .= ".&nbsp;-&nbsp;$collation";
-		
-		
+
+
 		if($collections) {
 			if($obj->notice->nocoll) $collections .= '; '.$obj->notice->nocoll;
 			$display_isbd .= ".&nbsp;-&nbsp;($collections)".' ';
@@ -255,18 +255,18 @@ function mba_isbd($obj){
 		if(substr(trim($display_isbd), -1) != "."){
 			$display_isbd .= '.';
 		}
-		
-			
+
+
 	//	// note générale
 	//	if($obj->notice->n_gen)
 	// 		$zoneNote = nl2br(htmlentities($obj->notice->n_gen,ENT_QUOTES, $charset)).' ';
-	//		
+	//
 	//	// ISBN ou NO. commercial
 	//	if($obj->notice->code) {
 	//		if(isISBN($obj->notice->code)) {
-	//			if ($zoneNote) { 
-	//				$zoneNote .= '.&nbsp;-&nbsp;ISBN '; 
-	//			} else { 
+	//			if ($zoneNote) {
+	//				$zoneNote .= '.&nbsp;-&nbsp;ISBN ';
+	//			} else {
 	//				$zoneNote = 'ISBN ';
 	//			}
 	//		} else {
@@ -274,24 +274,24 @@ function mba_isbd($obj){
 	//		}
 	//		$zoneNote .= $obj->notice->code;
 	//	}
-	
+
 // 		demande de retrait le 5/2/13
 // 		if($obj->notice->prix) {
 // 			if($obj->notice->code) {$zoneNote .= '&nbsp;: '.$obj->notice->prix;}
-// 			else { 
+// 			else {
 // 				if ($zoneNote) 	{ $zoneNote .= '&nbsp; '.$obj->notice->prix;}
 // 				else	{ $zoneNote = $obj->notice->prix;}
 // 			}
 // 		}
 // 		if($zoneNote) $display_isbd .= "<br /><br />$zoneNote.";
-		
+
 // 		//In
 		//Recherche des notices parentes
 		if (!$obj->no_link) {
 			$requete="select linked_notice, relation_type, rank, l.niveau_biblio as lnb, l.niveau_hierar as lnh from notices_relations, notices as l where num_notice=".$obj->notice_id." and linked_notice=l.notice_id order by relation_type,rank";
-			$result_linked=mysql_query($requete) or die(mysql_error());
+			$result_linked=pmb_mysql_query($requete) or die(pmb_mysql_error());
 			//Si il y en a, on prépare l'affichage
-			if (mysql_num_rows($result_linked)) {
+			if (pmb_mysql_num_rows($result_linked)) {
 				global $relation_listup ;
 				if (!$relation_listup) $relation_listup=new marc_list("relationtypeup");
 			}
@@ -299,20 +299,20 @@ function mba_isbd($obj){
 			$ul_opened=false;
 			$r_type_local="";
 			//Pour toutes les notices liées
-			
-			while ($r_rel=mysql_fetch_object($result_linked)) {
+
+			while ($r_rel=pmb_mysql_fetch_object($result_linked)) {
 				//Pour avoir le lien par défaut
 				if (!$obj->print_mode && (SESSrights & CATALOGAGE_AUTH)) $link_parent=$base_path.'/catalog.php?categ=isbd&id=!!id!!'; else $link_parent="";
-				
+
 				if ($r_rel->lnb=='s' && $r_rel->lnh=='1') {
 					// c'est une notice chapeau
 					global $link_serial,$link_analysis, $link_bulletin, $link_explnum_serial ;
 					$link_serial_sub = $base_path."/catalog.php?categ=serials&sub=view&serial_id=".$r_rel->linked_notice;
-								
+
 					// function serial_display ($id, $level='1', $action_serial='', $action_analysis='', $action_bulletin='', $lien_suppr_cart="", $lien_explnum="", $bouton_explnum=1,$print=0,$show_explnum=1, $show_statut=0, $show_opac_hidden_fields=true, $draggable=0 ) {
 					$serial = new serial_display($r_rel->linked_notice, 0, $link_serial_sub, $link_analysis, $link_bulletin, "", "", 0, $obj->print_mode, $obj->show_explnum, $obj->show_statut, $obj->show_opac_hidden_fields, 1, true);
-					$aff = $serial->header;				
-				} 
+					$aff = $serial->header;
+				}
 				else if ($r_rel->lnb=='a' && $r_rel->lnh=='2') {
 					// c'est un dépouillement de bulletin
 					global $link_serial, $link_analysis, $link_bulletin, $link_explnum_serial ;
@@ -325,9 +325,9 @@ function mba_isbd($obj){
 				else {
 					if($link_parent && $r_rel->lnb=='b' && $r_rel->lnh=='2'){
 						$requete="SELECT bulletin_id FROM bulletins WHERE num_notice='".$r_rel->linked_notice."'";
-						$res=mysql_query($requete);
-						if(mysql_num_rows($res)){
-							$link_parent=$base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".mysql_result($res,0,0);
+						$res=pmb_mysql_query($requete);
+						if(pmb_mysql_num_rows($res)){
+							$link_parent=$base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".pmb_mysql_result($res,0,0);
 						}
 					}
 					// dans les autres cas
@@ -337,21 +337,21 @@ function mba_isbd($obj){
 				}
 				//$parent_notice=new mono_display($r_rel->linked_notice,0,$link_parent);
 				//Présentation différente si il y en a un ou plusieurs
-				if (mysql_num_rows($result_linked)==1) {
+				if (pmb_mysql_num_rows($result_linked)==1) {
 					$display_isbd.="<br /><b>".$relation_listup->table[$r_rel->relation_type]."</b> ".$aff."<br />";
 				} else {
 					if ($r_rel->relation_type!=$r_type_local) {
 						$r_type_local=$r_rel->relation_type;
 						if ($ul_opened) {
-							$display_isbd.="</ul>"; 
+							$display_isbd.="</ul>";
 							$display_isbd.="\n<b>".$relation_listup->table[$r_rel->relation_type]."</b>";
 							$display_isbd.="\n<ul class='notice_rel'>\n";
 							$ul_opened=true;
-						} else { 
-							$display_isbd.="\n<br />"; 
+						} else {
+							$display_isbd.="\n<br />";
 							$display_isbd.="\n<b>".$relation_listup->table[$r_rel->relation_type]."</b>";
 							$display_isbd.="\n<ul class='notice_rel'>\n";
-							$ul_opened=true; 
+							$ul_opened=true;
 						}
 					}
 					$display_isbd.="\n<li>".$aff."</li>\n";
@@ -359,7 +359,7 @@ function mba_isbd($obj){
 			}
 			if ($ul_opened) $display_isbd.="\n</ul>\n";
 		}
-	
+
 		// niveau 1
 		if($obj->level == 1) {
 			if(!$obj->print_mode) $display_isbd .= "<!-- !!bouton_modif!! -->";
@@ -506,9 +506,9 @@ function mba_isbd($obj){
 		//Recherche des notices parentes
 		if (!$obj->no_link) {
 			$requete="select linked_notice, relation_type, rank, l.niveau_biblio as lnb, l.niveau_hierar as lnh from notices_relations, notices as l where num_notice=".$obj->notice_id." and linked_notice=l.notice_id order by relation_type,rank";
-			$result_linked=mysql_query($requete) or die(mysql_error());
+			$result_linked=pmb_mysql_query($requete) or die(pmb_mysql_error());
 			//Si il y en a, on prépare l'affichage
-			if (mysql_num_rows($result_linked)) {
+			if (pmb_mysql_num_rows($result_linked)) {
 				global $relation_listup ;
 				if (!$relation_listup) $relation_listup=new marc_list("relationtypeup");
 			}
@@ -517,7 +517,7 @@ function mba_isbd($obj){
 			$r_type_local="";
 			//Pour toutes les notices liées
 
-			while (($r_rel=mysql_fetch_object($result_linked))) {
+			while (($r_rel=pmb_mysql_fetch_object($result_linked))) {
 				//Pour avoir le lien par défaut
 				if (!$obj->print_mode && (SESSrights & CATALOGAGE_AUTH)) $link_parent=$base_path.'/catalog.php?categ=isbd&id=!!id!!'; else $link_parent="";
 
@@ -541,9 +541,9 @@ function mba_isbd($obj){
 				else {
 					if($link_parent && $r_rel->lnb=='b' && $r_rel->lnh=='2'){
 						$requete="SELECT bulletin_id FROM bulletins WHERE num_notice='".$r_rel->linked_notice."'";
-						$res=mysql_query($requete);
-						if(mysql_num_rows($res)){
-							$link_parent=$base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".mysql_result($res,0,0);
+						$res=pmb_mysql_query($requete);
+						if(pmb_mysql_num_rows($res)){
+							$link_parent=$base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".pmb_mysql_result($res,0,0);
 						}
 					}
 					// dans les autres cas
@@ -554,7 +554,7 @@ function mba_isbd($obj){
 				}
 
 				//Présentation différente si il y en a un ou plusieurs
-				if (mysql_num_rows($result_linked)==1) {
+				if (pmb_mysql_num_rows($result_linked)==1) {
 					$display_isbd.="<br /><b>".$relation_listup->table[$r_rel->relation_type]."</b> ".$aff."<br />";
 				} else {
 					if ($r_rel->relation_type!=$r_type_local) {

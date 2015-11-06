@@ -14,12 +14,12 @@ if ($idemprcaddie) {
 			if($form_cb) {
 				if ($empr_location_id>0) $where = " and empr_location=$empr_location_id "; 
 				$query = "select id_empr, empr_nom, empr_prenom from empr where (empr_cb='$form_cb' or empr_nom like '$form_cb%') $where ";
-				$result = mysql_query($query, $dbh);
-				if (!mysql_num_rows($result)) {
+				$result = pmb_mysql_query($query, $dbh);
+				if (!pmb_mysql_num_rows($result)) {
 					// emprunteur inconnu
 					$message_ajout_empr =  "<strong>$form_cb&nbsp;: ".$msg['empr_caddie_unknown_barcode']."</strong>";
-				} elseif (mysql_num_rows($result)==1) {
-					$empr_trouve = mysql_fetch_object($result);
+				} elseif (pmb_mysql_num_rows($result)==1) {
+					$empr_trouve = pmb_mysql_fetch_object($result);
 					$myCart->add_item($empr_trouve->id_empr);
 					$message_ajout_empr =  "<strong>".$empr_trouve->empr_nom."&nbsp;".$empr_trouve->empr_prenom."&nbsp;: ".$msg['empr_caddie_collect_added']."</strong>";
 				} else {

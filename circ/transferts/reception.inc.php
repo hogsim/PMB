@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reception.inc.php,v 1.11.6.1 2014-07-23 11:47:15 dgoron Exp $
+// $Id: reception.inc.php,v 1.13 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -44,8 +44,8 @@ switch ($action) {
 		$rqt = "SELECT transfert_statut_defaut FROM docs_location " .
 				"INNER JOIN users ON idlocation=deflt_docs_location " .
 				"WHERE userid=".$PMBuserid;
-		$res = mysql_query($rqt);
-		$statut_defaut = mysql_result($res,0);
+		$res = pmb_mysql_query($rqt);
+		$statut_defaut = pmb_mysql_result($res,0);
 		
 		//on remplit le select avec la liste des statuts
 		$tmpString = str_replace("!!liste_statuts!!", do_liste_statut($statut_defaut), $tmpString);
@@ -73,8 +73,8 @@ if ($action=="") {
 	$rqt = "SELECT transfert_statut_defaut FROM docs_location " .
 			"INNER JOIN users ON idlocation=deflt_docs_location " .
 			"WHERE userid=".$PMBuserid;
-	$res = mysql_query($rqt);
-	$statut_defaut = mysql_result($res,0);
+	$res = pmb_mysql_query($rqt);
+	$statut_defaut = pmb_mysql_result($res,0);
 	
 	//on remplit le select avec la liste des statuts
 	$tmpString = str_replace("!!liste_statuts!!", do_liste_statut($statut_defaut), $tmpString);

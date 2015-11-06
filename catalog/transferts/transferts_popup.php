@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: transferts_popup.php,v 1.3 2010-02-22 13:40:49 ngantier Exp $
+// $Id: transferts_popup.php,v 1.4 2015-04-03 11:16:29 jpermanne Exp $
 
 
 // d?finition du minimum n?c?ssaire
@@ -43,13 +43,13 @@ if ($action=="enregistre") {
 				" LEFT JOIN lenders ON idlender=expl_owner " .
 			" WHERE expl_id IN (".$expl.")";
 	
-	$res = mysql_query($rqt);
+	$res = pmb_mysql_query($rqt);
 	$nb = 0;
 	
 	//le nombre de colonnes dans la requete pour remplacer les champs dans le template
-	$nbCols = mysql_num_fields($res);
+	$nbCols = pmb_mysql_num_fields($res);
 	
-	while ($values=mysql_fetch_array($res)) {
+	while ($values=pmb_mysql_fetch_array($res)) {
 
 		if ($nb % 2)
 			$tmpLigne = str_replace("!!class_ligne!!", "odd", $transferts_popup_ligne_tableau);
@@ -59,7 +59,7 @@ if ($action=="enregistre") {
 		//on parcours toutes les colonnes de la requete
 		for($i=0; $i<$nbCols; $i++) {
 			//on remplace les données à afficher
-			$tmpLigne = str_replace("!!".mysql_field_name($res,$i)."!!",$values[$i],$tmpLigne);
+			$tmpLigne = str_replace("!!".pmb_mysql_field_name($res,$i)."!!",$values[$i],$tmpLigne);
 		}
 		
 		//on ajoute la ligne aux autres
@@ -78,8 +78,8 @@ if ($action=="enregistre") {
 			"FROM docs_location " .
 			"INNER JOIN users ON idlocation=deflt_docs_location " .
 			"WHERE userid=".$PMBuserid;
-	$res = mysql_query($rqt);
-	$values=mysql_fetch_array($res);
+	$res = pmb_mysql_query($rqt);
+	$values=pmb_mysql_fetch_array($res);
 	$tmpString = str_replace("!!dest_localisation!!", $values[1], $tmpString);
 	$tmpString = str_replace("!!loc_id!!", $values[0], $tmpString);
 	
@@ -101,6 +101,6 @@ if ($action=="enregistre") {
 echo $footer;
 
 // deconnection MYSql
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 ?>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: entrez.class.php,v 1.7 2012-10-17 07:50:52 dgoron Exp $
+// $Id: entrez.class.php,v 1.8 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -299,13 +299,13 @@ class entrez extends connector {
 				//Si conservation des anciennes notices, on regarde si elle existe
 				if (!$this->del_old) {
 					$requete="select count(*) from entrepot_source_".$source_id." where ref='".addslashes($ref)."'";
-					$rref=mysql_query($requete);
-					if ($rref) $ref_exists=mysql_result($rref,0,0);
+					$rref=pmb_mysql_query($requete);
+					if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 				}
 				//Si pas de conservation des anciennes notices, on supprime
 				if ($this->del_old) {
 					$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."'";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				$ref_exists = false;
 				//Si pas de conservation ou refï¿½rence inexistante
@@ -320,14 +320,14 @@ class entrez extends connector {
 					
 					//Rï¿½cupï¿½ration d'un ID
 					$requete="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$source_id." ".$ref)."', ".$source_id.")";
-					$rid=mysql_query($requete);
-					if ($rid) $recid=mysql_insert_id();
+					$rid=pmb_mysql_query($requete);
+					if ($rid) $recid=pmb_mysql_insert_id();
 					
 					foreach($n_header as $hc=>$code) {
 						$requete="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid, search_id) values(
 						'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 						'".$hc."','',-1,0,'".addslashes($code)."','',$recid, '$search_id')";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}
 					if ($fs)
 					for ($i=0; $i<count($fs); $i++) {
@@ -343,7 +343,7 @@ class entrez extends connector {
 								'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 								'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 								' ".addslashes(strip_empty_words($value))." ',$recid, '$search_id')";
-								mysql_query($requete);
+								pmb_mysql_query($requete);
 							}
 						} else {
 							$value=$rec_uni_dom->get_datas($fs[$i]);
@@ -351,7 +351,7 @@ class entrez extends connector {
 							'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 							'".addslashes($ufield)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 							' ".addslashes(strip_empty_words($value))." ',$recid, '$search_id')";
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 						}
 					}
 				}

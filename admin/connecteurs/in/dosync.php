@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dosync.php,v 1.8 2014-01-30 16:28:16 dbellamy Exp $
+// $Id: dosync.php,v 1.9 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,7 +18,7 @@ function show_progress($percent,$nlu,$ntotal) {
 		document.getElementById('nlu').innerHTML='".htmlentities($nlu,ENT_QUOTES,$charset)."';
 		document.getElementById('ntotal').innerHTML='".htmlentities($ntotal,ENT_QUOTES,$charset)."';";
 	$requete="update source_sync set percent=".round($percent*100)." where source_id=$source_id";
-	$r=mysql_query($requete);
+	$r=pmb_mysql_query($requete);
     ob_flush();
     flush();
 }
@@ -64,7 +64,7 @@ if ($cancel) {
 	} else {
 		$requete="update source_sync set cancel=1 where source_id=".$source_id;
 	}
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	die();
 }
 	
@@ -75,9 +75,9 @@ $is_already_sync=false;
 $recover_env="";
 $recover=false;
 $requete="select * from source_sync where source_id=$source_id";
-$resultat=mysql_query($requete);
-if (mysql_num_rows($resultat)) {
-	$rs_s=mysql_fetch_object($resultat);
+$resultat=pmb_mysql_query($requete);
+if (pmb_mysql_num_rows($resultat)) {
+	$rs_s=pmb_mysql_fetch_object($resultat);
 	if (!$rs_s->cancel) {
 		return_error($conn->msg["connecteurs_sync_currentexists"]);
 	} else {
@@ -114,11 +114,11 @@ register_shutdown_function('shutdown');
 if (!$is_already_sync) {
 	if (!$recover) {
 		$requete="insert into source_sync (source_id,nrecu,ntotal,date_sync) values($source_id,0,0,now())";
-		$r=mysql_query($requete);
+		$r=pmb_mysql_query($requete);
 	} 
 	else {
 		$requete="update source_sync set cancel=0 where source_id=$source_id";
-		$r=mysql_query($requete);
+		$r=pmb_mysql_query($requete);
 	}
 	if ($r) {
 		$n_maj=$conn->maj_entrepot($source_id,"show_progress",$recover,$recover_env);
@@ -128,16 +128,16 @@ if (!$is_already_sync) {
 			print "document.getElementById('get_back').style.visibility='visible';";
 			print "document.getElementById('sync_message').innerHTML='".htmlentities($msg["connecteurs_sync_syncover"] ,ENT_QUOTES, $charset)."'";
 			$requete="delete from source_sync where source_id=".$source_id;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$requete="update connectors_sources set last_sync_date=now() where source_id=".$source_id;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		} else {
 			if ($conn->break_maj($source_id)) {
 				$requete="delete from source_sync where source_id=".$source_id;
 			} else {
 				$requete="update source_sync set cancel=2 where source_id=".$source_id;
 			}
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			return_error($conn->error_message);
 		}
 	} else return_error($msg["connecteurs_sync_currentexists"]);

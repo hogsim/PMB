@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: update_notice.inc.php,v 1.76.2.6 2015-02-03 09:42:55 jpermanne Exp $
+// $Id: update_notice.inc.php,v 1.99 2015-06-11 13:46:41 gueluneau Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,12 +29,18 @@ if ($acces_m==0) {
 	require_once($class_path."/parametres_perso.class.php");
 	require_once($class_path."/notice.class.php");
 	require_once($class_path."/notice_doublon.class.php");
-	
+	require_once($class_path."/authperso_notice.class.php");
+	require_once($class_path."/map/map_edition_controler.class.php");	
+	require_once($class_path."/map_info.class.php");
+	require_once($class_path."/nomenclature/nomenclature_record_ui.class.php");
 	//Pour la synchro rdf
 	require_once($class_path."/synchro_rdf.class.php");
 	if($pmb_synchro_rdf){
 		$synchro_rdf = new synchro_rdf();
 	}
+	
+	// Pour l'indexation des concepts
+	require_once($class_path."/index_concept.class.php");
 	
 	$sign = new notice_doublon();
 	$signature = $sign->gen_signature();
@@ -67,8 +73,8 @@ if ($acces_m==0) {
 			$requete="select signature, niveau_biblio ,notice_id from notices where signature='$signature' and niveau_biblio='$b_level' ";
 			if($id)	$requete.= " and notice_id != '$id' ";
 			//$requete.= " limit 1 ";
-			$result=mysql_query($requete, $dbh);	
-			if ($dbls=mysql_num_rows($result)) {
+			$result=pmb_mysql_query($requete, $dbh);	
+			if ($dbls=pmb_mysql_num_rows($result)) {
 				//affichage de l'erreur, en passant tous les param postes (serialise) pour l'eventuel forcage 	
 				$tab=new stdClass();
 				$tab->POST = $_POST;
@@ -107,7 +113,7 @@ if ($acces_m==0) {
 				}
 				$enCours=1;
 				while($enCours<=$maxAffiche){
-					$r=mysql_fetch_object($result);
+					$r=pmb_mysql_fetch_object($result);
 					$nt = new mono_display($r->notice_id,1,'catalog.php?categ=isbd&id='.$r->notice_id);
 				
 				echo "
@@ -138,6 +144,31 @@ if ($acces_m==0) {
 		$notitle_message = $msg[280];
 	}
 	
+	$req_notice_date_is_new="";
+	if($id) {	
+		$req_new="select notice_is_new, notice_date_is_new from notices where notice_id=$id ";
+		$res_new=pmb_mysql_query($req_new, $dbh);
+		if (pmb_mysql_num_rows($res_new)) {
+			if($r=pmb_mysql_fetch_object($res_new)){
+				if($r->notice_is_new==$f_notice_is_new){ // pas de changement du flag
+					$req_notice_date_is_new= "";
+				}elseif($f_notice_is_new){ // Changement du flag et affecté comme new
+					$req_notice_date_is_new= ", notice_date_is_new =now() ";
+				}else{// raz date
+					$req_notice_date_is_new= ", notice_date_is_new ='' ";
+				}
+			}
+		}
+	}else{
+		if($f_notice_is_new){ // flag affecté comme new en création
+			$req_notice_date_is_new= ", notice_date_is_new =now() ";
+		}
+	}
+	// clean des vieilles nouveautés
+	if($pmb_newrecord_timeshift){
+		$req_old="UPDATE notices SET notice_date_is_new ='', notice_is_new=0 where notice_date_is_new !='0000-00-00 00:00:00' and (notice_date_is_new < now() - interval $pmb_newrecord_timeshift day )";
+		mysql_query($req_old, $dbh);
+	}
 	$p_perso=new parametres_perso("notices");
 	$nberrors=$p_perso->check_submited_fields();
 	
@@ -169,6 +200,8 @@ if ($acces_m==0) {
 		// le contenu des champs du form est mis dans un tableau
 		$t_notice['typdoc'] = $typdoc;
 		$t_notice['statut'] = $form_notice_statut;
+		$t_notice['notice_is_new'] = $f_notice_is_new+0;	
+		
 		$t_notice['commentaire_gestion'] = $f_commentaire_gestion;
 		$t_notice['thumbnail_url'] = $f_thumbnail_url;
 		
@@ -343,28 +376,42 @@ if ($acces_m==0) {
 		$requete .= ", signature='${t_notice['signature']}'";
 		$requete .= ", date_parution='$date_parution_notice'";
 		$requete .= ", indexation_lang='${t_notice['indexation_lang']}'";
+		$requete .= ", notice_is_new='${t_notice['notice_is_new']}'";
+		$requete .= $req_notice_date_is_new;
 		$requete .= $postrequete;
 		
-		$result = mysql_query($requete, $dbh);
+		$result = pmb_mysql_query($requete, $dbh);
 		
 		//traitement audit
 		if (!$id) {
 			$sav_id=0;
-			$id=mysql_insert_id($dbh);
+			$id=pmb_mysql_insert_id($dbh);
 			audit::insert_creation (AUDIT_NOTICE, $id) ;				
 		} else {
 			$sav_id=$id;
 			audit::insert_modif (AUDIT_NOTICE, $id) ;
 		}
+		// autorité personnalisées			
+		$authperso = new authperso_notice($id);
+		$authperso->save_form();			
 		
+		// map		
+		global $pmb_map_activate;
+		if($pmb_map_activate){
+			$map = new map_edition_controler(TYPE_RECORD, $id);
+			$map->save_form();
+			$map_info = new map_info($id);
+			$map_info->save_form();
+		}
+					
 		// vignette de la notice uploadé dans un répertoire
 		if($_FILES['f_img_load']['name'] && $pmb_notice_img_folder_id){
 			$poids_fichier_max=1024*1024;//Limite la taille de l'image à 1 Mo
 				
 			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-			$res = mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$rep=mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
 				$filename_output=$rep->repertoire_path."img_".$id;
 			}
 			if (($fp=@fopen($_FILES['f_img_load']['tmp_name'], "rb")) && $filename_output) {
@@ -414,15 +461,13 @@ if ($acces_m==0) {
 						$thumbnail_url=$opac_url_base."getimage.php?noticecode=&vigurl=&notice_id=".$id;						
 						
 						$req = "update notices set  thumbnail_url='".$thumbnail_url."' where notice_id ='".$id."'";
-						$res = mysql_query($req,$dbh);				
+						$res = pmb_mysql_query($req,$dbh);				
 						
 					}
 				}
 			}
 		}
-			
-		
-		
+					
 		// Traitement des titres uniformes
 		if ($pmb_use_uniform_title) {
 			$ntu=new tu_notice($id);
@@ -450,7 +495,7 @@ if ($acces_m==0) {
 		
 		//Traitement des liens
 		$requete='DELETE FROM notices_relations WHERE num_notice="'.$id.'" OR linked_notice="'.$id.'"';
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		for ($i=0; $i<$max_rel; $i++) {
 			$f_rel="f_rel_type_".$i;
 			$f_rel=explode('-', ${$f_rel});
@@ -465,17 +510,25 @@ if ($acces_m==0) {
 			if ($f_rel_id) {
 				if($f_rel_direction=='up'){
 					$requete='INSERT INTO notices_relations VALUES("'.$id.'","'.$f_rel_id.'","'.$f_rel_type.'","'.$f_rel_rank.'")';
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 				}elseif($f_rel_direction=='down'){
 					$requete='INSERT INTO notices_relations VALUES("'.$f_rel_id.'","'.$id.'","'.$f_rel_type.'","'.$f_rel_rank.'")';
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 				}
 			}
 		}
-				
+
+		// nomenclature
+		global $pmb_nomenclature_activate;
+		if($pmb_nomenclature_activate){
+			$nomenclature= new nomenclature_record_ui($id);
+			$nomenclature->save_form();
+		}
+		
+		
 		// traitement des auteurs
 		$rqt_del = "delete from responsability where responsability_notice='$id' ";
-		$res_del = mysql_query($rqt_del);
+		$res_del = pmb_mysql_query($rqt_del);
 		$rqt_ins = "INSERT INTO responsability (responsability_author, responsability_notice, responsability_fonction, responsability_type, responsability_ordre) VALUES ";
 		
 		$i=0;
@@ -486,14 +539,14 @@ if ($acces_m==0) {
 				$type_aut = $f_aut[$i]['type'];
 				$ordre_aut = $f_aut[$i]['ordre'];
 				$rqt = $rqt_ins . " ('$id_aut','$id','$fonc_aut','$type_aut', $ordre_aut) " ; 
-				$res_ins = @mysql_query($rqt);
+				$res_ins = @pmb_mysql_query($rqt);
 			}
 			$i++;
 		}
 			
 		// traitement des categories
 		$rqt_del = "DELETE FROM notices_categories WHERE notcateg_notice='$id' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "INSERT INTO notices_categories (notcateg_notice, num_noeud, ordre_categorie) VALUES ";
 		if(!isset($f_categ)) $f_categ = array();
 		while (list ($key, $val) = each ($f_categ)) {
@@ -501,10 +554,15 @@ if ($acces_m==0) {
 			if ($id_categ) {
 				$ordre_categ = $val['ordre'];
 				$rqt = $rqt_ins . " ('$id','$id_categ',$ordre_categ) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
+		// traitement des concepts
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($id, TYPE_NOTICE);
+			$index_concept->save();
+		}	
 		// traitement des langues
 		// langues
 		$f_lang_form = array();
@@ -521,14 +579,14 @@ if ($acces_m==0) {
 		}
 	
 		$rqt_del = "delete from notices_langues where num_notice='$id' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "insert into notices_langues (num_notice, type_langue, code_langue, ordre_langue) VALUES ";
 		while (list ($key, $val) = each ($f_lang_form)) {
 			$tmpcode_langue=$val['code'];
 			if ($tmpcode_langue) {
 				$tmpordre_langue = $val['ordre'];
 				$rqt = $rqt_ins . " ('$id',0, '$tmpcode_langue',$tmpordre_langue) " ; 
-				$res_ins = mysql_query($rqt, $dbh);
+				$res_ins = pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
@@ -539,7 +597,7 @@ if ($acces_m==0) {
 			if ($tmpcode_langue) {
 				$tmpordre_langue = $val['ordre'];
 				$rqt = $rqt_ins . " ('$id',1, '$tmpcode_langue',$tmpordre_langue) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
@@ -552,6 +610,12 @@ if ($acces_m==0) {
 			// echec de la requete
 			error_message($libelle, $msg[281], 1, "./catalog.php");
 		}
+		
+		//Recherche du titre uniforme automatique
+		global $opac_enrichment_bnf_sparql;
+		$opac_enrichment_bnf_sparql=1;
+		
+		$titre_uniforme=notice::getAutomaticTu($id);
 		
 		// permet de charger la bonne langue, mot vide... 
 		$info=notice::indexation_prepare($id);
@@ -567,7 +631,6 @@ if ($acces_m==0) {
 		if($pmb_synchro_rdf){
 			$synchro_rdf->addRdf($id,0);
 		}
-		
 	} else {
 		if ($f_tit1=="") {
 			// erreur : le champ tit1 est vide

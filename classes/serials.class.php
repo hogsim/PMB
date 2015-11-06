@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials.class.php,v 1.152.2.8 2015-10-27 14:25:57 jpermanne Exp $
+// $Id: serials.class.php,v 1.168 2015-06-05 12:36:58 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -18,6 +18,10 @@ require_once("$class_path/sur_location.class.php");
 require_once($class_path."/abts_modeles.class.php");
 require_once($class_path."/explnum.class.php");
 require_once($class_path."/synchro_rdf.class.php");
+require_once($class_path."/authperso_notice.class.php");
+require_once($class_path."/index_concept.class.php");
+require_once($class_path."/map/map_edition_controler.class.php");	
+require_once($class_path."/map_info.class.php");
 
 /* ------------------------------------------------------------------------------------
         classe serial : classe de gestion des notices chapeau
@@ -60,6 +64,10 @@ class serial {
 	var $date_parution_perio = '';
 	var $opac_visible_bulletinage = 1;
 	var $opac_serialcirc_demande = 1;
+	var $is_new=0; // nouveauté
+	var $date_is_new="0000-00-00 00:00:00"; // date nouveauté
+	var $create_date="0000-00-00 00:00:00"; // date création
+	var $update_date="0000-00-00 00:00:00"; // date modification
 
 	// constructeur
 	function serial($id=0) {
@@ -77,8 +85,8 @@ class serial {
 		global $dbh;
 		global $fonction_auteur;
 		
-		$myQuery = mysql_query("SELECT * FROM notices WHERE notice_id='".$this->serial_id."' LIMIT 1", $dbh);
-		$myPerio = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("SELECT * FROM notices WHERE notice_id='".$this->serial_id."' LIMIT 1", $dbh);
+		$myPerio = pmb_mysql_fetch_object($myQuery);
 		
 		// type du document
 		$this->typdoc  = $myPerio->typdoc;
@@ -150,6 +158,9 @@ class serial {
 		
 		$this->indexation_lang = $myPerio->indexation_lang;
 		
+		$this->is_new = $myPerio->notice_is_new;
+		$this->date_is_new = $myPerio->notice_date_is_new;
+		
 		$this->notice_link=array();
 		//liens vers autres notices
 		$requete="
@@ -158,10 +169,10 @@ class serial {
 		WHERE (notices_relations.num_notice=".$this->serial_id." OR notices_relations.linked_notice=".$this->serial_id.")
 		AND (bulletin_notice IS NULL OR bulletins.bulletin_notice!=".$this->serial_id.")
 		ORDER BY rank";
-		$result_rel=mysql_query($requete) or die(mysql_error());
-		if (mysql_num_rows($result_rel)) {
+		$result_rel=pmb_mysql_query($requete) or die(pmb_mysql_error());
+		if (pmb_mysql_num_rows($result_rel)) {
 			$i=0;
-			while (($r_rel=mysql_fetch_object($result_rel))) {
+			while (($r_rel=pmb_mysql_fetch_object($result_rel))) {
 				if($r_rel->linked_notice==$this->serial_id){
 					//notice en cours est notice fille
 					$this->notice_link['down'][$i]['relation_direction']='down';
@@ -181,6 +192,9 @@ class serial {
 				$i++;
 			}
 		}
+		
+		$this->create_date = $myPerio->create_date;
+		$this->update_date = $myPerio->update_date;
 	
 		return $myQuery->nbr_rows;
 	}
@@ -188,9 +202,9 @@ class serial {
 	//Récupération d'un titre de notice
 	function get_notice_title($notice_id) {
 		$requete="select serie_name, tnvol, tit1, code from notices left join series on serie_id=tparent_id where notice_id=".$notice_id;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);
 			return ($r->serie_name?$r->serie_name." ":"").($r->tnvol?$r->tnvol." ":"").$r->tit1.($r->code?" (".$r->code.")":"");
 		}
 		return '';
@@ -211,7 +225,7 @@ class serial {
 	}
 	
 	// fonction de mise à jour ou de création d'un périodique
-	function update($value) {
+	function update($value,$other_fields="") {
 		
 		global $dbh;
 		
@@ -234,14 +248,14 @@ class serial {
 		
 		if($this->serial_id) {
 			// modif
-			$q = "UPDATE notices SET $values , update_date=sysdate() WHERE notice_id=".$this->serial_id;
-			mysql_query($q, $dbh);
+			$q = "UPDATE notices SET $values , update_date=sysdate() $other_fields WHERE notice_id=".$this->serial_id;
+			pmb_mysql_query($q, $dbh);
 			audit::insert_modif (AUDIT_NOTICE, $this->serial_id) ;
 		} else {
 			// create
-			$q = "INSERT INTO notices SET $values , create_date=sysdate(), update_date=sysdate() ";
-			mysql_query($q, $dbh);
-			$this->serial_id = mysql_insert_id($dbh);
+			$q = "INSERT INTO notices SET $values , create_date=sysdate(), update_date=sysdate() $other_fields";
+			pmb_mysql_query($q, $dbh);
+			$this->serial_id = pmb_mysql_insert_id($dbh);
 			audit::insert_creation (AUDIT_NOTICE, $this->serial_id) ;
 			
 		}
@@ -264,9 +278,12 @@ class serial {
 		global $value_deflt_fonction;
 		global $value_deflt_relation_serial;
 		global $thesaurus_mode_pmb, $thesaurus_classement_mode_pmb ;
+		global $thesaurus_concepts_active;
 		global $opac_serialcirc_active;
+		global $pmb_notices_show_dates;
 		
 		require_once("$class_path/author.class.php");
+		require_once($class_path."/index_concept.class.php");
 		$fonction = new marc_list('function');
 		
 		// mise à jour des flags de niveau hiérarchique
@@ -392,11 +409,11 @@ class serial {
 			if ($i==0) $ptab_categ = str_replace('!!icateg!!', $i, $ptab[40]) ;
 				else $ptab_categ = str_replace('!!icateg!!', $i, $ptab[401]) ;
 				
-			if ($thesaurus_mode_pmb && $categ->id) $nom_tesaurus='['.$categ->thes->getLibelle().'] ' ;
-				else $nom_tesaurus='' ;
+			if ($thesaurus_mode_pmb && $categ->id) $nom_thesaurus='['.$categ->thes->getLibelle().'] ' ;
+				else $nom_thesaurus='' ;
 			$ptab_categ = str_replace('!!categ_id!!',			$categ_id, $ptab_categ);
-			$ptab_categ = str_replace('!!titre_drag!!',			htmlentities($nom_tesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
-			$ptab_categ = str_replace('!!categ_libelle!!',		htmlentities($nom_tesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
+			$ptab_categ = str_replace('!!titre_drag!!',			htmlentities($nom_thesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
+			$ptab_categ = str_replace('!!categ_libelle!!',		htmlentities($nom_thesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
 			$categ_repetables .= $ptab_categ ;	
 			
 			if ( sizeof($this->categories)>0 ) { 				
@@ -407,6 +424,14 @@ class serial {
 		$ptab[4] = str_replace('!!max_categ!!', $max_categ, $ptab[4]);
 		$ptab[4] = str_replace('!!categories_repetables!!', $categ_repetables, $ptab[4]);
 		$ptab[4] = str_replace('!!tab_categ_order!!', $tab_categ_order, $ptab[4]);
+		
+		// Concepts
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($this->serial_id, TYPE_NOTICE);
+			$ptab[4] = str_replace('!!concept_form!!', $index_concept->get_form('notice'), $ptab[4]);
+		}else{
+			$ptab[4] = str_replace('!!concept_form!!', "", $ptab[4]);
+		}
 		
 		// indexation interne
 		$ptab[4] = str_replace('!!indexint_id!!',	$this->indexint		, $ptab[4]);
@@ -483,10 +508,8 @@ class serial {
 		$serial_top_form = str_replace('!!tab5!!', $ptab[5], $serial_top_form);
 		
 		// mise à jour de l'onglet 6
-		global $pmb_curl_timeout;
 	 	$ptab[6] = str_replace('!!lien!!',		htmlentities($this->lien,ENT_QUOTES, $charset)		, $ptab[6]);
 	 	$ptab[6] = str_replace('!!eformat!!',	htmlentities($this->eformat,ENT_QUOTES, $charset)		, $ptab[6]);
-	 	$ptab[6] = str_replace('!!pmb_curl_timeout!!',		$pmb_curl_timeout	, $ptab[6]);
 		
 		$serial_top_form = str_replace('!!tab6!!', $ptab[6], $serial_top_form);
 		
@@ -665,14 +688,22 @@ class serial {
 		$ptab[8] = str_replace('!!commentaire_gestion!!',htmlentities($this->commentaire_gestion,ENT_QUOTES, $charset), $ptab[8]);
 		$ptab[8] = str_replace('!!thumbnail_url!!',htmlentities($this->thumbnail_url,ENT_QUOTES, $charset), $ptab[8]);
 		
+		if($this->is_new){
+			$ptab[8] = str_replace('!!checked_yes!!', "checked", $ptab[8]);
+			$ptab[8] = str_replace('!!checked_no!!', "", $ptab[8]);
+		}else{
+			$ptab[8] = str_replace('!!checked_no!!', "checked", $ptab[8]);
+			$ptab[8] = str_replace('!!checked_yes!!', "", $ptab[8]);
+		}
+			
 		
 		global $pmb_notice_img_folder_id;
 		$message_folder="";
 		if($pmb_notice_img_folder_id){
 			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-			$res = mysql_query($req);
-			if(mysql_num_rows($res)){
-				$rep=mysql_fetch_object($res);
+			$res = pmb_mysql_query($req);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
 				if(!is_dir($rep->repertoire_path)){
 					$notice_img_folder_error=1;
 				}
@@ -680,9 +711,9 @@ class serial {
 			if($notice_img_folder_error){
 				if (SESSrights & ADMINISTRATION_AUTH){
 					$requete = "select * from parametres where gestion=0 and type_param='pmb' and sstype_param='notice_img_folder_id' ";
-					$res = mysql_query($requete);
+					$res = pmb_mysql_query($requete);
 					$i=0;
-					if($param=mysql_fetch_object($res)) {
+					if($param=pmb_mysql_fetch_object($res)) {
 						$message_folder=" <a class='erreur' href='./admin.php?categ=param&action=modif&id_param=".$param->id_param."' >".$msg['notice_img_folder_admin_no_access']."</a> ";
 					}
 				}else{
@@ -709,6 +740,18 @@ class serial {
 		
 		$ptab[8] = str_replace('!!display_bulletinage!!',"", $ptab[8]);
 		
+		if ($this->serial_id && $pmb_notices_show_dates) {
+			$create_date = new DateTime($this->create_date);
+			$update_date = new DateTime($this->update_date);
+			$dates_notices = "<br>
+					<label for='notice_date_crea' class='etiquette'>".$msg["noti_crea_date"]."</label>&nbsp;".$create_date->format('d/m/Y H:i:s')."
+			    	<br>
+			    	 <label for='notice_date_mod' class='etiquette'>".$msg["noti_mod_date"]."</label>&nbsp;".$update_date->format('d/m/Y H:i:s');
+			$ptab[8] = str_replace('!!dates_notice!!',$dates_notices, $ptab[8]);
+		} else {
+			$ptab[8] = str_replace('!!dates_notice!!',"", $ptab[8]);
+		}
+		
 		//affichage des formulaires des droits d'acces
 		$rights_form = $this->get_rights_form();
 		$ptab[8] = str_replace('<!-- rights_form -->', $rights_form, $ptab[8]);
@@ -734,6 +777,14 @@ class serial {
 		$ptab[8] = str_replace('!!indexation_lang!!',$combo, $ptab[8]);			
 		
 		$serial_top_form = str_replace('!!tab8!!', $ptab[8],$serial_top_form);
+		
+		// autorité personnalisées
+		$authperso = new authperso_notice($this->serial_id);
+		$authperso_tpl=$authperso->get_form();
+		$serial_top_form = str_replace('!!authperso!!', $authperso_tpl, $serial_top_form);
+		
+		// map
+		$serial_top_form = str_replace('!!tab14!!', $ptab[14], $serial_top_form);			
 	
 /*		
 		//affichage des formulaires des droits d'acces
@@ -751,11 +802,11 @@ class serial {
 		global $PMBuserid, $pmb_form_editables;
 		if ($PMBuserid==1 && $pmb_form_editables==1) {
 			$req_loc="select idlocation,location_libelle from docs_location";
-			$res_loc=mysql_query($req_loc);
-			if (mysql_num_rows($res_loc)>1) {	
+			$res_loc=pmb_mysql_query($req_loc);
+			if (pmb_mysql_num_rows($res_loc)>1) {	
 				$select_loc="<select name='grille_location' id='grille_location' style='display:none' onChange=\"get_pos();initIt(); if (inedit) move_parse_dom(relative);\">\n";
 				$select_loc.="<option value='0'>".$msg['all_location']."</option>\n";
-				while (($r=mysql_fetch_object($res_loc))) {
+				while (($r=pmb_mysql_fetch_object($res_loc))) {
 					$select_loc.="<option value='".$r->idlocation."'>".$r->location_libelle."</option>\n";
 				}
 				$select_loc.="</select>\n";
@@ -858,9 +909,9 @@ class serial {
 					$t_u=array();
 					$t_u[0]= $dom_1->getComment('user_prf_def_lib');	//niveau par defaut
 					$qu=$dom_1->loadUsedUserProfiles();
-					$ru=mysql_query($qu, $dbh);
-					if (mysql_num_rows($ru)) {
-						while(($row=mysql_fetch_object($ru))) {
+					$ru=pmb_mysql_query($qu, $dbh);
+					if (pmb_mysql_num_rows($ru)) {
+						while(($row=pmb_mysql_fetch_object($ru))) {
 					        $t_u[$row->prf_id]= $row->prf_name;
 						}
 					}
@@ -955,9 +1006,9 @@ class serial {
 					$t_u=array();
 					$t_u[0]= $dom_2->getComment('user_prf_def_lib');	//niveau par defaut
 					$qu=$dom_2->loadUsedUserProfiles();
-					$ru=mysql_query($qu, $dbh);
-					if (mysql_num_rows($ru)) {
-						while(($row=mysql_fetch_object($ru))) {
+					$ru=pmb_mysql_query($qu, $dbh);
+					if (pmb_mysql_num_rows($ru)) {
+						while(($row=pmb_mysql_fetch_object($ru))) {
 					        $t_u[$row->prf_id]= $row->prf_name;
 						}
 					}
@@ -1021,16 +1072,39 @@ class serial {
 		global $perio_replace;
 		global $msg;
 		global $include_path;
-	
+		global $deflt_notice_replace_keep_categories;
+		global $perio_replace_categories, $perio_replace_category;
+		global $thesaurus_mode_pmb;
+		
 		// a compléter
 		if(!$this->serial_id) {
 			require_once("$include_path/user_error.inc.php");
 			error_message($msg[161], $msg[162], 1, './catalog.php');
 			return false;
-			}
+		}
 	
 		$perio_replace=str_replace('!!old_perio_libelle!!', $this->tit1, $perio_replace);
 		$perio_replace=str_replace('!!serial_id!!', $this->serial_id, $perio_replace);
+		if ($deflt_notice_replace_keep_categories && sizeof($this->categories)) {
+			// categories
+			$categories_to_replace = "";
+			for ($i = 0 ; $i < sizeof($this->categories) ; $i++) {
+				$categ_id = $this->categories[$i]["categ_id"] ;
+				$categ = new category($categ_id);
+				$ptab_categ = str_replace('!!icateg!!', $i, $perio_replace_category) ;
+				$ptab_categ = str_replace('!!categ_id!!', $categ_id, $ptab_categ);
+				if ($thesaurus_mode_pmb) $nom_thesaurus='['.$categ->thes->getLibelle().'] ' ;
+				else $nom_thesaurus='' ;
+				$ptab_categ = str_replace('!!categ_libelle!!',	htmlentities($nom_thesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
+				$categories_to_replace .= $ptab_categ ;
+			}
+			$perio_replace_categories=str_replace('!!perio_replace_category!!', $categories_to_replace, $perio_replace_categories);
+			$perio_replace_categories=str_replace('!!nb_categ!!', sizeof($this->categories), $perio_replace_categories);
+		
+			$perio_replace=str_replace('!!perio_replace_categories!!', $perio_replace_categories, $perio_replace);
+		} else {
+			$perio_replace=str_replace('!!perio_replace_categories!!', "", $perio_replace);
+		}
 		print $perio_replace;
 	}
 	
@@ -1042,30 +1116,36 @@ class serial {
 		global $msg;
 		global $dbh;
 		global $pmb_synchro_rdf;
+		global $keep_categories;
 		
 		if (($this->serial_id == $by) || (!$this->serial_id))  {
 			return $msg[223];
 		}
-	
+		
+		// traitement des catégories (si conservation cochée)
+		if ($keep_categories) {
+			update_notice_categories_from_form($by);
+		}
+		
 		// remplacement dans les bulletins
 		$requete = "UPDATE bulletins SET bulletin_notice='$by' WHERE bulletin_notice='$this->serial_id' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 	
 		// remplacement dans notice relations => cas ou il existe des notices de bulletins
 		$requete = "UPDATE notices_relations SET linked_notice='$by' WHERE linked_notice='$this->serial_id' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		
 		// autres liens
 		$requete = "UPDATE notices_relations SET num_notice='$by' WHERE num_notice='$this->serial_id' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		
 		// remplacement des docs numériques
 		$requete = "update explnum SET explnum_notice='$by' WHERE explnum_notice='$this->serial_id' " ;
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 			
 		// remplacement des etats de collections
 		$requete = "update collections_state SET id_serial='$by' WHERE id_serial='$this->serial_id' " ;
-		@mysql_query($requete, $dbh);	
+		@pmb_mysql_query($requete, $dbh);	
 			
 		if($supprime){
 			$this->serial_delete();
@@ -1075,8 +1155,8 @@ class serial {
 		if($pmb_synchro_rdf){
 			$synchro_rdf = new synchro_rdf();
 			$requete = "SELECT bulletin_id FROM bulletins WHERE bulletin_notice='$by' ";
-			$result=mysql_query($requete, $dbh);
-			while($row=mysql_fetch_object($result)){
+			$result=pmb_mysql_query($requete, $dbh);
+			while($row=pmb_mysql_fetch_object($result)){
 				$synchro_rdf->delRdf(0,$row->bulletin_id);
 				$synchro_rdf->addRdf(0,$row->bulletin_id);
 			}
@@ -1092,9 +1172,9 @@ class serial {
 		global $pmb_synchro_rdf,$pmb_notice_img_folder_id;
 		
 		$requete = "SELECT bulletin_id,num_notice from bulletins WHERE bulletin_notice='".$this->serial_id."' ";
-		$myQuery1 = mysql_query($requete, $dbh);
-		if($myQuery1 && mysql_num_rows($myQuery1)) {
-			while(($bul = mysql_fetch_object($myQuery1))) {				
+		$myQuery1 = pmb_mysql_query($requete, $dbh);
+		if($myQuery1 && pmb_mysql_num_rows($myQuery1)) {
+			while(($bul = pmb_mysql_fetch_object($myQuery1))) {				
 				$bulletin=new bulletinage($bul->bulletin_id);
 				$bulletin->delete();
 			}	
@@ -1103,9 +1183,9 @@ class serial {
 		//Suppression de la vignette de la notice si il y en a une d'uploadée
 		if($pmb_notice_img_folder_id){
 			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-			$res = mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$rep=mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
 				$img=$rep->repertoire_path."img_".$this->serial_id;
 				@unlink($img);
 			}
@@ -1118,18 +1198,18 @@ class serial {
 			
 		// élimination des docs numériques
 		$req_explNum = "select explnum_id from explnum where explnum_notice='".$this->serial_id."' ";
-		$result_explNum = @mysql_query($req_explNum, $dbh);
-		while(($explNum = mysql_fetch_object($result_explNum))) {
+		$result_explNum = @pmb_mysql_query($req_explNum, $dbh);
+		while(($explNum = pmb_mysql_fetch_object($result_explNum))) {
 			$myExplNum = new explnum($explNum->explnum_id);
 			$myExplNum->delete();		
 		}
 		
 		$requete = "DELETE FROM responsability WHERE responsability_notice='".$this->serial_id."' " ;
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 		
 		// suppression des entrées dans les caddies
 		$requete = "delete from caddie_content using caddie, caddie_content where caddie_id=idcaddie and type='NOTI' and object_id='".$this->serial_id."' ";
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 	
 		//élimination des champs persos
 		$p_perso=new parametres_perso("notices");
@@ -1140,60 +1220,60 @@ class serial {
 	
 		// suppression des categories
 		$rqt_del = "delete from notices_categories where notcateg_notice='".$this->serial_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		// suppression des bannettes
 		$rqt_del = "delete from bannette_contenu where num_notice='".$this->serial_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		// suppression des tags
 		$rqt_del = "delete from tags where num_notice='".$this->serial_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		// suppression des avis
 		$rqt_del = "delete from avis where num_notice='".$this->serial_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		//suppression des langues
 		$query = "delete from notices_langues where num_notice='".$this->serial_id."' ";
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 		
 		// suppression index global
 		$query = "delete from notices_global_index where num_notice='".$this->serial_id."' ";
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 		
 		// Effacement des occurences de la notice ds la table notices_mots_global_index :
 		$requete = "DELETE FROM notices_mots_global_index WHERE id_notice=".$this->serial_id;
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 		
 		// Effacement des occurences de la notice ds la table notices_fields_global_index :
 		$requete = "DELETE FROM notices_fields_global_index WHERE id_notice=".$this->serial_id;
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 	
 		//Suppression de la reference a la notice dans la table suggestions
 		$query = "UPDATE suggestions set num_notice = 0 where num_notice=".$this->serial_id;
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 
 		//Suppression de la reference a la notice dans la table lignes_actes
 		$requete = "UPDATE lignes_actes set num_produit=0, type_ligne=0 where num_produit='".$this->serial_id."' and type_ligne in ('1','5') ";
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 		
 		// liens entre notices
 		$requete = "DELETE FROM notices_relations WHERE linked_notice='".$this->serial_id."' OR num_notice='".$this->serial_id."' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		
 		//suppression des droits d'acces user_notice
 		$requete = "delete from acces_res_1 where res_num=".$this->serial_id;
-		@mysql_query($requete, $dbh);	
+		@pmb_mysql_query($requete, $dbh);	
 
 		//suppression des droits d'acces empr_notice
 		$requete = "delete from acces_res_2 where res_num=".$this->serial_id;
-		@mysql_query($requete, $dbh);	
+		@pmb_mysql_query($requete, $dbh);	
 								
 		// suppression des modeles
 		$requete = "SELECT modele_id from abts_modeles WHERE num_notice='".$this->serial_id."' ";
-		$result_modele = mysql_query($requete, $dbh);
-		while(($modele = mysql_fetch_object($result_modele))) { 	
+		$result_modele = pmb_mysql_query($requete, $dbh);
+		while(($modele = pmb_mysql_fetch_object($result_modele))) { 	
 			$mon_modele= new abts_modele($modele->modele_id);
 			$mon_modele->delete();
 		}
@@ -1204,18 +1284,18 @@ class serial {
 		
 		//si intégré depuis une source externe, on suprrime aussi la référence
 		$query="delete from notices_externes where num_notice=".$this->serial_id;
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 		
 		// on supprime la notice
 		$requete = "DELETE FROM notices WHERE notice_id='".$this->serial_id."' ";
-		mysql_query($requete, $dbh);
-		$result = mysql_affected_rows($dbh);
+		pmb_mysql_query($requete, $dbh);
+		$result = pmb_mysql_affected_rows($dbh);
 		
 		//Suppression dans les listes de lecture partagées
 		$requete = "SELECT id_liste, notices_associees from opac_liste_lecture" ;			
-		$res=mysql_query($requete, $dbh);
+		$res=pmb_mysql_query($requete, $dbh);
 		$id_tab=array();
-		while(($notices=mysql_fetch_object($res))){
+		while(($notices=pmb_mysql_fetch_object($res))){
 			$id_tab = explode(',',$notices->notices_associees);
 			for($i=0;$i<sizeof($id_tab);$i++){
 				if($id_tab[$i] == $this->serial_id){
@@ -1223,8 +1303,11 @@ class serial {
 				}
 			}
 			$requete = "UPDATE opac_liste_lecture set notices_associees='".addslashes(implode(',',$id_tab))."' where id_liste='".$notices->id_liste."'";
-			mysql_query($requete,$dbh);
+			pmb_mysql_query($requete,$dbh);
 		}
+				
+		$req="delete from notices_authperso where notice_authperso_notice_num=".$this->serial_id;
+		pmb_mysql_query($req, $dbh);
 		return $result;
 	}
 
@@ -1319,6 +1402,10 @@ class bulletinage extends serial {
 	var $b_accomp = '';					//Matériel d'accompagnement
 	var $b_prix = '';					//Prix		
 	var $indexation_lang = '';			//indexation_lang
+	var $b_is_new=0; // nouveauté
+	var $b_date_is_new="0000-00-00 00:00:00"; // date nouveauté
+	var $b_notice_create_date="0000-00-00 00:00:00"; // date création notice de bulletin
+	var $b_notice_update_date="0000-00-00 00:00:00"; // date modification notice de bulletin
 	
 	
 	// données de(s) exemplaire(s) : un tableau d'objets
@@ -1364,8 +1451,8 @@ class bulletinage extends serial {
 		$this->expl = array();
 		if($this->bulletin_id) {
 			$requete = "SELECT count(1) from analysis where analysis_bulletin='".$this->bulletin_id."'";
-			$query_nb_analysis = mysql_query ($requete, $dbh);
-			$this->nb_analysis = mysql_result ($query_nb_analysis, 0, 0) ;
+			$query_nb_analysis = pmb_mysql_query($requete, $dbh);
+			$this->nb_analysis = pmb_mysql_result($query_nb_analysis, 0, 0) ;
 			
 			// visibilité des exemplaires:
 			if ($pmb_droits_explr_localises && $explr_invisible) $where_expl_localises = " and expl_location not in ($explr_invisible)";
@@ -1384,9 +1471,9 @@ class bulletinage extends serial {
 			$requete .= " AND docs_location.idlocation=exemplaires.expl_location";
 			$requete .= " AND docs_codestat.idcode=exemplaires.expl_codestat";
 			$requete .= " AND lenders.idlender=exemplaires.expl_owner";
-			$myQuery = mysql_query($requete, $dbh);
-			if(mysql_num_rows($myQuery)) {
-				while(($expl = mysql_fetch_object($myQuery))) {
+			$myQuery = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($myQuery)) {
+				while(($expl = pmb_mysql_fetch_object($myQuery))) {
 					if($pmb_sur_location_activate){	
 						$sur_loc= sur_location::get_info_surloc_from_location($expl->expl_location);					
 						$expl->sur_loc_libelle = $sur_loc->libelle;					
@@ -1419,8 +1506,8 @@ class bulletinage extends serial {
 				*/
 				}
 			$requete = "SELECT explnum.* FROM explnum WHERE explnum_bulletin='".$this->bulletin_id."' ";
-			$myQuery = mysql_query($requete, $dbh);
-			$this->nbexplnum = mysql_num_rows($myQuery) ;
+			$myQuery = pmb_mysql_query($requete, $dbh);
+			$this->nbexplnum = pmb_mysql_num_rows($myQuery) ;
 			if($make_display && $this->nbexplnum){//Je ne crée la partie affichage que quand j'en ai besoin
 				$this->explnum = show_explnum_per_notice(0, $this->bulletin_id, $link_explnum);
 			}
@@ -1473,10 +1560,10 @@ class bulletinage extends serial {
 		global $dbh;
 		global $msg;
 		
-		$myQuery = mysql_query("SELECT *, date_format(date_date, '".$msg["format_date"]."') as aff_date_date FROM bulletins WHERE bulletin_id='".$this->bulletin_id."' ", $dbh);
+		$myQuery = pmb_mysql_query("SELECT *, date_format(date_date, '".$msg["format_date"]."') as aff_date_date FROM bulletins WHERE bulletin_id='".$this->bulletin_id."' ", $dbh);
 		
-		if(mysql_num_rows($myQuery)) {
-			$bulletin = mysql_fetch_object($myQuery);
+		if(pmb_mysql_num_rows($myQuery)) {
+			$bulletin = pmb_mysql_fetch_object($myQuery);
 			$this->bulletin_titre  = $bulletin->bulletin_titre;
 			$this->bulletin_notice = $bulletin->bulletin_notice;
 			$this->bulletin_numero = $bulletin->bulletin_numero;
@@ -1489,8 +1576,8 @@ class bulletinage extends serial {
 			
 			global $fonction_auteur;
 		
-			$myQueryBull = mysql_query("SELECT * FROM notices WHERE notice_id='".$this->bull_num_notice."' LIMIT 1", $dbh);
-			$myBull = mysql_fetch_object($myQueryBull);
+			$myQueryBull = pmb_mysql_query("SELECT * FROM notices WHERE notice_id='".$this->bull_num_notice."' LIMIT 1", $dbh);
+			$myBull = pmb_mysql_fetch_object($myQueryBull);
 			
 			// type du document
 			$this->b_typdoc  = $myBull->typdoc;
@@ -1558,6 +1645,9 @@ class bulletinage extends serial {
 			
 			$this->bull_indexation_lang = $myBull->indexation_lang;		
 			
+			$this->b_is_new = $myBull->notice_is_new;
+			$this->b_date_is_new = $myBull->notice_date_is_new;
+			
 			$this->notice_link=array();
 			//liens vers autres notices
 			$requete="
@@ -1566,10 +1656,10 @@ class bulletinage extends serial {
 			WHERE (notices_relations.num_notice=".$this->bull_num_notice." OR notices_relations.linked_notice=".$this->bull_num_notice.")
 			AND (bulletin_notice IS NULL OR bulletins.bulletin_notice!=".$this->bulletin_notice.")
 			ORDER BY rank";
-			$result_rel=mysql_query($requete);
-			if (mysql_num_rows($result_rel)) {
+			$result_rel=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($result_rel)) {
 				$i=0;
-				while (($r_rel=mysql_fetch_object($result_rel))) {
+				while (($r_rel=pmb_mysql_fetch_object($result_rel))) {
 					if($r_rel->linked_notice==$this->bull_num_notice){
 						//notice en cours est notice fille
 						$this->notice_link['down'][$i]['relation_direction']='down';
@@ -1589,6 +1679,9 @@ class bulletinage extends serial {
 					$i++;
 				}
 			}
+			
+			$this->b_notice_create_date = $myBull->create_date;
+			$this->b_notice_update_date = $myBull->update_date;
 		}
 		
 		if ($this->date_date=="0000-00-00") {
@@ -1596,11 +1689,11 @@ class bulletinage extends serial {
 			$this->aff_date_date = "";
 		}
 			
-		return mysql_num_rows($myQuery);
+		return pmb_mysql_num_rows($myQuery);
 	}
 	
 	// fonction de mise à jour d'une entrée MySQL de bulletinage
-	function update($value,$dont_update_bul=false) {
+	function update($value,$dont_update_bul=false, $other_fields="") {
 		global $dbh;
 		
 		if(is_array($value)) {
@@ -1626,16 +1719,16 @@ class bulletinage extends serial {
 				$data .= ",bulletin_notice='".$this->bulletin_notice."'";
 				// fabrication de la requete finale
 				$requete = "INSERT INTO bulletins SET $data";
-				$myQuery = mysql_query($requete, $dbh);
-				$insert_last_id = mysql_insert_id($dbh) ; 
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				$insert_last_id = pmb_mysql_insert_id($dbh) ; 
 				audit::insert_creation (AUDIT_BULLETIN, $insert_last_id) ;
 				$this->bulletin_id=$insert_last_id ;
 			} else {
 				$requete ="UPDATE bulletins SET $data WHERE bulletin_id='".$this->bulletin_id."' LIMIT 1";
-				$myQuery = mysql_query($requete, $dbh);
+				$myQuery = pmb_mysql_query($requete, $dbh);
 				audit::insert_modif (AUDIT_BULLETIN, $this->bulletin_id) ;
 				$requete="UPDATE notices SET date_parution='".$value['date_parution']."', year='".$value['year']."' WHERE notice_id in (SELECT analysis_notice FROM analysis WHERE analysis_bulletin=$this->bulletin_id)";
-				mysql_query($requete,$dbh);
+				pmb_mysql_query($requete,$dbh);
 			}
 		} else return;
 		
@@ -1664,6 +1757,9 @@ class bulletinage extends serial {
 			if(is_array($value['categ']) && $value['categ'][0]['id']) $value['categ']='categ_exist';
 			else $value['categ']='';	
 			
+			if ($value["concept"]) $value["concept"] = 'concept_exist';
+			else $value["concept"] = '';
+			
 			/*
 			 * On a un lien?
 			 */
@@ -1686,7 +1782,7 @@ class bulletinage extends serial {
 					if ((($cle=="indexint")&&($valeur))||($cle!="indexint"))
 						$empty.=$valeur;
 				}
-				if($cle=='aut' || $cle=='categ' || $cle=='rel'){
+				if($cle=='aut' || $cle=='categ' || $cle=='rel' || $cle=='concept'){
 					$values.='';
 				} else{
 					$values ? $values .= ",$cle='$valeur'" : $values .= "$cle='$valeur'";	
@@ -1695,14 +1791,14 @@ class bulletinage extends serial {
 			if($this->bull_num_notice) {
 				if ($empty) {
 					// modif
-					mysql_query("UPDATE notices SET $values , update_date=sysdate() WHERE notice_id=".$this->bull_num_notice, $dbh);
+					pmb_mysql_query("UPDATE notices SET $values , update_date=sysdate() $other_fields WHERE notice_id=".$this->bull_num_notice, $dbh);
 					// Mise à jour des index de la notice
 					notice::majNoticesTotal($this->bull_num_notice);
 					audit::insert_modif (AUDIT_NOTICE, $this->bull_num_notice) ;
 				} else {
 					notice::del_notice($this->bull_num_notice);
 					$this->bull_num_notice="";
-					mysql_query("update bulletins set num_notice=0 where bulletin_id=".$this->bulletin_id);
+					pmb_mysql_query("update bulletins set num_notice=0 where bulletin_id=".$this->bulletin_id);
 				}
 				return $this->bulletin_id;
 				
@@ -1710,18 +1806,18 @@ class bulletinage extends serial {
 				
 				// create
 				if ($empty) {
-					mysql_query("INSERT INTO notices SET $values , create_date=sysdate(), update_date=sysdate()  ", $dbh);
-					$this->bull_num_notice = mysql_insert_id($dbh);
+					pmb_mysql_query("INSERT INTO notices SET $values , create_date=sysdate(), update_date=sysdate() $other_fields ", $dbh);
+					$this->bull_num_notice = pmb_mysql_insert_id($dbh);
 					// Mise à jour des index de la notice
 					notice::majNoticesTotal($this->bull_num_notice);
 					audit::insert_creation (AUDIT_NOTICE, $this->bull_num_notice) ;
 
 					//Mise à jour du bulletin
 					$requete="update bulletins set num_notice=".$this->bull_num_notice." where bulletin_id=".$this->bulletin_id;
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 					//Mise à jour des liens bulletin -> notice mère
 					$requete="insert into notices_relations (num_notice,linked_notice,relation_type,rank) values(".$this->bull_num_notice.",".$this->serial_id.",'b',1)";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				return $this->bulletin_id;
 			}
@@ -1733,18 +1829,18 @@ class bulletinage extends serial {
 			if ($this->bull_num_notice) {
 				//Mise à jour du bulletin
 				$requete="update bulletins,notices set num_notice=".$this->bull_num_notice.",bulletin_titre=tit1 where bulletin_id=".$this->bulletin_id." and notice_id=".$this->bull_num_notice;
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				
 				//Mise à jour des liens bulletin -> notice mere
 				$requete="insert into notices_relations (num_notice,linked_notice,relation_type,rank) values(".$this->bull_num_notice.",".$this->serial_id.",'b',1)";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				//Recherche des articles
 				$requete="select analysis_notice from analysis where analysis_bulletin=".$this->bulletin_id;
-				$resultat_analysis=mysql_query($requete);
+				$resultat_analysis=pmb_mysql_query($requete);
 				$n=1;
-				while (($r_a=mysql_fetch_object($resultat_analysis))) {
+				while (($r_a=pmb_mysql_fetch_object($resultat_analysis))) {
 					$requete="insert into notices_relations (num_notice,linked_notice,relation_type,rank) values(".$r_a->analysis_notice.",".$this->bull_num_notice.",'a',$n)";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 					$n++;
 				}
 			}
@@ -1758,6 +1854,8 @@ class bulletinage extends serial {
 		global $msg;
 		global $charset ;
 		global $pmb_type_audit,$select_categ_prop ;
+		global $thesaurus_concepts_active;
+		global $pmb_notices_show_dates;
 		
 		//Notice
 		global $ptab,$ptab_bul;
@@ -1819,11 +1917,11 @@ class bulletinage extends serial {
 		global $PMBuserid, $pmb_form_editables;
 		if ($PMBuserid==1 && $pmb_form_editables==1) {
 			$req_loc="select idlocation,location_libelle from docs_location";
-			$res_loc=mysql_query($req_loc);
-			if (mysql_num_rows($res_loc)>1) {	
+			$res_loc=pmb_mysql_query($req_loc);
+			if (pmb_mysql_num_rows($res_loc)>1) {	
 				$select_loc="<select name='grille_location' id='grille_location' style='display:none' onChange=\"get_pos();initIt(); if (inedit) move_parse_dom(relative);\">\n";
 				$select_loc.="<option value='0'>".$msg['notice_grille_all_location']."</option>\n";
-				while (($r=mysql_fetch_object($res_loc))) {
+				while (($r=pmb_mysql_fetch_object($res_loc))) {
 					$select_loc.="<option value='".$r->idlocation."'>".$r->location_libelle."</option>\n";
 				}
 				$select_loc.="</select>\n";
@@ -1917,10 +2015,10 @@ class bulletinage extends serial {
 			if ($i==0) $ptab_categ = str_replace('!!icateg!!', $i, $ptab[40]) ;
 				else $ptab_categ = str_replace('!!icateg!!', $i, $ptab[401]) ;
 				
-			if ($thesaurus_mode_pmb && $categ->id) $nom_tesaurus='['.$categ->thes->getLibelle().'] ' ;
-				else $nom_tesaurus='' ;
+			if ($thesaurus_mode_pmb && $categ->id) $nom_thesaurus='['.$categ->thes->getLibelle().'] ' ;
+				else $nom_thesaurus='' ;
 			$ptab_categ = str_replace('!!categ_id!!',			$categ_id, $ptab_categ);
-			$ptab_categ = str_replace('!!categ_libelle!!',		htmlentities($nom_tesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
+			$ptab_categ = str_replace('!!categ_libelle!!',		htmlentities($nom_thesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
 			$categ_repetables .= $ptab_categ ;			
 			if ( sizeof($this->b_categories)>0 ) { 				
 				if($tab_categ_order!="")$tab_categ_order.=",";
@@ -1930,6 +2028,14 @@ class bulletinage extends serial {
 		$ptab[4] = str_replace('!!max_categ!!', $max_categ, $ptab[4]);
 		$ptab[4] = str_replace('!!categories_repetables!!', $categ_repetables, $ptab[4]);
 		$ptab[4] = str_replace('!!tab_categ_order!!', $tab_categ_order, $ptab[4]);
+		
+		// Concepts
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($this->bull_num_notice, TYPE_NOTICE);
+			$ptab[4] = str_replace('!!concept_form!!', $index_concept->get_form('notice'), $ptab[4]);
+		}else{
+			$ptab[4] = str_replace('!!concept_form!!', "", $ptab[4]);
+		}
 		
 		// indexation interne
 		$ptab[4] = str_replace('!!indexint_id!!',	$this->b_indexint		, $ptab[4]);
@@ -2005,10 +2111,8 @@ class bulletinage extends serial {
 		$serial_bul_form = str_replace('!!tab5!!', $ptab[5], $serial_bul_form);
 		
 		// mise à jour de l'onglet 6
-		global $pmb_curl_timeout;
 	 	$ptab[6] = str_replace('!!lien!!',		htmlentities($this->b_lien,ENT_QUOTES, $charset)		, $ptab[6]);
 	 	$ptab[6] = str_replace('!!eformat!!',	htmlentities($this->b_eformat,ENT_QUOTES, $charset)		, $ptab[6]);
-	 	$ptab[6] = str_replace('!!pmb_curl_timeout!!',		$pmb_curl_timeout	, $ptab[6]);
 		
 		$serial_bul_form = str_replace('!!tab6!!', $ptab[6], $serial_bul_form);
 		
@@ -2187,14 +2291,22 @@ class bulletinage extends serial {
 		$ptab[8] = str_replace('!!notice_statut!!', $select_statut, $ptab[8]);
 		$ptab[8] = str_replace('!!commentaire_gestion!!',htmlentities($this->b_commentaire_gestion,ENT_QUOTES, $charset), $ptab[8]);
 		$ptab[8] = str_replace('!!thumbnail_url!!',htmlentities($this->b_thumbnail_url,ENT_QUOTES, $charset), $ptab[8]);
-				
+		
+		if($this->b_is_new){
+			$ptab[8] = str_replace('!!checked_yes!!', "checked", $ptab[8]);
+			$ptab[8] = str_replace('!!checked_no!!', "", $ptab[8]);
+		}else{
+			$ptab[8] = str_replace('!!checked_no!!', "checked", $ptab[8]);
+			$ptab[8] = str_replace('!!checked_yes!!', "", $ptab[8]);
+		}
+					
 		global $pmb_notice_img_folder_id;
 		$message_folder="";
 		if($pmb_notice_img_folder_id){
 			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-			$res = mysql_query($req);
-			if(mysql_num_rows($res)){
-				$rep=mysql_fetch_object($res);
+			$res = pmb_mysql_query($req);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
 				if(!is_dir($rep->repertoire_path)){
 					$notice_img_folder_error=1;
 				}
@@ -2202,9 +2314,9 @@ class bulletinage extends serial {
 			if($notice_img_folder_error){
 				if (SESSrights & ADMINISTRATION_AUTH){
 					$requete = "select * from parametres where gestion=0 and type_param='pmb' and sstype_param='notice_img_folder_id' ";
-					$res = mysql_query($requete);
+					$res = pmb_mysql_query($requete);
 					$i=0;
-					if($param=mysql_fetch_object($res)) {
+					if($param=pmb_mysql_fetch_object($res)) {
 						$message_folder=" <a class='erreur' href='./admin.php?categ=param&action=modif&id_param=".$param->id_param."' >".$msg['notice_img_folder_admin_no_access']."</a> ";
 					}
 				}else{
@@ -2216,6 +2328,22 @@ class bulletinage extends serial {
 		
 		$display_opac_bulletinage = " style='display:none' ";
 		$ptab[8] = str_replace('!!display_bulletinage!!',$display_opac_bulletinage, $ptab[8]);
+		
+		//dates de la notice de bulletin
+		if ($this->bulletin_id && $this->bull_num_notice && $pmb_notices_show_dates) {
+			$create_date = new DateTime($this->b_notice_create_date);
+			$update_date = new DateTime($this->b_notice_update_date);
+			$dates_notices = "<br>
+						<label for='notice_date_crea' class='etiquette'>".$msg["noti_crea_date"]."</label>&nbsp;".$create_date->format('d/m/Y H:i:s')."
+			    		<br>
+			    		<label for='notice_date_mod' class='etiquette'>".$msg["noti_mod_date"]."</label>&nbsp;".$update_date->format('d/m/Y H:i:s');
+			$ptab[8] = str_replace('!!dates_notice!!',$dates_notices, $ptab[8]);
+		} else {
+			$ptab[8] = str_replace('!!dates_notice!!',"", $ptab[8]);
+		}
+		
+		
+		$serial_bul_form = str_replace('!!tab14!!', $ptab[14],$serial_bul_form);
 		
 		//affichage des formulaires des droits d'acces
 		$rights_form = $this->get_rights_form();
@@ -2243,6 +2371,11 @@ class bulletinage extends serial {
 		
 		$serial_bul_form = str_replace('!!tab8!!', $ptab[8], $serial_bul_form);
 		
+		// autorité personnalisées
+		$authperso = new authperso_notice($this->bull_num_notice);
+		$authperso_tpl=$authperso->get_form();
+		$serial_bul_form = str_replace('!!authperso!!', $authperso_tpl, $serial_bul_form);
+			
 		/*if($this->serial_id) {
 			$link_annul = "./catalog.php?categ=serials&sub=view&serial_id=".$this->serial_id;
 			if ($pmb_type_audit) $link_audit =  "<input class='bouton' type='button' onClick=\"window.open('./audit.php?type_obj=1&object_id=$this->serial_id', 'audit_popup', '$select_categ_prop')\" title='$msg[audit_button]' value='$msg[audit_button]' />";
@@ -2358,9 +2491,9 @@ class bulletinage extends serial {
 				$t_u=array();
 				$t_u[0]= $dom_2->getComment('user_prf_def_lib');	//niveau par defaut
 				$qu=$dom_2->loadUsedUserProfiles();
-				$ru=mysql_query($qu, $dbh);
-				if (mysql_num_rows($ru)) {
-					while(($row=mysql_fetch_object($ru))) {
+				$ru=pmb_mysql_query($qu, $dbh);
+				if (pmb_mysql_num_rows($ru)) {
+					while(($row=pmb_mysql_fetch_object($ru))) {
 				        $t_u[$row->prf_id]= $row->prf_name;
 					}
 				}
@@ -2422,8 +2555,8 @@ class bulletinage extends serial {
 		global $dbh,$pmb_archive_warehouse;
 		if($this->bulletin_id) {
 			$requete = "SELECT analysis_notice FROM analysis WHERE analysis_bulletin=".$this->bulletin_id;
-			$myQuery2 = mysql_query($requete, $dbh);
-			while(($dep = mysql_fetch_object($myQuery2))) {
+			$myQuery2 = pmb_mysql_query($requete, $dbh);
+			while(($dep = pmb_mysql_fetch_object($myQuery2))) {
 				$ana=new analysis($dep->analysis_notice);
 				if ($pmb_archive_warehouse) {
 					analysis::save_to_agnostic_warehouse(array(0=>$dep->analysis_notice),$pmb_archive_warehouse);
@@ -2442,21 +2575,44 @@ class bulletinage extends serial {
 		global $bulletin_replace;
 		global $msg,$dbh,$charset;
 		global $include_path;
-	
+		global $deflt_notice_replace_keep_categories;
+		global $bulletin_replace_categories, $bulletin_replace_category;
+		global $thesaurus_mode_pmb;
+		
 		if(!$this->bulletin_id) {
 			require_once("$include_path/user_error.inc.php");
 			error_message($msg[161], $msg[162], 1, './catalog.php');
 			return false;
 		}
 		$requete = "SELECT analysis_notice FROM analysis WHERE analysis_bulletin=".$this->bulletin_id;
-		$myQuery2 = mysql_query($requete, $dbh);
-		if( mysql_num_rows($myQuery2)) {
+		$myQuery2 = pmb_mysql_query($requete, $dbh);
+		if( pmb_mysql_num_rows($myQuery2)) {
 			$del_depouillement="<label class='etiquette' for='del'>".$msg['replace_bulletin_checkbox']."</label><input value='1' yes='' name='del' id='del' type='checkbox' checked>";
 		}		
 		$bulletin_replace=str_replace('!!old_bulletin_libelle!!',$this->bulletin_numero." [".formatdate($this->date_date)."] ".htmlentities($this->mention_date,ENT_QUOTES, $charset)." ". htmlentities($this->bulletin_titre,ENT_QUOTES, $charset), $bulletin_replace);
 		$bulletin_replace=str_replace('!!bul_id!!', $this->bulletin_id, $bulletin_replace);
 		$bulletin_replace=str_replace('!!serial_id!!', $this->serial_id, $bulletin_replace);
 		$bulletin_replace=str_replace('!!del_depouillement!!', $del_depouillement, $bulletin_replace);
+		if ($deflt_notice_replace_keep_categories && sizeof($this->b_categories)) {
+			// categories
+			$categories_to_replace = "";
+			for ($i = 0 ; $i < sizeof($this->b_categories) ; $i++) {
+				$categ_id = $this->b_categories[$i]["categ_id"] ;
+				$categ = new category($categ_id);
+				$ptab_categ = str_replace('!!icateg!!', $i, $bulletin_replace_category) ;
+				$ptab_categ = str_replace('!!categ_id!!', $categ_id, $ptab_categ);
+				if ($thesaurus_mode_pmb) $nom_thesaurus='['.$categ->thes->getLibelle().'] ' ;
+				else $nom_thesaurus='' ;
+				$ptab_categ = str_replace('!!categ_libelle!!',	htmlentities($nom_thesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
+				$categories_to_replace .= $ptab_categ ;
+			}
+			$bulletin_replace_categories=str_replace('!!bulletin_replace_category!!', $categories_to_replace, $bulletin_replace_categories);
+			$bulletin_replace_categories=str_replace('!!nb_categ!!', sizeof($this->categories), $bulletin_replace_categories);
+		
+			$bulletin_replace=str_replace('!!bulletin_replace_categories!!', $bulletin_replace_categories, $bulletin_replace);
+		} else {
+			$bulletin_replace=str_replace('!!bulletin_replace_categories!!', "", $bulletin_replace);
+		}
 		print $bulletin_replace;
 	}
 	
@@ -2467,6 +2623,7 @@ class bulletinage extends serial {
 		global $msg;
 		global $dbh;
 		global $pmb_synchro_rdf;
+		global $keep_categories;
 		
 		// traitement des dépouillements du bulletin
 		if($del_article) {
@@ -2475,22 +2632,28 @@ class bulletinage extends serial {
 		} else {	
 			// sinon on ratache les dépouillements existants
 			$requete = "UPDATE analysis SET analysis_bulletin=$by where analysis_bulletin=".$this->bulletin_id;
-			@mysql_query($requete, $dbh);
+			@pmb_mysql_query($requete, $dbh);
 		}
+		
+		// traitement des catégories (si conservation cochée)
+		if ($keep_categories) {
+			update_notice_categories_from_form(0, $by);
+		}
+		
 		// ratachement des exemplaires
 		$requete = "UPDATE exemplaires SET expl_bulletin=$by WHERE expl_bulletin=".$this->bulletin_id;
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 		
 		// élimination des docs numériques
 		$requete = "UPDATE explnum SET explnum_bulletin=$by WHERE explnum_bulletin=".$this->bulletin_id;
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 		
 		//Mise à jour des articles reliés
 		if($pmb_synchro_rdf){
 			$synchro_rdf = new synchro_rdf();
 			$requete = "SELECT analysis_notice FROM analysis WHERE analysis_bulletin='$by' ";
-			$result=mysql_query($requete, $dbh);
-			while($row=mysql_fetch_object($result)){
+			$result=pmb_mysql_query($requete, $dbh);
+			while($row=pmb_mysql_fetch_object($result)){
 				$synchro_rdf->delRdf($row->analysis_notice,0);
 				$synchro_rdf->addRdf($row->analysis_notice,0);
 			}
@@ -2516,38 +2679,38 @@ class bulletinage extends serial {
 		//suppression des exemplaires
 		$req_expl = "select expl_id from exemplaires where expl_bulletin ='".$this->bulletin_id."' " ;
 		
-		$result_expl = @mysql_query($req_expl, $dbh);
-		while(($expl = mysql_fetch_object($result_expl))) {
+		$result_expl = @pmb_mysql_query($req_expl, $dbh);
+		while(($expl = pmb_mysql_fetch_object($result_expl))) {
 			exemplaire::del_expl($expl->expl_id);		
 		}
 	
 		// expl numériques 	
 		$req_explNum = "select explnum_id from explnum where explnum_bulletin=".$this->bulletin_id." ";
-		$result_explNum = @mysql_query($req_explNum, $dbh);
-		while(($explNum = mysql_fetch_object($result_explNum))) {
+		$result_explNum = @pmb_mysql_query($req_explNum, $dbh);
+		while(($explNum = pmb_mysql_fetch_object($result_explNum))) {
 			$myExplNum = new explnum($explNum->explnum_id);
 			$myExplNum->delete();		
 		}		
 		
 		$requete = "delete from caddie_content using caddie, caddie_content where caddie_id=idcaddie and type='BULL' and object_id='".$this->bulletin_id."' ";
-		@mysql_query($requete, $dbh);
+		@pmb_mysql_query($requete, $dbh);
 		
 		// Suppression des résas du bulletin
 		$requete = "DELETE FROM resa WHERE resa_idbulletin=".$this->bulletin_id;
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		
 		// Suppression des transferts_demande			
 		$requete = "DELETE FROM transferts_demande using transferts_demande, transferts WHERE num_transfert=id_transfert and num_bulletin=".$this->bulletin_id;
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		// Suppression des transferts
 		$requete = "DELETE FROM transferts WHERE num_bulletin=".$this->bulletin_id;
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 					
 		//suppression de la notice du bulletin
 		$requete="select num_notice from bulletins where bulletin_id=".$this->bulletin_id;
-		$res_nbul=mysql_query($requete);
-		if (mysql_num_rows($res_nbul)) {
-			$num_notice=mysql_result($res_nbul,0,0);
+		$res_nbul=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($res_nbul)) {
+			$num_notice=pmb_mysql_result($res_nbul,0,0);
 			if ($num_notice) {
 				notice::del_notice($num_notice);
 			}
@@ -2555,7 +2718,7 @@ class bulletinage extends serial {
 	
 		// Suppression de ce bulletin
 		$requete = "DELETE FROM bulletins WHERE bulletin_id=".$this->bulletin_id;
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		audit::delete_audit (AUDIT_BULLETIN, $this->bulletin_id) ;	
 	}
 
@@ -2594,6 +2757,8 @@ class analysis extends bulletinage {
 	var $analysis_statut = 0 ;
 	var $analysis_commentaire_gestion = '' ;
 	var $analysis_thumbnail_url = '' ;
+	var $analysis_create_date = "0000-00-00 00:00:00"; // date création
+	var $analysis_update_date = "0000-00-00 00:00:00"; // date modification
 	
 	// constructeur
 	function analysis($analysis_id, $bul_id=0) {
@@ -2647,8 +2812,8 @@ class analysis extends bulletinage {
 		global $dbh;
 		global $fonction_auteur;
 		
-		$myQuery = mysql_query("SELECT * FROM notices WHERE notice_id='".$this->analysis_id."' LIMIT 1", $dbh);
-		$myAnalysis = mysql_fetch_object($myQuery);
+		$myQuery = pmb_mysql_query("SELECT * FROM notices WHERE notice_id='".$this->analysis_id."' LIMIT 1", $dbh);
+		$myAnalysis = pmb_mysql_fetch_object($myQuery);
 		
 		// type du document
 		$this->analysis_typdoc  = $myAnalysis->typdoc;
@@ -2694,13 +2859,16 @@ class analysis extends bulletinage {
 		
 		$this->analysis_indexation_lang = $myAnalysis->indexation_lang;
 		
+		$this->analysis_is_new = $myAnalysis->notice_is_new;
+		$this->analysis_date_is_new = $myAnalysis->notice_date_is_new;
+		
 		$this->notice_link=array();
 		//liens vers autres notices
 		$requete="SELECT * FROM notices_relations WHERE num_notice=".$this->analysis_id." OR linked_notice=".$this->analysis_id." ORDER BY rank";
-		$result_rel=mysql_query($requete);
-		if (mysql_num_rows($result_rel)) {
+		$result_rel=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($result_rel)) {
 			$i=0;
-			while (($r_rel=mysql_fetch_object($result_rel))) {
+			while (($r_rel=pmb_mysql_fetch_object($result_rel))) {
 				if($r_rel->linked_notice==$this->analysis_id){
 					//notice en cours est notice fille
 					$this->notice_link['down'][$i]['relation_direction']='down';
@@ -2726,6 +2894,9 @@ class analysis extends bulletinage {
 		if($this->analysis_lien) $this->analysis_eformat = $myAnalysis->eformat;
 		else $this->analysis_eformat ="";
 		
+		$this->analysis_create_date = $myAnalysis->create_date;
+		$this->analysis_update_date = $myAnalysis->update_date;
+		
 		return $myQuery->nbr_rows;
 	}
 	
@@ -2742,8 +2913,11 @@ class analysis extends bulletinage {
 		global $value_deflt_fonction;
 		global $value_deflt_lang, $value_deflt_relation_analysis ;
 		global $thesaurus_mode_pmb, $thesaurus_classement_mode_pmb ;
+		global $thesaurus_concepts_active;
+		global $pmb_notices_show_dates;
 		
 		require_once("$class_path/author.class.php");
+		require_once($class_path."/index_concept.class.php");
 		$fonction = new marc_list('function');
 		
 		// inclusion de la feuille de style des expandables
@@ -2856,12 +3030,12 @@ class analysis extends bulletinage {
 				else $ptab_categ = str_replace('!!icateg!!', $i, $pdeptab[401]) ;
 	
 			if ($thesaurus_mode_pmb && $categ_id) {
-				$nom_tesaurus='['.thesaurus::getLibelle($categ->thes->id_thesaurus).'] ' ;
+				$nom_thesaurus='['.thesaurus::getLibelle($categ->thes->id_thesaurus).'] ' ;
 			} else {
-				$nom_tesaurus='' ;
+				$nom_thesaurus='' ;
 			}
 			$ptab_categ = str_replace('!!categ_id!!',			$categ_id, $ptab_categ);
-			$ptab_categ = str_replace('!!categ_libelle!!',		htmlentities($nom_tesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
+			$ptab_categ = str_replace('!!categ_libelle!!',		htmlentities($nom_thesaurus.$categ->catalog_form,ENT_QUOTES, $charset), $ptab_categ);
 			$categ_repetables .= $ptab_categ ;				
 			if ( sizeof($this->analysis_categories)>0 ) { 				
 				if($tab_categ_order!="")$tab_categ_order.=",";
@@ -2871,6 +3045,14 @@ class analysis extends bulletinage {
 		$pdeptab[4] = str_replace('!!max_categ!!', 				$max_categ, 		$pdeptab[4]);
 		$pdeptab[4] = str_replace('!!categories_repetables!!',	$categ_repetables, $pdeptab[4]);
 		$pdeptab[4] = str_replace('!!tab_categ_order!!', $tab_categ_order, $pdeptab[4]);
+		
+		// Concepts
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($this->analysis_id, TYPE_NOTICE);
+			$pdeptab[4] = str_replace('!!concept_form!!', $index_concept->get_form('notice'), $pdeptab[4]);
+		}else{
+			$pdeptab[4] = str_replace('!!concept_form!!', "", $pdeptab[4]);
+		}
 		
 		// indexation interne
 		$pdeptab[4] = str_replace('!!indexint_id!!',	$this->analysis_indexint,								 			$pdeptab[4]);
@@ -2938,10 +3120,8 @@ class analysis extends bulletinage {
 		$analysis_top_form = str_replace('!!tab5!!', $pdeptab[5], $analysis_top_form);
 		
 		// mise à jour de l'onglet 6
-		global $pmb_curl_timeout;
 	 	$pdeptab[6] = str_replace('!!lien!!',		htmlentities($this->analysis_lien,ENT_QUOTES, $charset)		, $pdeptab[6]);
 	 	$pdeptab[6] = str_replace('!!eformat!!',	htmlentities($this->analysis_eformat,ENT_QUOTES, $charset)		, $pdeptab[6]);
-	 	$pdeptab[6] = str_replace('!!pmb_curl_timeout!!',		$pmb_curl_timeout	, $pdeptab[6]);
 		$analysis_top_form = str_replace('!!tab6!!', $pdeptab[6], $analysis_top_form);
 		
 		//Mise à jour de l'onglet 7
@@ -3119,13 +3299,21 @@ class analysis extends bulletinage {
 		$pdeptab[8] = str_replace('!!commentaire_gestion!!',htmlentities($this->analysis_commentaire_gestion,ENT_QUOTES, $charset), $pdeptab[8]);
 		$pdeptab[8] = str_replace('!!thumbnail_url!!',htmlentities($this->analysis_thumbnail_url,ENT_QUOTES, $charset), $pdeptab[8]);
 		
+		if($this->analysis_is_new){
+			$pdeptab[8] = str_replace('!!checked_yes!!', "checked", $pdeptab[8]);
+			$pdeptab[8] = str_replace('!!checked_no!!', "", $pdeptab[8]);
+		}else{
+			$pdeptab[8] = str_replace('!!checked_no!!', "checked", $pdeptab[8]);
+			$pdeptab[8] = str_replace('!!checked_yes!!', "", $pdeptab[8]);
+		}
+			
 		global $pmb_notice_img_folder_id;
 		$message_folder="";
 		if($pmb_notice_img_folder_id){
 			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-			$res = mysql_query($req);
-			if(mysql_num_rows($res)){
-				$rep=mysql_fetch_object($res);
+			$res = pmb_mysql_query($req);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
 				if(!is_dir($rep->repertoire_path)){
 					$notice_img_folder_error=1;
 				}
@@ -3133,9 +3321,9 @@ class analysis extends bulletinage {
 			if($notice_img_folder_error){
 				if (SESSrights & ADMINISTRATION_AUTH){
 					$requete = "select * from parametres where gestion=0 and type_param='pmb' and sstype_param='notice_img_folder_id' ";
-					$res = mysql_query($requete);
+					$res = pmb_mysql_query($requete);
 					$i=0;
-					if($param=mysql_fetch_object($res)) {
+					if($param=pmb_mysql_fetch_object($res)) {
 						$message_folder=" <a class='erreur' href='./admin.php?categ=param&action=modif&id_param=".$param->id_param."' >".$msg['notice_img_folder_admin_no_access']."</a> ";
 					}
 				}else{
@@ -3144,6 +3332,18 @@ class analysis extends bulletinage {
 			}
 		}
 		$pdeptab[8] = str_replace('!!message_folder!!',$message_folder, $pdeptab[8]);
+		
+		if ($this->analysis_id && $pmb_notices_show_dates) {
+			$create_date = new DateTime($this->create_date);
+			$update_date = new DateTime($this->update_date);
+			$dates_notices = "<br>
+						<label for='notice_date_crea' class='etiquette'>".$msg["noti_crea_date"]."</label>&nbsp;".$create_date->format('d/m/Y H:i:s')."
+			    		<br>
+			    		<label for='notice_date_mod' class='etiquette'>".$msg["noti_mod_date"]."</label>&nbsp;".$update_date->format('d/m/Y H:i:s');
+			$pdeptab[8] = str_replace('!!dates_notice!!',$dates_notices, $pdeptab[8]);
+		} else {
+			$pdeptab[8] = str_replace('!!dates_notice!!',"", $pdeptab[8]);
+		}
 		
 		//affichage des formulaires des droits d'acces
 		$rights_form = $this->get_rights_form();
@@ -3169,8 +3369,25 @@ class analysis extends bulletinage {
 		$combo .= "</select>";
 		$pdeptab[8] = str_replace('!!indexation_lang!!',$combo, $pdeptab[8]);
 		$analysis_top_form = str_replace('!!tab8!!', $pdeptab[8], $analysis_top_form);
-	
 		
+		// autorité personnalisées
+		$authperso = new authperso_notice($this->analysis_id);
+		$authperso_tpl=$authperso->get_form();
+		$analysis_top_form = str_replace('!!authperso!!', $authperso_tpl, $analysis_top_form);
+		
+		// map
+		global $pmb_map_activate;
+		if($pmb_map_activate){
+			$map_edition=new map_edition_controler(TYPE_RECORD,$this->analysis_id);
+			$map_form=$map_edition->get_form();
+			$map_info=new map_info($this->analysis_id);
+			$map_form_info=$map_info->get_form();
+			$map_notice_form=$pdeptab[14];
+			$map_notice_form = str_replace('!!notice_map!!', $map_form.$map_form_info, $map_notice_form);
+			$analysis_top_form = str_replace('!!tab14!!', $map_notice_form, $analysis_top_form);
+		}else{
+			$analysis_top_form = str_replace('!!tab14!!', "", $analysis_top_form);
+		}
 		// définition de la page cible du form
 		$analysis_top_form = str_replace('!!action!!', $this->action, $analysis_top_form);
 		
@@ -3182,11 +3399,11 @@ class analysis extends bulletinage {
 		global $PMBuserid, $pmb_form_editables;
 		if ($PMBuserid==1 && $pmb_form_editables==1) {
 			$req_loc="select idlocation,location_libelle from docs_location";
-			$res_loc=mysql_query($req_loc);
-			if (mysql_num_rows($res_loc)>1) {	
+			$res_loc=pmb_mysql_query($req_loc);
+			if (pmb_mysql_num_rows($res_loc)>1) {	
 				$select_loc="<select name='grille_location' id='grille_location' style='display:none' onChange=\"get_pos();initIt(); if (inedit) move_parse_dom(relative);\">\n";
 				$select_loc.="<option value='0'>".$msg['notice_grille_all_location']."</option>\n";
-				while ($r=mysql_fetch_object($res_loc)) {
+				while ($r=pmb_mysql_fetch_object($res_loc)) {
 					$select_loc.="<option value='".$r->idlocation."'>".$r->location_libelle."</option>\n";
 				}
 				$select_loc.="</select>\n";
@@ -3261,8 +3478,8 @@ class analysis extends bulletinage {
 		global $dbh;
 		if (!$analysis_id) return 0;
 		$q = "select analysis_bulletin from analysis where analysis_notice='".$analysis_id."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) return mysql_result($r,0,0);
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) return pmb_mysql_result($r,0,0);
 		return 0;	
 	}
 	
@@ -3330,9 +3547,9 @@ class analysis extends bulletinage {
 					$t_u=array();
 					$t_u[0]= $dom_2->getComment('user_prf_def_lib');	//niveau par defaut
 					$qu=$dom_2->loadUsedUserProfiles();
-					$ru=mysql_query($qu, $dbh);
-					if (mysql_num_rows($ru)) {
-						while(($row=mysql_fetch_object($ru))) {
+					$ru=pmb_mysql_query($qu, $dbh);
+					if (pmb_mysql_num_rows($ru)) {
+						while(($row=pmb_mysql_fetch_object($ru))) {
 					        $t_u[$row->prf_id]= $row->prf_name;
 						}
 					}
@@ -3394,10 +3611,11 @@ class analysis extends bulletinage {
 	
 	// fonction de mise à jour d'une entrée MySQL de bulletinage
 	
-	function analysis_update($values) {
+	function analysis_update($values, $other_fields="") {
 		
 		global $dbh,$pmb_notice_img_folder_id,$opac_url_base,$pmb_notice_img_pics_max_size;
-	
+		global $pmb_map_activate;
+		
 	    if(is_array($values)) {
 			$this->analysis_biblio_level	=	'a';
 			$this->analysis_hierar_level	=	'2';
@@ -3419,6 +3637,7 @@ class analysis extends bulletinage {
 			$this->analysis_pages		=	$values['pages'];
 			$this->analysis_signature			=	$values['signature']; 
 			$this->analysis_indexation_lang		=	$values['indexation_lang']; 
+			$this->notice_is_new		=	$values['notice_is_new']; 
 			
 			
 			// insert de year à partir de la date de parution du bulletin
@@ -3448,30 +3667,56 @@ class analysis extends bulletinage {
 			$data .= ", thumbnail_url='".$this->analysis_thumbnail_url."'";
 			$data .= ", signature='".$this->analysis_signature."'";
 			$data .= ", date_parution='".$this->date_parution_perio."'"; 
-			$data .= ", indexation_lang='".$this->analysis_indexation_lang."'";   	    
+			$data .= ", indexation_lang='".$this->analysis_indexation_lang."'";
+			$data .= ", notice_is_new='".$this->notice_is_new."' 
+			$other_fields";   	    
 			$result = 0;
 			if(!$this->analysis_id) {
 				
 	    		// si c'est une création
 	    		// fabrication de la requête finale
 	    		$requete = "INSERT INTO notices SET $data , create_date=sysdate(), update_date=sysdate() ";
-	    		$myQuery = mysql_query($requete, $dbh);
-				$this->analysis_id = mysql_insert_id($dbh);
+	    		$myQuery = pmb_mysql_query($requete, $dbh);
+				$this->analysis_id = pmb_mysql_insert_id($dbh);
 				if ($myQuery) $result = $this->analysis_id;
 				// si l'insertion est OK, il faut créer l'entrée dans la table 'analysis'
 				if($this->analysis_id) {
+									
+					// autorité personnalisées
+					$authperso = new authperso_notice($this->analysis_id);
+					$authperso->save_form();			
+					 
+					// map
+					if($pmb_map_activate){
+						$map = new map_edition_controler(TYPE_RECORD, $this->analysis_id);
+						$map->save_form();
+						$map_info = new map_info($this->analysis_id);
+						$map_info->save_form();
+					}
 					// Mise à jour des index de la notice
 					notice::majNoticesTotal($this->analysis_id);
 					audit::insert_creation (AUDIT_NOTICE, $this->analysis_id) ;
 					$requete = 'INSERT INTO analysis SET';
 					$requete .= ' analysis_bulletin='.$this->id_bulletinage;
 					$requete .= ', analysis_notice='.$this->analysis_id;
-					$myQuery = mysql_query($requete, $dbh);					
+					$myQuery = pmb_mysql_query($requete, $dbh);					
 				}
 			} else {
 				
 				$requete ="UPDATE notices SET $data , update_date=sysdate() WHERE notice_id='".$this->analysis_id."' LIMIT 1";
-				$myQuery = mysql_query($requete, $dbh);
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				
+				// autorité personnalisées
+				$authperso = new authperso_notice($this->analysis_id);
+				$authperso->save_form(); 
+				
+				// map				
+				if($pmb_map_activate){
+					$map = new map_edition_controler(TYPE_RECORD, $this->analysis_id);
+					$map->save_form();
+					$map_info = new map_info($this->analysis_id);
+					$map_info->save_form();
+				}
 				// Mise à jour des index de la notice
 				notice::majNoticesTotal($this->analysis_id);
 				audit::insert_modif (AUDIT_NOTICE, $this->analysis_id) ;
@@ -3484,9 +3729,9 @@ class analysis extends bulletinage {
 				$poids_fichier_max=1024*1024;//Limite la taille de l'image à 1 Mo
 			
 				$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-				$res = mysql_query($req,$dbh);
-				if(mysql_num_rows($res)){
-					$rep=mysql_fetch_object($res);
+				$res = pmb_mysql_query($req,$dbh);
+				if(pmb_mysql_num_rows($res)){
+					$rep=pmb_mysql_fetch_object($res);
 					$filename_output=$rep->repertoire_path."img_".$id;
 				}
 				if (($fp=@fopen($_FILES['f_img_load']['tmp_name'], "rb")) && $filename_output) {
@@ -3537,7 +3782,7 @@ class analysis extends bulletinage {
 					
 			
 							$req = "update notices set  thumbnail_url='".$thumbnail_url."' where notice_id ='".$id."'";
-							$res = mysql_query($req,$dbh);			
+							$res = pmb_mysql_query($req,$dbh);			
 						}
 					}
 				}
@@ -3557,9 +3802,9 @@ class analysis extends bulletinage {
 		//Suppression de la vignette de la notice si il y en a une d'uploadée
 		if($pmb_notice_img_folder_id){
 			$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-			$res = mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$rep=mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$rep=pmb_mysql_fetch_object($res);
 				$img=$rep->repertoire_path."img_".$this->analysis_id;
 				@unlink($img);
 			}
@@ -3573,18 +3818,18 @@ class analysis extends bulletinage {
 		
 		//elimination des docs numeriques
 		$req_explNum = "select explnum_id from explnum where explnum_notice=".$this->analysis_id." ";
-		$result_explNum = @mysql_query($req_explNum, $dbh);
-		while(($explNum = mysql_fetch_object($result_explNum))) {
+		$result_explNum = @pmb_mysql_query($req_explNum, $dbh);
+		while(($explNum = pmb_mysql_fetch_object($result_explNum))) {
 			$myExplNum = new explnum($explNum->explnum_id);
 			$myExplNum->delete();		
 		}
 	
 		// suppression des entrees dans les caddies
 		$query_caddie = "select caddie_id from caddie_content, caddie where type='NOTI' and object_id in ($this->analysis_id) and caddie_id=idcaddie ";
-		$result_caddie = @mysql_query($query_caddie, $dbh);
-		while(($cad = mysql_fetch_object($result_caddie))) {
+		$result_caddie = @pmb_mysql_query($query_caddie, $dbh);
+		while(($cad = pmb_mysql_fetch_object($result_caddie))) {
 			$req_suppr_caddie="delete from caddie_content where caddie_id = '$cad->caddie_id' and object_id in ($this->analysis_id) " ;
-			@mysql_query($req_suppr_caddie, $dbh);
+			@pmb_mysql_query($req_suppr_caddie, $dbh);
 		}
 	
 		//elimination des champs persos
@@ -3593,82 +3838,82 @@ class analysis extends bulletinage {
 	
 		// on supprime l'entree dans la table 'analysis'
 		$requete = "DELETE FROM analysis WHERE analysis_notice=".$this->analysis_id;
-		mysql_query($requete, $dbh);
-		$result = mysql_affected_rows($dbh);
+		pmb_mysql_query($requete, $dbh);
+		$result = pmb_mysql_affected_rows($dbh);
 	
 		// on supprime la notice du dépouillement
 		$requete = "DELETE FROM notices WHERE notice_id='".$this->analysis_id."' ";
-		mysql_query($requete, $dbh);
-		$result += mysql_affected_rows($dbh);
+		pmb_mysql_query($requete, $dbh);
+		$result += pmb_mysql_affected_rows($dbh);
 		
 		//suppression des droits d'acces user_notice
 		$requete = "delete from acces_res_1 where res_num=".$this->analysis_id;
-		@mysql_query($requete, $dbh);	
+		@pmb_mysql_query($requete, $dbh);	
 				
 		//suppression des droits d'acces empr_notice
 		$requete = "delete from acces_res_2 where res_num=".$this->analysis_id;
-		@mysql_query($requete, $dbh);	
+		@pmb_mysql_query($requete, $dbh);	
 		
 		// suppression des audits
 		audit::delete_audit (AUDIT_NOTICE, $this->analysis_id) ;
 	
 		// suppression des categories
 		$rqt_del = "delete from notices_categories where notcateg_notice='".$this->analysis_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		// suppression des responsabilités
 		$rqt_del = "delete from responsability where responsability_notice='".$this->analysis_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		// suppression des liens
 		$rqt_del = "delete from notices_relations where num_notice='".$this->analysis_id."' OR linked_notice='".$this->analysis_id."'";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 		
 		// suppression des bannettes
 		$rqt_del = "delete from bannette_contenu where num_notice='".$this->analysis_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		// suppression des tags
 		$rqt_del = "delete from tags where num_notice='".$this->analysis_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		// suppression des avis
 		$rqt_del = "delete from avis where num_notice='".$this->analysis_id."' ";
-		@mysql_query($rqt_del, $dbh);
+		@pmb_mysql_query($rqt_del, $dbh);
 	
 		//suppression des langues
 		$query = "delete from notices_langues where num_notice='".$this->analysis_id."' ";
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 		
 		// suppression index global
 		$query = "delete from notices_global_index where num_notice='".$this->analysis_id."' ";
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 		
 		// suppression notices_mots_global_index
 		$query = "delete from notices_mots_global_index where id_notice='".$this->analysis_id."' ";
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 		
 		// suppression notices_fields_global_index
 		$query = "delete from notices_fields_global_index where id_notice='".$this->analysis_id."' ";
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 		
 		//Suppression de la reference a la notice dans la table suggestions
 		$query = "UPDATE suggestions set num_notice = 0 where num_notice=".$this->analysis_id;
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 
 		//Suppression de la reference a la notice dans la table lignes_actes
 		$requete = "UPDATE lignes_actes set num_produit=0, type_ligne=0 where num_produit='".$this->analysis_id."' and type_ligne in ('1','5') ";
-		@mysql_query($requete, $dbh);	
+		@pmb_mysql_query($requete, $dbh);	
 		
 		//Suppression de la référence de la source si exitante..
 		$query="delete from notices_externes where num_notice=".$this->analysis_id;
-		@mysql_query($query, $dbh);
+		@pmb_mysql_query($query, $dbh);
 		
 		//Suppression dans les listes de lecture partagées
 		$requete = "SELECT id_liste, notices_associees from opac_liste_lecture" ;			
-		$res=mysql_query($requete, $dbh);
+		$res=pmb_mysql_query($requete, $dbh);
 		$id_tab=array();
-		while(($notices=mysql_fetch_object($res))){
+		while(($notices=pmb_mysql_fetch_object($res))){
 			$id_tab = explode(',',$notices->notices_associees);
 			for($i=0;$i<sizeof($id_tab);$i++){
 				if($id_tab[$i] == $this->analysis_id){
@@ -3676,8 +3921,11 @@ class analysis extends bulletinage {
 				}
 			}
 			$requete = "UPDATE opac_liste_lecture set notices_associees='".addslashes(implode(',',$id_tab))."' where id_liste='".$notices->id_liste."'";
-			mysql_query($requete,$dbh);
+			pmb_mysql_query($requete,$dbh);
 		}
+		$req="delete from notices_authperso where notice_authperso_notice_num=".$id;
+		pmb_mysql_query($req, $dbh);
+		
 		return $result;
 	}
 	

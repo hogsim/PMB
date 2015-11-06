@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes_actions.inc.php,v 1.5 2010-08-27 14:25:08 mbertin Exp $
+// $Id: demandes_actions.inc.php,v 1.15 2015-05-20 14:39:30 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,7 +15,6 @@ $actions = new demandes_actions($idaction);
 $demandes = new demandes($iddemande);
 $notes = new demandes_notes($idnote,$idaction);
 $explnum_doc = new explnum_doc($iddocnum);
-
 
 switch($sub){
 	case 'com':
@@ -48,59 +47,48 @@ switch($sub){
 				$actions->show_modif_form();
 			break;
 			case 'save_action':
-				$actions->save();
+				demandes_actions::get_values_from_form($actions);
+				demandes_actions::save($actions);
+				$actions->fetch_data($actions->id_action,false);
 				$actions->show_consultation_form();
 			break;
 			case 'modif':
 				$actions->show_modif_form();
 			break;
+			case 'change_statut':
+				demandes_actions::change_statut($idstatut,$actions);
+				$actions->fetch_data($idaction,false);
+				$actions->show_consultation_form();
+				break;
 			case 'see':
+				$actions->fetch_data($idaction,false);
 				$actions->show_consultation_form();
 			break;
 			case 'suppr_action':
-				$actions->delete();
+				$chk = ${"chk_action_".$iddemande};
+				if(sizeof($chk)){
+					for($i=0;$i<count($chk);$i++){
+						$action = new demandes_actions($chk[$i]);
+						demandes_actions::delete($action);
+					}
+				}else{
+					demandes_actions::delete($actions);					
+				}
+				$demandes->fetch_data($iddemande,false);				
 				$demandes->show_consult_form();
-			break;
-			case 'save_note':
-				$notes->save();
-				$actions->show_consultation_form();
-			break;
-			case 'suppr_note':
-				$notes->delete();
-				$actions->show_consultation_form();
 			break;
 			case 'add_docnum':
 				$actions->show_docnum_form();
 			break;
 			case 'save_docnum':
-				if($f_url){
-					$explnum_doc->explnum_doc_url = stripslashes($f_url);
-					$explnum_doc->explnum_doc_mime = 'URL';
-					$explnum_doc->explnum_doc_nomfichier = stripslashes($f_nom ? $f_nom : $f_url);
-					$explnum_doc->save();
-				} else {
-					if(!$_FILES['f_fichier']['error']){
-						$explnum_doc->load_file($_FILES['f_fichier']);
-						$explnum_doc->analyse_file();
-					}
-					if($f_nom) $explnum_doc->setName($f_nom);
-					$explnum_doc->save();
-				}	
-					global $ck_prive,$ck_rapport;
-					$req = "replace into explnum_doc_actions set 
-						num_explnum_doc='".$explnum_doc->explnum_doc_id."', 
-						num_action='".$actions->id_action."',
-						prive='".($ck_prive ? 1 : 0 )."',
-						rapport='".($ck_rapport ? 1 : 0 )."'
-						";
-					mysql_query($req,$dbh);
-				
+				demandes_actions::get_docnum_values_from_form($explnum_doc);
+				demandes_actions::save_docnum($actions, $explnum_doc);
+				$actions->fetch_data($actions->id_action,false);
 				$actions->show_consultation_form();
 			break;
 			case 'suppr_docnum':
-				$explnum_doc->delete();
-				$req = "delete from explnum_doc_actions where num_explnum_doc='".$explnum_doc->explnum_doc_id."'";
-				mysql_query($req,$dbh);
+				demandes_actions::delete_docnum($explnum_doc);
+				$actions->fetch_data($actions->id_action,false);
 				$actions->show_consultation_form();
 			break;
 			case 'modif_docnum':

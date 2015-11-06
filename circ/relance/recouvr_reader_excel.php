@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: recouvr_reader_excel.php,v 1.6 2013-04-08 14:56:08 mbertin Exp $
+// $Id: recouvr_reader_excel.php,v 1.7 2015-04-03 11:16:24 jpermanne Exp $
 
 //Affichage des recouvrements pour un lecteur, format Excel HTML
 
@@ -37,13 +37,13 @@ print pmb_bidi("<tr><td>".$empr->prenom." ".$empr->nom."</td></tr>
 </table>");
 
 $requete="select recouvr_id,id_expl,date_rec,libelle,montant, expl_notice,expl_bulletin, recouvr_type, date_pret,date_relance1,date_relance2,date_relance3 from recouvrements left join exemplaires on expl_id=id_expl where empr_id=$id_empr order by date_rec";
-$resultat=mysql_query($requete);
+$resultat=pmb_mysql_query($requete);
 print "<table>
 <tr>
 <th>".""."</th><th>".$msg["relance_recouvrement_type"]."</th><th>".$msg["relance_recouvrement_titre"]."</th><th>".$msg["relance_recouvrement_pret_date"]."</th><th>".$msg["relance_recouvrement_relance_date1"]."</th>
 <th>".$msg["relance_recouvrement_relance_date2"]."</th><th>".$msg["relance_recouvrement_relance_date3"]."</th><th>".$msg["relance_recouvrement_montant"]."</th>
 </tr>";
-while ($r=mysql_fetch_object($resultat)) {
+while ($r=pmb_mysql_fetch_object($resultat)) {
 	if ($r->id_expl) {
 		if ($r->expl_notice) {
 			$notice=new mono_display($r->expl_notice);

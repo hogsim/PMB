@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: databnf.class.php,v 1.2 2014-02-11 20:05:39 gueluneau Exp $
+// $Id: databnf.class.php,v 1.3 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -153,10 +153,10 @@ class databnf extends connector {
 		}else{
 			//on va chercher l'auteur principal...
 			$query = "select responsability_author, authority_number from responsability join authorities_sources on (authority_type='author' and num_authority=responsability_author) where responsability_notice =".$notice_id." and responsability_type=0";
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$author_id = mysql_result($result,0,0);
-				$author_number = mysql_result($result,0,1);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$author_id = pmb_mysql_result($result,0,0);
+				$author_number = pmb_mysql_result($result,0,1);
 				$author_class = new auteur($author_id);
 				$author =  $author_class->isbd_entry;
 				
@@ -337,10 +337,10 @@ class databnf extends connector {
 		
 		//On va rechercher l'isbn si il existe....
 		$requete="select code from notices where notice_id=$notice_id";
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		
-		if (mysql_num_rows($resultat)) {
-			$isbn=mysql_result($resultat,0,0);
+		if (pmb_mysql_num_rows($resultat)) {
+			$isbn=pmb_mysql_result($resultat,0,0);
 		} else $isbn="";
 		if ($isbn) {
 			//On y va !

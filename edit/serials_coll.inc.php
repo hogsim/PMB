@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials_coll.inc.php,v 1.21 2009-05-16 11:08:24 dbellamy Exp $
+// $Id: serials_coll.inc.php,v 1.22 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -44,19 +44,19 @@ if ($user_query) {
 	$where.=$members["where"]." and ";
 }
 $where.="niveau_biblio='s' AND niveau_hierar='1'";
-$count_query = mysql_query("SELECT count(distinct notice_id) FROM notices WHERE $where", $dbh);
-$nbr_lignes = mysql_result ($count_query, 0, 0);
+$count_query = pmb_mysql_query("SELECT count(distinct notice_id) FROM notices WHERE $where", $dbh);
+$nbr_lignes = pmb_mysql_result($count_query, 0, 0);
 
 if(!$page) $page=1;
 $debut =($page-1)*$nb_per_page;
 
 if($nbr_lignes) {
 
-	$myQuery = mysql_query("SELECT *,".$members["select"]." as pert FROM notices WHERE ".$where." group by notice_id ORDER BY pert desc,index_sew LIMIT $debut,$nb_per_page_a_search", $dbh);
+	$myQuery = pmb_mysql_query("SELECT *,".$members["select"]." as pert FROM notices WHERE ".$where." group by notice_id ORDER BY pert desc,index_sew LIMIT $debut,$nb_per_page_a_search", $dbh);
 
 	$affichage_final = "<br /><table class='hidelink'>";
 	
-	while($myPerio=mysql_fetch_object($myQuery)) {
+	while($myPerio=pmb_mysql_fetch_object($myQuery)) {
 		$class_entete = "even";
 		$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$class_entete'\" ";
 		$url = "./catalog.php?categ=serials&sub=view&serial_id=".$myPerio->notice_id; 
@@ -71,9 +71,9 @@ if($nbr_lignes) {
 		$affichage_final .= "<td colspan='6'><a href='".$url."'>".$isbd->isbd."</a></td></tr>";
 		
    		// affichage des bulletinages associés
-		$myQueryBull = mysql_query("SELECT bulletin_id FROM bulletins WHERE bulletin_notice='$myPerio->notice_id' ORDER BY date_date DESC, bulletin_id DESC ", $dbh);
+		$myQueryBull = pmb_mysql_query("SELECT bulletin_id FROM bulletins WHERE bulletin_notice='$myPerio->notice_id' ORDER BY date_date DESC, bulletin_id DESC ", $dbh);
 		$bulletins="";
-		while($bul = mysql_fetch_object($myQueryBull)) {
+		while($bul = pmb_mysql_fetch_object($myQueryBull)) {
 			$class_suite="odd";
         		$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$class_suite'\"";
 				$bulletin = new bulletinage($bul->bulletin_id);

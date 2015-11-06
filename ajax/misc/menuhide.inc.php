@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: menuhide.inc.php,v 1.2 2008-08-05 08:20:04 touraine37 Exp $
+// $Id: menuhide.inc.php,v 1.3 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -31,7 +31,7 @@ function menuvchgpref(){
 	}
 	$sauvemenu = serialize ($_SESSION["AutoHide"]) ;
 	$sql="update users set environnement='".addslashes($sauvemenu)."' where userid=$PMBuserid";
-	@mysql_query($sql);
+	@pmb_mysql_query($sql);
 	ajax_http_send_response("0","text/text");
 	return;
 }

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: acquisition.inc.php,v 1.13.8.1 2015-08-13 08:04:28 jpermanne Exp $
+// $Id: acquisition.inc.php,v 1.14 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,18 +15,15 @@ require_once("$class_path/tva_achats.class.php");
 
 //Recherche des etablissements auxquels a acces l'utilisateur
 $q = entites::list_biblio(SESSuserid);
-$list_bib = mysql_query($q,$dbh);
-$nb_bib=mysql_num_rows($list_bib);
+$list_bib = pmb_mysql_query($q,$dbh);
+$nb_bib=pmb_mysql_num_rows($list_bib);
 $tab_bib=array();
-while ($row=mysql_fetch_object($list_bib)) {
+while ($row=pmb_mysql_fetch_object($list_bib)) {
 	$tab_bib[0][]=$row->id_entite;
 	$tab_bib[1][]=$row->raison_sociale;
 }		
 
-//si on arrive par print_acquisition.php, pas d'entêtes
-if (!$acquisition_no_html) {
-	echo window_title($database_window_title.$msg[acquisition_menu].$msg[1003].$msg[1001]);
-}
+echo window_title($database_window_title.$msg[acquisition_menu].$msg[1003].$msg[1001]);
 
 switch($categ) {
 	case 'ach':

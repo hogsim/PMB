@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ireps_pdl.inc.php,v 1.10 2012-09-18 15:13:10 mbertin Exp $
+// $Id: ireps_pdl.inc.php,v 1.11 2015-04-03 11:16:17 jpermanne Exp $
 
 function search_other_function_filters() { //OK
 	global $charset,$ireps_ss_type,$ireps_location,$ireps_public,$ireps_expertise, $ireps_indexint;
@@ -15,14 +15,14 @@ function search_other_function_filters() { //OK
 	
 	//Pour la sélection par sous type
 	$q="select notices_custom_list_value,notices_custom_list_lib from notices_custom_lists where notices_custom_champ='3' order by notices_custom_list_lib";
-	$r=mysql_query($q);
+	$r=pmb_mysql_query($q);
 	$ireps_sel_ss_type="<select name='ireps_ss_type'>" ;
 	$ireps_sel_ss_type.="<option value='0' ";
 	if(!$ireps_ss_type) $ireps_sel_ss_type.="selected=\"selected\" ";
 	$ireps_sel_ss_type.=">Tous sous-types de documents</option>";
 	$incr=0;
-	if (mysql_num_rows($r)) {
-		while (($row = mysql_fetch_object($r))) {
+	if (pmb_mysql_num_rows($r)) {
+		while (($row = pmb_mysql_fetch_object($r))) {
 			$selected="";
 			if ($row->notices_custom_list_value==$ireps_ss_type) {
 				$selected="selected=\"selected\"";
@@ -39,13 +39,13 @@ function search_other_function_filters() { //OK
 	
 	//Pour la sélection par localisation
 	$q="select idlocation,location_libelle, if(left(location_libelle, 5 )='IREPS',1,2) as o from docs_location where location_visible_opac='1' order by o,cp";
-	$r=mysql_query($q);
+	$r=pmb_mysql_query($q);
 	$ireps_sel_location="<select name='ireps_location'>" ;
 	$ireps_sel_location.="<option value='0' ";
 	if(!$ireps_location) $ireps_sel_location.="selected=\"selected\" ";
 	$ireps_sel_location.=">Toutes localisations</option>";
-	if (mysql_num_rows($r)) {
-		while (($row = mysql_fetch_object($r))) {
+	if (pmb_mysql_num_rows($r)) {
+		while (($row = pmb_mysql_fetch_object($r))) {
 			$selected="";
 			if ($row->idlocation==$ireps_location) {
 				$selected="selected=\"selected\"";
@@ -59,13 +59,13 @@ function search_other_function_filters() { //OK
 
 	//Pour la sélection par public cible
 	$q="select notices_custom_list_value,notices_custom_list_lib from notices_custom_lists where notices_custom_champ='4' order by notices_custom_list_lib";
-	$r=mysql_query($q);
+	$r=pmb_mysql_query($q);
 	$ireps_sel_public="<select name='ireps_public'>" ;
 	$ireps_sel_public.="<option value='0' ";
 	if(!$ireps_public) $ireps_sel_public.="selected=\"selected\" ";
 	$ireps_sel_public.=">Tous publics</option>";
-	if (mysql_num_rows($r)) {
-		while (($row = mysql_fetch_object($r))) {
+	if (pmb_mysql_num_rows($r)) {
+		while (($row = pmb_mysql_fetch_object($r))) {
 			$selected="";
 			if ($row->notices_custom_list_value==$ireps_public) {
 				$selected="selected=\"selected\"";
@@ -79,13 +79,13 @@ function search_other_function_filters() { //OK
 	
 	//Pour la sélection par expertise
 	$q="select notices_custom_list_value,notices_custom_list_lib from notices_custom_lists where notices_custom_champ='8' order by notices_custom_list_lib";
-	$r=mysql_query($q);
+	$r=pmb_mysql_query($q);
 	$ireps_sel_expertise="<select name='ireps_expertise'>" ;
 	$ireps_sel_expertise.="<option value='0' ";
 	if(!$ireps_expertise) $ireps_sel_expertise.="selected=\"selected\" ";
 	$ireps_sel_expertise.=">Expertise r&eacute;gionale</option>";
-	if (mysql_num_rows($r)) {
-		while (($row = mysql_fetch_object($r))) {
+	if (pmb_mysql_num_rows($r)) {
+		while (($row = pmb_mysql_fetch_object($r))) {
 			$selected="";
 			if ($row->notices_custom_list_value==$ireps_expertise) {
 				$selected="selected=\"selected\"";
@@ -239,14 +239,14 @@ function search_other_function_filters() { //OK
 	$entete_indexint['N'] = "Education du patient";
 	$entete_indexint['O'] = "Pathologies et problèmes de santé";
 	$q="select indexint_id, indexint_name, indexint_comment from indexint where num_pclass=1 order by indexint_name";
-	$r=mysql_query($q);
+	$r=pmb_mysql_query($q);
 	$ireps_sel_indexint="<select name='ireps_indexint'>" ;
 	$ireps_sel_indexint.="<option value='0' ";
 	if(!$ireps_indexint) $ireps_sel_indexint.="selected=\"selected\" ";
 	$ireps_sel_indexint.=">Toutes thématiques</option>";
 	$anc_chap="";
-	if (mysql_num_rows($r)) {
-		while (($row = mysql_fetch_object($r))) {
+	if (pmb_mysql_num_rows($r)) {
+		while (($row = pmb_mysql_fetch_object($r))) {
 			if (substr($row->indexint_name,0,1)!=$anc_chap) {
 				if ($anc_chap!="") $ireps_sel_indexint.= "</optgroup>"; 
 				$anc_chap=substr($row->indexint_name,0,1);
@@ -352,9 +352,9 @@ function search_other_function_human_query($n) { //OK
 	$app="";
 	if ($ireps_ss_type) {
 		$q="select notices_custom_list_lib from notices_custom_lists where notices_custom_champ='3' and notices_custom_list_value='".$ireps_ss_type."' limit 1 ";
-		$r=mysql_query($q);
-		if (mysql_num_rows($r)) {
-			$app=mysql_result($r,0,0);
+		$r=pmb_mysql_query($q);
+		if (pmb_mysql_num_rows($r)) {
+			$app=pmb_mysql_result($r,0,0);
 		}
 	}
 	if ($app) $ret.="Sous-type de document : ".$app;
@@ -362,9 +362,9 @@ function search_other_function_human_query($n) { //OK
 	$app="";
 	if ($ireps_location) {
  		$q="select location_libelle from docs_location where idlocation='".$ireps_location."'";
-       	$r=mysql_query($q);
-       	if (mysql_num_rows($r)) {
-			$app=mysql_result($r,0,0);
+       	$r=pmb_mysql_query($q);
+       	if (pmb_mysql_num_rows($r)) {
+			$app=pmb_mysql_result($r,0,0);
 		}
 	}
 	if($ret && $app) $ret.=", ";
@@ -373,9 +373,9 @@ function search_other_function_human_query($n) { //OK
 	$app="";
 	if ($ireps_public) {
  		$q="select notices_custom_list_lib from notices_custom_lists where notices_custom_champ='4' and notices_custom_list_value='".$ireps_public."' limit 1 ";
-       	$r=mysql_query($q);
-       	if (mysql_num_rows($r)) {
-			$app=mysql_result($r,0,0);
+       	$r=pmb_mysql_query($q);
+       	if (pmb_mysql_num_rows($r)) {
+			$app=pmb_mysql_result($r,0,0);
 		}
 	}
 	if($ret && $app) $ret.=", ";
@@ -384,9 +384,9 @@ function search_other_function_human_query($n) { //OK
 	$app="";
 	if ($ireps_expertise) {
  		$q="select notices_custom_list_lib from notices_custom_lists where notices_custom_champ='8' and notices_custom_list_value='".$ireps_expertise."' limit 1 ";
-       	$r=mysql_query($q);
-       	if (mysql_num_rows($r)) {
-			$app=mysql_result($r,0,0);
+       	$r=pmb_mysql_query($q);
+       	if (pmb_mysql_num_rows($r)) {
+			$app=pmb_mysql_result($r,0,0);
 		}
 	}
 	if($ret && $app) $ret.=", ";
@@ -395,9 +395,9 @@ function search_other_function_human_query($n) { //OK
 	$app="";
 	if ($ireps_indexint) {
  		$q="select indexint_comment from indexint where indexint_id'".$ireps_indexint."' limit 1 ";
-       	$r=mysql_query($q);
-       	if (mysql_num_rows($r)) {
-			$app=mysql_result($r,0,0);
+       	$r=pmb_mysql_query($q);
+       	if (pmb_mysql_num_rows($r)) {
+			$app=pmb_mysql_result($r,0,0);
 		}
 	}
 	if($ret && $app) $ret.=", ";

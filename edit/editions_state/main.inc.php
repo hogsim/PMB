@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.5 2013-03-11 10:40:09 mbertin Exp $
+// $Id: main.inc.php,v 1.6 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -47,18 +47,18 @@ function show_state_list(){
 	global $msg,$charset,$javascript_path;
 	
 	$query = "select id_editions_state, editions_state_name, editions_state_comment, libproc_classement, editions_state_num_classement from editions_states left join procs_classements on editions_state_num_classement = idproc_classement order by libproc_classement,editions_state_name asc";
-	$result = mysql_query($query);
+	$result = pmb_mysql_query($query);
 	print "
 		<script type=\"text/javascript\" src=\"".$javascript_path."/tablist.js\"></script>
 		<a href=\"javascript:expandAll()\"><img src='./images/expand_all.gif' border='0' id=\"expandall\"></a>
 		<a href=\"javascript:collapseAll()\"><img src='./images/collapse_all.gif' border='0' id=\"collapseall\"></a>
 		";
-	if(mysql_num_rows($result)){
+	if(pmb_mysql_num_rows($result)){
 		$class_prec=$msg['proc_clas_aucun'];
 		$buf_tit=$msg['proc_clas_aucun'];
 		$buf_class=0;
 		$parity=1;
-		while ($row = mysql_fetch_object($result)){
+		while ($row = pmb_mysql_fetch_object($result)){
 			if (!$row->libproc_classement) $row->libproc_classement=$msg['proc_clas_aucun'];//Pour les états qui ne sont pas dans un classement
 			if ($class_prec!=$row->libproc_classement) {
 				if ($buf_tit) {

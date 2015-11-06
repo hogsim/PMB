@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: resa.class.php,v 1.33.4.1 2014-04-11 09:01:23 dgoron Exp $
+// $Id: resa.class.php,v 1.35 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -52,8 +52,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			}
 			if($cb) {
 				$query = "select expl_id,expl_notice,expl_bulletin from exemplaires where expl_cb='$cb' limit 1";
-				$result = mysql_query($query, $dbh);
-				if (($expl = mysql_fetch_object($result))) {		
+				$result = pmb_mysql_query($query, $dbh);
+				if (($expl = pmb_mysql_fetch_object($result))) {		
 										
 					$this->id_notice = $expl->expl_notice;
 					$this->id_bulletin = $expl->expl_bulletin;
@@ -70,9 +70,9 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			global $dbh;
 			$query = "select resa_idempr as empr, id_resa, resa_cb, concat(ifnull(concat(empr_nom,' '),''),empr_prenom) as nom_prenom, empr_cb 
 			from resa left join empr on resa_idempr=id_empr where resa_idnotice='".$this->id_notice."' and resa_idbulletin='".$this->id_bulletin."' order by resa_date limit 1";
-			$result = mysql_query($query, $dbh);
-			if (mysql_num_rows($result)) { 		
-				if(($row=mysql_fetch_object($result))) {
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_num_rows($result)) { 		
+				if(($row=pmb_mysql_fetch_object($result))) {
 					$link="<a href=\"./circ.php?categ=pret&form_cb=".$row->empr_cb."\">".$row->nom_prenom."</a>";
 					return $link;
 				}				
@@ -83,9 +83,9 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			global $dbh;
 			$query = "select resa_idempr as empr, id_resa, resa_cb, concat(ifnull(concat(empr_nom,' '),''),empr_prenom) as nom_prenom, empr_cb 
 			from resa, empr where resa_cb='".$this->expl_cb."' and resa_idempr=id_empr limit 1";
-			$result = mysql_query($query, $dbh);
-			if (mysql_num_rows($result)) { 		
-				if(($row=mysql_fetch_object($result))) {
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_num_rows($result)) { 		
+				if(($row=pmb_mysql_fetch_object($result))) {
 					$link="<a href=\"./circ.php?categ=pret&form_cb=".$row->empr_cb."\">".$row->nom_prenom."</a>";
 					return $link;
 				}				
@@ -100,8 +100,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			$query .= " and s.idstatut=e.expl_statut";
 			$query .= " limit 1";
 	
-			$result = mysql_query($query, $dbh);
-			if (($expl = mysql_fetch_array($result))) {			
+			$result = pmb_mysql_query($query, $dbh);
+			if (($expl = pmb_mysql_fetch_array($result))) {			
 				if (!$expl['pretable']) {
 					// l'exemplaire est en consultation sur place
 					return 0;				
@@ -112,15 +112,15 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			}
 			// on check si l'exemplaire est déjà en prêt
 			$query = "select pret_idempr from pret where pret_idexpl=$id_expl limit 1";
-			$result = mysql_query($query, $dbh);
-			if (@ mysql_num_rows($result)) {
+			$result = pmb_mysql_query($query, $dbh);
+			if (@ pmb_mysql_num_rows($result)) {
 				// l'exemplaire est déjà en prêt
 				return 0;
 			}	
 			// on check si l'exemplaire a une réservation
 			$query = "select resa_idempr as empr, id_resa, resa_cb, concat(ifnull(concat(empr_nom,' '),''),empr_prenom) as nom_prenom, empr_cb from resa left join empr on resa_idempr=id_empr where resa_idnotice='$expl->notice' and resa_idbulletin='$expl->bulletin' order by resa_date limit 1";
-			$result = mysql_query($query, $dbh);
-			if (mysql_num_rows($result)) { 
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_num_rows($result)) { 
 				// l'exemplaire a une réservation
 				return 0;
 				
@@ -133,8 +133,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			global $dbh,$msg,$pmb_transferts_actif, $transferts_choix_lieu_opac;
 			// recup de la localisation de l'emprunteur
 			$query = "select empr_location from empr where id_empr=".$this->id_empr;
-			$res = mysql_query($query, $dbh);			
-			$empr = mysql_fetch_object($res);
+			$res = pmb_mysql_query($query, $dbh);			
+			$empr = pmb_mysql_fetch_object($res);
 			$empr_location=$empr->empr_location;
 			
 			if($this->id_notice) $field_expl= " expl_notice=$this->id_notice ";
@@ -147,8 +147,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 				where  $field_expl and  expl_location in (select resa_loc  from resa_loc where resa_emprloc=$empr_location )
 				and s.idstatut=e.expl_statut and s.statut_allow_resa=1 $transf_possible limit 1";
 				
-				$res = mysql_query($requete, $dbh);	
-				if(mysql_num_rows($res)) {
+				$res = pmb_mysql_query($requete, $dbh);	
+				if(pmb_mysql_num_rows($res)) {
 					return TRUE;							
 				}	
 				$this->message = "<strong>".$msg["resa_no_expl_in_location_transferable"]."</strong>";				
@@ -157,16 +157,16 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 				where  $field_expl and  expl_location in (select resa_loc  from resa_loc where resa_emprloc=$empr_location )
 				and s.idstatut=e.expl_statut and s.statut_allow_resa=1 limit 1";
 				
-				$res = mysql_query($requete, $dbh);	
-				if(mysql_num_rows($res)) {
+				$res = pmb_mysql_query($requete, $dbh);	
+				if(pmb_mysql_num_rows($res)) {
 					return TRUE;							
 				}			
 				// recup de la liste des localisations ou l'emprunteur peut réserver un exemplaire
 				$requete="select location_libelle from resa_loc, docs_location  where resa_emprloc=$empr_location and idlocation=resa_loc";
-				$res = mysql_query($requete, $dbh);	
+				$res = pmb_mysql_query($requete, $dbh);	
 				$locations="";
-				if(mysql_num_rows($res)) {
-					while(($row=mysql_fetch_object($res))) {
+				if(pmb_mysql_num_rows($res)) {
+					while(($row=pmb_mysql_fetch_object($res))) {
 						if($locations) $locations.=", ";
 						$locations.=$row->location_libelle;				
 					}
@@ -281,21 +281,21 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 						
 			if (($pmb_transferts_actif=="1")&&($transferts_choix_lieu_opac=="1")) {
 				$rqt = "SELECT empr_location FROM empr WHERE id_empr=".$this->id_empr;
-				$idloc_retrait = mysql_result(mysql_query($rqt),0);				
+				$idloc_retrait = pmb_mysql_result(pmb_mysql_query($rqt),0);				
 			} 
 			$query .= "'$idloc_retrait' )";			
-			$result = mysql_query($query, $dbh);
+			$result = pmb_mysql_query($query, $dbh);
 			if(!$result) {
 				$this->message = "$query -> $msg[resa_no_create]";
 				$this->service->error="resa_no_create";	
 				return FALSE;
 			}else {
-				$this->id = mysql_insert_id($dbh);
+				$this->id = pmb_mysql_insert_id($dbh);
 				$this->message = $msg["resa_ajoutee"];
 				
 				// Archivage de la résa: info lecteur et notice et nombre d'exemplaire
 				$rqt = "SELECT * FROM empr WHERE id_empr=".$this->id_empr;
-				$empr = mysql_fetch_object(mysql_query($rqt));	
+				$empr = pmb_mysql_fetch_object(pmb_mysql_query($rqt));	
 						
 				$id_notice=$id_bulletin=0;
 				if($this->id_notice) {
@@ -305,7 +305,7 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 					$id_bulletin=$this->id_bulletin;
 					$query = "SELECT count(*) FROM exemplaires where expl_bulletin='$id_bulletin'";
 				}
-				$nb_expl = mysql_result(mysql_query($query),0);
+				$nb_expl = pmb_mysql_result(pmb_mysql_query($query),0);
 				
 				$query = "INSERT INTO resa_archive SET
 					resarc_id_empr = '".$this->id_empr."', 
@@ -324,11 +324,11 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 					resarc_empr_location = '".$empr->empr_location."',
 					resarc_expl_nb = '$nb_expl'		
 				 ";
-				mysql_query($query, $dbh);
-				$stat_id = mysql_insert_id($dbh);
+				pmb_mysql_query($query, $dbh);
+				$stat_id = pmb_mysql_insert_id($dbh);
 				// Lier achive et résa pour suivre l'évolution de la résa
 				$query = "update resa SET resa_arc='$stat_id' where id_resa='".$this->id."'";
-				mysql_query($query, $dbh);
+				pmb_mysql_query($query, $dbh);
 			}
 			return TRUE;
 		}
@@ -346,10 +346,10 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 				$id_bulletin=$this->id_bulletin;
 				$query = "delete from resa where resa_idempr=".$this->id_empr." and resa_idbulletin=".$this->id_bulletin;
 			}	
-			$result = @mysql_query($query, $dbh);
+			$result = @pmb_mysql_query($query, $dbh);
 			// archivage
 			$rqt_arch = "UPDATE resa_archive SET resarc_anulee = 1 WHERE resarc_id_empr = '".$this->id_empr."' and resarc_idnotice = '".$id_notice."' and	resarc_idbulletin = '".$id_bulletin."' "; 
-			mysql_query($rqt_arch, $dbh);
+			pmb_mysql_query($rqt_arch, $dbh);
 			
 			if(!$result) {
 				$this->message = $msg["resa_no_suppr"];
@@ -363,11 +363,11 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 				elseif($this->id_bulletin)
 					$query .= " and r.resa_idbulletin=".$this->id_bulletin;
 				$query .= " order by r.resa_date limit 1";
-				$result = mysql_query($query, $dbh);
-				if(mysql_num_rows($result)) {
+				$result = pmb_mysql_query($query, $dbh);
+				if(pmb_mysql_num_rows($result)) {
 		
 					// d'autres réservataires existent
-					$next_empr = mysql_fetch_object($result);
+					$next_empr = pmb_mysql_fetch_object($result);
 		
 					$this->message = $msg[resa_supprimee];
 		
@@ -377,8 +377,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 						$query = "select count(1) from exemplaires where expl_notice=".$this->id_notice;
 					elseif($this->id_bulletin)
 						$query = "select count(1) from exemplaires where expl_bulletin=".$this->id_bulletin;
-					$result = mysql_query($query, $dbh);
-					$total_ex = mysql_result($result, 0, 0);
+					$result = pmb_mysql_query($query, $dbh);
+					$total_ex = pmb_mysql_result($result, 0, 0);
 		
 					// on compte le nombre d'exemplaires sortis
 					$query = "select count(1) from exemplaires e, pret p";
@@ -387,8 +387,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 					elseif($this->id_bulletin)
 						$query .= " where e.expl_bulletin=".$this->id_bulletin;			
 					$query .= " and p.pret_idexpl=e.expl_id";
-					$result = mysql_query($query, $dbh);
-					$total_sortis = mysql_result($result, 0, 0);
+					$result = pmb_mysql_query($query, $dbh);
+					$total_sortis = pmb_mysql_result($result, 0, 0);
 		
 					// on en déduit le nombre d'exemplaires disponibles
 					$total_dispo = $total_ex - $total_sortis;
@@ -420,8 +420,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			global $dbh;
 			global $msg;
 			$query = "select count(1) from empr where id_empr=".$this->id_empr;
-			$result = @mysql_query($query, $dbh);
-			if(!@mysql_result($result, 0, 0)) {
+			$result = @pmb_mysql_query($query, $dbh);
+			if(!@pmb_mysql_result($result, 0, 0)) {
 				$this->message = "<strong>$msg[resa_no_empr]</strong>";
 				return FALSE;
 				}
@@ -435,8 +435,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			if($this->id_notice) $query = "select count(1) from notices where notice_id=".$this->id_notice;
 				elseif ($this->id_bulletin)
 					$query = "select count(1) from bulletins where bulletin_id=".$this->id_bulletin;
-			$result = @mysql_query($query, $dbh);
-			if(!@mysql_result($result, 0, 0)) {
+			$result = @pmb_mysql_query($query, $dbh);
+			if(!@pmb_mysql_result($result, 0, 0)) {
 				$this->message = "<strong>$msg[resa_no_doc]</strong>";
 				return FALSE;
 				}
@@ -451,8 +451,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			if($this->id_notice) $query .= " and resa_idnotice=".$this->id_notice;
 				elseif ($this->id_bulletin)
 					$query .= " and resa_idbulletin=".$this->id_bulletin;
-			$result = @mysql_query($query, $dbh);
-			if(@mysql_result($result, 0, 0)) {
+			$result = @pmb_mysql_query($query, $dbh);
+			if(@pmb_mysql_result($result, 0, 0)) {
 				$this->message = "<strong>$msg[resa_deja_resa]</strong>";
 				return TRUE;
 				}
@@ -470,8 +470,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 				$query .= " and e.expl_notice=".$this->id_notice;
 			elseif ($this->id_bulletin)
 				$query .= " and e.expl_bulletin=".$this->id_bulletin;
-			$result = @mysql_query($query, $dbh);
-			if(@mysql_result($result, 0, 0)) {
+			$result = @pmb_mysql_query($query, $dbh);
+			if(@pmb_mysql_result($result, 0, 0)) {
 				$this->message = "<strong>$msg[resa_deja_doc]</strong>";
 				return TRUE;
 			}
@@ -506,13 +506,13 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 				$query .= " where s.idstatut=e.expl_statut and s.statut_allow_resa=1 and e.expl_bulletin=".$this->id_bulletin;
 			if($pmb_location_reservation) {	
 				$query_loc = "select empr_location from empr where id_empr=".$this->id_empr;
-				$res = mysql_query($query_loc, $dbh);			
-				$empr = mysql_fetch_object($res);
+				$res = pmb_mysql_query($query_loc, $dbh);			
+				$empr = pmb_mysql_fetch_object($res);
 				$empr_location=$empr->empr_location;		
 				$query.=" and e.expl_location in (select resa_loc from resa_loc where resa_emprloc=$empr_location) ";
 			}		
-			$result = mysql_query($query, $dbh);
-			if(!@mysql_num_rows($result)) {
+			$result = pmb_mysql_query($query, $dbh);
+			if(!@pmb_mysql_num_rows($result)) {
 				// aucun exemplaire n'est disponible pour le prêt
 				$this->message .= "$msg[resa]&nbsp;:&nbsp;".$this->notice."<br /><strong>$msg[resa_no_expl]</strong>";
 				$this->service->error="check_statut";	
@@ -527,10 +527,10 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 			// c'est qu'il est disponible à la bibliothèque
 			$list_dispo = '';
 		
-			while($pretable = mysql_fetch_object($result)) {
+			while($pretable = pmb_mysql_fetch_object($result)) {
 				$req2 = "select count(1) from pret where pret_idexpl=".$pretable->expl_id;		
-				$req2_result = mysql_query($req2, $dbh);
-				if(!mysql_result($req2_result, 0, 0)) {
+				$req2_result = pmb_mysql_query($req2, $dbh);
+				if(!pmb_mysql_result($req2_result, 0, 0)) {
 					// l'exemplaire ne figure pas dans la table pret -> dispo
 					// on récupère les données exemplaires pour constituer le message
 					$req3 = "select p.expl_cote, s.section_libelle, l.location_libelle";
@@ -539,13 +539,13 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 					$req3 .= " and s.idsection=p.expl_section";
 					$req3 .= " and l.idlocation=p.expl_location limit 1";
 					
-					$req3_result = mysql_query($req3, $dbh);
-					$req3_obj = mysql_fetch_object($req3_result);
+					$req3_result = pmb_mysql_query($req3, $dbh);
+					$req3_obj = pmb_mysql_fetch_object($req3_result);
 					if($req3_obj->expl_cote) {				
 						// Si résa validé il n'est pas disponible en prêt
 						$req4 = "select count(1) from resa where resa_cb='".$pretable->expl_cb."' and resa_confirmee='1'";
-						$req4_result = mysql_query($req4, $dbh);
-						if(!mysql_result($req4_result, 0, 0)) {	
+						$req4_result = pmb_mysql_query($req4, $dbh);
+						if(!pmb_mysql_result($req4_result, 0, 0)) {	
 							$list_dispo .= '<br />'.$req3_obj->location_libelle.'.';
 							$list_dispo .= $req3_obj->section_libelle.' cote&nbsp;: '.$req3_obj->expl_cote;
 						}
@@ -585,22 +585,22 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 				
 			if($pmb_location_reservation) {	
 				$query_loc = "select empr_location from empr where id_empr=".$this->id_empr;
-				$res = mysql_query($query_loc, $dbh);			
-				$empr = mysql_fetch_object($res);
+				$res = pmb_mysql_query($query_loc, $dbh);			
+				$empr = pmb_mysql_fetch_object($res);
 				$empr_location=$empr->empr_location;		
 				$query.=" and e.expl_location in (select resa_loc from resa_loc where resa_emprloc=$empr_location) ";
 			}		
-			$result = mysql_query($query, $dbh);
-			if(!@mysql_num_rows($result)) {
+			$result = pmb_mysql_query($query, $dbh);
+			if(!@pmb_mysql_num_rows($result)) {
 				// aucun exemplaire n'est disponible pour le prêt
 				$this->message .= "$msg[resa]&nbsp;:&nbsp;".$this->notice."<br /><strong>$msg[resa_no_expl]</strong>";
 				return 1;
 			}
 		
-			while(($pretable = mysql_fetch_object($result))) {
+			while(($pretable = pmb_mysql_fetch_object($result))) {
 				$req2 = "select count(1) from pret where pret_idexpl=".$pretable->expl_id;		
-				$req2_result = mysql_query($req2, $dbh);
-				if(!mysql_result($req2_result, 0, 0)) {
+				$req2_result = pmb_mysql_query($req2, $dbh);
+				if(!pmb_mysql_result($req2_result, 0, 0)) {
 					// l'exemplaire ne figure pas dans la table pret -> dispo
 					// on récupère les données exemplaires pour constituer le message
 					$req3 = "select p.expl_cote, s.section_libelle, l.location_libelle, expl_location";
@@ -608,13 +608,13 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 					$req3 .= " where p.expl_id=".$pretable->expl_id;
 					$req3 .= " and s.idsection=p.expl_section";
 					$req3 .= " and l.idlocation=p.expl_location limit 1";
-					$req3_result = mysql_query($req3, $dbh);
-					$req3_obj = mysql_fetch_object($req3_result);
+					$req3_result = pmb_mysql_query($req3, $dbh);
+					$req3_obj = pmb_mysql_fetch_object($req3_result);
 					if($req3_obj->expl_cote) {
 						// Si résa validé il n'est pas disponible en prêt
 						$req4 = "select count(1) from resa where resa_cb='".addslashes($pretable->expl_cb)."' and resa_confirmee='1'";
-						$req4_result = mysql_query($req4, $dbh);
-						if(!mysql_result($req4_result, 0, 0)) {					
+						$req4_result = pmb_mysql_query($req4, $dbh);
+						if(!pmb_mysql_result($req4_result, 0, 0)) {					
 							$this->expl_affectable[]=$pretable->expl_cb;
 						}
 						if($req3_obj->expl_location !=$deflt_docs_location) {
@@ -667,8 +667,8 @@ if ( ! defined( 'RESA_CLASS' ) ) {
 				$rqt = "SELECT resa_idempr FROM resa WHERE resa_idnotice='".$this->id_notice."' AND resa_idbulletin='".$this->id_bulletin."' ORDER BY resa_date";
 			}
 			*/
-			$result = mysql_query($rqt, $dbh);
-			while(($resa=mysql_fetch_object($result))) {
+			$result = pmb_mysql_query($rqt, $dbh);
+			while(($resa=pmb_mysql_fetch_object($result))) {
 				if($resa->resa_idempr == $this->id_empr) break;
 				$rank++;
 			}

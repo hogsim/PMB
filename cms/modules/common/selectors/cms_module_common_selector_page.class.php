@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_page.class.php,v 1.3 2012-11-09 14:12:45 arenou Exp $
+// $Id: cms_module_common_selector_page.class.php,v 1.6 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");
@@ -10,13 +10,19 @@ class cms_module_common_selector_page extends cms_module_common_selector{
 	
 	public function __construct($id=0){
 		parent::__construct($id);
+		
+		if(!is_array($this->parameters) && $this->parameters){
+			$temp= array();
+			if($this->parameters)$temp[0]=$this->parameters;
+			$this->parameters=$temp;
+		}
 	}
 	
 	public function get_form(){
 		//si on est sur une page de type Page en création de cadre, on propose la condition pré-remplie...
 		if($this->cms_build_env['lvl'] == "cmspage"){
 			if(!$this->id){
-				$this->parameters = $this->cms_build_env['get']['pageid'];
+				$this->parameters[] = $this->cms_build_env['get']['pageid'];
 			}
 		}
 		$form = "
@@ -40,13 +46,13 @@ class cms_module_common_selector_page extends cms_module_common_selector{
 	
 	protected function gen_select(){
 		$query= "select id_page, page_name from cms_pages order by page_name";
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$select = "
-					<select name='".$this->get_form_value_name("id_page")."'>";
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+					<select name='".$this->get_form_value_name("id_page")."[]' multiple='yes'>";
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$select.="
-						<option value='".$row->id_page."' ".($this->parameters == $row->id_page ? "selected='selected'" : "").">".$this->format_text($row->page_name)."</option>";
+						<option value='".$row->id_page."' ".(in_array($row->id_page,$this->parameters) ? "selected='selected'" : "").">".$this->format_text($row->page_name)."</option>";
 			}
 		}else{
 			$select.= "

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: user_update.inc.php,v 1.32.2.1 2015-01-23 09:23:33 jpermanne Exp $
+// $Id: user_update.inc.php,v 1.34 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -33,8 +33,8 @@ if($form_cms) $droits = $droits + CMS_AUTH;
 
 // no duplication
 $requete = " SELECT count(1) FROM users WHERE (username='$form_login' AND userid!='$id' )  LIMIT 1 ";
-$res = mysql_query($requete, $dbh);
-$nbr = mysql_result($res, 0, 0);
+$res = pmb_mysql_query($requete, $dbh);
+$nbr = pmb_mysql_result($res, 0, 0);
 
 if ($nbr > 0) {
 	error_form_message($form_login.$msg["user_login_already_used"]);
@@ -42,9 +42,9 @@ if ($nbr > 0) {
 	// visibilité des exemplaires
 	if ($pmb_droits_explr_localises) {
 		$requete_droits_expl="select idlocation from docs_location order by location_libelle";
-		$resultat_droits_expl=mysql_query($requete_droits_expl);
+		$resultat_droits_expl=pmb_mysql_query($requete_droits_expl);
 		$form_expl_visibilite=array();
-		while ($j=mysql_fetch_array($resultat_droits_expl)) {
+		while ($j=pmb_mysql_fetch_array($resultat_droits_expl)) {
 			$temp_global="form_expl_visibilite_".$j["idlocation"];
 			global $$temp_global;
 			switch ($$temp_global) {
@@ -75,7 +75,7 @@ if ($nbr > 0) {
 		else
 			$form_expl_visibilite[2]="0";
 
-		mysql_free_result($resultat_droits_expl);
+		pmb_mysql_free_result($resultat_droits_expl);
 	} else {
 		$form_expl_visibilite[0]="0";
 		$form_expl_visibilite[1]="0";
@@ -116,22 +116,22 @@ if ($nbr > 0) {
 				$requete.= ", '$sel_group' ";
 			}
 			$requete.= ") ";
-			$res = @mysql_query($requete, $dbh);
-			$id=mysql_insert_id($dbh);
+			$res = @pmb_mysql_query($requete, $dbh);
+			$id=pmb_mysql_insert_id($dbh);
 			echo "<script>document.location=\"./admin.php?categ=users&sub=users&action=modif&id=$id\";</script>";
 		}
 	} else {
 		$requete = "SELECT username,nom,prenom,rights, user_lang, nb_per_page_search, nb_per_page_select, nb_per_page_gestion, explr_invisible, explr_visible_mod, explr_visible_unmod, grp_num  ";
 		$requete .= "FROM users WHERE userid='$id' LIMIT 1 ";
-		$res = @mysql_query($requete, $dbh);
-		$nbr = mysql_num_rows($res);
+		$res = @pmb_mysql_query($requete, $dbh);
+		$nbr = pmb_mysql_num_rows($res);
 		
 		$requete_param = "SELECT * FROM users WHERE userid='$id' LIMIT 1 ";
-		$res_param = mysql_query($requete_param, $dbh);
-		$field_values = mysql_fetch_row ( $res_param );
+		$res_param = pmb_mysql_query($requete_param, $dbh);
+		$field_values = pmb_mysql_fetch_row( $res_param );
 		
 		if($nbr==1) {
-			$row=mysql_fetch_row($res);
+			$row=pmb_mysql_fetch_row($res);
 			$dummy=array();
 			if($row[0] != $form_login && !empty($form_login)) {
 				$dummy[0] = "username='$form_login'";
@@ -151,8 +151,8 @@ if ($nbr > 0) {
 			}		
 			/* insérer ici la maj des param et deflt */
 			$i = 0;
-			while ($i < mysql_num_fields($res_param)) {
-				$field = mysql_field_name($res_param, $i) ;
+			while ($i < pmb_mysql_num_fields($res_param)) {
+				$field = pmb_mysql_field_name($res_param, $i) ;
 				$field_deb = substr($field,0,6);
 				switch ($field_deb) {
 					case "deflt_" :
@@ -214,7 +214,7 @@ if ($nbr > 0) {
 			if(!empty($set)) {
 				$set = "SET last_updated_dt=curdate(),".$set;
 				$requete = "UPDATE users $set WHERE userid=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			}
 		}
 	}

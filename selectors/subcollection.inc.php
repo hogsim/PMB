@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: subcollection.inc.php,v 1.28 2013-12-27 09:27:30 dgoron Exp $
+// $Id: subcollection.inc.php,v 1.29 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -83,8 +83,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 				}
 				$requete=$aq->get_query_count("sub_collections","sub_coll_name","index_sub_coll","sub_coll_id","sub_coll_id!='$no_display' ");
 		}
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = @mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	} else $nbr_lignes=1;
 	
 	if(!$page) $page=1;
@@ -104,8 +104,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 				$requete.="where ".$members["where"]." and sub_coll_id!='$no_display' and sub_coll_parent=collection_id and collection_parent=ed_id group by sub_coll_id order by pert desc,index_sub_coll, index_coll, index_publisher limit $debut,$nb_per_page";
 			}
 		} else $requete="select sub_collections.*,collections.*,publishers.* from sub_collections,collections,publishers where sub_coll_id='".$id."' and sub_coll_parent=collection_id and collection_parent=ed_id group by sub_coll_id";	
-		$res = @mysql_query($requete, $dbh);
-		while(($col=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($col=pmb_mysql_fetch_object($res))) {
 			$idsubcoll = $col->sub_coll_id;
 			$libellesubcoll = htmlentities(addslashes($col->sub_coll_name),ENT_QUOTES,$charset);
 			$idparentcoll = $col->sub_coll_parent;
@@ -117,7 +117,7 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 				$col->sub_coll_name</a>");
 			print pmb_bidi("&nbsp;($col->collection_name.&nbsp;$col->ed_name)<br />");
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);

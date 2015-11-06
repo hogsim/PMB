@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_print_fields.class.php,v 1.5.6.2 2015-10-01 14:06:31 jpermanne Exp $
+// $Id: serialcirc_print_fields.class.php,v 1.12 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -11,6 +11,7 @@ require_once("$class_path/parametres_perso.class.php");
 class serialcirc_print_fields {
 	var $id=0;
 	var $circ_tpl=array();
+	var $piedpage="";
 	
 	function serialcirc_print_fields($id_serialcirc=0) {
 		$this->id=$id_serialcirc+0;
@@ -18,15 +19,33 @@ class serialcirc_print_fields {
 	}
 	
 	function fetch_data() {
+		global $dbh;
+		
 		$this->p_perso = new parametres_perso("empr");
 		$this->circ_tpl=array();
+		$this->piedpage="";
 		$requete="select * from serialcirc where id_serialcirc=".$this->id ;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);
 			if($r->serialcirc_tpl) {
-				$this->circ_tpl=stripslashes_array(unserialize($r->serialcirc_tpl));
+				//On va récupérer le template prédéfini
+				if ($r->serialcirc_tpl+0 > 0) {
+					$query = "select * from serialcirc_tpl where serialcirctpl_id=".$r->serialcirc_tpl;
+					$res = pmb_mysql_query($query,$dbh);
+					if ($res) {
+						$row=pmb_mysql_fetch_object($res);
+						if($row->serialcirctpl_tpl) {
+							$this->circ_tpl=stripslashes_array(unserialize($row->serialcirctpl_tpl));
+							$this->piedpage=$row->serialcirctpl_piedpage;
+						}
+					}
+				} else {
+					$this->circ_tpl=stripslashes_array(unserialize($r->serialcirc_tpl));
+					$this->piedpage=$r->serialcirc_piedpage;
+				}
 			}
+			
 		}	
 	}
 	
@@ -45,16 +64,9 @@ class serialcirc_print_fields {
 	function get_line($data){
 		$elt=array();
 		if($data['empr_id']){
-			$req="SELECT empr.*, empr_statut.statut_libelle, empr_categ.libelle as libelle_categ, empr_codestat.libelle as libelle_codestat, GROUP_CONCAT(distinct libelle_groupe) as group_name 
-					FROM empr_statut, empr_categ, empr_codestat, empr 
-					LEFT JOIN empr_groupe ON (empr.id_empr=empr_groupe.empr_id) 
-					LEFT JOIN groupe on (groupe.id_groupe=empr_groupe.groupe_id) 
-					WHERE empr.empr_categ=empr_categ.id_categ_empr 
-					AND empr.empr_statut=empr_statut.idstatut 
-					AND empr.empr_codestat=empr_codestat.idcode 
-					AND empr.id_empr=".$data['empr_id'];
-			$res_empr=mysql_query($req);
-			$empr=mysql_fetch_object($res_empr);
+			$req="select * from empr where id_empr=".$data['empr_id'];
+			$res_empr=pmb_mysql_query($req);
+			$empr=pmb_mysql_fetch_object($res_empr);
 			$pp=$this->p_perso->show_fields($data['empr_id']);
 		}
 		
@@ -89,14 +101,6 @@ class serialcirc_print_fields {
 				case "ville":$elt[]=$empr->empr_ville;
 				break;			
 				case "libre":$elt[]=" ";
-				break;
-				case "statut":$elt[]=$empr->statut_libelle;
-				break;	
-				case "categ":$elt[]=$empr->libelle_categ;
-				break;	
-				case "codestat":$elt[]=$empr->libelle_codestat;
-				break;	
-				case "groupe":$elt[]=$empr->group_name;
 				break;	
 				default :$elt[]=" ";
 				break;					
@@ -108,7 +112,7 @@ class serialcirc_print_fields {
 	function get_select_form($name="select_field",$selected=0,$onchange="serialcirc_print_add_button();") {
 		global $charset,$msg,$base_path;
 		
-		$sel="
+		$sel=htmlentities($msg["serialcirc_diff_option_form_fiche_format_add_field"], ENT_QUOTES, $charset)."
 		<div class='row'>
 		 <select name='$name' id='$name' onchange='$onchange'>
 		 	<option value='name'>".htmlentities($msg['serialcirc_print_add_fields'],ENT_QUOTES,$charset)."</option>
@@ -121,10 +125,6 @@ class serialcirc_print_fields {
 			<option value='tel1'>".htmlentities($this->get_field_label('tel1'),ENT_QUOTES,$charset)."</option>
 			<option value='tel2'>".htmlentities($this->get_field_label('tel2'),ENT_QUOTES,$charset)."</option>	
 			<option value='ville'>".htmlentities($this->get_field_label('ville'),ENT_QUOTES,$charset)."</option>			
-			<option value='categ'>".htmlentities($this->get_field_label('categ'),ENT_QUOTES,$charset)."</option>			
-			<option value='statut'>".htmlentities($this->get_field_label('statut'),ENT_QUOTES,$charset)."</option>			
-			<option value='codestat'>".htmlentities($this->get_field_label('codestat'),ENT_QUOTES,$charset)."</option>			
-			<option value='groupe'>".htmlentities($this->get_field_label('groupe'),ENT_QUOTES,$charset)."</option>			
 			!!empr_param_perso!!	
 			<optgroup class='erreur' label='".htmlentities($msg["serialcirc_print_group_other"],ENT_QUOTES,$charset)."' ></optgroup>	
 			<option value='libre'>".htmlentities($this->get_field_label('libre'),ENT_QUOTES,$charset)."</option>		
@@ -179,75 +179,56 @@ class serialcirc_print_fields {
 	function get_field_label($field,$id=0){
 		global $msg;
 		switch($field){
-			case "name":
-				return $msg["serialcirc_print_empr_name"];
-				break;
-			case "emprlibelle":
-				return $msg["serialcirc_print_empr_libelle"];
-				break;
-			case "cb":
-				return $msg["serialcirc_print_empr_cb"];
-				break;
-			case "adr1":
-				return $msg["serialcirc_print_empr_adr1"];
-				break;
-			case "adr2":
-				return $msg["serialcirc_print_empr_adr2"];
-				break;
-			case "tel1":
-				return $msg["serialcirc_print_empr_tel1"];
-				break;
-			case "tel2":
-				return $msg["serialcirc_print_empr_tel2"];
-				break;
-			case "ville":
-				return $msg["serialcirc_print_empr_ville"];
-				break;			
-			case "libre":
-				return $msg["serialcirc_print_libre_fields"];
-				break;							
+			case "name":return $msg["serialcirc_print_empr_name"];
+			break;
+			case "emprlibelle":return $msg["serialcirc_print_empr_libelle"];
+			break;
+			case "cb":return $msg["serialcirc_print_empr_cb"];
+			break;
+			case "adr1":return $msg["serialcirc_print_empr_adr1"];
+			break;
+			case "adr2":return $msg["serialcirc_print_empr_adr2"];
+			break;
+			case "tel1":return $msg["serialcirc_print_empr_tel1"];
+			break;
+			case "tel2":return $msg["serialcirc_print_empr_tel2"];
+			break;
+			case "ville":return $msg["serialcirc_print_empr_ville"];
+			break;			
+			case "libre":return $msg["serialcirc_print_libre_fields"];
+			break;							
 			case "pp":
 				if(count($this->p_perso->t_fields )){
 					if($this->p_perso->t_fields[$id]){
 						return $this->p_perso->t_fields[$id]["TITRE"];
 					}			
 				}	
-				break;
-			case "categ" :
-				return $msg["serialcirc_print_empr_categ"];
-				return;
-				break;
-			case "statut" :
-				return $msg["serialcirc_print_empr_statut"];
-				return;
-				break;
-			case "codestat" :
-				return $msg["serialcirc_print_empr_codestat"];
-				return;
-				break;
-			case "groupe" :
-				return $msg["serialcirc_print_empr_groupe"];
-				return;
-				break;
+			break;
 		}
 	}
 	
 	function save_form(){
-		global $field_list;
-		$this->circ_tpl=array();
-		$cpt=0;
-		if(!$field_list)$field_list=array();
-		foreach($field_list as $field){
-			$data=explode('_',$field);
-			$this->circ_tpl[$cpt]['type']=$data[0];
-			$this->circ_tpl[$cpt]['id']=$data[2];		
-			$val_label=$field."_label";
-   			global $$val_label;
-   			$this->circ_tpl[$cpt]['label']=  $$val_label;				
-			$cpt++;
-		}			
-		$req="update serialcirc set serialcirc_tpl='".addslashes(serialize($this->circ_tpl))."' where id_serialcirc=".$this->id ;
-		mysql_query($req);
+		global $field_list,$piedpage,$fiche_tpl_id_sel;
+		
+		if ($fiche_tpl_id_sel) {
+			$req="update serialcirc set serialcirc_tpl='".$fiche_tpl_id_sel."', serialcirc_piedpage='$piedpage' where id_serialcirc=".$this->id ;
+			pmb_mysql_query($req);
+		} else {
+			$this->circ_tpl=array();
+			$cpt=0;
+			if(!$field_list)$field_list=array();
+			foreach($field_list as $field){
+				$data=explode('_',$field);
+				$this->circ_tpl[$cpt]['type']=$data[0];
+				$this->circ_tpl[$cpt]['id']=$data[2];
+				$val_label=$field."_label";
+				global $$val_label;
+				$this->circ_tpl[$cpt]['label']=  $$val_label;
+				$cpt++;
+			}
+			$req="update serialcirc set serialcirc_tpl='".addslashes(serialize($this->circ_tpl))."', serialcirc_piedpage='$piedpage' where id_serialcirc=".$this->id ;
+			pmb_mysql_query($req);
+		}
 		$this->fetch_data();
 	}	
 	
@@ -259,7 +240,7 @@ class serialcirc_print_fields {
 			$new_circ_tpl[]=$this->circ_tpl[$liste[$i]];
 		}	
 		$req="update serialcirc set serialcirc_tpl='".addslashes(serialize($new_circ_tpl))."' where id_serialcirc=".$this->id ;
-		mysql_query($req);
+		pmb_mysql_query($req);
 		$this->fetch_data();
 	}
 	
@@ -270,7 +251,7 @@ class serialcirc_print_fields {
 		$this->circ_tpl[$cpt]['type']=$data[0];
 		$this->circ_tpl[$cpt]['id']=$data[1];		
 		$req="update serialcirc set serialcirc_tpl='".addslashes(serialize($this->circ_tpl))."' where id_serialcirc=".$this->id ;
-		mysql_query($req);
+		pmb_mysql_query($req);
 		$this->fetch_data();
 	}	
 	
@@ -278,8 +259,58 @@ class serialcirc_print_fields {
 		global $index;
 		array_splice($this->circ_tpl,$index,1);
 		$req="update serialcirc set serialcirc_tpl='".addslashes(serialize($this->circ_tpl))."' where id_serialcirc=".$this->id ;
-		mysql_query($req);
+		pmb_mysql_query($req);
 		$this->fetch_data();	
+	}
+	
+	function change_fields(){
+		global $dbh, $form_serialcirc_tpl;
+		if ($form_serialcirc_tpl) {
+			$requete = "select serialcirctpl_tpl from serialcirc_tpl where serialcirctpl_id=".$form_serialcirc_tpl;
+			$result = pmb_mysql_query($requete,$dbh);
+			if ($result) {
+				if (pmb_mysql_num_rows($result) == 1) {
+					$req="update serialcirc set serialcirc_tpl='".$form_serialcirc_tpl."' where id_serialcirc=".$this->id;
+					pmb_mysql_query($req,$dbh);
+				}
+			}
+		} else {
+			$req="update serialcirc set serialcirc_tpl='' where id_serialcirc=".$this->id;
+			pmb_mysql_query($req,$dbh);
+		}
+ 		$this->fetch_data();
+	}
+	
+	function get_sort_form($name="sort_field",$selected=0,$onchange="serialcirc_diff_sort_button();") {
+		global $charset,$msg,$base_path;
+	
+		$sel="
+		<div class='row'>
+		".$msg["sort_label"]." : <select name='$name' id='$name' onchange='$onchange'>
+		<option value=''>".htmlentities($msg['serialcirc_print_add_fields'],ENT_QUOTES,$charset)."</option>
+		 	<optgroup class='erreur' label='".htmlentities($msg["serialcirc_print_group_empr_fields"],ENT_QUOTES,$charset)."' ></optgroup>
+			<option value='emprlibelle' ".($selected=="emprlibelle" ? "selected='selected'" : "").">".htmlentities($this->get_field_label('emprlibelle'),ENT_QUOTES,$charset)."</option>
+			<option value='name' ".($selected=="name" ? "selected='selected'" : "").">".htmlentities($this->get_field_label('name'),ENT_QUOTES,$charset)."</option>
+			<option value='cb' ".($selected=="cb" ? "selected='selected'" : "").">".htmlentities($this->get_field_label('cb'),ENT_QUOTES,$charset)."</option>
+			<option value='adr1' ".($selected=="adr1" ? "selected='selected'" : "").">".htmlentities($this->get_field_label('adr1'),ENT_QUOTES,$charset)."</option>
+			<option value='adr2' ".($selected=="adr2" ? "selected='selected'" : "").">".htmlentities($this->get_field_label('adr2'),ENT_QUOTES,$charset)."</option>
+			<option value='tel1' ".($selected=="tel1" ? "selected='selected'" : "").">".htmlentities($this->get_field_label('tel1'),ENT_QUOTES,$charset)."</option>
+			<option value='tel2' ".($selected=="tel2" ? "selected='selected'" : "").">".htmlentities($this->get_field_label('tel2'),ENT_QUOTES,$charset)."</option>
+			<option value='ville' ".($selected=="ville" ? "selected='selected'" : "").">".htmlentities($this->get_field_label('ville'),ENT_QUOTES,$charset)."</option>
+			!!empr_param_perso!!
+		</select>
+		</div>
+		<div class='row'>
+		</div>
+		";
+		$perso_fields="";
+		if(count($this->p_perso->t_fields ))$perso_fields="<optgroup class='erreur' label='".htmlentities($msg["serialcirc_print_group_empr_p_perso"],ENT_QUOTES,$charset)."' ></optgroup>";
+		foreach($this->p_perso->t_fields as $id =>$p){
+			$perso_fields.="<option value='pp_$id' ".($selected=="pp_".$id ? "selected='selected'" : "").">".htmlentities($this->get_field_label('pp',$id),ENT_QUOTES,$charset)."</option>";
+		}
+		$sel=str_replace('!!empr_param_perso!!', $perso_fields, $sel);
+	
+		return $sel;
 	}
 	
 } //serialcirc class end

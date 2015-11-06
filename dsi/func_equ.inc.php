@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_equ.inc.php,v 1.12 2009-05-16 11:08:24 dbellamy Exp $
+// $Id: func_equ.inc.php,v 1.13 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,8 +37,8 @@ if ($id_classement===0) $clause.= " and num_classement=0 ";
 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM equations $clause ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	}
 
 if (!$page) $page=1;
@@ -48,17 +48,17 @@ if($nbr_lignes) {
 
 		// on lance la vraie requête
 		$requete = "SELECT id_equation, nom_equation, comment_equation, num_classement FROM equations $clause ORDER BY nom_equation, id_equation LIMIT $debut,$nb_per_page ";
-		$res = @mysql_query($requete, $dbh);
+		$res = @pmb_mysql_query($requete, $dbh);
 
 		$parity = 0;
-		while(($equa=mysql_fetch_object($res))) {
+		while(($equa=pmb_mysql_fetch_object($res))) {
 			if ($parity % 2) $pair_impair = "even";
 				else $pair_impair = "odd";
 			$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./dsi.php?categ=equations&sub=gestion&id_equation=$equa->id_equation&suite=acces';\" ";
 			$requete_cla = "SELECT id_classement, nom_classement FROM classements where id_classement='$equa->num_classement' and type_classement='EQU' ";
-			$res_cla = mysql_query($requete_cla, $dbh);
-			if (mysql_num_rows($res_cla)) {
-				$cla=mysql_fetch_object($res_cla) ;
+			$res_cla = pmb_mysql_query($requete_cla, $dbh);
+			if (pmb_mysql_num_rows($res_cla)) {
+				$cla=pmb_mysql_fetch_object($res_cla) ;
 				$lib = $cla->nom_classement ;
 				} else $lib=""; 
 			$equation_list .= "<tr class='$pair_impair' $tr_javascript style='cursor: pointer'>";
@@ -73,7 +73,7 @@ if($nbr_lignes) {
 				</tr>";
 			$parity += 1;
 			}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// affichage de la barre de navig
 		$url_base = "$PHP_SELF?categ=equations&suite=search&form_cb=".rawurlencode($form_cb)."&id_classement=$id_classement" ;

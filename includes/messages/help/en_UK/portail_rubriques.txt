@@ -1,5 +1,5 @@
-<h1>Gestion des Rubriques</h1>
+<h1>Management of the Rubrics</h1>
 
-<p>Ici, vous pouvez administrer les rubriques.</p>
+<p>Here, you can manage the rubrics.</p>
 
  

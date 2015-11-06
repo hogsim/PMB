@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lignes_actes.class.php,v 1.24.6.1 2014-03-21 16:58:50 dbellamy Exp $
+// $Id: lignes_actes.class.php,v 1.26 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -63,8 +63,8 @@ class lignes_actes{
 		global $dbh,$acquisition_gestion_tva;
 		
 		$q = "select * from lignes_actes where id_ligne = '".$this->id_ligne."' ";
-		$r = mysql_query($q, $dbh) ;
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh) ;
+		$obj = pmb_mysql_fetch_object($r);
 		$this->type_ligne = $obj->type_ligne;
 		$this->num_acte = $obj->num_acte;
 		$this->lig_ref = $obj->lig_ref;
@@ -107,7 +107,7 @@ class lignes_actes{
 			$q.= "commentaires_gestion = '".$this->commentaires_gestion."', commentaires_opac = '".$this->commentaires_opac."', ";
 			$q.= "index_ligne = ' ".strip_empty_words($this->libelle)." '";
 			$q.= "where id_ligne = '".$this->id_ligne."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 
 		} else {
 
@@ -116,8 +116,8 @@ class lignes_actes{
 			$q.= "remise = '".$this->remise."', date_ech = '".$this->date_ech."', date_cre = '".today()."', statut = '".$this->statut."', ";
 			$q.= "commentaires_gestion = '".$this->commentaires_gestion."', commentaires_opac = '".$this->commentaires_opac."', ";
 			$q.= "index_ligne = ' ".strip_empty_words($this->libelle)." '";
-			$r = mysql_query($q, $dbh);
-			$this->id_ligne = mysql_insert_id($dbh);
+			$r = pmb_mysql_query($q, $dbh);
+			$this->id_ligne = pmb_mysql_insert_id($dbh);
 			
 		}
 	}
@@ -131,7 +131,7 @@ class lignes_actes{
 		if(!$id_ligne) $id_ligne = $this->id_ligne; 	
 
 		$q = "delete from lignes_actes where id_ligne = '".$id_ligne."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -148,7 +148,7 @@ class lignes_actes{
 			$q = "select lignes_actes.* from actes,lignes_actes where actes.type_acte = '".TYP_ACT_LIV."' and lignes_actes.lig_ref = '".$id_lig."' ";
 			$q.= "and lignes_actes.num_acte = actes.id_acte order by id_ligne ";
 		}
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r;
 	}
 
@@ -165,7 +165,7 @@ class lignes_actes{
 			$q = "select lignes_actes.* from actes,lignes_actes where actes.type_acte = '3' and lignes_actes.lig_ref = '".$id_lig."' ";
 			$q.= "and lignes_actes.num_acte = actes.id_acte order by id_ligne ";
 		}
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		return $r;
 	}
 
@@ -175,7 +175,7 @@ class lignes_actes{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE lignes_actes', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE lignes_actes', $dbh);
 		return $opt;
 				
 	}
@@ -191,7 +191,7 @@ class lignes_actes{
 				$t[]= $f."='".$v."' ";
 			}
 			$q="update lignes_actes set ".implode(',',$t)." where id_ligne in ('".implode("','",$t_id)."') ";
-			mysql_query($q,$dbh);
+			pmb_mysql_query($q,$dbh);
 		}		
 	}
 	
@@ -218,10 +218,10 @@ class lignes_actes{
 			$q = "select num_ligne, date_format(date_relance, '".$msg["format_date"]."') as date_rel ";
 			$q.= "from lignes_actes_relances where num_ligne ='".$id_lig."' ";
 			$q.= "order by num_ligne, date_relance desc ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
-			if (mysql_num_rows($r)) {
-				while ($row=mysql_fetch_object($r)) {
+			if (pmb_mysql_num_rows($r)) {
+				while ($row=pmb_mysql_fetch_object($r)) {
 					$tab[]=$row->date_rel;
 				}
 			}
@@ -241,10 +241,10 @@ class lignes_actes{
 			$q.= "libelle, code, prix, tva, nb, lignes_actes_relances.statut as statut, remise, debit_tva, commentaires_gestion, commentaires_opac ";
 			$q.= "from actes join lignes_actes_relances on num_acte=id_acte where num_fournisseur ='".$id_fou."' ";
 			$q.= "order by date_relance desc, num_acte ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
-			if (mysql_num_rows($r)) {
-				while ($row=mysql_fetch_array($r, MYSQL_ASSOC)) {
+			if (pmb_mysql_num_rows($r)) {
+				while ($row=pmb_mysql_fetch_array($r, MYSQL_ASSOC)) {
 					$tab[]=$row;
 				}
 			}
@@ -259,15 +259,15 @@ class lignes_actes{
 		global $dbh;
 		if (count($tab_lig)) {
 			$q1 = "select * from lignes_actes join lignes_actes_statuts on lignes_actes.statut=lignes_actes_statuts.id_statut and lignes_actes_statuts.relance='1' where id_ligne in ('".implode("','",$tab_lig)."') ";
-			$r1 = mysql_query($q1,$dbh);
-			if (mysql_num_rows($r1)) {
-				while ($row=mysql_fetch_object($r1)) {
+			$r1 = pmb_mysql_query($q1,$dbh);
+			if (pmb_mysql_num_rows($r1)) {
+				while ($row=pmb_mysql_fetch_object($r1)) {
 					$q2 = "insert ignore into lignes_actes_relances set num_ligne = '".$row->id_ligne."' ,date_relance=curdate(), type_ligne = '".$row->type_ligne."', num_acte = '".$row->num_acte."', lig_ref = '".$row->lig_ref."', num_acquisition = '".$row->num_acquisition."', num_rubrique = '".$row->num_rubrique."', ";
 					$q2.= "num_produit = '".$row->num_produit."', num_type = '".$row->num_type."', libelle = '".addslashes($row->libelle)."', code = '".addslashes($row->code)."', prix = '".$row->prix."', tva = '".$row->tva."', nb = '".$row->nb."', debit_tva = '".$row->debit_tva."', ";
 					$q2.= "remise = '".$row->remise."', date_ech = '".$row->date_ech."', date_cre = '".today()."', statut = '".$row->statut."', ";
 					$q2.= "commentaires_gestion = '".addslashes($row->commentaires_gestion)."', commentaires_opac = '".addslashes($row->commentaires_opac)."', ";
 					$q2.= "index_ligne = ' ".addslashes($row->libelle)." '";
-					mysql_query($q2, $dbh);		
+					pmb_mysql_query($q2, $dbh);		
 				}
 			}
 		}
@@ -285,7 +285,7 @@ class lignes_actes{
 			$q = "delete from lignes_actes_relances where num_acte='".$id_acte."' ";
 		}
 		if ($q) {
-			mysql_query($q, $dbh);
+			pmb_mysql_query($q, $dbh);
 		}
 	}
 	
@@ -296,7 +296,7 @@ class lignes_actes{
 		
 		if(!$id_lig) $id_lig=$this->id_ligne;
 		$q = "select ifnull(sum(nb),0) from lignes_actes join actes on id_acte=num_acte where actes.type_acte = '".TYP_ACT_LIV."' and lig_ref = '".$id_lig."' ";
-		$r = mysql_result(mysql_query($q, $dbh),0,0);
+		$r = pmb_mysql_result(pmb_mysql_query($q, $dbh),0,0);
 		return $r;
 	}
 		

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: display.inc.php,v 1.11 2011-09-30 07:58:18 dgoron Exp $
+// $Id: display.inc.php,v 1.12 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -11,11 +11,11 @@ include("$include_path/marc_tables/$pmb_indexation_lang/empty_words");
 include("$class_path/iso2709.class.php");
 
 $rqsql="select * from z_notices, z_bib where znotices_query_id ='$last_query_id' and bib_id=znotices_bib_id order by $tri1, $tri2";
-$resultat3=mysql_query($rqsql);
+$resultat3=pmb_mysql_query($rqsql);
 $test_resultat=0;
 $retour_affichage="";
 $i=0;
-while ($ligne3=mysql_fetch_array($resultat3)) {
+while ($ligne3=pmb_mysql_fetch_array($resultat3)) {
 	$znotices_id=$ligne3["znotices_id"];
 	$resultat_titre=$ligne3["titre"];
 	$resultat_auteur=$ligne3["auteur"];

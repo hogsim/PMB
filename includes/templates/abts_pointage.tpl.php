@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts_pointage.tpl.php,v 1.13.6.1 2015-02-14 13:23:42 Alexandre Exp $
+// $Id: abts_pointage.tpl.php,v 1.14 2015-02-14 13:28:49 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -33,23 +33,23 @@ $pointage_form = "
 				".$msg["pointage_label_localisation"]." : !!localisation!!
 			</div>
 			<div class='row'>
-				&nbsp
+				&nbsp	
 			</div>
 		</div>
 		<div class='row'>
-
+			
 		</div>
 		<div class='colonne2'>
 			<div class='row'>
 				<label for='abonnement_name' class='etiquette'>".$msg["pointage_titre_abonnements_liste"]."</label>
 			</div>
-		</div>
+		</div>		
 		<div class='row'>
-			!!bultinage!!
+			!!bultinage!!		
 		</div>
 		<!-- Fin du contenu -->
 		<div class='row'>
-			&nbsp
+			&nbsp	
 		</div>
 		<div class='row'>
 		<input type='hidden' id='act' name='act' value='' />
@@ -57,11 +57,11 @@ $pointage_form = "
 		!!imprimer!!
 		!!imprime_abts_depasse!!
 		!!gestion_retard!!
-		</div>
+		</div>			
 	</div>
 	<div class='row'></div>
 </form>
-";
+";			
 
 $abts_gestion_retard_form_filter = "
 
@@ -104,7 +104,7 @@ $abts_gestion_retard_form_filter = "
 		del_f_fourn.className='bouton_small';
 		del_f_fourn.setAttribute('readonly','');
 		del_f_fourn.setAttribute('value','X');
-
+		
 		sel_f_fourn = document.createElement('input');
         sel_f_fourn.setAttribute('id','sel_f_fourn'+suffixe);
         sel_f_fourn.setAttribute('type','button');
@@ -112,13 +112,13 @@ $abts_gestion_retard_form_filter = "
         sel_f_fourn.setAttribute('readonly','');
         sel_f_fourn.setAttribute('value','...');
         sel_f_fourn.onclick=fonction_selecteur_fourn;
-
+		
 		f_fourn_id = document.createElement('input');
 		f_fourn_id.name='f_fourn_id'+suffixe;
 		f_fourn_id.setAttribute('type','hidden');
 		f_fourn_id.setAttribute('id','f_fourn_id'+suffixe);
 		f_fourn_id.setAttribute('value','');
-
+		
 		fourn.appendChild(f_fourn);
 		space=document.createTextNode(' ');
 		fourn.appendChild(space);
@@ -130,49 +130,49 @@ $abts_gestion_retard_form_filter = "
 		fourn.appendChild(f_fourn_id);
 
 		template.appendChild(fourn);
-
+		
 		document.abts_gestion_retard_filter.max_fourn.value=suffixe*1+1*1 ;
 	}
 </script>
 
 	<h3>".$msg["abts_gestion_retard_form"]."</h3>
 	<div class='form-contenu'>
-
-		<div class='colonne3'>
-			<label for='form_pointage' class='etiquette'>".$msg["abts_gestion_retard_localisation"]."</label>
+		
+		<div class='colonne3'>				
+			<label for='form_pointage' class='etiquette'>".$msg["abts_gestion_retard_localisation"]."</label>				
 			<div class='row'>
 				!!location_filter!!
-			</div>
+			</div>								
 		</div>
-		<div class='colonne3'>
-			<label for='form_pointage' class='etiquette'>".$msg["abts_gestion_retard_abts_state"]."</label>
+		<div class='colonne3'>				
+			<label for='form_pointage' class='etiquette'>".$msg["abts_gestion_retard_abts_state"]."</label>				
 			<div class='row'>
 				<select name='filter' id='filter' onchange=''>
 					<option value='0' !!abts_state_selected_0!!>".$msg["abts_gestion_retard_abts_state_all"]."</option>
 					<option value='1' !!abts_state_selected_1!!>".$msg["abts_gestion_retard_abts_state_actif"]."</option>
 					<option value='2' !!abts_state_selected_2!!>".$msg["abts_gestion_retard_abts_state_old"]."</option>
 				</select>
-			</div>
+			</div>								
 		</div>
-		<div class='colonne3'>
-			<label for='form_pointage' class='etiquette'>".$msg["abts_gestion_retard_fournisseur"]."</label>
-			<input name='max_fourn' value='!!max_fourn!!' type='hidden'>
+		<div class='colonne3'>				
+			<label for='form_pointage' class='etiquette'>".$msg["abts_gestion_retard_fournisseur"]."</label>	
+			<input name='max_fourn' value='!!max_fourn!!' type='hidden'>			
 			<div class='row'>
-
+	
 				!!fournisseurs_repetables!!
 				<div id='addfourn'/>
        			</div>
-			</div>
+			</div>								
 		</div>
-
+		
 		<div class='row'></div>
 	</div>
 	<div class='left'>
-		<input type=\"submit\" class='bouton' value='".$msg["actualiser"]."' />&nbsp;
-	</div>
+		<input type=\"submit\" class='bouton' value='".$msg["actualiser"]."' />&nbsp;	
+	</div>			
 	<div class='row'></div>
 
-";
+";	
 
 
 $abts_gestion_retard_fournisseur_first = "
@@ -205,7 +205,7 @@ $abts_gestion_retard_form = "
 	function gestion_retard_sel_all(checked){
 		if(!nb_bulletins) return;
 		for(var i=1; i<nb_bulletins+1;i++){
-			var id= 'bulletin_'+i;
+			var id= 'bulletin_'+i;			
 			if (checked==false) {
 				document.getElementById(id).checked=false;
 			} else {
@@ -218,14 +218,14 @@ $abts_gestion_retard_form = "
 			} else {
 				document.getElementById('sel_perio_'+i).checked=true;
 			}
-		}
+		}	
 	}
-
+	
 	function gestion_retard_sel(num_perio,checked){
 		var start=tab_perio_bulletins[num_perio][0];
 		var nb=tab_perio_bulletins[num_perio][1];
 		for(var i=start; i< start+nb;i++){
-			var id= 'bulletin_'+i;
+			var id= 'bulletin_'+i;			
 			if (checked==false) {
 				document.getElementById(id).checked=false;
 			} else {
@@ -233,15 +233,15 @@ $abts_gestion_retard_form = "
 			}
 		}
 	}
-
+	
 	function gestion_retard_get_sel(){
 		if(!nb_bulletins) return;
 		var sel_relance='';
 		for(var i=1; i< nb_bulletins+1;i++){
-			var id= document.getElementById('bulletin_'+i);
+			var id= document.getElementById('bulletin_'+i);		
 			if (id.checked==true) {
-				sel_relance+=','+id.getAttribute('rel_id');
-			}
+				sel_relance+=','+id.getAttribute('rel_id');		
+			}	
 		}
 		if(sel_relance){
 			var url='./print_relance.php?action=print_prepare&sel_relance='+sel_relance;
@@ -249,9 +249,9 @@ $abts_gestion_retard_form = "
 		} else {
 			alert ('".addslashes($msg["abts_gestion_retard_no_sel"])."');
 		}
-
-	}
-
+		
+	}	
+	
 	function gestion_retard_view_histo(id,nb_rel){
 		for(var i=1;i<=nb_rel;i++){
 			var id_rel=document.getElementById(id+'_'+i);
@@ -261,37 +261,37 @@ $abts_gestion_retard_form = "
 				} else {
 					id_rel.style.display='none';
 				}
-			}
-		}
+			}		
+		}		
 	}
-
+	
 </script>
-	<div class='row'></div>
+	<div class='row'></div>		
 	!!perio_list!!
 	<input type='hidden' name='tab_bulletins' value='!!tab_bulletins!!' >
 	<input type='hidden' id='action' name='action' value='' >
-	<div class='row'></div>
+	<div class='row'></div>			
 	<div class='row'>
 		<input type=\"button\" class='bouton' value='".htmlentities($msg["abts_gestion_retard_sel"],ENT_QUOTES, $charset)."' onClick=\"gestion_retard_sel_all(1);\"/>&nbsp;
 		<input type=\"button\" class='bouton' value='".htmlentities($msg["abts_gestion_retard_desel"],ENT_QUOTES, $charset)."' onClick=\"gestion_retard_sel_all(0);\"/>&nbsp;
-		<input type=\"button\" class='bouton' value='".htmlentities($msg["abts_gestion_retard_relancer"],ENT_QUOTES, $charset)."' onClick=\"gestion_retard_get_sel();\"/>&nbsp;
-	</div>
-
-	<div class='colonne2'>
-		<label for='form_pointage' class='etiquette'>".htmlentities($msg["abts_gestion_retard_comment"],ENT_QUOTES, $charset)."</label>	<br />
+		<input type=\"button\" class='bouton' value='".htmlentities($msg["abts_gestion_retard_relancer"],ENT_QUOTES, $charset)."' onClick=\"gestion_retard_get_sel();\"/>&nbsp;	
+	</div>	
+			
+	<div class='colonne2'>	
+		<label for='form_pointage' class='etiquette'>".htmlentities($msg["abts_gestion_retard_comment"],ENT_QUOTES, $charset)."</label>	<br />					
 		<textarea  id='comment' name='comment' cols='50' rows='6' wrap='virtual'></textarea>
 	</div>
-	<div class='colonne_suite' >
-		<input type='submit' class='bouton' value='".htmlentities($msg["abts_gestion_retard_comment_gestion"],ENT_QUOTES, $charset)."' onClick=\"document.getElementById('action').value='comment_gestion';\" />&nbsp;<br />
+	<div class='colonne_suite' >	
+		<input type='submit' class='bouton' value='".htmlentities($msg["abts_gestion_retard_comment_gestion"],ENT_QUOTES, $charset)."' onClick=\"document.getElementById('action').value='comment_gestion';\" />&nbsp;<br />		
 		<input type='submit' class='bouton' value='".htmlentities($msg["abts_gestion_retard_comment_opac"],ENT_QUOTES, $charset)."' onClick=\"document.getElementById('action').value='comment_opac';\"  />
 	</div>
 	<div class='row'></div>
 </form>
 
 <script type='text/javascript'>parse_dynamic_elts();dynamic_text_no_control=1;</script>
-";
+";	
 
-$abts_gestion_retard_perio = "
+$abts_gestion_retard_perio = "	
 <div id='perio_retard!!num_perio!!' class='notice-parent'>
 	<img src='./images/plus.gif' class='img_plus' name='imEx' id='perio_retard!!num_perio!!Img' title='".addslashes($msg['plus_detail'])."' border='0' onClick=\"expandBase('perio_retard!!num_perio!!', true); return false;\" hspace='3'>
 	<span class='notice-heada'>
@@ -308,7 +308,7 @@ $abts_gestion_retard_perio = "
 	<table width='100%' class='sortable'>
 		<tr>
 			<th>
-
+				
 			</th>
 			<th>
 				".$msg["abts_gestion_retard_bull_date"]."
@@ -337,13 +337,13 @@ $abts_gestion_retard_perio = "
 </div>
 ";
 $abts_gestion_retard_bulletin="
-<tr  class='!!tr_class!!' >
+<tr  class='!!tr_class!!' >			
 	<td>
 		<input type='checkbox' name='bulletin[]' id='bulletin_!!bulletin_number!!' value='!!bulletin_serialise!!' rel_id='!!rel_id!!' class='checkbox' />
-	</td>
+	</td>		
 	<td>
 		!!date!!
-	</td>
+	</td>	
 	<td>
 		!!numero!!
 	</td>
@@ -361,16 +361,16 @@ $abts_gestion_retard_bulletin="
 	</td>
 	<td>
 		!!date_relance!!
-	</td>
+	</td>	
 </tr>
-";
+";	
 
 $abts_gestion_retard_bulletin_relance="
-<tr  class='!!tr_class!!' id='!!relnew_num!!_!!nb_relance!!' style='display:none'>
+<tr  class='!!tr_class!!' id='!!relnew_num!!_!!nb_relance!!' style='display:none'>			
 	<td>
-	</td>
+	</td>		
 	<td>
-	</td>
+	</td>	
 	<td>
 	</td>
 	<td>
@@ -386,7 +386,7 @@ $abts_gestion_retard_bulletin_relance="
 	</td>
 	<td>
 		!!date_relance!!
-	</td>
+	</td>	
 </tr>
-";
+";	
 ?>

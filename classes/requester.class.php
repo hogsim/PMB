@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: requester.class.php,v 1.9 2013-04-17 08:37:34 mbertin Exp $
+// $Id: requester.class.php,v 1.10 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -433,15 +433,15 @@ class requester {
 		$q.= "where trim(requete) like('select %') ";
 		$q.= "order by libproc_classement,name ";
 		
-		$r = mysql_query($q, $dbh);
-		if(mysql_num_rows($r)) {
+		$r = pmb_mysql_query($q, $dbh);
+		if(pmb_mysql_num_rows($r)) {
 
 			$dtree = "<script type='text/javascript'>\n";
 			$dtree.= "_dt_subr_ = new dTree('_dt_subr_');\n";
 			$dtree.= "_dt_subr_.add(0,-1,'&nbsp;&nbsp;".addslashes($msg['req_subr_lbl'])."');\n";			
 			$t_num_classement=array();
 
- 			while(($row=mysql_fetch_object($r))) {
+ 			while(($row=pmb_mysql_fetch_object($r))) {
 				if(in_array($row->num_classement,$t_num_classement)===false) {
 					if(!$row->num_classement) {
 						$libproc_classement=$msg['proc_clas_aucun'];
@@ -737,9 +737,9 @@ class requester {
 		global $dbh;
 		$sub='';
 		$q = "select requete from procs where idproc='".$r_id."'";
-		$r = mysql_query($q,$dbh);
-		if(mysql_num_rows($r)) {
-			$sub = '('.mysql_result($r,0,0).')';
+		$r = pmb_mysql_query($q,$dbh);
+		if(pmb_mysql_num_rows($r)) {
+			$sub = '('.pmb_mysql_result($r,0,0).')';
 		}
 		return $sub;
 	}

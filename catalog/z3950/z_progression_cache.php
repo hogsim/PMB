@@ -4,7 +4,7 @@
 // | creator : Eric ROBERT                                                    |
 // | modified : Marco VANINETTI                                                           |
 // +-------------------------------------------------+
-// $Id: z_progression_cache.php,v 1.35 2012-09-06 07:49:21 ngantier Exp $
+// $Id: z_progression_cache.php,v 1.36 2015-04-03 11:16:22 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path="../..";
@@ -58,15 +58,15 @@ $mioframe="frame1";
 // Remise à "" de tous les attributs de critère de recherche
 $map=array();
 		
-$rqt_bib_attr=mysql_query("select attr_libelle from z_attr group by attr_libelle ");
-while ($linea=mysql_fetch_array($rqt_bib_attr)) {
+$rqt_bib_attr=pmb_mysql_query("select attr_libelle from z_attr group by attr_libelle ");
+while ($linea=pmb_mysql_fetch_array($rqt_bib_attr)) {
 	$attr_libelle=$linea["attr_libelle"];
 	$var = "attr_".strtolower($attr_libelle) ;
 	$$var = "" ;
 }
 
-$rq_bib_z3950=mysql_query ("select * from z_bib $selection_bib order by bib_nom, bib_id ");
-while ($ligne=mysql_fetch_array($rq_bib_z3950)) {
+$rq_bib_z3950=pmb_mysql_query("select * from z_bib $selection_bib order by bib_nom, bib_id ");
+while ($ligne=pmb_mysql_fetch_array($rq_bib_z3950)) {
     	$bib_id=$ligne["bib_id"];
 		$url=$ligne["url"];
 		$port=$ligne["port"];
@@ -79,8 +79,8 @@ while ($ligne=mysql_fetch_array($rq_bib_z3950)) {
 		$formato[$bib_id]=$format;
 
 	// chargement des attributs de la bib sélectionnée
-	$rqt_bib_attr=mysql_query("select * from z_attr where attr_bib_id='$bib_id'");
-	while ($linea=mysql_fetch_array($rqt_bib_attr)) {
+	$rqt_bib_attr=pmb_mysql_query("select * from z_attr where attr_bib_id='$bib_id'");
+	while ($linea=pmb_mysql_fetch_array($rqt_bib_attr)) {
 		$attr_libelle=$linea["attr_libelle"];
 		$attr_attr=$linea["attr_attr"];
 		$var = "attr_".strtolower($attr_libelle) ;
@@ -249,7 +249,7 @@ $t1=time();
 
 //Override le timeout du serveur mysql, pour être sûr que le socket dure assez longtemps pour aller jusqu'aux ajouts des résultats dans la base. 
 $sql = "set wait_timeout = 120";
-mysql_query($sql);
+pmb_mysql_query($sql);
 
 yaz_wait($options);
 $dt=time()-$t1;
@@ -336,8 +336,8 @@ while (list($bib_id,$id)=each($map)){
 
 					$sql2="insert into z_notices (znotices_id, znotices_query_id, znotices_bib_id, isbn, titre, auteur, isbd, z_marc) ";
 					$sql2.="values(0,'$last_query_id', '$bib_id', '$lu_isbn', '".addslashes($lu_titre)."', '".addslashes($lu_auteur)."', '".addslashes($lu_isbd)."','".addslashes($rec)."') ";
-					mysql_query ($sql2);
-					$ID_notice = mysql_insert_id();
+					pmb_mysql_query($sql2);
+					$ID_notice = pmb_mysql_insert_id();
 				} // fin du if qui vérifie que la notice n'est pas vide
 			} // fin for
 			yaz_close ($id);

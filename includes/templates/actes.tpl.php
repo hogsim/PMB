@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: actes.tpl.php,v 1.18.6.1 2015-02-05 15:35:20 jpermanne Exp $
+// $Id: actes.tpl.php,v 1.19 2015-02-05 15:38:36 jpermanne Exp $
 
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: z3950_form.tpl.php,v 1.82.2.5 2015-06-12 13:17:02 jpermanne Exp $
+// $Id: z3950_form.tpl.php,v 1.88 2015-06-12 13:19:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -1641,6 +1641,12 @@ $ptab[1111] = "
 		<div class='row'>
 			<input type='hidden' name='doc_num_filename!!docnumid!!' id='doc_num_filename!!docnumid!!' value='!!docnum_filename!!' />
 		    <input type=\"text\" class='saisie-80em' id=\"doc_num_url!!docnumid!!\" name=\"doc_num_url!!docnumid!!\" value=\"!!docnum_url!!\" />
+		</div>
+    	<div class='row'>
+		    <label for=\"doc_num_statut!!docnumid!!\">".$msg["noticeintegre_docnum_integre_statut"]."</label>
+		</div>
+		<div class='row'>
+			!!docnum_statutlist!!
 		</div>
 	</blockquote>
 ";

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector.class.php,v 1.14 2013-07-04 12:55:49 arenou Exp $
+// $Id: cms_module_common_selector.class.php,v 1.17 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,12 +23,13 @@ class cms_module_common_selector extends cms_module_root{
 	}
 	
 	protected function fetch_datas(){
+		global $dbh;
 		if($this->id){
 			//on commence par aller chercher ses infos
 			$query = " select id_cadre_content, cadre_content_hash, cadre_content_num_cadre, cadre_content_data from cms_cadre_content where id_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->id = $row->id_cadre_content+0;
 				$this->hash = $row->cadre_content_hash;
 				$this->cadre_parent = $row->cadre_content_num_cadre+0;
@@ -36,9 +37,9 @@ class cms_module_common_selector extends cms_module_root{
 			}
 			//on va chercher les infos des sous-sélecteurs...
 			$query = "select id_cadre_content, cadre_content_object from cms_cadre_content where cadre_content_type='selector' and cadre_content_num_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row=mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($row=pmb_mysql_fetch_object($result)){
 				//	$this->sub_selectors[$row->cadre_content_object] = $row->id_cadre_content+0;				
 					$this->sub_selectors[] = array(
 						'id' => $row->id_cadre_content+0,
@@ -141,6 +142,7 @@ class cms_module_common_selector extends cms_module_root{
 		return 0;
 	}	
 	public function save_form(){
+		global $dbh;
 		$sub_selector_choice = $this->get_value_from_form("sub_selector_choice");	
 		if($sub_selector_choice && $this->once_sub_selector) $this->parameters['sub_selector'] = $sub_selector_choice;
 		$this->get_hash();
@@ -159,18 +161,20 @@ class cms_module_common_selector extends cms_module_root{
 			cadre_content_data = '".addslashes($this->serialize())."'".
 			($this->num_cadre_content ? ",cadre_content_num_cadre_content = ".$this->num_cadre_content : "")."			 
 		".$clause;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query,$dbh);
 		if($result){
 			if(!$this->id){
-				$this->id = mysql_insert_id();
+				$this->id = pmb_mysql_insert_id();
 			}
 			//on enregistre les sous-selecteurs...
 			foreach($this->get_sub_selectors() as $sub_selector_class){
-				$id=$this->get_sub_selector_id($sub_selector_class);
-				$sub_selector = new $sub_selector_class($id);
-				$sub_selector->set_parent($this->id);
-				$sub_selector->set_cadre_parent($this->cadre_parent);
-				$sub_selector->save_form();
+				if(($sub_selector_choice && $this->once_sub_selector && $sub_selector_class == $sub_selector_choice) || !$this->once_sub_selector){
+					$id=$this->get_sub_selector_id($sub_selector_class);
+					$sub_selector = new $sub_selector_class($id);
+					$sub_selector->set_parent($this->id);
+					$sub_selector->set_cadre_parent($this->cadre_parent);
+					$sub_selector->save_form();
+				}
 			}
 			return true;
 		}else{
@@ -189,12 +193,13 @@ class cms_module_common_selector extends cms_module_root{
 	}
 	
 	public function delete(){
+		global $dbh;
 		if($this->id){
 			//on commence par supprimer les sous-selecteurs
 			$query = "select id_cadre_content, cadre_content_object from cms_cadre_content where cadre_content_num_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$sub_selector = new $row->cadre_content_object($row->id_cadre_content);
 					$success = $sub_selector->delete();
 					if(!$success){
@@ -205,7 +210,7 @@ class cms_module_common_selector extends cms_module_root{
 			}
 			//plus de sous-sélecteurs, éliminons-nous !
 			$query = "delete from cms_cadre_content where id_cadre_content = ".$this->id;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query,$dbh);
 			if($result){
 				$this->delete_hash();
 				return true;
@@ -220,7 +225,7 @@ class cms_module_common_selector extends cms_module_root{
 		$this->fetch_managed_datas();
 	}
 	
-	protected function fetch_managed_datas(){
+	protected function fetch_managed_datas($type=""){
 		//parent::fetch_managed_datas("conditions");
 	}
 	

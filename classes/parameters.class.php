@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: parameters.class.php,v 1.17 2013-12-24 13:27:13 mbertin Exp $
+// $Id: parameters.class.php,v 1.18 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -41,14 +41,14 @@ class parameters {
 			//Ca c'est parcequ'Eric est borné !!
 			$requete="select idproc, name, requete, comment, autorisations, parameters from ".$this->table." where idproc=$id_parameters";
 		}
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		
 		//Si requête échoue, c'est que le numéro passé n'est pas un nombre
 		if ($resultat==false) return 0;
 		//Si il y a 0 résultats, c'est que l'id passé n'existe pas
-		if (mysql_num_rows($resultat)==0) return 0;
+		if (pmb_mysql_num_rows($resultat)==0) return 0;
 		
-		$this->proc=mysql_fetch_object($resultat);
+		$this->proc=pmb_mysql_fetch_object($resultat);
 		$this->id_query=$id_parameters;
 		//Récupération des paramètres cités dans la requête
 		if (!$this->get_query_parameters()) return 0;
@@ -346,7 +346,7 @@ class parameters {
 		
 		//Mise à jour de la procédure
 		$requete="update ".$this->table." set parameters='".addslashes($ret)."' where idproc=".$this->id_query;
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 		$this->parameters($this->id_query);
 		
 		//Retour au lien

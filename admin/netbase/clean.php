@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: clean.php,v 1.26.4.2 2014-04-04 09:26:08 arenou Exp $
+// $Id: clean.php,v 1.32 2015-06-02 13:24:51 dgoron Exp $
 
 $base_path="../..";                            
 $base_auth = "ADMINISTRATION_AUTH";  
@@ -40,7 +40,10 @@ define('CLEAN_INDEXINT'			        , 1048576);
 define('GEN_PHONETIQUE'			        , 2097152);
 define('INDEX_RDFSTORE'					, 4194304);
 define('INDEX_SYNCHRORDFSTORE'			, 8388608);
+define('INDEX_FAQ'						, 16777216);
 define('INDEX_CMS'						, 33554432);
+define('INDEX_CONCEPT'					, 67108864);
+define('HASH_EMPR_PASSWORD'				, 134217728);
 if(!$spec) {
 	$spec += $index_global;
 	$spec += $index_notices;
@@ -66,7 +69,10 @@ if(!$spec) {
 	$spec += $gen_phonetique;
 	$spec += $index_rdfstore;
 	$spec += $index_synchrordfstore;
+	$spec += $index_faq;
 	$spec += $index_cms;
+	$spec += $index_concept;
+	$spec += $hash_empr_password;
 }
 if($spec) {
 	if($spec & CLEAN_NOTICES) {
@@ -123,8 +129,14 @@ if($spec) {
 		include('./reindex_rdfstore.inc.php');
 	}  elseif ($spec & INDEX_SYNCHRORDFSTORE) {
 		include('./reindex_synchrordfstore.inc.php');
-	} elseif ($spec & INDEX_CMS){
+	}  elseif ($spec & INDEX_FAQ){
+		include('./reindex_faq.inc.php');
+	}  elseif ($spec & INDEX_CMS){
 		include('./reindex_cms.inc.php');
+	}  elseif ($spec & INDEX_CONCEPT){
+		include('./reindex_concept.inc.php');
+	} elseif ($spec & HASH_EMPR_PASSWORD){
+		include('./hash_empr_password.inc.php');
 	}
 } else {
 	if($v_state) {
@@ -136,6 +148,6 @@ if($spec) {
 
 // fermeture du lien MySQL
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 echo "</div>";
 print '</body></html>';

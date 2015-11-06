@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_associate_svg.class.php,v 1.2.2.1 2014-03-25 10:18:54 apetithomme Exp $
+// $Id: explnum_associate_svg.class.php,v 1.4 2015-04-03 11:16:17 jpermanne Exp $
 
 
 if (stristr ($_SERVER['REQUEST_URI'], ".class.php"))
@@ -264,10 +264,10 @@ class explnum_associate_svg {
 	 */
 	private function getDatas() {
 		$query = "select explnum_speaker_id, explnum_speaker_speaker_num, explnum_speaker_gender, explnum_speaker_author, author_name, author_rejete from explnum_speakers left join authors on explnum_speaker_author = author_id where explnum_speaker_explnum_num = ".$this->explnum_id;
-		$result = mysql_query($query);
-		if ($result && mysql_num_rows($result)) {
+		$result = pmb_mysql_query($query);
+		if ($result && pmb_mysql_num_rows($result)) {
 			$i = 0;
-			while ($speaker = mysql_fetch_object($result)) {
+			while ($speaker = pmb_mysql_fetch_object($result)) {
 				$this->speakers[$speaker->explnum_speaker_id] = array(
 						'id' => $speaker->explnum_speaker_speaker_num,
 						'gender' => $speaker->explnum_speaker_gender,
@@ -280,9 +280,9 @@ class explnum_associate_svg {
 		}
 		
 		$query = "select explnum_segment_id, explnum_segment_speaker_num, explnum_segment_start, explnum_segment_duration, explnum_segment_end from explnum_segments where explnum_segment_explnum_num = ".$this->explnum_id;
-		$result = mysql_query($query);
-		if ($result && mysql_num_rows($result)) {
-			while ($segment = mysql_fetch_object($result)) {
+		$result = pmb_mysql_query($query);
+		if ($result && pmb_mysql_num_rows($result)) {
+			while ($segment = pmb_mysql_fetch_object($result)) {
 				$this->segments[] = array(
 						'db_id' => $segment->explnum_segment_id,
 						'speaker' => $segment->explnum_segment_speaker_num,

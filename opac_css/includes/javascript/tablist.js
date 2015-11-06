@@ -1,7 +1,7 @@
 //+-------------------------------------------------+
 //© 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 //+-------------------------------------------------+
-//$Id: tablist.js,v 1.21.2.1 2014-08-01 09:16:39 dgoron Exp $
+//$Id: tablist.js,v 1.24 2015-04-18 13:15:01 dgoron Exp $
 
 //gestion des listes "collapsibles" en Javascript
 
@@ -10,6 +10,18 @@ imgOpened.src = './getgif.php?nomgif=moins';
 var imgClosed = new Image();
 imgClosed.src = './getgif.php?nomgif=plus';*/
 var expandedDb = '';
+
+var expandNotice=new Event('expandnotice');
+var expandAllNotices=new Event('expandallnotices');
+records_read = new Array();
+
+if (document.body.addEventListener) {
+	document.body.addEventListener("expandnotice",function(e) { storageBase(e); },false);
+	document.body.addEventListener("expandallnotices",function(e) { storageAll(e); },false);
+} else if (document.body.attachEvent) {
+	document.body.attachEvent("expandnotice",function() { storageBase(window.event); });
+	document.body.attachEvent("expandallnotices",function() { storageAll(window.event); });
+}
 
 /*
  * abacarisse
@@ -33,7 +45,6 @@ if(!param_social_network){
 		});
 	}
 }
-
 
 function waitingAddthisLoaded(elem){
 	waitingAddthis.push(elem);
@@ -65,6 +76,38 @@ function changeCoverImage(elt) {
 			if (img.src.substring(img.src.length-8,img.src.length)=='vide.png') {
 				img.src=url_image.replace(/!!noticecode!!/,isbn);
 			}
+		}
+	}
+}
+
+function storageBase(e) {
+	var found = false;
+	for(var i = 0; i < records_read.length; i++) {
+        if(records_read[i] == e.id) {
+        	found = true;
+        	break;
+        }
+    }
+	if (!found) {
+		var url= './ajax.php?module=ajax&categ=storage&sub=save';	
+		url+='&id='+e.id+'&token='+e.token+'&datetime='+e.datetime;	
+
+		var req = new http_request();
+		if (!req.request(url)) {
+			//on marque l'élément comme lu
+			records_read.push(e.id);
+		}
+	}
+}
+
+function storageAll(e) {
+	var url= './ajax.php?module=ajax&categ=storage&sub=save_all';	
+
+	var req = new http_request();
+	if (!req.request(url,1,'&records='+JSON.stringify(e.records))) {
+		//on marque les éléments comme lus
+		for(var i = 0; i < e.records.length; i++) {
+			records_read.push(e.records[i].id);
 		}
 	}
 }
@@ -207,6 +250,12 @@ function expandBase(el, unexpand){
 		whichEl.style.display  = 'block';
 		whichIm.src = whichIm.src.replace('nomgif=plus','nomgif=moins');
 		changeCoverImage(whichEl);
+		if(whichEl.getAttribute("token") && whichEl.getAttribute("datetime")){
+			expandNotice.id = el.replace("el","");
+			expandNotice.token = whichEl.getAttribute("token");
+			expandNotice.datetime = whichEl.getAttribute("datetime");
+			document.body.dispatchEvent(expandNotice);
+		}
 	}
 	else if (unexpand) {
 		whichEl.style.display  = 'none';
@@ -218,7 +267,8 @@ function expandBase(el, unexpand){
 function expandAll() {
 	var tempColl    = document.getElementsByTagName('DIV');
 	var tempCollCnt = tempColl.length;
-
+	var elements = new Array();
+	
 	for (var i = 0; i < tempCollCnt; i++) {
 		if(tempColl[i].className == 'notice-child'){
 			tempColl[i].style.display = 'block';
@@ -230,6 +280,13 @@ function expandAll() {
 			if (whichAddthis && !whichAddthis.getAttribute("added")){
 				creeAddthis(el);
 			}
+			if(tempColl[i].getAttribute("token") && tempColl[i].getAttribute("datetime")){
+				elements.push(
+						{"id":el.replace("el",""),
+						"token":tempColl[i].getAttribute("token"),
+						"datetime":tempColl[i].getAttribute("datetime")
+						});
+			}
 		}
 		changeCoverImage(tempColl[i]);
 	}
@@ -240,6 +297,8 @@ function expandAll() {
 			tempColl[i].src=tempColl[i].src.replace("nomgif=plus","nomgif=moins");
 		}
 	}
+	expandAllNotices.records = elements;
+	document.body.dispatchEvent(expandAllNotices);
 	ReinitializeAddThis();
 }
 

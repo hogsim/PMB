@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: connecteurs.class.php,v 1.33.2.1 2014-10-03 08:55:51 mbertin Exp $
+// $Id: connecteurs.class.php,v 1.36 2015-04-03 13:57:45 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -55,9 +55,9 @@ class connector {
 	function get_sources() {
 		$sources=array();
 		$requete="SELECT connectors_sources.*, source_sync.cancel, source_sync.percent, source_sync.date_sync FROM connectors_sources LEFT JOIN source_sync ON ( connectors_sources.source_id = source_sync.source_id ) where id_connector='".addslashes($this->get_id())."' order by connectors_sources.name";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			while ($r=mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			while ($r=pmb_mysql_fetch_object($resultat)) {
 				$s["SOURCE_ID"]=$r->source_id;
 				$s["PARAMETERS"]=$r->parameters;
 				$s["NAME"]=$r->name;
@@ -89,9 +89,9 @@ class connector {
 	function get_source_params($source_id) {
 		if ($source_id) {
 			$requete="select * from connectors_sources where id_connector='".addslashes($this->get_id())."' and source_id=".$source_id."";
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);
 				$s["SOURCE_ID"]=$r->source_id;
 				$s["PARAMETERS"]=$r->parameters;
 				$s["NAME"]=$r->name;
@@ -133,12 +133,12 @@ class connector {
 		}
 		//Gestion du timeout au niveau de mysql pour ne pas perdre la connection
 		if($s["TIMEOUT"]){
-			$res=mysql_query("SHOW SESSION VARIABLES like 'wait_timeout'");
+			$res=pmb_mysql_query("SHOW SESSION VARIABLES like 'wait_timeout'");
 			$timeout_default=0;
-			if($res && mysql_num_rows($res)){
-				$timeout_default=mysql_result($res,0,1);
+			if($res && pmb_mysql_num_rows($res)){
+				$timeout_default=pmb_mysql_result($res,0,1);
 			}
-			mysql_query("SET SESSION wait_timeout=".($timeout_default+(($s["TIMEOUT"])*1)));
+			pmb_mysql_query("SET SESSION wait_timeout=".($timeout_default+(($s["TIMEOUT"])*1)));
 		}
 		return $s;
 	}
@@ -175,8 +175,8 @@ class connector {
 		}
 		$requete="replace into connectors_sources (source_id,id_connector,parameters,comment,name,repository,retry,ttl,timeout,opac_allowed,upload_doc_num,rep_upload,enrichment,opac_affiliate_search,opac_selected,type_enrichment_allowed,ico_notice) 
 			values('".$source_id."','".addslashes($this->get_id())."','".addslashes($this->sources[$source_id]["PARAMETERS"])."','".addslashes($this->sources[$source_id]["COMMENT"])."','".addslashes($this->sources[$source_id]["NAME"])."','".addslashes($this->sources[$source_id]["REPOSITORY"])."','".addslashes($this->sources[$source_id]["RETRY"])."','".addslashes($this->sources[$source_id]["TTL"])."','".addslashes($this->sources[$source_id]["TIMEOUT"])."','".addslashes($this->sources[$source_id]["OPAC_ALLOWED"])."','".addslashes($this->sources[$source_id]["UPLOAD_DOC_NUM"])."','".addslashes($this->sources[$source_id]["REP_UPLOAD"])."','".addslashes($this->sources[$source_id]["ENRICHMENT"])."','".addslashes($this->sources[$source_id]["OPAC_AFFILIATE_SEARCH"])."','".addslashes($this->sources[$source_id]["OPAC_SELECTED"])."','".addslashes($this->sources[$source_id]["TYPE_ENRICHMENT_ALLOWED"])."','".addslashes($this->sources[$source_id]["ICO_NOTICE"])."')";
-		$result = mysql_query($requete);
-		if (!$source_id) $source_id = mysql_insert_id(); 
+		$result = pmb_mysql_query($requete);
+		if (!$source_id) $source_id = pmb_mysql_insert_id(); 
 
 		$table_entrepot_sql = "CREATE TABLE IF NOT EXISTS `entrepot_source_".$source_id."` (
 							  `connector_id` varchar(20) NOT NULL default '',
@@ -200,11 +200,11 @@ class connector {
 							  KEY `i_recid_source_id` (`recid`,`source_id`),
 							  KEY `i_ref` (`ref`)
 							)";
-		mysql_query($table_entrepot_sql);
+		pmb_mysql_query($table_entrepot_sql);
 		
 		//Mise à jour des catégories
 		$sql = "DELETE FROM connectors_categ_sources WHERE num_source = ".$source_id;
-		mysql_query($sql);
+		pmb_mysql_query($sql);
 		if ($source_categories) {
 			$values = array();
 			foreach($source_categories as $acateg_id) {
@@ -215,7 +215,7 @@ class connector {
 			$values = implode(",", $values);
 			if ($values) {
 				$sql = "INSERT INTO `connectors_categ_sources` (`num_categ`, `num_source`) VALUES ".$values;
-				mysql_query($sql) or die (mysql_error());					
+				pmb_mysql_query($sql) or die (pmb_mysql_error());					
 			}
 		}		
 		return $result;
@@ -226,10 +226,10 @@ class connector {
 		//suppression des documents numériques intégrés en tant que fichiers
 		$this->del_explnums($source_id);
 		$table_entrepot_sql = "DROP TABLE `entrepot_source_$source_id`;";
-		mysql_query($table_entrepot_sql);
+		pmb_mysql_query($table_entrepot_sql);
 		
 		$requete="delete from connectors_sources where source_id=$source_id and id_connector='".addslashes($this->get_id())."'";
-		return mysql_query($requete);
+		return pmb_mysql_query($requete);
 	}
 	
 	//Récupération  des propriétés globales par défaut du connecteur (timeout, retry, repository, parameters)
@@ -244,9 +244,9 @@ class connector {
 	//Récupération  des propriétés globales du connecteur (timeout, retry, repository, parameters)
 	function fetch_global_properties() {
 		$requete="select * from connectors where connector_id='".addslashes($this->get_id())."'";
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);
 			$this->repository=$r->repository;
 			$this->timeout=$r->timeout;
 			$this->retry=$r->retry;
@@ -276,22 +276,22 @@ class connector {
 		$this->make_serialized_properties();
 		$requete="replace into connectors (connector_id,parameters, retry, timeout, ttl, repository) values('".addslashes($this->get_id())."',
 		'".addslashes($this->parameters)."','".$this->retry."','".$this->timeout."','".$this->ttl."','".$this->repository."')";
-		return mysql_query($requete);
+		return pmb_mysql_query($requete);
 	}
 	
 	//Supression des notices dans l'entrepot !
 	function del_notices($source_id) {
 		$requete="select * from source_sync where source_id=".$source_id;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);
 			if (!$r->cancel) return false;
 		}
 		//suppression des documents numériques intégrés en tant que fichiers
 		$this->del_explnums($source_id);
 		
-		mysql_query("TRUNCATE TABLE entrepot_source_".$source_id);
-		mysql_query("delete from source_sync where source_id=".$source_id);
+		pmb_mysql_query("TRUNCATE TABLE entrepot_source_".$source_id);
+		pmb_mysql_query("delete from source_sync where source_id=".$source_id);
 		return true;
 	}
 	
@@ -299,9 +299,9 @@ class connector {
 	function del_explnums($source_id) {
 		global $dbh;
 		$q = "select value as file_name from entrepot_source_$source_id where ufield='897' and usubfield='a' and value like '/%' ";
-		$r = mysql_query($q,$dbh);
-		if (mysql_num_rows($r)) {
-			while ($row = mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($q,$dbh);
+		if (pmb_mysql_num_rows($r)) {
+			while ($row = pmb_mysql_fetch_object($r)) {
 				@unlink($row->file_name);
 			}
 		}
@@ -358,49 +358,49 @@ class connector {
 			//Categorie
 			case "60X":
 				$requete="select libelle_categorie from categories where num_noeud=".$id;
-				$r_cat=mysql_query($requete);
-				if (@mysql_num_rows($r_cat)) {
-					$r=mysql_result($r_cat,0,0);
+				$r_cat=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_cat)) {
+					$r=pmb_mysql_result($r_cat,0,0);
 				}
 				break;
 			//Dewey
 			case "676\$a686\$a":
 				$requete="select indexint_name from indexint where indexint_id=".$id;
-				$r_indexint=mysql_query($requete);
-				if (@mysql_num_rows($r_indexint)) {
-					$r=mysql_result($r_indexint,0,0);
+				$r_indexint=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_indexint)) {
+					$r=pmb_mysql_result($r_indexint,0,0);
 				}
 				break;
 			//Editeur
 			case "210\$c":
 				$requete="select ed_name from publishers where ed_id=".$id;
-				$r_pub=mysql_query($requete);
-				if (@mysql_num_rows($r_pub)) {
-					$r=mysql_result($r_pub,0,0);
+				$r_pub=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_pub)) {
+					$r=pmb_mysql_result($r_pub,0,0);
 				}
 				break;
 			//Collection
 			case "225\$a410\$t":
 				$requete="select collection_name from collections where collection_id=".$id;
-				$r_coll=mysql_query($requete);
-				if (@mysql_num_rows($r_coll)) {
-					$r=mysql_result($r_coll,0,0);
+				$r_coll=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_coll)) {
+					$r=pmb_mysql_result($r_coll,0,0);
 				}
 				break;
 			//Sous collection
 			case "225\$i411\$t":
 				$requete="select sub_coll_name from sub_collections where sub_coll_id=".$id;
-				$r_subcoll=mysql_query($requete);
-				if (@mysql_num_rows($r_subcoll)) {
-					$r=mysql_result($r_subcoll,0,0);
+				$r_subcoll=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_subcoll)) {
+					$r=pmb_mysql_result($r_subcoll,0,0);
 				}
 				break;
 			//Auteur
 			case "7XX":
 				$requete="select concat(author_name,', ',author_rejete) from authors where author_id=".$id;
-				$r_author=mysql_query($requete);
-				if (@mysql_num_rows($r_author)) {
-					$r=mysql_result($r_author,0,0);
+				$r_author=pmb_mysql_query($requete);
+				if (@pmb_mysql_num_rows($r_author)) {
+					$r=pmb_mysql_result($r_author,0,0);
 				}
 				break;
 		}
@@ -478,21 +478,21 @@ class connector {
 				
 				//suppression des anciennes notices
 				$q="delete from external_count where source_id='".addslashes($this->get_id().' '.$this->source_id.' '.$ref)."' and recid='".$this->source_id."' ";
-				mysql_query($q,$dbh);
+				pmb_mysql_query($q,$dbh);
 				$q="delete from entrepot_source_".$this->source_id." where ref='".addslashes($ref)."'";
-				mysql_query($q,$dbh);
+				pmb_mysql_query($q,$dbh);
 				
 				//Récupération d'un ID
 				$q="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$this->source_id." ".$ref)."', ".$this->source_id.")";
-				$rid=mysql_query($q,$dbh);
-				if ($rid) $recid=mysql_insert_id();
+				$rid=pmb_mysql_query($q,$dbh);
+				if ($rid) $recid=pmb_mysql_insert_id();
 				
 				
 				foreach($n_header as $hc=>$code) {
 					$q="insert into entrepot_source_".$this->source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid) values(
 					'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 					'".$hc."','',-1,0,'".addslashes($code)."','',$recid)";
-					mysql_query($q,$dbh);
+					pmb_mysql_query($q,$dbh);
 				}
 			
 				for ($i=0; $i<count($rec['f']); $i++) {
@@ -509,7 +509,7 @@ class connector {
 							'".addslashes($this->get_id())."',".$this->source_id.",'".addslashes($ref)."','".addslashes($date_import)."',
 							'".addslashes($ufield)."','".addslashes($field_ind)."','".addslashes($usubfield)."',".$field_order.",".$subfield_order.",'".addslashes($value)."',
 							' ".addslashes(strip_empty_words($value))." ',$recid)";
-							mysql_query($q,$dbh);
+							pmb_mysql_query($q,$dbh);
 						}
 					}
 				}
@@ -533,12 +533,12 @@ class connecteurs {
 		$this->parse_catalog($catalog);
 	}
 	
-	function get_class_name($source_id) {
+	static function get_class_name($source_id) {
 		$connector_id="";
 		$requete="select id_connector from connectors_sources where source_id=".$source_id;
-		$resultat=mysql_query($requete);
-		if (@mysql_num_rows($resultat)) {
-			$connector_id=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (@pmb_mysql_num_rows($resultat)) {
+			$connector_id=pmb_mysql_result($resultat,0,0);
 		}
 		return $connector_id;
 	}
@@ -643,8 +643,8 @@ class connecteurs {
 		$categories_select .= '<option value="">'.$msg["source_no_category"].'</option>';
 		$categories_sql = "SELECT connectors_categ.*, connectors_categ_sources.num_categ FROM connectors_categ LEFT JOIN connectors_categ_sources ON (connectors_categ_sources.num_categ = connectors_categ.connectors_categ_id AND connectors_categ_sources.num_source = ".(isset($source_id) ? $source_id : '-1').")";
 
-		$res = mysql_query($categories_sql, $dbh);
-		while($row=mysql_fetch_object($res)) {
+		$res = pmb_mysql_query($categories_sql, $dbh);
+		while($row=pmb_mysql_fetch_object($res)) {
 			$categories_select .= '<option value="'.$row->connectors_categ_id.'" '.(isset($row->num_categ) ? "SELECTED" : "").'>'.htmlentities($row->connectors_categ_name , ENT_QUOTES,$charset).'</option>';			
 		}		
 		$categories_select .= '</select>';
@@ -759,9 +759,9 @@ class connecteurs {
 					<option value=''>".$msg["connecteurs_no_upload_rep"]."</option>";
 		//on récup la liste des répertoires d'upload...
 		$upload_folders = array();
-		$res = mysql_query("select repertoire_id from upload_repertoire");
-		if(mysql_num_rows($res)){
-			while ($r = mysql_fetch_object($res)){
+		$res = pmb_mysql_query("select repertoire_id from upload_repertoire");
+		if(pmb_mysql_num_rows($res)){
+			while ($r = pmb_mysql_fetch_object($res)){
 				$rep = new upload_folder($r->repertoire_id);
 				$rep_upload_form.="
 					<option value='".$rep->repertoire_id."' ".($s['REP_UPLOAD']==$rep->repertoire_id ? "selected" : "").">".$rep->repertoire_nom."</option>";

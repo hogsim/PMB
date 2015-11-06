@@ -11,9 +11,9 @@ function _get_footer_($output_params) {
 	$contenuRdf=$export->exportStoreXml();
 	
 	//Suppression des tables temporaires
-	$res=mysql_query("SHOW TABLES LIKE '".session_id()."%'");
-	while($row=mysql_fetch_array($res)){
-		mysql_query("DROP TABLE ".$row[0]);
+	$res=pmb_mysql_query("SHOW TABLES LIKE '".session_id()."%'");
+	while($row=pmb_mysql_fetch_array($res)){
+		pmb_mysql_query("DROP TABLE ".$row[0]);
 	}
 
 	return $contenuRdf;

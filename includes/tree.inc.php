@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tree.inc.php,v 1.4 2007-03-10 09:46:46 touraine37 Exp $
+// $Id: tree.inc.php,v 1.5 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,10 +15,10 @@ function gen_div($categ_parent,$level,$prefix_name, $is_last, $last_before, $js)
 	//On cherche d'abord les dossiers
    	//$requete="select distinct a0.categ_id as id,a0.categ_libelle as libelle from categories as a0, categories as a1 where a0.categ_parent=$categ_parent and a1.categ_parent=a0.categ_id ";
    	$requete="SELECT distinct a0.categ_id as id, a0.categ_libelle as libelle, IF(a1.categ_id is null,0,1) AS dossier, a0.categ_parent as parent FROM categories a0 left JOIN categories a1 ON a1.categ_parent = a0.categ_id where a0.categ_parent=$categ_parent order by libelle ";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
    	$d=0;
    	$f=0;
-   	while ($res=mysql_fetch_object($resultat)) {
+   	while ($res=pmb_mysql_fetch_object($resultat)) {
    		if (!$res->dossier) {
    			$docs[ID][$f]=$res->id;
    			$docs[LIBELLE][$f]=$res->libelle;
@@ -109,8 +109,8 @@ function tree($js)
 	for ($i=1; $i<=4; $i++)
 	{
 		$requete="select count(notice_id), categ$i from notices group by categ$i";
-		$resultat=mysql_query($requete);
-		while (list($n,$c)=mysql_fetch_row($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		while (list($n,$c)=pmb_mysql_fetch_row($resultat)) {
 			$cnt[$c]+=$n;
 		}
 	}

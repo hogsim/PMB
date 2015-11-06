@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sudoc.class.php,v 1.2 2013-09-12 13:49:42 ngantier Exp $
+// $Id: sudoc.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -151,7 +151,7 @@ class sudoc extends connector {
 		
 		//Override le timeout du serveur mysql, pour être sûr que le socket dure assez longtemps pour aller jusqu'aux ajouts des résultats dans la base.
 		$sql = "set wait_timeout = 120";
-		mysql_query($sql);
+		pmb_mysql_query($sql);
 		
 		yaz_wait($options);		
 		

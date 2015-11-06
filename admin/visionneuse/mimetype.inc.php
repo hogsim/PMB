@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mimetype.inc.php,v 1.4 2012-03-23 14:10:19 dbellamy Exp $
+// $Id: mimetype.inc.php,v 1.5 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -74,5 +74,5 @@ function update_mimetypeConf() {
 		$mimetypeConf[$mime_in[$k]] = $value;
 	}
 	$rqt ="UPDATE parametres SET valeur_param = '".htmlspecialchars(addslashes(serialize($mimetypeConf)),ENT_QUOTES,$charset)."' WHERE type_param LIKE 'opac' AND sstype_param LIKE 'visionneuse_params' ";
-	$res = mysql_query($rqt);
+	$res = pmb_mysql_query($rqt);
 }

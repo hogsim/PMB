@@ -2,7 +2,7 @@
  // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: options_resolve.php,v 1.7 2011-05-19 14:02:25 arenou Exp $
+// $Id: options_resolve.php,v 1.8 2015-04-03 11:16:28 jpermanne Exp $
 
 //Gestion des options de type resolve
 $base_path = "../..";
@@ -14,8 +14,8 @@ require_once ("$include_path/fields_empr.inc.php");
 
 if(!$dtype && $idchamp){
 	$requete="SELECT datatype FROM ".$_custom_prefixe_."_custom WHERE idchamp = $idchamp";
-	$resultat = mysql_query($requete);
-	$dtype = mysql_result($resultat,0,0);
+	$resultat = pmb_mysql_query($requete);
+	$dtype = pmb_mysql_result($resultat,0,0);
 }
 $options = stripslashes($options);
 //Si enregistrer
@@ -123,8 +123,8 @@ if ($first==1) {
 									$max = 0;
 									for($i=0; $i<count($param[RESOLVE]);$i++){
 										$requete="select count(".$_custom_prefixe_."_custom_$dtype) from ".$_custom_prefixe_."_custom_values where ".$_custom_prefixe_."_custom_champ=".$idchamp." and SUBSTRING_INDEX(".$_custom_prefixe_."_custom_$dtype,'|',-1) like '".$param[RESOLVE][$i][ID]."'";
-										$res = mysql_query($requete);
-										if(mysql_num_rows($res)) $nb = mysql_result($res,0,0);
+										$res = pmb_mysql_query($requete);
+										if(pmb_mysql_num_rows($res)) $nb = pmb_mysql_result($res,0,0);
 										else $nb = 0;
 										print "
 										<tr>

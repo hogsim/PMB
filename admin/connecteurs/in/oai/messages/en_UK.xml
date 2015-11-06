@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: en_UK.xml,v 1.8 2011-07-29 12:32:13 dgoron Exp $ -->
+$Id: en_UK.xml,v 1.9 2015-06-15 12:55:33 pmbs Exp $ -->
 
 <XMLlist>
 	<entry code="rec_addr">Register an address to be able to access the repository properties</entry>
@@ -33,5 +33,5 @@ $Id: en_UK.xml,v 1.8 2011-07-29 12:32:13 dgoron Exp $ -->
 	<entry code="oai_syncinfo_date_serverearlyiest">Earliest notice date on the server: %s</entry>
 	<entry code="oai_syncinfo_nonotice">No notice in the database.</entry>
 	<entry code="oai_clean_url">Keep canonical form of returned url</entry>
-	<entry code="oai_last_sync">Depuis la dernière synchronisation</entry>
+	<entry code="oai_last_sync">Since the last synchronization</entry>
 </XMLlist>

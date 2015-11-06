@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: edit.tpl.php,v 1.26.2.1 2015-01-07 13:28:16 jpermanne Exp $
+// $Id: edit.tpl.php,v 1.29 2015-01-07 13:33:37 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -61,6 +61,8 @@ $edit_menu.= "
 <h3 onclick='menuHide(this,event)'>".$msg["edit_tpl_menu"]."</h3>
 <ul>
 <li><a href='./edit.php?categ=tpl&sub=notice'>".$msg["edit_notice_tpl_menu"]."</a></li>
+<li><a href='./edit.php?categ=tpl&sub=serialcirc'>".$msg["edit_serialcirc_tpl_menu"]."</a></li>
+<li><a href='./edit.php?categ=tpl&sub=bannette'>".$msg["edit_bannette_tpl_menu"]."</a></li>
 </ul>";
 
 if ($pmb_transferts_actif=="1") {

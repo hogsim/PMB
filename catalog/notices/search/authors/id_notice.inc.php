@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: id_notice.inc.php,v 1.1 2009-11-30 16:44:16 kantin Exp $
+// $Id: id_notice.inc.php,v 1.2 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -23,15 +23,15 @@ if($prefix_id){
 }
 
 $rqt = "select * from notices where notice_id='".$f_notice_id."'";
-$res = mysql_query($rqt,$dbh);
+$res = pmb_mysql_query($rqt,$dbh);
 
-if(mysql_num_rows($res)){
-	$ident = mysql_fetch_object($res);	
+if(pmb_mysql_num_rows($res)){
+	$ident = pmb_mysql_fetch_object($res);	
 	if($ident->niveau_biblio == 'a' && $ident->niveau_hierar == '2'){
 		$rqt_bull = "select analysis_bulletin from analysis where analysis_notice='".$ident->notice_id."'";
-		$res_bull = mysql_query($rqt_bull);
-		if(mysql_num_rows($res_bull)){
-			$ident_bull = mysql_result($res_bull,0,0);
+		$res_bull = pmb_mysql_query($rqt_bull);
+		if(pmb_mysql_num_rows($res_bull)){
+			$ident_bull = pmb_mysql_result($res_bull,0,0);
 			print "<script type=\"text/javascript\">";
 			print "document.location = \"./catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=$ident_bull&art_to_show=".$ident->notice_id."\"";
 			print "</script>";
@@ -42,9 +42,9 @@ if(mysql_num_rows($res)){
 		print "</script>";
 	} elseif ($ident->niveau_biblio == 'b' && $ident->niveau_hierar == '2'){
 		$rqt_bull = "select bulletin_id from bulletins where num_notice='".$ident->notice_id."'";
-		$res_bull = mysql_query($rqt_bull);
-		if(mysql_num_rows($res_bull)){	
-			$ident_bull = mysql_result($res_bull,0,0);	
+		$res_bull = pmb_mysql_query($rqt_bull);
+		if(pmb_mysql_num_rows($res_bull)){	
+			$ident_bull = pmb_mysql_result($res_bull,0,0);	
 			print "<script type=\"text/javascript\">";
 			print "document.location = \"./catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".$ident_bull."\"";
 			print "</script>";

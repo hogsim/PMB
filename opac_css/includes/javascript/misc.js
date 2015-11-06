@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: misc.js,v 1.1 2012-08-07 14:21:20 dbellamy Exp $
+// $Id: misc.js,v 1.4 2015-05-13 07:33:26 dgoron Exp $
 
 
 function replace_texte(string,text,by) {
@@ -126,3 +126,159 @@ function reverse_html_entities(text) {
 
 }
 
+function html_entities(text) {
+    
+    text = replace_texte(text,unescape('%22'),'&quot;');
+    text = replace_texte(text,unescape('%26'),'&amp;');
+    text = replace_texte(text,unescape('%3C'),'&lt;');
+    text = replace_texte(text,unescape('%3E'),'&gt;');
+    text = replace_texte(text,unescape('%A0'),'&nbsp;');
+    text = replace_texte(text,unescape('%A1'),'&iexcl;');
+    text = replace_texte(text,unescape('%A2'),'&cent;');
+    text = replace_texte(text,unescape('%A3'),'&pound;');
+    text = replace_texte(text,unescape('%A5'),'&yen;');
+    text = replace_texte(text,unescape('%A6'),'&brvbar;');
+    text = replace_texte(text,unescape('%A7'),'&sect;');
+    text = replace_texte(text,unescape('%A8'),'&uml;');
+    text = replace_texte(text,unescape('%A9'),'&copy;');
+    text = replace_texte(text,unescape('%AA'),'&ordf;');
+    text = replace_texte(text,unescape('%AB'),'&laquo;');
+    text = replace_texte(text,unescape('%AC'),'&not;');
+    text = replace_texte(text,unescape('%AD'),'&shy;');
+    text = replace_texte(text,unescape('%AE'),'&reg;');
+    text = replace_texte(text,unescape('%AF'),'&macr;');
+    text = replace_texte(text,unescape('%B0'),'&deg;');
+    text = replace_texte(text,unescape('%B1'),'&plusmn;');
+    text = replace_texte(text,unescape('%B2'),'&sup2;');
+    text = replace_texte(text,unescape('%B3'),'&sup3;');
+    text = replace_texte(text,unescape('%B4'),'&acute;');
+    text = replace_texte(text,unescape('%B5'),'&micro;');
+    text = replace_texte(text,unescape('%B6'),'&para;');
+    text = replace_texte(text,unescape('%B7'),'&middot;');
+    text = replace_texte(text,unescape('%B8'),'&cedil;');
+    text = replace_texte(text,unescape('%B9'),'&sup1;');
+    text = replace_texte(text,unescape('%BA'),'&ordm;');
+    text = replace_texte(text,unescape('%BB'),'&raquo;');
+    text = replace_texte(text,unescape('%BC'),'&frac14;');
+    text = replace_texte(text,unescape('%BD'),'&frac12;');
+    text = replace_texte(text,unescape('%BE'),'&frac34;');
+    text = replace_texte(text,unescape('%BF'),'&iquest;');
+    text = replace_texte(text,unescape('%C0'),'&Agrave;');
+    text = replace_texte(text,unescape('%C1'),'&Aacute;');
+    text = replace_texte(text,unescape('%C2'),'&Acirc;');
+    text = replace_texte(text,unescape('%C3'),'&Atilde;');
+    text = replace_texte(text,unescape('%C4'),'&Auml;');
+    text = replace_texte(text,unescape('%C5'),'&Aring;');
+    text = replace_texte(text,unescape('%C6'),'&AElig;');
+    text = replace_texte(text,unescape('%C7'),'&Ccedil;');
+    text = replace_texte(text,unescape('%C8'),'&Egrave;');
+    text = replace_texte(text,unescape('%C9'),'&Eacute;');
+    text = replace_texte(text,unescape('%CA'),'&Ecirc;');
+    text = replace_texte(text,unescape('%CB'),'&Euml;');
+    text = replace_texte(text,unescape('%CC'),'&Igrave;');
+    text = replace_texte(text,unescape('%CD'),'&Iacute;');
+    text = replace_texte(text,unescape('%CE'),'&Icirc;');
+    text = replace_texte(text,unescape('%CF'),'&Iuml;');
+    text = replace_texte(text,unescape('%D0'),'&ETH;');
+    text = replace_texte(text,unescape('%D1'),'&Ntilde;');
+    text = replace_texte(text,unescape('%D2'),'&Ograve;');
+    text = replace_texte(text,unescape('%D3'),'&Oacute;');
+    text = replace_texte(text,unescape('%D4'),'&Ocirc;');
+    text = replace_texte(text,unescape('%D5'),'&Otilde;');
+    text = replace_texte(text,unescape('%D6'),'&Ouml;');
+    text = replace_texte(text,unescape('%D7'),'&times;');
+    text = replace_texte(text,unescape('%D8'),'&Oslash;');
+    text = replace_texte(text,unescape('%D9'),'&Ugrave;');
+    text = replace_texte(text,unescape('%DA'),'&Uacute;');
+    text = replace_texte(text,unescape('%DB'),'&Ucirc;');
+    text = replace_texte(text,unescape('%DC'),'&Uuml;');
+    text = replace_texte(text,unescape('%DD'),'&Yacute;');
+    text = replace_texte(text,unescape('%DE'),'&THORN;');
+    text = replace_texte(text,unescape('%DF'),'&szlig;');
+    text = replace_texte(text,unescape('%E0'),'&agrave;');
+    text = replace_texte(text,unescape('%E1'),'&aacute;');
+    text = replace_texte(text,unescape('%E2'),'&acirc;');
+    text = replace_texte(text,unescape('%E3'),'&atilde;');
+    text = replace_texte(text,unescape('%E4'),'&auml;');
+    text = replace_texte(text,unescape('%E5'),'&aring;');
+    text = replace_texte(text,unescape('%E6'),'&aelig;');
+    text = replace_texte(text,unescape('%E7'),'&ccedil;');
+    text = replace_texte(text,unescape('%E8'),'&egrave;');
+    text = replace_texte(text,unescape('%E9'),'&eacute;');
+    text = replace_texte(text,unescape('%EA'),'&ecirc;');
+    text = replace_texte(text,unescape('%EB'),'&euml;');
+    text = replace_texte(text,unescape('%EC'),'&igrave;');
+    text = replace_texte(text,unescape('%ED'),'&iacute;');
+    text = replace_texte(text,unescape('%EE'),'&icirc;');
+    text = replace_texte(text,unescape('%EF'),'&iuml;');
+    text = replace_texte(text,unescape('%F0'),'&eth;');
+    text = replace_texte(text,unescape('%F1'),'&ntilde;');
+    text = replace_texte(text,unescape('%F2'),'&ograve;');
+    text = replace_texte(text,unescape('%F3'),'&oacute;');
+    text = replace_texte(text,unescape('%F4'),'&ocirc;');
+    text = replace_texte(text,unescape('%F5'),'&otilde;');
+    text = replace_texte(text,unescape('%F6'),'&ouml;');
+    text = replace_texte(text,unescape('%F7'),'&divide;');
+    text = replace_texte(text,unescape('%F8'),'&oslash;');
+    text = replace_texte(text,unescape('%F9'),'&ugrave;');
+    text = replace_texte(text,unescape('%FA'),'&uacute;');
+    text = replace_texte(text,unescape('%FB'),'&ucirc;');
+    text = replace_texte(text,unescape('%FC'),'&uuml;');
+    text = replace_texte(text,unescape('%FD'),'&yacute;');
+    text = replace_texte(text,unescape('%FE'),'&thorn;');
+    text = replace_texte(text,unescape('%FF'),'&yuml;');
+    return text;
+
+}
+
+function get_ref(obj) {
+	if (typeof obj == "string") {
+		obj = document.getElementById(obj);
+	}
+	return obj;
+}
+
+function set_value_style(obj, style, value) {
+	get_ref(obj).style[style] = value;
+	
+	var url = "./ajax.php?module=ajax&categ=misc&fname=session";
+	var req = new http_request();
+	var params = "key="+obj+"_"+style;
+	if (value != "") {
+		params += "&value="+value;
+	}
+	req.request(url, true, params);
+}
+
+function get_value_style(obj, style) {
+	if (!document.getElementById)
+		return;
+
+	var obj = get_ref(obj);
+	var value = obj.style[style];
+	if (!value) {
+		if (document.defaultView) {
+			value = document.defaultView.getComputedStyle(obj, "").getPropertyValue(style);
+		} else if (obj.currentStyle) {
+			value = obj.currentStyle[style]
+		}
+	}
+	return value;
+}
+
+function set_font_size(i) {
+	var str = get_value_style('pmbopac','font-size');
+	var unit = str.substring(str.length-2);
+	var value = str.substring(0, str.length-2);
+	switch (i) {
+		case -1: //Reduce
+			set_value_style('pmbopac', 'fontSize', (value*0.9)+unit);
+			break;
+		case 0: //Reset
+			set_value_style('pmbopac', 'fontSize', '');
+			break;
+		case 1: //Large
+			set_value_style('pmbopac', 'fontSize', (value*1.1)+unit);
+			break;
+	}
+}

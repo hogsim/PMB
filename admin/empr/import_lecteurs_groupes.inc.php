@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: import_lecteurs_groupes.inc.php,v 1.11.6.1 2014-08-20 13:04:21 dgoron Exp $
+// $Id: import_lecteurs_groupes.inc.php,v 1.14 2015-06-02 13:24:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -54,8 +54,8 @@ print "
     if ($pmb_lecteurs_localises=="1") {
     	print "Localisation des lecteurs <select name='localisation'>";
 		$requete_localisation="SELECT idlocation, location_libelle FROM docs_location ORDER BY location_libelle";
-		$select_requete_localisation = mysql_query($requete_localisation,$dbh);
-		while (($liste_localisation = mysql_fetch_array($select_requete_localisation))) {
+		$select_requete_localisation = pmb_mysql_query($requete_localisation,$dbh);
+		while (($liste_localisation = pmb_mysql_fetch_array($select_requete_localisation))) {
 			print "<option value='".$liste_localisation["idlocation"]."' >".$liste_localisation["location_libelle"]."</option>";
         }
 		print "</select><br />";
@@ -66,8 +66,8 @@ print "
 // Sélecteur de categ lecteur
 print "Cat&eacute;gorie des lecteurs <select name='categorie'>";
 $requete_categorie="SELECT id_categ_empr, libelle FROM empr_categ ORDER BY libelle";
-$select_requete_categorie = mysql_query($requete_categorie,$dbh);
-while (($liste_categorie = mysql_fetch_array($select_requete_categorie))) {
+$select_requete_categorie = pmb_mysql_query($requete_categorie,$dbh);
+while (($liste_categorie = pmb_mysql_fetch_array($select_requete_categorie))) {
 	print "<option value='".$liste_categorie["id_categ_empr"]."' >".$liste_categorie["libelle"]."</option>";
 }
 print "</select><br />";
@@ -77,8 +77,8 @@ print "Code statistique des lecteurs
 <select name='codestat'>";
 
 $requete_codestat="SELECT idcode, libelle FROM empr_codestat ORDER BY libelle";
-$select_requete_codestat = mysql_query($requete_codestat,$dbh);
-while (($liste_codestat = mysql_fetch_array($select_requete_codestat))) {
+$select_requete_codestat = pmb_mysql_query($requete_codestat,$dbh);
+while (($liste_codestat = pmb_mysql_fetch_array($select_requete_codestat))) {
 	print "<option value='".$liste_codestat["idcode"]."' >".$liste_codestat["libelle"]."</option>";
 }
 
@@ -101,8 +101,8 @@ function cre_login($nom, $prenom, $dbh) {
     $num_login=1 ;
     while ($pb==1) {
         $requete = "SELECT empr_login FROM empr WHERE empr_login='$empr_login' AND empr_nom <> '$nom' AND empr_prenom <> '$prenom' LIMIT 1 ";
-        $res = mysql_query($requete, $dbh);
-        $nbr_lignes = mysql_num_rows($res);
+        $res = pmb_mysql_query($requete, $dbh);
+        $nbr_lignes = pmb_mysql_num_rows($res);
         if ($nbr_lignes) {
             $empr_login .= $num_login ;
             $num_login++;
@@ -119,9 +119,9 @@ function import($separateur, $dbh, $type_import){
     //La structure du fichier texte doit être la suivante : 
     //Code-barres ; Nom ; Prénom ; Rue ; Complément de rue ; Code postal ; Commune ; Téléphone ; Année de date de naissance ; Classe ; Sexe ; Téléphone 2 ; Mail ; Profession ; Message
 	$requete = "SELECT duree_adhesion FROM empr_categ WHERE id_categ_empr='".$categorie."'";
-	$resultat = mysql_query($requete,$dbh);
-	if(mysql_num_rows($resultat))
-		 $duree = mysql_result($resultat,0,0);
+	$resultat = pmb_mysql_query($requete,$dbh);
+	if(pmb_mysql_num_rows($resultat))
+		 $duree = pmb_mysql_result($resultat,0,0);
 	else $duree=365;
     $eleve_abrege = array("Num&eacute;ro identifiant","Nom","Prénom");
     $date_auj = date("Y-m-d", time());
@@ -140,7 +140,7 @@ function import($separateur, $dbh, $type_import){
         while (!feof($fichier)) {
 			//initialise la variable tableau, au cas où on ait pas toutes les colonnes dans le fichier csv
 			$buffer = fgets($fichier, 4096);
-            $buffer = mysql_escape_string($buffer);
+            $buffer = pmb_mysql_escape_string($buffer);
             $tab = explode($separateur, $buffer);
 
             //Gestion du sexe
@@ -162,8 +162,8 @@ function import($separateur, $dbh, $type_import){
 			$tab[14]=str_replace("\\r\\n","", $tab[14]);
 			 
             // Traitement du lecteur
-            $select = mysql_query("SELECT id_empr FROM empr WHERE empr_cb = '".$tab[0]."'",$dbh);
-            $nb_enreg = mysql_num_rows($select);
+            $select = pmb_mysql_query("SELECT id_empr FROM empr WHERE empr_cb = '".$tab[0]."'",$dbh);
+            $nb_enreg = pmb_mysql_num_rows($select);
             
             //Test si un numéro id est fourni, rejet si pas d'id avec message si au moins nom ou au moins prénom contient qqch
             //si pas d'id, pas de nom, pas de prénom, erreur muette : dernière ligne
@@ -187,15 +187,17 @@ function import($separateur, $dbh, $type_import){
                     $req_insert .= "VALUES ('$tab[0]','$tab[1]','$tab[2]','$tab[3]', '$tab[4]', '$tab[5]', ";
                     $req_insert .= "'$tab[6]', '$tab[7]', '$tab[8]', $categorie, $codestat, '$date_auj', '$sexe', ";
                     $req_insert .= "'$login', '$password', '$date_auj', '$date_an_proch','$tab[11]','$tab[12]','$tab[13]','$tab[14]','$localisation')";
-                    $insert = mysql_query($req_insert,$dbh);
+                    $insert = pmb_mysql_query($req_insert,$dbh);
                     if (!$insert) {
-                        print("<b>Echec de la cr&eacute;ation du lecteur suivant (Erreur : ".mysql_error().") : </b><br />");
+                        print("<b>Echec de la cr&eacute;ation du lecteur suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
                         for ($i=0;$i<3;$i++) {
                             print($eleve_abrege[$i]." : ".$tab[$i].", ");
                         }
                         print("<br />");
                     }
                     else {
+                    	emprunteur::update_digest($login,$password);
+                    	emprunteur::hash_password($login,$password);
                         $cpt_insert ++;
                     }
                     gestion_groupe($tab[9], $tab[0], $dbh);
@@ -212,9 +214,9 @@ function import($separateur, $dbh, $type_import){
                     // $req_update .= "empr_login = $login, empr_password= $tab[8], ";
                     $req_update .= "empr_date_adhesion = '$date_auj', empr_date_expiration = '$date_an_proch', empr_tel2 = '$tab[11]', empr_location='$localisation' ";
                     $req_update .= "WHERE empr_cb = '$tab[0]'";
-                    $update = mysql_query($req_update, $dbh);
+                    $update = pmb_mysql_query($req_update, $dbh);
                     if (!$update) {
-                        print("<b>Echec de la modification du lecteur suivant (Erreur : ".mysql_error().") : </b><br />");
+                        print("<b>Echec de la modification du lecteur suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
                         for ($i=0;$i<3;$i++) {
                             print($eleve_abrege[$i]." : ".$tab[$i].", ");
                         }
@@ -223,9 +225,9 @@ function import($separateur, $dbh, $type_import){
                     else {
                     	if ($tab[12]!="") {
 	                    	$req_update_mail = "UPDATE empr SET empr_mail='$tab[12]' WHERE empr_cb = '$tab[0]'";
-	                    	$update_mail = mysql_query($req_update_mail, $dbh);
+	                    	$update_mail = pmb_mysql_query($req_update_mail, $dbh);
 	                    	if (!$update_mail) {
-	                    		print("<b>Echec de la modification du mail du lecteur suivant (Erreur : ".mysql_error().") : </b><br />");
+	                    		print("<b>Echec de la modification du mail du lecteur suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
 	                        	for ($i=0;$i<3;$i++) print($eleve_abrege[$i]." : ".$tab[$i].", ");
 	                        	print("<br />");
 	                        	
@@ -234,9 +236,9 @@ function import($separateur, $dbh, $type_import){
                     	}
                     	if ($tab[13]!="") { 
 	                    	$req_update_prof = "UPDATE empr SET empr_prof='$tab[13]' WHERE empr_cb = '$tab[0]'";
-	                    	$update_prof = mysql_query($req_update_prof, $dbh);
+	                    	$update_prof = pmb_mysql_query($req_update_prof, $dbh);
 	                    	if (!$update_prof) { 
-	                    		print("<b>Echec de la modification de la profession lecteur suivant (Erreur : ".mysql_error().") : </b><br />");
+	                    		print("<b>Echec de la modification de la profession lecteur suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
 	                        	for ($i=0;$i<3;$i++) print($eleve_abrege[$i]." : ".$tab[$i].", ");
 	                        	print("<br />");                    		 
 							}
@@ -244,9 +246,9 @@ function import($separateur, $dbh, $type_import){
                     	}
                     	if ($tab[14]!="") {
 	                    	$req_update_msg = "UPDATE empr SET empr_msg='$tab[14]' WHERE empr_cb = '$tab[0]'";
-	                    	$update_msg = mysql_query($req_update_msg, $dbh);
+	                    	$update_msg = pmb_mysql_query($req_update_msg, $dbh);
 	                    	if (!$update_msg) {                     		
-	                    		print("<b>Echec de la modification du message sur le lecteur suivant (Erreur : ".mysql_error().") : </b><br />");
+	                    		print("<b>Echec de la modification du message sur le lecteur suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
 	                        	for ($i=0;$i<3;$i++) print($eleve_abrege[$i]." : ".$tab[$i].", ");
 	                        	print("<br />");                    		 
 							}
@@ -261,7 +263,7 @@ function import($separateur, $dbh, $type_import){
                 case 2:
                     break;
                 default:
-                    print("<b>Echec pour le lecteur suivant (Erreur : ".mysql_error().") : </b><br />");
+                    print("<b>Echec pour le lecteur suivant (Erreur : ".pmb_mysql_error().") : </b><br />");
                     for ($i=0;$i<3;$i++) {
                         print($eleve_abrege[$i]." : ".$tab[$i].", ");
                     }
@@ -276,12 +278,12 @@ function import($separateur, $dbh, $type_import){
 			if ($pmb_lecteurs_localises=="1") {
 				$requete_empr_where .= " and empr_location=$localisation";
 			}
-			mysql_query($requete_empr_groupe_delete.$requete_empr_where,$dbh);
+			pmb_mysql_query($requete_empr_groupe_delete.$requete_empr_where,$dbh);
 			
         	$requete_list_empr_delete = "SELECT id_empr FROM empr LEFT JOIN pret ON pret_idempr=id_empr 
         		WHERE pret_idempr IS NULL and empr_modif != '$date_auj' and empr_categ=$categorie and empr_codestat= $codestat $requete_empr_where ";
-        	$list_empr_delete=mysql_query($requete_list_empr_delete,$dbh);
-        	while (($empr_delete = mysql_fetch_array($list_empr_delete))) {
+        	$list_empr_delete=pmb_mysql_query($requete_list_empr_delete,$dbh);
+        	while (($empr_delete = pmb_mysql_fetch_array($list_empr_delete))) {
             	emprunteur::del_empr($empr_delete["id_empr"]);
             }
         }
@@ -297,22 +299,22 @@ function import($separateur, $dbh, $type_import){
 
 function gestion_groupe($lib_groupe, $empr_cb, $dbh) {
     
-    $sel = mysql_query("SELECT id_groupe from groupe WHERE libelle_groupe = \"".$lib_groupe."\"",$dbh);
-    $nb_enreg_grpe = mysql_num_rows($sel);
+    $sel = pmb_mysql_query("SELECT id_groupe from groupe WHERE libelle_groupe = \"".$lib_groupe."\"",$dbh);
+    $nb_enreg_grpe = pmb_mysql_num_rows($sel);
     
     if (!$nb_enreg_grpe) {
 		//insertion dans la table groupe
-		mysql_query("INSERT INTO groupe(libelle_groupe) VALUES(\"".$lib_groupe."\")");
-		$groupe=mysql_insert_id();
+		pmb_mysql_query("INSERT INTO groupe(libelle_groupe) VALUES(\"".$lib_groupe."\")");
+		$groupe=pmb_mysql_insert_id();
     } else {
-    	$grpobj = mysql_fetch_object ($sel) ;
+    	$grpobj = pmb_mysql_fetch_object($sel) ;
     	$groupe = $grpobj->id_groupe ; 
     }
 
 	//insertion dans la table empr_groupe
-    $sel_empr = mysql_query("SELECT id_empr FROM empr WHERE empr_cb = \"".$empr_cb."\"",$dbh);
-    $empr = mysql_fetch_array($sel_empr);
-    @mysql_query("INSERT INTO empr_groupe(empr_id, groupe_id) VALUES ('$empr[id_empr]','$groupe')");
+    $sel_empr = pmb_mysql_query("SELECT id_empr FROM empr WHERE empr_cb = \"".$empr_cb."\"",$dbh);
+    $empr = pmb_mysql_fetch_array($sel_empr);
+    @pmb_mysql_query("INSERT INTO empr_groupe(empr_id, groupe_id) VALUES ('$empr[id_empr]','$groupe')");
 }
 
 switch($action) {

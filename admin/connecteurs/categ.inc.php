@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categ.inc.php,v 1.7 2012-10-31 16:17:09 dgoron Exp $
+// $Id: categ.inc.php,v 1.8 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,12 +18,12 @@ function show_categories($dbh) {
 	</tr>";
 
 	$requete = "SELECT connectors_categ_id, connectors_categ_name FROM connectors_categ order by connectors_categ_name";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
 	$parity=1;
-	while($row=mysql_fetch_object($res)) {
+	while($row=pmb_mysql_fetch_object($res)) {
 		$count_query = 'SELECT count(*) FROM connectors_categ_sources WHERE num_categ='.$row->connectors_categ_id;
-		$conn_count = mysql_result(mysql_query($count_query, $dbh), 0, 0);
+		$conn_count = pmb_mysql_result(pmb_mysql_query($count_query, $dbh), 0, 0);
 		
 		if ($parity % 2) {
 			$pair_impair = "even";
@@ -65,8 +65,8 @@ function category_form($categ_id=0, $new_categ_name="", $opac_expanded=false) {
 	$sources_sql = 'SELECT connectors_sources.source_id, connectors_sources.name, connectors_categ_sources.num_categ, id_connector
 		FROM connectors_sources LEFT JOIN connectors_categ_sources ON (connectors_sources.source_id = connectors_categ_sources.num_source AND connectors_categ_sources.num_categ='.$categ_id.') 
 		order by connectors_sources.id_connector, connectors_sources.name';
-	$resultat = mysql_query($sources_sql, $dbh);
-	while ($row=mysql_fetch_object($resultat)) {
+	$resultat = pmb_mysql_query($sources_sql, $dbh);
+	while ($row=pmb_mysql_fetch_object($resultat)) {
 		$sources[] = $row; 
 	}
 	$nbsources=count($sources);
@@ -107,16 +107,16 @@ switch($action) {
 		//Mettons a jours la catégorie
 		if ($categ_id == 0) {
 			$sql = "INSERT INTO connectors_categ (connectors_categ_name, opac_expanded) VALUES ('".$categ_name."', ".($categ_opac_expanded ? "1" : "0").");";
-			mysql_query($sql, $dbh);
-			$categ_id = mysql_insert_id($dbh);
+			pmb_mysql_query($sql, $dbh);
+			$categ_id = pmb_mysql_insert_id($dbh);
 		}
 		else {
 			$sql = "UPDATE connectors_categ SET connectors_categ_name = '".$categ_name."', opac_expanded = ".($categ_opac_expanded ? "1" : "0")." WHERE connectors_categ_id = ".$categ_id;
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 		}
 		
 		$sql = "DELETE FROM connectors_categ_sources WHERE num_categ = ".$categ_id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		if ($categ_content && !(count($categ_content == 1) && $categ_content[0] == "")) {
 			$values = array();
 			foreach($categ_content as $asource_id) {
@@ -124,7 +124,7 @@ switch($action) {
 			}
 			$values = implode(",", $values);
 			$sql = "INSERT INTO connectors_categ_sources (num_categ, num_source) VALUES ".$values;
-			mysql_query($sql, $dbh) or die (mysql_error());
+			pmb_mysql_query($sql, $dbh) or die (pmb_mysql_error());
 		}
 		
 		show_categories($dbh);
@@ -135,9 +135,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT * FROM connectors_categ WHERE connectors_categ_id=".$id;
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				$categ_name = $row->connectors_categ_name; 
 				$categ_opac_expanded=$row->opac_expanded;
 				category_form($id, $categ_name, $categ_opac_expanded);
@@ -148,9 +148,9 @@ switch($action) {
 		if ($id) {
 			$ida = addslashes($id);
 			$sql = "DELETE FROM connectors_categ WHERE connectors_categ_id=".$ida;
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 			$sql = "DELETE FROM connectors_categ_sources WHERE num_categ = ".$ida;
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 		}
 		show_categories($dbh);		
 		break;

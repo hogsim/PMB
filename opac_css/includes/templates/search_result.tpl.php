@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_result.tpl.php,v 1.12 2013-12-10 09:06:14 dgoron Exp $
+// $Id: search_result.tpl.php,v 1.13 2015-03-18 10:32:48 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -48,7 +48,7 @@ $search_result_affiliate_lvl1 = "
 				var strong = document.createElement('strong');
 				strong.innerHTML = \"".$msg['in_affiliate_source']."\";
 				div.appendChild(strong);
-				var text_node = document.createTextNode(' '+(rep.nb_results.total ? rep.nb_results.total : rep.nb_results) + ' ". $msg['results']." ');
+				var text_node = document.createTextNode(' '+((rep.nb_results.total || rep.nb_results.total === 0) ? rep.nb_results.total : rep.nb_results) + ' ". $msg['results']." ');
 				div.appendChild(text_node);
 				if(rep.nb_results>0 || rep.nb_results.total>0){
 					var a = document.createElement('a');

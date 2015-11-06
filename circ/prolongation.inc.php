@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: prolongation.inc.php,v 1.27 2013-04-11 08:04:09 mbertin Exp $
+// $Id: prolongation.inc.php,v 1.28 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,16 +29,16 @@ function prolonger($id_prolong) {
 	
 		//Récupération des ids de notices et de bulletin par rapport à l'id de l'exemplaire placé en paramètre 	
 		$query = "select expl_cb, expl_notice, expl_bulletin from exemplaires where expl_id='$id_prolong' limit 1";
-		$result = mysql_query($query, $dbh);
+		$result = pmb_mysql_query($query, $dbh);
 	
-		if(mysql_num_rows($result)) {
-			$retour = mysql_fetch_object($result);
+		if(pmb_mysql_num_rows($result)) {
+			$retour = pmb_mysql_fetch_object($result);
 			
 			$cb_doc=$retour->expl_cb;
 			//Récupération du nombre de prolongations effectuées pour l'exemplaire
 			$query_prolong = "select cpt_prolongation, retour_initial,  pret_date from pret where pret_idexpl=".$id_prolong." limit 1";
-			$result_prolong = mysql_query($query_prolong, $dbh);
-			$data = mysql_fetch_array($result_prolong);
+			$result_prolong = pmb_mysql_query($query_prolong, $dbh);
+			$data = pmb_mysql_fetch_array($result_prolong);
 			$cpt_prolongation = $data['cpt_prolongation']; 
 			$retour_initial =  $data['retour_initial'];
 			$pret_date =  $data['pret_date'];
@@ -55,8 +55,8 @@ function prolonger($id_prolong) {
 					and empr_location=resa_emprloc and resa_loc='".$deflt2docs_location."' 
 					";
 				}	
-				$result_resa = mysql_query($query_resa, $dbh);
-				$has_resa = mysql_result($result_resa,0,0);
+				$result_resa = pmb_mysql_query($query_resa, $dbh);
+				$has_resa = pmb_mysql_result($result_resa,0,0);
 				if (!$has_resa) {
 					if ($pmb_pret_restriction_prolongation>0) {
 						//limitation simple du prêt
@@ -86,7 +86,7 @@ function prolonger($id_prolong) {
 			//est-ce qu'on a le droit de prolonger
 			if ($prolongation==TRUE) {
 				$query = "update pret set cpt_prolongation='".$cpt_prolongation."' where pret_idexpl=".$id_prolong." limit 1";
-				mysql_query($query, $dbh);
+				pmb_mysql_query($query, $dbh);
 						
 				// mettre ici la routine de prolongation
 				$pretProlong = new pret ($id_empr, $id_prolong, $form_cb, "", "");
@@ -98,8 +98,8 @@ function prolonger($id_prolong) {
 					$nom=$q->tit1;
 				} elseif ($retour->expl_bulletin!=0) {		
 					$query = "select bulletin_notice, bulletin_numero,date_date from bulletins where bulletin_id =".$retour->expl_bulletin;
-					$res = mysql_query($query, $dbh);	
-					$bull = mysql_fetch_object($res);
+					$res = pmb_mysql_query($query, $dbh);	
+					$bull = pmb_mysql_fetch_object($res);
 					$q= new serial($bull->bulletin_notice);
 					$nom=$q->tit1.". ".$bull->bulletin_numero." (".formatdate($bull->date_date).")";
 				}

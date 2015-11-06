@@ -2,20 +2,20 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abiodoc.inc.php,v 1.5 2012-09-18 15:13:10 mbertin Exp $
+// $Id: abiodoc.inc.php,v 1.6 2015-04-03 11:16:17 jpermanne Exp $
 
 function search_other_function_filters() {
 	global $abiodoc_app,$charset;
 
 	$requete="select notices_custom_list_value,notices_custom_list_lib from notices_custom_lists where notices_custom_champ='27' order by notices_custom_list_lib";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 
 	$r="<select name='abiodoc_app'>" ;
 	$r.="<option value='' ";
 	if($abiodoc_app=="") $r.="selected=\"selected\" ";
 	$r.=">Tous les partenaires</option>";
-	if (mysql_numrows($resultat)) {
-		while (($app = mysql_fetch_object($resultat))) {
+	if (pmb_mysql_num_rows($resultat)) {
+		while (($app = pmb_mysql_fetch_object($resultat))) {
 			$selected="";
 			if ($app->notices_custom_list_value==$abiodoc_app) {
 				$selected="selected=\"selected\"";
@@ -82,9 +82,9 @@ function search_other_function_human_query($n) {
 	if ($abiodoc_app) {
 		$app="";
 		$requete="select notices_custom_list_lib from notices_custom_lists where notices_custom_champ='27' and notices_custom_list_value='".$abiodoc_app."' limit 1 ";
-		$resultat=mysql_query($requete);
-		if (mysql_numrows($resultat)) {
-			$res=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$res=pmb_mysql_fetch_object($resultat);
 			$app=$res->notices_custom_list_lib;
 		}
 		if ($app) $r="appartenance : ".$app;

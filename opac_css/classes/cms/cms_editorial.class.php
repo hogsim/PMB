@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial.class.php,v 1.12.2.8 2015-04-24 12:12:33 mbertin Exp $
+// $Id: cms_editorial.class.php,v 1.25 2015-06-08 08:52:40 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,12 +33,13 @@ class cms_editorial extends cms_root {
 	protected $opt_elements;		// les éléments optionnels constituants l'objet
 	public $create_date;			//
 	public $documents_linked=array();		//tableau des docs liés
+	public $formated_datas = null;
 	
 	public function __construct($id=2,$type="section",$num_parent=0){
 		$this->type = $type;
 		if($id){
 			$this->id = $id*1;
-			$this->fetch_data_cache();
+			$this->fetch_data();
 			$this->logo = new cms_logo($this->id,$this->type);
 		}else{
 			$this->id = 0;
@@ -48,7 +49,7 @@ class cms_editorial extends cms_root {
 			$this->publication_state = "";
 			$this->start_date = "";
 			$this->end_date = "";
-			$this->num_parent = $num_parent*1;
+			$this->num_parent = $num_parent;
 			$this->descriptors = array();
 			$this->num_type;
 			$this->create_date = "";
@@ -72,12 +73,12 @@ class cms_editorial extends cms_root {
 	}
 	
 	protected function get_descriptors(){
-		global $lang;
+		global $lang,$dbh;
 		// les descripteurs...
 		$rqt = "select num_noeud from cms_".$this->type."s_descriptors where num_".$this->type." = '".$this->id."' order by ".$this->type."_descriptor_order";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			while($row = mysql_fetch_object($res)){
+		$res = pmb_mysql_query($rqt, $dbh);
+		if(pmb_mysql_num_rows($res)){
+			while($row = pmb_mysql_fetch_object($res)){
 				$descriptors = array();
 				$categ = new categories($row->num_noeud, $lang);
 				$descriptors["id"] = $categ->num_noeud;
@@ -90,18 +91,19 @@ class cms_editorial extends cms_root {
 	}
 	
 	protected function get_fields_type(){
+		global $dbh;
 		$this->fields_type = array();
 		$query = "select id_editorial_type from cms_editorial_types where editorial_type_element = '".$this->type."_generic'";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$fields_type = new cms_editorial_parametres_perso(mysql_result($result,0,0));
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_num_rows($result)){
+			$fields_type = new cms_editorial_parametres_perso(pmb_mysql_result($result,0,0));
 			$this->fields_type = $fields_type->get_out_values($this->id);
 		}
 		if($this->num_type){
 			$query = "select editorial_type_label from cms_editorial_types where id_editorial_type = ".$this->num_type;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$this->type_content = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query, $dbh);
+			if(pmb_mysql_num_rows($result)){
+				$this->type_content = pmb_mysql_result($result,0,0);
 				$fields_type = new cms_editorial_parametres_perso($this->num_type);
 				$this->fields_type = array_merge($this->fields_type,$fields_type->get_out_values($this->id));
 			}
@@ -113,24 +115,24 @@ class cms_editorial extends cms_root {
 		if($result === true){
 			//documents du portfolio
 			$query = "delete from cms_documents_links where document_link_type_object = '".$this->type."' and document_link_num_object = ".$this->id;
-			mysql_query($query);
+			pmb_mysql_query($query);
 			//l'elément
 			$del = "delete from cms_".$this->type."s where id_".$this->type."='".$this->id."'";
-			mysql_query($del);
+			pmb_mysql_query($del);
 			//ses descripteurs
 			$del_desc = "delete from cms_".$this->type."s_descriptors where num_".$this->type." = '".$this->id."'";
-			mysql_query($del_desc);
+			pmb_mysql_query($del_desc);
 			//ses champs persos
 			$fields_type = new cms_editorial_parametres_perso($this->num_type);
-			$fields_type->delete_values($this->id);
+			$fields_type->delete_values($this->id,$this->type);
 			//indexation
 			$query = "delete from cms_editorial_fields_global_index where num_obj = ".$this->id." and type='".$this->type."'";
-			mysql_query($query);
+			pmb_mysql_query($query);
 			$query = "delete from cms_editorial_words_global_index where num_obj = ".$this->id." and type='".$this->type."'";
-			mysql_query($query);
+			pmb_mysql_query($query);
 			//ses extensions
 			$query ="delete from cms_modules_extensions_datas where extension_datas_type_element ='".$this->type."' and extension_datas_num_element = '".$this->id."'";
-			mysql_query($query);
+			pmb_mysql_query($query);
 			return true;
 		}else{
 			return $result;
@@ -327,8 +329,8 @@ class cms_editorial extends cms_root {
 				else $categ = $cms_editorial_other_desc;
 				//on y va
 				$categ = str_replace('!!icateg!!', $i, $categ);
-				$categ = str_replace('!!categ_id!!', $this->descriptors[$i]['id'], $categ);
-				$categorie = new categories($this->descriptors[$i]['id'],$lang);
+				$categ = str_replace('!!categ_id!!', $this->descriptors[$i], $categ);
+				$categorie = new categories($this->descriptors[$i],$lang);
 				$categ = str_replace('!!categ_libelle!!', $categorie->libelle_categorie, $categ);			
 				$categs.=$categ;
 			}
@@ -488,7 +490,7 @@ class cms_editorial extends cms_root {
 						'pond' => $tableau['FIELD'][$i]['POND'],
 						'no_words' => ($tableau['FIELD'][$i]['DATATYPE'] == "marclist" ? true : false)
 					);
-					if($tableau['FIELD'][$i]['TABLE'][0]['TABLEFIELD'][0]['value']['marctype']){
+					if($tableau['FIELD'][$i]['TABLE'][0]['TABLEFIELD'][0]['MARCTYPE']){
 						$tab_code_champ[0][$tableau['FIELD'][$i]['TABLE'][0]['TABLEFIELD'][0]['value']]['marctype']=$tableau['FIELD'][$i]['TABLE'][0]['TABLEFIELD'][0]['MARCTYPE'];
 					}
 				}
@@ -593,18 +595,18 @@ class cms_editorial extends cms_root {
 			//qu'est-ce qu'on efface?
 			if($datatype=="all") {
 				$req_del="delete from cms_editorial_words_global_index where num_obj='".$this->id."' and type = '".$this->type."'";
-				mysql_query($req_del,$dbh);
+				pmb_mysql_query($req_del,$dbh);
 				//la table pour les recherche exacte
 				$req_del="delete from cms_editorial_fields_global_index where num_obj='".$this->id."' and type = '".$this->type."'";
-				mysql_query($req_del,$dbh);					
+				pmb_mysql_query($req_del,$dbh);					
 			}else{
 				foreach ( $tab_code_champ as $subfields ) {
 					foreach($subfields as $subfield){
 						$req_del="delete from cms_editorial_words_global_index where num_obj='".$this->id."' and type = '".$this->type."' and code_champ='".$subfield['champ']."'";
-						mysql_query($req_del,$dbh);
+						pmb_mysql_query($req_del,$dbh);
 						//la table pour les recherche exacte
 						$req_del="delete from cms_editorial_fields_global_index where num_obj='".$this->id."' and type = '".$this->type."' and code_champ='".$subfield['champ']."'";
-						mysql_query($req_del,$dbh);	
+						pmb_mysql_query($req_del,$dbh);	
 						break;
 					}
 				}
@@ -613,10 +615,10 @@ class cms_editorial extends cms_root {
 				if(count($tab_pp)){
 					foreach ( $tab_pp as $id ) {
        					$req_del="delete from cms_editorial_words_global_index where num_obj='".$this->id."' and type = '".$this->type."' and code_champ='".$id."' ";
-       					mysql_query($req_del,$dbh);
+       					pmb_mysql_query($req_del,$dbh);
 						//la table pour les recherche exacte
 						$req_del="delete from cms_editorial_fields_global_index where num_obj='".$this->id."' and type = '".$this->type."' and code_champ='".$id."' ";
-						mysql_query($req_del,$dbh);	
+						pmb_mysql_query($req_del,$dbh);	
 					}
 				}
 			}
@@ -625,11 +627,11 @@ class cms_editorial extends cms_root {
 			$tab_insert=array();	
 			$tab_field_insert=array();
 			foreach($tab_req as $k=>$v) {	
-				$r=mysql_query($v["rqt"],$dbh);
+				$r=pmb_mysql_query($v["rqt"],$dbh);
 				$tab_mots=array();
 				$tab_fields=array();
-				if (mysql_num_rows($r)) {
-					while(($tab_row=mysql_fetch_array($r,MYSQL_ASSOC))) {
+				if (pmb_mysql_num_rows($r)) {
+					while(($tab_row=pmb_mysql_fetch_array($r,MYSQL_ASSOC))) {
 						if(isset($tab_row[$tab_languages[$k]])){
 							$lang = $tab_row[$tab_languages[$k]];
 							unset($tab_row[$tab_languages[$k]]);
@@ -671,9 +673,9 @@ class cms_editorial extends cms_root {
 					foreach ( $tab as $mot => $lang ) {
 						//on cherche le mot dans la table de mot...
 						$query = "select id_word from words where word = '".$mot."' and lang = '".$lang."'";
-						$result = mysql_query($query);
-						if(mysql_num_rows($result)){
-							$num_word = mysql_result($result,0,0);
+						$result = pmb_mysql_query($query);
+						if(pmb_mysql_num_rows($result)){
+							$num_word = pmb_mysql_result($result,0,0);
 						}else{
 							$dmeta = new DoubleMetaPhone($mot);
 							$stemming = new stemming($mot);
@@ -686,8 +688,8 @@ class cms_editorial extends cms_root {
 							$element_to_update.="stem = '".$stemming->stem."'";
 							
 							$query = "insert into words set word = '".$mot."', lang = '".$langage."'".($element_to_update ? ", ".$element_to_update : "");
-							mysql_query($query);
-							$num_word = mysql_insert_id();
+							pmb_mysql_query($query);
+							$num_word = pmb_mysql_insert_id();
 						}
 						$tab_insert[]="(".$this->id.",'".$this->type."',".$tab_code_champ[$k][$nom_champ]['champ'].",".$tab_code_champ[$k][$nom_champ]['ss_champ'].",".$num_word.",".$tab_code_champ[$k][$nom_champ]['pond'].",$pos)";
 						$pos++;
@@ -722,13 +724,13 @@ class cms_editorial extends cms_root {
 						foreach ( $tab_mots as $mot => $lang ) {
 							//on cherche le mot dans la table de mot...
 							$query = "select id_word from words where word = '".$mot."' and lang = '".$lang."'";
-							$result = mysql_query($query);
-							if(mysql_num_rows($result)){
-								$num_word = mysql_result($result,0,0);
+							$result = pmb_mysql_query($query);
+							if(pmb_mysql_num_rows($result)){
+								$num_word = pmb_mysql_result($result,0,0);
 							}else{
 								$query = "insert into words set word = '".$mot."', lang = '".$lang."'";
-								mysql_query($query);
-								$num_word = mysql_insert_id();
+								pmb_mysql_query($query);
+								$num_word = pmb_mysql_insert_id();
 							}
 							$tab_insert[]="(".$this->id.",'".$this->type."',".$code_champ.",".$code_ss_champ.",".$num_word.",".$p_perso->get_pond($code_ss_champ).",$pos)";
 							$pos++;
@@ -737,10 +739,10 @@ class cms_editorial extends cms_root {
 				}
 			}
 			$req_insert="insert into cms_editorial_words_global_index(num_obj,type,code_champ,code_ss_champ,num_word,pond,position) values ".implode(',',$tab_insert);
-			mysql_query($req_insert,$dbh);
+			pmb_mysql_query($req_insert,$dbh);
 			//la table pour les recherche exacte
 			$req_insert="insert into cms_editorial_fields_global_index(num_obj,type,code_champ,code_ss_champ,ordre,value,lang,pond) values ".implode(',',$tab_field_insert);
-			mysql_query($req_insert,$dbh);				
+			pmb_mysql_query($req_insert,$dbh);				
 		}
 	}
 	
@@ -779,24 +781,7 @@ class cms_editorial extends cms_root {
 		}		
 		$main_fields[] = array(
 			'var' => "logo",
-			'children' => array(
-				array(
-					'var' => "logo.small_vign",
-					'desc' => $msg['cms_module_common_datasource_desc_small_vign']
-				),
-				array(
-					'var' => "logo.vign",
-					'desc' => $msg['cms_module_common_datasource_desc_vign']
-				),
-				array(
-					'var' => "logo.large",
-					'desc' => $msg['cms_module_common_datasource_desc_large']
-				),			
-				array(
-					'var' => "logo.exists",
-					'desc' => $msg['cms_module_common_datasource_desc_logo_exists']
-				),
-			),			
+			'children' => self::prefix_var_tree(cms_logo::get_format_data_structure(false,false),"logo"),		
 			'desc' => $msg['cms_module_common_datasource_desc_logo']
 		);
 		$main_fields[] = array(
@@ -847,6 +832,7 @@ class cms_editorial extends cms_root {
 		);	
 		
 		//pour les types de contenu
+		$fields_type=array();
 		$types = new cms_editorial_types($type);
 		$fields_type = $types->get_format_data_structure($full);
 		return array(
@@ -890,9 +876,9 @@ class cms_editorial extends cms_root {
 	public function get_documents(){
 		$this->documents_linked =array();
 		$query = "select document_link_num_document from cms_documents_links join cms_documents on document_link_num_document = id_document where document_link_type_object = '".$this->type."' and document_link_num_object = ".$this->id." order by document_create_date desc";
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$this->documents_linked[] = $row->document_link_num_document;
 			}
 		}	
@@ -901,14 +887,16 @@ class cms_editorial extends cms_root {
 	public function save_documents(){
 		//on commence par tout virer
 		$query = "delete from cms_documents_links where document_link_type_object = '".$this->type."' and document_link_num_object = ".$this->id;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		
-		$query = "insert into cms_documents_links (document_link_type_object,document_link_num_object,document_link_num_document) values";
-		$documents ="";
-		foreach($this->documents_linked as $doc){
-			if($documents)$documents.=",";
-			$documents.="('".$this->type."',".$this->id.",".$doc.")";
+		if(count($this->documents_linked)){
+			$query = "insert into cms_documents_links (document_link_type_object,document_link_num_object,document_link_num_document) values";
+			$documents ="";
+			foreach($this->documents_linked as $doc){
+				if($documents)$documents.=",";
+				$documents.="('".$this->type."',".$this->id.",".$doc.")";
+			}
+			pmb_mysql_query($query.$documents);
 		}
-		mysql_query($query.$documents);
 	}
 }

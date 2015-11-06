@@ -11,6 +11,6 @@ echo str_replace('!!page_title!!', $msg[4000].$msg[1003].$msg[explnum_doc_associ
 
 $retour = "./catalog.php?categ=serials&sub=view&serial_id=$f_notice";
 $explnum = new explnum($f_explnum_id);
-$explnum->mise_a_jour($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk);	
+$explnum->mise_a_jour($f_notice, $f_bulletin, $f_nom, $f_url, $retour, $conservervignette, $f_statut_chk, $f_explnum_statut);	
 
 ?>

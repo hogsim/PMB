@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: en_UK.xml,v 1.1 2011-03-28 09:24:03 ngantier Exp $ -->
+$Id: en_UK.xml,v 1.2 2015-06-15 12:55:33 pmbs Exp $ -->
 
 <XMLlist>
 	<entry code="rec_addr">Register an address to be able to access the server properties</entry>
@@ -28,7 +28,7 @@ $Id: en_UK.xml,v 1.1 2011-03-28 09:24:03 ngantier Exp $ -->
 	<entry code="nasa_ads_xsl_custom">Custom file</entry>
 	<entry code="nasa_ads_cqlfail_means_global">If the query has failed, perform a global search.</entry>
 	<entry code="nasa_ads_doc_a">Abstract</entry>
-	<entry code="nasa_ads_doc_c">Citations</entry>
+	<entry code="nasa_ads_doc_c">Quotes</entry>
 	<entry code="nasa_ads_doc_d">On-line Data</entry>
 	<entry code="nasa_ads_doc_e">Electronic Article</entry>
 	<entry code="nasa_ads_doc_f">Printable Article</entry>

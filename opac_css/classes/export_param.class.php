@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export_param.class.php,v 1.1 2009-05-04 15:09:03 kantin Exp $
+// $Id: export_param.class.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -221,7 +221,7 @@ class export_param {
 			$affectation='';
 			$affectation .= " valeur_param='".$valeur."' WHERE sstype_param='$cle'";		
 			$requete .= $affectation;
-			mysql_query($requete,$dbh);
+			pmb_mysql_query($requete,$dbh);
 		}	
 
 		return;

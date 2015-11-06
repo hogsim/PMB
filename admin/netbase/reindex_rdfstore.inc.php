@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: reindex_rdfstore.inc.php,v 1.4 2013-09-04 08:52:11 mbertin Exp $
+// $Id: reindex_rdfstore.inc.php,v 1.5 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,15 +18,15 @@ $jauge_size .= "px";
 if (!isset($start)) {
 	$start=0;
 	//remise a zero de la table au début
-	mysql_query("TRUNCATE rdfstore_index",$dbh);
+	pmb_mysql_query("TRUNCATE rdfstore_index",$dbh);
 }
 
 $v_state=urldecode($v_state);
 
 if (!$count) {
 	$q_count = "select count(1) from rdfstore_triple t, rdfstore_id2val l where t.o_type=2 and t.o_lang_dt=l.id and length(l.val)<3";
-	$r_count = mysql_query($q_count, $dbh);
-	$count = mysql_result($r_count, 0, 0);
+	$r_count = pmb_mysql_query($q_count, $dbh);
+	$count = pmb_mysql_result($r_count, 0, 0);
 }
 
 print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_rdfstore_reindexation"], ENT_QUOTES, $charset)."</h2>";
@@ -36,9 +36,9 @@ select t.t as num_triple, s.val as subject_uri, p.val as predicat_uri, o.id as n
 from rdfstore_triple t, rdfstore_s2val s, rdfstore_id2val p, rdfstore_o2val o, rdfstore_id2val l  
 where t.o_type=2 and t.o_lang_dt=l.id and length(l.val)<3 and t.s=s.id and t.p=p.id and t.o=o.id 
 order by t.t LIMIT $start, $lot";
-$r_sel = mysql_query($q_sel,$dbh);
+$r_sel = pmb_mysql_query($q_sel,$dbh);
 
-if(mysql_num_rows($r_sel)) {
+if(pmb_mysql_num_rows($r_sel)) {
 	
 	// définition de l'état de la jauge
 	$state = floor($start / ($count / $jauge_size));
@@ -57,7 +57,7 @@ if(mysql_num_rows($r_sel)) {
 	$op = new ontology_parser("$class_path/rdf/skos_pmb.rdf");
 	$sh = new skos_handler($op);
 
-	while(($triple = mysql_fetch_object($r_sel))){
+	while(($triple = pmb_mysql_fetch_object($r_sel))){
 		$type=$sh->op->from_ns($sh->get_object_type($triple->subject_uri));
 		$q_ins = "insert ignore into rdfstore_index ";
 		$q_ins.= "set num_triple='".$triple->num_triple."', ";
@@ -69,7 +69,7 @@ if(mysql_num_rows($r_sel)) {
 		$q_ins.= "object_index=' ".strip_empty_chars($triple->object_val)." ', ";
 		$q_ins.= "object_lang ='".addslashes($triple->object_lang)."' ";
 
-		$r_ins = mysql_query($q_ins,$dbh);
+		$r_ins = pmb_mysql_query($q_ins,$dbh);
 	}
 	
 	$next = $start + $lot;
@@ -86,8 +86,8 @@ if(mysql_num_rows($r_sel)) {
 		</script>";
 } else {
 	$spec = $spec - INDEX_RDFSTORE;
-	$not = mysql_query("select count(1) from rdfstore_triple where o_type=2", $dbh);
-	$compte = mysql_result($not, 0, 0);
+	$not = pmb_mysql_query("select count(1) from rdfstore_triple where o_type=2", $dbh);
+	$compte = pmb_mysql_result($not, 0, 0);
 	$v_state .= "<br /><img src=../../images/d.gif hspace=3>".htmlentities($msg['nettoyage_rdfstore_reindexation'], ENT_QUOTES, $charset)." : ";
 	$v_state .= $compte." ".htmlentities($msg['nettoyage_rdfstore_reindex_elt'], ENT_QUOTES, $charset);
 	print "

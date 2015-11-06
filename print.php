@@ -2,7 +2,7 @@
 // +--------------------------------------------------------------------------+
 // | PMB est sous licence GPL, la réutilisation du code est cadrée            |
 // +--------------------------------------------------------------------------+
-// $Id: print.php,v 1.34.6.3 2015-05-07 13:46:47 jpermanne Exp $
+// $Id: print.php,v 1.42 2015-06-05 13:16:35 dgoron Exp $
 
 //Impression
 
@@ -48,6 +48,7 @@ $xml_print->analyser();
 $print_options = $xml_print->table;
 
 if ($action_print=="print_prepare") {
+	header ("Content-Type: text/html; charset=$charset");
 	print $std_header;
 	print "<h3>".$msg["print_options"]."</h3>\n";
 	print "
@@ -118,8 +119,8 @@ if ($action_print=="print_prepare") {
 	</blockquote>
 	<b>".$msg["print_numeric_ex_title"]."</b>
 		<blockquote>
-			<input type='radio' name='exnum' id='exnum1' value='1'/><label for='exnum1'>&nbsp;".$msg["print_numeric_ex"]."</label><br />
-			<input type='radio' name='exnum' id='exnum0' value='0' checked='checked'/><label for='exnum0'>&nbsp;".$msg["print_no_numeric_ex"]."</label>
+			<input type='radio' name='exnum' id='exnum1' value='1' ".($print_options['exnum'] ? ' checked=\'checked\' ' : '')."/><label for='exnum1'>&nbsp;".$msg["print_numeric_ex"]."</label><br />
+			<input type='radio' name='exnum' id='exnum0' value='0' ".($print_options['exnum'] ? '' : ' checked=\'checked\' ')."/><label for='exnum0'>&nbsp;".$msg["print_no_numeric_ex"]."</label>
 		</blockquote>
 	</div>
 	<b>".$msg["print_output_title"]."</b>
@@ -216,7 +217,7 @@ if (($action_print=="")&&($_SESSION["PRINT"])) {
 	}else{
 		$requete.=" $limit";
 	}
-	$resultat=@mysql_query($requete);
+	$resultat=@pmb_mysql_query($requete);
 
 	if (!$environement["vignette"]) {
 		$pmb_book_pics_show = 0;
@@ -256,26 +257,34 @@ if (($action_print=="")&&($_SESSION["PRINT"])) {
 	$output_final.= $pheader;
 
 	$date_today = formatdate(today()) ;
-	if (mysql_num_rows($resultat) != 1) {
-		$output_final.= '<h3>'.$date_today.'&nbsp;'.sprintf($msg["print_n_notices"],mysql_num_rows($resultat)).'</h3>';
+	if (pmb_mysql_num_rows($resultat) != 1) {
+		$output_final.= '<h3>'.$date_today.'&nbsp;'.sprintf($msg["print_n_notices"],pmb_mysql_num_rows($resultat)).'</h3>';
 	}
 	//$output_final.= '<hr style="border:none;border-bottom:solid #000000 3px;"/>';
 	$output_final.= '<br>';
 	
 	if($_SESSION["PRINT"]["notice_tpl"])	$noti_tpl=new notice_tpl_gen($_SESSION["PRINT"]["notice_tpl"]);
 
-	while (($r=mysql_fetch_object($resultat))) {
+	while (($r=pmb_mysql_fetch_object($resultat))) {
 		if($noti_tpl) {
 			$output_final.=$noti_tpl->build_notice($r->notice_id,$deflt2docs_location);
 			$output_final.="<hr />";
 		} else{
-			$n=mysql_fetch_object(@mysql_query("select * from notices where notice_id=".$r->notice_id));
+			$n=pmb_mysql_fetch_object(@pmb_mysql_query("select * from notices where notice_id=".$r->notice_id));
 			if($n->niveau_biblio != 's' && $n->niveau_biblio != 'a') {
-				$mono=new mono_display($n,$environement["short"],"",$environement["ex"],"","","",0,1,$environement["exnum"]);
+				if($environement['output']=='email'||$environement['output']=='tt'){
+					$mono=new mono_display($n,$environement["short"],"",$environement["ex"],"","","",0,4,$environement["exnum"]);
+				}else{
+					$mono=new mono_display($n,$environement["short"],"",$environement["ex"],"","","",0,1,$environement["exnum"]);
+				}
 				if ($environement["header"]) $output_final.= '<b>'.$mono->header.'</b><br /><br />';
 				$output_final.= $mono->isbd;
 			} else {
-				$serial = new serial_display($n, $environement["short"], "", "", "", "", "", 0,1,$environement["exnum"] );
+				if($environement['output']=='email'||$environement['output']=='tt'){
+					$serial = new serial_display($n, $environement["short"], "", "", "", "", "", 0,4,$environement["exnum"] );
+				}else{
+					$serial = new serial_display($n, $environement["short"], "", "", "", "", "", 0,1,$environement["exnum"] );
+				}
 				if ($environement["header"]) $output_final.= '<b>'.$serial->header.'</b><br /><br />';
 				$output_final.= $serial->isbd;
 			}		
@@ -294,7 +303,7 @@ if (($action_print=="")&&($_SESSION["PRINT"])) {
 			
 			$f_objet_mail = $msg['print_emailobj']." - $biblio_name - $date_today ";
 			$f_message_to_send = "";
-			if ($environement["emailcontent"]) $f_message_to_send .= $msg["523"].$environement["emailcontent"]."<br />";
+			if ($environement["emailcontent"]) $f_message_to_send .= $msg["523"].stripslashes($environement["emailcontent"])."<br />";
 			$f_message_to_send .= $output_final.'<br /><br />'.mail_bloc_adresse()."</body></html> ";
 			$emaildest=$_SESSION["PRINT"]["emaildest"];
 			

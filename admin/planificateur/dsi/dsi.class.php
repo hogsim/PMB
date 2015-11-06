@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dsi.class.php,v 1.4.6.1 2014-10-03 15:13:24 dgoron Exp $
+// $Id: dsi.class.php,v 1.6 2015-04-03 11:16:29 jpermanne Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -38,9 +38,9 @@ class dsi extends tache {
 		}
 		
 		$requete = "select id_bannette, nom_bannette from bannettes where bannette_auto=1 order by nom_bannette";
-		$result = mysql_query($requete,$dbh);
+		$result = pmb_mysql_query($requete,$dbh);
 		//size select
-		$nb_rows = mysql_num_rows($result);
+		$nb_rows = pmb_mysql_num_rows($result);
 		if (($nb_rows > 0) && ($nb_rows < 10)) {
 			$size_select = $nb_rows;	
 		} elseif ($nb_rows == 0) {
@@ -94,7 +94,7 @@ class dsi extends tache {
 				<br />
 				<input type='radio' name='radio_bannette' value='4' ".($param['radio_bannette'] == "4" ? "checked" : "")."/>
 				<select id='list_bann' style='vertical-align:middle' class='saisie-30em' name='list_bann[]' size='".$size_select."' multiple>";
-					while ($row = mysql_fetch_object($result)) {
+					while ($row = pmb_mysql_fetch_object($result)) {
 							$form_task .= "<option  value='".$row->id_bannette."' ".($liste_bannettes[$row->id_bannette] == $row->id_bannette ? 'selected=\'selected\'' : '' ).">".$row->nom_bannette."</option>";
 					}		
 		$form_task .="</select>
@@ -138,12 +138,12 @@ class dsi extends tache {
 			$requete = "SELECT id_bannette, nom_bannette, proprio_bannette FROM bannettes ";
 			$requete .= "WHERE bannette_auto=1 " ;
 			$requete .= $restrict_sql;
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			
 			//lister les bannettes sélectionnées en vérifiant qu'elles soient toujours en automatique
 			if ($parameters["radio_bannette"] == "4") {
 				if ($parameters["list_bann"]) {
-					while(($bann=mysql_fetch_object($res))) {
+					while(($bann=pmb_mysql_fetch_object($res))) {
 						foreach ($parameters["list_bann"] as $id_bann) {
 							//récupération des bannettes sélectionnées
 							if ($bann->id_bannette == $id_bann) {
@@ -156,14 +156,14 @@ class dsi extends tache {
 					}
 				}
 			} else {
-				while(($bann=mysql_fetch_object($res))) {
+				while(($bann=pmb_mysql_fetch_object($res))) {
 					$t=array();
 					$t["id_bann"] = $bann->id_bannette;
 					$t["nom_bann"] = $bann->nom_bannette;
 					$this->liste_bannette[] = $t;
 				}
 			}
-			mysql_free_result($res);
+			pmb_mysql_free_result($res);
 	
 			$this->report[] = "<tr><th>".$this->msg["dsi_report_header"]."</th></tr>";
 			if ($this->liste_bannette) {
@@ -194,14 +194,14 @@ class dsi extends tache {
 										if (method_exists($this->proxy, 'pmbesDSI_diffuseBannetteFullAuto')) {
  											// On diffuse en fonction de la périodicité
  											$requete = "SELECT periodicite FROM bannettes WHERE id_bannette=".$bann["id_bann"];
- 											$res = mysql_query($requete, $dbh);
+ 											$res = pmb_mysql_query($requete, $dbh);
  											$periodicite = 0;
- 											if ($res) $periodicite = mysql_result($res, 0,"periodicite");
+ 											if ($res) $periodicite = pmb_mysql_result($res, 0,"periodicite");
 //  										if (!$periodicite) $periodicite = 1; //Limiter à 1 fois par jour minimum
  											$requete = "SELECT count(*) as diffuse FROM bannettes WHERE id_bannette=".$bann["id_bann"]." AND (DATE_ADD(date_last_envoi, INTERVAL ".$periodicite." DAY) <= sysdate())";
- 											$res = mysql_query($requete, $dbh);
+ 											$res = pmb_mysql_query($requete, $dbh);
  											if ($res) {
- 												if (mysql_result($res, 0,"diffuse")) {
+ 												if (pmb_mysql_result($res, 0,"diffuse")) {
 													$this->report[] = $this->proxy->pmbesDSI_diffuseBannetteFullAuto($bann["id_bann"]);
  												} else {
  													$this->report[] = "<tr><td>".sprintf($this->msg["dsi_no_diffusable"],$periodicite)."</td></tr>";
@@ -232,14 +232,14 @@ class dsi extends tache {
 										if (method_exists($this->proxy, 'pmbesDSI_diffuseBannette')) {
 											// On diffuse en fonction de la périodicité
 											$requete = "SELECT periodicite FROM bannettes WHERE id_bannette=".$bann["id_bann"];
-											$res = mysql_query($requete, $dbh);
+											$res = pmb_mysql_query($requete, $dbh);
 											$periodicite = 0;
-											if ($res) $periodicite = mysql_result($res, 0,"periodicite");
+											if ($res) $periodicite = pmb_mysql_result($res, 0,"periodicite");
 // 											if (!$periodicite) $periodicite = 1; //Limiter à 1 fois par jour minimum
 											$requete = "SELECT count(*) as diffuse FROM bannettes WHERE id_bannette=".$bann["id_bann"]." AND (DATE_ADD(date_last_envoi, INTERVAL ".$periodicite." DAY) <= sysdate())";
-											$res = mysql_query($requete, $dbh);
+											$res = pmb_mysql_query($requete, $dbh);
 											if ($res) {
-												if (mysql_result($res, 0,"diffuse")) {
+												if (pmb_mysql_result($res, 0,"diffuse")) {
 													$this->report[] = $this->proxy->pmbesDSI_diffuseBannette($bann["id_bann"]);
 												} else {
 													$this->report[] = "<tr><td>".sprintf($this->msg["dsi_no_diffusable"],$periodicite)."</td></tr>";

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: other_proceed.inc.php,v 1.15 2009-11-30 10:39:25 kantin Exp $
+// $Id: other_proceed.inc.php,v 1.16 2015-04-03 11:16:28 jpermanne Exp $
 // Armelle : a priori plus utilisé
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
@@ -65,8 +65,8 @@ if($ourSearch->nbr_rows == 0) {
 	print $begin_result_liste;
 
 	// boucle de fetch des notices
-	$res = @mysql_query($requete, $dbh);
-	while(($n=mysql_fetch_object($res))) { 
+	$res = @pmb_mysql_query($requete, $dbh);
+	while(($n=pmb_mysql_fetch_object($res))) { 
 		if($n->niveau_biblio != 's' && $n->niveau_biblio != 'a') {
 			// notice de monographie
 			$link = './catalog.php?categ=isbd&id=!!id!!';

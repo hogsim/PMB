@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: procs_exp_imp.inc.php,v 1.7.6.1 2014-11-26 10:57:40 jpermanne Exp $
+// $Id: procs_exp_imp.inc.php,v 1.9 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -67,13 +67,13 @@ function procs_create($type_proc, $retour, $retour_erreur) {
 		// ajouter les droits pour celui qui importe
 		if ($PMBuserid!=1) $contenu = str_replace("autorisations='1'", "autorisations='1 ".$PMBuserid."'", $contenu) ;
 		
-		mysql_query($contenu, $dbh) ;
-		if (mysql_error()) {
-			echo mysql_error()."<br /><br />".htmlentities($contenu,ENT_QUOTES, $charset)."<br /><br />" ;
+		pmb_mysql_query($contenu, $dbh) ;
+		if (pmb_mysql_error()) {
+			echo pmb_mysql_error()."<br /><br />".htmlentities($contenu,ENT_QUOTES, $charset)."<br /><br />" ;
 			die ();
 		}
 		
-		$new_proc_id = mysql_insert_id();
+		$new_proc_id = pmb_mysql_insert_id();
 		$retour = str_replace("!!id!!",$new_proc_id,$retour);
 		print "<form class='form-$current_module' name=\"dummy\" method=\"post\" action=\"$retour\" >
 				<input type='submit' class='bouton' name=\"id_form\" value=\"Ok\" />

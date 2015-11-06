@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: quotas.class.php,v 1.19.2.3 2015-06-22 14:10:56 jpermanne Exp $
+// $Id: quotas.class.php,v 1.23 2015-06-22 14:09:47 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -76,10 +76,10 @@ class quota {
 				$ml=new marc_list($elt["TABLE"]);
 				reset($ml->table);
 				$requete="create temporary table ".$elt["TABLE"]." (id varchar(255),libelle varchar(255)) ENGINE=MyISAM ";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				while (list($key,$val)=each($ml->table)) {
 					$requete="insert into ".$elt["TABLE"]." (id,libelle) values('".addslashes($key)."','".addslashes($val)."')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				$elt["FIELD"]="id";
 				$elt["LABEL"]="libelle";
@@ -239,8 +239,8 @@ class quota {
 		global $min_value,$max_value,$default_value,$conflict_value,$conflict_list,$force_lend,$max_quota;
 		
 		$requete="select constraint_type, elements, value from ".$this->table." where quota_type=".$this->quota_type["ID"]." and constraint_type in ('MIN','MAX','DEFAULT','CONFLICT','PRIORITY','FORCE_LEND','MAX_QUOTA')";
-		$resultat=mysql_query($requete);
-		while ($r=mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			switch ($r->constraint_type) {
 				case 'MIN':
 					if ($this->quota_type["MIN"])
@@ -340,8 +340,8 @@ class quota {
 		
 		//Récupération des valeurs de quota
 		$requete="select quota_type,constraint_type,elements,value from ".$this->table." where quota_type=".$this->quota_type["ID"]." and elements=".$id." and (constraint_type like 'Q:%' or constraint_type like 'F:%')";
-		$resultat=mysql_query($requete);
-		while ($r=mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			//Analyse de la contrainte
 			$constraint=substr($r->constraint_type,2);
 			$constraint_type=substr($r->constraint_type,0,1);
@@ -468,8 +468,8 @@ class quota {
 			$_quota_element_=$_quotas_elements_[$this->get_element_by_id($ids[$i])];
 			
 			$requete="select ".$_quota_element_["FIELD"].", ".$_quota_element_["LABEL"]." from ".$_quota_element_["TABLE"]." order by ".$_quota_element_["LABEL"];
-			$resultat=mysql_query($requete);
-			while ($r=mysql_fetch_array($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			while ($r=pmb_mysql_fetch_array($resultat)) {
 				$t=array();
 				$t["ID"]=$r[$_quota_element_["FIELD"]];
 				$t["LABEL"]=$r[$_quota_element_["LABEL"]];
@@ -570,7 +570,7 @@ class quota {
 					}
 					$constraint.=implode(",",$quota);
 					$requete="insert into ".$this->table." (quota_type,constraint_type,elements,value) values(".$this->quota_type["ID"].",'".$constraint."',$elements_id,'".$value_to_store."')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				//Si le forçage est coché, construction de la requête d'enregistrement
 				if (($$forc)&&($force_lend)) {
@@ -581,7 +581,7 @@ class quota {
 					}
 					$constraint.=implode(",",$quota);
 					$requete="insert into ".$this->table." (quota_type,constraint_type,elements,value) values(".$this->quota_type["ID"].",'".$constraint."',$elements_id,".$$forc.")";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 			}
 		}
@@ -596,7 +596,7 @@ class quota {
 		if ($first) {
 			//Suppression des quotas dans la table
 			$requete="delete from ".$this->table." where quota_type=".$this->quota_type["ID"]." and (constraint_type like 'Q:%' or constraint_type like 'F:%') and elements=".$elements_id;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			
 			//Recherche des combinaisons possibles et enregistrement
 			//Liste des ids
@@ -606,8 +606,8 @@ class quota {
 			for ($i=0; $i<count($ids); $i++) {
 				$_quota_element_=$_quotas_elements_[$this->get_element_by_id($ids[$i])];
 				$requete="select ".$_quota_element_["FIELD"].", ".$_quota_element_["LABEL"]." from ".$_quota_element_["TABLE"];
-				$resultat=mysql_query($requete);
-				while ($r=mysql_fetch_array($resultat)) {
+				$resultat=pmb_mysql_query($requete);
+				while ($r=pmb_mysql_fetch_array($resultat)) {
 					$t=array();
 					$t["ID"]=$r[$_quota_element_["FIELD"]];
 					$t["LABEL"]=$r[$_quota_element_["LABEL"]];
@@ -738,8 +738,8 @@ class quota {
 			} else {
 				$requete="select ".$_quota_element_["LINKEDFIELD"]." from ".$_quota_element_["TABLELINKED"];
 				$requete.=" where ".$_quota_element_["LINKEDID"]."='".$struct[$_quota_element_["LINKEDTO"]]."'";
-				$resultat=mysql_query($requete);
-				$values[$_quota_element_["ID"]]=@mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$values[$_quota_element_["ID"]]=@pmb_mysql_result($resultat,0,0);
 			}
 		}
 		if ($flag) {
@@ -760,9 +760,9 @@ class quota {
 				}
 			}
 			$requete="select q0.value from ".$from." where ".$where;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat))
-				return mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat))
+				return pmb_mysql_result($resultat,0,0);
 			else
 				return 0;
 		} else return 0;
@@ -790,8 +790,8 @@ class quota {
 			} else {
 				$requete="select ".$_quota_element_["LINKEDFIELD"]." from ".$_quota_element_["TABLELINKED"];
 				$requete.=" where ".$_quota_element_["LINKEDID"]."='".$struct[$_quota_element_["LINKEDTO"]]."'";
-				$resultat=mysql_query($requete);
-				$values[$_quota_element_["ID"]]=@mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$values[$_quota_element_["ID"]]=@pmb_mysql_result($resultat,0,0);
 			}
 		}
 		if ($flag) {
@@ -812,9 +812,9 @@ class quota {
 				}
 			}
 			$requete="select q0.value from ".$from." where ".$where;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat))
-				return mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat))
+				return pmb_mysql_result($resultat,0,0);
 			else
 				return -1;
 		} else return -1;
@@ -825,20 +825,20 @@ class quota {
 		//Je prends tous les éléments que je trouve et je recherche récursivement le plus défavorale
 		$requete="select distinct ".$_quota_element_["LINKEDFIELD"]." from ".$_quota_element_["TABLELINKED"];
 		$requete.=" where ".$_quota_element_["LINKEDID_BY"]."='".$struct[$_quota_element_["LINKEDTO"]]."'";
-		$resultat=@mysql_query($requete);
-		if (!mysql_num_rows($resultat)) {
+		$resultat=@pmb_mysql_query($requete);
+		if (!pmb_mysql_num_rows($resultat)) {
 			$flag=false;
 		} else {
 			$min_quota=-1;
 			$min_quota_with_id=array();
 			$no_limit=0;
 			$no_limit_with_id=array();
-			while ($r=mysql_fetch_array($resultat)) {
+			while ($r=pmb_mysql_fetch_array($resultat)) {
 				$struct_=$struct;
 				//Pour l'élément, je recherche le premier objet associé
 				$requete="select ".$_quota_element_["LINKEDID"]." from ".$_quota_element_["TABLELINKED"]." where ".$_quota_element_["LINKEDID_BY"]."='".$struct[$_quota_element_["LINKEDTO"]]."' and ".$_quota_element_["LINKEDFIELD"]."='".$r[$_quota_element_["LINKEDFIELD"]]."' limit 1";
-				$resultat_object=@mysql_query($requete);
-				$struct_[$_quota_element_["LINKEDTO"]]=mysql_result($resultat_object,0,0);
+				$resultat_object=@pmb_mysql_query($requete);
+				$struct_[$_quota_element_["LINKEDTO"]]=pmb_mysql_result($resultat_object,0,0);
 				$quota_by=$this->get_quota_value_with_id($struct_,true);
 				if ($quota_by["VALUE"]==-1) {
 					$no_limit++;
@@ -901,8 +901,8 @@ class quota {
 				//Avec l'objet, je prends l'élément associé
 				$requete="select ".$_quota_element_["LINKEDFIELD"]." from ".$_quota_element_["TABLELINKED"];
 				$requete.=" where ".$_quota_element_["LINKEDID"]."='".$struct_[$flag_indirect?$_quota_element_["LINKEDID"]:$_quota_element_["LINKEDTO"]]."'";
-				$resultat=mysql_query($requete);
-				$values[$_quota_element_["ID"]]=@mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				$values[$_quota_element_["ID"]]=@pmb_mysql_result($resultat,0,0);
 			}
 		}
 		if ($flag) {
@@ -924,9 +924,9 @@ class quota {
 					}
 				}
 				$requete="select q0.value from ".$from." where ".$where;
-				$resultat=mysql_query($requete);
-				if (mysql_num_rows($resultat))
-					$q[$elements_id]=mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat))
+					$q[$elements_id]=pmb_mysql_result($resultat,0,0);
 				else
 					$q[$elements_id]="";
 			}
@@ -975,8 +975,8 @@ class quota {
 						$struct_[$element["LINKEDTO"]]=$indirect;
 						//Récupération de l'id de l'élément à partir de ce qui est transmis dans struct
 						$requete="select ".$element["LINKEDFIELD"]." from ".$element["TABLELINKED"]." where ".$element["LINKEDID"]."='".$struct_[$element["LINKEDTO"]]."'";
-						$resultat=mysql_query($requete);
-						$linkedid=@mysql_result($resultat,0,0);
+						$resultat=pmb_mysql_query($requete);
+						$linkedid=@pmb_mysql_result($resultat,0,0);
 						$where =" and ".$element["LINKEDFIELD"]."='".$linkedid."'";
 					} else {
 						$struct_[$element["LINKEDTO"]]=0;
@@ -985,8 +985,8 @@ class quota {
 				}
 				$requete="select ".$element["LABEL"]." from ".$element["TABLE"].", ".$element["TABLELINKED"]." where ".$element["FIELD"]."=".$element["LINKEDFIELD"]." and ".$element["LINKEDID"]."='".$struct_[$element["LINKEDTO"]]."'".$where;
 			}
-			$resultat=mysql_query($requete);
-			$title[]=@mysql_result($resultat,0,0);
+			$resultat=pmb_mysql_query($requete);
+			$title[]=@pmb_mysql_result($resultat,0,0);
 		}
 		return implode(" ".$msg["quotas_and"]." ",$title);
 	}
@@ -1012,8 +1012,8 @@ class quota {
 		$requete="select count(1) from ".$this->quota_type["COUNT_TABLE"]." where ".$this->quota_type["COUNT_FIELD"]."=".$struct[$_quota_element_entity_["LINKEDTO"]];
 		if ($this->quota_type["COUNT_FILTER"]) $requete.=" and ".$this->quota_type["COUNT_FILTER"];
 
-		$resultat=mysql_query($requete);
-		$nb_total=@mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		$nb_total=@pmb_mysql_result($resultat,0,0);
 
 		//!!A vérifier si valeur par défaut equiv quota le plus large !
 
@@ -1075,8 +1075,8 @@ class quota {
 							}
 							//Récupération de l'id de l'élément à partir de ce qui est transmis dans struct
 							$requete="select ".$element["LINKEDFIELD"]." from ".$element["TABLELINKED"]." where ".$element["LINKEDID"]."='".$struct_[$element["LINKEDTO"]]."'";
-							$resultat=mysql_query($requete);
-							$linkedid=@mysql_result($resultat,0,0);
+							$resultat=pmb_mysql_query($requete);
+							$linkedid=@pmb_mysql_result($resultat,0,0);
 							if ($element["TABLELINKED_BY"]) {
 								if (!$already_present) {
 									$where.=" and ".$countfields_[$i]."=".$element["LINKEDID_BY"];
@@ -1102,8 +1102,8 @@ class quota {
 					$requete="select count(".$distinct.") from ".$this->quota_type["COUNT_TABLE"].$from." where ".$this->quota_type["COUNT_FIELD"]."='".$struct[$_quota_element_entity_["LINKEDTO"]]."'".$where;
 					if ($this->quota_type["COUNT_FILTER"]) $requete.=" and ".$this->quota_type["COUNT_FILTER"];
 					//if ($group_by) $requete.=" group by ".$group_by;
-					$resultat=mysql_query($requete);
-					$nb_partial=@mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					$nb_partial=@pmb_mysql_result($resultat,0,0);
 					//Si nombre partiel+1>quota alors non !!
 					if ($nb_partial+1>$r["VALUE"]) {
 						$this->error_message=sprintf($this->quota_type["PARTIAL_ERROR_MESSAGE"],$this->get_criterias_title_by_elements_id($struct,$r["ID"]),$r["VALUE"]);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts_pointage.class.php,v 1.52.2.13 2015-07-16 12:34:46 jpermanne Exp $
+// $Id: abts_pointage.class.php,v 1.67 2015-07-16 12:33:42 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");
@@ -26,14 +26,14 @@ class abts_pointage {
 	var $liste_rel=array(); 
 	
 	function abts_pointage($notice_id = "") {
-		global $msg;
+		global $msg,$dbh;
 		
 		//Verif de l'id de la notice 
 		if ($notice_id) {
 			$this->num_notice = 0;
 			$requete = "select niveau_biblio from notices where notice_id=" . $notice_id;
-			$resultat = mysql_query($requete);
-			if (mysql_result($resultat, 0, 0) == "s")
+			$resultat = pmb_mysql_query($requete,$dbh);
+			if (pmb_mysql_result($resultat, 0, 0) == "s")
 				$this->num_notice = $notice_id;
 
 			else {
@@ -75,9 +75,9 @@ class abts_pointage {
 		$memo_prochain=array();
 		$memo_abt_modele=array();
 
-		$resultat = mysql_query($requete);
+		$resultat = pmb_mysql_query($requete,$dbh);
 		if ($resultat) {
-			while ($r = mysql_fetch_object($resultat)) {
+			while ($r = pmb_mysql_fetch_object($resultat)) {
 				$numero = $r->numero;
 				$libelle_numero = $numero;
 				$volume = "";
@@ -86,8 +86,8 @@ class abts_pointage {
 				if (!$numero_modele[$r->modele_id]) {
 					$requete = "SELECT modele_name,num_cycle,num_combien,num_increment,num_date_unite,num_increment_date,num_depart,vol_actif,vol_increment,vol_date_unite,vol_increment_numero,vol_increment_date,vol_cycle,vol_combien,vol_depart,tom_actif,tom_increment,tom_date_unite,tom_increment_numero,tom_increment_date,tom_cycle,tom_combien,tom_depart, format_aff 
 								FROM abts_modeles WHERE modele_id=$r->modele_id";
-					$resultat_n = mysql_query($requete);
-					if ($r_n = mysql_fetch_object($resultat_n)) {
+					$resultat_n = pmb_mysql_query($requete,$dbh);
+					if ($r_n = pmb_mysql_fetch_object($resultat_n)) {
 						$numero_modele[$r->modele_id]['modele_name'] = $r_n->modele_name;
 						$numero_modele[$r->modele_id]['num_cycle'] = $r_n->num_cycle;
 						$numero_modele[$r->modele_id]['num_combien'] = $r_n->num_combien;
@@ -149,8 +149,8 @@ class abts_pointage {
 					if( $r->type != 2){
 						if (!$numero_modele[$r->modele_id][$r->num_abt]) {
 							$requete = "SELECT num,vol, tome, delais,	critique FROM abts_abts_modeles WHERE modele_id=$r->modele_id and abt_id=$r->num_abt";
-							$resultat_n = mysql_query($requete);
-							if ($r_abt = mysql_fetch_object($resultat_n)) {
+							$resultat_n = pmb_mysql_query($requete,$dbh);
+							if ($r_abt = pmb_mysql_fetch_object($resultat_n)) {
 								$numero_modele[$r->modele_id][$r->num_abt]['num'] = $r_abt->num;
 								$numero_modele[$r->modele_id][$r->num_abt]['vol'] = $r_abt->vol;
 								$numero_modele[$r->modele_id][$r->num_abt]['tom'] = $r_abt->tome;
@@ -272,9 +272,9 @@ class abts_pointage {
 					$req_prochain="SELECT *	FROM abts_grille_abt
 						WHERE date_parution > CURDATE() and num_abt = ".$r->num_abt." AND modele_id=".$r->modele_id."
 						ORDER BY date_parution ";
-					$res_prochain = mysql_query($req_prochain);
+					$res_prochain = pmb_mysql_query($req_prochain,$dbh);
 					$deja_bulletine=0;
-					while ($r_prochain = mysql_fetch_object($res_prochain)) {
+					while ($r_prochain = pmb_mysql_fetch_object($res_prochain)) {
 						$prochain_id_bull=$r_prochain->id_bull;					
 						$fiche_prochain['date_parution']=$r_prochain->date_parution;
 						$fiche_prochain['periodique']="<a href=\"./catalog.php?categ=serials&sub=view&serial_id=" . $r->num_notice . "\">$r->tit1</a>";
@@ -326,8 +326,8 @@ class abts_pointage {
 							
 				if (!$numero_modele[$modele_id][$num_abt]['ordre']) {
 					$requete = "SELECT num,vol, tome, delais,	critique FROM abts_abts_modeles WHERE modele_id=".$modele_id." and abt_id=".$num_abt;
-					$resultat_n = mysql_query($requete);
-					if ($r_abt = mysql_fetch_object($resultat_n)) {
+					$resultat_n = pmb_mysql_query($requete,$dbh);
+					if ($r_abt = pmb_mysql_fetch_object($resultat_n)) {
 						$numero_modele[$modele_id][$num_abt]['num'] = $r_abt->num;
 						$numero_modele[$modele_id][$num_abt]['vol'] = $r_abt->vol;
 						$numero_modele[$modele_id][$num_abt]['tom'] = $r_abt->tome;
@@ -410,7 +410,7 @@ class abts_pointage {
 		return $this->fiche_bulletin;
 	}	
 
-	function get_dashboard_info($location_view="") {
+	static function get_dashboard_info($location_view="") {
 		global $msg;
 		global $dbh;
 		global $deflt_docs_location;	
@@ -437,14 +437,14 @@ class abts_pointage {
 		) as liste_bull order by date_parution
 		";
 				
-		$resultat = mysql_query($requete);
+		$resultat = pmb_mysql_query($requete,$dbh);
 		if ($resultat) {
-			while ($r = mysql_fetch_object($resultat)) {
+			while ($r = pmb_mysql_fetch_object($resultat)) {
 				// recheche des délais de retart 
 				if (!$numero_modele[$r->modele_id][$r->num_abt]) {
 					$requete = "SELECT delais,	critique FROM abts_abts_modeles WHERE modele_id=$r->modele_id and abt_id=$r->num_abt";
-					$resultat_n = mysql_query($requete);
-					if ($r_abt = mysql_fetch_object($resultat_n)) {
+					$resultat_n = pmb_mysql_query($requete,$dbh);
+					if ($r_abt = pmb_mysql_fetch_object($resultat_n)) {
 						$numero_modele[$r->modele_id][$r->num_abt]['delais'] = $r_abt->delais;
 						$numero_modele[$r->modele_id][$r->num_abt]['critique'] = $r_abt->critique;
 					}							
@@ -634,8 +634,8 @@ ENDOFTEXT;
 		$link_bulletinage="";
 		if ($serial_id) {
 			$requete = "SELECT tit1 from notices WHERE notice_id= $serial_id";
-			$resultat = mysql_query($requete);
-			if ($r = mysql_fetch_object($resultat)) {
+			$resultat = pmb_mysql_query($requete,$dbh);
+			if ($r = pmb_mysql_fetch_object($resultat)) {
 				
 				$link_bulletinage = "<a href='./catalog.php?categ=serials&sub=view&serial_id=$serial_id&location=$location_view'>"
 					.$r->tit1."</a>"; 
@@ -713,10 +713,10 @@ ENDOFTEXT;
 					and notice_id= num_notice";
 		if ($location_view) $requete .= " and location_id='$location_view'";
 		$requete .= " ORDER BY date_fin,abt_name";
-		$resultat = mysql_query($requete);	
+		$resultat = pmb_mysql_query($requete,$dbh);	
 		$cpt=0;
 		$contenu='';
-		while ($r = mysql_fetch_object($resultat)) {
+		while ($r = pmb_mysql_fetch_object($resultat)) {
 			if (++$cpt % 2) $pair_impair = "even"; else $pair_impair = "odd";
 			$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" ";
 			$contenu .= "<tr class='$pair_impair' $tr_javascript style='cursor: pointer'>";
@@ -736,10 +736,10 @@ ENDOFTEXT;
 					and notice_id= num_notice";
 		if ($location_view) $requete .= " and location_id='$location_view'";
 		$requete .= " ORDER BY date_fin,abt_name";	
-		$resultat = mysql_query($requete);	
+		$resultat = pmb_mysql_query($requete,$dbh);	
 		$cpt=0;
 		$contenu='';
-		while ($r = mysql_fetch_object($resultat)) {
+		while ($r = pmb_mysql_fetch_object($resultat)) {
 			if (++$cpt % 2) $pair_impair = "even"; else $pair_impair = "odd";
 			$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" ";
 			$contenu .= "<tr class='$pair_impair' $tr_javascript style='cursor: pointer'>";
@@ -828,9 +828,9 @@ ENDOFTEXT;
 		for($i=0;$i<$max_fourn; $i++){		
 			eval ("global \$f_fourn_id$i; \$id=  \$f_fourn_id$i;"); 									
 			$q = "select * from entites where id_entite = '".$id."' ";
-			$res = mysql_query($q, $dbh);
-			if (mysql_num_rows($res) != 0) {
-				$coord = mysql_fetch_object($res);
+			$res = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_num_rows($res) != 0) {
+				$coord = pmb_mysql_fetch_object($res);
 				$fournisseurs[$nb]["libelle"]=$coord->raison_sociale;
 				$fournisseurs[$nb]["id"]=$id;				
 				$nb++;
@@ -946,15 +946,15 @@ ENDOFTEXT;
 
 	
 	function get_comment_form($abt_id,$date_parution,$libelle_numero,$class_tr){
-		global $abts_gestion_retard_bulletin_relance,$charset;
+		global $dbh,$abts_gestion_retard_bulletin_relance,$charset;
 		
 		$rel_max=0;
 		$i=0;
 		$form_list="";
 		$req="SELECT * from perio_relance where rel_abt_num='".$abt_id."' and rel_date_parution='".$date_parution."' and  rel_libelle_numero='".addslashes($libelle_numero)."' order by rel_nb desc";		
-		$result = mysql_query($req);
-		if(mysql_num_rows($result)){
-			while($r = mysql_fetch_object($result)) {				
+		$result = pmb_mysql_query($req,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			while($r = pmb_mysql_fetch_object($result)) {				
 				if($i==0){
 					$rel_max=$r->rel_nb;
 					$rel_date_max=$r->rel_date;
@@ -989,8 +989,8 @@ ENDOFTEXT;
 		}	
 		if(!$first_line) {
 			$req="insert into perio_relance set rel_abt_num='".$abt_id."', rel_date_parution='".$date_parution."',  rel_libelle_numero='".addslashes($libelle_numero)."'  ";		
-			mysql_query($req);	
-			$first_line["rel_id"]=mysql_insert_id();
+			pmb_mysql_query($req,$dbh);	
+			$first_line["rel_id"]=pmb_mysql_insert_id($dbh);
 			if($rel_max){
 				$first_line["nb_relance"]=$rel_max;
 				$first_line["date_relance"]=formatdate($rel_date_max);
@@ -1007,6 +1007,7 @@ ENDOFTEXT;
 	}
 	
 	function set_comment_retard($type=0){
+		global $dbh;
 		global $bulletin, $comment;
 		if(!$comment || !$bulletin) return;
 		foreach($bulletin as $data){
@@ -1014,19 +1015,20 @@ ENDOFTEXT;
 			if($type==1)	$type_comment ="rel_comment_gestion";
 			else 			$type_comment ="rel_comment_opac";
 			$req="SELECT rel_id from perio_relance where rel_abt_num='".$bulletin_info['abt_id']."' and rel_date_parution='".$bulletin_info['date_parution']."' and  rel_libelle_numero='".addslashes($bulletin_info['libelle_numero'])."' and rel_nb=0";
-			$result = mysql_query($req);	
-			if(mysql_num_rows($result)){
-				$r = mysql_fetch_object($result);
+			$result = pmb_mysql_query($req,$dbh);	
+			if(pmb_mysql_num_rows($result)){
+				$r = pmb_mysql_fetch_object($result);
 				$req= "update perio_relance set $type_comment='$comment' where rel_id=".$r->rel_id."  ";
 			} else {
 				$req="insert into perio_relance set rel_abt_num='".$bulletin_info['abt_id']."', rel_date_parution='".$bulletin_info['date_parution']."',  rel_libelle_numero='".addslashes($bulletin_info['libelle_numero'])."', $type_comment='$comment'  ";		
 			}
-			mysql_query($req);	
+			pmb_mysql_query($req,$dbh);	
 		}		
 	}
 	
 	
 	function relance_retard(){
+		global $dbh;
 		global $sel_relance;	
 			
 		if(!$sel_relance) return;		
@@ -1037,9 +1039,9 @@ ENDOFTEXT;
 			if(!$rel_id) continue;
 			$nb=0;
 			$req="SELECT * from perio_relance where rel_id=$rel_id ";
-			$result = mysql_query($req);	
-			if(mysql_num_rows($result)){
-				$r = mysql_fetch_object($result);
+			$result = pmb_mysql_query($req,$dbh);	
+			if(pmb_mysql_num_rows($result)){
+				$r = pmb_mysql_fetch_object($result);
 				$nb=$r->nb;
 				$bulletin_info['abt_id']=$r->rel_abt_num;
 				$bulletin_info['date_parution']=$r->rel_date_parution;
@@ -1048,24 +1050,24 @@ ENDOFTEXT;
 			if($nb) continue;
 			// recherche de la plus grande relance
 			$req="SELECT max(rel_nb)as nb from perio_relance where rel_abt_num='".$bulletin_info['abt_id']."' and rel_date_parution='".$bulletin_info['date_parution']."' and  rel_libelle_numero='".addslashes($bulletin_info['libelle_numero'])."' ";
-			$result = mysql_query($req);	
-			if(mysql_num_rows($result)){
-				$r = mysql_fetch_object($result);
+			$result = pmb_mysql_query($req,$dbh);	
+			if(pmb_mysql_num_rows($result)){
+				$r = pmb_mysql_fetch_object($result);
 				$nb=$r->nb;
 			}			
 			$nb++;	
 			
 			$req="SELECT * from perio_relance,abts_abts where abt_id=".$bulletin_info['abt_id']." and rel_id=$rel_id";
-			$result = mysql_query($req);
-			if(mysql_num_rows($result)){
-				$r = mysql_fetch_object($result);
+			$result = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$r = pmb_mysql_fetch_object($result);
 				//if($r->rel_comment_gestion)	{	
 					$this->liste_rel[$r->fournisseur][$r->num_notice][$r->rel_abt_num][$r->rel_id]["rel_date_parution"]=$r->rel_date_parution;
 					$this->liste_rel[$r->fournisseur][$r->num_notice][$r->rel_abt_num][$r->rel_id]["rel_libelle_numero"]=$r->rel_libelle_numero;
 					$this->liste_rel[$r->fournisseur][$r->num_notice][$r->rel_abt_num][$r->rel_id]["rel_comment_gestion"]=$r->rel_comment_gestion;
 					$this->liste_rel[$r->fournisseur][$r->num_notice][$r->rel_abt_num][$r->rel_id]["rel_nb"]=$r->rel_nb;
 					$req= "update perio_relance set rel_nb=$nb, rel_date=now() where rel_id=".$r->rel_id."  ";				
-					mysql_query($req);		
+					pmb_mysql_query($req,$dbh);		
 				//}		
 			}
 		}
@@ -1077,11 +1079,12 @@ ENDOFTEXT;
 		return;			
 	}
 	
-	static function delete_retard($abt_id,$date_parution='',$libelle_numero=''){		
+	static function delete_retard($abt_id,$date_parution='',$libelle_numero=''){
+		global $dbh;		
 		$req="DELETE from perio_relance where rel_abt_num='".$abt_id."' ";
 		if($date_parution)	$req.=" and rel_date_parution='".$date_parution."'  ";
 		if($libelle_numero)	$req.=" and rel_libelle_numero='".addslashes($libelle_numero)."' ";
-		@mysql_query($req);
+		@pmb_mysql_query($req,$dbh);
 	}
 	
 	function generate_PDF(){
@@ -1141,7 +1144,7 @@ ENDOFTEXT;
 			if($id_fournisseur){
 				$fou = new entites($id_fournisseur);
 				$coord_fou = entites::get_coordonnees($id_fournisseur,1);
-				$coord_fou = mysql_fetch_object($coord_fou);
+				$coord_fou = pmb_mysql_fetch_object($coord_fou);
 				if($fou->raison_sociale != '') {
 					$libelleFou = $fou->raison_sociale;
 				} else {
@@ -1287,7 +1290,7 @@ ENDOFTEXT;
 			if($id_fournisseur){		
 				$fou = new entites($id_fournisseur);
 				$coord_fou = entites::get_coordonnees($id_fournisseur,1);
-				$coord_fou = mysql_fetch_object($coord_fou);
+				$coord_fou = pmb_mysql_fetch_object($coord_fou);
 				if($fou->raison_sociale != '') {
 					$libelle = $fou->raison_sociale;
 				} else { 

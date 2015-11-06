@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bulletin_affichage.inc.php,v 1.19 2013-02-08 08:32:44 mbertin Exp $
+// $Id: bulletin_affichage.inc.php,v 1.21 2015-05-27 09:56:27 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -13,8 +13,8 @@ require_once($base_path.'/classes/notice.class.php');
 function bulletin_affichage_reduit($id, $no_link=0) {
 	global $msg, $dbh, $css, $charset, $opac_show_exemplaires ;
 	$requete = "SELECT bulletin_id, bulletin_numero, bulletin_notice, mention_date, date_date, date_format(date_date, '".$msg["format_date_sql"]."') as aff_date_date FROM bulletins WHERE bulletin_id='$id'";
-	$res3 = mysql_query($requete, $dbh);
-	$obj = mysql_fetch_object($res3) ;
+	$res3 = pmb_mysql_query($requete, $dbh);
+	$obj = pmb_mysql_fetch_object($res3) ;
 	$notice3 = new notice($obj->bulletin_notice);
 
 	$res_print = "<h3><img src=./images/icon_per.gif>" ;
@@ -47,18 +47,18 @@ function bulletin_affichage($id,$type=""){
 	global $opac_show_exemplaires ;
 	$display ="";
 	$requete = "SELECT bulletin_id, bulletin_numero, bulletin_notice, mention_date, date_date, bulletin_titre, bulletin_cb, date_format(date_date, '".$msg["format_date_sql"]."') as aff_date_date,num_notice FROM bulletins WHERE bulletin_id='$id'";
-	$res = @mysql_query($requete, $dbh);
-	while(($obj=mysql_fetch_array($res))) {
+	$res = @pmb_mysql_query($requete, $dbh);
+	while(($obj=pmb_mysql_fetch_array($res))) {
 		$requete3 = "SELECT notice_id FROM notices WHERE notice_id='".$obj["bulletin_notice"]."' ";		
-		$res3 = @mysql_query($requete3, $dbh);
-		while(($obj3=mysql_fetch_object($res3))) {
+		$res3 = @pmb_mysql_query($requete3, $dbh);
+		while(($obj3=pmb_mysql_fetch_object($res3))) {
 			$notice3 = new notice($obj3->notice_id);		
 		}
 		$notice3->fetch_visibilite();
 		//on vient poser l'ancre des docnums...
 		$req = "select explnum_id from explnum where explnum_bulletin = ".$obj["bulletin_id"];
-		$resultat = mysql_query($req, $dbh) or die ($req." ".mysql_error());
-		$nb_ex = mysql_num_rows($resultat);
+		$resultat = pmb_mysql_query($req, $dbh) or die ($req." ".pmb_mysql_error());
+		$nb_ex = pmb_mysql_num_rows($resultat);
 		$res_print = "<h3><img src=./images/icon_per.gif> ".$notice3->print_resume(1,$css)."."." <b>".$obj["bulletin_numero"]."</b>".($nb_ex ? "&nbsp;<a href='#docnum'>".($nb_ex > 1 ? "<img src='./images/globe_rouge.png' />" : "<img src='./images/globe_orange.png' />")."</a>" : "")."</h3>\n";
 		$num_notice=$obj['num_notice'];
 		if ($obj['bulletin_titre']) {
@@ -86,12 +86,12 @@ function bulletin_affichage($id,$type=""){
 		// construction des dépouillements
 		$depouill= "<br /><h3>".$msg['bull_dep']."</h3>";
 		$requete = "SELECT * FROM analysis, notices, notice_statut WHERE analysis_bulletin='$id' AND notice_id = analysis_notice AND statut = id_notice_statut and ((notice_visible_opac=1 and notice_visible_opac_abon=0)".($_SESSION["user_code"]?" or (notice_visible_opac_abon=1 and notice_visible_opac=1)":"").") "; 
-		$res = @mysql_query($requete, $dbh);
-		if (mysql_num_rows($res)) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($res)) {
 			if ($opac_notices_depliable) $depouill .= $begin_result_liste;
-			if ($opac_cart_allow) $depouill.="<a href=\"cart_info.php?id=".$id."&lvl=analysis&header=".rawurlencode(strip_tags($notice_header))."\" target=\"cart_info\" class=\"img_basket\">".$msg["cart_add_result_in"]."</a>"; 		
+			if ($opac_cart_allow) $depouill.="<a href=\"cart_info.php?id=".$id."&lvl=analysis&header=".rawurlencode(strip_tags($notice_header))."\" target=\"cart_info\" class=\"img_basket\" title='".$msg["cart_add_result_in"]."'>".$msg["cart_add_result_in"]."</a>"; 		
 			$depouill.= "<blockquote>";
-			while(($obj=mysql_fetch_array($res))) {
+			while(($obj=pmb_mysql_fetch_array($res))) {
 				$depouill.= pmb_bidi(aff_notice($obj["analysis_notice"]));
 			}
 			$depouill.= "</blockquote>";
@@ -104,7 +104,7 @@ function bulletin_affichage($id,$type=""){
 				$resa_check=check_statut(0,$id) ;
 				if ($resa_check) {
 					$requete_resa = "SELECT count(1) FROM resa WHERE resa_idbulletin='$id'";
-					$nb_resa_encours = mysql_result(mysql_query($requete_resa,$dbh), 0, 0) ;
+					$nb_resa_encours = pmb_mysql_result(pmb_mysql_query($requete_resa,$dbh), 0, 0) ;
 					if ($nb_resa_encours) $message_nbresa = str_replace("!!nbresa!!", $nb_resa_encours, $msg["resa_nb_deja_resa"]) ;
 				
 					if (($_SESSION["user_code"] && $allow_book) && $opac_resa && !$popup_resa) {
@@ -144,7 +144,7 @@ function bulletin_affichage($id,$type=""){
 				$display .=  pmb_bidi("<a name='docnum'><h3>".$msg["explnum"]."</h3></a>".$explnum);
 		}	
 	}
-	mysql_free_result($res);
+	pmb_mysql_free_result($res);
 	
 	$display .=  notice_affichage::autres_lectures (0,$id) ;	
 	
@@ -156,9 +156,9 @@ function bulletin_header($id){
 	
 	$header ="";
 	$query = "select tit1,bulletin_titre,bulletin_numero,mention_date, date_format(date_date, '".$msg["format_date_sql"]."') as aff_date_date from bulletins join notices on bulletin_notice = notice_id where bulletin_id = ".$id;
-	$result = mysql_query($query);
-	if(mysql_num_rows($result)){
-		$row = mysql_fetch_object($result);
+	$result = pmb_mysql_query($query);
+	if(pmb_mysql_num_rows($result)){
+		$row = pmb_mysql_fetch_object($result);
 		$header = $row->tit1.".";
 		if($row->bulletin_numero!= ""){
 			$header.=" ".$row->bulletin_numero;

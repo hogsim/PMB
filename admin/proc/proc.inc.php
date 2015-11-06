@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: proc.inc.php,v 1.21.6.1 2014-11-26 10:57:40 jpermanne Exp $
+// $Id: proc.inc.php,v 1.23 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -51,15 +51,15 @@ function show_procs($dbh) {
 		";
 	// affichage du tableau des procédures
 	$requete = "SELECT idproc, name, requete, comment, libproc_classement, num_classement FROM procs left join procs_classements on idproc_classement=num_classement ORDER BY libproc_classement,name ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$class_prec=$msg[proc_clas_aucun];
 	$buf_tit="";
 	$buf_class=0;
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		$classement=$row[4];
 		if ($class_prec!=$classement) {
 			if (!$row[4]) $row[4]=$msg[proc_clas_aucun];
@@ -352,21 +352,21 @@ switch($action) {
 				$requete = "UPDATE procs SET name='$f_proc_name',requete='$f_proc_code',comment='$f_proc_comment' , autorisations='$autorisations' , num_classement='$form_classement', 
 				proc_notice_tpl='$form_notice_tpl', proc_notice_tpl_field='$form_notice_tpl_field' 
 				WHERE idproc=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_procs($dbh);
 			} else {
 				// afficher le form avec les bonnes valeurs
 				// ALTER TABLE procs ADD autorisations MEDIUMTEXT;
 				$requete = "SELECT idproc, name, requete, comment, autorisations, num_classement, proc_notice_tpl, proc_notice_tpl_field FROM procs WHERE idproc=$id LIMIT 1 ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete_users = "SELECT userid, username FROM users order by username ";
-				$res_users = mysql_query($requete_users, $dbh);
+				$res_users = pmb_mysql_query($requete_users, $dbh);
 				$all_users=array();
-				while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+				while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 					$all_users[]=array($all_userid,$all_username);
 					}
-				if(mysql_num_rows($res)) {
-					$row = mysql_fetch_row($res);
+				if(pmb_mysql_num_rows($res)) {
+					$row = pmb_mysql_fetch_row($res);
 					$autorisations_donnees=explode(" ",$row[4]);
 					for ($i=0 ; $i<count($all_users) ; $i++) {
 						if (array_search ($all_users[$i][0], $autorisations_donnees)!==FALSE) $autorisation[$i][0]=1;
@@ -385,8 +385,8 @@ switch($action) {
 	case 'add':
 		if($f_proc_name && $f_proc_code) {
 			$requete = "SELECT count(1) FROM procs WHERE name='$f_proc_name' ";
-			$res = mysql_query($requete, $dbh);
-			$nbr_lignes = mysql_result($res, 0, 0);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = pmb_mysql_result($res, 0, 0);
 			if(!$nbr_lignes) {
 				if (is_array($userautorisation)) {
 					$autorisations=implode(" ",$userautorisation);
@@ -400,7 +400,7 @@ switch($action) {
 				}
 				$requete = "INSERT INTO procs (idproc,name,requete,comment,autorisations,num_classement, proc_notice_tpl, proc_notice_tpl_field) 
 				VALUES ('', '$f_proc_name', '$f_proc_code', '$f_proc_comment', '$autorisations', '$form_classement', '$form_notice_tpl', '$form_notice_tpl_field' ) ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 			} else {
 				print "<script language='Javascript'>alert(\"$msg[709]\");</script>";
 				print "<script language='Javascript'>history.go(-1);</script>";
@@ -408,9 +408,9 @@ switch($action) {
 			show_procs($dbh);
 		} else {
 			$requete_users = "SELECT userid, username FROM users order by username ";
-			$res_users = mysql_query($requete_users, $dbh);
+			$res_users = pmb_mysql_query($requete_users, $dbh);
 			$autorisation=array();
-			while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+			while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 				$autorisation[]=array(0,$all_userid,$all_username);
 				}
 			proc_form("", "", "", 0, $autorisation);
@@ -426,9 +426,9 @@ switch($action) {
 	case 'del':
 		if($id) {
 			$requete = "DELETE FROM procs WHERE idproc=$id ";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			$requete = "OPTIMIZE TABLE procs ";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			show_procs($dbh);
 		}
 		break;
@@ -466,19 +466,19 @@ switch($action) {
 				if ($imported_name)
 					$the_procedure->name = $imported_name;
 				else
-					$the_procedure->name = mysql_escape_string($the_procedure->name);
+					$the_procedure->name = pmb_mysql_escape_string($the_procedure->name);
 				if ($imported_comment)
 					$the_procedure->comment = $imported_comment;
 				else
-					$the_procedure->comment = mysql_escape_string($the_procedure->comment);
+					$the_procedure->comment = pmb_mysql_escape_string($the_procedure->comment);
 					
 				$parameters=$the_procedure->params;
 				//mise à jour de l'encodage de l'entête 
 				if($charset == 'utf-8') {
 					$parameters = str_replace('<?xml version="1.0" encoding="iso-8859-1"?>', '<?xml version="1.0" encoding="utf-8"?>', $parameters) ;
 				}
-				$sql = "INSERT INTO procs (name, requete, comment, autorisations, parameters, num_classement) VALUES ('".$the_procedure->name."', '".mysql_escape_string($the_procedure->sql)."', '".$the_procedure->comment."', '".mysql_escape_string($autorisations)."', '".mysql_escape_string($parameters)."', ".mysql_escape_string($proc_classement).")";
-				$res = mysql_query($sql, $dbh);
+				$sql = "INSERT INTO procs (name, requete, comment, autorisations, parameters, num_classement) VALUES ('".$the_procedure->name."', '".pmb_mysql_escape_string($the_procedure->sql)."', '".$the_procedure->comment."', '".pmb_mysql_escape_string($autorisations)."', '".pmb_mysql_escape_string($parameters)."', ".pmb_mysql_escape_string($proc_classement).")";
+				$res = pmb_mysql_query($sql, $dbh);
 				show_procs($dbh);
 			}
 			else {
@@ -510,9 +510,9 @@ switch($action) {
 				//$form .= '<b>'.$msg["remote_procedures_putin"].':</b><br>'.$combo_clas."<br><br>";
 				
 				$requete_users = "SELECT userid, username FROM users order by username ";
-				$res_users = mysql_query($requete_users, $dbh);
+				$res_users = pmb_mysql_query($requete_users, $dbh);
 				$all_users=array();
-				while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+				while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 					$all_users[]=array($all_userid,$all_username);
 				}
 				foreach($all_users as $a_user) {
@@ -561,14 +561,14 @@ switch($action) {
 			
 		if ($the_procedure->params && ($the_procedure->params != "NULL")) {
 //			$sql = "DROP TABLE IF EXISTS remote_proc";
-//			mysql_query($sql, $dbh) or die(mysql_error());
+//			pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
 			
 			$sql = "CREATE TEMPORARY TABLE remote_proc LIKE procs";
-			mysql_query($sql, $dbh) or die(mysql_error());
+			pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
 			
-			$sql = "INSERT INTO remote_proc (idproc, name, requete, comment, autorisations, parameters, num_classement) VALUES (0, '".mysql_escape_string($the_procedure->name)."', '".mysql_escape_string($the_procedure->sql)."', '".mysql_escape_string($the_procedure->comment)."', '', '".mysql_escape_string($the_procedure->params)."', 0)";
-			mysql_query($sql, $dbh) or die(mysql_error());
-			$idproc = mysql_insert_id($dbh);
+			$sql = "INSERT INTO remote_proc (idproc, name, requete, comment, autorisations, parameters, num_classement) VALUES (0, '".pmb_mysql_escape_string($the_procedure->name)."', '".pmb_mysql_escape_string($the_procedure->sql)."', '".pmb_mysql_escape_string($the_procedure->comment)."', '', '".pmb_mysql_escape_string($the_procedure->params)."', 0)";
+			pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
+			$idproc = pmb_mysql_insert_id($dbh);
 			
 			$hp=new parameters($idproc,"remote_proc");
 			if (preg_match_all("|!!(.*)!!|U",$hp->proc->requete,$query_parameters)){
@@ -603,11 +603,11 @@ switch($action) {
 		}
 		
 		$sql = "CREATE TEMPORARY TABLE remote_proc LIKE procs";
-		mysql_query($sql, $dbh) or die(mysql_error());
+		pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
 		
-		$sql = "INSERT INTO remote_proc (idproc, name, requete, comment, autorisations, parameters, num_classement) VALUES (0, '".mysql_escape_string($the_procedure->name)."', '".mysql_escape_string($the_procedure->sql)."', '".mysql_escape_string($the_procedure->comment)."', '', '".mysql_escape_string($the_procedure->params)."', 0)";
-		mysql_query($sql, $dbh) or die(mysql_error());
-		$idproc = mysql_insert_id($dbh);
+		$sql = "INSERT INTO remote_proc (idproc, name, requete, comment, autorisations, parameters, num_classement) VALUES (0, '".pmb_mysql_escape_string($the_procedure->name)."', '".pmb_mysql_escape_string($the_procedure->sql)."', '".pmb_mysql_escape_string($the_procedure->comment)."', '', '".pmb_mysql_escape_string($the_procedure->params)."', 0)";
+		pmb_mysql_query($sql, $dbh) or die(pmb_mysql_error());
+		$idproc = pmb_mysql_insert_id($dbh);
 		
 		$hp=new parameters($idproc,"remote_proc");
 		$param_proc_hidden="";

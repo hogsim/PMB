@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: expl_list.inc.php,v 1.9 2012-04-05 12:30:38 dgoron Exp $
+// $Id: expl_list.inc.php,v 1.11 2015-04-17 14:22:36 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -33,9 +33,9 @@ function expl_list($type,$id) {
 	$requete .= " AND statut_visible_opac = 1 ";
 	
 	// récupération du nombre d'exemplaires
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 	$compteur=0;
-	while($expl = mysql_fetch_object($res)) {
+	while($expl = pmb_mysql_fetch_object($res)) {
 		$compteur = $compteur+1;
 		$expl_liste .= "<tr><td>";
 		$expl_liste .= $expl->expl_cb."&nbsp;";
@@ -63,7 +63,7 @@ function expl_list($type,$id) {
 	
 	// affichage de la liste d'exemplaires calculées ci-dessus
 	if ($compteur==0){
-		$expl_liste="<tr class=even><td colspan=5>".$msg["no_expl"]."</td></tr>";
+		$expl_liste="<tr class='even'><td colspan=5>".$msg["no_expl"]."</td></tr>";
 	}
 	print pmb_bidi($expl_liste);
 }

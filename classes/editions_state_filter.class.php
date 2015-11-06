@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: editions_state_filter.class.php,v 1.3.6.1 2014-10-28 17:44:26 mbertin Exp $
+// $Id: editions_state_filter.class.php,v 1.4 2014-10-28 18:03:42 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -29,7 +29,6 @@ class editions_state_filter {
 		if(isset($$filter_op)){
 			$this->op =$$filter_op;
 		}
-		
 	}
 	
 	public function get_form(){
@@ -44,7 +43,6 @@ class editions_state_filter {
 		}else{
 			return false;
 		}
-		
 	}
 	
 	protected function set_params($params){

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_filter.class.php,v 1.2.6.1 2014-11-26 11:26:02 dgoron Exp $
+// $Id: cms_module_common_filter.class.php,v 1.4 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -38,9 +38,9 @@ class cms_module_common_filter extends cms_module_root{
 		if($this->id){
 			//on commence par aller chercher ses infos
 			$query = " select id_cadre_content, cadre_content_hash, cadre_content_num_cadre, cadre_content_data from cms_cadre_content where id_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->id = $row->id_cadre_content+0;
 				$this->hash = $row->cadre_content_hash;
 				$this->cadre_parent = $row->cadre_content_num_cadre+0;
@@ -172,15 +172,15 @@ class cms_module_common_filter extends cms_module_root{
 			($this->cadre_parent ? "cadre_content_num_cadre = ".$this->cadre_parent."," : "")."		
 			cadre_content_data = '".addslashes($this->serialize())."'
 			".$clause;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		
 		if($result){
 			if(!$this->id){
-				$this->id = mysql_insert_id();
+				$this->id = pmb_mysql_insert_id();
 			}
 			//on supprime les anciens filtres
 			$query = "delete from cms_cadre_content where id_cadre_content != ".$this->id." and cadre_content_type='filter' and cadre_content_num_cadre = ".$this->cadre_parent;
-			mysql_query($query);
+			pmb_mysql_query($query);
 			//sélecteur
 			$selector_by_id = $selector_from_id = 0;
 			for($i=0 ; $i<count($this->selectors['by']) ; $i++){
@@ -221,7 +221,7 @@ class cms_module_common_filter extends cms_module_root{
 						
 						//on a tout sauvegardé, on garde la trace dans le filtre pour pas tout chamboulé dans les sélecteurs...
 						$this->parameters['selectors'] = $this->selectors;
-						mysql_query("update cms_cadre_content set cadre_content_data = '".addslashes($this->serialize())."' where id_cadre_content=".$this->id);
+						pmb_mysql_query("update cms_cadre_content set cadre_content_data = '".addslashes($this->serialize())."' where id_cadre_content=".$this->id);
 						return true;
 					}else{
 						$this->delete_hash();
@@ -248,10 +248,10 @@ class cms_module_common_filter extends cms_module_root{
 		if($this->id){
 			//on commence par éliminer le sélecteur associé...
 			$query = "select id_cadre_content,cadre_content_object from cms_cadre_content where cadre_content_num_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
 				//la logique voudrait qu'il n'y ai qu'un seul sélecteur (enfin sous-élément, la conception peut évoluer...), mais sauvons les brebis égarées...
-				while($row = mysql_fetch_object($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$sub_elem = new $row->cadre_content_object($row->id_cadre_content);
 					$success = $sub_elem->delete();
 					if(!$success){
@@ -262,7 +262,7 @@ class cms_module_common_filter extends cms_module_root{
 			}
 			//on est tout seul, éliminons-nous !
 			$query = "delete from cms_cadre_content where id_cadre_content = ".$this->id;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query);
 			if($result){
 				$this->delete_hash();
 				return true;

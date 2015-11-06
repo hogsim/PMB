@@ -2,14 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: type_empty_word.inc.php,v 1.2 2007-10-26 10:34:58 ngantier Exp $
+// $Id: type_empty_word.inc.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 require_once("$class_path/semantique.class.php");
 
 function ajax_modify_type_empty_word() {
 	global $id_mot,$type_lien;
-	@mysql_query("update linked_mots set type_lien=".$type_lien." where num_mot=".$id_mot);	
+	@pmb_mysql_query("update linked_mots set type_lien=".$type_lien." where num_mot=".$id_mot);	
 	
 	
 	semantique::gen_table_empty_word();

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: connecteurs_out_sets.class.php,v 1.8.6.1 2014-07-09 07:54:13 dgoron Exp $
+// $Id: connecteurs_out_sets.class.php,v 1.12 2015-06-19 14:03:50 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -109,7 +109,7 @@ class connector_out_set {
 		global $dbh;
 		$id+=0;
 		$sql = "SELECT * FROM connectors_out_sets WHERE connector_out_set_id = ".$id;
-		$row = mysql_fetch_assoc(mysql_query($sql, $dbh));
+		$row = pmb_mysql_fetch_assoc(pmb_mysql_query($sql, $dbh));
 		$this->id = $row["connector_out_set_id"];
 		$this->caption = $row["connector_out_set_caption"];
 		$this->type = $row["connector_out_set_type"];
@@ -122,15 +122,15 @@ class connector_out_set {
 	static function caption_exists($caption) {
 		global $dbh;
 		$sql = "SELECT connector_out_set_id FROM connectors_out_sets WHERE connector_out_set_caption = '".addslashes($caption)."'";
-		$res = mysql_query($sql, $dbh);
-		return mysql_num_rows($res) > 0 ? mysql_result($res, 0, 0) : 0;
+		$res = pmb_mysql_query($sql, $dbh);
+		return pmb_mysql_num_rows($res) > 0 ? pmb_mysql_result($res, 0, 0) : 0;
 	}
 
 	static function add_new() {
 		global $dbh;
 		$sql = "INSERT INTO connectors_out_sets () VALUES ()";
-		$res = mysql_query($sql, $dbh);
-		$new_set_id = mysql_insert_id($dbh);
+		$res = pmb_mysql_query($sql, $dbh);
+		$new_set_id = pmb_mysql_insert_id($dbh);
 		$cache = connector_out_setcache::add($new_set_id);
 		return new connector_out_set($new_set_id);
 	}
@@ -142,14 +142,14 @@ class connector_out_set {
 		$this->config = addslashes_array($this->config);
 		$serialized = serialize($this->config);
 		$sql = "UPDATE connectors_out_sets SET connector_out_set_caption = '".addslashes($this->caption)."', connector_out_set_type = ".$this->type.", connector_out_set_config = '".addslashes($serialized)."' WHERE connector_out_set_id = ".$this->id."";
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	function delete() {
 		global $dbh;
 		//Deletons le set
 		$sql = "DELETE FROM connectors_out_sets WHERE connector_out_set_id = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	function get_config_form(&$out_of_form_result) {
@@ -206,8 +206,8 @@ class connector_out_set_noticecaddie extends connector_out_set {
 		
 		$caddies=array();
 		$caddies_sql = "SELECT idcaddie FROM caddie WHERE type = 'NOTI'";
-		$caddies_res = mysql_query($caddies_sql, $dbh);
-		while($row=mysql_fetch_assoc($caddies_res)) {
+		$caddies_res = pmb_mysql_query($caddies_sql, $dbh);
+		while($row=pmb_mysql_fetch_assoc($caddies_res)) {
 			$acaddie = new caddie($row["idcaddie"]);
 			$caddies[] = $acaddie;
 		}
@@ -274,9 +274,9 @@ class connector_out_set_noticecaddie extends connector_out_set {
 	static function get_notice_setlist($notice_id) {
 		global $dbh;
 		$sql = "SELECT connectors_out_setcache_setnum FROM connectors_out_setcache_values LEFT JOIN connectors_out_setcaches ON (connectors_out_setcache_id =connectors_out_setcache_values_cachenum) WHERE connectors_out_setcache_values_value = ".$notice_id;
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		$results = array();
-		while($row=mysql_fetch_assoc($res))
+		while($row=pmb_mysql_fetch_assoc($res))
 			$results[] = $row["connectors_out_setcache_setnum"];
 		return $results;
 	}
@@ -336,8 +336,8 @@ class connector_out_set_noticemulticritere extends connector_out_set {
 		
 		//Copier une équation DSI
 		$sql = "SELECT id_equation, nom_equation FROM equations WHERE proprio_equation = 0";
-		$res = mysql_query($sql, $dbh);
-		while($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$config_form .= '<input name="search_updateaction" value="dsieq_'.$row["id_equation"].'" type="radio" id="search_updateaction_dsieq_'.$row["id_equation"].'"><label class="etiquette" for="search_updateaction_dsieq_'.$row["id_equation"].'">'.$msg["search_notice_to_connector_out_set_editsearch_copydsiequation"].'</label>: '.htmlentities($row["nom_equation"] ,ENT_QUOTES, $charset);
 			$config_form .= '<br />';
 		}
@@ -387,7 +387,7 @@ class connector_out_set_noticemulticritere extends connector_out_set {
 		
 		//on marque le set comme en cours de rafraichissement
 		$query = "update connectors_out_sets set being_refreshed = 1 where connector_out_set_id = ".$this->id;
-		mysql_query($query,$dbh);
+		pmb_mysql_query($query,$dbh);
 		
 		//Utilisons la classe de caches de recherche pour effectuer la recherche.
 		$cache_duration = $this->cache->cache_duration_in_seconds();
@@ -401,15 +401,15 @@ class connector_out_set_noticemulticritere extends connector_out_set {
 		
 		//on marque le set comme en cours de rafraichissement
 		$query = "update connectors_out_sets set being_refreshed = 0 where connector_out_set_id = ".$this->id;
-		mysql_query($query,$dbh);
+		pmb_mysql_query($query,$dbh);
 	}
 	
 	static function get_notice_setlist($notice_id) {
 		global $dbh;
 		$sql = "SELECT connectors_out_setcache_setnum FROM connectors_out_setcache_values LEFT JOIN connectors_out_setcaches ON (connectors_out_setcache_id = connectors_out_setcache_values_cachenum) WHERE connectors_out_setcache_values_value = ".$notice_id;
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		$results = array();
-		while($row=mysql_fetch_assoc($res))
+		while($row=pmb_mysql_fetch_assoc($res))
 			$results[] = $row["connectors_out_setcache_setnum"];
 		return $results;
 	}
@@ -481,8 +481,8 @@ class connector_out_set_explcaddie extends connector_out_set {
 		
 		$caddies=array();
 		$caddies_sql = "SELECT idcaddie FROM caddie WHERE type = 'EXPL'";
-		$caddies_res = mysql_query($caddies_sql, $dbh);
-		while($row=mysql_fetch_assoc($caddies_res)) {
+		$caddies_res = pmb_mysql_query($caddies_sql, $dbh);
+		while($row=pmb_mysql_fetch_assoc($caddies_res)) {
 			$acaddie = new caddie($row["idcaddie"]);
 			$caddies[] = $acaddie;
 		}
@@ -555,8 +555,8 @@ class connector_out_set_emprcaddie extends connector_out_set {
 		
 		$caddies=array();
 		$caddies_sql = "SELECT idemprcaddie FROM empr_caddie";
-		$caddies_res = mysql_query($caddies_sql, $dbh);
-		while($row=mysql_fetch_assoc($caddies_res)) {
+		$caddies_res = pmb_mysql_query($caddies_sql, $dbh);
+		while($row=pmb_mysql_fetch_assoc($caddies_res)) {
 			$acaddie = new empr_caddie($row["idemprcaddie"]);
 			$caddies[] = $acaddie;
 		}
@@ -605,7 +605,7 @@ function new_connector_out_set_typed($id, $type=0) {
 	
 	if (!$type) {
 		$sql = "SELECT connector_out_set_type FROM connectors_out_sets WHERE connector_out_set_id = ".($id+0);
-		$type = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$type = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 	}
 	if (!$type)
 		$type=1;
@@ -619,8 +619,8 @@ class connector_out_sets {
 		global $dbh;
 
 		$sql = "SELECT connector_out_set_id, connector_out_set_type FROM connectors_out_sets ORDER BY connector_out_set_type";
-		$res = mysql_query($sql, $dbh);
-		while ($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while ($row=pmb_mysql_fetch_assoc($res)) {
 			$aesuser = new_connector_out_set_typed($row["connector_out_set_id"], $row["connector_out_set_type"]);
 			$this->sets[] = clone $aesuser;
 		}
@@ -629,7 +629,7 @@ class connector_out_sets {
 	static function get_typed_set_count($type) {
 		global $dbh;
 		$sql = "SELECT COUNT(1) FROM connectors_out_sets WHERE connector_out_set_type = ".($type+0);
-		$result = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$result = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		return $result;
 	}
 }
@@ -648,14 +648,14 @@ class connector_out_setcateg {
 		
 		//Main information
 		$sql = "SELECT * FROM connectors_out_setcategs WHERE connectors_out_setcateg_id = ".($id+0);
-		$res = mysql_query($sql);
-		$row = mysql_fetch_assoc($res);
+		$res = pmb_mysql_query($sql);
+		$row = pmb_mysql_fetch_assoc($res);
 		$this->name = $row["connectors_out_setcateg_name"];
 		
 		//Categ content
 		$sql = "SELECT connectors_out_setcategset_setnum FROM connectors_out_setcateg_sets WHERE connectors_out_setcategset_categnum = ".($id+0);
-		$res=mysql_query($sql);
-		while($row=mysql_fetch_assoc($res)) {
+		$res=pmb_mysql_query($sql);
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$this->sets[] = $row["connectors_out_setcategset_setnum"];
 		}
 	}
@@ -663,15 +663,15 @@ class connector_out_setcateg {
 	static function name_exists($name) {
 		global $dbh;
 		$sql = "SELECT connectors_out_setcateg_id FROM connectors_out_setcategs WHERE connectors_out_setcateg_name = '".addslashes($name)."'";
-		$res = mysql_query($sql, $dbh);
-		return mysql_num_rows($res) > 0 ? mysql_result($res, 0, 0) : 0;
+		$res = pmb_mysql_query($sql, $dbh);
+		return pmb_mysql_num_rows($res) > 0 ? pmb_mysql_result($res, 0, 0) : 0;
 	}
 	
 	static function add_new() {
 		global $dbh;
 		$sql = "INSERT INTO connectors_out_setcategs () VALUES ()";
-		$res = mysql_query($sql, $dbh);
-		$new_setcateg_id = mysql_insert_id($dbh);
+		$res = pmb_mysql_query($sql, $dbh);
+		$new_setcateg_id = pmb_mysql_insert_id($dbh);
 		return new connector_out_setcateg($new_setcateg_id);
 	}
 	
@@ -679,11 +679,11 @@ class connector_out_setcateg {
 		global $dbh;
 		//on oublie pas que includes/global_vars.inc.php s'amuse à tout addslasher tout seul donc on le fait pas ici
 		$sql = "UPDATE connectors_out_setcategs SET connectors_out_setcateg_name = '".$this->name."' WHERE connectors_out_setcateg_id = ".$this->id."";
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 		//Vidage de la catégorie
 		$sql = "DELETE FROM connectors_out_setcateg_sets WHERE connectors_out_setcategset_categnum = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 		//Remplissage de la catégorie
 		if (count($this->sets)) {
@@ -695,7 +695,7 @@ class connector_out_setcateg {
 				$values[] = '('.$asetid.', '.$this->id.')';
 			}
 			$sql .= implode(",", $values);
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 		}
 	}
 	
@@ -703,11 +703,11 @@ class connector_out_setcateg {
 		global $dbh;
 		//Deletons l'user
 		$sql = "DELETE FROM connectors_out_setcategs WHERE connectors_out_setcateg_id = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 		//Vidons la catégorie
 		$sql = "DELETE FROM connectors_out_setcateg_sets WHERE connectors_out_setcategset_categnum = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 }
 
@@ -717,8 +717,8 @@ class connector_out_setcategs {
 	function connector_out_setcategs() {
 		global $dbh;
 		$sql = "SELECT connectors_out_setcateg_id FROM connectors_out_setcategs";
-		$res = mysql_query($sql, $dbh);
-		while ($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while ($row=pmb_mysql_fetch_assoc($res)) {
 			$acateg = new connector_out_setcateg($row["connectors_out_setcateg_id"]);
 			$this->categs[] = clone $acateg;
 		}
@@ -742,8 +742,8 @@ class connector_out_setcache {
 		$set_id+=0;
 		//Main information
 		$sql = "SELECT * FROM connectors_out_setcaches WHERE connectors_out_setcache_setnum=".$set_id;
-		$res = mysql_query($sql, $dbh);
-		$row = mysql_fetch_assoc($res);
+		$res = pmb_mysql_query($sql, $dbh);
+		$row = pmb_mysql_fetch_assoc($res);
 		$this->id = $row["connectors_out_setcache_id"];
 		$this->set_id = $set_id;
 		$this->last_updated_date = $row["connectors_out_setcache_lastupdatedate"];
@@ -754,8 +754,8 @@ class connector_out_setcache {
 	static function add($set_id) {
 		global $dbh;
 		$sql = "INSERT INTO connectors_out_setcaches (connectors_out_setcache_setnum) VALUES (".$set_id.")";
-		$res = mysql_query($sql, $dbh);
-		$new_row_id = mysql_insert_id($dbh);
+		$res = pmb_mysql_query($sql, $dbh);
+		$new_row_id = pmb_mysql_insert_id($dbh);
 		return new connector_out_setcache($set_id);
 	}
 	
@@ -763,22 +763,22 @@ class connector_out_setcache {
 		global $dbh;
 		//Deletons le cache
 		$sql = "DELETE FROM connectors_out_setcaches WHERE connectors_out_setcache_id = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 
 		//Vidons le cache
 		$sql = "DELETE FROM connectors_out_setcache_values WHERE connectors_out_setcache_values_cachenum = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	function clear($also_clear_date=false) {
 		global $dbh;
 		//Vidons le cache
 		$sql = "DELETE FROM connectors_out_setcache_values WHERE connectors_out_setcache_values_cachenum = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 		if ($also_clear_date) {
 			$sql = "UPDATE connectors_out_setcaches SET connectors_out_setcache_lastupdatedate = '0000-00-00 00:00:00' WHERE connectors_out_setcache_id = ".$this->id;
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 		}
 	}
 	
@@ -796,8 +796,8 @@ class connector_out_setcache {
 
 		$sql = "SELECT connectors_out_setcache_values_value FROM connectors_out_setcache_values WHERE connectors_out_setcache_values_cachenum = ".$this->id." ".$limit;
 
-		$res = mysql_query($sql, $dbh);
-		while($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$this->values[] = $row["connectors_out_setcache_values_value"];
 		}
 		return $this->values;
@@ -806,20 +806,26 @@ class connector_out_setcache {
 	function get_value_count() {
 		global $dbh;
 		$sql = "SELECT count(1) FROM connectors_out_setcache_values WHERE connectors_out_setcache_values_cachenum = ".$this->id;
-		return mysql_result(mysql_query($sql, $dbh), 0, 0);
+		return pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 	}
 	
 	function commit_to_db($also_commit_values=false) {
 		global $dbh;
 		$sql = "UPDATE connectors_out_setcaches SET connectors_out_setcache_lifeduration = ".$this->life_lifeduration.", connectors_out_setcache_lastupdatedate = '".$this->last_updated_date."', connectors_out_setcache_lifeduration_unit = '".$this->life_lifeduration_unit."' WHERE connectors_out_setcache_id = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	function commit_values_into_db() {
 		global $dbh;
+		
+		//On stocke l'état actuel dans une table temporaire
+		$temporary_table = "tmp_connectors_out_setcache_values_".$this->id;
+		$query = "create temporary table ".$temporary_table." engine myisam select connectors_out_setcache_values_value from connectors_out_setcache_values where connectors_out_setcache_values_cachenum = ".$this->id;
+		pmb_mysql_query($query, $dbh);
+		
 		//On vide
 		$sql = "DELETE FROM connectors_out_setcache_values WHERE connectors_out_setcache_values_cachenum = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 		//Et on remplit
 		//Des fois qu'il y en ait beaucoup on va pas tout mysqler d'un coup. Faisons des paquets de 100.
@@ -832,12 +838,14 @@ class connector_out_setcache {
 				$values[] = '('.$this->id.', '.$avalue.')';
 			}
 			$sql .= implode(",", $values);
-			mysql_query($sql, $dbh);
+			pmb_mysql_query($sql, $dbh);
 		}
+		
+		$this->update_deleted_records($temporary_table);
 		
 		//On met à jour la date
 		$sql = "UPDATE connectors_out_setcaches SET connectors_out_setcache_lastupdatedate = NOW() WHERE connectors_out_setcache_id = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	function updatedb_from_sqlselect($sql_select) {
@@ -845,22 +853,22 @@ class connector_out_setcache {
 		
 		//on marque le set comme en cours de rafraississement
 		$query = "update connectors_out_sets set being_refreshed = 1 where connector_out_set_id = ".$this->id;
-		mysql_query($query,$dbh);
+		pmb_mysql_query($query,$dbh);
 		
 		//On vide
 		$sql = "DELETE FROM connectors_out_setcache_values WHERE connectors_out_setcache_values_cachenum = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 
 		$sql = "INSERT INTO connectors_out_setcache_values (connectors_out_setcache_values_cachenum, connectors_out_setcache_values_value) ".$sql_select;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 
 		//On met à jour la date
 		$sql = "UPDATE connectors_out_setcaches SET connectors_out_setcache_lastupdatedate = NOW() WHERE connectors_out_setcache_id = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 		
 		//rafraississement terminé, on retire le marqueur
 		$query = "update connectors_out_sets set being_refreshed = 0 where connector_out_set_id = ".$this->id;
-		mysql_query($query,$dbh);		
+		pmb_mysql_query($query,$dbh);		
 
 		//Et on vide le cache actuel
 		$this->values = array();
@@ -903,7 +911,7 @@ class connector_out_setcache {
 			"months" => "MONTH"
 		);
 		$sql = "SELECT IFNULL(DATE_ADD(connectors_out_setcache_lastupdatedate, INTERVAL ".$this->life_lifeduration." ".$config_mysql_timemapping[$this->life_lifeduration_unit].") < NOW(), 1) FROM connectors_out_setcaches WHERE connectors_out_setcache_id = ".$this->id;
-		$expired = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$expired = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		return $expired;
 	}
 	
@@ -919,13 +927,33 @@ class connector_out_setcache {
 			"months" => "MONTH"
 		);
 		$sql = "SELECT UNIX_TIMESTAMP(NOW() + INTERVAL ".$this->life_lifeduration." ".$config_mysql_timemapping[$this->life_lifeduration_unit].") - UNIX_TIMESTAMP(NOW())";
-		$seconds = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$seconds = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		return $seconds;
+	}
+	
+	private function update_deleted_records($temporary_table) {
+		global $dbh;
+		
+		// On regarde les enregistrements qui sont revenus dans le set et on les enlève de la table
+		$query = "delete from connectors_out_oai_deleted_records where num_notice in (select connectors_out_setcache_values_value from connectors_out_setcache_values where connectors_out_setcache_values_cachenum = ".$this->id.") and num_set = ".$this->set_id;
+		pmb_mysql_query($query, $dbh);
+
+		// On regarde les enregistrements qui ne sont plus dans le set et on les ajoute à la table
+		$query = "select connectors_out_setcache_values_value from ".$temporary_table." where connectors_out_setcache_values_value not in (select connectors_out_setcache_values_value from connectors_out_setcache_values where connectors_out_setcache_values_cachenum = ".$this->id.")";
+		$result = pmb_mysql_query($query, $dbh);
+		if ($result && pmb_mysql_num_rows($result)) {
+			$values = array();
+			while ($record = pmb_mysql_fetch_object($result)) {
+				$values[] = "(".$this->set_id.", ".$record->connectors_out_setcache_values_value.", NOW())";
+			}
+			$query = "insert into connectors_out_oai_deleted_records (num_set, num_notice, deletion_date) values ".implode(",", $values);
+			pmb_mysql_query($query, $dbh);
+		}
 	}
 	
 }
 
-class connector_out_setcache_notice extends connector_out_setcache {
+class connector_out_setcache_notice extends connector_out_setcache {	
 	function get_values($first=false, $count=false, $datefrom=false, $dateuntil=false) {
 		if ($this->values) {
 			return $this->values;
@@ -951,8 +979,8 @@ class connector_out_setcache_notice extends connector_out_setcache {
 			$sql = "SELECT connectors_out_setcache_values_value FROM connectors_out_setcache_values WHERE connectors_out_setcache_values_cachenum = ".$this->id." ".$limit;
 
 		
-		$res = mysql_query($sql, $dbh);
-		while($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while($row=pmb_mysql_fetch_assoc($res)) {
 			$this->values[] = $row["connectors_out_setcache_values_value"];
 		}
 		return $this->values;
@@ -971,19 +999,16 @@ class connector_out_setcache_notice extends connector_out_setcache {
 			$where_clause = implode(" AND ", $where_clauses);
 		}
 		$sql = "SELECT count(1) FROM connectors_out_setcache_values LEFT JOIN notices ON (notices.notice_id = connectors_out_setcache_values_value) WHERE ".$where_clause.($where_clause ? ' AND ' : '')." connectors_out_setcache_values_cachenum = ".$this->id;
-		return mysql_result(mysql_query($sql, $dbh), 0, 0);
+		return pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 	}
 	
 	//Fonction qui renvoie la date de modification la plus vieille (pour l'oai)
 	function get_earliest_updatedate() {
 		global $dbh;
 		$sql = "SELECT UNIX_TIMESTAMP(MIN(update_date)) FROM connectors_out_setcache_values LEFT JOIN notices ON (notices.notice_id = connectors_out_setcache_values_value) WHERE connectors_out_setcache_values_cachenum = ".$this->id;
-		$result = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$result = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		return $result;
 	}
 }
-
-
-
 
 ?>

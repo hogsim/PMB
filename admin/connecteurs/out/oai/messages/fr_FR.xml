@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.6 2012-10-08 09:52:04 dbellamy Exp $ -->
+$Id: fr_FR.xml,v 1.7 2015-06-11 13:00:04 apetithomme Exp $ -->
 
 <XMLlist>
 	<entry code="illegal_verb">Illegal Verb</entry>
@@ -35,4 +35,10 @@ $Id: fr_FR.xml,v 1.6 2012-10-08 09:52:04 dbellamy Exp $ -->
 	<entry code="include_items">Conserver les informations des exemplaires dans la zone 995</entry>
 	<entry code='feuille_xslt'>Feuille XSLT personnalisée pour le Dublin Core</entry>
 	<entry code='suppr_feuille_xslt'>Supprimer cette feuille</entry>
+	<entry code='deletion_management'>Mode de gestion des suppressions des enregistrements</entry>
+	<entry code='deletion_management_none'>Aucune</entry>
+	<entry code='deletion_management_transient'>Transitoire</entry>
+	<entry code='deletion_management_transient_duration'>durée (secondes) :</entry>
+	<entry code='deletion_management_persistent'>Persistant</entry>
+	<entry code='if_none_status_to_deletion'>(Si aucun statut lié)</entry>
 </XMLlist>

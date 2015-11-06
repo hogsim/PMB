@@ -6,25 +6,25 @@ function _export_($id,$keep_expl) {
 	$notice="<?xml version='1.0' encoding='".$charset."'?>\n";
 	$notice.="<notice>\n";
 	$requete="select * from notices where notice_id=$id";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	
-	$rn=mysql_fetch_object($resultat);
+	$rn=pmb_mysql_fetch_object($resultat);
 	
 	//Référence
 	//$notice.="  <REF>".htmlspecialchars($id)."</REF>\n";
 	
 	//Organisme (OP)
 	$requete="select notices_custom_list_lib from notices_custom_lists, notices_custom_values where notices_custom_lists.notices_custom_champ=1 and notices_custom_values.notices_custom_champ=1 and notices_custom_integer=notices_custom_list_value and notices_custom_origine=$id";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-		$op=mysql_result($resultat,0,0);
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+		$op=pmb_mysql_result($resultat,0,0);
 		$notice.="  <OP>".htmlspecialchars(strtoupper($op),ENT_QUOTES,$charset)."</OP>\n";
 	}
 	//Date saisie (DS)
 	$requete="select notices_custom_date from notices_custom_values where notices_custom_champ=3 and notices_custom_origine=$id";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-		$date=mysql_result($resultat,0,0);
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+		$date=pmb_mysql_result($resultat,0,0);
 	} else $date=date("Y")."-".date("m")."-".date("d");
 	$notice.="<DS>".$date."</DS>\n";
 		
@@ -32,8 +32,8 @@ function _export_($id,$keep_expl) {
 	$serie="";
 	if ($rn->tparent_id) {
 		$requete="select serie_name from series where serie_id=".$rn->tparent_id;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) $serie=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) $serie=pmb_mysql_result($resultat,0,0);
 	}
 	if ($rn->tnvol) $serie.=($serie?" ":"").$rn->tnvol;
 	if ($serie) $serie.=". ";
@@ -51,10 +51,10 @@ function _export_($id,$keep_expl) {
 	}
 
 	$requete="select num_noeud from notices_categories where notcateg_notice=$id";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	$doc=array();
 	$de=array();
-	while (list($categ_id)=mysql_fetch_row($resultat)) {
+	while (list($categ_id)=pmb_mysql_fetch_row($resultat)) {
 		$categ=new category($categ_id);
 		switch ($categ->thes->id_thesaurus) {
 			case 1:
@@ -90,8 +90,8 @@ function _export_($id,$keep_expl) {
 	//DO
 	if ($rn->indexint) {
 		$requete="select indexint_name from indexint where indexint_id=".$rn->indexint;
-		$resultat=mysql_query($requete);
-		$do=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		$do=pmb_mysql_result($resultat,0,0);
 		$notice.="<DO>".htmlspecialchars($do,ENT_QUOTES,$charset)."</DO>\n";
 	}
 	$notice.="</notice>";

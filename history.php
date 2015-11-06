@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: history.php,v 1.31.2.1 2014-04-03 15:30:43 dgoron Exp $
+// $Id: history.php,v 1.35 2015-05-27 09:56:27 apetithomme Exp $
 
 //Transmission ensuite du fichier converti
 $base_path = ".";
@@ -56,7 +56,7 @@ if ($act) {
 			$_SESSION["CURRENT"]=false;
 			//vide également l'historique stocké en base
 			$requete="delete from admin_session where userid=".SESSuserid;
-			$r=mysql_query($requete);
+			$r=pmb_mysql_query($requete);
 			break;
 		case 'export':
 			if ($sel) {
@@ -131,7 +131,7 @@ if ($act) {
 		case 'save':
 			$save=serialize($_SESSION['session_history']);
 			$requete="replace into admin_session values(".SESSuserid.",'".addslashes($save)."')";
-			$r=mysql_query($requete);
+			$r=pmb_mysql_query($requete);
 			if (!$r) $alert=$msg["histo_save_fail"]; else $alert=$msg["histo_save_done"];
 			break;
 	}
@@ -180,8 +180,9 @@ if (count($_SESSION["session_history"])) {
 				$subqueries.="<tr><td width='15' valign='top'><img src='./images/branch_final.png' align='center'/></td><td><a href='#' onClick=\"parent.document.location='recall.php?t=NOTI&current=$i'; return false;\"><b>N</b> ".$_SESSION["session_history"][$i]["NOTI"]["HUMAN_QUERY"].", page ".$_SESSION["session_history"][$i]["NOTI"]["PAGE"]."</a>";
 				if (!$_SESSION["session_history"][$i]["NOTI"]["NOPRINT"])
 					$subqueries.="&nbsp;<a href='#' onClick=\"openPopUp('./print_cart.php?current_print=$i&action=print_prepare','print',500, 600, -2, -2, 'scrollbars=yes,menubar=0'); return false;\"><img src='./images/basket_small_20x20.gif' border='0' align='center' alt=\"".$msg["histo_add_to_cart"]."\" title=\"".$msg["histo_add_to_cart"]."\"></a>&nbsp;<a href='#' onClick=\"w=openPopUp('./print.php?current_print=$i&action_print=print_prepare','print',500,600,-2,-2,'scrollbars=yes,menubar=0'); return false;\"><img src='./images/print.gif' border='0' align='center' alt=\"".$msg["histo_print"]."\" title=\"".$msg["histo_print"]."\"/></a>";
+					$subqueries.="&nbsp;<a href='#' onClick=\"openPopUp('./download.php?current_download=$i&action_download=download_prepare','download',500,600,-2,-2,'scrollbars=yes,menubar=0'); return false;\"><img src='./images/upload_docnum.gif' border='0' align='center' alt=\"".$msg["docnum_download"]."\" title=\"".$msg["docnum_download"]."\"/></a>";
 					if ($pmb_allow_external_search) 
-						$subqueries.="&nbsp;<a href='#' onClick=\"parent.document.location='recall.php?t=NOTI&current=$i&external=1'; return false;\"><img src='./images/external_search.png' border='0' align='center' alt=\"".$msg["connecteurs_external_search_sources"]."\" title=\"".$msg["connecteurs_external_search_sources"]."\"/></a>";
+						$subqueries.="&nbsp;<a href='#' onClick=\"parent.document.location='recall.php?t=NOTI&current=$i&external=1'; return false;\" title='".$msg["connecteurs_external_search_sources"]."'><img src='./images/external_search.png' border='0' align='center' alt=\"".$msg["connecteurs_external_search_sources"]."\"/></a>";
 				$subqueries.="</td></tr>\n";
 			}
 			if ($_SESSION["session_history"][$i]["EXPL"]) {

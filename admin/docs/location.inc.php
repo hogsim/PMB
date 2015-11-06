@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: location.inc.php,v 1.30.2.1 2014-05-13 12:35:16 dgoron Exp $
+// $Id: location.inc.php,v 1.32 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,13 +37,13 @@ function show_location($dbh) {
 		</tr>";
 
 	$requete = "SELECT idlocation,location_libelle, locdoc_owner, locdoc_codage_import, lender_libelle, location_visible_opac, css_style FROM docs_location left join lenders on locdoc_owner=idlender ORDER BY location_libelle";
-	$res = mysql_query($requete, $dbh);
+	$res = pmb_mysql_query($requete, $dbh);
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		$memo_location[]=$row;
 		if ($parity % 2) {
 			$pair_impair = "even";
@@ -73,13 +73,13 @@ function show_location($dbh) {
 			<tr>
 				<th>".$msg["admin_location_resa_empr_loc"]."</th>";
 		$requete="select * from resa_loc";
-		$res = mysql_query($requete, $dbh);	
-		if(mysql_num_rows($res)) {
-			while(($row=mysql_fetch_object($res))) {
+		$res = pmb_mysql_query($requete, $dbh);	
+		if(pmb_mysql_num_rows($res)) {
+			while(($row=pmb_mysql_fetch_object($res))) {
 				$resa_liste[$row->resa_loc][$row->resa_emprloc]=1;				
 			}
 		}
-		$ligne="";
+		$ligne="";		
 		foreach($memo_location as $row) {
 			$form_res_location.="<th>".$row->location_libelle."</th>";		
 			if ($parity++ % 2) {
@@ -163,8 +163,8 @@ switch($action) {
 		// vérification validité des données fournies.
 		if($form_actif) {
 			$requete = " SELECT count(1) FROM docs_location WHERE (location_libelle='$form_libelle' AND idlocation!='$id' )  LIMIT 1 ";
-			$res = mysql_query($requete, $dbh);
-			$nbr = mysql_result($res, 0, 0);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr = pmb_mysql_result($res, 0, 0);
 			if ($nbr > 0) {
 				error_form_message($form_libelle.$msg["docs_label_already_used"]);
 			} else {
@@ -173,10 +173,10 @@ switch($action) {
 				$set_values = "SET location_libelle='$form_libelle', locdoc_codage_import='$form_locdoc_codage_import', locdoc_owner='$form_locdoc_owner', location_pic='$form_location_pic', location_visible_opac='$form_location_visible_opac', name= '$form_locdoc_name', adr1= '$form_locdoc_adr1', adr2= '$form_locdoc_adr2', cp= '$form_locdoc_cp', town= '$form_locdoc_town', state= '$form_locdoc_state', country= '$form_locdoc_country', phone= '$form_locdoc_phone', email= '$form_locdoc_email', website= '$form_locdoc_website', logo= '$form_locdoc_logo', commentaire='$form_locdoc_commentaire', num_infopage='$form_num_infopage', css_style='$form_css_style', surloc_num='$form_sur_localisation', surloc_used='$form_location_use_surloc' " ;
 				if($id) {
 					$requete = "UPDATE docs_location $set_values WHERE idlocation='$id' ";
-					$res = mysql_query($requete, $dbh);
+					$res = pmb_mysql_query($requete, $dbh);
 				} else {
 					$requete = "INSERT INTO docs_location $set_values ";
-					$res = mysql_query($requete, $dbh);
+					$res = pmb_mysql_query($requete, $dbh);
 				}
 			}
 		}	
@@ -189,11 +189,11 @@ switch($action) {
 	case 'resa_loc':
 		if($form_actif) {
 			$requete = "truncate table resa_loc";
-			mysql_query($requete, $dbh);
+			pmb_mysql_query($requete, $dbh);
 			if(is_array($matrice_loc))foreach($matrice_loc as $loc_bibli=>$val) {
 				foreach($val as $loc_empr=>$val1) {
 					$requete = "INSERT INTO resa_loc SET resa_loc='$loc_bibli', resa_emprloc='$loc_empr'";
-					mysql_query($requete, $dbh);
+					pmb_mysql_query($requete, $dbh);
 				}
 			}
 		}	
@@ -202,9 +202,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT location_libelle, locdoc_codage_import, locdoc_owner, location_pic, location_visible_opac, location_visible_opac, name, adr1, adr2, cp, town, state, country, phone, email, website, logo, commentaire, num_infopage, css_style, surloc_used FROM docs_location WHERE idlocation='$id' ";
-			$res = mysql_query($requete, $dbh) or die(mysql_error()."<br />$requete");
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error()."<br />$requete");
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				location_form($row->location_libelle, $row->locdoc_codage_import, $row->locdoc_owner, $id, $row->location_pic, $row->location_visible_opac, $row->name, $row->adr1, $row->adr2, $row->cp, $row->town, $row->state, $row->country, $row->phone, $row->email, $row->website, $row->logo, $row->commentaire, $row->num_infopage, $row->css_style,$row->surloc_used);
 			} else {
 				show_location($dbh);
@@ -215,14 +215,14 @@ switch($action) {
 		break;
 	case 'del':
 		if($id) {
-			$total1 = mysql_result (mysql_query("select count(1) from exemplaires where expl_location='".$id."' ", $dbh), 0, 0);
-			$total2 = mysql_result (mysql_query("select count(1) from users where deflt2docs_location='".$id."' or deflt_docs_location='".$id."'", $dbh), 0, 0);
-			$total3 = mysql_result (mysql_query("select count(1) from empr where empr_location='".$id."' ", $dbh), 0, 0);
-			$total4 = mysql_result(mysql_query("select count(1) from abts_abts where location_id ='".$id."' ", $dbh), 0, 0);
-			$total5 = mysql_result(mysql_query("select count(1) from collections_state where location_id ='".$id."' ", $dbh), 0, 0);
+			$total1 = pmb_mysql_result(pmb_mysql_query("select count(1) from exemplaires where expl_location='".$id."' ", $dbh), 0, 0);
+			$total2 = pmb_mysql_result(pmb_mysql_query("select count(1) from users where deflt2docs_location='".$id."' or deflt_docs_location='".$id."'", $dbh), 0, 0);
+			$total3 = pmb_mysql_result(pmb_mysql_query("select count(1) from empr where empr_location='".$id."' ", $dbh), 0, 0);
+			$total4 = pmb_mysql_result(pmb_mysql_query("select count(1) from abts_abts where location_id ='".$id."' ", $dbh), 0, 0);
+			$total5 = pmb_mysql_result(pmb_mysql_query("select count(1) from collections_state where location_id ='".$id."' ", $dbh), 0, 0);
 			if (($total1+$total2+$total3+$total4+$total5)==0) {
 				$requete = "DELETE FROM docs_location WHERE idlocation=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_location($dbh);
 			} else {
 				$msg_suppr_err = $admin_liste_jscript;

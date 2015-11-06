@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc.class.php,v 1.2 2011-11-28 14:18:56 arenou Exp $
+// $Id: serialcirc.class.php,v 1.3 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,9 +30,9 @@ class serialcirc {
 	
 	protected function _fetch_data(){
 		$query = "select * from serialcirc where id_serialcirc = ".$this->id_serialcirc;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			$row = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query);
+		if(pmb_mysql_num_rows($result)){
+			$row = pmb_mysql_fetch_object($result);
 			$this->num_abt = $row->num_serialcirc_abt;
 			$this->type = $row->serialcirc_type;
 			$this->virtual = $row->serialcirc_virtual;
@@ -72,9 +72,9 @@ class serialcirc {
 	public function get_serial_title(){
 		if(!$this->serial_title){
 			$query="select tit1 from notices join abts_abts on num_notice = notice_id where abt_id = ".$this->num_abt;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$this->serial_title = mysql_result($result,0,0);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$this->serial_title = pmb_mysql_result($result,0,0);
 			}
 		}
 		return $this->serial_title;

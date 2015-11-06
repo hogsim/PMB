@@ -1,7 +1,7 @@
 /* +--------------------------------------------------------------------------+
 // 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bretagne2.css,v 1.53.6.2 2015-02-04 08:37:10 cbenard Exp $
+// $Id: bretagne2.css,v 1.55 2015-02-04 08:37:10 cbenard Exp $
 */
 
 /* ---------------------------------------------------------------------------*/
@@ -1035,7 +1035,6 @@ a .perio_title, a .bull_title{
 blockquote ul{
 	list-style-type:none;
 }
-
 .notice-child .img_basket{
 	display:block;
 	width:auto;

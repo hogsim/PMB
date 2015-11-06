@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_create.inc.php,v 1.11.14.1 2014-04-03 09:42:47 dbellamy Exp $
+// $Id: empr_create.inc.php,v 1.13 2015-04-03 11:16:21 jpermanne Exp $
 
 // récupération code barre en vue saisie d'un emprunteur (modifié F CEROVETTI 12/2007 pour marcher aussi avec ALPHANUMERIQUE )
 // corrigé et augmenté par Eric ROBERT
@@ -27,8 +27,8 @@ $pmb_num_carte_auto_array=explode(",",$pmb_num_carte_auto);
 
 if ($pmb_num_carte_auto_array[0] == "1" ) {
 	$rqt = "select max(empr_cb+1) as max_cb from empr ";
-	$res = mysql_query($rqt, $dbh);
-	$cb_initial = mysql_fetch_object($res);
+	$res = pmb_mysql_query($rqt, $dbh);
+	$cb_initial = pmb_mysql_fetch_object($res);
 	$cb_a_creer = (string)$cb_initial->max_cb;
 } elseif ($pmb_num_carte_auto_array[0] == "2" ) {
 
@@ -37,8 +37,8 @@ if ($pmb_num_carte_auto_array[0] == "1" ) {
 	$prefix = $pmb_num_carte_auto_array[3];
 	
     $rqt =  "SELECT CAST(SUBSTRING(empr_cb,".($long_prefixe+1).") AS UNSIGNED) AS max_cb, SUBSTRING(empr_cb,1,".($long_prefixe*1).") AS prefixdb FROM empr ORDER BY max_cb DESC limit 0,1" ; // modif f cerovetti pour sortir dernier code barre tri par ASCII
-	$res = mysql_query($rqt, $dbh);
-	$cb_initial = mysql_fetch_object($res);
+	$res = pmb_mysql_query($rqt, $dbh);
+	$cb_initial = pmb_mysql_fetch_object($res);
 	$cb_a_creer = ($cb_initial->max_cb*1)+1;
 	if (!$nb_chiffres) $nb_chiffres=strlen($cb_a_creer);
 	if (!$prefix) $prefix = $cb_initial->prefixdb;

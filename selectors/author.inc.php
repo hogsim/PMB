@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: author.inc.php,v 1.38 2013-12-27 09:27:30 dgoron Exp $
+// $Id: author.inc.php,v 1.39 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "inc.php")) die("no access");
 
@@ -153,8 +153,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			$requete=$aq->get_query_count("authors","concat(author_name,', ',author_rejete) ","index_author","author_id","author_id!='$no_display'");
 			$requete.=$libelleReq;
 		}
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = @mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	} else {
 		$nbr_lignes=1;
 	}
@@ -173,8 +173,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 		} else {
 			$requete="select * from authors where author_id='".$id."'".$libelleReq;
 		}
-		$res = @mysql_query($requete, $dbh);
-		while(($author=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($author=pmb_mysql_fetch_object($res))) {
 			$auteur = new auteur($author->author_id);
 			$author_voir="" ;
 			// gestion des voir :
@@ -191,7 +191,7 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			print "</div>";
 
 			}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);

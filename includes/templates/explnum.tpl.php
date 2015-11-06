@@ -2,12 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum.tpl.php,v 1.27.2.1 2015-05-15 10:14:32 jpermanne Exp $
+// $Id: explnum.tpl.php,v 1.32 2015-05-15 10:13:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
 // on teste si des répertoires de stockages sont paramétrés
-if (mysql_num_rows(mysql_query("select * from upload_repertoire "))==0) $pmb_docnum_in_directory_allow = 0;
+if (pmb_mysql_num_rows(pmb_mysql_query("select * from upload_repertoire "))==0) $pmb_docnum_in_directory_allow = 0;
 else $pmb_docnum_in_directory_allow=1;
 // les deux paramètres pour savoir si on peut stocker de la GED sont donc : 
 // $pmb_docnum_in_directory_allow
@@ -133,9 +133,19 @@ if ($pmb_docnum_in_directory_allow || $pmb_docnum_in_database_allow) {
 			<div id='f_url_check' style='display:inline'></div>
 			<input type='text' id='f_url' name='f_url' class='saisie-80em' onchange='chklnk_f_url(this);' value='!!url!!' />
 		</div>
+		<div class='row'>&nbsp;</div>
+		<div class='row'>
+		    <label class='etiquette'>$msg[docnum_statut_gestion]</label>
+		</div>
+		<div class='row'>
+			!!statut_list!!
+		</div>
+		<div class='row'>&nbsp;</div>
+		!!index_concept_form!!
 		!!ck_indexation!!
 		!!ck_diarization!!
 		!!fct_conf_diarize_again!!
+		!!rights_form!!
 	</div>
 	<div class='row'>
 		<input type='button' class='bouton' value='$msg[76]' onClick=\"history.go(-1);\" />
@@ -187,6 +197,13 @@ if ($pmb_docnum_in_directory_allow || $pmb_docnum_in_database_allow) {
 		<div class='row'>
 			<div id='f_url_check' style='display:inline'></div>
 			<input type='text' id='f_url' name='f_url' class='saisie-80em' onchange='chklnk_f_url(this);' value='!!url!!' />
+		</div>
+		<div class='row'>&nbsp;</div>
+		<div class='row'>
+		    <label class='etiquette'>$msg[docnum_statut_gestion]</label>
+		</div>
+		<div class='row'>
+			!!statut_list!!
 		</div>
 		!!ck_indexation!!
 		!!ck_diarization!!

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: transaction.class.php,v 1.1 2013-12-24 13:08:33 ngantier Exp $
+// $Id: transaction.class.php,v 1.2 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -28,9 +28,9 @@ class transactype  {
 		
 		// les infos générales...	
 		$rqt = "select * from transactype where transactype_id ='".$this->id."'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$row = mysql_fetch_object($res);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$row = pmb_mysql_fetch_object($res);
 			$this->id = $row->transactype_id;
 			$this->name = $row->transactype_name;
 			$this->unit_price = $row->transactype_unit_price;
@@ -89,7 +89,7 @@ class transactype  {
 		global $dbh;
 		
 		$rqt = "delete FROM transactype WHERE transactype_id ='".$this->id."'";
-		mysql_query($rqt, $dbh);
+		pmb_mysql_query($rqt, $dbh);
 		
 		$this->id=0;
 	}
@@ -105,9 +105,9 @@ class transactype  {
 			$save = "insert into ";						
 		}
 		$save.=" transactype set transactype_name='". addslashes( $this->name). "', transactype_unit_price='".$this->unit_price. "' ,transactype_quick_allowed='". $this->quick_allowed. "'   $clause";
-		mysql_query($save,$dbh);		
+		pmb_mysql_query($save,$dbh);		
 		if(!$this->id){
-			$this->id=mysql_insert_id();
+			$this->id=pmb_mysql_insert_id();
 		}			
 		$this->fetch_data();
 	}

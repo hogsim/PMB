@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_pro.inc.php,v 1.36 2013-02-07 11:27:30 ngantier Exp $
+// $Id: func_pro.inc.php,v 1.38 2015-07-03 13:43:33 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -37,8 +37,8 @@ if ($id_classement===0) $clause.= " and num_classement=0 ";
 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM bannettes $clause ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	}
 
 if (!$page) $page=1;
@@ -48,11 +48,11 @@ if($nbr_lignes) {
 
 		// on lance la vraie requête
 		$requete = "SELECT id_bannette, nom_bannette, comment_gestion FROM bannettes $clause ORDER BY nom_bannette, id_bannette LIMIT $debut,$nb_per_page ";
-		$res = @mysql_query($requete, $dbh);
+		$res = @pmb_mysql_query($requete, $dbh);
 
 		$parity = 0;
-		$ban_trouvees =  mysql_num_rows($res) ;
-		while(($bann=mysql_fetch_object($res))) {
+		$ban_trouvees =  pmb_mysql_num_rows($res) ;
+		while(($bann=pmb_mysql_fetch_object($res))) {
 			if ($parity % 2) $pair_impair = "even";
 				else $pair_impair = "odd";
 			$td_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=$bann->id_bannette&suite=acces&id_classement=$id_classement';\" ";
@@ -71,7 +71,7 @@ if($nbr_lignes) {
 			$bann_list .= "</tr>";
 			$parity += 1;
 			}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// affichage de la barre de navig
 		$url_base = "$PHP_SELF?categ=bannettes&sub=pro&form_cb=".rawurlencode($form_cb)."&id_classement=$id_classement" ;
@@ -89,6 +89,7 @@ if($nbr_lignes) {
 function bannette_equation ($nom="", $id_bannette=0) {
 	global $dsi_bannette_equation_assoce, $msg, $dbh, $id_classement ;
 	global $charset ;
+	global $faire;
 	
 	if (!$id_classement) $id_classement=0;
 	$url_base = "./dsi.php?categ=bannettes&sub=pro&id_bannette=$id_bannette&suite=affect_equation"; 
@@ -97,14 +98,14 @@ function bannette_equation ($nom="", $id_bannette=0) {
 	if ($id_classement>0) $requete = "select distinct id_equation, num_classement, nom_equation, comment_equation, proprio_equation from equations left join bannette_equation on num_equation=id_equation where proprio_equation=0 and num_classement='$id_classement' order by nom_equation " ;
 		elseif ($id_classement==0) $requete = "select distinct id_equation, num_classement, nom_equation, comment_equation, proprio_equation from equations left join bannette_equation on num_equation=id_equation where proprio_equation=0 order by nom_equation " ;
 			elseif ($id_classement==-1) $requete = "select distinct id_equation, num_classement, nom_equation, comment_equation, proprio_equation from equations, bannette_equation where num_bannette=$id_bannette and num_equation=id_equation and proprio_equation=0 order by nom_equation " ;
-	$res = mysql_query($requete, $dbh) or die ($requete) ;
+	$res = pmb_mysql_query($requete, $dbh) or die ($requete) ;
 	$parity = 0;
-	$equ_trouvees =  mysql_num_rows($res) ;
-	while ($equa=mysql_fetch_object($res)) {
+	$equ_trouvees =  pmb_mysql_num_rows($res) ;
+	while ($equa=pmb_mysql_fetch_object($res)) {
 		$equations .= "<input type='checkbox' name='bannette_equation[]' value='$equa->id_equation' ";
 		$requete_affect = "SELECT 1 FROM bannette_equation where num_equation='$equa->id_equation' and num_bannette='$id_bannette' ";
-		$res_affect = mysql_query($requete_affect, $dbh);
-		if (mysql_num_rows($res_affect)) $equations .= "checked" ;
+		$res_affect = pmb_mysql_query($requete_affect, $dbh);
+		if (pmb_mysql_num_rows($res_affect)) $equations .= "checked" ;
 		$equations .= " /> $equa->nom_equation<br />";
 		}
 	$dsi_bannette_equation_assoce = str_replace("!!form_action!!", $url_base."&faire=enregistrer", $dsi_bannette_equation_assoce);
@@ -115,7 +116,11 @@ function bannette_equation ($nom="", $id_bannette=0) {
 	$dsi_bannette_equation_assoce = str_replace("!!classement!!", 
 		gen_liste ("select id_classement, nom_classement from classements where id_classement=1 union select 0 as id_classement, '".$msg['dsi_all_classements']."' as nom_classement UNION select id_classement, nom_classement from classements where type_classement='EQU' order by nom_classement", "id_classement", "nom_classement", "id_classement", "this.form.faire.value=''; this.form.submit();", $id_classement, "", "",-1,$msg['dsi_ban_equation_affectees'],0)
 		, $dsi_bannette_equation_assoce);
-
+	if($faire == "enregistrer") {
+		$dsi_bannette_equation_assoce = str_replace("!!bannette_equations_saved!!", "<div class='erreur'>".$msg["dsi_bannette_equations_update"]."</div><br />", $dsi_bannette_equation_assoce);
+	} else {
+		$dsi_bannette_equation_assoce = str_replace("!!bannette_equations_saved!!", "", $dsi_bannette_equation_assoce);
+	}
 	// afin de revenir où on était : $form_cb, le critère de recherche
 	global $form_cb ;
 	$dsi_bannette_equation_assoce = str_replace('!!form_cb!!', urlencode($form_cb),  $dsi_bannette_equation_assoce);
@@ -129,6 +134,7 @@ function bannette_lecteur ($nom="", $id_bannette=0) {
 	global $dsi_bannette_lecteurs_assoce, $msg, $dbh, $quoi, $id_categorie, $id_groupe, $mail_abon ;
 	global $lect_restrict, $empr_location_id, $deflt2docs_location, $pmb_lecteurs_localises ;
 	global $charset ;
+	global $faire;
 	
 	$nb_limit = 20 ;
 	if ($lect_restrict) {
@@ -161,27 +167,27 @@ function bannette_lecteur ($nom="", $id_bannette=0) {
 		if ($id_groupe>0) $requete = "select id_empr, empr_cb, concat(empr_nom, ' ', empr_prenom) as nom_prenom, empr_mail from empr,empr_groupe where id_empr=empr_id and groupe_id='$id_groupe' and empr_nom like '$lect_query' $restrict_loc $restrict_mail order by nom_prenom, empr_cb $limit_nb" ;
 			elseif ($id_groupe==0) $requete = "select id_empr, empr_cb, concat(empr_nom, ' ', empr_prenom) as nom_prenom, empr_mail from empr where empr_nom like '$lect_query' $restrict_loc $restrict_mail order by nom_prenom, empr_cb $limit_nb " ;
 				elseif ($id_groupe==-1) $requete = "select id_empr, empr_cb, concat(empr_nom, ' ', empr_prenom) as nom_prenom, empr_mail from empr, bannette_abon where num_bannette='$id_bannette' and id_empr=num_empr and empr_nom like '$lect_query' $restrict_loc $restrict_mail order by nom_prenom, empr_cb $limit_nb" ;
-		$res = mysql_query($requete, $dbh) or die ($requete) ;
+		$res = pmb_mysql_query($requete, $dbh) or die ($requete) ;
 	} else {
 		if (!$id_categorie) $id_categorie = 0;
 		$id_groupe=0;
 		if ($id_categorie>0) $requete = "select id_empr, empr_cb, concat(empr_nom, ' ', empr_prenom) as nom_prenom, empr_mail from empr where empr_categ='$id_categorie' and empr_nom like '$lect_query' $restrict_loc $restrict_mail order by nom_prenom, empr_cb $limit_nb" ;
 			elseif ($id_categorie==0) $requete = "select id_empr, empr_cb, concat(empr_nom, ' ', empr_prenom) as nom_prenom, empr_mail from empr where empr_nom like '$lect_query' $restrict_loc $restrict_mail order by nom_prenom, empr_cb $limit_nb " ;
 				elseif ($id_categorie==-1) $requete = "select id_empr, empr_cb, concat(empr_nom, ' ', empr_prenom) as nom_prenom, empr_mail from empr, bannette_abon where num_bannette='$id_bannette' and id_empr=num_empr and empr_nom like '$lect_query' $restrict_loc $restrict_mail order by nom_prenom, empr_cb $limit_nb" ;
-		$res = mysql_query($requete, $dbh) or die ($requete) ;
+		$res = pmb_mysql_query($requete, $dbh) or die ($requete) ;
 	}
 
 	$parity = 0;
-	$lec_trouvees =  mysql_num_rows($res) ;
+	$lec_trouvees =  pmb_mysql_num_rows($res) ;
 	$lecteurs="";
 	if($lec_trouvees){
 		$lecteurs="<table>";
-		while ($lec=mysql_fetch_object($res)) {
+		while ($lec=pmb_mysql_fetch_object($res)) {
 			$requete_affect = "SELECT * FROM bannette_abon where num_empr='$lec->id_empr' and num_bannette='$id_bannette' ";
-			$res_affect = mysql_query($requete_affect, $dbh);
+			$res_affect = pmb_mysql_query($requete_affect, $dbh);
 			$checked= "";
-			if (mysql_num_rows($res_affect)){
-				$abon=mysql_fetch_object($res_affect);
+			if (pmb_mysql_num_rows($res_affect)){
+				$abon=pmb_mysql_fetch_object($res_affect);
 				$checked= "checked";
 			}
 			$sel_mail="";
@@ -232,7 +238,13 @@ function bannette_lecteur ($nom="", $id_bannette=0) {
 		, $dsi_bannette_lecteurs_assoce);
 		
 	$dsi_bannette_lecteurs_assoce = str_replace("!!mail_abon_checked!!", $mail_abon_checked, $dsi_bannette_lecteurs_assoce);
-		
+	
+	if($faire == "enregistrer") {
+		$dsi_bannette_lecteurs_assoce = str_replace("!!bannette_lecteurs_saved!!", "<div class='erreur'>".$msg["dsi_bannette_lecteurs_update"]."</div><br />", $dsi_bannette_lecteurs_assoce);
+	} else {
+		$dsi_bannette_lecteurs_assoce = str_replace("!!bannette_lecteurs_saved!!", "", $dsi_bannette_lecteurs_assoce);
+	}
+	
 	// afin de revenir où on était : $form_cb, le critère de recherche
 	global $form_cb ;
 	$dsi_bannette_lecteurs_assoce = str_replace('!!form_cb!!', urlencode($form_cb),  $dsi_bannette_lecteurs_assoce);
@@ -265,8 +277,8 @@ if ($id_classement===0) $clause.= " and num_classement=0 ";
 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM bannettes $clause ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	}
 
 if (!$page) $page=1;
@@ -276,7 +288,7 @@ if($nbr_lignes) {
 
 		// on lance la vraie requête
 		$requete = "SELECT id_bannette FROM bannettes $clause ORDER BY nom_bannette, id_bannette LIMIT $debut,$nb_per_page ";
-		$res = @mysql_query($requete, $dbh);
+		$res = @pmb_mysql_query($requete, $dbh);
 
 		$bann_list .= "<tr >";
 		$bann_list .= "
@@ -305,8 +317,8 @@ if($nbr_lignes) {
 		$bann_list .= "</tr>";
 		
 		$parity = 0;
-		$ban_trouvees =  mysql_num_rows($res) ;
-		while(($ban=mysql_fetch_object($res))) {
+		$ban_trouvees =  pmb_mysql_num_rows($res) ;
+		while(($ban=pmb_mysql_fetch_object($res))) {
 			$bann = new bannette($ban->id_bannette) ;
 			if ($parity % 2) $pair_impair = "even";
 				else $pair_impair = "odd";
@@ -323,10 +335,10 @@ if($nbr_lignes) {
 					<em>".htmlentities($bann->comment_gestion,ENT_QUOTES, $charset)."</em>";
 			$bann_list .= "</ul></td>";
 			$requete = "select id_equation, num_classement, nom_equation, comment_equation, proprio_equation, num_bannette from equations, bannette_equation where num_equation=id_equation and proprio_equation=0 and num_bannette='$bann->id_bannette' order by nom_equation " ;
-			$resequ = mysql_query($requete, $dbh) or die ($requete) ;
-			$equ_trouvees =  mysql_num_rows($resequ) ;
+			$resequ = pmb_mysql_query($requete, $dbh) or die ($requete) ;
+			$equ_trouvees =  pmb_mysql_num_rows($resequ) ;
 			$equations = "" ;
-			while ($equa=mysql_fetch_object($resequ)) {
+			while ($equa=pmb_mysql_fetch_object($resequ)) {
 				$equations .= "<li>$equa->nom_equation</li>";
 				}
 			$td_javascript=" onmousedown=\"document.location='./dsi.php?categ=bannettes&sub=pro&id_bannette=$bann->id_bannette&suite=affect_equation&id_classement=$id_classement&form_cb=".urlencode($form_cb_save)."';\" ";
@@ -348,7 +360,7 @@ if($nbr_lignes) {
 			$bann_list .= "</tr>";
 			$parity += 1;
 			}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 
 		// affichage de la barre de navig

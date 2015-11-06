@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: install.php,v 1.24.6.1 2014-07-25 14:30:44 gueluneau Exp $
+// $Id: install.php,v 1.25 2014-07-25 14:32:59 gueluneau Exp $
 
 // plus rien ici : reprise d'un script d'une autre install
 if(preg_match('/noinstall\.php/', $_SERVER['REQUEST_URI'])) {

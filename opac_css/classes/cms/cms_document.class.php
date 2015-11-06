@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_document.class.php,v 1.3 2014-02-17 14:16:36 abacarisse Exp $
+// $Id: cms_document.class.php,v 1.4 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -50,9 +50,9 @@ class cms_document {
 	protected function fetch_datas(){
 		if($this->id){
 			$query = "select document_title,document_description,document_filename,document_mimetype,document_filesize,document_vignette,document_url,document_path,document_create_date,document_num_storage,document_type_object,document_num_object from cms_documents where id_document = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->title = $row->document_title;
 				$this->description = $row->document_description;
 				$this->filename = $row->document_filename;
@@ -276,7 +276,7 @@ class cms_document {
 			$query.= ",
 			document_vignette = '".addslashes($this->vignette)."'";	
 		}
-		if(mysql_query($query.$clause)){
+		if(pmb_mysql_query($query.$clause)){
 			return $this->get_item_render("openEditDialog");
 		}
 	}
@@ -287,7 +287,7 @@ class cms_document {
 		//suppression physique
 		if($this->storage->delete($this->path.$this->filename)){
 			//il ne reste plus que la base
-			if(mysql_query("delete from cms_documents where id_document = ".$this->id)){
+			if(pmb_mysql_query("delete from cms_documents where id_document = ".$this->id)){
 				return true;
 			}
 		}else{

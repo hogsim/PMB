@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: frame_facture.php,v 1.26 2013-01-03 08:27:33 dgoron Exp $
+// $Id: frame_facture.php,v 1.27 2015-04-03 11:16:26 jpermanne Exp $
 
 //Liste les lignes d'une facture
 $base_path="../../..";                            
@@ -208,13 +208,13 @@ function show_lig_from_cde() {
 
 	$nb_lig = 0;
 	
-	while (($row_cde = mysql_fetch_object($lignes_cde))) {
+	while (($row_cde = pmb_mysql_fetch_object($lignes_cde))) {
 		
 		
 		//recherche des lignes de facture
 		$lignes_fac = lignes_actes::getFactures($row_cde->id_ligne);
 		$nb_fac = 0;
-		while (($row_fac = mysql_fetch_object($lignes_fac))) {
+		while (($row_fac = pmb_mysql_fetch_object($lignes_fac))) {
 			$nb_fac = $nb_fac + $row_fac->nb;
 		}
 
@@ -302,10 +302,10 @@ function show_lig_fac() {
 
 		//affichage du déjà facturé sur la facture courante
 		$lignes_fac = actes::getLignes($id_fac);
-		$max_lig_fac = mysql_num_rows($lignes_fac);
+		$max_lig_fac = pmb_mysql_num_rows($lignes_fac);
 		$frame = str_replace('!!max_lig_fac!!', $max_lig_fac, $frame);
 		$frame = str_replace('!!max_lig!!', '0', $frame);
-		while (($row_fac = mysql_fetch_object($lignes_fac))) {
+		while (($row_fac = pmb_mysql_fetch_object($lignes_fac))) {
 			$nb_lig++;
 			$frame = str_replace('<!-- lignes -->', $frame_row_fa_arc.'<!-- lignes -->', $frame);
 			$frame = str_replace('<!-- select_typ -->', $select_typ[1], $frame);
@@ -375,12 +375,12 @@ function show_lig_fac() {
 
 			$nb_lig = 0;
 			
-			while (($row_cde = mysql_fetch_object($lignes_cde))) {
+			while (($row_cde = pmb_mysql_fetch_object($lignes_cde))) {
 				
 				//recherche des lignes de Facture
 				$lignes_fac = lignes_actes::getFactures($row_cde->id_ligne);
 				$sol = $row_cde->nb;
-				while (($row_fac = mysql_fetch_object($lignes_fac))) {
+				while (($row_fac = pmb_mysql_fetch_object($lignes_fac))) {
 					$sol = $sol - $row_fac->nb;
 				}
 				$fac = 0;
@@ -420,10 +420,10 @@ function show_lig_fac() {
 		//affichage du déjà facturé sur la facture courante
 		$frame = str_replace('<!-- lignes -->', $frame_row_fa_header.'<!-- lignes -->', $frame);
 		$lignes_fac = actes::getLignes($id_fac);
-		$max_lig_fac = mysql_num_rows($lignes_fac);
+		$max_lig_fac = pmb_mysql_num_rows($lignes_fac);
 		$frame = str_replace('!!max_lig_fac!!', $max_lig_fac, $frame);
 	
-		while  (($row_fac = mysql_fetch_object($lignes_fac))) {
+		while  (($row_fac = pmb_mysql_fetch_object($lignes_fac))) {
 			$nb_lig++;
 			$frame = str_replace('<!-- lignes -->', $frame_row_fa.'<!-- lignes -->', $frame);
 			$frame = str_replace('<!-- select_typ -->', $select_typ[1], $frame);
@@ -1166,10 +1166,10 @@ function update_fac($statut=0) {
 	//La commande est-elle entièrement facturée
 	$tab_cde = actes::getLignes($id_cde);
 	$facture = true;
-	while (($row_cde = mysql_fetch_object($tab_cde))) {
+	while (($row_cde = pmb_mysql_fetch_object($tab_cde))) {
 		$tab_fac = lignes_actes::getFactures($row_cde->id_ligne);
 		$nb_fac = 0;
-		while (($row_fac = mysql_fetch_object($tab_fac))) {
+		while (($row_fac = pmb_mysql_fetch_object($tab_fac))) {
 			$nb_fac = $nb_fac + $row_fac->nb;
 		}
 		if ($row_cde->nb > $nb_fac) {
@@ -1186,7 +1186,7 @@ function update_fac($statut=0) {
 		//Si de plus toutes les factures sont payées, Statut commande=payé
 		$tab_pay = liens_actes::getChilds($id_cde, TYP_ACT_FAC);
 		$paye= true;
-		while (($row_pay = mysql_fetch_object($tab_pay))) {
+		while (($row_pay = pmb_mysql_fetch_object($tab_pay))) {
 			if(($row_pay->statut & STA_ACT_PAY) != STA_ACT_PAY){
 				$paye = false;
 				break;
@@ -1283,8 +1283,8 @@ function getCurrentUserId() {
 	global $dbh;
 		
  	$requete_user = "SELECT userid FROM users where username='".SESSlogin."' limit 1 ";
-	$res_user = mysql_query($requete_user, $dbh);
-	$row_user=mysql_fetch_row($res_user);
+	$res_user = pmb_mysql_query($requete_user, $dbh);
+	$row_user=pmb_mysql_fetch_row($res_user);
 	$user_userid=$row_user[0];
 	return $user_userid;
 

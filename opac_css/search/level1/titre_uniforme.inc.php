@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: titre_uniforme.inc.php,v 1.11 2013-10-30 15:00:54 dgoron Exp $
+// $Id: titre_uniforme.inc.php,v 1.12 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -27,8 +27,8 @@ if ($add_notice) $clause.= ' and notice_id in ('.$add_notice.')';
 $tri = "order by pert desc, index_tu";
 $pert=$members["select"]." as pert";
 
-$tu = mysql_query("SELECT COUNT(distinct tu_id) FROM titres_uniformes $clause", $dbh);
-$nb_result_titres_uniformes = mysql_result($tu, 0 , 0); 
+$tu = pmb_mysql_query("SELECT COUNT(distinct tu_id) FROM titres_uniformes $clause", $dbh);
+$nb_result_titres_uniformes = pmb_mysql_result($tu, 0 , 0); 
 
 //Enregistrement des stats
 if($pmb_logs_activate){
@@ -65,10 +65,10 @@ if($opac_allow_affiliate_search){
 	if ($nb_result_titres_uniformes ) {
 		// tout bon, y'a du résultat, on lance le pataquès d'affichage
 		$requete = "select tu_id,tu_name from titres_uniformes $clause $tri LIMIT $opac_search_results_first_level";
-		// ??? ER : $found = mysql_query($requete, $dbh);
+		// ??? ER : $found = pmb_mysql_query($requete, $dbh);
 		print "<div style=search_result id=\"titre_uniforme\" name=\"titre_uniforme\">";
 		print "<strong>".$msg["titres_uniformes"]."</strong> ".$nb_result_titres_uniformes." ".$msg["results"]." ";
-		/* while($mesEditeurs = mysql_fetch_object($found)) {
+		/* while($mesEditeurs = pmb_mysql_fetch_object($found)) {
 			print "<li><a href='./index.php?lvl=publisher_see&id=".$mesEditeurs->ed_id."'>".$mesEditeurs->ed_name."</a></li>\n";
 			} */
 		

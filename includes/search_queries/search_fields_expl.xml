@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- $Id: search_fields_expl.xml,v 1.30.2.3 2015-08-26 13:09:48 jpermanne Exp $ -->
+<!-- $Id: search_fields_expl.xml,v 1.34 2015-06-26 13:21:22 dgoron Exp $ -->
 <pmbfields>
 
 	<!-- Zone fixedFields :
@@ -316,7 +316,7 @@
 				 union select distinct expl_id from exemplaires, notices,analysis,bulletins 
 				 	where (date_parution like '!!p!!') and analysis_bulletin=bulletin_id and bulletin_id=expl_bulletin and analysis_notice=notice_id]]></main>
 			</query>
-			<query for="LT" detectDate="min">
+			<query for="LT" detectDate="00">
 				<main><![CDATA[select distinct expl_id from exemplaires, notices 
 				 	where (date_parution<'!!p!!' and date_parution>'0000-00-00') and notice_id=expl_notice 
 				 union select distinct expl_id  from exemplaires, bulletins, notices 
@@ -326,7 +326,7 @@
 				 union select distinct expl_id from exemplaires, notices,analysis,bulletins 
 				 	where (date_parution<'!!p!!' and date_parution>'0000-00-00') and analysis_bulletin=bulletin_id and bulletin_id=expl_bulletin and analysis_notice=notice_id]]></main>
 			</query>
-			<query for="GT" detectDate="max">
+			<query for="GT" detectDate="__">
 				<main><![CDATA[select distinct expl_id from exemplaires, notices 
 				 	where (date_parution>'!!p!!') and notice_id=expl_notice 
 				 union select distinct expl_id  from exemplaires, bulletins, notices 
@@ -336,7 +336,7 @@
 				 union select distinct expl_id from exemplaires, notices,analysis,bulletins 
 				 	where (date_parution>'!!p!!') and analysis_bulletin=bulletin_id and bulletin_id=expl_bulletin and analysis_notice=notice_id]]></main>
 			</query>
-			<query for="LTEQ" detectDate="min">
+			<query for="LTEQ" detectDate="__">
 				<main><![CDATA[select distinct expl_id from exemplaires, notices 
 				 	where (date_parution<='!!p!!' and date_parution>'0000-00-00') and notice_id=expl_notice 
 				 union select distinct expl_id  from exemplaires, bulletins, notices 
@@ -346,7 +346,7 @@
 				 union select distinct expl_id from exemplaires, notices,analysis,bulletins 
 				 	where (date_parution<='!!p!!' and date_parution>'0000-00-00') and analysis_bulletin=bulletin_id and bulletin_id=expl_bulletin and analysis_notice=notice_id]]></main>
 			</query>
-			<query for="GTEQ" detectDate="max">
+			<query for="GTEQ" detectDate="01">
 				<main><![CDATA[select distinct expl_id from exemplaires, notices 
 				 	where (date_parution>='!!p!!') and notice_id=expl_notice 
 				 union select distinct expl_id  from exemplaires, bulletins, notices 
@@ -2422,7 +2422,7 @@
 	<dynamicFields>
 		<fieldType type="notices" prefix="d">
 			<field dataType="small_text" id="1">
-				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON expl_notice=notices_custom_origine AND notices_custom_champ=!!field!! WHERE !!multiple_term!!
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON bulletin_notice=notices_custom_origine AND notices_custom_champ=!!field!! WHERE !!multiple_term!!
@@ -2431,7 +2431,7 @@
 					<multipleTerm>notices_custom_small_text like '%!!p!!%'</multipleTerm>
 					<multipleOperator>or</multipleOperator>
 				</query>
-				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON expl_notice=notices_custom_origine AND notices_custom_champ=!!field!! WHERE !!multiple_term!!
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON bulletin_notice=notices_custom_origine AND notices_custom_champ=!!field!! WHERE !!multiple_term!!
@@ -2440,21 +2440,21 @@
 					<multipleTerm>notices_custom_small_text like '%!!p!!%'</multipleTerm>
 					<multipleOperator>and</multipleOperator>
 				</query>
-				<query for="STARTWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="STARTWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_small_text like '!!p!!%' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_small_text like '!!p!!%' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_small_text like '!!p!!%' AND num_notice=notices_custom_origine
 					]]></main>
 				</query>
-				<query for="ENDWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="ENDWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_small_text like '%!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_small_text like '%!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_small_text like '%!!p!!' AND num_notice=notices_custom_origine
 					]]></main>
 				</query>
-				<query for="EXACT" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="EXACT" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_small_text = '!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_small_text = '!!p!!' AND bulletin_notice=notices_custom_origine
@@ -2484,7 +2484,7 @@
 				</query>
 			</field>
 			<field dataType="text" id="2">
-				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON expl_notice=notices_custom_origine AND notices_custom_champ=!!field!! WHERE !!multiple_term!!
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON bulletin_notice=notices_custom_origine AND notices_custom_champ=!!field!! WHERE !!multiple_term!!
@@ -2493,7 +2493,7 @@
 					<multipleTerm>notices_custom_text like '%!!p!!%'</multipleTerm>
 					<multipleOperator>or</multipleOperator>
 				</query>
-				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON expl_notice=notices_custom_origine AND notices_custom_champ=!!field!! WHERE !!multiple_term!!
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON bulletin_notice=notices_custom_origine AND notices_custom_champ=!!field!! WHERE !!multiple_term!!
@@ -2502,21 +2502,21 @@
 					<multipleTerm>notices_custom_text like '%!!p!!%'</multipleTerm>
 					<multipleOperator>and</multipleOperator>
 				</query>
-				<query for="STARTWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="STARTWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_text like '!!p!!%' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_text like '!!p!!%' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_text like '!!p!!%' AND num_notice=notices_custom_origine
 					]]></main>
 				</query>
-				<query for="ENDWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="ENDWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_text like '%!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_text like '%!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_text like '%!!p!!' AND num_notice=notices_custom_origine
 					]]></main>
 				</query>
-				<query for="EXACT" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="EXACT" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_text = '!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_text = '!!p!!' AND bulletin_notice=notices_custom_origine
@@ -2553,28 +2553,28 @@
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer='!!p!!' AND num_notice=notices_custom_origine
 					]]></main>			
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer<'!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer<'!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer<'!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer>'!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer>'!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer>'!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer<='!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer<='!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer<='!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer>='!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_integer>='!!p!!' AND bulletin_notice=notices_custom_origine
@@ -2604,28 +2604,28 @@
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))='!!p!!' AND num_notice=notices_custom_origine
 					]]></main>			
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))<'!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))<'!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))<'!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))>'!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))>'!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))>'!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))<='!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))<='!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))<='!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))>='!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND round(notices_custom_float,LENGTH(SUBSTRING_INDEX('!!p!!','.',-1)))>='!!p!!' AND bulletin_notice=notices_custom_origine
@@ -2655,28 +2655,28 @@
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date='!!p!!' AND num_notice=notices_custom_origine
 					]]></main>			
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date<'!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date<'!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date<'!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date>'!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date>'!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date>'!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date<='!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date<='!!p!!' AND bulletin_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date<='!!p!!' AND num_notice=notices_custom_origine
 					]]></main>					
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[
 					SELECT DISTINCT expl_id FROM exemplaires JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date>='!!p!!' AND expl_notice=notices_custom_origine
 					UNION SELECT DISTINCT expl_id FROM exemplaires JOIN bulletins ON bulletin_id=expl_bulletin JOIN notices_custom_values ON notices_custom_champ=!!field!! AND notices_custom_date>='!!p!!' AND bulletin_notice=notices_custom_origine
@@ -2701,23 +2701,23 @@
 		</fieldType>
 		<fieldType type="expl" prefix="e">
 			<field dataType="small_text" id="1">
-				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND (!!multiple_term!!)]]></main>
 					<multipleTerm>expl_custom_small_text like '%!!p!!%'</multipleTerm>
 					<multipleOperator>or</multipleOperator>
 				</query>
-				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND (!!multiple_term!!)]]></main>
 					<multipleTerm>expl_custom_small_text like '%!!p!!%'</multipleTerm>
 					<multipleOperator>and</multipleOperator>
 				</query>
-				<query for="STARTWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="STARTWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_small_text like '!!p!!%']]></main>
 				</query>
-				<query for="ENDWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="ENDWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_small_text like '%!!p!!']]></main>
 				</query>
-				<query for="EXACT" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="EXACT" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_small_text = '!!p!!']]></main>
 				</query>
 				<query for="EQ">
@@ -2731,23 +2731,23 @@
 				</query>
 			</field>
 			<field dataType="text" id="2">
-				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND (!!multiple_term!!)]]></main>
 					<multipleTerm>expl_custom_text like '%!!p!!%'</multipleTerm>
 					<multipleOperator>or</multipleOperator>
 				</query>
-				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list">
+				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND (!!multiple_term!!)]]></main>
 					<multipleTerm>expl_custom_text like '%!!p!!%'</multipleTerm>
 					<multipleOperator>and</multipleOperator>
 				</query>
-				<query for="STARTWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="STARTWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_text like '!!p!!%']]></main>
 				</query>
-				<query for="ENDWITH" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="ENDWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_text like '%!!p!!']]></main>
 				</query>
-				<query for="EXACT" notAllowedFor="list,query_list" regDiacrit="no">
+				<query for="EXACT" notAllowedFor="list,query_list,marclist" regDiacrit="no">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_text = '!!p!!']]></main>
 				</query>
 				<query for="EQ">
@@ -2764,16 +2764,16 @@
 				<query for="EQ">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_integer = '!!p!!']]></main>
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_integer < '!!p!!']]></main>
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_integer > '!!p!!']]></main>
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_integer <= '!!p!!']]></main>
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_integer >= '!!p!!']]></main>
 				</query>
 				<query for="ISEMPTY">
@@ -2787,16 +2787,16 @@
 				<query for="EQ">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_float = '!!p!!']]></main>
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_float < '!!p!!']]></main>
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_float > '!!p!!']]></main>
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_float <= '!!p!!']]></main>
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_float >= '!!p!!']]></main>
 				</query>
 				<query for="ISEMPTY">
@@ -2810,16 +2810,16 @@
 				<query for="EQ">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_date = '!!p!!']]></main>
 				</query>
-				<query for="LT" notAllowedFor="list,query_list">
+				<query for="LT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_date < '!!p!!']]></main>
 				</query>
-				<query for="GT" notAllowedFor="list,query_list">
+				<query for="GT" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_date > '!!p!!']]></main>
 				</query>
-				<query for="LTEQ" notAllowedFor="list,query_list">
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_date <= '!!p!!']]></main>
 				</query>
-				<query for="GTEQ" notAllowedFor="list,query_list">
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ=!!field!! AND expl_custom_date >= '!!p!!']]></main>
 				</query>
 				<query for="ISEMPTY">
@@ -2827,6 +2827,137 @@
 				</query>
 				<query for="ISNOTEMPTY">
 					<main><![CDATA[SELECT DISTINCT expl_custom_origine AS expl_id FROM expl_custom_values WHERE expl_custom_champ = !!field!! AND expl_custom_date != '' AND expl_custom_date!='0000-00-00']]></main>
+				</query>
+			</field>
+		</fieldType>
+		<fieldType type="pret" prefix="p">
+			<field dataType="small_text" id="1">
+				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND (!!multiple_term!!)]]></main>
+					<multipleTerm>pret_custom_small_text like '%!!p!!%'</multipleTerm>
+					<multipleOperator>or</multipleOperator>
+				</query>
+				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND (!!multiple_term!!)]]></main>
+					<multipleTerm>pret_custom_small_text like '%!!p!!%'</multipleTerm>
+					<multipleOperator>and</multipleOperator>
+				</query>
+				<query for="STARTWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_small_text like '!!p!!%']]></main>
+				</query>
+				<query for="ENDWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_small_text like '%!!p!!']]></main>
+				</query>
+				<query for="EXACT" notAllowedFor="list,query_list,marclist" regDiacrit="no">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_small_text = '!!p!!']]></main>
+				</query>
+				<query for="EQ">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_small_text = '!!p!!']]></main>
+				</query>
+				<query for="ISEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret LEFT JOIN pret_custom_values ON pret_arc_id=pret_custom_origine AND pret_custom_champ=!!field!! WHERE pret_custom_small_text='' OR pret_custom_small_text IS NULL]]></main>
+				</query>
+				<query for="ISNOTEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ = !!field!! AND pret_custom_small_text != '']]></main>
+				</query>
+			</field>
+			<field dataType="text" id="2">
+				<query for="CONTAINS_AT_LEAST" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND (!!multiple_term!!)]]></main>
+					<multipleTerm>pret_custom_text like '%!!p!!%'</multipleTerm>
+					<multipleOperator>or</multipleOperator>
+				</query>
+				<query for="CONTAINS_ALL" multipleWords="yes" regDiacrit="yes" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND (!!multiple_term!!)]]></main>
+					<multipleTerm>pret_custom_text like '%!!p!!%'</multipleTerm>
+					<multipleOperator>and</multipleOperator>
+				</query>
+				<query for="STARTWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_text like '!!p!!%']]></main>
+				</query>
+				<query for="ENDWITH" notAllowedFor="list,query_list,marclist" regDiacrit="no">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_text like '%!!p!!']]></main>
+				</query>
+				<query for="EXACT" notAllowedFor="list,query_list,marclist" regDiacrit="no">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_text = '!!p!!']]></main>
+				</query>
+				<query for="EQ">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_text = '!!p!!']]></main>
+				</query>
+				<query for="ISEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret LEFT JOIN pret_custom_values ON pret_arc_id=pret_custom_origine AND pret_custom_champ=!!field!! WHERE pret_custom_text='' OR pret_custom_text IS NULL]]></main>
+				</query>
+				<query for="ISNOTEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ = !!field!! AND pret_custom_text != '']]></main>
+				</query>
+			</field>
+			<field dataType="integer" id="3">
+				<query for="EQ">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_integer = '!!p!!']]></main>
+				</query>
+				<query for="LT" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_integer < '!!p!!']]></main>
+				</query>
+				<query for="GT" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_integer > '!!p!!']]></main>
+				</query>
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_integer <= '!!p!!']]></main>
+				</query>
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_integer >= '!!p!!']]></main>
+				</query>
+				<query for="ISEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret LEFT JOIN pret_custom_values ON pret_arc_id=pret_custom_origine AND pret_custom_champ=!!field!! WHERE pret_custom_integer='' OR pret_custom_integer IS NULL]]></main>
+				</query>
+				<query for="ISNOTEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ = !!field!! AND pret_custom_integer != '']]></main>
+				</query>
+			</field>
+			<field dataType="float" id="4">
+				<query for="EQ">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_float = '!!p!!']]></main>
+				</query>
+				<query for="LT" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_float < '!!p!!']]></main>
+				</query>
+				<query for="GT" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_float > '!!p!!']]></main>
+				</query>
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_float <= '!!p!!']]></main>
+				</query>
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_float >= '!!p!!']]></main>
+				</query>
+				<query for="ISEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret LEFT JOIN pret_custom_values ON pret_arc_id=pret_custom_origine AND pret_custom_champ=!!field!! WHERE pret_custom_float='' OR pret_custom_float IS NULL]]></main>
+				</query>
+				<query for="ISNOTEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ = !!field!! AND pret_custom_float != '']]></main>
+				</query>
+			</field>
+			<field dataType="date" id="5">
+				<query for="EQ">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_date = '!!p!!']]></main>
+				</query>
+				<query for="LT" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_date < '!!p!!']]></main>
+				</query>
+				<query for="GT" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_date > '!!p!!']]></main>
+				</query>
+				<query for="LTEQ" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_date <= '!!p!!']]></main>
+				</query>
+				<query for="GTEQ" notAllowedFor="list,query_list,marclist">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ=!!field!! AND pret_custom_date >= '!!p!!']]></main>
+				</query>
+				<query for="ISEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret LEFT JOIN pret_custom_values ON pret_arc_id=pret_custom_origine AND pret_custom_champ=!!field!! WHERE pret_custom_date='' OR pret_custom_date IS NULL OR pret_custom_date='0000-00-00']]></main>
+				</query>
+				<query for="ISNOTEMPTY">
+					<main><![CDATA[SELECT DISTINCT pret_idexpl AS expl_id FROM pret JOIN pret_custom_values ON pret_arc_id=pret_custom_origine WHERE pret_custom_champ = !!field!! AND pret_custom_date != '' AND pret_custom_date!='0000-00-00']]></main>
 				</query>
 			</field>
 		</fieldType>

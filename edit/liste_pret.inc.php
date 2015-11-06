@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liste_pret.inc.php,v 1.31 2012-12-03 12:49:39 dgoron Exp $
+// $Id: liste_pret.inc.php,v 1.32 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -21,8 +21,8 @@ $ourPDF->Open();
 
 //requete par rapport à un emprunteur
 $rqt = "select expl_cb from pret, exemplaires where pret_idempr='".$id_empr."' and pret_idexpl=expl_id order by pret_date " ;	
-$req = mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.mysql_error());
-$count = mysql_num_rows($req);
+$req = pmb_mysql_query($rqt) or die($msg['err_sql'].'<br />'.$rqt.'<br />'.pmb_mysql_error());
+$count = pmb_mysql_num_rows($req);
 
 $ourPDF->addPage();
 //$ourPDF->SetMargins(10,10,10);
@@ -47,7 +47,7 @@ $taille_bloc = 12 ;
 $debut_expl_1er_page=35+$offsety;
 $debut_expl_page=10;
 $limite_after_list = 260;
-while ($data = mysql_fetch_array($req)) {
+while ($data = pmb_mysql_fetch_array($req)) {
 	if ($nb_page==0 && $indice_page==$nb_1ere_page) {
 		$ourPDF->addPage();
 		$nb_page++;
@@ -63,7 +63,7 @@ while ($data = mysql_fetch_array($req)) {
 	$indice_page++;
 }
 
-mysql_free_result($req);
+pmb_mysql_free_result($req);
 
 header("Content-Type: application/pdf");
 $ourPDF->OutPut();

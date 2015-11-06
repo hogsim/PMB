@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions_unimarc.class.php,v 1.1 2009-10-26 13:35:36 kantin Exp $
+// $Id: suggestions_unimarc.class.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -24,9 +24,9 @@ class suggestions_unimarc{
 		if($id){
 			$this->sugg_uni_id = $id;
 			$req = "select * from import_marc where id_import='".$this->sugg_uni_id."'";
-			$res = mysql_query($req,$dbh);
+			$res = pmb_mysql_query($req,$dbh);
 			if($res){
-				$uni = mysql_fetch_object($res);
+				$uni = pmb_mysql_fetch_object($res);
 				$this->sugg_uni_notice = $uni->notice;
 				$this->sugg_uni_origine = $uni->origine;
 				$this->sugg_uni_num_notice = $uni->no_notice;
@@ -53,9 +53,9 @@ class suggestions_unimarc{
 		$req = "insert into import_marc set notice='".addslashes($this->sugg_uni_notice)."', 
 			origine='".addslashes($this->sugg_uni_origine)."',
 			no_notice='".addslashes($this->sugg_uni_num_notice)."'";
-		mysql_query($req,$dbh); 
+		pmb_mysql_query($req,$dbh); 
 		
-		$this->sugg_uni_id = mysql_insert_id();
+		$this->sugg_uni_id = pmb_mysql_insert_id();
 		$this->suggestions_unimarc($this->sugg_uni_id);
 		
 	}
@@ -67,7 +67,7 @@ class suggestions_unimarc{
 		global $dbh;
 		
 		$req = "delete from import_marc where origine='".$this->sugg_uni_origine."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		
 	}
 	
@@ -78,11 +78,11 @@ class suggestions_unimarc{
 		global $dbh;
 		
 		$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($recid).";";
-		$myQuery = mysql_query($requete, $dbh);
-		$source_id = mysql_result($myQuery, 0, 0);
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		$source_id = pmb_mysql_result($myQuery, 0, 0);
 		
 		$requete="select * from entrepot_source_$source_id where recid='".addslashes($recid)."' group by ufield,usubfield,field_order,subfield_order,value order by field_order,subfield_order";
-		$resultat = mysql_query($requete, $dbh);
+		$resultat = pmb_mysql_query($requete, $dbh);
 		
 		$unimarc=new iso2709_record("",USER_UPDATE);
 		
@@ -90,7 +90,7 @@ class suggestions_unimarc{
 		$field=$r->ufield;
 		$sfields=array();
 		
-		while ($r=mysql_fetch_object($resultat)) {
+		while ($r=pmb_mysql_fetch_object($resultat)) {
 			switch ($r->ufield) {
 				case "rs":
 					$unimarc->set_rs($r->value);

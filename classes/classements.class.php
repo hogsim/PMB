@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: classements.class.php,v 1.4 2007-03-10 09:25:48 touraine37 Exp $
+// $Id: classements.class.php,v 1.5 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,10 +30,10 @@ function getData() {
 		$this->nom_classement	= '';
 		} else {
 			$requete = "SELECT type_classement, nom_classement FROM classements WHERE id_classement='$this->id_classement' ";
-			$result = @mysql_query($requete, $dbh);
-			if (mysql_num_rows($result)) {
-				$temp = mysql_fetch_object($result);
-				mysql_free_result($result);
+			$result = @pmb_mysql_query($requete, $dbh);
+			if (pmb_mysql_num_rows($result)) {
+				$temp = pmb_mysql_fetch_object($result);
+				pmb_mysql_free_result($result);
 				$this->type_classement = $temp->type_classement;
 				$this->nom_classement = $temp->nom_classement;
 				} else {
@@ -49,7 +49,7 @@ function delete() {
 	global $dbh;
 	if ($this->id_classement==1) return ;
 	$requete = "delete FROM classements where id_classement='".$this->id_classement."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	}
 
 // ---------------------------------------------------------------
@@ -57,11 +57,11 @@ function update($temp) {
 	global $dbh;
 	if ($this->id_classement) {
 		$req = "update classements set nom_classement='".$temp->nom_classement."' where id_classement='".$this->id_classement."'";
-		$result = mysql_query($req, $dbh);
+		$result = pmb_mysql_query($req, $dbh);
 		} else {
 			$req = "insert into classements set nom_classement='".$temp->nom_classement."', type_classement='".$temp->type_classement."' ";
-			$result = @mysql_query($req, $dbh);
-			$this->id_classement = mysql_insert_id() ;
+			$result = @pmb_mysql_query($req, $dbh);
+			$this->id_classement = pmb_mysql_insert_id() ;
 			$this->getData() ;
 			}
 	}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: html_editor.inc.php,v 1.2.14.1 2014-12-16 16:36:48 dbellamy Exp $
+// $Id: html_editor.inc.php,v 1.3 2014-12-16 16:39:34 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

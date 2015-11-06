@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: comptabilite.inc.php,v 1.18 2009-05-16 11:11:54 dbellamy Exp $
+// $Id: comptabilite.inc.php,v 1.19 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -20,16 +20,16 @@ function show_list_biblio() {
 
 	//Récupération de l'utilisateur
   	$requete_user = "SELECT userid FROM users where username='".SESSlogin."' limit 1 ";
-	$res_user = mysql_query($requete_user, $dbh);
-	$row_user=mysql_fetch_row($res_user);
+	$res_user = pmb_mysql_query($requete_user, $dbh);
+	$row_user=pmb_mysql_fetch_row($res_user);
 	$user_userid=$row_user[0];
 
 
 	//Affichage de la liste des etablissements auxquels a acces l'utilisateur
 	$aff = "<table>";
 	$q = entites::list_biblio($user_userid);
-	$res = mysql_query($q, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($q, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	if(!$nbr) {
 		//Pas d'etablissements définis pour l'utilisateur
@@ -44,13 +44,13 @@ function show_list_biblio() {
 
 	if ($nbr == '1') {
 		
-		$row = mysql_fetch_object($res);
+		$row = pmb_mysql_fetch_object($res);
 		show_list_exer($row->id_entite);		
 	
 	} else {
 	
 		$parity=1;
-		while($row=mysql_fetch_object($res)){
+		while($row=pmb_mysql_fetch_object($res)){
 			if ($parity % 2) {
 				$pair_impair = "even";
 			} else {
@@ -84,12 +84,12 @@ function show_list_exer($id_entite) {
 	</tr>";
 
 	$q = exercices::listByEntite($id_entite);
-	$res = mysql_query($q, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($q, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 			if ($parity % 2) {
 				$pair_impair = "even";
 			} else {

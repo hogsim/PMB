@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: 100cases_browser.inc.php,v 1.13 2012-07-30 12:24:12 ngantier Exp $
+// $Id: 100cases_browser.inc.php,v 1.14 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -50,8 +50,8 @@ while ($i < 10) {
 $hundred_cases_table .= "\n</table>";
 
 $rqt = " select indexint_id, indexint_comment, indexint_name from indexint where indexint_name REGEXP \"^..0$\" ";
-$res = mysql_query($rqt, $dbh);
-while($indexint=mysql_fetch_object($res)) {
+$res = pmb_mysql_query($rqt, $dbh);
+while($indexint=pmb_mysql_fetch_object($res)) {
 	$indexint->indexint_comment = pmb_preg_replace('/\r/', ' ', $indexint->indexint_comment);
 	$indexint->indexint_comment = pmb_preg_replace('/\n/', ' ', $indexint->indexint_comment);
 	$hundred_cases_table = pmb_preg_replace("/!!".$indexint->indexint_name."!!/m", htmlentities($indexint->indexint_comment,ENT_QUOTES,$charset), $hundred_cases_table);

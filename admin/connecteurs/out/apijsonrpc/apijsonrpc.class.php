@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: apijsonrpc.class.php,v 1.8 2013-11-13 16:24:22 arenou Exp $
+// $Id: apijsonrpc.class.php,v 1.9 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -71,9 +71,9 @@ class apijsonrpc extends connecteur_out {
 			if (isset($this->json_input["auth_pw"])) {
 				//Vérification du hash salé double
 				$requete="select esuser_password from es_esusers where esuser_username='".addslashes($credentials_user)."'";
-				$resultat=mysql_query($requete);
+				$resultat=pmb_mysql_query($requete);
 				if ($resultat) {
-					$pwd=mysql_result($resultat,0,0);
+					$pwd=pmb_mysql_result($resultat,0,0);
 					$sc=$this->instantiate_source_class($source_id);
 					$salt=md5($credentials_user.md5($pwd).$sc->comment.$this->json_input["id"].$this->json_input["method"]);
 					if ($salt==$this->json_input["auth_pw"]) $credentials_password=$pwd;

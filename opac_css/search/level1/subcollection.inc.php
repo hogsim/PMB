@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: subcollection.inc.php,v 1.27 2013-10-30 15:00:55 dgoron Exp $
+// $Id: subcollection.inc.php,v 1.28 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -27,8 +27,8 @@ if ($add_notice) $clause.= ' and notice_id in ('.$add_notice.')';
 $tri = 'order by pert desc, index_sub_coll';
 $pert=$members["select"]." as pert";
 
-$subcollections = mysql_query("SELECT COUNT(sub_coll_id) FROM sub_collections $clause", $dbh);
-$nb_result_subcollections = mysql_result($subcollections, 0 , 0); 
+$subcollections = pmb_mysql_query("SELECT COUNT(sub_coll_id) FROM sub_collections $clause", $dbh);
+$nb_result_subcollections = pmb_mysql_result($subcollections, 0 , 0); 
 
 //Enregistrement des stats
 if($pmb_logs_activate){
@@ -64,7 +64,7 @@ if($opac_allow_affiliate_search){
 if ($nb_result_subcollections) {
 	// tout bon, y'a du résultat, on lance le pataquès d'affichage
 	$requete = "select sub_coll_id,sub_coll_name from sub_collections $clause $tri LIMIT $opac_search_results_first_level";
-	// ??? ER : $found = mysql_query($requete, $dbh);
+	// ??? ER : $found = pmb_mysql_query($requete, $dbh);
 	print "<div style=search_result id=\"subcollection\" name=\"subcollection\">";
 	print "<strong>$msg[subcollections]</strong> ".$nb_result_subcollections." $msg[results] ";
 	print "<a href=\"javascript:document.forms['search_sub_collection'].submit()\">$msg[suite] <img src='./images/search.gif' border='0' align='absmiddle'/></a>\n";

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions.tpl.php,v 1.37.2.2 2014-08-19 13:14:47 dgoron Exp $
+// $Id: suggestions.tpl.php,v 1.39 2014-08-19 13:13:58 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

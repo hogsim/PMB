@@ -4,7 +4,7 @@
 // | creator : Eric ROBERT                                                    |
 // | modified : ...                                                           |
 // +-------------------------------------------------+
-// $Id: import.inc.php,v 1.35 2013-01-29 09:12:38 dgoron Exp $
+// $Id: import.inc.php,v 1.36 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -24,9 +24,9 @@ include("$include_path/templates/expl.tpl.php");
 
 if ($notice_org) {
 	$requete="select z_marc,fichier_func from z_notices, z_bib where znotices_id='".$notice_org."' and znotices_bib_id=bib_id";
-	$resultat=mysql_query($requete);
-	$notice_org=@mysql_result($resultat,0,0);
-	$modele=@mysql_result($resultat,0,1);
+	$resultat=pmb_mysql_query($requete);
+	$notice_org=@pmb_mysql_result($resultat,0,0);
+	$modele=@pmb_mysql_result($resultat,0,1);
 }
 
 //$modele utilisée dans la classe z3950_notice
@@ -38,19 +38,19 @@ if (!$id_notice) {
 	print "<h1>$msg[notice_z3950_remplace_catal]</h1>";
 }
 
-$resultat=mysql_query("select znotices_id, znotices_bib_id, isbd, isbn, titre, auteur, z_marc from z_notices where znotices_id='$znotices_id' AND znotices_query_id='$last_query_id'");
+$resultat=pmb_mysql_query("select znotices_id, znotices_bib_id, isbd, isbn, titre, auteur, z_marc from z_notices where znotices_id='$znotices_id' AND znotices_query_id='$last_query_id'");
 
 $integration_OK="";
 $integrationexpl_OK="";
 
-while (($ligne=mysql_fetch_array($resultat))) {
+while (($ligne=pmb_mysql_fetch_array($resultat))) {
 	//$id_notice=$ligne["znotices_id"];	
 	$znotices_id=$ligne["znotices_id"];
 	
 	/* récupération du format des notices retournées par la bib */
 	$znotices_bib_id=$ligne["znotices_bib_id"];
-	$rqt_bib_id=mysql_query("select format from z_bib where bib_id='$znotices_bib_id'");
-	while (($ligne_format=mysql_fetch_array($rqt_bib_id))) {
+	$rqt_bib_id=pmb_mysql_query("select format from z_bib where bib_id='$znotices_bib_id'");
+	while (($ligne_format=pmb_mysql_fetch_array($rqt_bib_id))) {
 		$format=$ligne_format["format"];
 	}
 
@@ -75,9 +75,9 @@ while (($ligne=mysql_fetch_array($resultat))) {
 			}
 			if ($isbn_verif) {
 				$requete = "SELECT notice_id FROM notices WHERE code='$isbn_verif' ".$suite_rqt;
-				$myQuery = mysql_query($requete, $dbh);
-				$temp_nb_notice = mysql_num_rows($myQuery) ;
-				if ($temp_nb_notice) $not_id = mysql_result($myQuery, 0 ,0) ;
+				$myQuery = pmb_mysql_query($requete, $dbh);
+				$temp_nb_notice = pmb_mysql_num_rows($myQuery) ;
+				if ($temp_nb_notice) $not_id = pmb_mysql_result($myQuery, 0 ,0) ;
 					else $not_id=0 ;
 			}
 			// if ($not_id) METTRE ICI TRAITEMENT DU CHOIX DU DOUBLON echo "<script> alert('Existe déjà'); </script>" ;

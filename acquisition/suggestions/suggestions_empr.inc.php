@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions_empr.inc.php,v 1.2.8.1 2015-03-09 17:19:48 mbertin Exp $
+// $Id: suggestions_empr.inc.php,v 1.4 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -20,7 +20,7 @@ else  $statut_clause= "and statut='".$statut."'";
 
 $req="select count(id_suggestion) as nb, concat(empr_nom,' ',empr_prenom) as nom, id_empr as id, empr_location from suggestions, suggestions_origine, empr
  where origine=id_empr and num_suggestion=id_suggestion and type_origine=1 $statut_clause group by nom";
-$res = mysql_query($req,$dbh);
+$res = pmb_mysql_query($req,$dbh);
 
 	$aff = "
 	<h1>".$msg['acquisition_sug_ges']."</h1>
@@ -40,11 +40,11 @@ $res = mysql_query($req,$dbh);
 				<th>".$msg['acquisition_sugg_lecteur']."</th>
 				<th>".$msg['acquisition_sugg_nb']."</th>
 			</tr>";
-	if(!mysql_num_rows($res)){
+	if(!pmb_mysql_num_rows($res)){
 		$aff .= "<tr><td>".htmlentities($msg['acquisition_sugg_no_state_lecteur'],ENT_QUOTES,$charset)."</td></tr>";
 	} else {
 		$parity = 1;
-		while(($empr = mysql_fetch_object($res))){
+		while(($empr = pmb_mysql_fetch_object($res))){
 			if ($parity % 2)
 				$pair_impair = "even";
 			else

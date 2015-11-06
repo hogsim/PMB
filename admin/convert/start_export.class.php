@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: start_export.class.php,v 1.11.12.1 2014-04-03 15:29:21 dgoron Exp $
+// $Id: start_export.class.php,v 1.12 2014-04-03 15:21:47 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

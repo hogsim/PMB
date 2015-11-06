@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mailing.class.php,v 1.1 2012-07-31 10:12:16 dgoron Exp $
+// $Id: mailing.class.php,v 1.2 2015-04-03 11:16:29 jpermanne Exp $
 
 global $class_path, $include_path;
 require_once($include_path."/parser.inc.php");
@@ -108,12 +108,12 @@ class mailing extends tache {
 							$tpl_report .= $msg[empr_mailing_recap_comptes] ;
 							
 							$sql = "select id_empr, empr_mail, empr_nom, empr_prenom from empr, empr_caddie_content where flag='2' and empr_caddie_id=".$parameters['empr_caddie']." and object_id=id_empr ";
-							$sql_result = mysql_query($sql) ;
-							if (mysql_num_rows($sql_result)) {
+							$sql_result = pmb_mysql_query($sql) ;
+							if (pmb_mysql_num_rows($sql_result)) {
 								$tpl_report .= "<hr /><div class='row'>
 									<strong>$msg[empr_mailing_liste_erreurs]</strong>  
 									</div>";
-								while ($obj_erreur=mysql_fetch_object($sql_result)) {
+								while ($obj_erreur=pmb_mysql_fetch_object($sql_result)) {
 									$tpl_report .= "<div class='row'>
 										".$obj_erreur->empr_nom." ".$obj_erreur->empr_prenom." (".$obj_erreur->empr_mail.") 
 										</div>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: harvest.class.php,v 1.3 2013-03-22 11:06:20 mbertin Exp $
+// $Id: harvest.class.php,v 1.4 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -49,25 +49,25 @@ class harvest {
 		if(!$this->id) return;
 		$req="select * from harvest_profil where id_harvest_profil=". $this->id;
 		
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);		
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);		
 			$this->info['id']= $r->id_harvest_profil;	
 			$this->info['name']= $r->harvest_profil_name;	
 		}	
 		$this->info['fields']=array();	
 		$req="select * from harvest_field where num_harvest_profil=".$this->id." order by harvest_field_order";
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){						
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){						
 				$this->info['fields'][$r->harvest_field_xml_id]['id']= $r->id_harvest_field;	
 				$this->info['fields'][$r->harvest_field_xml_id]['xml']= $r->harvest_field_xml_id;	
 				$this->info['fields'][$r->harvest_field_xml_id]['first_flag']= $r->harvest_field_first_flag;	
 				$cpt=0;
 				$this->info['fields'][$r->harvest_field_xml_id]['src']=array();	
 				$req_src="select * from harvest_src where num_harvest_field=". $r->id_harvest_field." order by harvest_src_order";
-				$resultat_src=mysql_query($req_src);
-				while($r_src=mysql_fetch_object($resultat_src)){	
+				$resultat_src=pmb_mysql_query($req_src);
+				while($r_src=pmb_mysql_fetch_object($resultat_src)){	
 					$this->info['fields'][$r->harvest_field_xml_id]['src'][$cpt]['id']=$r_src->id_harvest_src;
 					$this->info['fields'][$r->harvest_field_xml_id]['src'][$cpt]['num_field']=$r_src->num_harvest_field;
 					$this->info['fields'][$r->harvest_field_xml_id]['src'][$cpt]['num_source']=$r_src->num_source;
@@ -85,9 +85,9 @@ class harvest {
 		} 	
 		$this->info['connector']=array();
 		$requete="SELECT connectors_categ_sources.num_categ, connectors_sources.source_id, connectors_categ.connectors_categ_name as categ_name, connectors_sources.name, connectors_sources.comment, connectors_sources.repository, connectors_sources.opac_allowed, source_sync.cancel FROM connectors_sources LEFT JOIN connectors_categ_sources ON (connectors_categ_sources.num_source = connectors_sources.source_id) LEFT JOIN connectors_categ ON (connectors_categ.connectors_categ_id = connectors_categ_sources.num_categ) LEFT JOIN source_sync ON (connectors_sources.source_id = source_sync.source_id AND connectors_sources.repository=2) ORDER BY connectors_categ_sources.num_categ DESC, connectors_sources.name";
-    	$resultat=mysql_query($requete);
+    	$resultat=pmb_mysql_query($requete);
 
-    	while ($source=mysql_fetch_object($resultat)) {    		
+    	while ($source=pmb_mysql_fetch_object($resultat)) {    		
     		$this->info['connector'][$source->source_id]=$source->name;     
     	}
     	$this->info['champ_base']=array(); 		
@@ -118,8 +118,8 @@ class harvest {
     	}
     	
 		$requete="SELECT * from harvest_search_field where num_harvest_profil=". $this->id;
-    	$resultat=mysql_query($requete);
-    	while ($source=mysql_fetch_object($resultat)) {  
+    	$resultat=pmb_mysql_query($requete);
+    	while ($source=pmb_mysql_fetch_object($resultat)) {  
     		if($this->info['connector'][$source->num_source]) { 		
 	    		$this->info['search_field'][$source->num_source]['field']=$source->num_field; 
 	    		$this->info['search_field'][$source->num_source]['ss_field']=$source->num_ss_field;    
@@ -142,8 +142,8 @@ class harvest {
     		$req="select ".$data['tabfield']." as code from notices where notice_id=$notice_id ";
     	}
     	// print $req;
-  		$resultat=@mysql_query($req);
-    	if ($r=@mysql_fetch_object($resultat)) {    		
+  		$resultat=@pmb_mysql_query($req);
+    	if ($r=@pmb_mysql_fetch_object($resultat)) {    		
     		return   $r->code;  
     	}
     	return '';
@@ -190,24 +190,24 @@ class harvest {
 		
 		$res=$s->make_search();
 		$req="select * from ".$res ;
-		$resultat=mysql_query($req);
-		while($r=mysql_fetch_object($resultat)){				
+		$resultat=pmb_mysql_query($req);
+		while($r=pmb_mysql_fetch_object($resultat)){				
 			// printr( $r);
 			$recid=$r->notice_id;
 			$requete = "SELECT source_id FROM external_count WHERE rid=".$r->notice_id.";";
-			$myQuery = mysql_query($requete, $dbh);
-			$source_id = mysql_result($myQuery, 0, 0);
+			$myQuery = pmb_mysql_query($requete, $dbh);
+			$source_id = pmb_mysql_result($myQuery, 0, 0);
 				
 			$req="select * from entrepot_source_".$source_id." where recid='".$recid."' order by ufield,field_order,usubfield,subfield_order,value";
-			$res_entrepot=mysql_query($req);
-			while($r_ent=mysql_fetch_object($res_entrepot)){
+			$res_entrepot=pmb_mysql_query($req);
+			while($r_ent=pmb_mysql_fetch_object($res_entrepot)){
 				$this->info['notice'][$source_id][$r_ent->ufield][]=$r_ent;	
 			}	
 			// on fait le ménage ou pas vu les requetes
 			/*$req="DELETE FROM entrepot_source_".$source_id."  where where recid='".$recid."'  ";
-	    	mysql_query($req);			    		
+	    	pmb_mysql_query($req);			    		
 			$req="DELETE FROM FROM external_count WHERE rid=".$r->notice_id."";
-	    	mysql_query($req);*/
+	    	pmb_mysql_query($req);*/
 		}
 		// printr(	$this->info['notice']);    
 	    $notice_composite=array();
@@ -408,23 +408,23 @@ class harvest {
 			$req="INSERT INTO harvest_profil SET 
 				harvest_profil_name='".$data['name']."'
 			";	
-			mysql_query($req, $dbh);
-			$this->id = mysql_insert_id($dbh);
+			pmb_mysql_query($req, $dbh);
+			$this->id = pmb_mysql_insert_id($dbh);
 		} else {
 			$req="UPDATE harvest_profil SET 
 				harvest_profil_name='".$data['name']."'
 				where 	id_harvest_profil=".$this->id;	
-			mysql_query($req, $dbh);				
+			pmb_mysql_query($req, $dbh);				
 				
 			foreach($this->info['fields'] as $harvest_field){				
 				$req="DELETE from harvest_src WHERE num_harvest_field=".$harvest_field['id'];	
-				mysql_query($req, $dbh);
+				pmb_mysql_query($req, $dbh);
 			}			
 			$req=" DELETE from harvest_field WHERE num_harvest_profil=".$this->id;
-			mysql_query($req, $dbh);			
+			pmb_mysql_query($req, $dbh);			
 					
 			$req=" DELETE from harvest_search_field WHERE num_harvest_profil=".$this->id;
-			mysql_query($req, $dbh);					
+			pmb_mysql_query($req, $dbh);					
 		}
 		$cpt_fields=0;
 		foreach($this->fields as $field ){
@@ -438,8 +438,8 @@ class harvest {
 				harvest_field_first_flag=".$first_flag.",
 				harvest_field_order=".$cpt_fields++."	
 			";	
-			mysql_query($req, $dbh);
-			$harvest_field_id = mysql_insert_id($dbh);	
+			pmb_mysql_query($req, $dbh);
+			$harvest_field_id = pmb_mysql_insert_id($dbh);	
 			
 			$var="unimarcfieldnumber_".$field["ID"];
 			global $$var;
@@ -475,7 +475,7 @@ class harvest {
 					harvest_src_prec_flag=".$rec_flag.",	
 					harvest_src_order=".$cpt."
 					";	
-					mysql_query($req, $dbh);
+					pmb_mysql_query($req, $dbh);
 					$cpt++;
 	    		}	    		
     		}
@@ -494,7 +494,7 @@ class harvest {
 					num_field='".$field."',
 					num_ss_field='".$ss_field."'
 				";	
-				mysql_query($req, $dbh);	
+				pmb_mysql_query($req, $dbh);	
     		}
 		}
 		$this->fetch_data();
@@ -504,14 +504,14 @@ class harvest {
 		global $dbh;
 		foreach($this->info['fields'] as $harvest_field){				
 			$req="DELETE from harvest_src WHERE num_harvest_field=".$harvest_field['id'];	
-			mysql_query($req, $dbh);
+			pmb_mysql_query($req, $dbh);
 		}			
 		$req=" DELETE from harvest_field WHERE num_harvest_profil=".$this->id;
-		mysql_query($req, $dbh);				
+		pmb_mysql_query($req, $dbh);				
 		$req=" DELETE from  harvest_profil where id_harvest_profil=". $this->id;
-		mysql_query($req, $dbh);								
+		pmb_mysql_query($req, $dbh);								
 		$req=" DELETE from harvest_search_field WHERE num_harvest_profil=".$this->id;
-		mysql_query($req, $dbh);	
+		pmb_mysql_query($req, $dbh);	
 		
 		$this->fetch_data();	
 	}	
@@ -521,12 +521,12 @@ class harvest {
     	
     	//Recherche des sources
     	$requete="SELECT connectors_categ_sources.num_categ, connectors_sources.source_id, connectors_categ.connectors_categ_name as categ_name, connectors_sources.name, connectors_sources.comment, connectors_sources.repository, connectors_sources.opac_allowed, source_sync.cancel FROM connectors_sources LEFT JOIN connectors_categ_sources ON (connectors_categ_sources.num_source = connectors_sources.source_id) LEFT JOIN connectors_categ ON (connectors_categ.connectors_categ_id = connectors_categ_sources.num_categ) LEFT JOIN source_sync ON (connectors_sources.source_id = source_sync.source_id AND connectors_sources.repository=2) ORDER BY connectors_categ_sources.num_categ DESC, connectors_sources.name";
-    	$resultat=mysql_query($requete);
+    	$resultat=pmb_mysql_query($requete);
     	$r="<select name='source_".$id_field."_".$nb."' >";
     	$current_categ=0;
     	$count = 0;
     	if(!$value)$selected=" selected='selected' ";
-    	while ($source=mysql_fetch_object($resultat)) {
+    	while ($source=pmb_mysql_fetch_object($resultat)) {
     		if ($current_categ !== $source->num_categ) {
     			$current_categ = $source->num_categ;
     			$source->categ_name = $source->categ_name ? $source->categ_name : $msg["source_no_category"];
@@ -587,14 +587,14 @@ class harvest {
 			</script>";
     	//Recherche des sources
     	$requete="SELECT connectors_categ_sources.num_categ, connectors_sources.source_id as source_id, connectors_categ.connectors_categ_name as categ_name, connectors_sources.name, connectors_sources.comment, connectors_sources.repository, connectors_sources.opac_allowed, source_sync.cancel FROM connectors_sources LEFT JOIN connectors_categ_sources ON (connectors_categ_sources.num_source = connectors_sources.source_id) LEFT JOIN connectors_categ ON (connectors_categ.connectors_categ_id = connectors_categ_sources.num_categ) LEFT JOIN source_sync ON (connectors_sources.source_id = source_sync.source_id AND connectors_sources.repository=2) ORDER BY connectors_categ_sources.num_categ DESC, connectors_sources.name";
-    	$resultat=mysql_query($requete);
+    	$resultat=pmb_mysql_query($requete);
     	
     	$current_categ=0;
     	$count = 0;
     	
     	$facette=new facette_search();
     	
-    	while ($source=mysql_fetch_object($resultat)) {
+    	while ($source=pmb_mysql_fetch_object($resultat)) {
     		$r.="
     			<tr>
     				<td>".
@@ -629,9 +629,9 @@ class harvests {
 		$this->info=array();
 		$i=0;
 		$req="select * from harvest_profil ";
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){	
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){	
 				$this->info[$i]= $harvest=new harvest($r->id_harvest_profil);	
 				
 				$i++;

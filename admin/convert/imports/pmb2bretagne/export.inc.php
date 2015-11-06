@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export.inc.php,v 1.20 2013-04-17 08:37:34 mbertin Exp $
+// $Id: export.inc.php,v 1.21 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -11,9 +11,9 @@ require_once("$class_path/category.class.php");
 function _export_($id,$keep_expl=0,$params=array()) {
 	global $charset;
 	$requete="select * from notices where notice_id=$id";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	
-	$rn=mysql_fetch_object($resultat);
+	$rn=pmb_mysql_fetch_object($resultat);
 	
 	$dt=$rn->typdoc;
 	$bl=$rn->niveau_biblio;
@@ -40,12 +40,12 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	$notice_langue_temp="";
 	$notice_org_langue_temp="";
 	$rqttmp_lang = "select code_langue from notices_langues where num_notice='$rn->notice_id' and type_langue=0 order by ordre_langue ";
-	$restmp_lang = mysql_query($rqttmp_lang);
-	while ($tmp_lang = mysql_fetch_object($restmp_lang)) $notice_langue_temp.="    <s c='a'>".htmlspecialchars($tmp_lang->code_langue,ENT_QUOTES,$charset)."</s>\n";  
+	$restmp_lang = pmb_mysql_query($rqttmp_lang);
+	while ($tmp_lang = pmb_mysql_fetch_object($restmp_lang)) $notice_langue_temp.="    <s c='a'>".htmlspecialchars($tmp_lang->code_langue,ENT_QUOTES,$charset)."</s>\n";  
 
 	$rqttmp_lang = "select code_langue from notices_langues where num_notice='$rn->notice_id' and type_langue=1 order by ordre_langue ";
-	$restmp_lang = mysql_query($rqttmp_lang);
-	while ($tmp_lang = mysql_fetch_object($restmp_lang)) $notice_org_langue_temp.="    <s c='c'>".htmlspecialchars($tmp_lang->code_langue,ENT_QUOTES,$charset)."</s>\n";
+	$restmp_lang = pmb_mysql_query($rqttmp_lang);
+	while ($tmp_lang = pmb_mysql_fetch_object($restmp_lang)) $notice_org_langue_temp.="    <s c='c'>".htmlspecialchars($tmp_lang->code_langue,ENT_QUOTES,$charset)."</s>\n";
 
 	if ($notice_langue_temp || $notice_org_langue_temp) {
 		$notice.="  <f c='101' ind='  '>\n";
@@ -80,8 +80,8 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	//Editeur
 	if ($rn->ed1_id) {
 	    $requete="select * from publishers where ed_id=".$rn->ed1_id;
-		$resultat=mysql_query($requete);
-		$red=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		$red=pmb_mysql_fetch_object($resultat);
 		$notice.="  <f c='210' ind='  '>\n";
 		$notice.="    <s c='c'>".htmlspecialchars($red->ed_name,ENT_QUOTES,$charset)."</s>\n";
 		if ($red->ed_ville) $notice.="    <s c='a'>".htmlspecialchars($red->ed_ville,ENT_QUOTES,$charset)."</s>\n";
@@ -93,8 +93,8 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	}
 	if ($rn->ed2_id) {
 	    $requete="select * from publishers where ed_id=".$rn->ed2_id;
-		$resultat=mysql_query($requete);
-		$red=mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		$red=pmb_mysql_fetch_object($resultat);
 		$notice.="  <f c='210' ind='  '>\n";
 		$notice.="    <s c='c'>".htmlspecialchars($red->ed_name,ENT_QUOTES,$charset)."</s>\n";
 		if ($red->ed_ville) $notice.="    <s c='a'>".htmlspecialchars($red->ed_ville,ENT_QUOTES,$charset)."</s>\n";
@@ -114,14 +114,14 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	//Collection
 	if ($rn->coll_id) {
 		$requete="select collection_name from collections where collection_id=".$rn->coll_id;
-		$resultat=mysql_query($requete);
+		$resultat=pmb_mysql_query($requete);
 		$notice.="  <f c='225' ind='  '>\n";
-		$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,0,0),ENT_QUOTES,$charset)."</s>\n";	
+		$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,0,0),ENT_QUOTES,$charset)."</s>\n";	
 		//sous-collection
 		if ($rn->subcoll_id){
 			$requete="select * from sub_collections where sub_coll_id=".$rn->subcoll_id;
-			$resultat=mysql_query($requete);		    
-			$subcoll=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete);		    
+			$subcoll=pmb_mysql_fetch_object($resultat);
 			$notice.="    <s c='i'>".htmlspecialchars($subcoll->sub_coll_name,ENT_QUOTES,$charset)."</s>\n";
 		}
 		if ($rn->nocoll) $notice.="    <s c='v'>".htmlspecialchars($rn->nocoll,ENT_QUOTES,$charset)."</s>\n";
@@ -151,8 +151,8 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	//dewey
 	if ($rn->indexint) {
 		$requete = "select * from indexint where indexint_id=".$rn -> indexint;
-		$resultat = mysql_query($requete);
-		if ($code_dewey=mysql_fetch_object($resultat)) {
+		$resultat = pmb_mysql_query($requete);
+		if ($code_dewey=pmb_mysql_fetch_object($resultat)) {
 			$notice.="  <f c='676' ind='  '>\n";
 			$notice.="    <s c='a'>".htmlspecialchars( $code_dewey -> indexint_name,ENT_QUOTES,$charset)."</s>\n";
 			$notice.="    <s c='l'>".htmlspecialchars( $code_dewey -> indexint_comment,ENT_QUOTES,$charset)."</s>\n";
@@ -164,8 +164,8 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	$serie="";
 	if ($rn->tparent_id!=0 || $rn->tnvol!==false) {
 		$requete="select serie_name from series where serie_id=".$rn->tparent_id;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) $serie=mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) $serie=pmb_mysql_result($resultat,0,0);
 		$notice_461temp="";
 		if ($serie!=="") $notice_461temp.="    <s c='t'>".htmlspecialchars($serie,ENT_QUOTES,$charset)."</s>\n";
 		if ($rn->tnvol) $notice_461temp.="    <s c='v'>".htmlspecialchars($rn->tnvol,ENT_QUOTES,$charset)."</s>\n";
@@ -176,49 +176,49 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	$requete = "SELECT author_name, author_rejete, author_type, responsability_fonction, responsability_type ";
 	$requete .= "FROM authors, responsability where responsability_notice=$id and responsability_author=author_id ";
 	$requete .= "ORDER BY responsability_type, responsability_ordre, author_type, responsability_fonction";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-		for ($i=0; $i<mysql_num_rows($resultat); $i++) {
-		$resptype=mysql_result($resultat,$i, 4);
-		$prenom=mysql_result($resultat,$i, 1);
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+		for ($i=0; $i<pmb_mysql_num_rows($resultat); $i++) {
+		$resptype=pmb_mysql_result($resultat,$i, 4);
+		$prenom=pmb_mysql_result($resultat,$i, 1);
 	    if (!$resptype) {
 			//Auteur principal
 			$notice.="  <f c='700' ind='  '>\n";
 		
 		if (!$prenom) {
-			$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";			
+			$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";			
 		} 
 		else {
-			$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";
-			$notice.="    <s c='b'>".htmlspecialchars(mysql_result($resultat,$i, 1),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="    <s c='b'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 1),ENT_QUOTES,$charset)."</s>\n";
 		}
-		$notice.="    <s c='4'>".htmlspecialchars(mysql_result($resultat,$i, 3),ENT_QUOTES,$charset)."</s>\n";
+		$notice.="    <s c='4'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 3),ENT_QUOTES,$charset)."</s>\n";
 		$notice.="  </f>\n";		
 		}
 		if ($resptype==1) {
 			//Co-auteurs
 			$notice.="  <f c='701' ind='  '>\n";
 			if (!$prenom) {				
-				$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";
+				$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";
 			} 
 			else {
-				$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";			
-				$notice.="    <s c='b'>".htmlspecialchars(mysql_result($resultat,$i, 1),ENT_QUOTES,$charset)."</s>\n";
+				$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";			
+				$notice.="    <s c='b'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 1),ENT_QUOTES,$charset)."</s>\n";
 			}
-			$notice.="    <s c='4'>".htmlspecialchars(mysql_result($resultat,$i, 3),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="    <s c='4'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 3),ENT_QUOTES,$charset)."</s>\n";
 			$notice.="  </f>\n";		
 		}
 		if ($resptype==2) {
 		//Auteurs secondaires
 		$notice.="  <f c='702' ind='  '>\n";
 		if (!$prenom) {
-				$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";
+				$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";
 		}
 		else {
-		$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";				
-		$notice.="    <s c='b'>".htmlspecialchars(mysql_result($resultat,$i, 1),ENT_QUOTES,$charset)."</s>\n";
+		$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 0),ENT_QUOTES,$charset)."</s>\n";				
+		$notice.="    <s c='b'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 1),ENT_QUOTES,$charset)."</s>\n";
 		}
-		$notice.="    <s c='4'>".htmlspecialchars(mysql_result($resultat,$i, 3),ENT_QUOTES,$charset)."</s>\n";
+		$notice.="    <s c='4'>".htmlspecialchars(pmb_mysql_result($resultat,$i, 3),ENT_QUOTES,$charset)."</s>\n";
 		$notice.="  </f>\n";
 		}
 		}
@@ -237,8 +237,8 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	if ($rn->niveau_biblio=="a") {
 		//Récupération du titre du périodique
 		$requete="select tit1,bulletin_numero,bulletin_notice,mention_date, date_date, bulletin_titre from notices, bulletins, analysis where analysis_notice=$id and analysis_bulletin=bulletin_id and bulletin_notice=notice_id";
-		$resultat=mysql_query($requete);
-		$r_bull=@mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		$r_bull=@pmb_mysql_fetch_object($resultat);
 		$data_bull="";
 		if (($r_bull)&&($r_bull->tit1)) {
 			if ($r_bull->tit1) $data_bull.="    <s c='t'>".htmlspecialchars($r_bull->tit1,ENT_QUOTES,$charset)."</s>\n";
@@ -267,97 +267,97 @@ function _export_($id,$keep_expl=0,$params=array()) {
 	$requete = "SELECT libelle_categorie FROM categories, notices_categories ";
 	$requete .= "WHERE notcateg_notice=$id AND categories.num_noeud = notices_categories.num_noeud ";
 	$requete .= "ORDER BY ordre_categorie, libelle_categorie ";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	
 	//Descripteurs
-	if (mysql_num_rows($resultat)) {
-	    for ($i=0; $i<mysql_num_rows($resultat); $i++) {
+	if (pmb_mysql_num_rows($resultat)) {
+	    for ($i=0; $i<pmb_mysql_num_rows($resultat); $i++) {
 			$notice.="  <f c='606' ind='  '>\n";
-			$notice.="     <s c='a'>".htmlspecialchars(mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="     <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
 			$notice.="  </f>\n";
 		}
 	}
 		
 	//Thème(s) 
 	$requete="select ncl.notices_custom_list_lib from notices_custom_lists ncl, notices_custom_values ncv, notices_custom nc where ncv.notices_custom_origine=$id and ncv.notices_custom_champ=nc.idchamp and name='theme' and ncv.notices_custom_champ=ncl.notices_custom_champ and ncv.notices_custom_integer=ncl.notices_custom_list_value";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-	    for ($i=0; $i<mysql_num_rows($resultat); $i++) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+	    for ($i=0; $i<pmb_mysql_num_rows($resultat); $i++) {
 			$notice.="  <f c='900' ind='  '>\n";
-			$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
 			$notice.="  </f>\n";
 		}
 	}
 	//Genre(s)
 	$requete="select ncl.notices_custom_list_lib from notices_custom_lists ncl, notices_custom_values ncv, notices_custom nc where ncv.notices_custom_origine=$id and ncv.notices_custom_champ=nc.idchamp and name='genre' and ncv.notices_custom_champ=ncl.notices_custom_champ and ncv.notices_custom_integer=ncl.notices_custom_list_value";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-	    for ($i=0; $i<mysql_num_rows($resultat); $i++) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+	    for ($i=0; $i<pmb_mysql_num_rows($resultat); $i++) {
 			$notice.="  <f c='901' ind='  '>\n";
-			$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
 			$notice.="  </f>\n";
 		}
 	}
 	//Niveau
 	$requete="select ncl.notices_custom_list_lib from notices_custom_lists ncl, notices_custom_values ncv, notices_custom nc where ncv.notices_custom_origine=$id and ncv.notices_custom_champ=nc.idchamp and name='niveau' and ncv.notices_custom_champ=ncl.notices_custom_champ and ncv.notices_custom_integer=ncl.notices_custom_list_value";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-	    for ($i=0; $i<mysql_num_rows($resultat); $i++) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+	    for ($i=0; $i<pmb_mysql_num_rows($resultat); $i++) {
 			$notice.="  <f c='906' ind='  '>\n";
-			$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
 			$notice.="  </f>\n";
 		}
 	}
 	//Discipline
 	$requete="select ncl.notices_custom_list_lib from notices_custom_lists ncl, notices_custom_values ncv, notices_custom nc where ncv.notices_custom_origine=$id and ncv.notices_custom_champ=nc.idchamp and name='discipline' and ncv.notices_custom_champ=ncl.notices_custom_champ and ncv.notices_custom_integer=ncl.notices_custom_list_value";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
-	    for ($i=0; $i<mysql_num_rows($resultat); $i++) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
+	    for ($i=0; $i<pmb_mysql_num_rows($resultat); $i++) {
 			$notice.="  <f c='902' ind='  '>\n";
-			$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,$i),ENT_QUOTES,$charset)."</s>\n";
 			$notice.="  </f>\n";
 		}
 	}
 	//Année de péremption
 	$requete="select ncv.notices_custom_integer from notices_custom_values ncv, notices_custom nc where ncv.notices_custom_origine=$id and ncv.notices_custom_champ=nc.idchamp and name='annee_peremption'";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
 	    $notice.="  <f c='903' ind='  '>\n";
-		$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,0),ENT_QUOTES,$charset)."</s>\n";
+		$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,0),ENT_QUOTES,$charset)."</s>\n";
 		$notice.="  </f>\n";
 	}
 	//Date de saisie
 	$requete="select ncv.notices_custom_date from notices_custom_values ncv, notices_custom nc where ncv.notices_custom_origine=$id and ncv.notices_custom_champ=nc.idchamp and name='date_creation'";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
 			$notice.="  <f c='904' ind='  '>\n";
-			$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,0),ENT_QUOTES,$charset)."</s>\n";
+			$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,0),ENT_QUOTES,$charset)."</s>\n";
 			$notice.="  </f>\n";
 		}
 	//Type doc
 	$requete="select ncl.notices_custom_list_lib from notices_custom_lists ncl, notices_custom_values ncv, notices_custom nc where ncv.notices_custom_origine=$id and ncv.notices_custom_champ=nc.idchamp and name='type_nature' and ncv.notices_custom_champ=ncl.notices_custom_champ and ncv.notices_custom_integer=ncl.notices_custom_list_value";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
 	    $notice.="  <f c='905' ind='  '>\n";
-		$notice.="    <s c='a'>".htmlspecialchars(mysql_result($resultat,0),ENT_QUOTES,$charset)."</s>\n";
+		$notice.="    <s c='a'>".htmlspecialchars(pmb_mysql_result($resultat,0),ENT_QUOTES,$charset)."</s>\n";
 		$notice.="  </f>\n";
 	}
 	//Origine
 	$requete="select orinot_nom from notices, origine_notice where notice_id=$id and origine_catalogage=orinot_id";
-	$resultat=mysql_query($requete);
-	if (mysql_num_rows($resultat)) {
+	$resultat=pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($resultat)) {
 	    $notice.="  <f c='801' ind='  '>\n";
-		$notice.="    <s c='b'>".htmlspecialchars(mysql_result($resultat,0),ENT_QUOTES,$charset)."</s>\n";
+		$notice.="    <s c='b'>".htmlspecialchars(pmb_mysql_result($resultat,0),ENT_QUOTES,$charset)."</s>\n";
 		$notice.="  </f>\n";
 	}	
 	
 	// Ajout, eventuel, des exemplaires :
 	if($keep_expl) {
 		$requete = "select expl_cb, expl_typdoc, expl_cote, expl_section, expl_statut, expl_note, expl_comment from exemplaires where expl_notice = $id";
-		$resultat = mysql_query($requete);
-		$nb = mysql_num_rows($resultat);
+		$resultat = pmb_mysql_query($requete);
+		$nb = pmb_mysql_num_rows($resultat);
 		for($i=0; $i < $nb ; $i++) {
-			$expl =@mysql_fetch_object($resultat);
+			$expl =@pmb_mysql_fetch_object($resultat);
 			$notice.="  <f c='995' ind='  '>\n";
 			if($expl->expl_cb && $expl->expl_cb != "") {
 				$notice.="    <s c='f'>".htmlspecialchars($expl->expl_cb,ENT_QUOTES,$charset)."</s>\n";

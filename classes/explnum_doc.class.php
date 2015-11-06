@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_doc.class.php,v 1.4 2010-02-08 11:28:09 kantin Exp $
+// $Id: explnum_doc.class.php,v 1.5 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,9 +33,9 @@ class explnum_doc{
 			$this->explnum_doc_url = '';
 		} else {
 			$req = "select * from explnum_doc where id_explnum_doc='".$this->explnum_doc_id."'";
-			$res=mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$expl = mysql_fetch_object($res);
+			$res=pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$expl = pmb_mysql_fetch_object($res);
 				$this->explnum_doc_nomfichier = $expl->explnum_doc_nomfichier;
 	 			$this->explnum_doc_contenu = $expl->explnum_doc_data;
 	 			$this->explnum_doc_mime = $expl->explnum_doc_mimetype;
@@ -59,7 +59,7 @@ class explnum_doc{
 		global $dbh;
 
 		$req = "delete from explnum_doc where id_explnum_doc='".$this->explnum_doc_id."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		
 	}
 	
@@ -78,8 +78,8 @@ class explnum_doc{
 					 explnum_doc_data='".addslashes($this->explnum_doc_contenu)."',
 					 explnum_doc_url='".addslashes($this->explnum_doc_url)."'
 					 ";
-			mysql_query($req,$dbh);
-			$this->explnum_doc_id = mysql_insert_id();
+			pmb_mysql_query($req,$dbh);
+			$this->explnum_doc_id = pmb_mysql_insert_id();
 					 
 		} else{
 			//Modification
@@ -90,7 +90,7 @@ class explnum_doc{
 					 explnum_doc_data='".addslashes($this->explnum_doc_contenu)."',
 					 explnum_doc_url='".addslashes($this->explnum_doc_url)."'
 					 where id_explnum_doc='".$this->explnum_doc_id."'";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
 		}
 	}
 	

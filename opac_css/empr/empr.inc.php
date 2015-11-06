@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr.inc.php,v 1.26 2013-07-03 09:27:43 dgoron Exp $
+// $Id: empr.inc.php,v 1.28 2015-04-10 14:21:36 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -28,10 +28,10 @@ if ($opac_resa) {
 
 // recherche des valeurs dans la table empr suivant id_empr
 $query = "SELECT *, date_format(empr_date_adhesion, '".$msg["format_date_sql"]."') as aff_empr_date_adhesion, date_format(empr_date_expiration, '".$msg["format_date_sql"]."') as aff_empr_date_expiration, date_format(date_fin_blocage, '".$msg["format_date_sql"]."') as aff_date_fin_blocage FROM empr WHERE empr_login='$login'";
-$result = mysql_query($query) or die("Query failed ".$query);
+$result = pmb_mysql_query($query) or die("Query failed ".$query);
 
 // récupération des valeurs MySQL du lecteur et injection dans les variables
-while (($line = mysql_fetch_array($result, MYSQL_ASSOC))) {
+while (($line = pmb_mysql_fetch_array($result, MYSQL_ASSOC))) {
 	$id_empr=$line["id_empr"];
 	$empr_cb = $line["empr_cb"];
 	$empr_nom = $line["empr_nom"];
@@ -104,9 +104,9 @@ $perso_=$p_perso->show_fields($id_empr);
 if (count($perso_["FIELDS"])) {
 	for ($ipp=0; $ipp<count($perso_["FIELDS"]); $ipp++) {
 		$p=$perso_["FIELDS"][$ipp];
-		if($p[OPAC_SHOW]==1){				
+		if(($p[OPAC_SHOW]==1) && $p["AFF"]){
 			$tab_empr_info[$i]["titre"]=$p["TITRE_CLEAN"];
-			$tab_empr_info[$i++]["val"]=$p["AFF"];						
+			$tab_empr_info[$i++]["val"]=$p["AFF"];
 		}		
 	}
 }

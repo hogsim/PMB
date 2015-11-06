@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rss_func.inc.php,v 1.11.12.3 2015-06-05 12:07:18 jpermanne Exp $
+// $Id: rss_func.inc.php,v 1.16 2015-06-05 12:08:09 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -12,8 +12,8 @@ require_once($include_path."/notice.inc.php");
 function affiche_rss($id_rss=0) {
 
 	$req_rss = "select lien, eformat from notices where notice_id='$id_rss' " ;
-	$res_rss = mysql_query($req_rss);
-	$rss = mysql_fetch_object($res_rss);
+	$res_rss = pmb_mysql_query($req_rss);
+	$rss = pmb_mysql_fetch_object($res_rss);
 	
 	$rss_lien = $rss->lien;
 	$rss_lu = explode(' ', $rss->eformat) ;
@@ -22,8 +22,8 @@ function affiche_rss($id_rss=0) {
 	if ($rss_time=='0' || !$rss_time) return affiche_rss_from_url($rss->lien) ;
 	else {
 		$req_content = "select if(sysdate()<date_add(rss_last, interval $rss_time minute), rss_content, null) as contenu, if(sysdate()<date_add(rss_last, interval $rss_time minute), rss_content_parse, null) as contenu_parse from rss_content where rss_id='$id_rss' " ;
-		$res_content = mysql_query($req_content);
-		if ($content = mysql_fetch_object($res_content)) {
+		$res_content = pmb_mysql_query($req_content);
+		if ($content = pmb_mysql_fetch_object($res_content)) {
 			// on a trouvé un truc dans la table
 			if ($content->contenu) {
 				$etat_cache_rss = 1 ;
@@ -44,7 +44,7 @@ function affiche_rss($id_rss=0) {
 				$fichier = lit_fichier_rss($rss_lien) ;
 				$contenu_parse = affiche_rss_from_fichier($fichier);
 				$rq = "update rss_content set rss_content='".addslashes($fichier)."', rss_content_parse='".addslashes($contenu_parse)."' where rss_id='$id_rss' ";
-				mysql_query($rq);
+				pmb_mysql_query($rq);
 				if ($rss_lu[3]=='1') majNoticesGlobalIndex($id_rss, 1, $contenu_parse);
 				return $contenu_parse ;
 				break ;
@@ -52,7 +52,7 @@ function affiche_rss($id_rss=0) {
 				$fichier = lit_fichier_rss($rss_lien) ;
 				$contenu_parse = affiche_rss_from_fichier($fichier);
 				$rq = "insert into rss_content set rss_id='$id_rss', rss_content='".addslashes($fichier)."', rss_content_parse='".addslashes($contenu_parse)."' ";
-				mysql_query($rq);
+				pmb_mysql_query($rq);
 				if ($rss_lu[3]=='1') majNoticesGlobalIndex($id_rss, 1, $contenu_parse);
 				return $contenu_parse ;
 				break ;
@@ -70,6 +70,7 @@ function lit_fichier_rss($url_fichier) {
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		configurer_proxy_curl($ch);
 		$res=curl_exec($ch);
 		curl_close($ch);

@@ -5,7 +5,7 @@
 // |                                                                          |
 // | Ces scripts sont basés sur le travail de Quentin CHEVILLON               |
 // +-------------------------------------------------+
-// $Id: z_progression_main.php,v 1.17 2012-09-06 07:49:42 ngantier Exp $
+// $Id: z_progression_main.php,v 1.18 2015-04-03 11:16:22 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path="../..";
@@ -35,8 +35,8 @@ $selection_bib="where bib_id in (".$clause.") ";
 //
 
 $sql = "insert into z_query (zquery_id, search_attr) values (0,'crit1=$crit1&val1=$val1&bool1=$bool1&crit2=$crit2&val2=$val2')";
-mysql_query($sql);
-$last_id_query = mysql_insert_id();
+pmb_mysql_query($sql);
+$last_id_query = pmb_mysql_insert_id();
 
 // DEBUG NOTE: expand size frame3 to 50% to show messages from z_progression_cache and children  
 

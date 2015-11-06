@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mono_display_expl.class.php,v 1.7.6.1 2015-04-16 11:42:47 jpermanne Exp $
+// $Id: mono_display_expl.class.php,v 1.9 2015-04-16 11:39:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -94,9 +94,9 @@ function mono_display_expl($cb,$expl_id, $level=1, $action='', $expl=1, $expl_li
 	
 	if($this->id_bulletin) {
 		$req="select num_notice from bulletins where bulletin_id=".$this->id_bulletin;
-		$result = mysql_query($req);
-		if(mysql_num_rows($result)) {
-			$res = mysql_fetch_object($result);
+		$result = pmb_mysql_query($req);
+		if(pmb_mysql_num_rows($result)) {
+			$res = pmb_mysql_fetch_object($result);
 			$this->num_notice = $res->num_notice;
 		}	
 	}
@@ -229,9 +229,9 @@ function get_expl_info($cb, $id, $lien_notice=1) {
 		$query .= " and dtype.idtyp_doc=expl.expl_typdoc";
 		$query .= " and idcode=expl.expl_codestat";
 		$query .= " and idlender=expl.expl_owner";
-		$result = mysql_query($query, $dbh);
-		if(mysql_num_rows($result)) {
-			$expl = mysql_fetch_object($result);
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_num_rows($result)) {
+			$expl = pmb_mysql_fetch_object($result);
 			if ($expl->expl_lastempr) {
 				$lastempr = new emprunteur($expl->expl_lastempr, '', FALSE, 0) ;
 				$expl->lastempr_nom = $lastempr->nom;
@@ -261,9 +261,9 @@ function expl_info_display($affichage_emprunteurs=1,$affichage_zone_notes=1) {
 	
 	//on compte de nombre de prets pour cet exemplaire 
 	$req = "select count(arc_expl_id) as nb_prets from pret_archive where arc_expl_id = ".$this->expl_data->expl_id;
-	$res = mysql_query($req);
-	if(mysql_num_rows($res)){	
-		$arch_pret = mysql_fetch_object($res);
+	$res = pmb_mysql_query($req);
+	if(pmb_mysql_num_rows($res)){	
+		$arch_pret = pmb_mysql_fetch_object($res);
 		$nb_prets = $arch_pret->nb_prets ;
 	}else $nb_prets = 0;
 	$expl_aff=str_replace('!!nb_prets!!', $nb_prets, $expl_aff);

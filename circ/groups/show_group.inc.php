@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: show_group.inc.php,v 1.20 2014-02-26 10:44:23 dgoron Exp $
+// $Id: show_group.inc.php,v 1.21 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -120,8 +120,8 @@ if($myGroup->nb_members) {
 
 			if ($empr_temp->adhesion_renouv_proche() || $empr_temp->adhesion_depassee()) {		
 				$rqt="select duree_adhesion from empr_categ where id_categ_empr='$empr_temp->categ'";
-				$res_dur_adhesion = mysql_query($rqt, $dbh);
-				$row = mysql_fetch_row($res_dur_adhesion);
+				$res_dur_adhesion = pmb_mysql_query($rqt, $dbh);
+				$row = pmb_mysql_fetch_row($res_dur_adhesion);
 				$nb_jour_adhesion_categ = $row[0];
 			
 				if ($empr_prolong_calc_date_adhes_depassee && $empr_temp->adhesion_depassee()) {
@@ -131,8 +131,8 @@ if($myGroup->nb_members) {
 					$rqt_date = "select date_add('$empr_temp->date_expiration',INTERVAL 1 DAY) as nouv_date_debut,
 							date_add('$empr_temp->date_expiration',INTERVAL $nb_jour_adhesion_categ DAY) as nouv_date_fin ";
 				}
-				$resultatdate=mysql_query($rqt_date) or die ("<br /> $rqt_date ".mysql_error());
-				$resdate=mysql_fetch_object($resultatdate);
+				$resultatdate=pmb_mysql_query($rqt_date) or die ("<br /> $rqt_date ".pmb_mysql_error());
+				$resdate=pmb_mysql_fetch_object($resultatdate);
 			
 				$date_clic   = "onClick=\"openPopUp('./select.php?what=calendrier&caller=group_form&date_caller=".preg_replace('/-/', '', $resdate->nouv_date_fin)."&param1=form_expiration_".$membre['id']."&param2=form_expiration_lib_".$membre['id']."&auto_submit=NO&date_anterieure=YES', 'date_adhesion', 205, 300, -2, -2, 'toolbar=no, dependent=yes, resizable=yes')\"  ";
 					
@@ -166,9 +166,9 @@ print $group_form_add_membre ;
 
 function get_nombre_pret($id_empr) {
 	$requete = "SELECT count( pret_idempr ) as nb_pret FROM pret where pret_idempr = $id_empr";
-	$res_pret = mysql_query($requete);
-	if (mysql_num_rows($res_pret)) {
-		$rpret=mysql_fetch_object($res_pret);
+	$res_pret = pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($res_pret)) {
+		$rpret=pmb_mysql_fetch_object($res_pret);
 		$nb_pret=$rpret->nb_pret;	
 	}	
 	return $nb_pret;
@@ -176,9 +176,9 @@ function get_nombre_pret($id_empr) {
 
 function get_nombre_resa($id_empr) {
 	$requete = "SELECT count( resa_idempr ) as nb_resa FROM resa where resa_idempr = $id_empr";
-	$res_resa = mysql_query($requete);
-	if (mysql_num_rows($res_resa)) {
-		$rresa=mysql_fetch_object($res_resa);
+	$res_resa = pmb_mysql_query($requete);
+	if (pmb_mysql_num_rows($res_resa)) {
+		$rresa=pmb_mysql_fetch_object($res_resa);
 		$nb_resa=$rresa->nb_resa;	
 	}	
 	return $nb_resa;

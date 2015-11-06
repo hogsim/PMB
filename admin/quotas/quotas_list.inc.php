@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: quotas_list.inc.php,v 1.15 2012-08-08 14:42:09 arenou Exp $
+// $Id: quotas_list.inc.php,v 1.16 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -83,13 +83,13 @@ $recorded="";
 if ($first==1) {
 	//Nettoyage
 	$requete="delete from ".$qt->table." where quota_type=".$qt->quota_type["ID"]." and constraint_type in ('MIN','MAX','DEFAULT','CONFLICT','PRIORITY','FORCE_LEND','MAX_QUOTA')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	//Max
 	$requete="insert into ".$qt->table." (quota_type,constraint_type,elements,value) values(".$qt->quota_type["ID"].",'MAX',0,'".$max_value."')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	//Min
 	$requete="insert into ".$qt->table." (quota_type,constraint_type,elements,value) values(".$qt->quota_type["ID"].",'MIN',0,'".$min_value."')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	//Default
 	if($qt->quota_type['SPECIALCLASS']){
 		global $class_path;
@@ -97,21 +97,21 @@ if ($first==1) {
 		$default_value = call_user_func(array($qt->quota_type['SPECIALCLASS'],'get_storable_value'),$default_value);
 	}
 	$requete="insert into ".$qt->table." (quota_type,constraint_type,elements,value) values(".$qt->quota_type["ID"].",'DEFAULT',0,'".$default_value."')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	//Conflict value
 	$requete="insert into ".$qt->table." (quota_type,constraint_type,elements,value) values(".$qt->quota_type["ID"].",'CONFLICT',0,'".$conflict_value."')";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	//Forçage du prêt
 	$requete="insert into ".$qt->table." (quota_type,constraint_type,elements,value) values(".$qt->quota_type["ID"].",'FORCE_LEND',0,".$force_lend.")";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	//Max_quota
 	$requete="insert into ".$qt->table." (quota_type,constraint_type,elements,value) values(".$qt->quota_type["ID"].",'MAX_QUOTA',0,".$max_quota.")";
-	mysql_query($requete);
+	pmb_mysql_query($requete);
 	//Priorités
 	for ($i=0; $i<count($elements); $i++) {
 		$id=$conflict_list[$i];
 		$requete="insert into ".$qt->table." (quota_type,constraint_type,elements,value) values(".$qt->quota_type["ID"].",'PRIORITY',$id,'".$i."')";
-		mysql_query($requete);
+		pmb_mysql_query($requete);
 	}
 	$recorded="<font color='#CC0000'><strong>".$msg["quotas_recorded"]."</strong></font>";
 }

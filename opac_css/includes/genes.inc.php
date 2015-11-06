@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: genes.inc.php,v 1.12 2012-09-18 15:13:10 mbertin Exp $
+// $Id: genes.inc.php,v 1.13 2015-04-03 11:16:16 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -12,9 +12,9 @@ function search_other_function_filters() {
 	$r.="<select name='cnl_bibli'>";
 	$r.="<option value=''>tous les sites</option>";
 	$requete="select location_libelle,idlocation from docs_location where location_visible_opac=1";
-	$result = mysql_query($requete, $dbh);
-	if (mysql_numrows($result)){
-		while ($loc = mysql_fetch_object($result)) {
+	$result = pmb_mysql_query($requete, $dbh);
+	if (pmb_mysql_num_rows($result)){
+		while ($loc = pmb_mysql_fetch_object($result)) {
 			$selected="";
 			if ($cnl_bibli==$loc->idlocation) {$selected="selected";}
 			$r.= "<option value='$loc->idlocation' $selected>$loc->location_libelle</option>";
@@ -92,8 +92,8 @@ function search_other_function_human_query($n) {
 	if ($cnl_bibli) {
 		$r="bibliotheque : ";
 		$requete="select location_libelle from docs_location where id_location='".$cnl_bibli."' limit 1";
-		$res=mysql_query($requete);
-		$r.=@mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete);
+		$r.=@pmb_mysql_result($res,0,0);
 		$r=" ";
 	}
 	$notices_t=array("m"=>"Monographies","s"=>"Périodiques","a"=>"Articles");

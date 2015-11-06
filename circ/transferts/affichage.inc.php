@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: affichage.inc.php,v 1.7.6.1 2015-05-07 10:23:20 jpermanne Exp $
+// $Id: affichage.inc.php,v 1.9 2015-05-07 10:21:31 jpermanne Exp $
 
 require_once ("$class_path/mono_display.class.php");
 require_once ("$class_path/serial_display.class.php");
@@ -14,8 +14,8 @@ function affiche_liste_departs($typeListe, $page, $rqt_select, $rqt_base, $nb_li
 	global $transferts_tableau_nb_lignes;
 
 	//requete pour compter les r?sultats
-	$res_rqt = mysql_query("SELECT COUNT(*) ".$rqt_base);
-	$nbRes = mysql_result($res_rqt,0);
+	$res_rqt = pmb_mysql_query("SELECT COUNT(*) ".$rqt_base);
+	$nbRes = pmb_mysql_result($res_rqt,0);
 	
 	$page = (int)$page;
 	
@@ -38,14 +38,14 @@ function affiche_liste_departs($typeListe, $page, $rqt_select, $rqt_base, $nb_li
 		if ($page>$pagesMax) $page=$pagesMax;
 
 		//requete pour la boucle sur le résultat
-		$res_rqt = mysql_query($rqt_select.$rqt_base." LIMIT ".(($page-1)*$nb_lignes).",".$nb_lignes);
+		$res_rqt = pmb_mysql_query($rqt_select.$rqt_base." LIMIT ".(($page-1)*$nb_lignes).",".$nb_lignes);
 		//echo $rqt_select.$rqt_base;
 		
 		//le nombre de colonnes dans la requete pour remplacer les champs dans le template
-		$nbCols = mysql_num_fields($res_rqt);
+		$nbCols = pmb_mysql_num_fields($res_rqt);
 		
 		//on parcours tous les enregistrements de la base
-		while ($values=mysql_fetch_array($res_rqt)) {
+		while ($values=pmb_mysql_fetch_array($res_rqt)) {
 			
 			//pour la coloration
 			if ($nb % 2)
@@ -56,7 +56,7 @@ function affiche_liste_departs($typeListe, $page, $rqt_select, $rqt_base, $nb_li
 			//on parcours toutes les colonnes de la requete
 			for($i=0;$i<$nbCols;$i++) {
 				//on remplace les données à afficher
-				$tmpLigne = aff_colonne($tmpLigne, mysql_field_name($res_rqt,$i), $values[$i]);
+				$tmpLigne = aff_colonne($tmpLigne, pmb_mysql_field_name($res_rqt,$i), $values[$i]);
 			}
 			
 			//affichage du titre
@@ -126,8 +126,8 @@ function affiche_liste($typeListe, $page, $rqt_select, $rqt_base, $nb_lignes, $h
 	global $transferts_tableau_nb_lignes;
 
 	//requete pour compter les r?sultats
-	$res_rqt = mysql_query("SELECT COUNT(*) ".$rqt_base);
-	$nbRes = mysql_result($res_rqt,0);
+	$res_rqt = pmb_mysql_query("SELECT COUNT(*) ".$rqt_base);
+	$nbRes = pmb_mysql_result($res_rqt,0);
 	
 	$page = (int)$page;
 	
@@ -150,14 +150,14 @@ function affiche_liste($typeListe, $page, $rqt_select, $rqt_base, $nb_lignes, $h
 		if ($page>$pagesMax) $page=$pagesMax;
 
 		//requete pour la boucle sur le résultat
-		$res_rqt = mysql_query($rqt_select.$rqt_base." LIMIT ".(($page-1)*$nb_lignes).",".$nb_lignes);
+		$res_rqt = pmb_mysql_query($rqt_select.$rqt_base." LIMIT ".(($page-1)*$nb_lignes).",".$nb_lignes);
 		//echo $rqt_select.$rqt_base;
 		
 		//le nombre de colonnes dans la requete pour remplacer les champs dans le template
-		$nbCols = mysql_num_fields($res_rqt);
+		$nbCols = pmb_mysql_num_fields($res_rqt);
 		
 		//on parcours tous les enregistrements de la base
-		while ($values=mysql_fetch_array($res_rqt)) {
+		while ($values=pmb_mysql_fetch_array($res_rqt)) {
 			
 			//pour la coloration
 			if ($nb % 2)
@@ -168,7 +168,7 @@ function affiche_liste($typeListe, $page, $rqt_select, $rqt_base, $nb_lignes, $h
 			//on parcours toutes les colonnes de la requete
 			for($i=0;$i<$nbCols;$i++) {
 				//on remplace les données à afficher
-				$tmpLigne = aff_colonne($tmpLigne, mysql_field_name($res_rqt,$i), $values[$i]);
+				$tmpLigne = aff_colonne($tmpLigne, pmb_mysql_field_name($res_rqt,$i), $values[$i]);
 			}
 			
 			//affichage du titre
@@ -245,15 +245,15 @@ function affiche_liste_valide($tpl_global, $tpl_ligne, $rqt_liste, $action) {
 	
 	//la requete pour récupérer les infos
 	$rqt = str_replace("!!liste_numeros!!", $numeros, $rqt_liste);
-	$res_rqt = mysql_query($rqt);
+	$res_rqt = pmb_mysql_query($rqt);
 		
 	//le nombre de colonnes dans la requete pour remplacer les champs dans le template
-	$nbCols = mysql_num_fields($res_rqt);
+	$nbCols = pmb_mysql_num_fields($res_rqt);
 	
 	$nb = 0;
 	
 	//on parcours tous les enregistrements
-	while ($values=mysql_fetch_array($res_rqt)) {
+	while ($values=pmb_mysql_fetch_array($res_rqt)) {
 		
 		//pour la coloration
 		if ($nb % 2)
@@ -264,7 +264,7 @@ function affiche_liste_valide($tpl_global, $tpl_ligne, $rqt_liste, $action) {
 		//on parcours toutes les colonnes de la requete
 		for($i=0; $i<$nbCols; $i++) {
 			//on remplace les données à afficher
-			$tmpLigne = aff_colonne($tmpLigne, mysql_field_name($res_rqt,$i), $values[$i]);
+			$tmpLigne = aff_colonne($tmpLigne, pmb_mysql_field_name($res_rqt,$i), $values[$i]);
 		}
 		
 		//affichage du titre
@@ -323,14 +323,14 @@ function aff_emprunteur($cb_empr='') {
 	if ($cb_empr == '') return;
 	
 	$rqt = "select concat(empr_nom,' ',empr_prenom) as empr_nom_prenom from empr where empr_cb='".$cb_empr."'";
-	$result = mysql_query($rqt);
+	$result = pmb_mysql_query($rqt);
 	
 	if (SESSrights & CIRCULATION_AUTH) {
 		$des_empr = "<a href='./circ.php?categ=pret&form_cb=" . $cb_empr . "'>";
-		$des_empr .= mysql_result($result, 0, "empr_nom_prenom");
+		$des_empr .= pmb_mysql_result($result, 0, "empr_nom_prenom");
 		$des_empr .= "</a>";
 	} else
-		$des_empr = mysql_result($result, 0, "empr_nom_prenom");
+		$des_empr = pmb_mysql_result($result, 0, "empr_nom_prenom");
 
 	return $des_empr;
 }
@@ -363,9 +363,9 @@ function aff_statut($val_col){
 	$tmp=explode("###",$val_col);
 	if(preg_match("/^(.+?)###([0-9]+)$/",$val_col,$matches)){
 		$requete="SELECT date_format(pret_retour, '".$msg["format_date"]."') AS aff_pret_retour FROM pret WHERE pret_idexpl='".$matches[2]."'";
-		$res=mysql_query($requete);
-		if(mysql_num_rows($res)){//On affiche la date de retour
-			$message=$matches[1]."<br/><strong>".$msg["358"]." ".mysql_result($res,0,0)."</strong>";
+		$res=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)){//On affiche la date de retour
+			$message=$matches[1]."<br/><strong>".$msg["358"]." ".pmb_mysql_result($res,0,0)."</strong>";
 		}else{//On affiche le statut de l'exemplaire
 			$message=$matches[1];
 		}
@@ -378,11 +378,11 @@ function aff_statut($val_col){
 //fonction de generation de select
 function do_liste($rqt, $idsel) {
 	//on execute la requete
-	$res = mysql_query($rqt);
+	$res = pmb_mysql_query($rqt);
 	$tmpOpt = "";
 	
 	//on parcours la liste des options
-	while ($value = mysql_fetch_array($res)) {
+	while ($value = pmb_mysql_fetch_array($res)) {
 		//debut de l'option
 		$tmpOpt .= "<option value='" . $value[0] . "'";
 		

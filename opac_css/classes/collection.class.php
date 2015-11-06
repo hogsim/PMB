@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collection.class.php,v 1.14.6.1 2014-04-01 12:16:32 mbertin Exp $
+// $Id: collection.class.php,v 1.16 2015-04-03 11:16:17 jpermanne Exp $
 
 // définition de la classe de gestion des collections
 // inclure :
@@ -52,10 +52,10 @@ function collection($id) {
 function get_primaldata() {
 	global $dbh;
 	$requete = "SELECT * FROM collections WHERE collection_id='".addslashes($this->id)."' LIMIT 1 ";
-	$result = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) {
-		$obj = mysql_fetch_object($result);
-		mysql_free_result($result);
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		$obj = pmb_mysql_fetch_object($result);
+		pmb_mysql_free_result($result);
 		$this->get_primaldatafrom($obj);
 	} else {
 		// pas de collection avec cette clé
@@ -142,12 +142,12 @@ function print_resume($level = 2,$css='') {
 	if (preg_match("#!!subcolls!!#", $print)) {
 		global $dbh;
 		$query = "select sub_coll_id, sub_coll_name from sub_collections where sub_coll_parent=".$this->id;
-		$result = mysql_query($query, $dbh);
-		if(mysql_num_rows($result)) {
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_num_rows($result)) {
 			$remplacement = $msg["subcollection_attached"]."\n<ul>\n";
-			while ($obj = mysql_fetch_object($result)) 
+			while ($obj = pmb_mysql_fetch_object($result)) 
 				$remplacement .= "<li><a href='index.php?lvl=subcoll_see&id=".$obj->sub_coll_id."'>".$obj->sub_coll_name."</a></li>\n";
-			mysql_free_result($result);
+			pmb_mysql_free_result($result);
 			$remplacement .= "</ul><div class='row'></div>\n";
 			} else $remplacement = "";
 		$print = str_replace("!!subcolls!!", $remplacement, $print);

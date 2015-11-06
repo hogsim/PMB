@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: integre.inc.php,v 1.15.2.2 2015-02-03 09:42:55 jpermanne Exp $
+// $Id: integre.inc.php,v 1.18 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -29,8 +29,8 @@ switch ($action) {
 				$sign = new notice_doublon(true);
 				$signature = $sign->gen_signature();
 				$requete="select signature, niveau_biblio ,niveau_hierar ,notice_id from notices where signature='$signature'";
-				$result = mysql_query($requete);
-				if ($dbls=mysql_num_rows($result)) {
+				$result = pmb_mysql_query($requete);
+				if ($dbls=pmb_mysql_num_rows($result)) {
 					//affichage de l'erreur, en passant tous les param postes (serialise) pour l'eventuel forcage 	
 					$tab=new stdClass();
 					$tab->POST = $_POST;
@@ -70,7 +70,7 @@ switch ($action) {
 					}
 					$enCours=1;
 					while($enCours<=$maxAffiche){
-						$r=mysql_fetch_object($result);
+						$r=pmb_mysql_fetch_object($result);
 						if (($notice->niveau_biblio =='s' || $r->niveau_biblio =='a') && ($r->niveau_hierar== 1 || $r->niveau_hierar== 2)) {
 							$link_serial = './catalog.php?categ=serials&sub=view&serial_id=!!id!!';
 							$link_analysis = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=!!bul_id!!&art_to_show=!!id!!';
@@ -86,8 +86,8 @@ switch ($action) {
 							$notice_display = pmb_bidi($display->result);
 				        } elseif ($r->niveau_biblio=='b' && $r->niveau_hierar==2) { // on est face à une notice de bulletin
 				        	$requete_suite = "SELECT bulletin_id, bulletin_notice FROM bulletins where num_notice='".$r->notice_id."'";
-				        	$result_suite = mysql_query($requete_suite, $dbh) or die("<br /><br />".mysql_error()."<br /><br />");
-				        	$notice_suite = mysql_fetch_object($result_suite);
+				        	$result_suite = pmb_mysql_query($requete_suite, $dbh) or die("<br /><br />".pmb_mysql_error()."<br /><br />");
+				        	$notice_suite = pmb_mysql_fetch_object($result_suite);
 				        	$r->bulletin_id=$notice_suite->bulletin_id;
 				        	$r->bulletin_notice=$notice_suite->bulletin_notice;
 							$link_bulletin = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id='.$r->bulletin_id;
@@ -144,10 +144,10 @@ switch ($action) {
 		//on conserve la trace de l'origine de la notice...
 		$id_notice = $ret[1];
 		$rqt = "select recid from external_count where rid = '$item'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)) $recid = mysql_result($res,0,0);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)) $recid = pmb_mysql_result($res,0,0);
 		$req= "insert into notices_externes set num_notice = '".$id_notice."', recid = '".$recid."'";
-		mysql_query($req);
+		pmb_mysql_query($req);
 		if ($ret[0]) {
 			if($z->bull_id && $z->perio_id){
 				$notice_display=new serial_display($ret[1],6);
@@ -231,17 +231,17 @@ switch ($action) {
 		if ($infos['notice']) {
 			//regardons si on ne l'a pas déjà traité
 			$rqt = "select recid from external_count where rid = '$item'";
-			$res = mysql_query($rqt);
-			if(mysql_num_rows($res)) $recid = mysql_result($res,0,0);
+			$res = pmb_mysql_query($rqt);
+			if(pmb_mysql_num_rows($res)) $recid = pmb_mysql_result($res,0,0);
 			$req = "select num_notice from notices_externes where recid like '$recid'";
-			$res = mysql_query($req);
-			if(mysql_num_rows($res)){
+			$res = pmb_mysql_query($req);
+			if(pmb_mysql_num_rows($res)){
 				$integrate = true;
-				$id_notice = mysql_result($res,0,0);
+				$id_notice = pmb_mysql_result($res,0,0);
 				$requete = "SELECT * FROM notices where notice_id = '".$id_notice."'";
-				$result = mysql_query($requete, $dbh);
-				if(mysql_num_rows($result)){
-					$notice = mysql_fetch_object($result);
+				$result = pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($result)){
+					$notice = pmb_mysql_fetch_object($result);
 					if (($notice->niveau_biblio =='s' || $notice->niveau_biblio =='a') && ($notice->niveau_hierar== 1 || $notice->niveau_hierar== 2)) {
 						$link_serial = './catalog.php?categ=serials&sub=view&serial_id=!!id!!';
 						$link_analysis = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=!!bul_id!!&art_to_show=!!id!!';
@@ -258,8 +258,8 @@ switch ($action) {
 						$notice_display = pmb_bidi($display->result);
 			        } elseif ($notice->niveau_biblio=='b' && $notice->niveau_hierar==2) { // on est face à une notice de bulletin
 			        	$requete_suite = "SELECT bulletin_id, bulletin_notice FROM bulletins where num_notice='".$notice->notice_id."'";
-			        	$result_suite = mysql_query($requete_suite, $dbh) or die("<br /><br />".mysql_error()."<br /><br />");
-			        	$notice_suite = mysql_fetch_object($result_suite);
+			        	$result_suite = pmb_mysql_query($requete_suite, $dbh) or die("<br /><br />".pmb_mysql_error()."<br /><br />");
+			        	$notice_suite = pmb_mysql_fetch_object($result_suite);
 			        	$notice->bulletin_id=$notice_suite->bulletin_id;
 			        	$notice->bulletin_notice=$notice_suite->bulletin_notice;
 						$link_bulletin = './catalog.php?categ=serials&sub=bulletinage&action=view&bul_id='.$notice->bulletin_id;

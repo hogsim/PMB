@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: connector_out.php,v 1.4 2012-09-05 10:30:38 dbellamy Exp $
+// $Id: connector_out.php,v 1.6 2015-04-03 11:16:29 jpermanne Exp $
 //Here be komodo dragons
 
 //Les erreurs php font taches dans les protocols des connecteurs
@@ -19,6 +19,8 @@ $base_nodojo=1;
 
 $class_path = $base_path."/classes";
 $include_path = $base_path."/includes";
+$javascript_path= $base_path."/javascript";
+
 
 //Cette fonction recréer un environnement de session, comme si l'utilisateur était loggué
 function create_user_environment($user_id) {
@@ -38,10 +40,10 @@ function create_user_environment($user_id) {
 	
 	$user_id+=0;
 	$query = "SELECT rights, username, user_lang FROM users WHERE userid=$user_id";
-	$result = mysql_query($query, $dbh);
+	$result = pmb_mysql_query($query, $dbh);
 	if (!$result)
 		return false;
-	$ff = mysql_fetch_object($result);
+	$ff = pmb_mysql_fetch_object($result);
 	$flag = $ff->rights;
 
 	// mise à disposition des variables de la session
@@ -54,11 +56,11 @@ function create_user_environment($user_id) {
 	
 	/* param par défaut */	
 	$requete_param = "SELECT * FROM users WHERE userid=$user_id LIMIT 1 ";
-	$res_param = mysql_query($requete_param, $dbh);
-	$field_values = mysql_fetch_row( $res_param );
+	$res_param = pmb_mysql_query($requete_param, $dbh);
+	$field_values = pmb_mysql_fetch_row( $res_param );
 	$i = 0;
-	while ($i < mysql_num_fields($res_param)) {
-		$field = mysql_field_name($res_param, $i) ;
+	while ($i < pmb_mysql_num_fields($res_param)) {
+		$field = pmb_mysql_field_name($res_param, $i) ;
 		$field_deb = substr($field,0,6);
 		switch ($field_deb) {
 			case "deflt_" :
@@ -91,8 +93,8 @@ function create_user_environment($user_id) {
 		$i++;
 		}
 	$requete_nom = "SELECT nom, prenom, user_email, userid, username, grp_num FROM users WHERE userid=$user_id ";
-	$res_nom = mysql_query($requete_nom, $dbh);
-	$param_nom = mysql_fetch_object ( $res_nom );
+	$res_nom = pmb_mysql_query($requete_nom, $dbh);
+	$param_nom = pmb_mysql_fetch_object( $res_nom );
 	$PMBusernom=$param_nom->nom ;
 	$PMBuserprenom=$param_nom->prenom ;
 	$PMBgrp_num=$param_nom->grp_num;
@@ -107,10 +109,10 @@ function create_user_environment($user_id) {
 
 	//Récupération  de l'historique
 	$query = "select session from admin_session where userid=".$PMBuserid;
-	$resultat=mysql_query($query);
+	$resultat=pmb_mysql_query($query);
 	if ($resultat) {
-		if (mysql_num_rows($resultat)) {
-			$_SESSION["session_history"]=@unserialize(@mysql_result($resultat,0,0));
+		if (pmb_mysql_num_rows($resultat)) {
+			$_SESSION["session_history"]=@unserialize(@pmb_mysql_result($resultat,0,0));
 		}
 	}
 
@@ -137,10 +139,10 @@ if (!$source_id)
 
 //Trouvons de quel connecteur dépend la source
 $sql = "SELECT connectors_out_sources_connectornum FROM connectors_out_sources WHERE connectors_out_source_id = ".$source_id;
-$res = mysql_query($sql, $dbh);
-if (!mysql_num_rows($res))
+$res = pmb_mysql_query($sql, $dbh);
+if (!pmb_mysql_num_rows($res))
 	die();
-$connector_id = mysql_result($res, 0, 0);
+$connector_id = pmb_mysql_result($res, 0, 0);
 if (!$connector_id)
 	die();
 

@@ -2,14 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: inra.inc.php,v 1.2 2012-01-17 17:39:54 dbellamy Exp $
+// $Id: inra.inc.php,v 1.3 2015-04-03 11:16:16 jpermanne Exp $
 
 function get_field_dateparution() {
 	global $field_dateparution;
 	if(!$field_dateparution) {
 		$q = "select idchamp from notices_custom where name='dateparution' limit 1 "; 
-		$result = mysql_query ($q);
-		if (mysql_num_rows($result)) $field_dateparution = mysql_result($result,0,0);
+		$result = pmb_mysql_query($q);
+		if (pmb_mysql_num_rows($result)) $field_dateparution = pmb_mysql_result($result,0,0);
 	}
 	if(!$field_dateparution) $field_dateparution=0;
 	return $field_dateparution;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: categorie.class.php,v 1.22.10.1 2015-03-18 14:18:45 jpermanne Exp $
+// $Id: categorie.class.php,v 1.25 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -49,9 +49,9 @@ class categorie {
 		$query.= "and noeuds.id_noeud = '".$this->id."' ";
 		$query.= "and noeuds.id_noeud = categories.num_noeud ";
 		$query.= "limit 1";
-		$result = mysql_query($query, $dbh);
+		$result = pmb_mysql_query($query, $dbh);
 		
-		$current = mysql_fetch_object($result);
+		$current = pmb_mysql_fetch_object($result);
 		$this->libelle 	= $current->libelle_categorie;
 		$this->parent	= $current->num_parent;
 		$this->voir		= $current->num_renvoi_voir;
@@ -61,18 +61,18 @@ class categorie {
 			
 		// on regarde si la catégorie à des enfants
 		$query = "select count(1) from noeuds where num_parent = '".$this->id."' ";
-		$result = mysql_query($query, $dbh);
-		$this->has_child = mysql_result($result, 0, 0);
+		$result = pmb_mysql_query($query, $dbh);
+		$this->has_child = pmb_mysql_result($result, 0, 0);
 
 		// on regarde si la catégorie à des associées
 		$query = "select count(1) from voir_aussi where num_noeud_orig = '".$this->id."' or num_noeud_dest = '".$this->id."' ";
-		$result = mysql_query($query, $dbh);
-		$this->has_child = $this->has_child + mysql_result($result, 0, 0);
+		$result = pmb_mysql_query($query, $dbh);
+		$this->has_child = $this->has_child + pmb_mysql_result($result, 0, 0);
 
 		// on regarde si la catégorie est utilisée dans des notices
 		$query = "select count(1) from notices_categories where num_noeud = '".$this->id."' ";
-		$result = mysql_query($query, $dbh);
-		$this->has_notices = mysql_result($result, 0, 0);
+		$result = pmb_mysql_query($query, $dbh);
+		$this->has_notices = pmb_mysql_result($result, 0, 0);
 
 
 	}
@@ -87,7 +87,7 @@ class categorie {
 		
 		if(!$this->id) return;
 		
-		$desc_categ = $this->zoom_categ($this->id, $this->comment);
+		$desc_categ = self::zoom_categ($this->id, $this->comment);
 		$current = "$sep<a href='./index.php?lvl=categ_see&id=".$this->id."&main=$main'".$desc_categ['java_com'].">".$this->libelle.'</a>'." ".$desc_categ['zoom'];
 		// si pas de parent, le path se résume à la catégorie
 		
@@ -107,7 +107,7 @@ class categorie {
 	}
 	
 	
-	function zoom_categ($id, $note) {
+	static function zoom_categ($id, $note) {
 		global $charset;
 		global $opac_show_infobulles_categ;
 		
@@ -145,10 +145,10 @@ class categorie {
 		else 
 		$result = categories::listChilds($this->id, $lang, 1, $opac_categories_sub_mode);
 		
-		if(mysql_num_rows($result) < $opac_categories_nb_col_subcat) {
+		if(pmb_mysql_num_rows($result) < $opac_categories_nb_col_subcat) {
 
 			// nombre de sous-catégories réduit
-			while($child=mysql_fetch_object($result)) {
+			while($child=pmb_mysql_fetch_object($result)) {
 				$libelle = $child->libelle_categorie;
 				$note = $child->comment_public;
 				$id = $child->num_noeud;
@@ -160,7 +160,7 @@ class categorie {
 					} 
 					 
 					// Si il y a présence d'un commentaire affichage du layer					
-					$result_com = $this->zoom_categ($id, $note);				
+					$result_com = self::zoom_categ($id, $note);				
 					
 					$l .= "<a href='./index.php?lvl=categ_see&id=$id&main=$main' class='small'>";
 					
@@ -175,7 +175,7 @@ class categorie {
 			$l = "<br /><div style='margin-left:48px'>$l</div>";
 		} else {
 				$l = "<table border='0' style='margin-left:48px' cellpadding='3'>";
-				while($child=mysql_fetch_object($result)) {
+				while($child=pmb_mysql_fetch_object($result)) {
 					$libelle = $child->libelle_categorie;
 					$note = $child->comment_public;
 					$id = $child->num_noeud;
@@ -186,7 +186,7 @@ class categorie {
 						$id = $child->num_renvoi_voir;
 					}
 					// Si il y a présence d'un commentaire affichage du layer					
-					$result_com = categorie::zoom_categ($id, $note);
+					$result_com = self::zoom_categ($id, $note);
 					if ($current_col == 0) $l .= "\n<tr>";  
 					$l .= "<td align='top'><a href='./index.php?lvl=categ_see&id=$id&main=$main' class='small'>";
 					

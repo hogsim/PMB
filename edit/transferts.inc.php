@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: transferts.inc.php,v 1.5 2013-04-11 08:15:56 mbertin Exp $
+// $Id: transferts.inc.php,v 1.6 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -177,17 +177,17 @@ $tabLigne = str_replace("!!colonnes_variables!!", $cols_supp_ligne, $transferts_
 
 //echo $rqt;
 //execution de la requete
-$req = mysql_query($rqt);
+$req = pmb_mysql_query($rqt);
 
 switch($dest) {
 	case "TABLEAU":
-		$nbr_champs = @mysql_num_fields($req);
-		$nbr_lignes = @mysql_num_rows($req);
+		$nbr_champs = @pmb_mysql_num_fields($req);
+		$nbr_lignes = @pmb_mysql_num_rows($req);
 		for($n=0; $n < $nbr_champs; $n++) {
-			$worksheet->write(2,$n,mysql_field_name($req,$n));
+			$worksheet->write(2,$n,pmb_mysql_field_name($req,$n));
 		}
 		for($i=0; $i < $nbr_lignes; $i++) {
-			$row = mysql_fetch_row($req);
+			$row = pmb_mysql_fetch_row($req);
 			$j=0;
 			foreach($row as $dummykey=>$col) {
 				if(!$col) $col=" ";
@@ -202,7 +202,7 @@ switch($dest) {
 		break;
 	case "TABLEAUHTML":
 		//le nombre de colonnes dans la requete pour remplacer les champs dans le template
-		$nbCols = mysql_num_fields($req);
+		$nbCols = pmb_mysql_num_fields($req);
 		
 		$transferts_list .= "<table>" ;
 		$transferts_list .= "<tr>
@@ -220,7 +220,7 @@ switch($dest) {
 
 		$tmpAff = "";
 		//on boucle sur la liste
-		while ($value = mysql_fetch_array($req)) {
+		while ($value = pmb_mysql_fetch_array($req)) {
 		
 			//pour la coloration
 			if ($nb % 2)
@@ -230,7 +230,7 @@ switch($dest) {
 			
 			//on parcours toutes les colonnes de la requete
 			for($i=0;$i<$nbCols;$i++) {
-				$tmpLigne = str_replace("!!".mysql_field_name($req,$i)."!!",$value[$i],$tmpLigne);
+				$tmpLigne = str_replace("!!".pmb_mysql_field_name($req,$i)."!!",$value[$i],$tmpLigne);
 			}
 		
 			//affichage du titre
@@ -253,12 +253,12 @@ switch($dest) {
 		break;
 	default:
 		//le nombre de colonnes dans la requete pour remplacer les champs dans le template
-		$nbCols = mysql_num_fields($req);
+		$nbCols = pmb_mysql_num_fields($req);
 		
 		$tmpAff = "";
 		
 		//on boucle sur la liste
-		while ($value = mysql_fetch_array($req)) {
+		while ($value = pmb_mysql_fetch_array($req)) {
 		
 			//pour la coloration
 			if ($nb % 2)
@@ -268,7 +268,7 @@ switch($dest) {
 			
 			//on parcours toutes les colonnes de la requete
 			for($i=0;$i<$nbCols;$i++) {
-				$tmpLigne = str_replace("!!".mysql_field_name($req,$i)."!!",$value[$i],$tmpLigne);
+				$tmpLigne = str_replace("!!".pmb_mysql_field_name($req,$i)."!!",$value[$i],$tmpLigne);
 			}
 		
 			//affichage du titre
@@ -332,7 +332,7 @@ function creer_liste_localisations($loc_select,$tous = true) {
 
 	//la requete
 	$rqt="SELECT idlocation, location_libelle FROM docs_location ORDER BY location_libelle ";
-	$req = mysql_query($rqt);
+	$req = pmb_mysql_query($rqt);
 	
 	
 	//initialisation de la liste
@@ -342,7 +342,7 @@ function creer_liste_localisations($loc_select,$tous = true) {
 		$tmpListe = "";
 	
 	//on parcours
-	while ($value = mysql_fetch_array($req)) {
+	while ($value = pmb_mysql_fetch_array($req)) {
 		
 		$tmpListe .= "<option value=".$value[0]; 
 		

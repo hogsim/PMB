@@ -4,10 +4,11 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.1.2.2 2014-09-25 14:27:09 arenou Exp $ -->
+$Id: manifest.xml,v 1.2 2015-06-22 14:38:24 pmbs Exp $ -->
 
 <manifest>
-	<name>Liste de bannettes</name>
+	<name lang="fr_FR">Liste de bannettes</name>
+	<name lang="en_UK">SDI Baskets list</name>
 	<author>
 		<name>Nicolas GANTIER</name>
 		<organisation>PMB Services</organisation>

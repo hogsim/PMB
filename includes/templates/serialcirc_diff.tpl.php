@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff.tpl.php,v 1.13 2013-09-24 13:31:10 ngantier Exp $
+// $Id: serialcirc_diff.tpl.php,v 1.22 2015-03-20 09:06:14 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -23,7 +23,53 @@ $serialcirc_diff_form="
 				}	
 			}	
 		return true;
+		}	
+		function insert_vars(theselector,dest){	
+			var selvars='';
+			for (var i=0 ; i< theselector.options.length ; i++){
+				if (theselector.options[i].selected){
+					selvars=theselector.options[i].value ;
+					break;
+				}
+			}
+			if(!selvars) return ;
+		/*	
+			if(typeof(tinyMCE)== 'undefined'){			
+				var start = dest.selectionStart;		   
+			    var start_text = dest.value.substring(0, start);
+			    var end_text = dest.value.substring(start);
+			    dest.value = start_text+selvars+end_text;
+			}else{
+				tinyMCE.execCommand('mceInsertContent',false,selvars);
+			}
+		*/	
+			var start = dest.selectionStart;		   
+			var start_text = dest.value.substring(0, start);
+			var end_text = dest.value.substring(start);
+			dest.value = start_text+selvars+end_text;
 		}
+		function serialcirc_diff_duplicate_button(){
+			openPopUp('./select.php?what=abts&caller=&param1=no&param2=&deb_rech=&no_display=!!num_abt!!&dyn=1&callback=serialcirc_diff_duplicate', 'select_abt', 400, 500, -2, -2, '$select1_prop');
+		}
+		
+		function serialcirc_diff_duplicate(id_value,libelle_value,flag_circlist_info){
+			var url= './ajax.php?module=catalog&categ=serialcirc_diff&sub=duplicate';	
+			url+='&abt_from=!!num_abt!!'+'&abt_to='+id_value;	
+			if(flag_circlist_info){
+				var result = confirm ('".addslashes($msg["serialcirc_diff_duplicate_circlist_info"])."');	
+				if(!result) return;
+			}
+			var req = new http_request();
+			req.request(url);
+			var error = req.get_text()
+			if(error)alert (error);	
+			else{
+			var message_ok=\"".$msg["serialcirc_diff_duplicate_ok"]."\";
+				if(message_ok)	alert (message_ok + libelle_value);	
+				window.location.href='./catalog.php?categ=serialcirc_diff&sub=view&num_abt='+id_value;
+			}	
+		}
+	
 	</script>
 	<h1>".htmlentities($msg["serialcirc_diff_title"], ENT_QUOTES, $charset)."</h1>			
 	<h3>!!perio!! / !!abt!!</h3> !!bulletinage_see!!
@@ -46,6 +92,8 @@ $serialcirc_diff_form="
 				<input type='button' class='bouton' name='ficheformat_button' value='".htmlentities($msg["serialcirc_diff_ficheformat_button"], ENT_QUOTES, $charset)."' onclick='serialcirc_diff_get_ficheformat_form();' />				
 				<input type='button' class='bouton' name='selection_empr_button' id='selection_empr_button' value='".htmlentities($msg["serialcirc_diff_selection_empr_button"], ENT_QUOTES, $charset)."' onclick='serialcirc_diff_selection_empr_button();' />			
 				<input type='button' class='bouton' name='delete_empr_button' value='".htmlentities($msg["serialcirc_diff_delete_empr_button"], ENT_QUOTES, $charset)."' onclick='serialcirc_diff_delete_empr_button()' />			
+				<input type='button' class='bouton' name='duplicate_empr_button' value='".htmlentities($msg["serialcirc_diff_duplicate_button"], ENT_QUOTES, $charset)."' onclick='serialcirc_diff_duplicate_button()' />			
+		
 			</td> 				
 			<td valign='top'>
 				<input type='button' class='bouton' name='record_button' id='record_button'  value='".htmlentities($msg["serialcirc_diff_record_button"], ENT_QUOTES, $charset)."' onclick='if(verif_form())serialcirc_diff_record_button();' />			
@@ -64,6 +112,7 @@ $serialcirc_diff_form_empr_list="
 	<h3>".htmlentities($msg["serialcirc_diff_empr_list_title"], ENT_QUOTES, $charset)."</h3>	
 	<form id='form_empr_list' name='form_empr_list' method='post' action=''>
 		<input type='hidden' id='num_abt' name='num_abt' value='!!num_abt!!' />
+			!!sort_list!!
 		<div class='row'>
 			!!empr_list!!
 		</div> 
@@ -214,13 +263,20 @@ $serialcirc_diff_form_group="
 ";
 
 $serialcirc_diff_form_ficheformat="
-	<h3>".htmlentities($msg["serialcirc_diff_option_form_fiche_format_title"], ENT_QUOTES, $charset)."</h3>			
+	<h3>".htmlentities($msg["serialcirc_diff_option_form_fiche_format_title"], ENT_QUOTES, $charset)."</h3>
+	<form id='form_serialcirc_diff_tpl' name='form_serialcirc_diff_tpl' method='post' action=''>
+		".htmlentities($msg["serialcirc_diff_option_form_fiche_format_tpl_field"], ENT_QUOTES, $charset)."
+		!!fiche_tpl_field_sel!!
+	</form>
 	<form id='form_edition' name='form_edition' method='post' action=''>
-		<input type='hidden' id='form_type' name='form_type' value='ficheformat_form' />				
+		<input type='hidden' id='form_type' name='form_type' value='ficheformat_form' />
+		<input type='hidden' id='fiche_tpl_id_sel' name='fiche_tpl_id_sel' value='!!fiche_tpl_id_sel!!' />				
 		<div class='row'>				
-			".htmlentities($msg["serialcirc_diff_option_form_fiche_format_add_field"], ENT_QUOTES, $charset)."
 			!!fiche_add_field_sel!!				
 		</div>				
+				
+		!!piedpageform!!
+								
 	</form>			
 ";
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_record.class.php,v 1.2 2013-07-30 07:42:38 arenou Exp $
+// $Id: cms_module_common_datasource_record.class.php,v 1.5 2015-02-05 09:06:57 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -17,9 +17,12 @@ class cms_module_common_datasource_record extends cms_module_common_datasource{
 	public function get_available_selectors(){
 		return array(
 			"cms_module_common_selector_record",
+			"cms_module_common_selector_record_permalink",
 			"cms_module_common_selector_env_var",
 			"cms_module_common_selector_type_article",
-			"cms_module_common_selector_type_section"
+			"cms_module_common_selector_type_section",
+			"cms_module_common_selector_type_article_generic",
+			"cms_module_common_selector_type_section_generic"
 		);
 	}
 	
@@ -37,7 +40,7 @@ class cms_module_common_datasource_record extends cms_module_common_datasource{
 			}
 			//$notice = new notice_info($selector->get_value());
 			$notice=$selector->get_value();
-			if($this->parameters['selector'] == "cms_module_common_selector_type_article" || $this->parameters['selector'] == "cms_module_common_selector_type_section"){
+			if(is_array($notice)){
 				$notice = $notice[0];
 			}
 			return $notice;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: douchette_ajax.inc.php,v 1.1 2008-01-25 15:00:56 ngantier Exp $
+// $Id: douchette_ajax.inc.php,v 1.2 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -16,13 +16,13 @@ if($idcaddie) {
 			if($form_cb_expl) {
 				$expl_ajout_ok = 1 ;
 				$query = "select expl_id from exemplaires where expl_cb='$form_cb_expl'";
-				$result = mysql_query($query, $dbh);
-				if(!mysql_num_rows($result)) {
+				$result = pmb_mysql_query($query, $dbh);
+				if(!pmb_mysql_num_rows($result)) {
 					// exemplaire inconnu
 					$param->message_ajout_expl =  $msg[367];
 					$expl_ajout_ok = 0 ;
 				} else {
-					$expl_trouve = mysql_fetch_object($result);
+					$expl_trouve = pmb_mysql_fetch_object($result);
 					$item = $expl_trouve->expl_id;
 					$param->expl_id=$expl_trouve->expl_id;
 					

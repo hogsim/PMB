@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: publisher.class.php,v 1.20.6.1 2014-04-01 12:16:32 mbertin Exp $
+// $Id: publisher.class.php,v 1.22 2015-04-03 11:16:18 jpermanne Exp $
 
 // définition de la classe de gestion des 'editeurs'
 
@@ -55,10 +55,10 @@ class publisher {
 	function get_primaldata() {
 		global $dbh;
 		$requete = "SELECT * FROM publishers WHERE ed_id='".$this->id."'";
-		$result = mysql_query($requete, $dbh);
-		if (mysql_num_rows($result)) {
-			$obj = mysql_fetch_object($result);
-			mysql_free_result($result);
+		$result = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($result)) {
+			$obj = pmb_mysql_fetch_object($result);
+			pmb_mysql_free_result($result);
 			$this->get_primaldatafrom($obj);
 		} else {
 			// pas de collection avec cette clé
@@ -171,13 +171,13 @@ class publisher {
 		if (preg_match("#!!colls!!#", $print)) {
 			global $dbh;
 			$query = "select collection_id, collection_name from collections where collection_parent='".$this->id."' order by index_coll";
-			$result = mysql_query($query, $dbh);
-			if(mysql_num_rows($result)) {
+			$result = pmb_mysql_query($query, $dbh);
+			if(pmb_mysql_num_rows($result)) {
 				$remplacement = $msg[publishers_collections]."\n<ul>\n";
-				while ($obj = mysql_fetch_object($result)) {
+				while ($obj = pmb_mysql_fetch_object($result)) {
 					$remplacement .= "<li><a href='index.php?lvl=coll_see&id=".$obj->collection_id."'>".$obj->collection_name."</a></li>\n";
 				}
-				mysql_free_result($result);
+				pmb_mysql_free_result($result);
 				$remplacement .= "</ul><div class='row'></div>\n";
 			} else {
 				$remplacement = "";

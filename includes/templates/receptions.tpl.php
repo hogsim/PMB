@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: receptions.tpl.php,v 1.4.6.1 2014-08-01 14:53:24 Alexandre Exp $
+// $Id: receptions.tpl.php,v 1.5 2014-08-01 14:55:45 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

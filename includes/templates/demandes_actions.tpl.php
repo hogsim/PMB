@@ -2,60 +2,32 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes_actions.tpl.php,v 1.6 2010-08-27 14:25:08 mbertin Exp $
+// $Id: demandes_actions.tpl.php,v 1.15 2015-05-20 14:39:30 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
-$form_liste_action ="
-<script src='./javascript/demandes.js' type='text/javascript'></script>
-<script src='./javascript/dynamic_element.js' type='text/javascript'></script>
-<script type='text/javascript'>
- function verifChk() {
-		
-	var elts = document.forms['liste_action'].elements['chk[]'];
-	var elts_cnt  = (typeof(elts.length) != 'undefined')
-              ? elts.length
-              : 0;
-	nb_chk = 0;
-	if (elts_cnt) {
-		for(var i=0; i < elts.length; i++) {
-			if (elts[i].checked) nb_chk++;
-		}
-	} else {
-		if (elts.checked) nb_chk++;
-	}
-	if (nb_chk == 0) {
-		alert(\"".$msg['demandes_actions_nocheck']."\");
-		return false;	
-	}
-	
-	var sup = confirm(\"".$msg['demandes_confirm_suppr']."\");
-	if(!sup) 
-		return false;
-	return true;
-}
+$js_liste_action = "
+	<script src='./javascript/demandes.js' type='text/javascript'></script>
+	<script src='./javascript/dynamic_element.js' type='text/javascript'></script>
+	<script type='text/javascript' src='./javascript/demandes_form.js'></script>
+	<script type='text/javascript'>
+		var msg_demandes_note_confirm_demande_end='".addslashes($msg['demandes_note_confirm_demande_end'])."'; 
+		var msg_demandes_actions_nocheck='".addslashes($msg['demandes_actions_nocheck'])."'; 
+		var msg_demandes_confirm_suppr = '".addslashes($msg['demandes_confirm_suppr'])."';
+		var msg_demandes_note_confirm_suppr = '".addslashes($msg['demandes_note_confirm_suppr'])."';
+	</script>
+";
 
-function alert_progression(){
-	alert(\"".$msg['demandes_progres_ko']."\");
-}
-
-function alert_cout(){
-  	alert(\"".$msg['demandes_action_cout_ko']."\");
-}
-
-function alert_temps(){
-   	alert(\"".$msg['demandes_action_time_ko']."\");
-}
-
-</script>
-<form class='form-".$current_module."' id='liste_action' name='liste_action' method='post' action=\"./demandes.php?categ=action\"  >
-	<input type='hidden' name='act' id='act' />
+$content_liste_action = "
 	<input type='hidden' id='iddemande' name='iddemande' value='!!iddemande!!'/>
+	<input type='hidden' id='last_modified' value='!!last_modified!!'/>
 	<h3>".$msg['demandes_action_liste']."</h3>
 	<div class='form-contenu'>
 		<table>
 			<tbody>
 				<tr>
+					!!expand_header!!
+					<th></th>
 					<th>".$msg['demandes_action_type']."</th>
 					<th>".$msg['demandes_action_sujet']."</th>
 					<th>".$msg['demandes_action_detail']."</th>	
@@ -75,17 +47,25 @@ function alert_temps(){
 	</div>
 	<div class='row'>
 		<div class='left'>
-			<input type='submit' class='bouton' value='".$msg['demandes_action_add']."' onclick='this.form.act.value=\"add_action\"' />
+			<input type='submit' class='bouton' value='".$msg['demandes_action_add']."' onclick='!!change_action_form!!this.form.act.value=\"add_action\"' />
 		</div>
 		<div class='right'>
 			!!btn_suppr!!
 		</div>
 	</div>
 	<div class='row'></div>
-</form>	
-<script>parse_dynamic_elts();</script>
 ";
 
+$form_liste_action = "
+	<form class='form-".$current_module."' id='liste_action' name='liste_action' method='post' action=\"./demandes.php?categ=action\"  >
+	<input type='hidden' name='act' id='act' />
+	".$content_liste_action."	
+	</form>	
+<script>
+!!script_expand!!
+parse_dynamic_elts();
+</script>
+";
 
 $form_modif_action = "
 
@@ -246,6 +226,7 @@ $form_consult_action = "
 <form class='form-".$current_module."' id='see_action' name='see_action' method='post' action=\"./demandes.php?categ=action\">
 	<h3>!!form_title!!</h3>
 	<input type='hidden' id='idaction' name='idaction' value='!!idaction!!'/>
+	<input type='hidden' id='idstatut' name='idstatut' value='!!idstatut!!'/>
 	<input type='hidden' id='iddemande' name='iddemande' value='!!iddemande!!'/>
 	<input type='hidden' id='act' name='act' />
 	<div class='form-contenu'>
@@ -300,9 +281,13 @@ $form_consult_action = "
 		<div class='row'></div>
 	</div>
 	<div class='row'>
+		!!btn_etat!!
+	</div>
+	<div class='row'>
 		<div class='left'>
 			<input type='button' class='bouton' value='".$msg['demandes_retour']."' onClick=\"!!cancel_action!!\" />
 			<input type='submit' class='bouton' value='$msg[62]' onClick='this.form.act.value=\"modif\" ; ' />
+			!!btn_audit!!			
 		</div>
 		<div class='right'>
 			<input type='submit' class='bouton' value='$msg[63]' onClick='this.form.act.value=\"suppr_action\"; return confirm_delete(); ' />

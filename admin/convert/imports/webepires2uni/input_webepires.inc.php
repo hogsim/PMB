@@ -2,11 +2,11 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: input_webepires.inc.php,v 1.3 2008-09-13 07:55:52 touraine37 Exp $
+// $Id: input_webepires.inc.php,v 1.4 2015-04-03 11:16:27 jpermanne Exp $
 
 function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 	global $base_path;
-	//mysql_query("delete from import_marc");
+	//pmb_mysql_query("delete from import_marc");
 	
 	$first=true;
 	$stop=false;
@@ -49,7 +49,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 		} 
 		if ($notice) {
 			$requete="insert into import_marc (no_notice, notice, origine) values($n,'".addslashes($notice)."','$origine')";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$n++;
 			$t=array();
 			$t["POS"]=$n;

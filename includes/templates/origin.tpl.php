@@ -2,15 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: origin.tpl.php,v 1.1 2011-12-20 13:12:44 arenou Exp $
+// $Id: origin.tpl.php,v 1.2 2015-02-02 09:45:02 touraine37 Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
 $origin_form="
-<div class='form-contenu'>
-	<form class='form-".$current_module."' name='origin' method='post' action='./admin.php?categ=!!type!!&sub=origins&action=update&id=!!id!!'>
-		<h3>!!title!!</h3>
-		<div class='row'>&nbsp;</div>
+<form class='form-".$current_module."' name='origin' method='post' action='./admin.php?categ=!!type!!&sub=origins&action=update&id=!!id!!'>
+	<h3>!!title!!</h3>
+	<div class='form-contenu'>
 		<div class='row'>
 			<label class='etiquette' for='origin_name'>".$msg['origin_name']."</label>
 		</div>
@@ -27,17 +26,19 @@ $origin_form="
 			<label class='etiquette' >".$msg['origin_diffusible']."</label>&nbsp;
 			<input type='checkbox' name='origin_diffusible' id='origin_diffusible' value='1' !!checked!!/>
 		</div>
-		<div class='row'><hr /></div>
-		<div class='row'>
-			<div class='left'>
-				<input type='button' class='bouton' onclick='history.go(-1);' value='".htmlentities($msg['origin_cancel'],ENT_QUOTES,$charset)."' />&nbsp;
-				<input type='submit' class='bouton' onclick='return test_origin_form();' value='".htmlentities($msg['origin_save'],ENT_QUOTES,$charset)."' />
-			</div>
-			<div class='right'>
-				<input type='button' class='bouton' onclick='document.location=\"./admin.php?categ=!!type!!&sub=origins&action=delete&id=!!id!!\"' value='".htmlentities($msg['origin_delete'],ENT_QUOTES,$charset)."' />
-			</div>
+	</div>
+	<!--	boutons	-->
+	<div class='row'>
+		<div class='left'>
+			<input type='button' class='bouton' onclick='history.go(-1);' value='".htmlentities($msg['origin_cancel'],ENT_QUOTES,$charset)."' />&nbsp;
+			<input type='submit' class='bouton' onclick='return test_origin_form();' value='".htmlentities($msg['origin_save'],ENT_QUOTES,$charset)."' />
 		</div>
-	</form>
+		<div class='right'>
+			<input type='button' class='bouton' onclick='document.location=\"./admin.php?categ=!!type!!&sub=origins&action=delete&id=!!id!!\"' value='".htmlentities($msg['origin_delete'],ENT_QUOTES,$charset)."' />
+		</div>
+	</div>
+	<div class='row'></div>
+</form>
 	<script type='text/javascript'>
 		function test_origin_form(){
 			if(document.forms['origin'].origin_name.value == ''){
@@ -46,7 +47,7 @@ $origin_form="
 			} 
 		}
 	</script>
-</div>";
+";
 
 $origin_tab_display = "
 	<table>

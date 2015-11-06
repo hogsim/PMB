@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: copy_lieux.php,v 1.8 2009-05-16 11:11:53 dbellamy Exp $
+// $Id: copy_lieux.php,v 1.9 2015-04-03 11:16:20 jpermanne Exp $
 
 //if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -17,9 +17,9 @@ require("lib/api.inc.php");
 
 //Récupération du lieu
 $requete="select sauv_lieu_nom,sauv_lieu_url, sauv_lieu_protocol, sauv_lieu_login, sauv_lieu_password, sauv_lieu_host from sauv_lieux where sauv_lieu_id=".$sauv_lieu_id;
-$resultat=@mysql_query($requete);
+$resultat=@pmb_mysql_query($requete);
 
-$res=mysql_fetch_object($resultat);
+$res=pmb_mysql_fetch_object($resultat);
 
 //message
 print "<div id=\"contenu-frame\">\n";

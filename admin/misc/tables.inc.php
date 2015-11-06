@@ -2,29 +2,29 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tables.inc.php,v 1.10 2013-04-11 08:01:28 mbertin Exp $
+// $Id: tables.inc.php,v 1.11 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 // on récupére la liste des tables
 
-$result = mysql_query("SHOW TABLES FROM ".DATA_BASE);
+$result = pmb_mysql_query("SHOW TABLES FROM ".DATA_BASE);
 $i = 0;
 
-while($i < mysql_num_rows($result)) {
-	$table[$i] = mysql_tablename($result, $i);
+while($i < pmb_mysql_num_rows($result)) {
+	$table[$i] = pmb_mysql_tablename($result, $i);
 
 	$desc[$i] = "<table >";
 	$desc[$i] .= "<tr><th><strong>Field</strong></th><th><strong>Type</strong></th><th><strong>Null</strong></th><th><strong>Key</strong></th><th><strong>Default</strong></th><th><strong>Extra</strong></th></tr>";
 
 	$requete = "DESCRIBE $table[$i]";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	if($nbr) {
 		$odd_even=1;
 		for($j=0;$j<$nbr;$j++) {
-			$row=mysql_fetch_row($res);
+			$row=pmb_mysql_fetch_row($res);
 			if ($odd_even==0) {
 				$pair_impair = "odd";
 				$odd_even=1;

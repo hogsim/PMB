@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_build.js,v 1.31.6.2 2015-06-07 17:19:04 Alexandre Exp $
+// $Id: cms_build.js,v 1.37 2015-06-07 17:23:41 Alexandre Exp $
 
 var cms_build_obj_list_id=new Array();
 var cms_build_obj_list_type=new Array();
@@ -186,6 +186,7 @@ function cms_desel_all_obj(){
 function cms_show_obj(id){
 	cms_desel_all_obj();
 	var obj=parent.frames['opac_frame'].document.getElementById(id);
+
 	if(obj){
 		obj.classList.add("cms_drag");
 		obj.style.visibility="visible";
@@ -435,7 +436,11 @@ function cms_drag_record() {
 						page_info['cms_nodes'][0][index]['childs'][nb_cadre]=new Array();
 						page_info['cms_nodes'][0][index]['childs'][nb_cadre]['name']=cadre_name;
 						page_info['cms_nodes'][0][index]['childs'][nb_cadre]['fixed']=(cadre_fixed ? true : false);
-						if(obj_cadre.style.cssText){
+
+						if(obj_zone.childNodes[j].getAttribute("type")=="cms_module_hidden"){
+							page_info['cms_nodes'][0][index]['childs'][nb_cadre]['style']=obj_zone.childNodes[j].getAttribute("cadre_style");
+						}
+						else if(obj_cadre.style.cssText){
 							page_info['cms_nodes'][0][index]['childs'][nb_cadre]['style']=obj_cadre.style.cssText;
 						}
 
@@ -476,6 +481,7 @@ function get_cadres_list(){
 			for(var j=0;j<obj_zone.childNodes.length;j++){
 				if(obj_zone.childNodes[j].nodeType == 1){
 					if(obj_zone.childNodes[j].getAttribute("id")){
+						if(obj_zone.childNodes[j].getAttribute("type")=="cms_module_hidden") continue;
 						var cadre_name=obj_zone.childNodes[j].getAttribute("id"); // Acceuil, Adresse ...
 						cadre_list[nb_cadre++]=cadre_name;
 					}
@@ -544,6 +550,20 @@ function cms_build_load_cadres_not_in_page_list(){
 	return http.get_text();
 }
 
+function cms_build_load_cadres_not_in_cms_list(){
+	var http=new http_request();
+
+	var url = './ajax.php?module=cms&categ=module&action=cadres_list_not_in_cms';
+	var opac=parent.frames['opac_frame'];
+	cadre_list=get_cadres_list();
+	for(var i=0;i<cadre_list.length;i++){
+		if(opac.document.getElementById(cadre_list[i])){
+			url+='&in_page[]='+cadre_list[i];
+		}
+	}
+	http.request(url);
+	return http.get_text();
+}
 function cms_build_save_cadre_classement(id_cadre,classement){
 	var http=new http_request();
 	var url = './ajax.php?module=cms&categ=module&action=cadre_save_classement';

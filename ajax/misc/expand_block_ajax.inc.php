@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: expand_block_ajax.inc.php,v 1.3.2.1 2015-06-19 07:38:42 mbertin Exp $
+// $Id: expand_block_ajax.inc.php,v 1.4 2015-06-19 07:43:03 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

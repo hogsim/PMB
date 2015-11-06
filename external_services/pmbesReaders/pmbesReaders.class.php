@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesReaders.class.php,v 1.1 2011-07-29 12:32:12 dgoron Exp $
+// $Id: pmbesReaders.class.php,v 1.2 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -65,15 +65,15 @@ class pmbesReaders extends external_services_api_class {
 			$requete = "SELECT COUNT(1) FROM empr, empr_statut where 1 ";
 			$requete = $requete.$restrict_localisation.$restrict_statut." and ".$restrict;
 			$requete .= " and empr_statut=idstatut";
-			$res = mysql_query($requete, $dbh);
-			$nbr_lignes = @mysql_result($res, 0, 0);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 		}
 
 		if($nbr_lignes) {
 //			if ($statut_action=="modify") {
 //				$requete="UPDATE empr set empr_statut='$empr_chang_statut_edit' where 1 ".$restrict_localisation.$restrict_statut." and ".$restrict;
 //				$restrict_statut = " AND empr_statut='$empr_chang_statut_edit' ";
-//				@mysql_query($requete);
+//				@pmb_mysql_query($requete);
 //			} 
 			// on lance la vraie requête
 			$requete = "SELECT id_empr,empr_cb, empr_nom, empr_prenom, empr_adr1, empr_adr2, empr_ville, empr_mail,
@@ -87,9 +87,9 @@ class pmbesReaders extends external_services_api_class {
 		
 			$requete .= " ORDER BY $sortby ";
 
-			$res = @mysql_query($requete, $dbh);
+			$res = @pmb_mysql_query($requete, $dbh);
 			
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = array (
 					"id_empr" => $row["id_empr"],
 					"empr_cb" => $row["empr_cb"],
@@ -115,13 +115,13 @@ class pmbesReaders extends external_services_api_class {
 		
 		$requete = "SELECT id_groupe, libelle_groupe, resp_groupe, concat(IFNULL(empr_prenom,'') ,' ',IFNULL(empr_nom,'')) as resp_name, count( empr_id ) as nb_empr FROM groupe LEFT  JOIN empr_groupe ON groupe_id = id_groupe left join empr on resp_groupe = id_empr
 		$clause group by id_groupe, libelle_groupe, resp_groupe, resp_name ORDER BY libelle_groupe LIMIT $debut,$nb_per_page ";
-		$res = mysql_query($requete, $dbh);
+		$res = pmb_mysql_query($requete, $dbh);
 		
-		while($rgroup=mysql_fetch_assoc($res)) {
+		while($rgroup=pmb_mysql_fetch_assoc($res)) {
 			$requete = "SELECT count( pret_idempr ) as nb_pret FROM empr_groupe,pret where groupe_id=$rgroup->id_groupe and empr_id = pret_idempr";
-			$res_pret = mysql_query($requete, $dbh);
-			if (mysql_num_rows($res_pret)) {
-				$rpret=mysql_fetch_object($res_pret);
+			$res_pret = pmb_mysql_query($requete, $dbh);
+			if (pmb_mysql_num_rows($res_pret)) {
+				$rpret=pmb_mysql_fetch_object($res_pret);
 				$nb_pret=$rpret->nb_pret;	
 			}
 			
@@ -311,9 +311,9 @@ class pmbesReaders extends external_services_api_class {
 //		// requete à modifier en fonction de paramètres de restrictions
 //		$requete = "SELECT empr.*, date_format(empr_date_adhesion, '".$msg["format_date"]."') as aff_empr_date_adhesion, date_format(empr_date_expiration, '".$msg["format_date"]."') as aff_empr_date_expiration, statut_libelle  FROM empr, empr_statut Where 1 ";
 //		$requete .= " and ".$restrict;
-//		$res = mysql_query($requete, $dbh);
+//		$res = pmb_mysql_query($requete, $dbh);
 //		
-//		while ($row = mysql_fetch_assoc($res)) {
+//		while ($row = pmb_mysql_fetch_assoc($res)) {
 //			$result[] = array (
 //				"empr_cb" => $row->empr_cb,
 //				"empr_nom" => $row->empr_nom,
@@ -337,9 +337,9 @@ class pmbesReaders extends external_services_api_class {
 //		// requete à modifier en fonction de paramètres de restrictions
 //		$requete = "SELECT empr.*, date_format(empr_date_adhesion, '".$msg["format_date"]."') as aff_empr_date_adhesion, date_format(empr_date_expiration, '".$msg["format_date"]."') as aff_empr_date_expiration, statut_libelle  FROM empr, empr_statut Where 1 ";
 //		$requete .= " and ".$restrict;
-//		$res = mysql_query($requete, $dbh);
+//		$res = pmb_mysql_query($requete, $dbh);
 //		
-//		while ($row = mysql_fetch_assoc($res)) {
+//		while ($row = pmb_mysql_fetch_assoc($res)) {
 //			$result[] = array (
 //				"empr_cb" => $row->empr_cb,
 //				"empr_nom" => $row->empr_nom,
@@ -481,9 +481,9 @@ class pmbesReaders extends external_services_api_class {
 				$empr_location_id = $deflt_docs_location;
 			}
 			$query = "select name, adr1,adr2,cp,town,state,country,phone,email,website,logo from docs_location where idlocation=".$empr_location_id;
-			$res = mysql_query($query,$dbh);
-			if (mysql_num_rows($res) == 1) {
-				$row = mysql_fetch_object($res);
+			$res = pmb_mysql_query($query,$dbh);
+			if (pmb_mysql_num_rows($res) == 1) {
+				$row = pmb_mysql_fetch_object($res);
 				$biblio_name = $row->name;
 				$biblio_adr1 = $row->adr1;
 				$biblio_adr2 = $row->adr2;

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serie.inc.php,v 1.25 2013-12-27 09:27:30 dgoron Exp $
+// $Id: serie.inc.php,v 1.26 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -80,8 +80,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			}
 			$requete=$aq->get_query_count("series","serie_name","serie_index","serie_id","serie_id!='$no_display'");
 		}
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_result($res, 0, 0);
 	} else $nbr_lignes=1;
 	
 	if (!$page) $page=1;
@@ -98,8 +98,8 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 				$requete="select *,".$members["select"]." as pert from series where ".$members["where"]." and serie_id!='$no_display' group by serie_id order by pert desc,serie_index limit $debut,$nb_per_page";
 			}
 		} else $requete="select * from series where serie_id='".$id."'";				
-		$res = @mysql_query($requete, $dbh);
-		while(($serie=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($serie=pmb_mysql_fetch_object($res))) {
 			$entry = $serie->serie_name;
 			print pmb_bidi("
 			<a href='#' onclick=\"set_parent('$caller', '$serie->serie_id', '".htmlentities(addslashes($entry),ENT_QUOTES,$charset)."','$callback')\">
@@ -107,7 +107,7 @@ function show_results($dbh, $user_input, $nbr_lignes=0, $page=0, $id = 0) {
 			print "<br />";
 
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 

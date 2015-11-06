@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: docs_location.class.php,v 1.5 2013-04-11 08:24:13 mbertin Exp $
+// $Id: docs_location.class.php,v 1.6 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -52,10 +52,10 @@ function getData() {
 	/* récupération des informations du statut */
 
 	$requete = "SELECT * FROM docs_location WHERE idlocation='".$this->id."'";
-	$result = @mysql_query($requete, $dbh);
-	if(!mysql_num_rows($result)) return;
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(!pmb_mysql_num_rows($result)) return;
 		
-	$data = mysql_fetch_object($result);
+	$data = pmb_mysql_fetch_object($result);
 	$this->id = $data->idlocation;		
 	$this->libelle = $data->location_libelle;		
 	$this->locdoc_codage_import = $data->locdoc_codage_import;
@@ -85,9 +85,9 @@ function import($data) {
 	}
 	// check sur les éléments du tableau
 	
-	$long_maxi = mysql_field_len(mysql_query("SELECT location_libelle FROM docs_location limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT location_libelle FROM docs_location limit 1"),0);
 	$data['location_libelle'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['location_libelle']))),0,$long_maxi));
-	$long_maxi = mysql_field_len(mysql_query("SELECT locdoc_codage_import FROM docs_location limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT locdoc_codage_import FROM docs_location limit 1"),0);
 	$data['locdoc_codage_import'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['locdoc_codage_import']))),0,$long_maxi));
 
 	if($data['locdoc_owner']=="") $data['locdoc_owner'] = 0;
@@ -102,9 +102,9 @@ function import($data) {
 	
 	/* vérification que le lieu existe */
 	$query = "SELECT idlocation FROM docs_location WHERE locdoc_codage_import='${key1}' and locdoc_owner = '${key2}' LIMIT 1 ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't SELECT docs_location ".$query);
-	$docs_location  = mysql_fetch_object($result);
+	$docs_location  = pmb_mysql_fetch_object($result);
 
 	/* le lieu de doc existe, on retourne l'ID */
 	if($docs_location->idlocation) return $docs_location->idlocation;
@@ -115,10 +115,10 @@ function import($data) {
 	$query .= "location_libelle='".$key0."', ";
 	$query .= "locdoc_codage_import='".$key1."', ";
 	$query .= "locdoc_owner='".$key2."' ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't INSERT into docs_location ".$query);
 
-	return mysql_insert_id($dbh);
+	return pmb_mysql_insert_id($dbh);
 } /* fin méthode import */
 
 /* une fonction pour générer des combo Box 
@@ -137,9 +137,9 @@ static function gen_combo_box ( $selected ) {
 	$option_premier_code="";
 	$option_premier_info="";
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete);
+	$resultat_liste=pmb_mysql_query($requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\">\n" ;
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 	} else {
@@ -150,11 +150,11 @@ static function gen_combo_box ( $selected ) {
 		}
 		$i=0;
 		while ($i<$nb_liste) {
-			$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-			if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+			$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+			if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 				$gen_liste_str.="selected" ;
 			}
-			$gen_liste_str.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
+			$gen_liste_str.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
 			$i++;
 		}
 	}
@@ -173,9 +173,9 @@ static function gen_combo_box_empr ( $selected, $afficher_premier=1, $on_change=
 	$option_premier_code="0";
 	if ($afficher_premier) $option_premier_info=$msg['all_location'];
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete);
+	$resultat_liste=pmb_mysql_query($requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\" >\n";
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 	} else {
@@ -186,11 +186,11 @@ static function gen_combo_box_empr ( $selected, $afficher_premier=1, $on_change=
 		}
 		$i=0;
 		while ($i<$nb_liste) {
-			$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-			if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+			$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+			if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 				$gen_liste_str.="selected" ;
 				}
-			$gen_liste_str.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
+			$gen_liste_str.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
 			$i++;
 		}
 	}
@@ -210,9 +210,9 @@ function gen_combo_box_sugg ( $selected, $afficher_premier=1, $on_change="" ) {
 	$option_premier_code="0";
 	if ($afficher_premier) $option_premier_info=$msg['all_location'];
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete);
+	$resultat_liste=pmb_mysql_query($requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\" >\n";
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 	} else {
@@ -223,11 +223,11 @@ function gen_combo_box_sugg ( $selected, $afficher_premier=1, $on_change="" ) {
 		}
 		$i=0;
 		while ($i<$nb_liste) {
-			$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-			if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+			$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+			if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 				$gen_liste_str.="selected" ;
 				}
-			$gen_liste_str.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
+			$gen_liste_str.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
 			$i++;
 		}
 	}

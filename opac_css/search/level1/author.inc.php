@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: author.inc.php,v 1.45 2013-12-10 09:06:14 dgoron Exp $
+// $Id: author.inc.php,v 1.46 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -34,12 +34,12 @@ $tri = 'order by pert desc, index_author';
 $pert=$members["select"]." as pert";
 
 
-$auteurs = mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='70' ", $dbh);
-$nb_result_auteurs_physiques = mysql_result($auteurs, 0 , 0);
-$auteurs = mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='71' ", $dbh);
-$nb_result_auteurs_collectivites = mysql_result($auteurs, 0 , 0);
-$auteurs = mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='72' ", $dbh);
-$nb_result_auteurs_congres = mysql_result($auteurs, 0 , 0);
+$auteurs = pmb_mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='70' ", $dbh);
+$nb_result_auteurs_physiques = pmb_mysql_result($auteurs, 0 , 0);
+$auteurs = pmb_mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='71' ", $dbh);
+$nb_result_auteurs_collectivites = pmb_mysql_result($auteurs, 0 , 0);
+$auteurs = pmb_mysql_query("SELECT COUNT(distinct author_id) FROM authors $clause and author_type='72' ", $dbh);
+$nb_result_auteurs_congres = pmb_mysql_result($auteurs, 0 , 0);
 $nb_result_auteurs=$nb_result_auteurs_physiques+$nb_result_auteurs_collectivites+$nb_result_auteurs_congres;
 
 //Enregistrement des stats

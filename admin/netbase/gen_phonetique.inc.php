@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: gen_phonetique.inc.php,v 1.1 2013-04-03 10:14:03 mbertin Exp $
+// $Id: gen_phonetique.inc.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,14 +18,14 @@ if(!isset($start)) $start=0;
 $v_state=urldecode($v_state);
 
 if(!$count) {
-	$notices = mysql_query("SELECT count(1) FROM words", $dbh);
-	$count = mysql_result($notices, 0, 0);
+	$notices = pmb_mysql_query("SELECT count(1) FROM words", $dbh);
+	$count = pmb_mysql_result($notices, 0, 0);
 }
 
 print "<br /><br /><h2 align='center'>".htmlentities($msg["gen_phonetique_en_cours"], ENT_QUOTES, $charset)."</h2>";
 
-$query = mysql_query("select id_word,word from words LIMIT $start, $lot");
-if(mysql_num_rows($query)) {
+$query = pmb_mysql_query("select id_word,word from words LIMIT $start, $lot");
+if(pmb_mysql_num_rows($query)) {
 
     // définition de l'état de la jauge
     $state = floor($start / ($count / $jauge_size));
@@ -39,7 +39,7 @@ if(mysql_num_rows($query)) {
 
     // affichage du % d'avancement et de l'état
     print "<div align='center'>$percent%</div>";
-   	while($row = mysql_fetch_object($query)){
+   	while($row = pmb_mysql_fetch_object($query)){
 		$dmeta = new DoubleMetaPhone($row->word);
 		$stemming = new stemming($row->word);
 		$element_to_update = "";
@@ -51,10 +51,10 @@ if(mysql_num_rows($query)) {
 		$element_to_update.="stem = '".$stemming->stem."'";
 		
 		if ($element_to_update){
-			mysql_query("update words set ".$element_to_update." where id_word = '".$row->id_word."'");
+			pmb_mysql_query("update words set ".$element_to_update." where id_word = '".$row->id_word."'");
 		}
 	}
-   	mysql_free_result($query);
+   	pmb_mysql_free_result($query);
 	$next = $start + $lot;
  	print "
 	<form class='form-$current_module' name='current_state' action='./clean.php' method='post'>
@@ -72,7 +72,7 @@ if(mysql_num_rows($query)) {
 	$spec = $spec - GEN_PHONETIQUE;
 	$v_state .= "<br /><img src=../../images/d.gif hspace=3>";
 	$v_state .= $count." ".htmlentities($msg["gen_phonetique_end"], ENT_QUOTES, $charset);
-	$opt = mysql_query('OPTIMIZE TABLE words');
+	$opt = pmb_mysql_query('OPTIMIZE TABLE words');
 	// mise à jour de l'affichage de la jauge
 	print "
 	<table border='0' align='center' width='$table_size' cellpadding='0'><tr><td class='jauge'>

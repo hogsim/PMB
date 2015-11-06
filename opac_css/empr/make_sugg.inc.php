@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: make_sugg.inc.php,v 1.15.10.1 2015-10-05 13:16:10 jpermanne Exp $
+// $Id: make_sugg.inc.php,v 1.16 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -84,12 +84,6 @@ $sug_form.= "
 				<input type='text' id='date_publi' name='date_publi' value='$sugg->date_publi'>
 				<input type='button' class='bouton' id='date_publi_sug' name='date_publi_sug' value='...' onClick=\"window.open('./select.php?what=calendrier&caller=empr_sugg&param1=date_publi&param2=date_publi&auto_submit=NO&date_anterieure=YES', 'date_publi', 'toolbar=no, dependent=yes, width=250,height=250, resizable=yes')\"/>
 			</td>
-		</tr>
-		<tr>
-			<td class='cell_header' align=right>".htmlentities($msg["empr_sugg_qte"], ENT_QUOTES, $charset)."</td>
-			<td>
-				<input type='text' id='nb' name='nb' size='5' value='".htmlentities($sugg->nb, ENT_QUOTES, $charset)."'>
-			</td>
 		</tr>	";
 if(!$_SESSION["id_empr_session"]) {
 	
@@ -137,9 +131,9 @@ if ($opac_sugg_categ == '1' ) {
 // Localisation de la suggestion
 if($_SESSION["id_empr_session"]) {		
 	$requete = "SELECT * FROM empr WHERE id_empr=".$_SESSION["id_empr_session"];	
-	$res = mysql_query($requete);
+	$res = pmb_mysql_query($requete);
 	if($res) {
-		$empr = mysql_fetch_object($res);	
+		$empr = pmb_mysql_fetch_object($res);	
 		if (!$empr->empr_location) $empr->empr_location=0 ;	
 		$list_locs='';
 		$locs=new docs_location();
@@ -158,10 +152,10 @@ if($_SESSION["id_empr_session"]) {
 
 //Affichage du selecteur de source
 $req = "select * from suggestions_source order by libelle_source";
-$res= mysql_query($req,$dbh);
+$res= pmb_mysql_query($req,$dbh);
 $option = "<option value='0' selected>".htmlentities($msg['empr_sugg_no_src'],ENT_QUOTES,$charset)."</option>";
 
-while(($src=mysql_fetch_object($res))){
+while(($src=pmb_mysql_fetch_object($res))){
 	if($id_sug){
 		$selected = ($sugg->sugg_src == $src->id_source ? 'selected' : '');
 	}

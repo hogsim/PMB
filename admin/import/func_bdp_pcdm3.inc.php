@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_bdp_pcdm3.inc.php,v 1.4 2010-07-28 13:58:02 mbertin Exp $
+// $Id: func_bdp_pcdm3.inc.php,v 1.5 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -81,7 +81,7 @@ function import_new_notice_suite() {
 	$rqt_maj = "update notices set index_l='".addslashes($mots_cles)."', index_matieres=' ".addslashes($index_matieres)." ' ";
 	if ($pcdm3) $rqt_maj.= ", indexint='".$pcdm3."' ";
 	$rqt_maj.= "where notice_id='$notice_id' " ;
-	$res_ajout = mysql_query($rqt_maj, $dbh);
+	$res_ajout = pmb_mysql_query($rqt_maj, $dbh);
 	} // fin import_new_notice_suite
 			
 // TRAITEMENT DES EXEMPLAIRES ICI

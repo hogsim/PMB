@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: aut_pass1.inc.php,v 1.16 2013-03-20 18:21:23 mbertin Exp $
+// $Id: aut_pass1.inc.php,v 1.17 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -21,10 +21,10 @@ $v_state=urldecode($v_state);
 
 print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_suppr_auteurs"], ENT_QUOTES, $charset)."</h2>";
 
-$res = mysql_query("SELECT author_id from authors left join responsability on responsability_author=author_id where responsability_author is null and author_see=0 ");
+$res = pmb_mysql_query("SELECT author_id from authors left join responsability on responsability_author=author_id where responsability_author is null and author_see=0 ");
 $affected=0;
-if($affected = mysql_num_rows($res)){
-	while ($ligne=mysql_fetch_object($res)) {
+if($affected = pmb_mysql_num_rows($res)){
+	while ($ligne=pmb_mysql_fetch_object($res)) {
 		$auteur=new auteur($ligne->author_id);
 		$auteur->delete();
 	}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: restaure_act.php,v 1.7 2012-04-24 15:23:00 dgoron Exp $
+// $Id: restaure_act.php,v 1.8 2015-04-03 11:16:21 jpermanne Exp $
 
 //Restauration d'un jeu
 
@@ -38,8 +38,8 @@ print "<div id=\"contenu-frame\">\n";
 echo "<center><h1>".sprintf($msg["sauv_misc_restaure"],$file_name)."</h1></center>\n";
 
 if ($critical==1) {
-	mysql_connect($host,$user,$password) or abort($msg["sauv_misc_ract_cant_connect"]);
-	mysql_select_db($db) or abort(sprintf($msg["sauv_misc_ract_db_dont_exists"],$db));
+	pmb_mysql_connect($host,$user,$password) or abort($msg["sauv_misc_ract_cant_connect"]);
+	pmb_mysql_select_db($db) or abort(sprintf($msg["sauv_misc_ract_db_dont_exists"],$db));
 }
 
 //Récupération de la partie data
@@ -130,7 +130,7 @@ while (!feof($fsql)) {
 			if (($as!==false)&&($as!==null)) { $mod_query=1; echo sprintf($msg["sauv_misc_ract_start_restaure"],$currentTable)."<br />"; } else { $mod_query=0; echo sprintf($msg["sauv_misc_ract_ignore"],$currentTable)."<br />"; }
 			flush();
 		} else {
-			if ($mod_query==1) { mysql_query($line) or abort(sprintf($msg["sauv_misc_ract_invalid_request"],$line)); }
+			if ($mod_query==1) { pmb_mysql_query($line) or abort(sprintf($msg["sauv_misc_ract_invalid_request"],$line)); }
 		}
 	}
 }
@@ -142,7 +142,7 @@ fclose($fsql);
  * Lors de la restauration, on récupère la valeur 0, enregistrée avant la fin de la sauvegarde.
  */
 $requete="update sauv_log set sauv_log_succeed=1 where sauv_log_id=".$logid;
-@mysql_query($requete);
+@pmb_mysql_query($requete);
 
 echo "<h2>".$msg["sauv_misc_ract_correct"]."</h2>";
 echo "</div>";

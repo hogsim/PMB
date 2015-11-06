@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: thesaurus.inc.php,v 1.5.12.1 2015-02-11 13:08:02 jpermanne Exp $
+// $Id: thesaurus.inc.php,v 1.7 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -15,15 +15,15 @@ $base_url = "./autorites.php?categ=categories&sub=";
 $action = $base_url."thes_form&id_thes=0";
 
 $q = "select id_thesaurus, libelle_thesaurus, num_noeud_racine from thesaurus ORDER BY 2 ";
-$r = mysql_query($q, $dbh);
-if (mysql_num_rows($r) == 0) {
+$r = pmb_mysql_query($q, $dbh);
+if (pmb_mysql_num_rows($r) == 0) {
 	$browser_content = $msg[4051];
 	affiche();
 	exit;
 }
 
 $odd_even = 1;
-while ($row = mysql_fetch_object($r)) {
+while ($row = pmb_mysql_fetch_object($r)) {
 	if ($odd_even==0) {
 		$browser_content .= "	<tr class='odd'>";
 		$odd_even=1;

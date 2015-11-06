@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesTasks.class.php,v 1.7.2.4 2014-12-23 11:10:17 dbellamy Exp $
+// $Id: pmbesTasks.class.php,v 1.13 2015-06-19 08:12:42 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,8 +30,8 @@ class pmbesTasks extends external_services_api_class {
 		$requete = "select id_tache, param, start_at FROM taches, planificateur 
 			WHERE num_planificateur=id_planificateur AND id_process <> 0";
 
-		$resultat=mysql_query($requete, $dbh);
-		while ($row = mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query($requete, $dbh);
+		while ($row = pmb_mysql_fetch_object($resultat)) {
 			$params=unserialize($row->param);
 			foreach ($params as $index=>$param) {
 				if (($index == "timeout") && ($param != "")) {
@@ -40,7 +40,7 @@ class pmbesTasks extends external_services_api_class {
 						where DATE_ADD('".$row->start_at."', INTERVAL ".($param)." MINUTE) <= CURRENT_TIMESTAMP 
 						and id_tache=".$row->id_tache;
 					
-					mysql_query($requete_check_timeout, $dbh);
+					pmb_mysql_query($requete_check_timeout, $dbh);
 				}
 			}
 		}
@@ -73,7 +73,7 @@ class pmbesTasks extends external_services_api_class {
 	
 	/*Vérifie les processus actifs*/
 	function checkTasks() {
-		global $dbh,$base_path,$include_path,$class_path,$lang;
+		global $dbh,$base_path,$include_path,$class_path,$javascript_path,$lang;
 		global $charset;
 		global $PMBusernom,$PMBuserprenom,$PMBuseremail;
 		
@@ -81,9 +81,9 @@ class pmbesTasks extends external_services_api_class {
 		$os = $this->getOS();
 		
 		$sql = "SELECT id_tache, start_at, id_process FROM taches WHERE id_process <> 0";
-		$res = mysql_query($sql,$dbh);
-		if ($res && mysql_num_rows($res)) {
-			while ($row = mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql,$dbh);
+		if ($res && pmb_mysql_num_rows($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				if ($os == "Linux") {
 					$command = 'ps -p '.$row['id_process'];
 				} else if ($os == "Windows") {
@@ -100,13 +100,13 @@ class pmbesTasks extends external_services_api_class {
 	        		$sql_stop_task = "update taches set status=5, "; 
 	        		if ($row['start_at'] == '0000-00-00 00:00:00') $sql_stop_task .= "start_at=CURRENT_TIMESTAMP, ";
 	        		$sql_stop_task .= "end_at=CURRENT_TIMESTAMP, id_process=0, commande=0 where id_tache=".$row["id_tache"];
-	        		mysql_query($sql_stop_task);
+	        		pmb_mysql_query($sql_stop_task);
 	        		//En fonction du paramétrage de la tâche...
 	        		//Replanifier / Envoi de mail
 	        		$query = "select num_type_tache, libelle_tache, param, num_planificateur, indicat_progress from planificateur join taches on id_planificateur=num_planificateur where id_tache=".$row["id_tache"];
-	        		$result = mysql_query($query);
-	        		if ($result && mysql_num_rows($result)) {
-	        			$task_info = mysql_fetch_object($result);
+	        		$result = pmb_mysql_query($query);
+	        		if ($result && pmb_mysql_num_rows($result)) {
+	        			$task_info = pmb_mysql_fetch_object($result);
 	        			$params = unserialize($task_info->param);
 	        			if ($params["alert_mail_on_failure"] != "") {
 	        				$params_alert_mail = explode(",",$params["alert_mail_on_failure"]);
@@ -163,8 +163,8 @@ class pmbesTasks extends external_services_api_class {
 			Or p.calc_next_date_deb = '".date('Y-m-d')."' 
 			And p.calc_next_heure_deb <= '".date('H:i')."')
 			";
-		$res = mysql_query($sql,$dbh);
-		while ($row = mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql,$dbh);
+		while ($row = pmb_mysql_fetch_assoc($res)) {
 			$output=array();
 			if ($os == "Linux") {		
 				exec("nohup $pmb_path_php  $base_path/admin/planificateur/run_task.php ".$row["id_tache"]." ".$row["num_type_tache"]." ".$row["id_planificateur"]." ".$row["num_user"]." ".$connectors_out_source_id." ".LOCATION." > /dev/null 2>&1 & echo $!", $output);
@@ -186,7 +186,7 @@ class pmbesTasks extends external_services_api_class {
 			$id_process = (int)$output[0];
 			
 			$update_process = "update taches set id_process='".$id_process."' where id_tache='".$row["id_tache"]."'";		
-			mysql_query($update_process,$dbh);
+			pmb_mysql_query($update_process,$dbh);
 		}
 	}
 	
@@ -201,9 +201,9 @@ class pmbesTasks extends external_services_api_class {
 		$sql .= "t.start_at, t.end_at, t.indicat_progress, t.status";
 		$sql .= "FROM taches t, planificateur p WHERE t.num_planificateur=p.id_planificateur"; 
 			
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		if ($res) {
-			while($row = mysql_fetch_assoc($res)) {
+			while($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = array (
 						"id_tache" => $row["id_tache"],
 						"libelle_tache" => utf8_normalize($row["libelle_tache"]),
@@ -257,11 +257,11 @@ class pmbesTasks extends external_services_api_class {
 		
 		$sql = "SELECT * FROM planificateur WHERE id_planificateur = ".$planificateur_id;
 		$sql = $sql.$critere;
-		$res = mysql_query($sql,$dbh);
+		$res = pmb_mysql_query($sql,$dbh);
 		if (!$res)
 			throw new Exception("Not found: planificateur_id = ".$planificateur_id);
 		
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = pmb_mysql_fetch_assoc($res)) {
 			$result[] = array(
 				"id_planificateur" => $row["id_planificateur"],
 				"num_type_tache" => $row["num_type_tache"],
@@ -309,14 +309,14 @@ class pmbesTasks extends external_services_api_class {
 			throw new Exception("Missing parameter: id_planificateur");
 			
 		$sql = "select statut from planificateur where id_planificateur=".$id_planificateur;
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		
-		if (mysql_num_rows($res) == "1") {
-			$statut_sql = mysql_result($res, 0,"statut");
+		if (pmb_mysql_num_rows($res) == "1") {
+			$statut_sql = pmb_mysql_result($res, 0,"statut");
 			if ((($statut_sql == "0") && ($activation == "1")) ||
 				(($statut_sql == "1") && ($activation == "0"))) {
 				$sql_update = "update planificateur set statut=".$activation." where id_planificateur=".$id_planificateur;
-				mysql_query($sql_update, $dbh);
+				pmb_mysql_query($sql_update, $dbh);
 				return true;
 			} else {
 				return false;

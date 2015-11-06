@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: marc_table.class.php,v 1.20 2012-04-30 14:04:19 dbellamy Exp $
+// $Id: marc_table.class.php,v 1.22 2014-11-20 10:51:59 arenou Exp $
 
 // classe de gestion des tables MARC en XML
 
@@ -124,6 +124,16 @@ class marc_list {
 				$parser->analyser();
 				$this->table = $parser->table;
 				break;	
+			case 'music_key':
+				$parser = new XMLlist("$include_path/marc_tables/$lang/music_key.xml");
+				$parser->analyser();
+				$this->table = $parser->table;
+				break;	
+			case 'music_form':
+				$parser = new XMLlist("$include_path/marc_tables/$lang/music_form.xml");
+				$parser->analyser();
+				$this->table = $parser->table;
+				break;
 			default:
 				$this->table=array();
 				break;
@@ -137,6 +147,7 @@ class marc_select {
 // propriétés
 
 	var $display;
+	var $libelle; // libellé du selected
 
 // méthodes
 
@@ -153,9 +164,10 @@ class marc_select {
 			foreach($source->table as $value=>$libelle) {
 				if(!($value == $selected))
 					$tag = "<option value='$value'>";
-				else
-					$tag = "<option value='$value' selected='selected' >";
-
+				else{
+					$tag = "<option value='$value' selected='selected'>";
+					$this->libelle="$libelle";
+				}
 				$this->display .= "$tag$libelle</option>";
 			}
 

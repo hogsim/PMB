@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: de_DE.xml,v 1.4.6.1 2015-03-09 12:59:28 jpermanne Exp $ -->
+$Id: de_DE.xml,v 1.6 2015-06-08 08:10:45 apetithomme Exp $ -->
 
 <XMLlist>
 	<entry code="amazon_key">AWSAccessKeyID Key</entry>
@@ -39,4 +39,6 @@ $Id: de_DE.xml,v 1.4.6.1 2015-03-09 12:59:28 jpermanne Exp $ -->
 	<entry code="theatricaldate">Enregistré le</entry>
 	<entry code="format">Format</entry>
 	<entry code="disc">Disque</entry>
+	<entry code="amazon_review_height">Hauteur du cadre d'affichage des avis</entry>
+	<entry code="amazon_review_width">Largeur du cadre d'affichage des avis</entry>
 </XMLlist>

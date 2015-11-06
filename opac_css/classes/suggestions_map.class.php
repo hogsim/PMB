@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions_map.class.php,v 1.11 2011-08-09 13:14:15 dbellamy Exp $
+// $Id: suggestions_map.class.php,v 1.12 2015-04-03 11:16:17 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -1040,21 +1040,21 @@ class suggestions_map {
 		$corps = str_replace('!!date!!', formatdate($sug->date_creation), $corps);
 		
 		$q = suggestions_origine::listOccurences($sug->id_suggestion);
-		$list_orig = mysql_query($q, $dbh);
-		while($row = mysql_fetch_object($list_orig)) {
+		$list_orig = pmb_mysql_query($q, $dbh);
+		while($row = pmb_mysql_fetch_object($list_orig)) {
 	
 			switch($row->type_origine){
 				
 				default:
 				case '0' :
 				 	$q = "SELECT nom, prenom, user_email FROM users where userid = '".$row->origine."' limit 1 ";
-					$r = mysql_fetch_object(mysql_query($q, $dbh));
+					$r = pmb_mysql_fetch_object(pmb_mysql_query($q, $dbh));
 					$tonom = $r->prenom." ".$r->nom;
 					$tomail = $r->user_email;			
 					break;
 				case '1' :
 				 	$q = "SELECT empr_nom, empr_prenom, empr_mail FROM empr where id_empr = '".$row->origine."' limit 1 ";
-					$r = mysql_fetch_object(mysql_query($q, $dbh));
+					$r = pmb_mysql_fetch_object(pmb_mysql_query($q, $dbh));
 					$tonom = $r->empr_prenom." ".$r->empr_nom;
 					$tomail = $r->empr_mail;			
 					break;

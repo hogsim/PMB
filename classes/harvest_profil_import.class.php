@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: harvest_profil_import.class.php,v 1.1 2012-01-25 15:20:35 ngantier Exp $
+// $Id: harvest_profil_import.class.php,v 1.2 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -47,17 +47,17 @@ class harvest_profil_import {
 		if(!$this->id) return;
 		$req="select * from harvest_profil_import where id_harvest_profil_import=". $this->id;
 		
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			$r=mysql_fetch_object($resultat);		
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			$r=pmb_mysql_fetch_object($resultat);		
 			$this->info['id']= $r->id_harvest_profil_import;	
 			$this->info['name']= $r->harvest_profil_import_name;	
 		}	
 		$this->info['fields']=array();	
 		$req="select * from harvest_profil_import_field where num_harvest_profil_import=".$this->id." order by harvest_profil_import_field_order";
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){						
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){						
 				$this->info['fields'][$r->harvest_profil_import_field_xml_id]['id']= $r->harvest_profil_import_field_xml_id;	
 				$this->info['fields'][$r->harvest_profil_import_field_xml_id]['xml']= $r->harvest_profil_import_field_xml_id;	
 				$this->info['fields'][$r->harvest_profil_import_field_xml_id]['flagtodo']= $r->harvest_profil_import_field_flag;	
@@ -72,8 +72,8 @@ class harvest_profil_import {
 		$memo=array();
 		
 		$req="select * from notices where notice_id=".$id." ";
-		$resultat=mysql_query($req);	
-		if ($r=mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query($req);	
+		if ($r=pmb_mysql_fetch_object($resultat)) {
 			$code=$r->code;
 			$notice_extern= $this->info['harvest']->havest_notice($code);
 			foreach($notice_extern as $contens){				
@@ -155,16 +155,16 @@ class harvest_profil_import {
 			$req="INSERT INTO harvest_profil_import SET 
 				harvest_profil_import_name='".$data['name']."'
 			";	
-			mysql_query($req, $dbh);
-			$this->id = mysql_insert_id($dbh);
+			pmb_mysql_query($req, $dbh);
+			$this->id = pmb_mysql_insert_id($dbh);
 		} else {
 			$req="UPDATE harvest_profil_import SET 
 				harvest_profil_import_name='".$data['name']."'
 				where 	id_harvest_profil_import=".$this->id;	
-			mysql_query($req, $dbh);			
+			pmb_mysql_query($req, $dbh);			
 		
 			$req=" DELETE from harvest_profil_import_field WHERE num_harvest_profil_import=".$this->id;
-			mysql_query($req, $dbh);					
+			pmb_mysql_query($req, $dbh);					
 		}
 		$cpt_fields=0;
 		foreach($this->fields as $field ){
@@ -178,8 +178,8 @@ class harvest_profil_import {
 				harvest_profil_import_field_flag=".$flagtodo.",					
 				harvest_profil_import_field_order=".$cpt_fields++."	
 			";	
-			mysql_query($req, $dbh);
-			$harvest_field_id = mysql_insert_id($dbh);	
+			pmb_mysql_query($req, $dbh);
+			$harvest_field_id = pmb_mysql_insert_id($dbh);	
     		
 		}
 		$this->fetch_data();
@@ -188,9 +188,9 @@ class harvest_profil_import {
 	function delete() {
 		global $dbh;		
 		$req=" DELETE from harvest_profil_import_field WHERE num_harvest_profil_import_field=".$this->id;
-		mysql_query($req, $dbh);				
+		pmb_mysql_query($req, $dbh);				
 		$req=" DELETE from  harvest_profil_import where id_harvest_profil_import=". $this->id;
-		mysql_query($req, $dbh);					
+		pmb_mysql_query($req, $dbh);					
 		$this->fetch_data();
 	}	
 	    
@@ -210,9 +210,9 @@ class harvest_profil_imports {
 		$this->info=array();
 		$i=0;
 		$req="select * from harvest_profil_import ";		
-		$resultat=mysql_query($req);	
-		if (mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){	
+		$resultat=pmb_mysql_query($req);	
+		if (pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){	
 				$this->info[$i]= $harvest=new harvest_profil_import($r->id_harvest_profil_import);					
 				$i++;
 			}

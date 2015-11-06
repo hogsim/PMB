@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource_sections_sections.class.php,v 1.4 2013-09-06 08:00:05 apetithomme Exp $
+// $Id: cms_module_common_datasource_sections_sections.class.php,v 1.6 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -20,6 +20,7 @@ class cms_module_common_datasource_sections_sections extends cms_module_common_d
 		return array(
 			"cms_module_common_selector_sections",
 			"cms_module_common_selector_env_var",
+			"cms_module_common_selector_generic_parent_section",
 		);
 	}
 
@@ -52,10 +53,10 @@ class cms_module_common_datasource_sections_sections extends cms_module_common_d
 					$query .= " order by ".$this->parameters["sort_by"];
 					if ($this->parameters["sort_order"] != "") $query .= " ".$this->parameters["sort_order"];
 				}
-				$result = mysql_query($query);
+				$result = pmb_mysql_query($query);
 				$return = array();
-				if(mysql_num_rows($result) > 0){
-					while($row = mysql_fetch_object($result)){
+				if($result){
+					while($row = pmb_mysql_fetch_object($result)){
 						$return[] = $row->id_section;
 					}
 				}

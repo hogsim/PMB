@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tu_notice.class.php,v 1.6.6.1 2014-09-02 12:16:44 dgoron Exp $
+// $Id: tu_notice.class.php,v 1.9 2015-05-19 13:43:43 mhoestlandt Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -43,10 +43,10 @@ class tu_notice {
 		if($this->id) {				
 			$requete = "SELECT * FROM notices_titres_uniformes WHERE ntu_num_notice='".addslashes($this->id)."' order by ntu_ordre";
 		
-			$result = mysql_query($requete, $dbh);
+			$result = pmb_mysql_query($requete, $dbh);
 			$nb_result=0;
-			if(mysql_num_rows($result)) {
-				while(($res_tu = mysql_fetch_object($result))) {
+			if(pmb_mysql_num_rows($result)) {
+				while(($res_tu = pmb_mysql_fetch_object($result))) {
 					$this->ntu_data[$nb_result]=new stdClass();
 					$this->ntu_data[$nb_result]->num_tu=	$res_tu->ntu_num_tu;
 					$this->ntu_data[$nb_result]->titre=	$res_tu->ntu_titre;
@@ -79,7 +79,7 @@ class tu_notice {
 		switch($type) {
 			case 2:
 				foreach ($this->ntu_data as $tu) {
-					if($link)$link_print="<a href='".$link.$tu->num_tu."' class='lien_gestion'>".$tu->tu->name."</a>";				
+					if($link)$link_print="<a href='".$link.$tu->num_tu."' class='lien_gestion'>".$tu->tu->display."</a>";				
 					else $link_print=$tu->num_tu;
 					$biblio_fields=array(); 
 					if($tu->titre)$biblio_fields[]=$tu->titre;	
@@ -99,7 +99,7 @@ class tu_notice {
 				$display="<b>".$msg["catal_onglet_titre_uniforme"]."</b>&nbsp;:";
 				foreach ($this->ntu_data as $tu) {
 					$link="<a href='./autorites.php?categ=titres_uniformes&sub=titre_uniforme_form&id=".$tu->num_tu."' class='lien_gestion'>
-					".$tu->tu->name."
+					".$tu->tu->display."
 					</a>";
 					$biblio_fields=array(); 
 					if($tu->titre)$biblio_fields[]=$tu->titre;	
@@ -442,7 +442,7 @@ class tu_notice {
 		
 		if(!$this->id) return false;
 		$requete = "DELETE FROM notices_titres_uniformes WHERE ntu_num_notice='$this->id' ";
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		$this->id=0;
 		$this->ntu_data=array();
 	}
@@ -477,7 +477,7 @@ class tu_notice {
 		
 		if(!$this->id) return false;
 		$requete = "DELETE FROM notices_titres_uniformes WHERE ntu_num_notice=".$this->id;
-		mysql_query($requete, $dbh);
+		pmb_mysql_query($requete, $dbh);
 		// nettoyage des chaînes en entrée		
 		$ordre=0;
 		foreach($values as $value) {			
@@ -493,7 +493,7 @@ class tu_notice {
 				ntu_mention='".clean_string($value['ntu_mention'])."',
 				ntu_ordre=$ordre 				
 				";
-				mysql_query($requete, $dbh);
+				pmb_mysql_query($requete, $dbh);
 			}
 			$ordre++;
 		}
@@ -529,9 +529,9 @@ class tu_notice {
 	function update_index($id) {
 		global $dbh;
 		// On cherche tous les n-uplet de la table notice correspondant à ce titre_uniforme.
-		$found = mysql_query("select ntu_num_notice from notices_titres_uniformes where ntu_num_tu = ".$id,$dbh);
+		$found = pmb_mysql_query("select ntu_num_notice from notices_titres_uniformes where ntu_num_tu = ".$id,$dbh);
 		// Pour chaque n-uplet trouvés on met a jour la table notice_global_index avec l'auteur modifié :
-		while(($mesNotices = mysql_fetch_object($found))) {
+		while(($mesNotices = pmb_mysql_fetch_object($found))) {
 			$notice_id = $mesNotices->ntu_num_notice;
 			notice::majNoticesGlobalIndex($notice_id);
 			notice::majNoticesMotsGlobalIndex($notice_id);

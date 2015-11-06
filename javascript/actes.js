@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: actes.js,v 1.12.2.3 2015-02-17 10:07:43 jpermanne Exp $
+// $Id: actes.js,v 1.15 2015-02-17 10:09:14 jpermanne Exp $
 
 
 /*

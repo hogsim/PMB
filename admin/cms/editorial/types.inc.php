@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: types.inc.php,v 1.2 2012-12-26 09:15:48 arenou Exp $
+// $Id: types.inc.php,v 1.3 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -19,9 +19,9 @@ switch($quoi){
 			case "article_generic" :
 			case "section_generic" :
 				$query = "select id_editorial_type from cms_editorial_types where editorial_type_element = '".$elem."'";
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					$row = mysql_fetch_object($result);
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					$row = pmb_mysql_fetch_object($result);
 					$type_id = $row->id_editorial_type;
 				}
 				break;

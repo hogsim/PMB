@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesSync.class.php,v 1.4 2012-11-22 11:37:45 dbellamy Exp $
+// $Id: pmbesSync.class.php,v 1.5 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -37,9 +37,9 @@ class pmbesSync extends external_services_api_class {
 			$result = array();
 			
 			$requete = "select source_id, id_connector, comment, name from connectors_sources where repository=1";
-			$res = mysql_query($requete) or die(mysql_error());
+			$res = pmb_mysql_query($requete) or die(pmb_mysql_error());
 				
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = array(
 					"source_id" => $row["source_id"],
 					"id_connector" => utf8_normalize($row["id_connector"]),
@@ -60,11 +60,11 @@ class pmbesSync extends external_services_api_class {
 		$callback_deals_command = $this->callback_deals_command;
 		
 		$requete="update source_sync set percent=".round($percent*100)." where source_id=".$this->id_source;
-		$r=mysql_query($requete,$dbh);
+		$r=pmb_mysql_query($requete,$dbh);
 		
 		if ($this->id_tache != "") {
 			$requete = "update taches set indicat_progress =".round($percent*100)." where id_tache=".$this->id_tache;
-			mysql_query($requete,$dbh);
+			pmb_mysql_query($requete,$dbh);
 		}
 		
 		// listen commands
@@ -96,9 +96,9 @@ class pmbesSync extends external_services_api_class {
 			$recover_env="";
 			$recover=false;
 			$requete="select * from source_sync where source_id=$id_source";
-			$resultat=mysql_query($requete, $dbh);
-			if (mysql_num_rows($resultat)) {
-				$rs_s=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete, $dbh);
+			if (pmb_mysql_num_rows($resultat)) {
+				$rs_s=pmb_mysql_fetch_object($resultat);
 				if (!$rs_s->cancel) {
 					$result[] =  $conn->msg["connecteurs_sync_currentexists"];
 					$is_already_sync=true;
@@ -115,11 +115,11 @@ class pmbesSync extends external_services_api_class {
 			if (!$is_already_sync) {
 				if (!$recover) {
 					$requete="insert into source_sync (source_id,nrecu,ntotal,date_sync) values($id_source,0,0,now())";
-					$r=mysql_query($requete, $dbh);
+					$r=pmb_mysql_query($requete, $dbh);
 				} 
 				else {
 					$requete="update source_sync set cancel=0 where source_id=$id_source";
-					$r=mysql_query($requete, $dbh);
+					$r=pmb_mysql_query($requete, $dbh);
 				}
 				if ($r) {
 					$n_maj=$conn->maj_entrepot($id_source,array(&$this,"callback_progress"),$recover,$recover_env);
@@ -130,31 +130,31 @@ class pmbesSync extends external_services_api_class {
 						$this->callback_progress(1, $n_maj, $n_maj);
 						$percent = 1;
 						$requete="update source_sync set percent=".round($percent*100)." where source_id=$id_source";
-						$r=mysql_query($requete, $dbh);
+						$r=pmb_mysql_query($requete, $dbh);
 			
 						$requete="delete from source_sync where source_id=".$id_source;
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 						$requete="update connectors_sources set last_sync_date=now() where source_id=".$id_source;
-						mysql_query($requete, $dbh);
+						pmb_mysql_query($requete, $dbh);
 					} else {
 						if ($conn->break_maj($id_source)) {
 							$requete="delete from source_sync where source_id=".$id_source;
 						} else {
 							$requete="update source_sync set cancel=2 where source_id=".$id_source;
 						}
-						mysql_query($requete, $dbh);
+						pmb_mysql_query($requete, $dbh);
 						$result[] = $conn->error_message;
 					}
-				} else $result[] = mysql_error();
+				} else $result[] = pmb_mysql_error();
 			} else $result[] = $msg["connecteurs_sync_currentexists"];
 	
 			//si l'import automatique est activé
 			if($auto_import/* && !$auto_import*/){
 				//on va chercher les notices non intégrées
 				$query = "select distinct entrepot_source_".$id_source.".recid from entrepot_source_".$id_source." left join notices_externes on notices_externes.recid = concat(connector_id,' ".$id_source." ',ref) where num_notice is null";
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					while ($row = mysql_fetch_object($result)){
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					while ($row = pmb_mysql_fetch_object($result)){
 						$infos=entrepot_to_unimarc($row->recid);
 						
 						if($infos['notice']){
@@ -172,10 +172,10 @@ class pmbesSync extends external_services_api_class {
 							$ret=$z->insert_in_database(false);
 							$id_notice = $ret[1];
 							$rqt = "select recid from external_count where rid = '$row->recid'";
-							$res = mysql_query($rqt);
-							if(mysql_num_rows($res)) $recid = mysql_result($res,0,0);
+							$res = pmb_mysql_query($rqt);
+							if(pmb_mysql_num_rows($res)) $recid = pmb_mysql_result($res,0,0);
 							$req= "insert into notices_externes set num_notice = '".$id_notice."', recid = '".$recid."'";
-							mysql_query($req);
+							pmb_mysql_query($req);
 						}
 					}
 				}

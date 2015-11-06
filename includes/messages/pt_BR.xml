@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
+$Id: pt_BR.xml,v 1.439 2015-07-16 12:16:52 jpermanne Exp $ -->
 
 <XMLlist>
 <entry code="demo">Demo</entry>
@@ -3431,7 +3431,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="catalogue_saut_de_ligne">uma linha de feed</entry>
 <entry code="caddie_transfert_BULL_DEP">Indexação de cada item</entry>
 <entry code="caddie_transfert_BULL_NOT">Registros de cada edição</entry>
-<entry code="catalog_change_statut_form">!!statut_check!! Alterar o estado da questão para !!statut_list!! depois de receber a nova questão</entry>
+<entry code="catalog_change_statut_form">!!statut_check!! Alterar o estado da questão para !!statut_list!! depois de receber a nova questão (ne s'applique pas si une liste de circulation existe pour cet abonnement)</entry>
 <entry code="req_th_tabg">Left join table</entry>
 <entry code="req_th_tabd">Right join table</entry>
 <entry code="req_joi_l">L</entry>
@@ -3913,7 +3913,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="aut_titre_uniforme_commentaire">Comentário</entry>
 <entry code="aut_titre_uniforme_form_nom">Nome do título uniforme</entry>
 <entry code="aut_titre_uniforme_form_distribution">Média de desempenho (para música)</entry>
-<entry code="aut_titre_uniforme_form_tonalite">Chave (para música)</entry>
+<entry code="aut_titre_uniforme_form_tonalite">Chave (Saisie Libre)</entry>
 <entry code="aut_titre_uniforme_form_subdivision_forme">Forma de subdivisão</entry>
 <entry code="aut_titre_uniforme_form_ref_numerique">Designação numérica (para música)</entry>
 <entry code="aut_titre_uniforme_result">Títulos uniformes encontrados com a chave</entry>
@@ -4564,7 +4564,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="demandes_menu_not_assigned">Não atribuído</entry>
 <entry code="demandes_not_assigned">Não atribuído</entry>
 <entry code="demandes_note_mail_reponse">respondido para a nota %s na ação %s do pedido %s</entry>
-<entry code="demandes_note_mail_new">postada uma nota na ação %s do pedido %s</entry>
+<entry code="demandes_note_mail_new">%s postada uma nota na ação %s - do pedido %s</entry>
 <entry code="demandes_note_mail_new_object">Uma nova nota foi criada</entry>
 <entry code="demandes_note_mail_reponse_object">Responder para a nota %s</entry>
 <entry code="acquisition_catalogue_uni">Catalogar a sugestão</entry>
@@ -4979,7 +4979,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="opac_view_form_name_empty">Le nom de la vue Opac est vide.</entry>
 <entry code="opac_view_form_name">Nom</entry>
 <entry code="opac_view_form_add_error">Erreur de l'enregistrement de la vue Opac</entry>
-<entry code="opac_view_list_select">Selection</entry>
+<entry code="opac_view_list_select">Sélection</entry>
 <entry code="opac_view_list_default">Vue par défaut</entry>
 <entry code="param_subst_origin_value_title">Valeur d'origine</entry>
 <entry code="param_subst_title">Paramètres propres à la vue</entry>
@@ -5012,7 +5012,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="sur_location_comment">Commentaire</entry>
 <entry code="sur_location_sort">Sur localisation</entry>
 <entry code="sur_location_expl">Sur localisation</entry>
-<entry code="sur_location_loc_sel">Selection</entry>
+<entry code="sur_location_loc_sel">Sélection</entry>
 <entry code="sur_location_aucune">Aucune</entry>
 <entry code="sur_location_select_surloc">Sur-Localisation</entry>
 <entry code="sur_location_use_surloc">Utiliser les coordonnées de la sur-localisation ?</entry>
@@ -5501,7 +5501,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="serialcirc_circ_title_form">Gestion de la circulation</entry>
 <entry code="serialcirc_circ_cb_doc">Code barre du document</entry>
 <entry code="serialcirc_circ_cb_first_diff">Premier destinataire : </entry>
-<entry code="serialcirc_circ_list_title">Selection de la liste</entry>
+<entry code="serialcirc_circ_list_title">Sélection de la liste</entry>
 <entry code="serialcirc_circ_list_location_title">Localisation</entry>
 <entry code="serialcirc_circ_list_bull_title">Liste des documents</entry>
 <entry code="serialcirc_circ_list_bull_alerter">Alerter</entry>
@@ -5621,8 +5621,8 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="serialcirc_print_empr_cb">Code-barres</entry>
 <entry code="serialcirc_print_empr_adr1">Adresse</entry>
 <entry code="serialcirc_print_empr_adr2">Adresse 2</entry>
-<entry code="serialcirc_print_empr_tel1">Tel fixe</entry>
-<entry code="serialcirc_print_empr_tel2">Tel portable</entry>
+<entry code="serialcirc_print_empr_tel1">Téléphone 1</entry>
+<entry code="serialcirc_print_empr_tel2">Téléphone 2</entry>
 <entry code="serialcirc_print_empr_ville">Ville</entry>
 
 <entry code="serialcirc_print_add_fields">choisissez un champ...</entry>
@@ -5631,8 +5631,8 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="serialcirc_print_libre_fields">Champ libre</entry>
 <entry code="serialcirc_print_delete_line">X</entry>
 <entry code="serialcirc_circ_list_reproduction_isdone_bt">Reproduction effectuée</entry>
-<entry code="serialcirc_diff_no_selection_caddie">Selectionner un panier...</entry>
-<entry code="serialcirc_diff_no_selection_group">Selectionner un groupe...</entry>
+<entry code="serialcirc_diff_no_selection_caddie">Sélectionner un panier...</entry>
+<entry code="serialcirc_diff_no_selection_group">Sélectionner un groupe...</entry>
 <entry code="serialcirc_diff_empr_reponsability">Resp. Sélectionnez des lecteurs</entry>
 
 <entry code="empr_short_no_allow_serialcirc">Circulation des périodiques</entry>
@@ -6123,7 +6123,6 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="groupexpl_see_form_warrning">Cet exemplaire fait partie de ce groupe, mais n'est pas désigné comme le principal</entry>
 <entry code="groupexpl_see_form_expl_principal">Exemplaire principal : </entry>
 <entry code="groupexpl_confirm_emprunteur">Emprunté par : </entry>
-
 <entry code='editions_state_fields_label'>Champs</entry>
 <entry code='editions_state_filter_label'>Filtre</entry>
 <entry code='editions_state_order_label'>Tri</entry>
@@ -6197,6 +6196,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="cms_module_common_datasource_desc_types">Valeur de fields_type en fonction du type de contenu</entry>
 <entry code="cms_editorial_desc_children">Tableau des sous-rubriques</entry>
 <entry code="cms_editorial_desc_articles">Tableau des articles de la rubrique</entry>
+
 <entry code='admin_transferts_regroupement_depart'>Regrouper la gestion des départs: Validation, envoi, retour:</entry>
 	
 <entry code="admin_opac_facette_ss_critere">Pas de sous critère disponible</entry>
@@ -6227,7 +6227,6 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="reserv_en_cours">Réservations en cours</entry>
 <entry code="group_lettre_rappel_show_nomgroup">Imprimer le nom de ce groupe sur les lettres de rappel individuelles ?</entry>
 <entry code="count_notices_assoc">Utilisation</entry>
-
 <entry code="ordinal_1">1</entry>
 <entry code="ordinal_2">2</entry>
 <entry code="ordinal_3">3</entry>
@@ -6391,6 +6390,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="edit_droit_forcing">Editions forçage</entry>
 <entry code="date_update_sort">Date de mise à jour</entry>
 <entry code="empr_dateretour_pret_query">Date de retour prévue</entry>
+
 <entry code="admin_menu_authperso">Autorités perso</entry>
 <entry code="admin_authperso">Gestion des Autorités personnalisées</entry>
 <entry code="admin_authperso_name">Liste des Autorités personnalisées</entry>
@@ -6791,7 +6791,7 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="resa_date_debut">Début</entry>
 <entry code="autorites_categ_last">Voir les dernières catégories créées</entry>
 
-<entry code="aut_oeuvre_form_forme">Forme de l'oeuvre</entry>
+<entry code="aut_oeuvre_form_forme">Forme de l'oeuvre (Saisie Libre)</entry>
 <entry code="aut_oeuvre_form_date">Date de l'oeuvre</entry>
 <entry code="aut_oeuvre_form_sujet">Sujet de l'oeuvre</entry>
 <entry code="aut_oeuvre_form_lieu">Lieu d'origine de l'oeuvre</entry>
@@ -6807,12 +6807,26 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="isbd_oeuvre">Oeuvre</entry>
 <entry code="autoindex_do">Actualiser</entry>
 
+<entry code="demandes_create_notice">Créer la notice</entry>
+<entry code="demandes_delete_notice">Supprimer la notice</entry>
+<entry code="demandes_delete">Supprimer la demande</entry>
+
+<entry code="demandes_action_change_checked_states">Passer les actions sélectionnées dans le statut</entry>
+<entry code="demandes_action_change_state">Passer l'action dans le statut</entry>
+
 <entry code="acquisition_recept_deliv_save">Enregistrer cette réception</entry>
 <entry code="abt_numeric_bulletinage_form_filename">Nom</entry>
 <entry code="expl_lastpret_retour">Le dernier retour date du !!date_last!!.</entry>
 <entry code="expl_lastpret_encours">Actuellement en prêt depuis le !!date_last!!.</entry>
 <entry code="acquisition_act_tab_pri_exposant"><![CDATA[<sup>(1)</sup>]]></entry>
 <entry code="acquisition_act_tab_pri_exposant_label"><![CDATA[<sup>(1) Prix non remisé</sup>]]></entry>
+
+<entry code="audit_lecteur">Lecteur opac</entry>
+
+<entry code="demandes_note_vue">Marquer comme lue</entry>
+
+<entry code="demandes_action_type_allow">Autoriser pour ce type ?</entry>
+<entry code="demandes_action_type_default">Action par défaut</entry>
 
 <entry code="explnum_associate_segments_move_forbidden">Il y a déjà un segment à cet emplacement !</entry>
 <entry code="explnum_associate_add_segment">Ajouter un segment</entry>
@@ -6826,11 +6840,71 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="nettoyage_synchrordfstore_reindex">Réindexer la synchronisation rdf</entry>
 <entry code="nettoyage_synchrordfstore_reindexation">Réindexation de la synchronisation rdf</entry>
 <entry code="nettoyage_synchrordfstore_reindex_total"> objets indexé(s)</entry>
+
+<entry code="demande_type_allowed_actions">Actions autorisées à l'OPAC</entry>
+
 <entry code="print_output_ent">Ajouter à l'entrepot sémantique</entry>
+
+<entry code="demandes_reponse_finale">Réponse finale de la demande</entry>
+<entry code="demandes_repfinale_creation">Créer la réponse finale</entry>
+<entry code="demandes_repfinale_modif">Modifier la réponse finale</entry>
+<entry code="demandes_repfinale_delete">Supprimer la réponse finale</entry>
+
+<entry code="param_faq">FAQ</entry>
+<entry code="admin_faq">FAQ</entry>
+<entry code="faq_type">Type</entry>
+<entry code="faq_theme">Thème</entry>
+<entry code="faq_ajout_theme">Ajout d'un thème de FAQ</entry>
+<entry code="faq_modif_theme">Modification d'un thème de FAQ</entry>
+<entry code="faq_del_theme">Etes-vous sûr de vouloir supprimer ce thème ?</entry>
+<entry code="faq_no_theme_available">Aucun thème n'a été créé</entry>
+<entry code="faq_add_theme">Ajouter un thème de FAQ</entry>
+<entry code="faq_used_theme">Ce thème est utilisé par une ou plusieurs questions, vous ne pouvez pas le supprimer !</entry>
+<entry code="faq_ajout_type">Ajout d'un type de FAQ</entry>
+<entry code="faq_modif_type">Modification d'un type de FAQ</entry>
+<entry code="faq_del_type">Etes-vous sûr de vouloir supprimer ce type ?</entry>
+<entry code="faq_no_type_available">Aucun type n'a été créé</entry>
+<entry code="faq_add_type">Ajouter un type de FAQ</entry>
+<entry code="faq_used_type">Ce type est utilisé par une ou plusieurs questions, vous ne pouvez pas le supprimer !</entry>
+<entry code="demandes_menu_faq">FAQ</entry>
+<entry code="faq_question_type_label">Type</entry>
+<entry code="faq_question_theme_label">Thème</entry>
+<entry code="faq_question_question">Question</entry>
+<entry code="faq_question_answer">Réponse</entry>
+<entry code="faq_question_new_form">Ajouter une nouvelle question</entry>
+<entry code="faq_question_edit_form">Editer une question</entry>
+<entry code="faq_question_question_date">Date de la question</entry>
+<entry code="faq_question_answer_date">Date de la réponse</entry>
+<entry code="faq_no_question">Aucune question dans la FAQ</entry>
+<entry code="faq_add_new_question">Ajouter une nouvelle question dans la FAQ</entry>
+<entry code="faq_filter_form_title">Filtrer les questions par</entry>
+<entry code="faq_filter_form_submit">Filtrer</entry>
+<entry code="faq_question_confirm_suppression">Êtes-vous sur de vouloir supprimer cette question ?</entry>
+<entry code="faq_question_delete_error">Une erreur est survenue pendant la suppression</entry>
+<entry code="faq_question_save_error">Une erreur est survenue pendant la sauvegarde</entry>
+<entry code="faq_question_desc">Catégories</entry>
+<entry code="faq_question_statut_label">Visible à l'OPAC</entry>
+<entry code="faq_question_statut">Visible à l'OPAC</entry>
+<entry code="faq_question_statut_visible_0">Tous</entry>
+<entry code="faq_question_statut_visible_2">Oui</entry>
+<entry code="faq_question_statut_visible_1">Non</entry>
+<entry code="faq_question_statut_visible_3">Oui (authentifiés seulement)</entry>
+
+<entry code="demandes_see_last_note">Voir la dernière publication</entry>
+
+<entry code="nettoyage_faq_reindex">Réindexer la FAQ</entry>
+<entry code="nettoyage_reindex_faq">Réindexation de la FAQ</entry>
+<entry code="nettoyage_res_reindex_faq"> question(s) traitée(s).</entry>
+<entry code="demandes_creation_faq_question">Créer la question dans FAQ</entry>
+<entry code="demandes_edit_faq_question">Modifier la question dans FAQ</entry>
 
 <entry code="nettoyage_cms_reindex">Réindexer le contenu éditorial</entry>
 <entry code="nettoyage_reindex_cms">Réindexation du contenu éditorial</entry>
 <entry code="nettoyage_res_reindex_cms"> élément(s) traité(s).</entry>
+
+<entry code="onto_common_datatype_ui_fr">français</entry>
+<entry code="onto_common_datatype_ui_en">anglais</entry>
+<entry code="onto_common_datatype_ui_no_lang">Sans langue</entry>
 
 <entry code="empr_late_relance_mail">par mail</entry>
 <entry code="empr_late_relance_letter">par lettre</entry>
@@ -6839,9 +6913,33 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="print_vignette">Imprimer la vignette/couverture</entry>
 <entry code="resa_doc_location">La localisation de cet exemplaire ne permet pas de satisfaire la réservation</entry>
 <entry code="admin_files_gestion_error_param_img_folder">Vérifier le paramètre img_folder ( dans paramètres généraux )</entry>
+
+<entry code="facettes_admin_menu_facettes">Facettes</entry>
+<entry code="facettes_admin_menu_compare">Comparateur de notices</entry>
+<entry code="notice_tpl_label">Template de notice utilisé</entry>
+<entry code="notice_nb_label">Nombre de notice(s) affichée(s)</entry>
 <entry code="notice_img_load">Upload de la vignette</entry>
 <entry code="notice_img_folder_admin_no_access">Répertoire d'upload non valide</entry>
 <entry code="notice_img_folder_no_access">Répertoire d'upload non valide</entry>
+
+<entry code="onto_common_add">Ajouter un %s</entry>
+<entry code="deflt_concept_scheme">Schema par défaut</entry>
+<entry code="onto_add_composed_concept">Ajouter un concept composé</entry>
+
+<entry code="vedette_composee_apercu">Aperçu</entry>
+
+<entry code="vedette_authors">Auteurs</entry>
+<entry code="vedette_categories">Catégories</entry>
+<entry code="vedette_concepts">Concepts</entry>
+<entry code="vedette_publishers">Editeurs</entry>
+<entry code="vedette_collections">Collections</entry>
+
+<entry code="skos_concept_card_ui_btn_derived">Passer en saisie composée</entry>
+<entry code="skos_concept_card_ui_btn_parent">Passer en saisie standard</entry>
+
+<entry code="nettoyage_concept_reindex">Réindexer les concepts</entry>
+<entry code="nettoyage_reindex_concept">Réindexation des concepts</entry>
+<entry code="nettoyage_res_reindex_concept"> élément(s) traité(s).</entry>
 
 <entry code="calendrier_active_and_empty"><![CDATA[Attention : Vous devez configurer le calendrier de votre localisation, <a href="./admin.php?categ=calendrier">CLIQUEZ ICI</a> pour effectuer le paramétrage.]]></entry>
 <entry code="civilite_unknown">Madame, Monsieur</entry>
@@ -6849,15 +6947,286 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="civilite_madame">Madame</entry>
 <entry code="notice_tpl_id">Id</entry>
 <entry code="expl_resa_available">En rayon</entry>
+
+<entry code="index_concept_label">Concepts</entry>
+
+<entry code="concept_use_in_notices_cant_delete">Ce concept est utilisé dans des notices. Impossible de le supprimer</entry>
+
+<entry code="onto_common_preflabel">Libellé</entry>
+<entry code="onto_common_example">Exemple</entry>
+
+<entry code="param_concepts">Concepts</entry>
+<entry code="param_search">Recherche</entry>
+
+<entry code="onto_selector_no_search_available">Pas de recherche disponible pour ce type d'élément.</entry>
+<entry code="onto_error_no_minima">%s : Ce champ doit être renseigné.</entry>
+<entry code="onto_error_too_much_values">%s : Ce champ ne peut pas contenir autant de valeurs.</entry>
+<entry code="onto_error_must_be_distinct">"%s" et "%s" ne peuvent pas être identiques.</entry>
+<entry code="onto_error_unvalid_datas">%s : La saisie est invalide.</entry>
+
+<entry code="vedette_subcollections">Sous-collections</entry>
+<entry code="vedette_series">Titres de série</entry>
+<entry code="vedette_titres_uniformes">Titres uniformes</entry>
+<entry code="vedette_indexint">Index. décimale</entry>
+<entry code="vedette_subdivision_tete">Tête</entry>
+<entry code="vedette_subdivision_sujet">Sujet</entry>
+<entry code="vedette_subdivision_geo">Géographique</entry>
+<entry code="vedette_subdivision_chrono">Chronologique</entry>
+<entry code="vedette_subdivision_forme">Forme</entry>
+<entry code="vedette_dont_del_autority">Cette autorité est utilisée dans des vedettes composées. Impossible de la supprimer.</entry>
+
+<entry code="search_concept_title">Concept</entry>
+
+<entry code="onto_common_definition">Définition</entry>
+<entry code="onto_common_altlabel">Libellé alternatif</entry>
+<entry code="onto_common_scopenote">Note d'emploi</entry>
+<entry code="onto_common_inscheme">Dans les schémas</entry>
+<entry code="onto_common_topconceptof">Concept racine dans les schémas</entry>
+<entry code="onto_common_hiddenlabel">Libellé caché</entry>
+<entry code="onto_common_notation">Notation</entry>
+<entry code="onto_common_note">Notes</entry>
+<entry code="onto_common_changenote">Note modifiée</entry>
+<entry code="onto_common_editorialnote">Note éditoriale</entry>
+<entry code="onto_common_historynote">Note historique</entry>
+<entry code="onto_common_semanticrelation">En relation sémantique avec</entry>
+<entry code="onto_common_broader">Termes génériques</entry>
+<entry code="onto_common_broadertransitive">Termes génériques par transitivité</entry>
+<entry code="onto_common_narrower">Termes spécifiques</entry>
+<entry code="onto_common_related">Relations associatives</entry>
+<entry code="onto_common_narrowertransitive">Termes spécifiques par transitivité</entry>
+<entry code="onto_common_mappingrelation">Relations d'équivalence</entry>
+<entry code="onto_common_broadmatch">Termes génériques partiels</entry>
+<entry code="onto_common_narrowmatch">Termes spécifiques partiels</entry>
+<entry code="onto_common_exactmatch">Termes équivalents</entry>
+<entry code="onto_common_relatedmatch">Termes associés</entry>
+<entry code="onto_common_closematch">Termes approchants</entry>
+<entry code="onto_common_hastopconcept">Têtes de hiérarchie</entry>
+<entry code="onto_common_member">Contient</entry>
+<entry code="onto_common_concept">Concepts</entry>
+<entry code="onto_common_conceptscheme">Schémas</entry>
+<entry code="onto_common_collection">Collections</entry>
+<entry code="onto_common_orderedcollection">Collections ordonnées</entry>
+
+<entry code="dsi_ban_form_display_notice_in_every_group">Réafficher les notices dans chaque groupement ou elles apparaissent</entry>
+
+<entry code="onto_common_warning_object_in_assertions">Attention, ce concept est lié à d'autres entités</entry>
+<entry code="onto_common_assertion_subject">Sujet</entry>
+<entry code="onto_common_assertion_predicate">Propriété</entry>
+<entry code="onto_common_assertion_object">Objet</entry>
+
 <entry code="recherche_exemplaires">Exemplaire associée</entry>
 <entry code='forbidden_docnum'>Vous ne pouvez pas accéder à ce document.</entry>
+
+<entry code="authperso_search_title">Recherche</entry>
+<entry code="authperso_search_last">Voir les derniers créés</entry>
+<entry code="authperso_search_add">Ajouter</entry>
+<entry code="authperso_search_search">Rechercher</entry>
+<entry code="authperso_search_found">Autorités trouvées sous la clé</entry>
+<entry code="authperso_form_titre_new">Création de l'autorité</entry>
+<entry code="authperso_form_titre_edit">Edition de l'autorité</entry>
+<entry code="admin_authperso_form_isbd_script">Format de l'ISBD</entry>
+<entry code="admin_menu_noti_onglet">Onglets</entry>
+<entry code="admin_noti_onglet_name">Nom</entry>
+<entry code="admin_noti_onglet_ajout">Ajouter un onglet</entry>
+<entry code="admin_noti_onglet_modification">Modifier un onglet</entry>
+<entry code="admin_menu_noti_onglet_title">Onglets d'édition de notice</entry>
+<entry code="admin_authperso_notice_onglet">Onglet d'édition de notice</entry>
+<entry code="admin_authperso_notice_onglet_no">Aucun onglet de notice</entry>
+<entry code="admin_authperso_notice_onglet_sel">Sélectionner un onglet de notice</entry>
+<entry code="admin_authperso_notice_onglet_see">Voir</entry>
+<entry code="authperso_sel_title">Sélection de l'autorité</entry>
+<entry code="authperso_sel_add">Créer une autorité</entry>
+
+<entry code="admin_authperso_opac_search">Recherche en Opac :</entry>
+<entry code="admin_authperso_opac_search_no">Interdite</entry>
+<entry code="admin_authperso_opac_search_yes">Autorisée</entry>
+<entry code="admin_authperso_opac_search_yes_active">Autorisée et validée par défaut</entry>
+<entry code="admin_authperso_opac_search_multi_critere">Autorisée en recherche multi-critères</entry>
+
+<entry code="admin_authperso_opac_search_simple_list_valid">Validée par défaut</entry>
+<entry code="admin_authperso_opac_search_simple_list_title">Recherche simple en Opac</entry>
+<entry code="admin_authperso_opac_search_multi_list_title">Recherche multi-critères en Opac</entry>
+<entry code="admin_authperso_insert_field">Insérer</entry>
+
+<entry code="admin_authperso_gestion_search">Recherche en Gestion :</entry>
+<entry code="admin_authperso_gestion_search_no">Interdite</entry>
+<entry code="admin_authperso_gestion_search_yes">Autorisée</entry>
+<entry code="admin_authperso_gestion_search_yes_active">Bouton actif</entry>
+<entry code="admin_authperso_gestion_search_multi">Autorisée en recherche multi-critères</entry>
+<entry code="admin_authperso_gestion_search_simple_list_valid">Bouton actif </entry>
+<entry code="admin_authperso_gestion_search_simple_list_title">Recherche simple en Gestion</entry>
+<entry code="admin_authperso_gestion_search_multi_list_title">Recherche multi-critères en Gestion</entry>
+<entry code="admin_authperso_form_view_script">Format de visualisation</entry>
+<entry code="authperso_multi_search_title">Autorités personnalisées</entry>
+<entry code="authperso_usage">Utilisations</entry>
+<entry code="search_by_authperso">Autorité personnalisée : !!name!!</entry>
+
+<entry code="onto_skos_concept_all_concepts">Tous les concepts</entry>
+<entry code="onto_skos_concept_no_scheme">Concepts sans schéma</entry>
+
 <entry code="caddie_menu_pointage_apres_pointage">Après pointage : </entry>
-<entry code="admin_transferts_lib_retour_action_resa">Génére un transfert pour répondre à une réservation :</entry>
+
+<entry code="onto_skos_concept_only_top_concepts">Seulement les tops concepts</entry>
+<entry code="onto_skos_concept_nb_results">Concept(s) correspondant(s)</entry>
+
+<entry code="onto_skos_add_concept">Ajouter un concept</entry>
+<entry code="onto_skos_add_conceptscheme">Ajouter un schéma</entry>
+<entry code="onto_skos_add_collection">Ajouter une collection</entry>
+<entry code="onto_skos_add_orderedcollection">Ajouter une collection ordonnée</entry>
+
+<entry code="admin_menu_docnum_statut">Statuts</entry>
+<entry code="docnum_statut_gestion">Gestion</entry>
+<entry code="docnum_statut_libelle">Libellé</entry>
+<entry code="docnum_statut_opac">OPAC</entry>
+<entry code="docnum_statut_libelle">Libellé</entry>
+<entry code="docnum_statut_class_html">Couleur d'affichage:</entry>
+<entry code="docnum_statut_visu_opac">Visibles</entry>
+<entry code="docnum_statut_cons_opac">Consultables</entry>
+<entry code="docnum_statut_down_opac">Téléchargeables</entry>
+<entry code="docnum_statut_visu_opac_abon">Uniquement aux abonnés ?</entry>
+<entry code="docnum_statut_cons_opac_abon">Uniquement aux abonnés ?</entry>
+<entry code="docnum_statut_down_opac_abon">Uniquement aux abonnés ?</entry>
+<entry code="docnum_statut_visibilite_generale">Visibilité générale</entry>
+<entry code="docnum_statut_visibilite_restrict">Restriction ?</entry>
+<entry code="docnum_statut_visu_opac_form">Visible dans la notice</entry>
+<entry code="docnum_statut_cons_opac_form">Consultable dans la visionneuse</entry>
+<entry code="docnum_statut_down_opac_form">Téléchargeable</entry>
+<entry code="docnum_statut_docnum">Statut de document numérique</entry>
+<entry code="docnum_statut_used">Impossible de supprimer ce statut car il est utilisé dans des documents numériques.</entry>
+<entry code="deflt_explnum_statut">Statut de document numérique par défaut en création de document numérique</entry>
+<entry code="docnum_statut_gestion">Statut du document</entry>
+
+<entry code="dom_empr_docnum">Emprunteurs - Documents numériques</entry>
+<entry code="statut_explnum_sort">Statut de document numérique</entry>
+<entry code="admin_transferts_lib_retour_action_resa">Génère un transfert pour répondre à une réservation :</entry>
+<entry code="abt_numeric_bulletinage_form_statut">Statut</entry>
+<entry code="acquisition_recept_explnum_statut">Statut</entry>
 <entry code="audit_comment">Information</entry>
+<entry code="noticeintegre_docnum_integre_statut">Statut du document</entry>
+
+<entry code="vedette_records">Notices</entry>
+
+<entry code="parperso_marclist">Marclist</entry>
+<entry code="parperso_include_option_selectors_code">code</entry>
+<entry code="parperso_include_option_sort_methode">Méthode de tri des valeurs</entry>
+<entry code="parperso_include_option_sort_selectors_code">code</entry>
+<entry code="parperso_include_option_sort_selectors_label">label</entry>
+<entry code="parperso_include_option_sort_selectors_asc">croissant</entry>
+<entry code="parperso_include_option_sort_selectors_desc">décroissant</entry>
+<entry code="parperso_marclist_option_country">Pays</entry>
+<entry code="parperso_marclist_option_lang">Langues</entry>
+<entry code="parperso_marclist_option_doctype">Types de documents</entry>
+<entry code="parperso_marclist_option_function">Fonctions</entry>
+<entry code="parperso_marclist_option_section_995">Sections 995</entry>
+<entry code="parperso_marclist_option_typdoc_995">Types de documents 995</entry>
+<entry code="parperso_marclist_option_codstatdoc_995">Codes statistiques 995</entry>
+<entry code="parperso_marclist_option_nivbiblio">Niveaux bibliographiques</entry>
+
+<entry code="tu_authors_list">Auteurs</entry>
+<entry code="concept_menu">Concept</entry>
+<entry code="authperso_multi_search_by_field_title">Autorité</entry>
+<entry code="authperso_multi_search_tous_champs_title">Tous les champs</entry>
+<entry code="edit_auth_tu_tpl_menu">Titres uniformes</entry>
+<entry code="serialcirc_add_expl">Ajouter en circulation de périodique</entry>
+<entry code="serialcirc_expl_in_circ">Ce document est en circulation</entry>
+<entry code="serialcirc_diff_option_form_fiche_pied_page">Pied de page</entry>
+<entry code="serialcirc_diff_duplicate_button">Dupliquer</entry>
+<entry code="abts_sel_title">Sélection d'un abonnement</entry>
+<entry code="abts_sel_search_button">Rechercher</entry>
+<entry code="serialcirc_diff_duplicate_ok">La liste de circulation est créée pour l'abonnement : </entry>
+<entry code="edit_serialcirc_tpl_menu">Listes de circulation</entry>
+<entry code="serialcirc_tpl_id">Id</entry>
+<entry code="serialcirc_tpl_name">Nom</entry>
+<entry code="serialcirc_tpl_description">Description</entry>
+<entry code="serialcirc_tpl_ajouter">Ajouter un template de liste de circulation</entry>
+<entry code="serialcirc_tpl_modifier">Modifier le template de liste de circulation</entry>
+<entry code="serialcirc_tpl_modifier_erreur">Impossible de modifier ce template</entry>
+<entry code="serialcirc_tpl_ajouter_erreur">Impossible d'ajouter ce template</entry>
+<entry code="serialcirc_tpl_nom_erreur">Le template doit comporter au moins un nom</entry>
+<entry code="serialcirc_tpl_list_default">Template manuel</entry>
+<entry code="serialcirc_diff_option_form_fiche_format_tpl_field">Appliquer un template</entry>
+<entry code="serialcirc_empr_delete_button">Supprimer les abonnements cochés</entry>
+<entry code="serialcirc_empr_forward_button">Transférer les abonnements cochés</entry>
+<entry code="serialcirc_empr_delete_confirm">Voulez-vous vraiment désabonner le lecteur des abonnements cochés ?</entry>
+<entry code="serialcirc_unsubscribe_group_resp">Impossible de désabonner ce lecteur de l'abonnement %s, il est responsable du groupe %s</entry>
+<entry code="serialcirc_empr_forward_confirm">Voulez-vous vraiment transférer les abonnements cochés ?</entry>
+<entry code="serialcirc_forward_already_subcribed">Impossible de transférer l'abonnement %s, le lecteur "%s" y est déjà abonné</entry>
+<entry code="serialcirc_empr_forwarded">Des abonnements ont été transférés vers %s</entry>
+<entry code="serialcirc_img_info">Liste de circulation présente</entry>
+<entry code="serialcirc_diff_duplicate_circlist_info">Une liste de circulation est déjà présente. Voulez-vous l'écraser ?</entry>
+<entry code="serialcirc_circ_empr_title">Circulation de périodiques en cours</entry>
+<entry code="serialcirc_tpl_format">Format de la liste de circulation</entry>
+<entry code="edit_tpl_serialcirc_delete">Template de listes de circulation</entry>
+<entry code="edit_tpl_serialcirc_delete_forbidden">Impossible de supprimer ce template car il est utilisé dans des listes de circulation de périodiques.</entry>
+
+<entry code="edit_bannette_tpl_menu">Bannettes</entry>
+<entry code="bannette_tpl_id">Id</entry>
+<entry code="bannette_tpl_name">Nom</entry>
+<entry code="bannette_tpl_description">Description</entry>
+<entry code="bannette_tpl_ajouter">Ajouter un template de bannette</entry>
+<entry code="bannette_tpl_modifier">Modifier le template de bannette</entry>
+<entry code="bannette_tpl_modifier_erreur">Impossible de modifier ce template</entry>
+<entry code="bannette_tpl_ajouter_erreur">Impossible d'ajouter ce template</entry>
+<entry code="bannette_tpl_nom_erreur">Le template doit comporter au moins un nom</entry>
+<entry code="bannette_tpl_tpl">Template</entry>
+<entry code="bannette_tpl_insert">Insérer</entry>
+<entry code="bannette_tpl_list_default">Template par défaut</entry>
+<entry code="dsi_ban_form_tpl">Template de la bannette</entry>
+
+<entry code="serialcirc_empr_only_in_circ">Cet emprunteur n'est plus abonné, mais des exemplaires le concernant sont encore en circulation</entry>
+<entry code="serialcirc_expl_see">Exemplaires en cours de circulation</entry>
+<entry code="notice_map_onglet_title">Carte</entry>
+<entry code="notice_map">Carte de la notice</entry>
+
+<entry code="admin_menu_noti_map_echelle">Echelles</entry>
+<entry code="admin_menu_noti_map_projection">Projections</entry>
+<entry code="admin_menu_noti_map_ref">Références</entry>
+<entry code="admin_nomap_echelle_name">Nom</entry>
+<entry code="admin_noti_map_echelle_ajout">Ajouter</entry>
+<entry code="admin_noti_map_echelle_name">Nom de l'échelle</entry>
+<entry code="admin_nomap_projection_name">Nom</entry>
+<entry code="admin_noti_map_projection_ajout">Ajouter</entry>
+<entry code="admin_noti_map_projection_name">Nom de la projection</entry>
+<entry code="admin_nomap_ref_name">Nom</entry>
+<entry code="admin_noti_map_ref_ajout">Ajouter</entry>
+<entry code="admin_noti_map_ref_name">Nom de la référence</entry>
 
 <entry code='editions_datasource_arc_id'>Identifiant du prêt</entry>
+
+<entry code="map_echelle">Echelle</entry>
+<entry code="map_projection">Système de projection du document</entry>
+<entry code="map_ref">Système de référence de coordonnées de la carte</entry>
+<entry code="map_equinoxe">Equinoxe</entry>
+<entry code="map_echelle_vide">Sans échelle</entry>
+<entry code="map_projection_vide">Sans projection</entry>
+<entry code="map_ref_vide">Sans référence</entry>
+
+<entry code="map_notice_echelle">Echelle</entry>
+<entry code="map_notice_projection">Projection</entry>
+<entry code="map_notice_ref">Référence</entry>
+<entry code="map_notice_equinoxe">Equinoxe</entry>
+
+<entry code="search_map">Géoréférencement</entry>
+<entry code="search_by_map">Géoréférencement</entry>
+<entry code="categ_map_title">Carte</entry>
+<entry code="map_search">Carte</entry> 
+<entry code="map_emprise">Emprise</entry>
+<entry code="map_emprises_query">Emprises</entry>
+<entry code="map_multisearch_aerainf">surface inférieure</entry>
+<entry code="map_multisearch_aerasup">surface supérieure</entry>
+<entry code="map_multisearch_intersects">Intersecte</entry>
+<entry code="cms_build_cadre_not_in_cms">Cadres non utilisés:</entry>
+<entry code="cms_build_cadre_not_in_page_switch">Voir</entry>
+<entry code="cms_build_cms_opac_view">Vues Opac</entry>
+<entry code="cms_build_cms_opac_view_empty">Pas de vue Opac</entry>
+<entry code="cms_build_cms_opac_view_select">Pour toutes les vues</entry>
 <entry code="cms_module_common_datasource_desc_nb_documents">Nombre de documents attachés</entry>
 <entry code="cms_module_common_datasource_desc_documents">Documents</entry>
+
+<entry code="cms_module_common_datasource_desc_small">140x140</entry>
+<entry code="cms_module_common_datasource_desc_medium">300x300</entry>
+<entry code="cms_module_common_datasource_desc_big">600x600</entry>
+<entry code="cms_module_common_datasource_desc_custom">Taille à définir manuellement (concaténer avec un nombre. ex : {{logo.custom}}150)</entry>
 
 <entry code="cms_editorial_form_change_type_confirm">Le changement de type de contenu va entraîner la perte des données des champs associés. Voulez-vous continuer ?</entry>
 <entry code="chklnk_verif_cp">Vérification des liens des champs personnalisés résolveur et URL</entry>
@@ -6865,6 +7234,9 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="chklnk_verifurl_editorial_content_cp">Vérification des liens des champs personnalisés résolveur et URL du contenu éditorial</entry>
 <entry code="chklnk_verifeditorialcontentcp">Résultat de la vérification des liens des champs personnalisés résolveur et URL du contenu éditorial</entry>
 <entry code="cms_editorial_form_obj_id">Identifiant :</entry>
+<entry code="cms_build_go_opac_url">Url Opac</entry>
+<entry code="parperso_marclist_option_music_form">Formes musicales</entry>
+<entry code="parperso_marclist_option_music_key">Tonalités musicales</entry>
 
 <entry code="chklnk_editorial_content_chk_cp">Vérifier les liens des champs personnalisés résolveur et URL</entry>
 <entry code="cms_module_common_datasource_desc_descriptors_id">Identifiant de la catégorie</entry>
@@ -6875,10 +7247,192 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="cms_edit_form_reset_css_bt_confirm">Confirmez-vous la suppression du style de ce cadre ?</entry>
 <entry code="expl_typdoc_mandatory">La fiche exemplaire doit obligatoirement appartenir à un support.</entry>
 <entry code="expl_location_mandatory">La fiche exemplaire doit obligatoirement appartenir à une localisation.</entry>
+<entry code="admin_opac_facette_opac_views">Vues Opac</entry>
+<entry code="admin_opac_facette_opac_view_empty">Pas de vue Opac</entry>
+<entry code="admin_opac_facette_opac_view_select">Pour toutes les vues</entry>
+<entry code="onto_skos_concept_broader">Parent :</entry>
+<entry code="onto_skos_concept_scopenote">Note d'application :</entry>
+<entry code="explnum_docs_in_relation">Documents numériques en relation :</entry>
 
 <entry code="edit_menu_empr_categ_change">Categ. à changer</entry>
+<entry code="admin_menu_nomenclature">Nomenclatures</entry>
+<entry code="admin_menu_nomenclature_tutti">Tutti</entry>
+<entry code="admin_menu_nomenclature_voice">Voix</entry>
+<entry code="admin_menu_nomenclature_instruments">Instruments</entry>
+<entry code="admin_menu_nomenclature">Nomenclatures</entry>
+<entry code="admin_nomenclature">Nomenclatures</entry>
+<entry code="admin_nomenclature_family">Familles / Pupitres</entry>
+<entry code="admin_nomenclature_family_name">Nom</entry>
+<entry code="admin_nomenclature_family_instrument">Instruments</entry>
+<entry code="admin_nomenclature_family_pupitres">Liste des pupitres</entry>
+<entry code="admin_nomenclature_musicstand_edition">Pupitres</entry>
+<entry code="admin_nomenclature_family_add">Ajouter</entry>
+<entry code="admin_nomenclature_family_form_del">Supprimer</entry>
+<entry code="admin_nomenclature_family_form_name">Nom</entry>
+<entry code="admin_nomenclature_family_form_name_error">Veuillez saisir un nom de famille</entry>
+<entry code="admin_nomenclature_family_form_save">Enregistrer</entry>
+<entry code="admin_nomenclature_family_form_exit">Annuler</entry>
+<entry code="admin_nomenclature_family_form_add">Ajouter une Famille</entry>
+<entry code="admin_nomenclature_family_form_edit">Edition de la Famille</entry>
+<entry code="admin_nomenclature_family_musicstand">Pupitres de la famille : !!famille_name!!</entry>
+<entry code="admin_nomenclature_family_musicstand_add">Ajouter</entry>
+<entry code="admin_nomenclature_family_musicstand_form_del">Supprimer</entry>
+<entry code="admin_nomenclature_family_musicstand_form_name">Nom</entry>
+<entry code="admin_nomenclature_family_musicstand_form_instruments">Liste des instruments</entry>
+<entry code="admin_nomenclature_family_musicstand_form_division">Divisible</entry>
+<entry code="admin_nomenclature_family_musicstand_form_name_error">Veuillez saisir un nom de pupitre</entry>
+<entry code="admin_nomenclature_family_musicstand_form_save">Enregistrer</entry>
+<entry code="admin_nomenclature_family_musicstand_form_exit">Annuler</entry>
+<entry code="admin_nomenclature_family_musicstand_form_add">Ajouter un pupitre dans la famille : !!famille_name!!</entry>
+<entry code="admin_nomenclature_family_musicstand_form_edit">Edition du pupitre de la famille : !!famille_name!!</entry>
+<entry code="admin_nomenclature_instrument">Instruments</entry>
+<entry code="admin_nomenclature_instrument_name">Nom</entry>
+<entry code="admin_nomenclature_instrument_code">Code</entry>
+<entry code="admin_nomenclature_instrument_musicstand">Pupitre préféré</entry>
+<entry code="admin_nomenclature_instrument_standard">Standard</entry>
+<entry code="admin_nomenclature_instrument_add">Ajouter</entry>
+<entry code="admin_nomenclature_instrument_form_del">Supprimer</entry>
+<entry code="admin_nomenclature_instrument_form_code">Code</entry>
+<entry code="admin_nomenclature_instrument_form_name">Nom</entry>
+<entry code="admin_nomenclature_instrument_form_musicstand">Pupitre préféré</entry>
+<entry code="admin_nomenclature_instrument_form_musicstand_no">Pas de pupitre</entry>
+<entry code="admin_nomenclature_instrument_form_musicstand_no_sel">Pas de pupitre sélectionné</entry>
+<entry code="admin_nomenclature_instrument_form_standard">Standard</entry>
+<entry code="admin_nomenclature_instrument_form_name_error">Veuillez saisir un nom d\'instrument</entry>
+<entry code="admin_nomenclature_instrument_form_save">Enregistrer</entry>
+<entry code="admin_nomenclature_instrument_form_exit">Annuler</entry>
+<entry code="admin_nomenclature_instrument_form_add">Ajouter un instrument</entry>
+<entry code="admin_nomenclature_instrument_form_edit">Edition de l'instrument</entry>
+<entry code="persofield_usehtmleditor">Utiliser l'éditeur HTML</entry>
+<entry code="admin_nomenclature_instrument_musicstand_family">Famille du pupitre préféré</entry>
+<entry code="etagere_img_load">Upload de la vignette</entry>
+<entry code="etagere_img_folder_admin_no_access">Répertoire d'upload non valide</entry>
+<entry code="etagere_img_folder_no_access">Répertoire d'upload non valide</entry>
+<entry code="admin_nomenclature_instrument_form_musicstand_standard_error">Le pupitre préféré possède déjà un instrument standard : </entry>
+<entry code="admin_nomenclature_instrument_form_musicstand_standard_force">Forcer celui-ci</entry>
+<entry code="admin_nomenclature_instrument_standard_no">Aucun</entry>
+
+<entry code="admin_menu_nomenclature_formations">Formations</entry>
+<entry code="admin_nomenclature_formation">Formations / Types</entry>
+<entry code="admin_nomenclature_formation_name">Nom</entry>
+<entry code="admin_nomenclature_formation_formations">Liste des formations</entry>
+<entry code="admin_nomenclature_formation_types">Liste des Types</entry>
+<entry code="admin_nomenclature_type_edition">Types</entry>
+<entry code="admin_nomenclature_formation_add">Ajouter</entry>
+<entry code="admin_nomenclature_formation_form_del">Supprimer</entry>
+<entry code="admin_nomenclature_formation_form_name">Nom</entry>
+<entry code="admin_nomenclature_formation_form_name_error">Veuillez saisir un nom de formation</entry>
+<entry code="admin_nomenclature_formation_form_save">Enregistrer</entry>
+<entry code="admin_nomenclature_formation_form_exit">Annuler</entry>
+<entry code="admin_nomenclature_formation_form_add">Ajouter une formation</entry>
+<entry code="admin_nomenclature_formation_form_edit">Edition de la formation</entry>
+<entry code="admin_nomenclature_formation_type">Types de la formation : !!formation_name!!</entry>
+<entry code="admin_nomenclature_formation_type_add">Ajouter</entry>
+<entry code="admin_nomenclature_formation_type_form_del">Supprimer</entry>
+<entry code="admin_nomenclature_formation_type_form_name">Nom</entry>
+<entry code="admin_nomenclature_formation_type_form_name_error">Veuillez saisir un nom de type</entry>
+<entry code="admin_nomenclature_formation_type_form_save">Enregistrer</entry>
+<entry code="admin_nomenclature_formation_type_form_exit">Annuler</entry>
+<entry code="admin_nomenclature_formation_type_form_add">Ajouter un type dans la formation : !!formation_name!!</entry>
+<entry code="admin_nomenclature_formation_type_form_edit">Edition du type de la formation : !!formation_name!!</entry>
+
+<entry code="admin_menu_nomenclature_voices">Voix</entry>
+<entry code="admin_nomenclature_voice">Voix</entry>
+<entry code="admin_nomenclature_voice_name">Nom</entry>
+<entry code="admin_nomenclature_voice_voices">Liste des Voix</entry>
+<entry code="admin_nomenclature_voice_add">Ajouter</entry>
+<entry code="admin_nomenclature_voice_form_del">Supprimer</entry>
+<entry code="admin_nomenclature_voice_form_name">Nom</entry>
+<entry code="admin_nomenclature_voice_form_name_error">Veuillez saisir un nom de voix</entry>
+<entry code="admin_nomenclature_voice_form_save">Enregistrer</entry>
+<entry code="admin_nomenclature_voice_form_exit">Annuler</entry>
+<entry code="admin_nomenclature_voice_form_add">Ajouter une Voix</entry>
+<entry code="admin_nomenclature_voice_form_edit">Edition de la Voix</entry>
+<entry code="admin_nomenclature_family_musicstand_form_workshop">Associé aux ateliers</entry>
+<entry code="etagere_thumbnail_url">URL de la vignette</entry>
+
+<entry code="admin_nomenclature_formation_nature">Nature</entry>
+<entry code="admin_nomenclature_formation_form_nature">Nature de la formation</entry>
+<entry code="admin_nomenclature_formation_form_nature_instrument">Instruments</entry>
+<entry code="admin_nomenclature_formation_form_nature_voice">Voix</entry>
 
 <entry code="alert_sugg_user_mail">Alerter par mail des nouvelles suggestions OPAC ?</entry>
+<entry code="notice_nomenclature_onglet_title">Nomenclature</entry>
+<entry code="notice_nomenclature_onglet_add_formation">Ajouter une formation</entry>
+
+<entry code="nomenclature_formation_isbd_formation">Formation : </entry>
+<entry code="nomenclature_formation_isbd_abbreviation">Abbréviation Tutti : </entry>
+<entry code="nomenclature_formation_isbd_instruments_non_standards">Instruments non standards : </entry>
+<entry code="nomenclature_formation_isbd_workshops">Instruments des Ateliers : </entry>
+
+<entry code="nomenclature_search">Nomenclatures</entry>
+<entry code="nomenclature_search_formations">Formation</entry>
+<entry code="nomenclature_search_types">Type de formation</entry>
+<entry code="nomenclature_search_formation_label">Nom de formation</entry>
+<entry code="nomenclature_search_workshop_label">Nom d'un atelier</entry>
+
+<entry code="nomenclature_js_formation_add">Ajouter une formation</entry>
+<entry code="nomenclature_js_formation_type_label">Type</entry>
+<entry code="nomenclature_js_formation_type_select_default_value">Sélectionnez un sous type</entry>
+<entry code="nomenclature_js_notice_nomenclature_label">Nom</entry>
+<entry code="nomenclature_js_musicstand_label">Pupitre</entry>
+<entry code="nomenclature_js_exotic_instruments_label">Instruments non standards</entry>
+<entry code="nomenclature_js_workshops_label">Atelier(s)</entry>
+<entry code="nomenclature_js_workshop_label">Atelier</entry>
+<entry code="nomenclature_js_workshop_add">Ajouter un atelier</entry>
+<entry code="nomenclature_js_workshop_name">Nom</entry>
+<entry code="nomenclature_js_nomenclature_label">Nomenclature</entry>
+<entry code="nomenclature_js_nomenclature_voices_label">Nomenclature Voix</entry>
+<entry code="nomenclature_js_voice_add">Ajouter une voix</entry>
+<entry code="nomenclature_js_instrument_add">Ajouter un instrument</entry>
+<entry code="nomenclature_js_instruments_header_order">Ordre</entry>
+<entry code="nomenclature_js_instruments_header_part">Partie</entry>
+<entry code="nomenclature_js_instruments_header_instruments">Instruments</entry>
+<entry code="nomenclature_js_instruments_header_voices">Voix</entry>
+<entry code="nomenclature_js_instruments_header_instrument">Instrument</entry>
+<entry code="nomenclature_js_instruments_header_main">Principal</entry>
+<entry code="nomenclature_js_instruments_header_other">Annexe</entry>
+<entry code="nomenclature_js_instruments_header_effective">Effectif</entry>
+<entry code="nomenclature_js_workshop_delete">Supprimer l'atelier</entry>
+<entry code="nomenclature_js_workshops_delete">Supprimer les ateliers</entry>
+<entry code="nomenclature_js_formation_delete">Supprimer la formation</entry>
+
+<entry code="nomenclature_js_nomenclature_error_for_analyze">Erreur pendant l'analyse</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze">Erreur d'analyse</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_already_family_def">Il y a déjà une famille en cours de définition</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_already_musicstand_def">Il y a déjà un pupitre en cours de définition</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_already_instrument_def">Il y a déjà un instrument en cours de définition</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_already_other_instrument_def">Il y a déjà un instrument annexe en cours de définition</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_already_musicstand_undetermined">Le pupitre est déjà indéterminé</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_end_family_def">Il n'y a plus de famille a définir</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_end_musicstand_def">Il n'y a plus de pupitre à définir pour cette famille</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_no_numeric">On attend un chiffre</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_illegal_character">Caractère non autorisé</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_no_musicstand_def">Il n'y a pas de pupitre en cours de définition</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_no_instrument_def">Il n'y a pas d'instrument en cours de definition</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_no_other_instrument_def">Il n'y a pas d'instrument annexe en cours de définition</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_already_musicstand_detail_def">La définition du détail du pupitre est déjà en cours</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_close_musicstand_detail">Fermez le détail du pupitre avant de changer de famille</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_other_instrument_no_first_numeric">Un instrument annexe ne peut pas commencer par un chiffre</entry>
+<entry code="nomenclature_js_nomenclature_error_analyze_no_detail_musicstand_def">Il n'y a pas de détail de pupitre en cours de définition</entry>
+
+<entry code="nomenclature_js_nomenclature_voices_error_analyze_invalid_char">Caractère invalide</entry>
+<entry code="nomenclature_js_nomenclature_voices_error_analyze_incorrect_effective">L'effectif de la voix en cours est incorrect</entry>
+<entry code="nomenclature_js_nomenclature_voices_error_analyze_no_voice_in_def">Pas de voix en cours de définition</entry>
+<entry code="nomenclature_js_nomenclature_voices_error_analyze_no_part_in_def">Pas de partie en cours de définition</entry>
+<entry code="nomenclature_js_nomenclature_voices_error_analyze_specifics_chars_only">Dans une partie sans effectif les seuls caractères suivants peuvent être un point ou un crochet</entry>
+<entry code="nomenclature_js_nomenclature_voices_error_analyze_letter_needed">On attend une lettre</entry>
+
+<entry code="nomenclature_js_nomenclature_error_check_musicstand_incorrect">Un pupitre n'est pas correct</entry>
+<entry code="nomenclature_js_nomenclature_error_check_instrument_incorrect">Un instrument n'est pas correct</entry>
+<entry code="nomenclature_js_nomenclature_error_check_instrument_sum_effective_incorrect">La somme des effectifs des instruments ne correspond pas avec celle declarée sur le pupitre</entry>
+<entry code="nomenclature_js_nomenclature_error_check_instrument_effective">Un instrument doit avoir un effectif</entry>
+<entry code="nomenclature_search_nomenclature_notes">Notes</entry>
+<entry code="nomenclature_search_nomenclature_abbreviation">Tutti des instruments</entry>
+<entry code="nomenclature_search_nomenclature_abbreviation_bois">Tutti des bois</entry>
+<entry code="nomenclature_search_nomenclature_abbreviation_cuivres">Tutti des cuivres</entry>
+<entry code="nomenclature_search_nomenclature_abbreviation_percussions">Tutti des percussions</entry>
+<entry code="nomenclature_search_nomenclature_abbreviation_cordes">Tutti des cordes</entry>
 
 <entry code="stat_imp_request">Importer une requête</entry>
 <entry code="stat_title_form_import">Import de requête</entry>
@@ -6887,36 +7441,398 @@ $Id: pt_BR.xml,v 1.239.2.33 2015-10-01 14:06:30 jpermanne Exp $ -->
 <entry code="stat_import_invalide">Requête invalide</entry>
 <entry code="stat_import_consolide">Vous devez consolider la vue pour pouvoir utiliser cette nouvelle requête.</entry>
 
+<entry code="nomenclature_search_instruments_no_standard">Instruments non standards</entry>
+<entry code="nomenclature_search_instruments_workshop">Instruments d'un atelier</entry>
+
 <entry code="gen_signature_erreur_similaire_nb">Affichage %s doublons sur %s</entry>
+<entry code="admin_nomenclature_voice_code">Code</entry>
+<entry code="admin_nomenclature_voice_form_code">Code</entry>
+<entry code="nomenclature_js_nomenclature_ui_confirm_sync">La synchronisation va réinitialiser le détail (y compris les ateliers). Voulez-vous vraiment continuer?</entry>
+
+
+<entry code="nomenclature_isbd_child_formation">Formation</entry>
+<entry code="nomenclature_isbd_child_workshop">Atelier</entry>
+<entry code="nomenclature_isbd_child_musicstand">Pupitre</entry>
+<entry code="nomenclature_isbd_child_instrument">Instrument</entry>
+<entry code="nomenclature_isbd_child_effective">Effectifs</entry>
+<entry code="nomenclature_isbd_child_voice">Voix</entry>
+<entry code="nomenclature_formation_isbd_abbreviation_voix">Abbréviation voix : </entry>
+<entry code="nomenclature_isbd_child_order">Ordre</entry>
+
+<entry code="nomenclature_js_general_selector">Générale</entry>
+<entry code="nomenclature_js_child_selector">Partielle</entry>
+<entry code="nomenclature_js_selector">Définition d'une nomenclature</entry>
+<entry code="nomenclature_js_partial_formation">Formation</entry>
+<entry code="nomenclature_js_partial_musicstand">Pupitre</entry>
+<entry code="nomenclature_js_partial_instrument">Instrument principal</entry>
+<entry code="nomenclature_js_partial_other_instruments">Instruments annexes</entry>
+<entry code="nomenclature_js_partial_effective">Effectif</entry>
+<entry code="nomenclature_js_partial_order">Ordre</entry>
+<entry code="nomenclature_js_partial_workshop">Atelier</entry>
+<entry code="nomenclature_js_partial_voice">Voix</entry>
+<entry code="nomenclature_js_partial_formation_choice">Sélectionner une formation</entry>
+<entry code="nomenclature_js_partial_musicstand_choice">Sélectionner un pupitre</entry>
+<entry code="nomenclature_js_partial_workshop_choice">Sélectionner un atelier</entry>
+
+<entry code="nomenclature_js_create_record">Créer la notice</entry>
+<entry code="nomenclature_js_see_record">Voir la notice</entry>
 
 <entry code="searcher_results_show_all">Afficher tous les résultats</entry>
 <entry code="searcher_results_check_all">Tout cocher</entry>
 <entry code="searcher_results_uncheck_all">Tout décocher</entry>
 <entry code="searcher_results_add_selection">Ajouter la sélection à la commande</entry>
 
+<entry code="dsi_menu_docwatch">Veilles</entry>
+<entry code="dsi_menu_docwatch_definition">Définition des veilles</entry>
+<entry code="dsi_docwatch_itemslistui_title">Items</entry>
+<entry code="dsi_docwatch_sourceslistui_title">Sources</entry>
+
+<entry js="dsi" code="dsi_js_item_title">Titre</entry>
+<entry js="dsi" code="dsi_js_item_summary">Résumé</entry>
+<entry js="dsi" code="dsi_js_item_publication_date">Date de publication</entry>
+<entry js="dsi" code="dsi_js_item_added_date">Date d'ajout</entry>
+<entry js="dsi" code="dsi_js_item_content">Contenu</entry>
+<entry js="dsi" code="dsi_js_item_link">Lien</entry>
+<entry js="dsi" code="dsi_js_item_tags">Tags</entry>
+<entry js="dsi" code="dsi_js_item_type">Type</entry>
+<entry js="dsi" code="dsi_js_item_interesting">Intéressant</entry>
+<entry js="dsi" code="dsi_js_item_source_name">Nom de la source</entry>
+
+<entry js="dsi" code="dsi_js_source_title">Nom de la source</entry>
+<entry js="dsi" code="dsi_js_source_last_sync">Date de la dernière synchronisation</entry>
+
+<entry js="dsi" code="dsi_js_item_action_mark_as_interesting">Marquer comme intéressant</entry>
+<entry js="dsi" code="dsi_js_item_action_delete">Supprimer</entry>
+<entry js="dsi" code="dsi_js_item_action_create_notice">Créer la notice</entry>
+<entry js="dsi" code="dsi_js_item_action_see_notice">Voir la notice</entry>
+<entry js="dsi" code="dsi_js_item_action_create_article">Créer un article</entry>
+<entry js="dsi" code="dsi_js_item_action_see_article">Voir l'article</entry>
+<entry js="dsi" code="dsi_js_item_action_mark_as_read">Marquer comme lu</entry>
+<entry js="dsi" code="dsi_js_item_action_mark_as_unread">Marquer comme non lu</entry>
+<entry js="dsi" code="dsi_js_item_action_index">Indexer</entry>
+
+<entry code="dsi_docwatch_category_form_category_parent">Classement parent</entry>
+<entry code="dsi_docwatch_category_form_libelle">Nom du classement</entry>
+<entry code="dsi_docwatch_form_save">Enregistrer</entry>
+<entry code="dsi_docwatch_form_delete">Supprimer</entry>
+<entry code="dsi_docwatch_watch_form_libelle">Nom de la veille</entry>
+<entry code="dsi_docwatch_watch_form_ttl">TTL (en heures)</entry>
+<entry code="dsi_docwatch_watch_form_rights">Droits utilisateurs</entry>
+<entry code="dsi_docwatch_watch_form_logo_url">Url du logo de la veille</entry>
+<entry code="dsi_docwatch_watch_form_desc">Description de la veille</entry>
+
+<entry js="dsi" code="dsi_js_docwatch_edit_category">Editer un classement</entry>
+<entry js="dsi" code="dsi_js_docwatch_add_category">Ajouter un classement</entry>
+<entry js="dsi" code="dsi_js_docwatch_edit_watch">Editer une veille</entry>
+<entry js="dsi" code="dsi_js_docwatch_add_watch">Ajouter une veille</entry>
+
+<entry js="dsi" code="dsi_js_source_action_delete">Supprimer</entry>
+<entry js="dsi" code="dsi_js_source_action_save">Enregistrer</entry>
+<entry js="dsi" code="dsi_js_source_title">Titre</entry>
+<entry js="dsi" code="dsi_js_source_save_form_no_title">La source doit comporter un titre</entry>
+
+<entry code="admin_connecteurs_enrichment_available_sources">Sources disponibles</entry>
+<entry code="admin_connecteurs_enrichment_default_display">Enrichissements affichables par défaut</entry>
+<entry js="dsi" code="dsi_js_source_mark_as_interesting">Marquer comme intéressant par défaut</entry>
+<entry js="dsi" code="docwatch_confirm_watch_delete">Vous allez supprimer une veille. Cette action est irréversible! Voulez-vous vraiment continuer?</entry>
+<entry js="dsi" code="docwatch_add_category">Nouveau Classement</entry>
+<entry js="dsi" code="docwatch_add_watch">Nouvelle Veille</entry>
+
+<entry code="dsi_docwatch_category_error_watch_associated">Une ou plusieurs veilles sont associées à ce classement</entry>
+<entry code="dsi_docwatch_category_error_sub_categ">Le classement possède un ou plusieurs sous classements</entry>
+<entry code="dsi_docwatch_category_error_database">Impossible de se connecter à la base de données</entry>
+<entry code="dsi_docwatch_category_error_dont_exist">Cette source n'existe pas</entry>
+
+<entry js="dsi" code="dsi_js_item_action_create_section">Créer une rubrique</entry>
+<entry js="dsi" code="dsi_js_item_action_see_section">Voir la rubrique</entry>
+
+<entry js="dsi" code="docwatch_add_source">Ajouter une Source</entry>
+<entry code="dsi_docwatch_add_source">Ajouter une nouvelle source</entry>
+<entry code="dsi_docwatch_select_souce_choice">Choisissez un type de source</entry>
+<entry code="dsi_docwatch_datasource_articles">Articles de la base</entry>
+<entry code="dsi_docwatch_datasource_sections">Rubriques de la base</entry>
+<entry code="dsi_docwatch_datasource_notices">Notices de la base</entry>
+<entry code="dsi_docwatch_datasource_notices_rss">Notices RSS de la base</entry>
+<entry code="dsi_docwatch_datasource_title">Nom</entry>
+<entry code="dsi_docwatch_datasource_ttl">TTL (en heures)</entry>
+<entry code="dsi_docwatch_datasource_default_interesting">Marquer les nouveaux éléments comme intéressants par défaut ?</entry>
+<entry code="dsi_docwatch_datasource_submit">Enregistrer</entry>
+<entry code="dsi_docwatch_datasource_delete">Supprimer</entry>
+<entry code="dsi_docwatch_datasource_selector">Récupérer les données via</entry>
+<entry code="dsi_docwatch_datasource_selector_choice">Choisissez une méthode</entry>
+<entry code="dsi_docwatch_selector_notices_caddie">Sélection de notices par un panier</entry>
+<entry js="dsi" code="docwatch_switch_selector_confirm">Voulez-vous vraiment changer de méthode de sélection ?</entry>
+<entry code="dsi_docwatch_selector_notices_caddie_select">Panier(s) à utiliser</entry>
+<entry code="dsi_docwatch_selector_notices_caddie_select_no_caddie">Il n'y a aucun panier de notices dans la base</entry>
+<entry js="dsi" code="docwatch_datasource_delete_confirm">Vous allez supprimer une source de données. Cette action est irréversible! Voulez-vous vraiment continuer?</entry>
+
+<entry code="contient_search">Contient</entry>
+<entry js="dsi" code="dsi_docwatch_item_categ">Catégories</entry>
+
+<entry code="dsi_docwatch_datasource_rss">Flux RSS</entry>
+<entry code="dsi_docwatch_selector_rss">Lien du flux RSS à utiliser</entry>
+<entry code="dsi_docwatch_selector_rss_select">Par lien de flux</entry>
+
+<entry js="dsi" code="dsi_js_item_action_create_section_confirm">Êtes-vous sûr de vouloir créer une rubrique ?</entry>
+<entry js="dsi" code="dsi_js_item_action_create_article_confirm">Êtes-vous sûr de vouloir créer un article ?</entry>
+<entry js="dsi" code="dsi_js_item_action_create_record_confirm">Êtes-vous sûr de vouloir créer une notice ?</entry>
+
+<entry code="cms_module_item_datasource_desc_id">Identifiant de l'item</entry>
+<entry code="cms_module_item_datasource_desc_title">Titre de l'item</entry>
+<entry code="cms_module_item_datasource_desc_summary">Résumé de l'item</entry>
+<entry code="cms_module_item_datasource_desc_content">Contenu de l'item</entry>
+<entry code="cms_module_item_datasource_desc_added_date">Date d'ajout de l'item</entry>
+<entry code="cms_module_item_datasource_desc_publication_date">Date de publication de la ressource associée à l'item</entry>
+<entry code="cms_module_item_datasource_desc_url">Lien vers la ressource en ligne</entry>
+<entry code="cms_module_item_datasource_desc_logo_url">URL du logo de l'item</entry>
+<entry code="cms_module_item_datasource_desc_status">Item lu/non lu</entry>
+<entry code="cms_module_item_datasource_desc_interesting">Item intéressant/inintéressant</entry>
+<entry code="cms_module_item_datasource_desc_descriptors">Tableau des catégories</entry>
+<entry code="cms_module_item_datasource_desc_descriptor_id">Identifiant de la catégorie associée à l'item</entry>
+<entry code="cms_module_item_datasource_desc_descriptor_name">Libellé de la catégorie associée à l'item</entry>
+<entry code="cms_module_item_datasource_desc_descriptor_comment">Commentaire de la catégorie associée à l'item</entry>
+<entry code="cms_module_item_datasource_desc_descriptor_lang">Langue de la catégorie associée à l'item</entry>
+<entry code="cms_module_item_datasource_desc_tags">Tableau des tags</entry>
+<entry code="cms_module_item_datasource_desc_tag_id">Identifiant du tag</entry>
+<entry code="cms_module_item_datasource_desc_tag_name">Libellé du tag</entry>
+<entry code="cms_module_item_datasource_desc_watch">Information générales concernant la veille de l'item</entry>
+<entry code="cms_module_item_datasource_desc_watch_id">Identifiant de la veille de l'item</entry>
+<entry code="cms_module_item_datasource_desc_watch_title">Libellé de la veille de l'item </entry>
+<entry code="cms_module_item_datasource_desc_watch_last_date">Date de dernière mise à jour de la veille de l'item</entry>
+<entry code="cms_module_item_datasource_desc_watch_desc">Description de la veille de l'item</entry>
+<entry code="cms_module_item_datasource_desc_watch_logo_url">URL du logo de la veille de l'item</entry>
+<entry code="cms_module_item_datasource_desc_source_title">Titre de la source de données de l'item</entry>
+
+<entry code="cms_module_watch_datasource_desc_id">Identifiant de la veille</entry>
+<entry code="cms_module_watch_datasource_desc_title">Titre de la veille</entry>
+<entry code="cms_module_watch_datasource_desc_desc">Description de la veille</entry>
+<entry code="cms_module_watch_datasource_desc_logo_url">URL du logo de la veille</entry>
+<entry code="cms_module_watch_datasource_desc_last_date">Date de dernière mise à jour de la veille</entry>
+<entry code="cms_module_watch_datasource_desc_category">Informations concernant le classement de la veille</entry>
+<entry code="cms_module_watch_datasource_desc_category_id">Identifiant du classement</entry>
+<entry code="cms_module_watch_datasource_desc_category_title">Nom du classement</entry>
+<entry code="cms_module_watch_datasource_desc_items">Tableau des items associés</entry>
+<entry code="cms_module_watch_datasource_desc_rss_link">Lien vers le Flux RSS de la veille</entry>
+
+<entry code="dsi_docwatch_watch_form_record_default_type">Type des notices en création</entry>
+<entry code="dsi_docwatch_watch_form_record_default_status">Statut des notices en création</entry>
+<entry code="dsi_docwatch_watch_form_article_default_parent">Rubrique parente des articles en création</entry>
+<entry code="dsi_docwatch_watch_form_article_default_content_type">Type des articles en création</entry>
+<entry code="dsi_docwatch_watch_form_article_default_publication_status">Mode de publication des articles en création</entry>
+<entry code="dsi_docwatch_watch_form_section_default_parent">Rubrique parente des rubriques en création</entry>
+<entry code="dsi_docwatch_watch_form_section_default_content_type">Type des rubriques en création</entry>
+<entry code="dsi_docwatch_watch_form_section_default_publication_status">Mode de publication des rubriques en création</entry>
+
+<entry code="dsi_docwatch_watch_form_options_record">Options de création de notice</entry>
+<entry code="dsi_docwatch_watch_form_options_article">Options de création d'article</entry>
+<entry code="dsi_docwatch_watch_form_options_section">Options de création de rubrique</entry>
+
+<entry js="dsi" code="dsi_js_item_action_create_tag">Nouveau tag</entry>
+<entry js="dsi" code="dsi_js_item_action_restore">Restaurer</entry>
+
+<entry code="docwatch_selector_articles_by_sections">Articles d'une ou plusieurs rubriques</entry>
+<entry code="dsi_docwatch_selector_articles_by_sections_select">Choisissez une ou plusieurs rubriques</entry>
+<entry code="docwatch_selector_parent_sections">Rubriques d'une ou plusieurs rubriques parentes</entry>
+<entry code="dsi_docwatch_selector_parent_sections_select">Choisissez une ou plusieurs rubriques</entry>
+<entry code="demandes_note_confirm_demande_end">Êtes-vous sûr de générer la réponse finale de la demande avec cette note?</entry>
+<entry code="demandes_note_demande_end">Générer la réponse finale de la demande avec cette note</entry>
+<entry code="dsi_docwatch_datasource_clean_html">Eliminer la mise en forme HTML des nouveaux éléments ?</entry>
+
 <entry code="planificateur_catalog_scan_docnum">Rattachement des documents numériques</entry>
+<entry code="serialcirc_export_list">Export des destinataires</entry>
+
+<entry code="dsi_docwatch_datasource_external_sources">Notices dans les entrepôts</entry>
+<entry code="dsi_docwatch_selector_external_sources">Sélection de notices par un entrepôt</entry>
+<entry code="dsi_docwatch_selector_external_sources_select">Entrepôt(s) à utiliser</entry>
+<entry code="dsi_docwatch_selector_external_sources_select_no_repository">Il n'y a aucun entrepôt de notices dans la base</entry>
+<entry code="dsi_docwatch_selector_external_sources_limit">Nombres d'éléments maximum à récupérer par sources</entry>
+<entry code="dsi_docwatch_watch_error_database">Impossible de se connecter à la base de données</entry>
+<entry code="dsi_docwatch_watch_error_dont_exist">Cette veille n'existe pas</entry>
+<entry code="dsi_docwatch_tree_error_database">Impossible de se connecter à la base de données</entry>
+<entry js="dsi" code="dsi_js_docwatch_edit_watch">Editer</entry>
+
+<entry code="classementGen_default_libelle">_aucun classement_</entry>
+<entry code="classementGen_list_libelle">Gérer les classements</entry>
+<entry code="classementGen_list_no_entry">Aucun classement</entry>
+<entry code="classementGen_list_title">Libellé du classement</entry>
+<entry code="classementGen_list_form_title">Modifier un classement</entry>
+<entry code="classementGen_list_form_libelle">Libellé du classement</entry>
+<entry code="classementGen_list_form_no_empty">Veuillez saisir un nom pour ce classement.</entry>
+<entry code="etagere_menu_classement">Classements</entry>
+<entry code="etagere_classement_list">Classement de l'étagère</entry>
+<entry code="etagere_classement_save">Enregistrer</entry>
+<entry code="caddie_menu_classement">Classement</entry>
+<entry code="caddie_classement_list">Classement du panier</entry>
+<entry code="caddie_classement_save">Enregistrer</entry>
+<entry code="empr_caddie_menu_classement">Classement</entry>
+<entry code="empr_caddie_classement_list">Classement du panier</entry>
+<entry code="empr_caddie_classement_save">Enregistrer</entry>
 <entry code="resa_planning_for_empr">Création d'une prévision pour le lecteur %1s</entry>
 
+<entry js="carto" code="carto_sexagesimal_degrees">Degrés sexagésimaux</entry>
+<entry js="carto" code="carto_decimal_degrees">Degrés décimaux</entry>
+<entry js="carto" code="carto_lon_abbr">Lon</entry>
+<entry js="carto" code="carto_lat_abbr">Lat</entry>
+<entry js="carto" code="carto_ok_popup">OK</entry>
+<entry js="carto" code="carto_btn_affiner">Affiner</entry>
+<entry js="carto" code="carto_popup_linked_records">Notices Liées</entry>
+<entry js="carto" code="carto_control_rectangle">Rectangle</entry>
+<entry js="carto" code="carto_control_circle">Cercle</entry>
+<entry js="carto" code="carto_control_triangle">Triangle</entry>
+<entry js="carto" code="carto_control_polygon">Polygone</entry>
+<entry js="carto" code="carto_control_path">Ligne</entry>
+<entry js="carto" code="carto_control_point">Point</entry>
+<entry js="carto" code="carto_control_regular_polygon">Polygone régulier</entry>
+<entry js="carto" code="carto_point_label">Point</entry>
+<entry js="carto" code="carto_show_points_label">Afficher les points</entry>
+<entry js="carto" code="carto_show_point_label">Afficher le point</entry>
+<entry js="carto" code="carto_polygon_form_label">Modification fine des points d'un polygone</entry>
+<entry js="carto" code="carto_path_form_label">Modification fine des points d'une ligne</entry>
+<entry js="carto" code="carto_point_form_label">Modification fine du placement d'un point</entry>
+<entry js="carto" code="carto_polygon_nb_pt">Le polygone possède %s points</entry>
+<entry js="carto" code="carto_path_nb_pt">La ligne possède %s points</entry>
+<entry js="carto" code="carto_points_label">points</entry>
+<entry js="carto" code="carto_warning_not_enough_points">Vous n'avez pas renseigné assez de points</entry>
+<entry js="carto" code="carto_warning_no_feature_selected">Aucune emprise sélectionnée</entry>
+<entry js="carto" code="carto_wkt_import_label">Import wkt</entry>
+<entry js="carto" code="carto_wkt_export_label">Export wkt</entry>
+<entry js="carto" code="carto_wkt_import_placeholder">Entrez une chaine WKT ici</entry>
+<entry js="carto" code="carto_validate_label">Valider</entry>
+<entry js="carto" code="carto_warning_invalid_wkt_string">La chaine wkt: %s n'est pas conforme</entry>
+<entry js="carto" code="carto_select_record">Sélectionner emprise</entry>
+<entry js="carto" code="carto_draw_label">Dessiner</entry>
+<entry js="carto" code="carto_delete_label">Supprimer</entry>
+<entry js="carto" code="carto_warning_delete">Vous êtes sur le point de supprimer cette emprise. Voulez vous continuer ?</entry>
+<entry js="carto" code="carto_control_edit_label">Modifier</entry>
+<entry js="carto" code="carto_control_resize_label">Redimensionner</entry>
+<entry js="carto" code="carto_control_move_label">Déplacer</entry>
+<entry js="carto" code="carto_refinement_popup">Voulez vous réaliser un affinage sur cette zone ?</entry>
+<entry js="carto" code="carto_control_clustering">Clustering</entry>
+<entry js="carto" code="carto_warning_edit_form">ATTENTION /!\ si vous modifiez votre emprise directement sur la carte, ce formulaire disparaîtra</entry>
+<entry js="carto" code="carto_label_new_point">Nouveau point</entry>
+<entry js="carto" code="carto_warning_point_delete_number">Etes vous sûr de vouloir supprimer le point n°:%s ?</entry>
+<entry js="carto" code="carto_warning_point_delete">Etes vous sûr de vouloir supprimer le point ?</entry>
+<entry js="carto" code="carto_warning_point_misinformed">Point n°:%s mal renseigné.</entry>
+<entry js="carto" code="carto_warning_new_point_misinformed">Nouveau point n°:%s mal renseigné.</entry>
+<entry js="carto" code="carto_label_new_regular_polygon">Création d'un polygone régulier</entry>
+<entry js="carto" code="carto_label_shape_choosing">Choix de la forme</entry>
+<entry js="carto" code="carto_label_cancel_modifications">Annuler les modifications</entry>
+<entry js="carto" code="carto_label_cancel_last_modification">Annuler la dernière modification</entry>
+<entry js="carto" code="carto_label_regular">Régulier</entry>
+<entry js="carto" code="carto_create_form_point">Création d'un point</entry>
+<entry js="carto" code="carto_create_form_polygon">Création d'un polygone</entry>
+<entry js="carto" code="carto_create_form_path">Création d'une ligne</entry>
+<entry code="notice_is_new_gestion">Nouveauté</entry>
+<entry code="notice_is_new_gestion_no">Non</entry>
+<entry code="notice_is_new_gestion_yes">Oui</entry>
+<entry code="notice_is_new_search">Nouveauté</entry>
+
 <entry code="resa_doc_no_resa">Cet exemplaire ne permet pas de satisfaire une réservation.</entry>
+<entry code="docnum_download">Télécharger les documents numériques</entry>
+<entry code="download_title">Téléchargement</entry>
+<entry code="download_options">Options de téléchargement</entry>
+<entry code="download_size">Etendue du téléchargement</entry>
+<entry code="download_size_current_page">Les documents numériques de la page courante</entry>
+<entry code="download_size_all">Tous les documents numériques du résultat de la recherche</entry>
+<entry code="download_output_title">Format de sortie</entry>
+<entry code="download_output_singly">Individuellement (Un à un)</entry>
+<entry code="download_output_zip">Archive ZIP</entry>
+<entry code="download_download">Télécharger</entry>
+<entry code="download_cancel">Annuler</entry>
 
 <entry code="expl_codestat_mandatory">La fiche exemplaire doit obligatoirement appartenir à un code statistique.</entry>
+<entry code="bannette_tpl_insert_name">Nom de la bannette</entry>
+<entry code="bannette_tpl_insert_opac_name">Nom Opac de la bannette</entry>
+<entry code="bannette_tpl_insert_header">Entête du mail</entry>
+<entry code="bannette_tpl_insert_footer">Pied de page du mail</entry>
+<entry code="bannette_tpl_insert_chapters">Chapitres</entry>
+<entry code="bannette_tpl_insert_records_by_chapters">Notices par chapitres</entry>
+<entry code="bannette_tpl_insert_title_chapter">Titre de chapitre</entry>
+<entry code="bannette_tpl_insert_level_chapter">Niveau du chapitre</entry>
 
 <entry code="opac_serialcirc_demande">Autoriser la demande d'abonnement à l'OPAC</entry>
+
+<entry code="infopages_menu_classement">Classements</entry>
+<entry code="infopages_classement_list">Classement de l'infopage</entry>
+<entry code="infopages_classement_save">Enregistrer</entry>
 
 <entry code="infopages_duplicate_bouton">Dupliquer</entry>
 
 <entry code="search_perso_form_autorisations">Autorisations accordées à :</entry>
 
-<entry code="acquisitions_export_excel">Export tableau EXCEL</entry>
+<entry code="admin_menu_authperso_template">Templates</entry>
+<entry code="title_auth_template">Choix du répertoire de templates pour les autorités</entry>
+<entry code="sub_title_auth_template">Répertoire séléctionné</entry>
+<entry code="auth_template_successfully_saved">Le répertoire de template a bien été modifié</entry>
+<entry code="auth_template_unsuccessfully_saved">Problème à l'enregistrement du répertoire de template</entry>
+<entry code="dsi_docwatch_datasource_articles_link_select">Construction du lien pour les articles</entry>
+<entry code="dsi_docwatch_datasource_sections_link_select">Construction du lien pour les rubriques</entry>
+<entry code="dsi_docwatch_datasource_link_constructor_page_var">Variable à utiliser</entry>
+<entry code="dsi_docwatch_datasource_link_constructor_page">Choisissez une page</entry>
+<entry code="dsi_docwatch_datasource_link_constructor_method">Choisissez une méthode de construction</entry>
+<entry code="dsi_docwatch_datasource_link_select_cms_page">Sélection d'une page portail</entry>
+<entry code="dsi_docwatch_datasource_link_input_url">Saisie d'une URL</entry>
+<entry code="dsi_docwatch_datasource_link_constructor_url">Saisissez le permalink en remplaçant l'identifiant de l'élément par !!id!!</entry>
+<entry code="hash_empr_password">Encoder les mots de passe lecteurs pour la connexion à l'Opac. Assurez-vous que le paramètre url_base ( dans paramètres généraux ) soit correct avant de lancer cette étape</entry>
+<entry code="hash_empr_password_status">Modification de la table empr :</entry>
+<entry code="hash_empr_password_status_end">mot(s) de passe encodé(s)</entry>
 
-<entry code="nettoyage_clean_blob">Taille de champs blob</entry>
-<entry code="nettoyage_res_suppr_blob">Augmentation de la taille de champs blob</entry>
+<entry code="noti_crea_date">Date de création de la notice :</entry>
+<entry code="noti_mod_date">Date de dernière modification de la notice :</entry>
 
-<entry code="serialcirc_print_empr_categ">Catégorie</entry>
-<entry code="serialcirc_print_empr_statut">Statut</entry>
-<entry code="serialcirc_print_empr_codestat">Code statistique</entry>
-<entry code="serialcirc_print_empr_groupe">Groupe</entry>
+<entry code="deflt_notice_replace_keep_categories">Proposer les catégories en remplacement de notice ?</entry>
+<entry code="bulletin_replace_keep_categories">Conserver les catégories cochées du bulletin remplacé ?</entry>
+<entry code="notice_replace_keep_categories">Conserver les catégories cochées de la notice remplacée ?</entry>
+<entry code="perio_replace_keep_categories">Conserver les catégories cochées du périodique remplacé ?</entry>
 
+<entry code="acquisition_entite_suppr">Suppression d'un fournisseur</entry>
+<entry code="confirm_suppr_categ_rejete">Cette suppression va entraîner la suppression des catégories renvoyant vers celle-ci. Etes-vous sûr de vouloir continuer ?</entry>
+
+<entry code="caddie_used_in">Utilisé dans :</entry>
+<entry code="caddie_used_in_warning">Attention, le panier est utilisé dans :</entry>
+<entry code="empr_caddie_used_in">Utilisé dans :</entry>
+<entry code="empr_caddie_used_in_warning">Attention, le panier est utilisé dans :</entry>
+<entry code="empr_caddie_used_cant_delete">Vous ne pouvez effacer ce panier.</entry>
+<entry code="selvars_empr_civilite">Civilité</entry>
+<entry code="cms_editorial_form_section_duplicate_confirm">Voulez-vous vraiment dupliquer cette rubrique ?</entry>
+<entry code="cms_editorial_form_article_duplicate_confirm">Voulez-vous vraiment dupliquer cet article ?</entry>
+
+<entry code="resa_planning_unknown_record">Notice ou bulletin inconnu</entry>
+<entry code="resa_planning_no_item_available">Aucun exemplaire n'est réservable.</entry>
+<entry code="resa_planning_qty_requested">Quantité à réserver</entry>
+<entry code="resa_planning_alert_qty">Quantité nulle ou erronée.</entry>
+<entry code="resa_planning_qty">Qté</entry>
+<entry code="resa_planning_tab_qty">Qté</entry>
+<entry code="resa_planning_bt_to_resa">Passer en réservation</entry>
+<entry code="resa_planning_loc_empr">Localisation lecteur</entry>
+<entry code="resa_planning_loc_retrait">Localisation retrait</entry>
+<entry code="resa_planning_show_all">Toutes les prévisions</entry>
+<entry code="resa_planning_show_validees">Prévisions validées</entry>
+<entry code="resa_planning_show_invalidees">Prévisions non validées</entry>
+<entry code="resa_planning_show_non_confirmees">Prévisions validées non confirmées</entry>
+<entry code="resa_planning_show_toresa">Prévisions transformées en réservations</entry>
+<entry code="resa_planning_loc_none">Non définie</entry>
+<entry code="resa_planning_bt_val">Valider</entry>
+<entry code="resa_planning_bt_raz_val">Invalider</entry>
+<entry code="resa_planning_bt_conf">Envoyer confirmation</entry>
+<entry code="resa_planning_bt_raz_conf">Effacer confirmation</entry>
+<entry code="resa_planning_todo">Prévisions à traiter</entry>
+
+<entry code="aut_oeuvre_form_forme_list">Forme de l'oeuvre</entry>
+<entry code="aut_titre_uniforme_form_tonalite_list">Tonalité</entry>
+
+<entry code="caddie_fast_access">Accès rapide</entry>
+<entry code="caddie_fast_access_no_selected">Vous n'avez sélectionné aucun panier de notices en accès rapide.</entry>
+<entry code="search_custom_pret">Personnalisables des prêts</entry>
+<entry code="admin_menu_loans">Prêts</entry>
+<entry code="admin_menu_loans_perso">Personnalisables</entry>
+<entry code="parperso_filters">Visible dans les filtres</entry>
+<entry code="dsi_bannette_equations_update">L'enregistrement a été effectué</entry>
+<entry code="dsi_bannette_lecteurs_update">L'enregistrement a été effectué</entry>
+
+<entry code="expl_surlocation_without_expl">Sur-localisations sans exemplaire</entry>
+
+<entry code="acquisition_cde_date_val">Date de validation</entry>
 
 <!-- A LAISSER A LA FIN DES MESSAGES -->
 <!--Novas mensagens por Conssoli Software Livre-->

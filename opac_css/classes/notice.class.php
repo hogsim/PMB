@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice.class.php,v 1.32.6.1 2015-03-11 09:35:12 dgoron Exp $
+// $Id: notice.class.php,v 1.35 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -98,23 +98,34 @@ function notice($id) {
 function fetch_visibilite() {
 	global $dbh;
 	global $hide_explnum;
-	$requete = "SELECT opac_libelle, notice_visible_opac, expl_visible_opac, notice_visible_opac_abon, expl_visible_opac_abon, explnum_visible_opac, explnum_visible_opac_abon FROM notice_statut WHERE id_notice_statut='".$this->statut."' ";
-	$myQuery = mysql_query($requete, $dbh);
-	if(mysql_num_rows($myQuery)) {
-		$statut_temp = mysql_fetch_object($myQuery);
-		$this->statut_notice =        $statut_temp->opac_libelle  ;
-		$this->visu_notice =          $statut_temp->notice_visible_opac  ;
-		$this->visu_notice_abon =     $statut_temp->notice_visible_opac_abon  ;
-		$this->visu_expl =            $statut_temp->expl_visible_opac  ;
-		$this->visu_expl_abon =       $statut_temp->expl_visible_opac_abon  ;
-		$this->visu_explnum =         $statut_temp->explnum_visible_opac  ;
-		$this->visu_explnum_abon =    $statut_temp->explnum_visible_opac_abon  ;
-
+	global $gestion_acces_active,$gestion_acces_empr_notice;
+	if ($gestion_acces_active==1 && $gestion_acces_empr_notice==1) {
+		$ac = new acces();
+		$this->dom_2= $ac->setDomain(2);
 		if ($hide_explnum) {
-			$this->visu_explnum=0;
-			$this->visu_explnum_abon=0;
+			$this->rights = $this->dom_2->getRights($_SESSION['id_empr_session'],$this->id,4);
+		} else {
+			$this->rights = $this->dom_2->getRights($_SESSION['id_empr_session'],$this->id);
 		}
-	}	
+	} else {
+		$requete = "SELECT opac_libelle, notice_visible_opac, expl_visible_opac, notice_visible_opac_abon, expl_visible_opac_abon, explnum_visible_opac, explnum_visible_opac_abon FROM notice_statut WHERE id_notice_statut='".$this->statut."' ";
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($myQuery)) {
+			$statut_temp = pmb_mysql_fetch_object($myQuery);
+			$this->statut_notice =        $statut_temp->opac_libelle  ;
+			$this->visu_notice =          $statut_temp->notice_visible_opac  ;
+			$this->visu_notice_abon =     $statut_temp->notice_visible_opac_abon  ;
+			$this->visu_expl =            $statut_temp->expl_visible_opac  ;
+			$this->visu_expl_abon =       $statut_temp->expl_visible_opac_abon  ;
+			$this->visu_explnum =         $statut_temp->explnum_visible_opac  ;
+			$this->visu_explnum_abon =    $statut_temp->explnum_visible_opac_abon  ;
+		
+			if ($hide_explnum) {
+				$this->visu_explnum=0;
+				$this->visu_explnum_abon=0;
+			}
+		}	
+	}
 }
 
 function get_primaldata() {
@@ -123,10 +134,10 @@ function get_primaldata() {
 	
 	// on récupère les infos de la notice
 	$query = "select * from notices where notice_id=".$this->id." limit 1";
-	$result = mysql_query($query, $dbh);
-	if(mysql_num_rows($result)) {
-		$obj = mysql_fetch_object($result);
-		mysql_free_result($result);
+	$result = pmb_mysql_query($query, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		$obj = pmb_mysql_fetch_object($result);
+		pmb_mysql_free_result($result);
 		$this->get_primaldatafrom($obj);
 		}
 	}

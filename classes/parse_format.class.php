@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: parse_format.class.php,v 1.11.4.1 2014-10-28 11:02:26 mbertin Exp $
+// $Id: parse_format.class.php,v 1.12 2014-10-28 11:04:51 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");

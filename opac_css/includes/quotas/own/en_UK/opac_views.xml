@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <pmbquotas table="quotas_opac_views">
 	<elements>
-	  	<element name="READER_CATEG" id="1" comment="Catégories de lecteurs">
+	  	<element name="READER_CATEG" id="1" comment="Categories of readers">
 			<linkedto>READER</linkedto>
 			<tablelinked>empr</tablelinked>
 			<linkedfield>empr_categ</linkedfield>
@@ -10,7 +10,7 @@
 			<field>id_categ_empr</field>
 			<label>libelle</label>
 		</element>
-	  	<element name="READER_LOCATION" id="2" comment="Localisations de lecteurs">
+	  	<element name="READER_LOCATION" id="2" comment="Loacation of readers">
 			<linkedto>READER</linkedto>
 			<tablelinked>empr</tablelinked>
 			<linkedfield>empr_location</linkedfield>
@@ -19,7 +19,7 @@
 			<field>idlocation</field>
 			<label>location_libelle</label>
 		</element>
-	  	<element name="READER_STATUT" id="4" comment="Statuts de lecteurs">
+	  	<element name="READER_STATUT" id="4" comment="Statuses of readers">
 			<linkedto>READER</linkedto>
 			<tablelinked>empr</tablelinked>
 			<linkedfield>empr_statut</linkedfield>
@@ -28,7 +28,7 @@
 			<field>idstatut</field>
 			<label>statut_libelle</label>
 		</element>
-	  	<element name="READER_CODESTAT" id="8" comment="Codes statistiques de lecteurs">
+	  	<element name="READER_CODESTAT" id="8" comment="Statistical codes of readers">
 			<linkedto>READER</linkedto>
 			<tablelinked>empr</tablelinked>
 			<linkedfield>empr_codestat</linkedfield>
@@ -37,7 +37,7 @@
 			<field>idcode</field>
 			<label>libelle</label>
 		</element>
-		<element name="READER_ALONE" id="16" comment="Lecteurs individuels">
+		<element name="READER_ALONE" id="16" comment="Individual readers">
 			<linkedto>READER</linkedto>
 			<tablelinked>empr</tablelinked>
 			<linkedfield>id_empr</linkedfield>
@@ -49,7 +49,7 @@
 	</elements>
 	
 	<types>
-		<type name="OPAC_VIEW" elements_label="affectations" id="1" max="no" min="no" forcelend="no" conflit_min="no" conflit_max="no" comment="Choix des Vues autorisées" specialclass="opac_views" default_value_label="Vues autorisées si aucune correspondance" short_comment="Vues autorisées">
+		<type name="OPAC_VIEW" elements_label="affectations" id="1" max="no" min="no" forcelend="no" conflit_min="no" conflit_max="no" comment="Selection of the allowed views" specialclass="opac_views" default_value_label="Allowed views if no correspondence" short_comment="Allowed views">
 			<quotas>
 				<on>READER_CATEG</on>
 				<on>READER_LOCATION</on>

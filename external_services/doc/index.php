@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: index.php,v 1.2.6.1 2015-01-07 09:21:31 dbellamy Exp $
+// $Id: index.php,v 1.3 2015-01-07 09:11:35 pmbs Exp $
 
 //Ce script nécéssite php5
 

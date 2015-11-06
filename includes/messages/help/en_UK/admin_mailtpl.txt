@@ -1,9 +1,9 @@
-<h1>Administration des template mail</h1>
-<p>Cette page permet d&apos;&eacute;diter des templates de mail pour effectuer du mailing</p>
-<p>Param&eacute;trage &agrave; effectuer:</p>
+<h1>Administration of the e-mail templates</h1>
+<p>This page allows to edit e-mail templates in order to do mailings</p>
+<p>Configuration to set up:</p>
 
-<p>mail_html_format : Format d&apos;envoi des mails &agrave; partir de l&apos;opac 
+<p>mail_html_format : Format of the e-mails sent from the opac 
 <br> 1: HTML 
-<br> 2: HTML, images incluses</p>
-<p>img_folder : R&eacute;pertoire de stockage des images, en chemin absolu, de type /home/.../public_html/pmb/includes/img/</p>
-<p>img_url : URL d&apos;acc&egrave;s du r&eacute;pertoire des images de type http://pmb.com/.../pmb/includes/img/</p>
+<br> 2: HTML, images included</p>
+<p>img_folder : Images storage directory, in absolute path like /home/.../public_html/pmb/includes/img/</p>
+<p>img_url : Access URL of the directory of the images like http://pmb.com/.../pmb/includes/img/</p>

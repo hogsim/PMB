@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: factures.tpl.php,v 1.25.8.1 2015-02-05 15:35:20 jpermanne Exp $
+// $Id: factures.tpl.php,v 1.26 2015-02-05 15:38:36 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

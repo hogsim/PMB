@@ -2,11 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes_notes.class.php,v 1.7 2012-02-13 13:17:07 dgoron Exp $
+// $Id: demandes_notes.class.php,v 1.28 2015-05-20 14:39:30 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
 require_once($include_path."/mail.inc.php");
+require_once("$class_path/audit.class.php");
 
 class demandes_notes {
 	
@@ -23,59 +24,89 @@ class demandes_notes {
 	var $notes_num_user = 0;
 	var $notes_type_user = 0;
 	var $createur_note = '';
+	var $notes_read_gestion = 0; // flag gestion sur la lecture de la note par l'utilisateur
+	var $notes_read_opac = 0; // flag opac sur la lecture de la note par le lecteur
+	var $demande_final_note_num = 0;
 	
 	function demandes_notes($id_note=0,$id_action=0){
 		global $dbh;
 		
-		$this->id_note = $id_note;
-		if($id_action) $this->num_action = $id_action;
+		$this->fetch_data($id_note,$id_action);
+	}
+	
+	function fetch_data($id_note=0,$id_action=0){
+		
+		global $dbh;
+		
+		if($this->id_note && !$id_note){
+			$id_note=$this->id_note;
+		}elseif(!$this->id_note && $id_note){
+			$this->id_note=$id_note;
+		}
+		
+		if($this->num_action && !$id_action){
+			$id_action=$this->num_action;
+		}elseif(!$this->num_action && $id_action){
+			$this->num_action=$id_action;
+		}
 		
 		if($this->id_note){
-			$req = "select id_note, prive, rapport,contenu,date_note, sujet_action, id_demande, titre_demande, notes_num_user, notes_type_user, num_action, num_note_parent from demandes_notes 
-			join demandes_actions on num_action=id_action 
+			$req = "select id_note, prive, rapport,contenu,date_note, sujet_action, id_demande, titre_demande, notes_num_user, notes_type_user, 
+					num_action, num_note_parent, notes_read_gestion, notes_read_opac , demande_note_num
+			from demandes_notes
+			join demandes_actions on num_action=id_action
 			join demandes on num_demande=id_demande
 			where id_note='".$this->id_note."'";
-			$res = mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$obj = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$obj = pmb_mysql_fetch_object($res);
 				$this->date_note = $obj->date_note;
 				$this->contenu = $obj->contenu;
 				$this->rapport = $obj->rapport;
 				$this->prive = $obj->prive;
-				$this->num_note_parent = $obj->num_note_parent;	
-				$this->num_action = $obj->num_action;	
+				$this->num_note_parent = $obj->num_note_parent;
+				$this->num_action = $obj->num_action;
 				$this->libelle_action = $obj->sujet_action;
 				$this->libelle_demande = $obj->titre_demande;
 				$this->num_demande = $obj->id_demande;
 				$this->notes_num_user = $obj->notes_num_user;
 				$this->notes_type_user = $obj->notes_type_user;
+				$this->notes_read_gestion = $obj->notes_read_gestion;
+				$this->notes_read_opac = $obj->notes_read_opac;
+				$this->demande_final_note_num = $obj->demande_note_num;
 			} else {
-				$this->date_note = '0000-00-00';
+				$this->date_note = '0000-00-00 00:00:00';
 				$this->contenu = '';
 				$this->rapport = 0;
 				$this->prive = 0;
-				$this->num_note_parent = 0;	
+				$this->num_note_parent = 0;
 				$this->num_action = 0;
 				$this->notes_num_user = 0;
 				$this->notes_type_user = 0;
+				$this->notes_read_gestion = 0;
+				$this->notes_read_opac = 0;
+				$this->demande_final_note_num = 0;
 			}
 		} else {
-			$this->date_note = '0000-00-00';
+			$this->date_note = '0000-00-00 00:00:00';
 			$this->contenu = '';
 			$this->rapport = 0;
 			$this->prive = 0;
-			$this->num_note_parent = 0;	
+			$this->num_note_parent = 0;
 			$this->notes_num_user = 0;
 			$this->notes_type_user = 0;
+			$this->notes_read_gestion = 0;
+			$this->notes_read_opac = 0;
+			$this->demande_final_note_num = 0;
 		}
 		
 		if($this->num_action){
-			$req = "select sujet_action, titre_demande, id_demande  
+			$req = "select sujet_action, titre_demande, id_demande
 			from demandes_actions join demandes on num_demande=id_demande
 			where id_action='".$this->num_action."'
 			";
-			$res = mysql_query($req,$dbh);
-			$obj = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req,$dbh);
+			$obj = pmb_mysql_fetch_object($res);
 			$this->libelle_action = $obj->sujet_action;
 			$this->libelle_demande = $obj->titre_demande;
 			$this->num_demande = $obj->id_demande;
@@ -92,29 +123,43 @@ class demandes_notes {
 	function show_modif_form($reply=false){
 		global $form_modif_note, $msg, $charset, $demandes_include_note;
 		
-		$act_cancel = "document.location='./demandes.php?categ=action&act=see&idaction=$this->num_action'";
+		$act_cancel = "document.location='./demandes.php?categ=action&act=see&idaction=$this->num_action#fin'";
 		$form_modif_note = str_replace('!!cancel_action!!',$act_cancel,$form_modif_note);
+		$form_modif_note = str_replace('!!iduser!!',$this->notes_num_user,$form_modif_note);
+		$form_modif_note = str_replace('!!typeuser!!',$this->notes_type_user,$form_modif_note);
+		$form_modif_note = str_replace('!!iddemande!!',$this->num_demande,$form_modif_note);
 		
 		if($this->id_note && !$reply){			
 			$title = (strlen($this->contenu)>30 ? substr($this->contenu,0,30).'...' : $this->contenu);
 			$form_modif_note = str_replace('!!form_title!!',$msg['demandes_note_modif'].' : '.$title,$form_modif_note);
 			
 			$form_modif_note = str_replace('!!contenu!!',htmlentities($this->contenu,ENT_QUOTES,$charset),$form_modif_note);
-			if($this->rapport)
+			if($this->rapport){
 				$form_modif_note = str_replace('!!ck_rapport!!','checked',$form_modif_note);
-			else $form_modif_note = str_replace('!!ck_rapport!!','',$form_modif_note);
-			if($this->prive)
+			}else{
+				$form_modif_note = str_replace('!!ck_rapport!!','',$form_modif_note);
+			}
+			if($this->prive){
 				$form_modif_note = str_replace('!!ck_prive!!','checked',$form_modif_note);
-			else $form_modif_note = str_replace('!!ck_prive!!','',$form_modif_note);
+			}else{
+				$form_modif_note = str_replace('!!ck_prive!!','',$form_modif_note);
+			}
+			if($this->notes_read_gestion){
+				$form_modif_note = str_replace('!!ck_vue!!','',$form_modif_note);
+			}else{
+				$form_modif_note = str_replace('!!ck_vue!!','checked',$form_modif_note);
+			}	
+			
+			if($this->demande_final_note_num == $this->id_note){
+				$form_modif_note = str_replace('!!ck_final_note!!','checked',$form_modif_note);
+			}else{
+				$form_modif_note = str_replace('!!ck_final_note!!','',$form_modif_note);
+			}
+				
 			$form_modif_note = str_replace('!!date_note_btn!!',formatdate($this->date_note),$form_modif_note);
 			$form_modif_note = str_replace('!!date_note!!',$this->date_note,$form_modif_note);
 			$form_modif_note = str_replace('!!idnote!!',$this->id_note,$form_modif_note);
-			$form_modif_note = str_replace('!!idaction!!',$this->num_action,$form_modif_note);			
-			//Parent
-			$nots = new demandes_notes($this->num_note_parent);
-			$form_modif_note = str_replace('!!parent_text!!',$nots->contenu,$form_modif_note);
-			$form_modif_note = str_replace('!!id_note_parent!!',$nots->id_note,$form_modif_note);
-			$form_modif_note = str_replace('!!style!!',"",$form_modif_note);
+			$form_modif_note = str_replace('!!idaction!!',$this->num_action,$form_modif_note);
 			
 			$btn_suppr = "<input type='submit' class='bouton' value='".$msg[63]."' id='suppr_note' name='suppr_note' onclick='this.form.act.value=\"suppr_note\";return confirm_delete();'";
 		} elseif($this->id_note && $reply){
@@ -131,11 +176,8 @@ class demandes_notes {
 			$form_modif_note = str_replace('!!date_note_btn!!',$date,$form_modif_note);
 			$form_modif_note = str_replace('!!date_note!!',$date_note,$form_modif_note);
 			$form_modif_note = str_replace('!!idnote!!','',$form_modif_note);
-			$form_modif_note = str_replace('!!idaction!!',$this->num_action,$form_modif_note);						
-			//Parent
-			$form_modif_note = str_replace('!!parent_text!!',$nots->contenu,$form_modif_note);
-			$form_modif_note = str_replace('!!id_note_parent!!',$nots->id_note,$form_modif_note);
-			$form_modif_note = str_replace('!!style!!',"style='display:none'",$form_modif_note);
+			$form_modif_note = str_replace('!!idaction!!',$this->num_action,$form_modif_note);
+			$form_modif_note = str_replace('!!ck_final_note!!','',$form_modif_note);
 		} else {
 			$form_modif_note = str_replace('!!form_title!!',$msg['demandes_note_creation'],$form_modif_note);
 			$form_modif_note = str_replace('!!ck_prive!!','',$form_modif_note);
@@ -152,6 +194,7 @@ class demandes_notes {
 			$form_modif_note = str_replace('!!parent_text!!','',$form_modif_note);
 			$form_modif_note = str_replace('!!id_note_parent!!','',$form_modif_note);
 			$form_modif_note = str_replace('!!style!!','',$form_modif_note);
+			$form_modif_note = str_replace('!!ck_final_note!!','',$form_modif_note);
 		}
 		
 		$path = "<a href=./demandes.php?categ=gestion&act=see_dmde&iddemande=$this->num_demande>".htmlentities($this->libelle_demande,ENT_QUOTES,$charset)."</a>";
@@ -162,62 +205,207 @@ class demandes_notes {
 		print $form_modif_note;
 	}
 	
+	static function get_values_from_form(&$note){
+		global $contenu_note, $idaction,$idnote ,$iddemande , $iduser,$typeuser;
+		global $date_note, $ck_rapport, $ck_prive, $ck_vue,$id_note_parent, $PMBuserid,$demande_end;
+		
+		if(!$iduser){
+			$iduser=$PMBuserid;
+			$typeuser='0';
+		}
+		
+		$note->id_note=$idnote;
+		$note->num_action=$idaction;
+		$note->num_demande=$iddemande;
+		$note->contenu=$contenu_note;
+		$note->num_note_parent=$id_note_parent;
+		if(!$date_note){
+			$note->date_note=date("Y-m-d h:i:s",time());
+		}else{
+			$note->date_note=$date_note;
+		}
+		if($ck_prive){
+			$note->prive=1;
+		}else{
+			$note->prive=0;
+		}
+		if($ck_rapport){
+			$note->rapport=1;
+		}else{
+			$note->rapport=0;
+		}
+		if($ck_vue){
+			$note->notes_read_gestion=0;
+		}else{
+			$note->notes_read_gestion=1;
+		}
+		if($demande_end){
+			$note->demande_end=1;
+		}else{
+			$note->demande_end=0;
+		}
+		
+		$note->notes_num_user=$iduser;
+		$note->notes_type_user=$typeuser;
+	}
+	
 	/*
-	 * Création/Modification d'une demande
+	 * Création/Modification d'une note
 	 */
-	function save(){
+	static function save(&$note){
+	
+		global $dbh; 
+		global $demandes_email_demandes, $pmb_type_audit,$PMBuserid;
 		
-		global $dbh, $contenu_note, $idaction, $id_note_parent;
-		global $date_note, $ck_rapport, $ck_prive, $PMBuserid;
-		global $demandes_email_demandes;
-		
-		if($this->id_note){
+		if($note->id_note){
 			//MODIFICATION
-			$req = "update demandes_notes set contenu='".$contenu_note."',  
-				date_note='".$date_note."', 
-				prive='".($ck_prive ? 1 : 0)."', 
-				rapport='".($ck_rapport ? 1 : 0)."', 
-				num_action='".$idaction."',
-				notes_num_user='".$PMBuserid."',
-				notes_type_user='0',
-				num_note_parent='".$id_note_parent."'
-				where id_note='".$this->id_note."'";
-				$req_up = "update demandes_actions set actions_read='1' where id_action='".$idaction."'";
-				mysql_query($req_up,$dbh);
+			$query = "UPDATE demandes_notes SET 
+			contenu='".$note->contenu."',
+			date_note='".$note->date_note."',
+			prive='".$note->prive."',
+			rapport='".$note->rapport."',
+			num_action='".$note->num_action."',
+			notes_num_user='".$note->notes_num_user."',
+			notes_type_user='".$note->notes_type_user."',
+			num_note_parent='".$note->num_note_parent."',
+			notes_read_gestion='".$note->notes_read_gestion."',
+			notes_read_opac='1' 
+			WHERE id_note='".$note->id_note."'";
+			
+			pmb_mysql_query($query,$dbh);
+			
+			if($pmb_type_audit) audit::insert_modif(AUDIT_NOTE,$note->id_note);
 		} else {
 			//CREATION
-			$req = "insert into demandes_notes set contenu='".$contenu_note."',  
-				date_note='".$date_note."', 
-				prive='".($ck_prive ? 1 : 0)."', 
-				rapport='".($ck_rapport ? 1 : 0)."', 
-				num_action='".$idaction."',
-				num_note_parent='".$id_note_parent."',
-				notes_num_user='".$PMBuserid."',
-				notes_type_user='0'";
+			$query = "INSERT INTO demandes_notes SET
+			contenu='".$note->contenu."',
+			date_note='".$note->date_note."',
+			prive='".$note->prive."',
+			rapport='".$note->rapport."',
+			num_action='".$note->num_action."',
+			notes_num_user='".$note->notes_num_user."',
+			notes_type_user='".$note->notes_type_user."',
+			num_note_parent='".$note->num_note_parent."', 
+			notes_read_gestion='".$note->notes_read_gestion."',
+			notes_read_opac='1'";
+			pmb_mysql_query($query,$dbh);
+			$note->id_note=pmb_mysql_insert_id($dbh);
 			
-			if(!$ck_prive) {
-				if ($demandes_email_demandes) $this->send_alert_by_mail($PMBuserid,$id_note_parent);
-				$req_up = "update demandes_actions set actions_read='1' where id_action='".$idaction."'";
-				mysql_query($req_up,$dbh);
+			if($pmb_type_audit) audit::insert_creation(AUDIT_NOTE,$note->id_note);
+				
+			if(!$note->prive) {
+				if ($demandes_email_demandes){
+					$note->fetch_data($note->id_note,$note->num_action);
+					$note->send_alert_by_mail($note->notes_num_user,$note);					
+				}
 			}
 		}
-		mysql_query($req,$dbh);
+		
+		// Générer la réponse finale de la demande avec cette note
+		if($note->demande_end){
+			global $f_message;
+			$f_message=$note->contenu;
+			$demande = new demandes($note->num_demande);
+			$demande->save_repfinale($note->id_note);
+			demandes_notes::note_majParent($note->id_note,$note->num_action,$note->num_demande,"_gestion");
+		}
 	}
 	
 	/*
 	 * Suppression d'une note
 	 */
-	function delete(){
+	static function delete($note){
 		global $dbh;
-		if($this->id_note){
-			$req = "delete from demandes_notes where id_note='".$this->id_note."'";
-			mysql_query($req,$dbh);
-			$req = "delete from demandes_notes where num_note_parent='".$this->id_note."'";
-			mysql_query($req,$dbh);
+		if($note->id_note){
+			$req = "delete from demandes_notes where id_note='".$note->id_note."'";
+			pmb_mysql_query($req,$dbh);
+			$req = "delete from demandes_notes where num_note_parent='".$note->id_note."'";
+			pmb_mysql_query($req,$dbh);
+			audit::delete_audit(AUDIT_NOTE,$note->id_note);
 		}
 	}
 	
+	static function show_dialog($notes,$num_action,$num_demande,$redirect_to='demandes_actions-show_consultation_form',$from_ajax=false){
+		global $dbh, $msg, $charset;
+		global $content_dialog_note, $form_dialog_note, $js_dialog_note;
+		
+		if($from_ajax) {
+			$dialog_note = $content_dialog_note;
+			$form_name = "liste_action";
+		} else {
+			$dialog_note = $js_dialog_note.$form_dialog_note;
+			$form_name = "modif_notes";
+		}
+		$dialog_note = str_replace('!!redirectto!!',$redirect_to,$dialog_note);
+		$dialog_note = str_replace('!!idaction!!',$num_action,$dialog_note);
+		$dialog='';
+		if(sizeof($notes)){
+			foreach($notes as $idNote=>$note){
+				//Utilisateur ou lecteur ? 
+				if($note->notes_type_user==="1"){
+					$side='note_opac';
+				}elseif($note->notes_type_user==="0"){
+					$side='note_gest';
+				}
+
+				$dialog.='<div class="'.$side.'" id="note_'.$note->id_note.'">';
+				$dialog.='<div class="btn_note">';
+				
+				if($note->prive){
+					$dialog.="<input type='image' src='./images/interdit.gif' alt='".htmlentities($msg['demandes_note_privacy'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_privacy'],ENT_QUOTES,$charset)."' onclick='return false;'/>"; 
+				}
+				if($note->rapport){
+					$dialog.="<input type='image' src='./images/info.gif' alt='".htmlentities($msg['demandes_note_rapport'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_rapport'],ENT_QUOTES,$charset)."' onclick='return false;'/>";
+				}
+				if($note->notes_read_gestion){
+					$dialog.="<input type='image' onclick=\"change_read_note('note_".$note->id_note."','$note->id_note','".$num_action."','".$num_demande."', true); return false;\" title=\"\" id=\"note_".$note->id_note."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" style='display:none'>
+								<input type='image' onclick=\"change_read_note('note_".$note->id_note."','$note->id_note','".$num_action."','".$num_demande."', true); return false;\" title=\"\" id=\"note_".$note->id_note."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\">";
+				} else {
+					$dialog .= "<input type='image' onclick=\"change_read_note('note_".$note->id_note."','$note->id_note','".$num_action."','".$num_demande."', true); return false;\" title=\"\" id=\"note_".$note->id_note."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" >
+								<input type='image' onclick=\"change_read_note('note_".$note->id_note."','$note->id_note','".$num_action."','".$num_demande."', true); return false;\" title=\"\" id=\"note_".$note->id_note."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\" style='display:none'>";
+				}
+				
+				$dialog.="<input type='image' src='./images/cross.png' alt='".htmlentities($msg['demandes_note_suppression'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_suppression'],ENT_QUOTES,$charset)."' 
+								onclick='if(confirm_delete_note()) {!!change_action_form!!document.forms[\"".$form_name."\"].act.value=\"suppr_note\";document.forms[\"".$form_name."\"].idnote.value=\"$note->id_note\";} else return false;' />";
+				// affichage de l'audit des notes seulement si nécessaire
+				$audit_note = new audit(16,$note->id_note);
+				$audit_note->get_all();
+				if(sizeof($audit_note->all_audit)>1){
+					$dialog.="<input type='image' src='./images/historique.gif'
+					onClick=\"openPopUp('./audit.php?type_obj=16&object_id=$note->id_note', 'audit_popup', 700, 500, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes'); return false;\" title=\"".$msg['audit_button']."\" value=\"".$msg['audit_button']."\" />";
+				}				
+				if(!$note->notes_read_gestion && !$note->notes_type_user){
+					$req = "select  demande_note_num from demandes where demande_note_num='".$note->id_note."'" ;
+					$res = pmb_mysql_query($req,$dbh);
+					if(pmb_mysql_num_rows($res)){
+						$color_img="red";
+					}else $color_img="blue";
+						
+					$dialog.="<a href=\"javascript:change_demande_end('note_".$note->id_note."','$note->id_note','".$num_action."','".$num_demande."', true);\" ><i  id='note_".$note->id_note."Img3' class='fa fa-file-text-o fa-2x' style='color:$color_img' alt='".htmlentities($msg['demandes_note_demande_end'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_note_demande_end'],ENT_QUOTES,$charset)."' ></i></a>";
+				}				
+				$dialog.=' </div>';
+				$dialog.="<div onclick='!!change_action_form!!document.forms[\"".$form_name."\"].act.value=\"modif_note\";document.forms[\"".$form_name."\"].idnote.value=\"$note->id_note\";document.forms[\"".$form_name."\"].submit();'>";
+				$dialog.='<div class="entete_note">'.$note->createur_note.' '.$msg['381'].' '.formatdate($note->date_note).'</div>';
+				$dialog.='<p>'.$note->contenu.'</p>';
+				$dialog.='</div>';
+				$dialog.='</div>';
+				
+				demandes_notes::note_read($note->id_note,true,"_gestion");				
+			}
+			$dialog.='<a name="fin"></a>';
+		}
+		
+		$dialog_note = str_replace('!!dialog!!',$dialog,$dialog_note);
+		if($from_ajax) {
+			$dialog_note = str_replace('!!change_action_form!!','document.forms["'.$form_name.'"].action="./demandes.php?categ=notes#fin";',$dialog_note);
+		} else {
+			$dialog_note = str_replace('!!change_action_form!!','',$dialog_note);
+		}
+		return $dialog_note;
+	}
+	
 	/*
+	 * Inutile depuis la refonte
 	 * Affichage de la liste des notes associées à une action
 	 */
 	function show_list_notes($idaction=0){
@@ -227,10 +415,10 @@ class demandes_notes {
 	
 		$req = "select id_note, CONCAT(SUBSTRING(contenu,1,50),'','...') as titre, contenu, date_note, prive, rapport,notes_num_user,notes_type_user
 		 from demandes_notes where num_action='".$idaction."' and num_note_parent=0  order by date_note desc ,id_note desc";
-		$res = mysql_query($req,$dbh); 
+		$res = pmb_mysql_query($req,$dbh); 
 		$liste ="";
-		if(mysql_num_rows($res)){
-			while(($note = mysql_fetch_object($res))){
+		if(pmb_mysql_num_rows($res)){
+			while(($note = pmb_mysql_fetch_object($res))){
 				$createur = $this->getCreateur($note->notes_num_user,$note->notes_type_user);
 				$contenu = "
 					<div class='row'>
@@ -272,6 +460,7 @@ class demandes_notes {
 	}
 	
 	/*
+	 * Inutile depuis la refonte
 	 * Affichage des notes enfants
 	 */
 	function getChilds($id_note){
@@ -279,10 +468,10 @@ class demandes_notes {
 		
 		$req = "select id_note, CONCAT(SUBSTRING(contenu,1,50),'','...') as titre, contenu, date_note, prive, rapport, notes_num_user,notes_type_user 
 		from demandes_notes where num_note_parent='".$id_note."' and num_action='".$this->num_action."' order by date_note desc, id_note desc";
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 		$display="";
-		if(mysql_num_rows($res)){
-			while(($fille = mysql_fetch_object($res))){
+		if(pmb_mysql_num_rows($res)){
+			while(($fille = pmb_mysql_fetch_object($res))){
 				$createur = $this->getCreateur($fille->notes_num_user,$fille->notes_type_user);
 				$contenu = "
 					<div class='row'>
@@ -322,43 +511,56 @@ class demandes_notes {
 	/*
 	 * Alerte par mail
 	 */	
-	function send_alert_by_mail($idsender,$idparent=0){
+	function send_alert_by_mail($idsender,$note){
 		
-		global $msg, $PMBusernom, $PMBuserprenom, $PMBuseremail, $dbh;
+		global $msg, $PMBusernom, $PMBuserprenom, $PMBuseremail, $dbh,$opac_url_base,$pmb_url_base,$demandes_email_generic;
 		
-		if($idparent){	
-			$nots = new demandes_notes($idparent);		
-			$titre = (strlen($nots->contenu)<30 ? substr($nots->contenu,0,30) : substr($nots->contenu,0,30)."...");
-			$objet = sprintf($msg['demandes_note_mail_reponse_object'], $titre);
-			$contenu = $PMBuserprenom." ".$PMBusernom." ".sprintf($msg['demandes_note_mail_reponse'],$titre,$nots->libelle_action,$nots->libelle_demande);
-		} else{
-			$contenu = $PMBuserprenom." ".$PMBusernom." ".sprintf($msg['demandes_note_mail_new'],$this->libelle_action,$this->libelle_demande);
-			$objet = $msg['demandes_note_mail_new_object'];
-		}
+		$contenu = sprintf($msg['demandes_note_mail_new'],$PMBuserprenom." ".$PMBusernom." ",$note->libelle_action,$note->libelle_demande).'<br />';
+		$contenu.=$note->contenu.'<br />';
+		$lien_opac='<a href="'.$opac_url_base.'empr.php?tab=request&lvl=list_dmde&sub=open_demande&iddemande='.$note->num_demande.'&last_modified='.$note->num_action.'#fin">'.$msg['demandes_see_last_note'].'</a>';
+		$lien_gestion='<a href="'.$pmb_url_base.'demandes.php?categ=gestion&act=see_dmde&iddemande='.$note->num_demande.'&last_modified='.$note->num_action.'#fin">'.$msg['demandes_see_last_note'].'</a>';
+		$objet = $msg['demandes_note_mail_new_object'];
 		
 		$headers  = "MIME-Version: 1.0\n";
 		$headers .= "Content-type: text/html; charset=iso-8859-1";
 		
 		//Envoi du mail aux autres documentalistes concernés par la demande
-		$req = "select user_email, concat(prenom,' ',nom) as nom from users
-			join demandes_users on num_user=userid
-			where num_demande='".$this->num_demande."' and num_user !='".$idsender."'";
-		$res = mysql_query($req,$dbh);
-		while(($user = mysql_fetch_object($res))){	
-			if($user->user_email)
-				$envoi_OK = mailpmb($user->nom,$user->user_email,$objet,$contenu,$PMBuserprenom." ".$PMBusernom,$PMBuseremail,$headers,"" );
+		$req = "SELECT user_email, prenom,nom FROM users
+		JOIN demandes_users ON num_user=userid
+		WHERE num_demande='".$note->num_demande."' AND num_user !='".$idsender."'";
+		$res = pmb_mysql_query($req,$dbh);
+		
+		while(($user = pmb_mysql_fetch_object($res))){	
+			if($user->user_email){
+				if($user->prenom){
+					$user->nom=$user->prenom.' '.$user->nom;
+				}
 				
+				$envoi_OK = mailpmb($user->nom,$user->user_email,$objet,$contenu.$lien_gestion,$PMBuserprenom." ".$PMBusernom,$PMBuseremail,$headers,"" );
+			}
 		}
 		
 		//Envoi du mail au demandeur
-		$req= "select concat(empr_nom,' ',empr_prenom) as nom, empr_mail
-			from empr
-			join demandes on id_empr=num_demandeur
-			where id_demande='".$this->num_demande."'";
-		$res = mysql_query($req,$dbh);
-		$empr = mysql_fetch_object($res);		
-		if($empr->empr_mail) 
-			$envoi_OK = mailpmb($empr->nom,$empr->empr_mail,$objet,$contenu,$PMBuserprenom." ".$PMBusernom,$PMBuseremail,$headers,"");
+		$req= "SELECT empr_prenom,empr_nom,  empr_mail FROM empr
+		JOIN demandes ON id_empr=num_demandeur
+		WHERE id_demande='".$note->num_demande."'";
+		
+		$res = pmb_mysql_query($req,$dbh);
+		$empr = pmb_mysql_fetch_object($res);		
+		if($empr->empr_mail) {
+			if($empr->empr_prenom){
+				$empr->empr_nom=$empr->empr_prenom.' '.$empr->empr_nom;
+			}
+			$envoi_OK = mailpmb($empr->empr_nom,$empr->empr_mail,$objet,$contenu.$lien_opac,$PMBuserprenom." ".$PMBusernom,$PMBuseremail,$headers,"");
+		}
+		
+		// Envoi au mail générique
+		if($demandes_email_generic){
+			$param=explode(",", $demandes_email_generic);
+			if(($param[0]==2 || $param[0]==3) && $param[1]){
+				$envoi_OK = mailpmb("",$param[1],$objet,$contenu.$lien_gestion,$PMBuserprenom." ".$PMBusernom,$PMBuseremail,$headers,"",$param[2]);				
+			}
+		}
 	}
 	
 	/*
@@ -372,13 +574,112 @@ class demandes_notes {
 		else 
 			$rqt = "select concat(empr_prenom,' ',empr_nom) as nom from empr where id_empr='".$id_createur."'";
 		
-		$res = mysql_query($rqt,$dbh);
-		if(mysql_num_rows($res)){		
-			$createur = mysql_fetch_object($res);			
+		$res = pmb_mysql_query($rqt,$dbh);
+		if(pmb_mysql_num_rows($res)){		
+			$createur = pmb_mysql_fetch_object($res);			
 			return (trim($createur->nom)  ? $createur->nom : $createur->username);
 		}
 		
 		return "";
+	}
+	
+	/*
+	 * Met à jour les alertes sur l'action et la demande dont dépend la note
+	*/
+	static function note_majParent($id_note,$id_action,$id_demande,$side="_gestion"){
+		global $dbh;
+		
+		$ok = false;
+		if($id_note){
+			
+			$select = "SELECT notes_read".$side." FROM demandes_notes WHERE id_note=".$id_note;
+			$result  = pmb_mysql_query($select,$dbh);
+			$read = pmb_mysql_result($result,0,0);
+			
+			if($read == 1){
+				if(demandes_actions::action_read($id_action,false,$side) && demandes::demande_read($id_demande,false,$side)){
+					$ok = true;
+				}
+			} else {
+				// maj action : controle s'il existe des notes non lues pour l'action en cours
+				$query = "SELECT notes_read".$side." FROM demandes_notes WHERE num_action=".$id_action." AND id_note!=".$id_note." AND notes_read".$side."=1";
+				$result = pmb_mysql_query($query,$dbh);
+				
+				if(pmb_mysql_num_rows($result)){
+					$ok = demandes_actions::action_read($id_action,false,$side);
+				} else {
+					$ok = demandes_actions::action_read($id_action,true,$side);
+				}
+				// maj demande : controle s'il existe des actions non lues pour la demande en cours
+				if($ok){
+					$query = "SELECT actions_read".$side." FROM demandes_actions WHERE num_demande=".$id_demande." AND id_action!=".$id_action." AND actions_read".$side."=1";
+					$result = pmb_mysql_query($query,$dbh);
+					
+					if(pmb_mysql_num_rows($result)){
+						$ok = demandes::demande_read($id_demande,false,$side);
+					} else {
+						$ok = demandes::demande_read($id_demande,true,$side);
+					}
+				}
+			}
+		}
+		return $ok;
+	}
+	
+	/*
+	 * Met à jour les alertes sur l'action et la demande dont dépend la note
+	*/
+	static function note_read($id_note,$booleen=true,$side="_gestion"){
+		global $dbh;
+		
+		$value = "";
+		if($booleen){
+			$value = 0;
+		} else {
+			$value = 1;
+		}
+		$query = "UPDATE demandes_notes SET notes_read".$side."=".$value." WHERE id_note=".$id_note;
+		pmb_mysql_query($query,$dbh);		
+	}
+	
+	/*
+	 * fonction qui renvoie un booléen indiquant si une note a été lue ou pas
+	*/
+	static function read($note,$side="_gestion"){
+		global $dbh;
+		$read  = false;
+		$query = "SELECT notes_read".$side." FROM demandes_notes WHERE id_note=".$note->id_note;
+		$result = pmb_mysql_query($query,$dbh);
+		if($result){
+			$tmp = pmb_mysql_result($result,0,0);
+			if($tmp == 0){
+				$read = true;
+			}
+		}
+		return $read;
+	}
+	
+	/*
+	 * Change l'alerte de la note : si elle est lue, elle passe en non lue et inversement
+	*/
+	static function change_read($note,$side="_gestion"){
+		global $dbh;
+	
+		$read = demandes_notes::read($note,$side);
+		$value = "";
+		if($read){
+			$value = 1;
+		} else {
+			$value = 0;
+		}
+		$query = "UPDATE demandes_notes SET notes_read".$side."=".$value." WHERE id_note=".$note->id_note;
+		if(pmb_mysql_query($query,$dbh)){
+			return true;
+		} else {
+			return false;
+		}
+		
+		
 	}
 }
 ?>

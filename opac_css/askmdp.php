@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: askmdp.php,v 1.38 2014-02-17 14:23:01 abacarisse Exp $
+// $Id: askmdp.php,v 1.43 2015-06-10 08:13:01 dgoron Exp $
 
 $base_path=".";
 $is_opac_included = false;
@@ -109,8 +109,8 @@ print $std_header;
 require_once ($base_path.'/includes/navigator.inc.php');
 	
 $query = "SELECT valeur_param FROM parametres WHERE type_param='opac' AND sstype_param = 'biblio_name'";
-$result = mysql_query($query) or die ("*** Erreur dans la requ&ecirc;te <br />*** $query<br />\n");
-$row = mysql_fetch_array ($result);
+$result = pmb_mysql_query($query) or die ("*** Erreur dans la requ&ecirc;te <br />*** $query<br />\n");
+$row = pmb_mysql_fetch_array($result);
 $demandeemail= "<hr /><p class='texte'>".$msg[mdp_txt_intro_demande]."</p>
 	<form action=\"askmdp.php\" method=\"post\" ><br />
 	<input type=\"text\" name=\"email\" size=\"20\" border=\"0\" value=\"email@\" onFocus=\"this.value='';\">&nbsp;&nbsp;
@@ -127,17 +127,17 @@ if ($demande!="ok" || $email=='') {
 	
 } elseif ($email) {
 	$query = "SELECT empr_login, empr_password, empr_location,empr_mail,concat(empr_prenom,' ',empr_nom) as nom_prenom FROM empr WHERE empr_mail like '%".$email."%'";
-	$result = mysql_query($query) or die ("*** Erreur dans la requ&ecirc;te <br />*** $query<br />\n");
-	if (mysql_num_rows($result)!=0) {
+	$result = pmb_mysql_query($query) or die ("*** Erreur dans la requ&ecirc;te <br />*** $query<br />\n");
+	if (pmb_mysql_num_rows($result)!=0) {
 		$res_envoi = false;
-		while ($row = mysql_fetch_object ($result)) {
+		while ($row = pmb_mysql_fetch_object($result)) {
 			$emails_empr = explode(";",$row->empr_mail);
 			for ($i=0; $i<count($emails_empr); $i++) {
 				if (strtolower($email) == strtolower($emails_empr[$i])) {
 					if (!$opac_biblio_name) {
 						$query_loc = "SELECT name, email FROM docs_location WHERE idlocation='$row->empr_location'";
-						$result_loc = mysql_query($query_loc) or die ("*** Erreur dans la requ&ecirc;te <br />*** $query_loc<br />\n");
-						$info_loc = mysql_fetch_object ($result_loc) ;
+						$result_loc = pmb_mysql_query($query_loc) or die ("*** Erreur dans la requ&ecirc;te <br />*** $query_loc<br />\n");
+						$info_loc = pmb_mysql_fetch_object($result_loc) ;
 						$biblio_name_temp=$info_loc->name ;
 						$biblio_email_temp=$info_loc->email ;
 					} else {
@@ -147,11 +147,18 @@ if ($demande!="ok" || $email=='') {
 					$headers  = "MIME-Version: 1.0\n";
 					$headers .= "Content-type: text/html; charset=iso-8859-1\n";
 		
-					// Pour faire suite à votre demande, nous vous prions de trouver ci-dessous vos informations de connexion pour <b>!!biblioname!!</b> :<br /> -Identifiant: !!login!! <br /> -Mot de passe: !!password!! <br /><br />Si vous rencontrez des difficultés, adressez un mail à !!biblioemail!!.
+					// clé pour autoriser une seule connexion auto :
+					$alphanum  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+					$password_key = substr(str_shuffle($alphanum), 0, 20);
+					$rqt = "update empr set cle_validation='".$password_key."' where empr_login='".$row->empr_login."' ";
+					$res = pmb_mysql_query($rqt,$dbh);
+					
+					// Bonjour,<br /><br />Pour faire suite à votre demande de réinitialisation de mot de passe à <b>!!biblioname!!</b>, veuillez trouver ci-dessous le lien qui vous permettra d'effectuer ce changement : <br /><br />!!lien_mdp!!<br /><br /> - Pour rappel, votre identifiant est : !!login!!<br /><br />Si vous rencontrez des difficultés, adressez un mail à !!biblioemail!!.<br /><br />
 					$messagemail = $msg[mdp_mail_body] ;
 					$messagemail = str_replace("!!login!!",$row->empr_login,$messagemail);
-					$messagemail = str_replace("!!password!!",$row->empr_password,$messagemail);
-					$messagemail = str_replace("!!biblioname!!","<a href=\"$opac_url_base\">".$biblio_name_temp."</a>",$messagemail);
+					$messagemail = str_replace("!!biblioname!!","<a href=\"$opac_url_base\">".$biblio_name_temp."</a>",$messagemail);	
+					$lien_mdp = "<a href='".$opac_url_base."empr.php?lvl=change_password&emprlogin=".$row->empr_login."&password_key=".$password_key."'>".$opac_url_base."empr.php?lvl=change_password&emprlogin=".$row->empr_login."&password_key=".$password_key."</a>";
+					$messagemail = str_replace("!!lien_mdp!!",$lien_mdp,$messagemail);
 					$messagemail = str_replace("!!biblioemail!!","<a href=mailto:$opac_biblio_email>$biblio_email_temp</a>",$messagemail);
 		
 					$objetemail = str_replace("!!biblioname!!",$biblio_name_temp,$msg[mdp_mail_obj]);
@@ -213,11 +220,23 @@ if ($opac_show_bandeaugauche==0) {
 		$loginform__ = genere_form_connexion_empr();
 	} else {
 		$loginform__.="<b>".$empr_prenom." ".$empr_nom."</b><br />\n";
-		$loginform__.="<a href=\"empr.php\" id=\"empr_my_account\">".$msg["empr_my_account"]."</a><br />
-			<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
+		$loginform__.="<select name='empr_quick_access' onchange='if (this.value) window.location.href=this.value'>
+				<option value=''>".$msg["empr_quick_access"]."</option>
+				<option value='empr.php'>".$msg["empr_my_account"]."</option>";
+		if ($allow_loan || $allow_loan_hist) {
+			$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-loan'>".$msg["empr_my_loans"]."</option>";
+		}
+		if ($allow_book && $opac_resa) {
+			$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-resa'>".$msg["empr_my_resas"]."</option>";
+		}
+		if ($opac_demandes_active && $allow_dema) {
+			$loginform__.="<option value='empr.php?tab=request&lvl=list_dmde'>".$msg["empr_my_dmde"]."</option>";
+		}
+		$loginform__.="</select><br />";
+		$loginform__.="<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
 	}
 	$loginform = str_replace("!!login_form!!",$loginform__,$loginform);
-	$footer= str_replace("!!contenu_bandeau!!",$home_on_left.$loginform.$meteo.$adresse,$footer);
+	$footer= str_replace("!!contenu_bandeau!!",($opac_accessibility ? $accessibility : "").$home_on_left.$loginform.$meteo.$adresse,$footer);
 	$footer= str_replace("!!contenu_bandeau_2!!",$opac_facette_in_bandeau_2?$lvl1.$facette:"",$footer);
 }
 
@@ -278,7 +297,47 @@ if($opac_parse_html || $cms_active){
 		$cms=new cms_build();
 		$htmltoparse = $cms->transform_html($htmltoparse);
 	}
+	
+	//Compression CSS
+	
+	if($opac_compress_css == 1 && !$cms_active){
+		$compressed_file_exist = file_exists("./temp/full.css");
+		require_once($class_path."/curl.class.php");
+		$dom = new DOMDocument();
+		$dom->encoding = $charset;
+		$dom->loadHTML($htmltoparse);
+		$css_buffer = "";
+		$links = $dom->getElementsByTagName("link");
+		$dom_css = array();
+		for($i=0 ; $i<$links->length ; $i++){
+			$dom_css[] = $links->item($i);
+			if(!$compressed_file_exist && $links->item($i)->hasAttribute("type") && $links->item($i)->getAttribute("type") == "text/css"){
+				$css_buffer.= loadandcompresscss(html_entity_decode($links->item($i)->getAttribute("href")));
+			}
+		}
+		$styles = $dom->getElementsByTagName("style");
+		for($i=0 ; $i<$styles->length ; $i++){
+			$dom_css[] = $styles->item($i);
+			if(!$compressed_file_exist){
+				$css_buffer.= compresscss($styles->item($i)->nodeValue,"");
+			}
+		}
+		foreach($dom_css as $link){
+			$link->parentNode->removeChild($link);
+		}
+		if(!$compressed_file_exist){
+			file_put_contents("./temp/full.css",$css_buffer);
+		}
+		$link = $dom->createElement("link");
+		$link->setAttribute("href", "./temp/full.css");
+		$link->setAttribute("rel", "stylesheet");
+		$link->setAttribute("type", "text/css");
+		$dom->getElementsByTagName("head")->item(0)->appendChild($link);
+		$htmltoparse = $dom->saveHTML();
+	}else if (file_exists("./temp/full.css") && !$cms_active){
+		unlink("./temp/full.css");
+	}
 	print $htmltoparse;
 }
 /* Fermeture de la connexion */
-mysql_close($dbh);
+pmb_mysql_close($dbh);

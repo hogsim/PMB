@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: origine.inc.php,v 1.12 2011-06-06 08:04:27 dbellamy Exp $
+// $Id: origine.inc.php,v 1.13 2015-04-03 11:16:20 jpermanne Exp $
 
 /*
  * caller	= nom du formulaire appelant
@@ -74,10 +74,10 @@ switch ($sub) {
 			// Localisation de l'emprunteur
 			if($pmb_lecteurs_localises){
 				$req_loc = "select idlocation, location_libelle from docs_location";
-				$res_loc = mysql_query($req_loc,$dbh);
+				$res_loc = pmb_mysql_query($req_loc,$dbh);
 				$sel_loc = "<select id='empr_loca' name='empr_loca' onchange='this.form.submit();return test_form(this.form);'>";
 				$sel_loc .= "<option value='0' ".(!$empr_loca ? 'selected' : '').">".htmlentities($msg['demandes_localisation_all'],ENT_QUOTES,$charset)."</option>";
-				while($loc = mysql_fetch_object($res_loc)){
+				while($loc = pmb_mysql_fetch_object($res_loc)){
 					$sel_loc .= "<option value='".$loc->idlocation."' ".(($empr_loca==$loc->idlocation) ? 'selected' : '').">".htmlentities($loc->location_libelle,ENT_QUOTES,$charset)."</option>";
 				}
 				$sel_loc.= "</select>";
@@ -137,8 +137,8 @@ function show_empr_results($dbh, $user_input, $nbr_lignes=0, $page=0) {
 		$requete = "SELECT COUNT(1) FROM empr WHERE ( $where ) ".( $where_loc ? "AND ".$where_loc :"");
 	}
 
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 
 	if(!$page) $page=1;
 	$debut =($page-1)*$nb_per_page;
@@ -152,8 +152,8 @@ function show_empr_results($dbh, $user_input, $nbr_lignes=0, $page=0) {
 			$requete .= "ORDER BY empr_nom, empr_prenom LIMIT $debut,$nb_per_page ";
 		}
 
-		$res = @mysql_query($requete, $dbh);
-		while(($empr=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($empr=pmb_mysql_fetch_object($res))) {
             $empr_entry = $empr->empr_nom;
             if($empr->empr_prenom) $empr_entry = $empr->empr_prenom.' '.$empr_entry;
             $location = ( $empr->empr_location ? $empr->empr_location :  $em);
@@ -162,7 +162,7 @@ function show_empr_results($dbh, $user_input, $nbr_lignes=0, $page=0) {
 				$empr_entry</a>");
 			print "<br />";
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 
@@ -211,8 +211,8 @@ function show_user_results($dbh, $user_input, $nbr_lignes=0, $page=0) {
 		$requete = "SELECT COUNT(1) FROM users WHERE $where ";
 	}
 
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 
 	if(!$page) $page=1;
 	$debut =($page-1)*$nb_per_page;
@@ -227,8 +227,8 @@ function show_user_results($dbh, $user_input, $nbr_lignes=0, $page=0) {
 			$requete .= "ORDER BY nom, prenom LIMIT $debut,$nb_per_page ";
 		}
 
-		$res = @mysql_query($requete, $dbh);
-		while(($row_user=mysql_fetch_object($res))) {
+		$res = @pmb_mysql_query($requete, $dbh);
+		while(($row_user=pmb_mysql_fetch_object($res))) {
             $user_entry = $row_user->nom;
             if($row_user->prenom) $user_entry = $row_user->prenom.' '.$user_entry;
             print pmb_bidi("
@@ -236,7 +236,7 @@ function show_user_results($dbh, $user_input, $nbr_lignes=0, $page=0) {
 				$user_entry</a>");
 			print "<br />";
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 

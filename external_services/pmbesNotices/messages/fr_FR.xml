@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.6 2013-02-20 16:09:28 mbertin Exp $ -->
+$Id: fr_FR.xml,v 1.7 2015-06-26 07:48:01 pmbs Exp $ -->
 
 <!DOCTYPE XMLlist SYSTEM "../../../includes/XMLlist.dtd" >
 <XMLlist>
@@ -16,7 +16,7 @@ pmbesNotices
 fetchNoticeList
 -->
   <entry code="fetchNoticeList_description">Récupère une liste de notices à partir de leurs ids, sous un format spécifique</entry>
-  <entry code="fetchNoticeList_input_description">Attention, aux exigences des protocoles en matière de charset si vous utilisez cette fonction. Par exemple, si vous utilisez SOAP, vous devez transporter les notices en utf-8.</entry>
+  <entry code="fetchNoticeList_input_description">Attention aux exigences des protocoles en matière de charset si vous utilisez cette fonction. Par exemple, si vous utilisez SOAP, vous devez transporter les notices en utf-8.</entry>
   <entry code="fetchNoticeList_output_description"></entry>
   <entry code="fetchNoticeList_noticelist">un tableau contenant la liste des id des notices que l'on souhaite récupérer</entry>
   <entry code="fetchNoticeList_recordFormat">le format dans lequel on souhaite ces notices</entry>

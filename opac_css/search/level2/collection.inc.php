@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collection.inc.php,v 1.22 2012-07-30 12:26:31 ngantier Exp $
+// $Id: collection.inc.php,v 1.24 2015-04-16 16:09:56 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -31,15 +31,15 @@ if(!$opac_allow_affiliate_search || ($opac_allow_affiliate_search && $tab == "ca
 	print activation_surlignage();
 	print "</h3></span>\n";
 	
-	$found = mysql_query("select collection_id, ".$pert.",collection_name from collections $clause group by collection_id $tri $limiter", $dbh);
+	$found = pmb_mysql_query("select collection_id, ".$pert.",collection_name from collections $clause group by collection_id $tri $limiter", $dbh);
 	
 	if(!$opac_allow_affiliate_search) print "
 			</div>";
 	print "
 			<div id=\"resultatrech_liste\">
 			<ul>";
-	while($mesCollections = mysql_fetch_object($found)) {
-		print pmb_bidi("<li class='categ_colonne'><font class='notice_fort'><a href='index.php?lvl=coll_see&id=".$mesCollections->collection_id."'>".$mesCollections->collection_name."</a></font></li>\n");
+	while($mesCollections = pmb_mysql_fetch_object($found)) {
+		print pmb_bidi("<li class='categ_colonne'><font class='notice_fort'><a href='index.php?lvl=coll_see&id=".$mesCollections->collection_id."&from=search'>".$mesCollections->collection_name."</a></font></li>\n");
 		}
 	print "</ul>";
 	print "

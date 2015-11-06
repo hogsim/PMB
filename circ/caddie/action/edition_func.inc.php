@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // ï¿½ 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: edition_func.inc.php,v 1.6 2013-04-04 14:25:41 mbertin Exp $
+// $Id: edition_func.inc.php,v 1.7 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,9 +35,9 @@ if (!$flag && !$no_flag ) return ;
 $requete .= $complement_clause." order by object_id";
 
 $liste=array();
-$result = mysql_query($requete, $dbh) or die($requete."<br />".mysql_error($dbh));
-if(mysql_num_rows($result)) {
-	while ($temp = mysql_fetch_object($result)) 
+$result = pmb_mysql_query($requete, $dbh) or die($requete."<br />".pmb_mysql_error($dbh));
+if(pmb_mysql_num_rows($result)) {
+	while ($temp = pmb_mysql_fetch_object($result)) 
 		$liste[] = array('object_id' => $temp->object_id, 'flag' => $temp->flag ) ;
 	} else return;
 
@@ -54,8 +54,8 @@ switch($dest) {
 
 	// calcul du nombre max de colonnes pour les champs perso
 	$rqt_compte1 = "select idchamp, titre from empr_custom order by ordre " ;
-	$res_compte1 = mysql_query($rqt_compte1, $dbh) ; 
-	$max_perso = mysql_num_rows($res_compte1) ;
+	$res_compte1 = pmb_mysql_query($rqt_compte1, $dbh) ; 
+	$max_perso = pmb_mysql_num_rows($res_compte1) ;
 		
 	// boucle de parcours des exemplaires trouvés
 	$entete=0;
@@ -89,9 +89,9 @@ function extrait_info_empr ($sql="", $entete=1, $flag="") {
 	
 	if (!$debligne_excel) $debligne_excel = 0 ;
 	
-	$res = @mysql_query($sql, $dbh);
-	$nbr_lignes = @mysql_num_rows($res);
-	$nbr_champs = @mysql_num_fields($res);
+	$res = @pmb_mysql_query($sql, $dbh);
+	$nbr_lignes = @pmb_mysql_num_rows($res);
+	$nbr_champs = @pmb_mysql_num_fields($res);
              		
 	if ($nbr_lignes) {
 		switch($dest) {
@@ -102,7 +102,7 @@ function extrait_info_empr ($sql="", $entete=1, $flag="") {
 				}
 				for($i=0; $i < $nbr_champs; $i++) {
 					// entête de colonnes
-					$fieldname = mysql_field_name($res, $i);
+					$fieldname = pmb_mysql_field_name($res, $i);
 					if ($entete) {
 						$worksheet->write_string((1+$debligne_excel),0,$msg['caddie_action_marque']);
 						$worksheet->write_string((1+$debligne_excel),($i+1),${fieldname});
@@ -111,7 +111,7 @@ function extrait_info_empr ($sql="", $entete=1, $flag="") {
 				if ($entete) {
 					$worksheet->write_string((1+$debligne_excel),($nbr_champs+1),"DESCR");
 					for($i=0; $i < $max_perso; $i++) {
-						$perso = mysql_fetch_object($res_compte1) ;
+						$perso = pmb_mysql_fetch_object($res_compte1) ;
 						$worksheet->write_string((1+$debligne_excel),($nbr_champs+2+$i),$perso->titre);
 					}
 				}
@@ -119,7 +119,7 @@ function extrait_info_empr ($sql="", $entete=1, $flag="") {
              		        		
 				for($i=0; $i < $nbr_lignes; $i++) {
 					$debligne_excel++;
-					$row = mysql_fetch_row($res);
+					$row = pmb_mysql_fetch_row($res);
 					$id_notice = $row[0] ;
 					if ($flag) $worksheet->write_string(($i+$debligne_excel),0,"X");
 					$j=0;
@@ -146,17 +146,17 @@ function extrait_info_empr ($sql="", $entete=1, $flag="") {
 					echo "\n<table><th align='left'>".$msg['caddie_action_marque']."</th>";
 					$etat_table = 1 ;
 					for($i=0; $i < $nbr_champs; $i++) {
-						$fieldname = mysql_field_name($res, $i);
+						$fieldname = pmb_mysql_field_name($res, $i);
 						print("<th align='left'>${fieldname}</th>");
 					}
 					print "<th align='left'>DESCR</th>" ;
 					for($i=0; $i < $max_perso; $i++) {
-						$perso = mysql_fetch_object($res_compte1) ;
+						$perso = pmb_mysql_fetch_object($res_compte1) ;
 						print "<th align='left'>".$perso->titre."</th>" ;
 					}
 				}
 				for($i=0; $i < $nbr_lignes; $i++) {
-					$row = mysql_fetch_row($res);
+					$row = pmb_mysql_fetch_row($res);
 					$id_notice = $row[0] ;
 					echo "<tr>";
 					if ($flag) print "<td>X</td>"; else print "<td>&nbsp;</td>";
@@ -187,18 +187,18 @@ function extrait_info_empr ($sql="", $entete=1, $flag="") {
 					echo "\n<table><th align='left'>".$msg['caddie_action_marque']."</th>";
 					$etat_table = 1 ;
 					for($i=0; $i < $nbr_champs; $i++) {
-						$fieldname = mysql_field_name($res, $i);
+						$fieldname = pmb_mysql_field_name($res, $i);
 						print("<th align='left'>${fieldname}</th>");
 					}
 					print "<th align='left'>DESCR</th>" ;
 					for($i=0; $i < $max_perso; $i++) {
-						$perso = mysql_fetch_object($res_compte1) ;
+						$perso = pmb_mysql_fetch_object($res_compte1) ;
 						print "<th align='left'>".$perso->titre."</th>" ;
 					}
 				}
 				$odd_even=0;
 				for($i=0; $i < $nbr_lignes; $i++) {
-					$row = mysql_fetch_row($res);
+					$row = pmb_mysql_fetch_row($res);
 					$id_notice = $row[0] ;
 					if ($odd_even==0) {
 						echo "	<tr class='odd'>";

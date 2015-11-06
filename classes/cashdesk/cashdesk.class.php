@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cashdesk.class.php,v 1.8 2014-02-26 15:53:03 ngantier Exp $
+// $Id: cashdesk.class.php,v 1.9 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,9 +30,9 @@ class cashdesk  {
 		
 		// les infos générales...	
 		$rqt = "select * from cashdesk where cashdesk_id ='".$this->id."'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$row = mysql_fetch_object($res);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$row = pmb_mysql_fetch_object($res);
 			$this->id = $row->cashdesk_id;
 			$this->name = $row->cashdesk_name;
 			$this->autorisations=$row->cashdesk_autorisations;
@@ -40,16 +40,16 @@ class cashdesk  {
 			$this->cashbox=$row->cashdesk_cashbox;
 			
 			$rqt = "select * from cashdesk_locations where cashdesk_loc_cashdesk_num ='".$this->id."'";
-			$res_loc = mysql_query($rqt);
-			if(mysql_num_rows($res_loc)){
-				while($row_loc=mysql_fetch_object($res_loc)){
+			$res_loc = pmb_mysql_query($rqt);
+			if(pmb_mysql_num_rows($res_loc)){
+				while($row_loc=pmb_mysql_fetch_object($res_loc)){
 					// les localisations de la caisse				
 					$this->affectation[$row_loc->cashdesk_loc_num]=array();				
 					$rqt = "select * from cashdesk_sections where cashdesk_section_cashdesk_num ='".$this->id."'";
 					
-					$res_section = mysql_query($rqt);
-					if(mysql_num_rows($res_section)){						
-						while($row_section= mysql_fetch_object($res_section)){
+					$res_section = pmb_mysql_query($rqt);
+					if(pmb_mysql_num_rows($res_section)){						
+						while($row_section= pmb_mysql_fetch_object($res_section)){
 							// les sections spécifique de la caisse
 							$this->affectation[$row_loc->cashdesk_loc_num][$row_section->cashdesk_section_num]=1;			
 						}			
@@ -100,9 +100,9 @@ class cashdesk  {
 		global $msg;
 	
 		$requete_users = "SELECT transactype_id, transactype_name FROM transactype order by transactype_name ";
-		$res = mysql_query($requete_users, $dbh);
+		$res = pmb_mysql_query($requete_users, $dbh);
 		$all_tansactions=array();
-		while (list($transactype_id,$transactype_name)=mysql_fetch_row($res)) {
+		while (list($transactype_id,$transactype_name)=pmb_mysql_fetch_row($res)) {
 			$all_tansactions[]=array($transactype_id,$transactype_name);
 		}	
 	
@@ -138,14 +138,14 @@ class cashdesk  {
 		if (!$this->location_id) $this->location_id=$deflt_docs_location;
 		
 		$rqtloc = "SELECT * FROM docs_location order by location_libelle";
-		$resloc = mysql_query($rqtloc, $dbh);		
+		$resloc = pmb_mysql_query($rqtloc, $dbh);		
 		$form.="<table>
 		<tr>
 			<th>".$msg["cashdesk_form_locations"]."</th>
 			<th>".$msg["cashdesk_form_sections"]."</th>
 		</tr>
 		";
-		while (($loc=mysql_fetch_object($resloc))) {
+		while (($loc=pmb_mysql_fetch_object($resloc))) {
 			if ($parity++ % 2)	$pair_impair = "even"; else $pair_impair = "odd";
 			if(is_array($this->affectation[$loc->idlocation]))$checked=" checked='checked' "; else $checked="";
 			$form.="<tr class='$pair_impair' >";
@@ -153,10 +153,10 @@ class cashdesk  {
 			$form.="<input class='checkbox' type='checkbox' $checked value='".$loc->idlocation."' name='f_locations[]'>".htmlentities($loc->location_libelle,ENT_QUOTES, $charset)."<br/>";
 			$form.="</td>";
 			$requete = "SELECT idsection, section_libelle FROM docs_section, docsloc_section where idsection=num_section and num_location='$loc->idlocation' order by section_libelle";
-			$result = mysql_query($requete, $dbh);
+			$result = pmb_mysql_query($requete, $dbh);
 			$form.="<td>";
-			if ( mysql_num_rows($result)) {
-				while (($section = mysql_fetch_object($result))) {
+			if ( pmb_mysql_num_rows($result)) {
+				while (($section = pmb_mysql_fetch_object($result))) {
 					if($this->affectation[$loc->idlocation][$section->idsection])$checked=" checked='checked' "; else $checked="";
 					$form.="<input class='checkbox' type='checkbox' $checked value='".$section->idsection."' name='f_sections_".$loc->idlocation."[]'>".$section->section_libelle."<br/>  ";						
 				}
@@ -174,9 +174,9 @@ class cashdesk  {
 		global $PMBuserid;
 	
 		$requete_users = "SELECT userid, username FROM users order by username ";
-		$res_users = mysql_query($requete_users, $dbh);
+		$res_users = pmb_mysql_query($requete_users, $dbh);
 		$all_users=array();
-		while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+		while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 			$all_users[]=array($all_userid,$all_username);
 		}
 		if ($creation_cart) $param_autorisations.=" ".$PMBuserid ;
@@ -227,9 +227,9 @@ class cashdesk  {
 		
 		$i=0;
 		$data=array();
-		$res=mysql_query($requete);
-		if(mysql_num_rows($res)){
-			while ($row = mysql_fetch_object($res)){
+		$res=pmb_mysql_query($requete);
+		if(pmb_mysql_num_rows($res)){
+			while ($row = pmb_mysql_fetch_object($res)){
 		
 				$data[$i]["id"]=$row->transactype_num;
 				$data[$i]["name"]=$row->transactype_name;
@@ -237,25 +237,25 @@ class cashdesk  {
 				$data[$i]["unit_price"]=$row->transactype_unit_price;				
 				
 				$req="select SUM(montant)as cash from transactions where cashdesk_num=".$this->id." and transactype_num=".$row->transactype_num." and realisee=0 $all_filter";				
-				$res_sum=mysql_query($req);
-				if($row_sum= mysql_fetch_object($res_sum))	$data[$i]["realisee_no"]=$row_sum->cash;
+				$res_sum=pmb_mysql_query($req);
+				if($row_sum= pmb_mysql_fetch_object($res_sum))	$data[$i]["realisee_no"]=$row_sum->cash;
 				else $data[$i]["realisee_no"]="";
 				
 				$req="select SUM(montant)as cash from transactions where cashdesk_num=".$this->id." and transactype_num=".$row->transactype_num." and realisee=1 $all_filter";				
-				$res_sum=mysql_query($req);
-				if($row_sum= mysql_fetch_object($res_sum))	$data[$i]["realisee"]=$row_sum->cash;
+				$res_sum=pmb_mysql_query($req);
+				if($row_sum= pmb_mysql_fetch_object($res_sum))	$data[$i]["realisee"]=$row_sum->cash;
 				else $data[$i]["realisee"]="";
 				
 				$req="select SUM(montant)as cash from transactions where cashdesk_num=".$this->id." and transactype_num=".$row->transactype_num." and encaissement=0 
 				and transacash_num=0 $all_filter";
-				$res_sum=mysql_query($req);
-				if($row_sum= mysql_fetch_object($res_sum))	$data[$i]["encaissement_no"]=$row_sum->cash;
+				$res_sum=pmb_mysql_query($req);
+				if($row_sum= pmb_mysql_fetch_object($res_sum))	$data[$i]["encaissement_no"]=$row_sum->cash;
 				else $data[$i]["encaissement_no"]="";
 				
 				$req="select SUM(montant)as cash from transactions where cashdesk_num=".$this->id." and transactype_num=".$row->transactype_num." 
 				and transacash_num>0 $all_filter";		
-				$res_sum=mysql_query($req);
-				if($row_sum= mysql_fetch_object($res_sum))	$data[$i]["encaissement"]=$row_sum->cash;
+				$res_sum=pmb_mysql_query($req);
+				if($row_sum= pmb_mysql_fetch_object($res_sum))	$data[$i]["encaissement"]=$row_sum->cash;
 				else $data[$i]["encaissement"]="";
 				
 				$i++;
@@ -275,8 +275,8 @@ class cashdesk  {
 			$requete="select SUM(montant)as cash from transactions,  comptes where cashdesk_num=".$this->id."
 			and encaissement=0 and type_compte_id=1 and id_compte =compte_id $all_filter
 			";
-			$res_sum=mysql_query($requete);
-			if($row_sum= mysql_fetch_object($res_sum)){
+			$res_sum=pmb_mysql_query($requete);
+			if($row_sum= pmb_mysql_fetch_object($res_sum)){
 				if($row_sum->cash)$aff_flag=1;	
 				$compte["encaissement_no"]=$row_sum->cash;
 			}else $compte["encaissement_no"]="";
@@ -285,8 +285,8 @@ class cashdesk  {
 			$requete="select SUM(montant)as cash from transactions,  comptes where cashdesk_num=".$this->id."
 			and encaissement=1 and type_compte_id=1 and id_compte =compte_id $all_filter
 			";
-			$res_sum=mysql_query($requete);
-			if($row_sum= mysql_fetch_object($res_sum)){
+			$res_sum=pmb_mysql_query($requete);
+			if($row_sum= pmb_mysql_fetch_object($res_sum)){
 				if($row_sum->cash)$aff_flag=1;	
 				$compte["encaissement"]=$row_sum->cash;
 			}else $compte["encaissement"]="";
@@ -308,8 +308,8 @@ class cashdesk  {
 			$requete="select SUM(montant)as cash from transactions,  comptes where cashdesk_num=".$this->id." 
 			and encaissement=0 and type_compte_id=2 and id_compte =compte_id $all_filter
 			";
-			$res_sum=mysql_query($requete);
-			if($row_sum= mysql_fetch_object($res_sum)){
+			$res_sum=pmb_mysql_query($requete);
+			if($row_sum= pmb_mysql_fetch_object($res_sum)){
 				if($row_sum->cash)$aff_flag=1;
 				$compte["encaissement_no"]=$row_sum->cash;
 			}else $compte["encaissement_no"]="";
@@ -318,8 +318,8 @@ class cashdesk  {
 			$requete="select SUM(montant)as cash from transactions,  comptes where cashdesk_num=".$this->id."
 			and encaissement=1 and type_compte_id=2 and id_compte =compte_id $all_filter
 			";
-			$res_sum=mysql_query($requete);
-			if($row_sum= mysql_fetch_object($res_sum)){
+			$res_sum=pmb_mysql_query($requete);
+			if($row_sum= pmb_mysql_fetch_object($res_sum)){
 				if($row_sum->cash)$aff_flag=1;	
 				$compte["encaissement"]=$row_sum->cash;
 			}else $compte["encaissement"]="";
@@ -341,8 +341,8 @@ class cashdesk  {
 			$requete="select SUM(montant)as cash from transactions,  comptes where cashdesk_num=".$this->id." 
 			and encaissement=0 and type_compte_id=3 and id_compte =compte_id $all_filter
 			";
-			$res_sum=mysql_query($requete);
-			if($row_sum= mysql_fetch_object($res_sum)){
+			$res_sum=pmb_mysql_query($requete);
+			if($row_sum= pmb_mysql_fetch_object($res_sum)){
 				if($row_sum->cash)$aff_flag=1;
 				$compte["encaissement_no"]=$row_sum->cash;
 			}else $compte["encaissement_no"]="";
@@ -351,8 +351,8 @@ class cashdesk  {
 			$requete="select SUM(montant)as cash from transactions,  comptes where cashdesk_num=".$this->id."
 			and encaissement=1 and type_compte_id=3 and id_compte =compte_id $all_filter
 			";
-			$res_sum=mysql_query($requete);
-			if($row_sum= mysql_fetch_object($res_sum)){
+			$res_sum=pmb_mysql_query($requete);
+			if($row_sum= pmb_mysql_fetch_object($res_sum)){
 				if($row_sum->cash)$aff_flag=1;	
 				$compte["encaissement"]=$row_sum->cash;
 			}else $compte["encaissement"]="";
@@ -407,11 +407,11 @@ class cashdesk  {
 		global $dbh;
 		
 		$rqt = "delete FROM cashdesk_locations WHERE cashdesk_loc_cashdesk_num ='".$this->id."'";
-		mysql_query($rqt, $dbh);
+		pmb_mysql_query($rqt, $dbh);
 		$rqt = "delete FROM cashdesk_sections WHERE cashdesk_section_cashdesk_num ='".$this->id."'";
-		mysql_query($rqt, $dbh);		
+		pmb_mysql_query($rqt, $dbh);		
 		$rqt = "delete FROM cashdesk WHERE cashdesk_id ='".$this->id."'";
-		mysql_query($rqt, $dbh);
+		pmb_mysql_query($rqt, $dbh);
 		
 		$this->id=0;
 	}
@@ -421,9 +421,9 @@ class cashdesk  {
 		
 		if($this->id){
 			$rqt = "delete FROM cashdesk_locations WHERE cashdesk_loc_cashdesk_num ='".$this->id."'";
-			mysql_query($rqt, $dbh);
+			pmb_mysql_query($rqt, $dbh);
 			$rqt = "delete FROM cashdesk_sections WHERE cashdesk_section_cashdesk_num ='".$this->id."'";
-			mysql_query($rqt, $dbh);
+			pmb_mysql_query($rqt, $dbh);
 			
 			$save = "update ";
 			$clause = "where cashdesk_id = '".$this->id."'";
@@ -431,17 +431,17 @@ class cashdesk  {
 			$save = "insert into ";						
 		}
 		$save.=" cashdesk set cashdesk_name='". addslashes( $this->name). "', cashdesk_autorisations='".$this->autorisations."' , cashdesk_transactypes='".$this->transactypes."'  , cashdesk_cashbox='".$this->cashbox."' $clause";
-		mysql_query($save,$dbh);		
+		pmb_mysql_query($save,$dbh);		
 		if(!$this->id){
-			$this->id=mysql_insert_id();
+			$this->id=pmb_mysql_insert_id();
 		}
 				
 		foreach($this->affectation as $id_location => $sections){
 			$rqt = "insert into cashdesk_locations set cashdesk_loc_cashdesk_num ='".$this->id."', cashdesk_loc_num ='".$id_location."' ";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 			foreach($sections as $id_section => $val){					
 				$rqt = "insert into cashdesk_sections set cashdesk_section_cashdesk_num ='".$this->id."', cashdesk_section_num ='".$id_section."' ";			
-				mysql_query($rqt,$dbh);
+				pmb_mysql_query($rqt,$dbh);
 			}
 		}				
 		$this->fetch_data();

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff.class.php,v 1.15 2013-09-24 13:31:58 ngantier Exp $
+// $Id: serialcirc_diff.class.php,v 1.23 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -11,7 +11,9 @@ require_once($include_path."/templates/serialcirc_diff.tpl.php");
 require_once($class_path."/serial_display.class.php");
 require_once($class_path."/empr_caddie.class.php");	
 require_once($class_path."/serialcirc_ask.class.php");
+require_once($class_path."/serialcirc_tpl.class.php");
 require_once($class_path."/serialcirc_print_fields.class.php");
+require_once($class_path."/parametres_perso.class.php");
 	
 class serialcirc_diff {
 	
@@ -33,22 +35,23 @@ class serialcirc_diff {
 	var $duration_before_send=0;
 	var $expl_statut_circ=0;
 	var $expl_statut_circ_after=0;
+	var $sort_diff='';
 	
 	function serialcirc_diff($id_serialcirc=0,$num_abt=0 ) {
 		$id_serialcirc+=0;
 		$num_abt+=0;		
 		if($num_abt && !$id_serialcirc){			
 			$requete="select id_serialcirc from serialcirc where num_serialcirc_abt=".$num_abt;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);
 				$id_serialcirc=$r->id_serialcirc;
 			}			
 		} elseif(!$num_abt && $id_serialcirc){
 			$requete="select num_serialcirc_abt from serialcirc where id_serialcirc=".$id_serialcirc;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);
 				$num_abt=$r->num_serialcirc_abt;
 			}			
 			
@@ -65,9 +68,9 @@ class serialcirc_diff {
 		//on récupère les infos liées au périos
 		if($this->num_abt){
 			$query = "select notice_id,tit1,abt_name from abts_abts join notices on notice_id = num_notice and abt_id = ".$this->num_abt;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->abt_name=$row->abt_name;	
 				$this->id_perio=$row->notice_id;
 				$this->serial_info['serial_link']=	"./catalog.php?categ=serials&sub=view&serial_id=".$row->notice_id;
@@ -81,9 +84,9 @@ class serialcirc_diff {
 		//on récupère les in infos sur la circulation
 		if($this->id){
 			$requete="select * from serialcirc where id_serialcirc=".$this->id ;
-			$resultat=mysql_query($requete);
-			if (mysql_num_rows($resultat)) {
-				$r=mysql_fetch_object($resultat);						
+			$resultat=pmb_mysql_query($requete);
+			if (pmb_mysql_num_rows($resultat)) {
+				$r=pmb_mysql_fetch_object($resultat);						
 				$this->circ_type=$r->serialcirc_type; // rotative ou étoile
 				$this->virtual_circ=$r->serialcirc_virtual; // virtuelle
 				$this->no_ret_circ=$r->serialcirc_no_ret; 
@@ -96,13 +99,16 @@ class serialcirc_diff {
 				$this->allow_subscription=$r->serialcirc_allow_subscription;
 				$this->duration_before_send=$r->serialcirc_duration_before_send;
 				$this->expl_statut_circ=$r->serialcirc_expl_statut_circ;
-				$this->expl_statut_circ_after=$r->serialcirc_expl_statut_circ_after;	
+				$this->piedpage=$r->serialcirc_piedpage;
+				$this->tpl=$r->serialcirc_tpl;
+				$this->expl_statut_circ_after=$r->serialcirc_expl_statut_circ_after;
+				$this->sort_diff=$r->serialcirc_sort_diff;
 				
 				// liste des lecteurs et groupes de lecteur
 				$requete="select * from serialcirc_diff where num_serialcirc_diff_serialcirc=".$this->id." order by serialcirc_diff_order";
-				$resultat=mysql_query($requete);
+				$resultat=pmb_mysql_query($requete);
 	
-				while($r_empr=mysql_fetch_object($resultat)){				
+				while($r_empr=pmb_mysql_fetch_object($resultat)){				
 					$this->diffusion[$r_empr->id_serialcirc_diff]['id']=$r_empr->id_serialcirc_diff;
 					$this->diffusion[$r_empr->id_serialcirc_diff]['empr_type']=$r_empr->serialcirc_diff_empr_type;
 					$this->diffusion[$r_empr->id_serialcirc_diff]['type_diff']=$r_empr->serialcirc_diff_type_diff;
@@ -114,9 +120,9 @@ class serialcirc_diff {
 					if($this->diffusion[$r_empr->id_serialcirc_diff]['empr_type']==SERIALCIRC_EMPR_TYPE_group){
 						// C'est un groupe; on va chercher les lecteurs de ce groupe
 						$requete="select * from serialcirc_group where num_serialcirc_group_diff=".$this->diffusion[$r_empr->id_serialcirc_diff]['id']." order by serialcirc_group_order";
-						$resultat_group_empr=mysql_query($requete);
+						$resultat_group_empr=pmb_mysql_query($requete);
 						$cpt_empr_group=0;
-						while($r_group_empr=mysql_fetch_object($resultat_group_empr)){
+						while($r_group_empr=pmb_mysql_fetch_object($resultat_group_empr)){
 							$this->diffusion[$r_empr->id_serialcirc_diff]['group'][$cpt_empr_group]['id']=$r_group_empr->id_serialcirc_group;
 							$this->diffusion[$r_empr->id_serialcirc_diff]['group'][$cpt_empr_group]['num_empr']=$r_group_empr->num_serialcirc_group_empr;
 							$this->diffusion[$r_empr->id_serialcirc_diff]['group'][$cpt_empr_group]['order']=$r_group_empr->serialcirc_group_order;
@@ -140,8 +146,8 @@ class serialcirc_diff {
 		$requete="select consultation_duration from abts_periodicites , abts_abts,abts_modeles, abts_abts_modeles where 
 			abts_abts.abt_id=abts_abts_modeles.abt_id and abts_modeles.modele_id=abts_abts_modeles.modele_id and num_periodicite=periodicite_id 
 			and abts_abts.abt_id=".$this->num_abt ;
-		$resultat=mysql_query($requete);
-		$r=mysql_fetch_object($resultat);			
+		$resultat=pmb_mysql_query($requete);
+		$r=pmb_mysql_fetch_object($resultat);			
 		return 	$r->consultation_duration;
 	}
 	
@@ -153,7 +159,7 @@ class serialcirc_diff {
 			num_serialcirc_expl_serialcirc=".$this->id.",
 			serialcirc_expl_bulletine_date=now();
 		";
-		mysql_query($req, $dbh);				
+		pmb_mysql_query($req, $dbh);				
 	}
 	
 	function empr_info($id){
@@ -161,8 +167,8 @@ class serialcirc_diff {
 		
 		$info=array();
 		$req="select empr_cb, empr_nom ,  empr_prenom, empr_mail from empr where id_empr=".$id;
-		$res_empr=mysql_query($req);
-		if ($empr=mysql_fetch_object($res_empr)) {			
+		$res_empr=pmb_mysql_query($req);
+		if ($empr=pmb_mysql_fetch_object($res_empr)) {			
 			$info['cb'] = $empr->empr_cb;
 			$info['nom'] = $empr->empr_nom; 
 			$info['prenom'] = $empr->empr_prenom;  
@@ -225,8 +231,8 @@ class serialcirc_diff {
 				serialcirc_expl_statut_circ=".$data['expl_statut_circ'].",
 				serialcirc_expl_statut_circ_after=".$data['expl_statut_circ_after']."
 			";	
-			mysql_query($req, $dbh);
-			$this->id = mysql_insert_id($dbh);
+			pmb_mysql_query($req, $dbh);
+			$this->id = pmb_mysql_insert_id($dbh);
 		}else{
 			$req="UPDATE serialcirc SET 
 				num_serialcirc_abt=".$this->num_abt.",
@@ -245,7 +251,7 @@ class serialcirc_diff {
 				serialcirc_expl_statut_circ_after=".$data['expl_statut_circ_after']."
 				WHERE id_serialcirc=".$this->id."
 			";	
-			mysql_query($req, $dbh);			
+			pmb_mysql_query($req, $dbh);			
 		}	
 		//print $req;
 		$this->fetch_data(); 
@@ -295,7 +301,14 @@ class serialcirc_diff {
 			$tpl_empr=str_replace('!!empr_name!!', $name_elt, $tpl_empr);	
 			$tpl_empr_list.=$tpl_empr;				
 		}		
-		$form=$serialcirc_diff_form_empr_list;		
+		$form=$serialcirc_diff_form_empr_list;
+		if (count($this->diffusion)) {		
+			$fields =new serialcirc_print_fields();
+			$select_field=$fields->get_sort_form("sort_field",$this->sort_diff);
+			$form=str_replace('!!sort_list!!', $select_field, $form);
+		} else {
+			$form=str_replace('!!sort_list!!', "", $form);
+		}
 		$form=str_replace('!!empr_list!!', $tpl_empr_list, $form);	
 		return $form;
 	}	
@@ -317,8 +330,8 @@ class serialcirc_diff {
 			serialcirc_diff_duration=".$data['duration'].",
 			serialcirc_diff_order=".count($this->diffusion)."			
 			";
-			mysql_query($req, $dbh);
-			$id_serialcirc_diff = mysql_insert_id($dbh);		
+			pmb_mysql_query($req, $dbh);
+			$id_serialcirc_diff = pmb_mysql_insert_id($dbh);		
 		}else{				
 			$req="UPDATE serialcirc_diff SET 
 			num_serialcirc_diff_serialcirc=".$this->id.",
@@ -327,7 +340,7 @@ class serialcirc_diff {
 			serialcirc_diff_duration='".$data['duration']."'
 			where id_serialcirc_diff=".$id_diff." 			
 			";
-			mysql_query($req, $dbh);	
+			pmb_mysql_query($req, $dbh);	
 		}
 		//print $req;
 		$this->fetch_data(); 		
@@ -352,8 +365,8 @@ class serialcirc_diff {
 			serialcirc_diff_duration=".$data['duration'].",
 			serialcirc_diff_order=".count($this->diffusion)."			
 			";
-			mysql_query($req, $dbh);	
-			$id_diff = mysql_insert_id($dbh);	
+			pmb_mysql_query($req, $dbh);	
+			$id_diff = pmb_mysql_insert_id($dbh);	
 		}else{				
 			$req="UPDATE serialcirc_diff SET 
 			num_serialcirc_diff_serialcirc=".$this->id.",
@@ -363,34 +376,34 @@ class serialcirc_diff {
 			serialcirc_diff_duration='".$data['duration']."'
 			where id_serialcirc_diff=".$id_diff." 			
 			";
-			mysql_query($req, $dbh);	
+			pmb_mysql_query($req, $dbh);	
 		}	
 
 		$req=" DELETE from serialcirc_group WHERE num_serialcirc_group_diff=$id_diff ";
-		mysql_query($req, $dbh);	
+		pmb_mysql_query($req, $dbh);	
 		$order=0;
 		if(count($data['empr_list']))
 		foreach($data['empr_list'] as $id_empr){			
 			$req=" INSERT INTO serialcirc_group SET num_serialcirc_group_diff=$id_diff,num_serialcirc_group_empr=$id_empr,serialcirc_group_order=$order ";
 			if($id_empr==$data['empr_resp'] )	$req.=", serialcirc_group_responsable=1";
-			mysql_query($req, $dbh);	
+			pmb_mysql_query($req, $dbh);	
 			$order++;
 		}/*
 		if($data['add_type']==1 && $data['caddie_select']){// vient d'un panier
 			$requete = "SELECT object_id, flag FROM empr_caddie_content where empr_caddie_id='".$data['caddie_select']."' ";
-			$res = mysql_query($requete, $dbh);
-			while($r=mysql_fetch_object($res)){	
+			$res = pmb_mysql_query($requete, $dbh);
+			while($r=pmb_mysql_fetch_object($res)){	
 				$req=" INSERT INTO serialcirc_group SET num_serialcirc_group_diff=$id_diff,num_serialcirc_group_empr=".$r->object_id." ,serialcirc_group_order=$order ";
-				mysql_query($req, $dbh);	
+				pmb_mysql_query($req, $dbh);	
 				$order++;				
 			}			
 		}else
 		*/if($data['add_type']==2 && $data['group_circ_select']){// vient d'un group
 			$requete = "SELECT empr_id  FROM empr_groupe where groupe_id='".$data['group_circ_select']."' ";
-			$res = mysql_query($requete, $dbh);
-			while($r=mysql_fetch_object($res)){	
+			$res = pmb_mysql_query($requete, $dbh);
+			while($r=pmb_mysql_fetch_object($res)){	
 				$req=" INSERT INTO serialcirc_group SET num_serialcirc_group_diff=$id_diff,num_serialcirc_group_empr=".$r->empr_id." ,serialcirc_group_order=$order ";
-				mysql_query($req, $dbh);	
+				pmb_mysql_query($req, $dbh);	
 				$order++;				
 			}						
 		}
@@ -400,9 +413,9 @@ class serialcirc_diff {
 	function del_diff($id_diff){
 		global $dbh;
 		$req=" DELETE from serialcirc_group WHERE num_serialcirc_group_diff=$id_diff ";
-		mysql_query($req, $dbh);
+		pmb_mysql_query($req, $dbh);
 		$req=" DELETE from serialcirc_diff WHERE id_serialcirc_diff=$id_diff ";
-		mysql_query($req, $dbh);
+		pmb_mysql_query($req, $dbh);
 		$this->fetch_data();
 	}		
 
@@ -415,30 +428,30 @@ class serialcirc_diff {
 			return $msg['serialcirc_error_delete_abt'];
 		}
 		$requete="select id_serialcirc from serialcirc where num_serialcirc_abt=".$num_abt;
-		$resultat=mysql_query($requete);
-		if (mysql_num_rows($resultat)) {
-			$r = mysql_fetch_object($resultat);
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$r = pmb_mysql_fetch_object($resultat);
 			$id_serialcirc=$r->id_serialcirc;
 						
 			$requete="select id_serialcirc_diff from serialcirc_diff where num_serialcirc_diff_serialcirc=".$id_serialcirc;
-			$res_diff=mysql_query($requete);
-			while($r = mysql_fetch_object($res_diff)){
+			$res_diff=pmb_mysql_query($requete);
+			while($r = pmb_mysql_fetch_object($res_diff)){
 				$id_diff=$r->id_serialcirc_diff;
 				
 				$requete="delete from serialcirc_group where num_serialcirc_group_diff=".$id_diff;
-				mysql_query($requete);				
+				pmb_mysql_query($requete);				
 				$requete="delete from serialcirc_expl where num_serialcirc_expl_serialcirc_diff=".$id_diff;
-				mysql_query($requete);						
+				pmb_mysql_query($requete);						
 			}	
 							
 			$requete="delete from serialcirc_circ where num_serialcirc_circ_serialcirc=".$id_serialcirc;
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 			$requete="delete from serialcirc_diff where num_serialcirc_diff_serialcirc=".$id_serialcirc;
-			mysql_query($requete);	
+			pmb_mysql_query($requete);	
 			$requete="delete from serialcirc_ask where num_serialcirc_ask_serialcirc=".$id_serialcirc;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$requete="delete from serialcirc where id_serialcirc=".$id_serialcirc;
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 		}	
 	}
 	
@@ -446,8 +459,8 @@ class serialcirc_diff {
 	function expl_in_circ($num_abt){
 		$requete="select num_serialcirc_expl_id from serialcirc, serialcirc_expl where num_serialcirc_expl_serialcirc=id_serialcirc and num_serialcirc_abt=".$num_abt;
 	
-		$resultat=mysql_query($requete);
-		if ($nb=mysql_num_rows($resultat)) {
+		$resultat=pmb_mysql_query($requete);
+		if ($nb=pmb_mysql_num_rows($resultat)) {
 			return $nb;
 		}
 		return 0;
@@ -462,8 +475,8 @@ class serialcirc_diff {
 		$empr_form_list="";			
 		$empr_form=$serialcirc_diff_form_group_empr_0;
 		$requete = "SELECT * FROM empr, empr_caddie_content where empr_caddie_id='".$id_caddie."' and object_id=id_empr";
-		$res = mysql_query($requete, $dbh);
-		if (!$empr_count=mysql_num_rows($res)) {
+		$res = pmb_mysql_query($requete, $dbh);
+		if (!$empr_count=pmb_mysql_num_rows($res)) {
 			$empr_form=str_replace('!!empr_libelle!!', "", $empr_form);
 			$empr_form=str_replace('!!empr_cpt!!', "0", $empr_form);			
 			$empr_form=str_replace('!!id_empr!!',"0", $empr_form);
@@ -471,7 +484,7 @@ class serialcirc_diff {
 			$empr_form_list=$empr_form;			
 		}
 		$cpt=0;	
-		while($r=mysql_fetch_object($res)){		
+		while($r=pmb_mysql_fetch_object($res)){		
 			$empr_form=str_replace('!!id_empr!!', $r->id_empr, $empr_form);
 			$empr_form=str_replace('!!empr_libelle!!',$r->empr_nom." ".$r->empr_prenom." (".$r->empr_cb." )", $empr_form);
 			$empr_form=str_replace('!!checked!!','', $empr_form);
@@ -580,9 +593,9 @@ class serialcirc_diff {
 		}
 		$group_empr_sel="";
 		$requete="select id_groupe, libelle_groupe from groupe";
-		$result=mysql_query($requete);
-		if (mysql_num_rows($result)) {
-			while ($grp_temp=mysql_fetch_object($result)) {
+		$result=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($result)) {
+			while ($grp_temp=pmb_mysql_fetch_object($result)) {
 				$group_empr_sel.="<option value=".$grp_temp->id_groupe." onchange=''>".htmlentities($grp_temp->libelle_groupe,ENT_QUOTES,$charset)."</option>";
 			}
 		} 
@@ -625,7 +638,8 @@ class serialcirc_diff {
 	
 	function ficheformat_save($data){
 		$fields =new serialcirc_print_fields($this->id);		
-		$fields->save_form();		
+		$fields->save_form();
+		$this->fetch_data();		
 	}	
 	
 	function ficheformat_add_field($data){
@@ -637,13 +651,61 @@ class serialcirc_diff {
 		$fields =new serialcirc_print_fields($this->id);		
 		$fields->del_field();		
 	}
+	
+	function ficheformat_change_fields($data){
+		global $form_serialcirc_tpl;
+		
+		$fields =new serialcirc_print_fields($this->id);
+		$fields->change_fields();
+		$this->tpl = ($form_serialcirc_tpl ? $form_serialcirc_tpl : "");
+	}
 			
 	function ficheformat_form(){
 		global $serialcirc_diff_form_ficheformat;
+		global $msg;
+		
 		$form=$serialcirc_diff_form_ficheformat;
-		$fields =new serialcirc_print_fields($this->id);
-		$select_field=$fields->get_select_form();
-		$form=str_replace('!!fiche_add_field_sel!!', $select_field, $form);	
+		
+		if ($this->tpl+0 > 0) $selected = $this->tpl;
+		else $selected = 0;
+		$select_tpl=serialcirc_tpl::gen_tpl_select("form_serialcirc_tpl", $selected, "serialcirc_print_change_fields();");
+		$form=str_replace('!!fiche_tpl_field_sel!!', $select_tpl, $form);
+		$form=str_replace('!!fiche_tpl_id_sel!!', $selected, $form);
+		if (!$selected) {
+			$fields =new serialcirc_print_fields($this->id);
+			$select_field=$fields->get_select_form();
+			$form=str_replace('!!fiche_add_field_sel!!', $select_field, $form);
+			
+			$piedpage_tpl="		
+			<div class='row'>	
+				<label class='etiquette' for='piedpage'>".$msg['serialcirc_diff_option_form_fiche_pied_page']."</label>!!fields_options!!
+				<input class='bouton' type='button' onclick=\"insert_vars(document.getElementById('fields_options'), document.getElementById('piedpage')); return false; \" value=' ".$msg['admin_authperso_insert_field']." ' >			
+			</div>
+			<div class='row'>
+				<textarea type='text' name='piedpage' id='piedpage' class='saisie-50em' rows='4' cols='50' >!!pied_page!!</textarea>
+			</div>";
+			
+			$fields_options="<select id='fields_options' name='fields_options'>";
+			$fields_options.="<option value='{{last_empr.nom}}'>Dernier lecteur: Nom</option>";
+			$fields_options.="<option value='{{last_empr.prenom}}'>Dernier lecteur: Prénom</option>";
+			$fields_options.="<option value='{{last_empr.empr_libelle}}'>Dernier lecteur: Libellé</option>";
+			$fields_options.="<option value='{{last_empr.mail}}'>Dernier lecteur: Mail</option>";
+			$fields_options.="<option value='{{last_empr.cb}}'>Dernier lecteur: Code-barre</option>";
+			$fields_options.="<option value='{{expl.cb}}'>Bulletin: Code-barre</option>";
+			$fields_options.="<option value='{{expl.numero}}'>Bulletin: Numéro</option>";
+			$fields_options.="<option value='{{expl.bulletine_date}}'>Bulletin: date</option>";
+			$fields_options.="<option value='{{expl.serial_title}}'>Bulletin: Nom du périodique</option>";
+			$fields_options.="<option value='{{expl.expl_location_name}}'>Bulletin: Localisation</option>";
+			$fields_options.="<option value='{{expl.expl_cote}}'>Bulletin: Cote</option>";
+			$fields_options.="</select>";	
+			$piedpage_tpl=str_replace('!!fields_options!!', $fields_options, $piedpage_tpl);	
+			$piedpage_tpl=str_replace('!!pied_page!!', $this->piedpage, $piedpage_tpl);	
+			$form=str_replace('!!piedpageform!!', $piedpage_tpl, $form); 
+			
+		} else {
+			$form=str_replace('!!fiche_add_field_sel!!', '', $form);
+			$form=str_replace('!!piedpageform!!', '', $form);
+		} 
 		return $form;
 	}	
 	
@@ -714,9 +776,21 @@ class serialcirc_diff {
 	function up_order_circdiff($tablo){	
 		global $dbh;	
 		$liste = explode(",",$tablo);
+		if ($liste[0]) {
+			// réinitialisation du tri
+			$rqt = "select num_serialcirc_diff_serialcirc from serialcirc_diff where id_serialcirc_diff='".$liste[0]."'";
+			$res = pmb_mysql_query($rqt,$dbh);
+			if ($res) {
+				$id_serialcirc = pmb_mysql_result($res, 0, "num_serialcirc_diff_serialcirc");
+				if ($id_serialcirc) {
+					$req=" UPDATE serialcirc SET serialcirc_sort_diff='' WHERE id_serialcirc=".$id_serialcirc;
+					pmb_mysql_query($req, $dbh);
+				}
+			}
+		}
 		for($i=0;$i<count($liste);$i++){
 			$rqt = "update serialcirc_diff set serialcirc_diff_order='".$i."' where id_serialcirc_diff='".$liste[$i]."' ";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 		}
 	}
 	
@@ -724,6 +798,67 @@ class serialcirc_diff {
 		global $dbh;	
 		$fields =new serialcirc_print_fields($id_serialcirc);		
 		$fields->up_order($tablo);
+	}
+	
+	function duplicate($abt_to_id){
+		global $dbh;
+		
+		$requete="select id_serialcirc from serialcirc where num_serialcirc_abt=".$abt_to_id;
+		$resultat=pmb_mysql_query($requete);
+		if (pmb_mysql_num_rows($resultat)) {
+			$status=serialcirc_diff::delete($abt_to_id);
+			if($status)return $status;// error
+		}	
+		
+		$req="INSERT INTO serialcirc SET
+			num_serialcirc_abt=".$abt_to_id.",
+			serialcirc_type=".$this->circ_type.",
+			serialcirc_virtual=".$this->virtual_circ.",
+			serialcirc_no_ret=".$this->no_ret_circ.",
+			serialcirc_duration=".$this->duration.",
+			serialcirc_checked=".$this->checked.",
+			serialcirc_retard_mode=".$this->retard_mode.",
+			serialcirc_allow_resa=".$this->allow_resa.",
+			serialcirc_allow_copy=".$this->allow_copy.",
+			serialcirc_allow_send_ask=".$this->allow_send_ask.",
+			serialcirc_allow_subscription=".$this->allow_subscription.",
+			serialcirc_duration_before_send=".$this->duration_before_send.",
+			serialcirc_expl_statut_circ=".$this->expl_statut_circ.",
+			serialcirc_piedpage='".$this->piedpage."',
+			serialcirc_tpl='".$this->tpl."',
+			serialcirc_expl_statut_circ_after=".$this->expl_statut_circ_after."
+			";
+		pmb_mysql_query($req, $dbh);
+		$new_serialcirc_id = pmb_mysql_insert_id($dbh);	
+				
+		$requete="select * from serialcirc_diff where num_serialcirc_diff_serialcirc=".$this->id." order by serialcirc_diff_order";
+		$res_empr=pmb_mysql_query($requete);	
+		while($r_empr=pmb_mysql_fetch_object($res_empr)){		
+			$req="INSERT INTO serialcirc_diff SET
+				num_serialcirc_diff_serialcirc=".$new_serialcirc_id.",
+				serialcirc_diff_empr_type='".$r_empr->serialcirc_diff_empr_type."',
+				serialcirc_diff_type_diff='".$r_empr->serialcirc_diff_type_diff."',
+				num_serialcirc_diff_empr='".$r_empr->num_serialcirc_diff_empr."',
+				serialcirc_diff_group_name='".$r_empr->serialcirc_diff_group_name."',
+				serialcirc_diff_duration='".$r_empr->serialcirc_diff_duration."',
+				serialcirc_diff_order=".$r_empr->serialcirc_diff_order."			
+			";
+			pmb_mysql_query($req, $dbh);	
+			$new_id_serialcirc_diff = pmb_mysql_insert_id($dbh);		
+			
+			$requete="select * from serialcirc_group where num_serialcirc_group_diff=".$r_empr->id_serialcirc_diff ;
+			$res_group=pmb_mysql_query($requete);			
+			while($r_group=pmb_mysql_fetch_object($res_group)){	
+				$req="INSERT INTO serialcirc_group SET
+					num_serialcirc_group_diff=".$new_id_serialcirc_diff.",
+					num_serialcirc_group_empr='".$r_group->num_serialcirc_group_empr."',
+					serialcirc_group_responsable='".$r_group->serialcirc_group_responsable."',
+					serialcirc_group_order='".$r_group->serialcirc_group_order."'
+				";
+				pmb_mysql_query($req, $dbh);		
+				
+			}			
+		}			
 	}
 		
 	function up_order_circdiffgroupdrop($tablo){	
@@ -734,7 +869,89 @@ class serialcirc_diff {
 			$goup_id=$ids[0];
 			$empr_id=$ids[1];	
 			$rqt = "update serialcirc_group set serialcirc_group_order='".$i."' where num_serialcirc_group_diff='".$goup_id."' and num_serialcirc_group_empr=$empr_id";
-			mysql_query($rqt,$dbh);
+			pmb_mysql_query($rqt,$dbh);
 		}
 	}	
+	
+	function sort_diff(){
+		global $dbh;
+		global $sort_field;
+	
+		if (!$this->id) return;
+		
+		$flag_get_value_from_database = false;
+		if (!$sort_field) {
+			$rqt = "select serialcirc_sort_diff from serialcirc where id_serialcirc=".$this->id;
+			$res = pmb_mysql_query($rqt,$dbh);
+			$sort_field = pmb_mysql_result($res, 0, "serialcirc_sort_diff");
+			$flag_get_value_from_database = true; 
+		}
+		$select_order = "serialcirc_diff_order";
+		$join = "";
+		if ($sort_field) {
+			if (substr($sort_field, 0, 2) != "pp") {
+				switch($sort_field) {
+					case "emprlibelle" :
+						$select_order = "concat (empr_nom,' ',empr_prenom) as empr_nom_prenom";
+						break;
+					case "name" :
+						$select_order = "empr_nom";
+						break;
+					case "cb" :
+						$select_order = "empr_cb";
+						break;
+					case "adr1" :
+						$select_order = "empr_adr1";
+						break;
+					case "adr2" :
+						$select_order = "empr_adr2";
+						break;
+					case "tel1" :
+						$select_order = "empr_tel1";
+						break;
+					case "tel2" :
+						$select_order = "empr_tel2";
+						break;
+					case "ville" :
+						$select_order = "empr_ville";
+						break;
+				}
+			} else {
+				$p_perso = new parametres_perso("empr");
+				$select_order = $p_perso->prefix."_custom_".$p_perso->t_fields[substr($sort_field, 3, 1)]["DATATYPE"];
+				$join = "left join ".$p_perso->prefix."_custom_values on ".$p_perso->prefix."_custom_origine=id_empr and ".$p_perso->prefix."_custom_champ=".substr($sort_field, 3, 1);
+	
+			}
+		}
+		$tab_sort = array();
+		$requete = "select id_serialcirc_diff, $select_order from serialcirc_diff join empr on num_serialcirc_diff_empr=id_empr $join where num_serialcirc_diff_serialcirc=".$this->id;
+		$result = pmb_mysql_query($requete,$dbh);
+		while ($row = pmb_mysql_fetch_array($result)) {
+			$tab_sort[$row["id_serialcirc_diff"]] = strtolower($row[1]);
+		}
+		$requete = "select id_serialcirc_diff, $select_order from serialcirc_diff join serialcirc_group on id_serialcirc_diff=num_serialcirc_group_diff join empr on num_serialcirc_group_empr=id_empr $join where num_serialcirc_diff_serialcirc=".$this->id;
+		$result = pmb_mysql_query($requete,$dbh);
+		while ($row = pmb_mysql_fetch_array($result)) {
+			$tab_sort[$row["id_serialcirc_diff"]] = strtolower($row[1]);
+		}
+		asort($tab_sort);
+	
+		$no_ordre = 0;
+		foreach ($tab_sort as $key=>$value) {
+			$req="UPDATE serialcirc_diff SET
+					serialcirc_diff_order = ".$no_ordre."
+				WHERE id_serialcirc_diff=".$key."
+				AND num_serialcirc_diff_serialcirc=".$this->id;
+			pmb_mysql_query($req,$dbh);
+			$no_ordre++;
+		}
+		
+		if(!$flag_get_value_from_database) {
+			//on met à jour le tri choisi dans la table serialcirc
+			$query = "update serialcirc set serialcirc_sort_diff='".$sort_field."' where id_serialcirc=".$this->id;
+			pmb_mysql_query($query);
+		}
+		
+		$this->fetch_data();
+	}
 } //serialcirc class end

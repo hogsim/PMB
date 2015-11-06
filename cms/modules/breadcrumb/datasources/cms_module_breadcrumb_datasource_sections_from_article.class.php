@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_breadcrumb_datasource_sections_from_article.class.php,v 1.2.6.1 2014-11-18 09:39:01 dgoron Exp $
+// $Id: cms_module_breadcrumb_datasource_sections_from_article.class.php,v 1.4 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -30,18 +30,18 @@ class cms_module_breadcrumb_datasource_sections_from_article extends cms_module_
 			if($article_id){
 				$sections = array();
 				$query = "select num_section from cms_articles where id_article = ".$article_id;
-				$result = mysql_query($query);
-				if(mysql_num_rows($result)){
-					$section_id = mysql_result($result,0,0);
+				$result = pmb_mysql_query($query);
+				if(pmb_mysql_num_rows($result)){
+					$section_id = pmb_mysql_result($result,0,0);
 					if($section_id){
 						$datas = array();
 						$i=0;
 						do {
 							$i++;
 							$query = "select id_section,section_num_parent from cms_sections where id_section = ".$section_id;
-							$result = mysql_query($query);
-							if(mysql_num_rows($result)){
-								$row = mysql_fetch_object($result);
+							$result = pmb_mysql_query($query);
+							if(pmb_mysql_num_rows($result)){
+								$row = pmb_mysql_fetch_object($result);
 								$section_id = $row->section_num_parent;
 								$datas[] = $row->id_section;
 								

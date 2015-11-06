@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: title.inc.php,v 1.40 2013-10-30 15:00:55 dgoron Exp $
+// $Id: title.inc.php,v 1.42 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -49,11 +49,11 @@ if($opac_allow_affiliate_search){
 	if ($nb_result_titres) {
 		// tout bon, y'a du résultat, on lance le pataquès d'affichage
 		// (affichage sur une ligne cliquable, maybe...
-		print "<strong>$msg[titles]</strong> ".$nb_result_titres." $msg[results] ";
-		// $found = mysql_query("select * from notices $clause $tri LIMIT $opac_search_results_first_level", $dbh);
+		print '<strong>'.$msg['titles'].'</strong> '.$nb_result_titres.' '.$msg['results'].' ';
+		// $found = pmb_mysql_query("select * from notices $clause $tri LIMIT $opac_search_results_first_level", $dbh);
 		// si il y a d'autres résultats, je met le lien 'plus de résultats'
 		// Le lien validant le formulaire est inséré avant le formulaire, cela évite les blancs à l'écran
-		print "<a href=\"javascript:document.forms['search_objects'].submit()\">$msg[suite]&nbsp;<img src='./images/search.gif' border='0' align='absmiddle'/></a>";
+		print "<a href=\"javascript:document.forms['search_objects'].submit()\">".$msg['suite']."&nbsp;<img src='./images/search.gif' border='0' align='absmiddle'/></a>";
 	  	print "<div style=search_result>$form</div>";			
 	}
 }

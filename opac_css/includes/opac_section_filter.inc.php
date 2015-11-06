@@ -6,9 +6,9 @@ function search_other_function_filters() {
 	$r.="<select name='cnl_bibli'>";
 	$r.="<option value=''>toute section</option>";
 	$requete="select section_libelle,idsection from docs_section where section_visible_opac=1";
-	$result = mysql_query($requete, $dbh);
-	if (mysql_numrows($result)){
-		while ($loc = mysql_fetch_object($result)) {
+	$result = pmb_mysql_query($requete, $dbh);
+	if (pmb_mysql_num_rows($result)){
+		while ($loc = pmb_mysql_fetch_object($result)) {
 			$selected="";
 			if ($cnl_bibli==$loc->idsection) {$selected="selected";}
 			$r.= "<option value='$loc->idsection' $selected>$loc->section_libelle</option>";
@@ -55,8 +55,8 @@ function search_other_function_human_query($n) {
 	if ($cnl_bibli) {
 		$r="bibliotheque : ";
 		$requete="select section_libelle from docs_section where idsection='".$cnl_bibli."' limit 1";
-		$res=mysql_query($requete);
-		$r.=@mysql_result($res,0,0);
+		$res=pmb_mysql_query($requete);
+		$r.=@pmb_mysql_result($res,0,0);
 	}
 	return $r;
 }

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_bannettes_generic.class.php,v 1.1.2.2 2014-09-25 13:50:26 ngantier Exp $
+// $Id: cms_module_common_selector_bannettes_generic.class.php,v 1.1 2014-09-16 13:52:54 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");

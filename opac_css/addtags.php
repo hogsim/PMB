@@ -4,7 +4,7 @@
 // © 2006 mental works / www.mental-works.com contact@mental-works.com
 // 	complètement repris et corrigé par PMB Services 
 // +-------------------------------------------------+
-// $Id: addtags.php,v 1.24 2013-04-11 08:23:19 mbertin Exp $
+// $Id: addtags.php,v 1.25 2015-04-03 11:16:25 jpermanne Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -100,11 +100,11 @@ print "<div id='titre-popup'>".$msg[notice_title_tag]."</div>";
 // Le lecteur a ajouté un mot-clé
 if (($ChpTag) && ($log_ok)) {
 	$sql="select * from notices where index_l like '%$ChpTag%' and notice_id=$noticeid";
-	$r = mysql_query($sql, $dbh);
-	if (mysql_numrows($r)>=1) echo "<br /><br />".$msg[addtag_exist];
+	$r = pmb_mysql_query($sql, $dbh);
+	if (pmb_mysql_num_rows($r)>=1) echo "<br /><br />".$msg[addtag_exist];
 		else {
 			$sql="insert into tags (libelle, num_notice,user_code,dateajout) values ('$ChpTag',$noticeid,'". $_SESSION["user_code"] ."',CURRENT_TIMESTAMP())";
-			if (mysql_query($sql, $dbh)) {
+			if (pmb_mysql_query($sql, $dbh)) {
 				echo "<div align='center'><br /><br />".$msg[addtag_enregistre]."<br /><br /><a href='#' onclick='window.close()'>".$msg[addtag_fermer]."</a></div>";
 				} else {
 					echo "<div align='center'><br /><br />".$msg[addtag_pb_enr]."<br /><br /><a href='#' onclick='window.close()'>".$msg[addtag_fermer]."</a></div>";
@@ -113,9 +113,9 @@ if (($ChpTag) && ($log_ok)) {
 	} else {
 		$requete = "select index_l from notices where index_l is not null and index_l!=''";
 	
-		$r = mysql_query($requete, $dbh);
-		if (mysql_numrows($r)){
-			while ($loc = mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($r)){
+			while ($loc = pmb_mysql_fetch_object($r)) {
 				$liste = explode($pmb_keyword_sep,$loc->index_l);
 				for ($i=0;$i<count($liste);$i++){
 					$index=trim($liste[$i]);
@@ -161,5 +161,5 @@ if($pmb_logs_activate){
 print $popup_footer;
 
 /* Fermeture de la connexion */
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 		

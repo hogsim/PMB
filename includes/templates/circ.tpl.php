@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: circ.tpl.php,v 1.43.6.1 2014-10-20 18:37:38 Alexandre Exp $
+// $Id: circ.tpl.php,v 1.45 2015-03-30 07:14:50 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -120,6 +120,9 @@ $empr_menu_panier_gestion = "
 	</span>
 	<span".ongletSelect("categ=caddie&sub=gestion&quoi=remote_procs").">
 		<a title='$msg[remote_procedures_circ_title]' href='./circ.php?categ=caddie&sub=gestion&quoi=remote_procs'>$msg[remote_procedures_circ_title]</a>
+	</span>
+	<span".ongletSelect("categ=caddie&sub=gestion&quoi=classementGen").">
+		<a title='$msg[classementGen_list_libelle]' href='./circ.php?categ=caddie&sub=gestion&quoi=classementGen'>$msg[classementGen_list_libelle]</a>
 	</span>
 </div>";
 

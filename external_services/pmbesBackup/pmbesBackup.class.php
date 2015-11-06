@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesBackup.class.php,v 1.1 2011-07-29 12:32:14 dgoron Exp $
+// $Id: pmbesBackup.class.php,v 1.2 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -33,9 +33,9 @@ class pmbesBackup extends external_services_api_class {
 			$result = array();
 			
 			$requete = "select sauv_table_id, sauv_table_nom, sauv_table_tables from sauv_tables order by sauv_table_nom";
-			$res = mysql_query($requete) or die(mysql_error());
+			$res = pmb_mysql_query($requete) or die(pmb_mysql_error());
 				
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = array(
 					"sauv_table_id" => $row["sauv_table_id"],
 					"sauv_table_nom" => utf8_normalize($row["sauv_table_nom"]),
@@ -55,18 +55,18 @@ class pmbesBackup extends external_services_api_class {
 		if (SESSrights & SAUV_AUTH) {
 			//Récupération de la liste des tables dans les groupes
 			$requete = "select sauv_table_id, sauv_table_nom, sauv_table_tables from sauv_tables ";
-			$resultat = mysql_query($requete) or die(mysql_error());
+			$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error());
 			$tTables = "";
-			while ($res = mysql_fetch_object($resultat)) {
+			while ($res = pmb_mysql_fetch_object($resultat)) {
 				$tTables.= ",".$res -> sauv_table_tables;
 			}
 					
 			//Recherche des tables non intégrées dans les groupes
 			$tTablesSelected = explode(",", $tTables);
 			$requete = "show tables";
-			$resultat = mysql_query($requete) or die(mysql_error());
+			$resultat = pmb_mysql_query($requete) or die(pmb_mysql_error());
 			$unsavedTables = array();
-			while (list ($table) = mysql_fetch_row($resultat)) {
+			while (list ($table) = pmb_mysql_fetch_row($resultat)) {
 				$as=array_search($table, $tTablesSelected);
 				if (( $as!== false)&&($as!==null)) {
 					//Do nothing
@@ -89,8 +89,8 @@ class pmbesBackup extends external_services_api_class {
 		
 			//Recherche des paramètres de la sauvegarde
 			$requete="select sauv_sauvegarde_nom, sauv_sauvegarde_file_prefix, sauv_sauvegarde_tables, sauv_sauvegarde_lieux, sauv_sauvegarde_users,sauv_sauvegarde_compress,sauv_sauvegarde_compress_command, sauv_sauvegarde_crypt from sauv_sauvegardes where sauv_sauvegarde_id=".$id_sauvegarde;
-			$resultat=mysql_query($requete, $dbh);
-			$res=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($requete, $dbh);
+			$res=pmb_mysql_fetch_object($resultat);
 			$liste_users = explode(",",$res->sauv_sauvegarde_users);
 
 			$access_allow=false;
@@ -126,16 +126,16 @@ class pmbesBackup extends external_services_api_class {
 			$log_file=$log_file_test;
 						
 			$requete="insert into sauv_log (sauv_log_start_date,sauv_log_file,sauv_log_messages,sauv_log_userid) values(now(),'$log_file','$log_messages',$PMBuserid)";
-			$res_query = mysql_query($requete, $dbh);
+			$res_query = pmb_mysql_query($requete, $dbh);
 			if (!$res_query) {
-				$report[] = mysql_error();
+				$report[] = pmb_mysql_error();
 				$result = array(
 					"logid" => "",
 					"report" => $report
 				);
 				return $result;
 			}
-			$logid=mysql_insert_id();
+			$logid=pmb_mysql_insert_id();
 			
 			//Création du fichier d'export
 			$path_name = $base_path."/admin/backup/backups/".$log_file;
@@ -154,7 +154,7 @@ class pmbesBackup extends external_services_api_class {
 			
 			//Récupération des tables
 			$requete="select sauv_table_tables from sauv_tables where sauv_table_id in (".$res->sauv_sauvegarde_tables.")";
-			$resultat=mysql_query($requete);
+			$resultat=pmb_mysql_query($requete);
 			if (!$resultat) {
 				$report[] = $requete;
 				$report[] = stop("Tables could not be retrived",$logid);
@@ -165,7 +165,7 @@ class pmbesBackup extends external_services_api_class {
 				return $result;
 			}
 			$tables=array();
-			while (list($sauv_table_tables)=mysql_fetch_row($resultat)) {
+			while (list($sauv_table_tables)=pmb_mysql_fetch_row($resultat)) {
 				$tSauv_table_tables=explode(",",$sauv_table_tables);
 				for ($i=0; $i<count($tSauv_table_tables); $i++) {
 					$as=array_search($tSauv_table_tables[$i],$tables);
@@ -264,9 +264,9 @@ class pmbesBackup extends external_services_api_class {
 			if ($res->sauv_sauvegarde_crypt==1) {
 				//Recherche des paramètres de cryptage
 				$requete="select sauv_sauvegarde_key1, sauv_sauvegarde_key2 from sauv_sauvegardes where sauv_sauvegarde_id=".$currentSauv;
-				$resultat=mysql_query($requete,$dbh);
+				$resultat=pmb_mysql_query($requete,$dbh);
 				
-				$res=mysql_fetch_object($resultat);
+				$res=pmb_mysql_fetch_object($resultat);
 				
 				//Ajout du cryptage
 				$fe=@fopen($path_name,"a");
@@ -321,7 +321,7 @@ class pmbesBackup extends external_services_api_class {
 			
 			//Succeed - Executer cette requete si le fichier a bien été crée
 			$requete="update sauv_log set sauv_log_succeed=1 where sauv_log_id=".$logid;
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 		
 			$fe=@fopen($path_name,"a");
 			$fsql=@fopen($temp_path_name,"rb");
@@ -363,20 +363,20 @@ class pmbesBackup extends external_services_api_class {
 			
 			//Succeed
 			$requete="update sauv_log set sauv_log_succeed=1 where sauv_log_id=".$logid;
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 	
 			//Récupération des lieux
 			$requete="select sauv_sauvegarde_lieux from sauv_sauvegardes where sauv_sauvegarde_id=".$id_sauvegarde;
-			$resultat=@mysql_query($requete);
-			$lieux=mysql_result($resultat,0,0);
+			$resultat=@pmb_mysql_query($requete);
+			$lieux=pmb_mysql_result($resultat,0,0);
 	
 			$tLieux=explode(",",$lieux);
 					
 			//Pour chaque lieu, transférer le fichier
 			for ($i=0; $i<count($tLieux); $i++) {
 				$requete="select sauv_lieu_nom,sauv_lieu_url, sauv_lieu_protocol, sauv_lieu_login, sauv_lieu_password, sauv_lieu_host from sauv_lieux where sauv_lieu_id=".$tLieux[$i];
-				$resultat=@mysql_query($requete);
-				$res=mysql_fetch_object($resultat);
+				$resultat=@pmb_mysql_query($requete);
+				$res=pmb_mysql_fetch_object($resultat);
 				$tfilecopy=explode("/",$path_name);
 				$filecopy=$tfilecopy[count($tfilecopy)-1];
 				switch ($res->sauv_lieu_protocol) {
@@ -440,9 +440,9 @@ class pmbesBackup extends external_services_api_class {
 			$requete = "select sauv_sauvegarde_id, sauv_sauvegarde_nom, sauv_sauvegarde_file_prefix, sauv_sauvegarde_tables, 
 				sauv_sauvegarde_lieux, sauv_sauvegarde_users,sauv_sauvegarde_compress, sauv_sauvegarde_compress_command,
 				sauv_sauvegarde_crypt, sauv_sauvegarde_key1, sauv_sauvegarde_key2 from sauv_sauvegardes ";
-			$res = mysql_query($requete) or die(mysql_error());
+			$res = pmb_mysql_query($requete) or die(pmb_mysql_error());
 			
-			while ($row = mysql_fetch_assoc($res)) {
+			while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = array(
 					"sauv_sauvegarde_id" => $row["sauv_sauvegarde_id"],
 					"sauv_sauvegarde_nom" => utf8_normalize($row["sauv_sauvegarde_nom"]),
@@ -476,9 +476,9 @@ class pmbesBackup extends external_services_api_class {
 //  	  		$requete.=" and sauv_log_start_date in (".$dates.")";
 //	    	}
 	    	$requete.=" order by sauv_log_start_date desc";
-	    	$resultat=mysql_query($requete,$dbh);
+	    	$resultat=pmb_mysql_query($requete,$dbh);
 	    	
-	    	while ($row = mysql_fetch_assoc($res)) {
+	    	while ($row = pmb_mysql_fetch_assoc($res)) {
 				$result[] = array(
 					"sauv_log_id" => $row["sauv_log_id"],
 					"sauv_log_start_date" => utf8_normalize($row["sauv_log_start_date"]),
@@ -506,12 +506,12 @@ class pmbesBackup extends external_services_api_class {
 		    } else {
 		    	for ($i=0; $i<count($sauv_log); $i++) {
 		    		$requete="select sauv_log_file from sauv_log where sauv_log_id=".$sauv_log[$i];
-		    		$resultat=mysql_query($requete);
+		    		$resultat=pmb_mysql_query($requete);
 		    		if ($resultat) {
-			    		$file_to_del=mysql_result($resultat,0,0);
+			    		$file_to_del=pmb_mysql_result($resultat,0,0);
 			    		@unlink($base_path."/admin/backup/backups/".$file_to_del);
 			    		$requete="delete from sauv_log where sauv_log_id=".$sauv_log[$i];
-			    		$rs = mysql_query($requete);
+			    		$rs = pmb_mysql_query($requete);
 			    		if (!$rs) {
 			    			return false;
 			    		}

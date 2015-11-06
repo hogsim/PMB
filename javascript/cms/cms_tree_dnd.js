@@ -38,6 +38,7 @@ function cms_check_if_item_tree_can_drop_here(target,source,position){
 		switch(target_item.type[0]){
 			case 'root_section' :
 			case 'section' :
+			case 'articles' :
 				return true;
 				break;
 			case 'article' :
@@ -163,6 +164,16 @@ function cms_load_content_infos(item,node,evt){
 	var change = false;
 	var add_section_button = document.getElementById('add_section_button');
 	var add_article_button = document.getElementById('add_article_button');
+	if(typeof(tinyMCE)!= 'undefined') {
+		if (tinyMCE.getInstanceById('cms_editorial_form_resume')) {
+			tinyMCE.execCommand('mceToggleEditor',true,'cms_editorial_form_resume');
+			tinyMCE.execCommand('mceRemoveControl',true,'cms_editorial_form_resume');
+		}
+		if (tinyMCE.getInstanceById('cms_editorial_form_contenu')) {	
+			tinyMCE.execCommand('mceToggleEditor',true,'cms_editorial_form_contenu');
+			tinyMCE.execCommand('mceRemoveControl',true,'cms_editorial_form_contenu');
+		}
+	}
 	if(item.id != "root"){
 		switch(item.type[0]){
 			case "section" :
@@ -193,10 +204,6 @@ function cms_load_content_infos(item,node,evt){
 	} else {
 		add_section_button.href = "./cms.php?categ=section&sub=edit&id=new";
 		add_article_button.href = "./cms.php?categ=article&sub=edit&id=new";
-	}
-	
-	if(change){
-		content.refresh();
 	}
 }
 

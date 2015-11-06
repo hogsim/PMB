@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc.js,v 1.7.2.1 2014-12-12 09:57:41 jpermanne Exp $
+// $Id: serialcirc.js,v 1.8 2014-12-12 09:59:03 jpermanne Exp $
 
 function serialcirc_circ_get_info_cb(cb,container){		
 	

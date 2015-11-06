@@ -2,17 +2,17 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dataref.inc.php,v 1.6 2013-10-09 15:03:54 dgoron Exp $
+// $Id: dataref.inc.php,v 1.8 2015-05-25 13:59:40 dgoron Exp $
 
 // references des index sur les tables
 
 // prevents direct script access
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
-// PMB version : 4.0.9 
-// PMB database version v5.13
+// PMB version : 4.2.0 
+// PMB database version v5.18
 
-// generated from DATABASE bibli 2009-04-14 18:20:39
+// generated from DATABASE bibli 2015-05-15 18:20:39
 
 //  ###################### abo_liste_lecture
 $tabindexref["abo_liste_lecture"]["PRIMARY"][]="num_empr";
@@ -22,6 +22,7 @@ $tabindexref["abo_liste_lecture"]["PRIMARY"][]="num_liste";
 //  ###################### abts_abts
 $tabindexref["abts_abts"]["PRIMARY"][]="abt_id";
 $tabindexref["abts_abts"]["index_num_notice"][]="num_notice";
+$tabindexref["abts_abts"]["i_date_fin"][]="date_fin";
 
 
 //  ###################### abts_abts_modeles
@@ -125,6 +126,11 @@ $tabindexref["author_custom_lists"]["editorial_champ_list_value"][]="author_cust
 //  ###################### author_custom_values
 $tabindexref["author_custom_values"]["editorial_custom_champ"][]="author_custom_champ";
 $tabindexref["author_custom_values"]["editorial_custom_origine"][]="author_custom_origine";
+$tabindexref["author_custom_values"]["i_acv_st"][]="author_custom_small_text";
+$tabindexref["author_custom_values"]["i_acv_t"][]="author_custom_text";
+$tabindexref["author_custom_values"]["i_acv_i"][]="author_custom_integer";
+$tabindexref["author_custom_values"]["i_acv_d"][]="author_custom_date";
+$tabindexref["author_custom_values"]["i_acv_f"][]="author_custom_float";
 
 
 //  ###################### authorities_sources
@@ -136,6 +142,34 @@ $tabindexref["authors"]["PRIMARY"][]="author_id";
 $tabindexref["authors"]["author_see"][]="author_see";
 $tabindexref["authors"]["author_name"][]="author_name";
 $tabindexref["authors"]["author_rejete"][]="author_rejete";
+
+
+//  ###################### authperso
+$tabindexref["authperso"]["PRIMARY"][]="id_authperso";
+
+
+//  ###################### authperso_authorities
+$tabindexref["authperso_authorities"]["PRIMARY"][]="id_authperso_authority";
+
+
+//  ###################### authperso_custom
+$tabindexref["authperso_custom"]["PRIMARY"][]="idchamp";
+
+
+//  ###################### authperso_custom_lists
+$tabindexref["authperso_custom_lists"]["editorial_custom_champ"][]="authperso_custom_champ";
+$tabindexref["authperso_custom_lists"]["editorial_champ_list_value"][]="authperso_custom_champ";
+$tabindexref["authperso_custom_lists"]["editorial_champ_list_value"][]="authperso_custom_list_value";
+
+
+//  ###################### authperso_custom_values
+$tabindexref["authperso_custom_values"]["editorial_custom_champ"][]="authperso_custom_champ";
+$tabindexref["authperso_custom_values"]["editorial_custom_origine"][]="authperso_custom_origine";
+$tabindexref["authperso_custom_values"]["i_acv_st"][]="authperso_custom_small_text";
+$tabindexref["authperso_custom_values"]["i_acv_t"][]="authperso_custom_text";
+$tabindexref["authperso_custom_values"]["i_acv_i"][]="authperso_custom_integer";
+$tabindexref["authperso_custom_values"]["i_acv_d"][]="authperso_custom_date";
+$tabindexref["authperso_custom_values"]["i_acv_f"][]="authperso_custom_float";
 
 
 //  ###################### avis
@@ -172,6 +206,10 @@ $tabindexref["bannette_exports"]["PRIMARY"][]="export_format";
 $tabindexref["bannette_facettes"]["bannette_facettes_key"][]="num_ban_facette";
 $tabindexref["bannette_facettes"]["bannette_facettes_key"][]="ban_facette_critere";
 $tabindexref["bannette_facettes"]["bannette_facettes_key"][]="ban_facette_ss_critere";
+
+
+//  ###################### bannette_tpl
+$tabindexref["bannette_tpl"]["PRIMARY"][]="bannettetpl_id";
 
 
 //  ###################### bannettes
@@ -215,6 +253,20 @@ $tabindexref["caddie_content"]["object_id"][]="object_id";
 $tabindexref["caddie_procs"]["PRIMARY"][]="idproc";
 
 
+//  ###################### cashdesk
+$tabindexref["cashdesk"]["PRIMARY"][]="cashdesk_id";
+
+
+//  ###################### cashdesk_locations
+$tabindexref["cashdesk_locations"]["PRIMARY"][]="cashdesk_loc_cashdesk_num";
+$tabindexref["cashdesk_locations"]["PRIMARY"][]="cashdesk_loc_num";
+
+
+//  ###################### cashdesk_sections
+$tabindexref["cashdesk_sections"]["PRIMARY"][]="cashdesk_section_cashdesk_num";
+$tabindexref["cashdesk_sections"]["PRIMARY"][]="cashdesk_section_num";
+
+
 //  ###################### categ_custom
 $tabindexref["categ_custom"]["PRIMARY"][]="idchamp";
 
@@ -228,6 +280,11 @@ $tabindexref["categ_custom_lists"]["editorial_champ_list_value"][]="categ_custom
 //  ###################### categ_custom_values
 $tabindexref["categ_custom_values"]["editorial_custom_champ"][]="categ_custom_champ";
 $tabindexref["categ_custom_values"]["editorial_custom_origine"][]="categ_custom_origine";
+$tabindexref["categ_custom_values"]["i_ccv_st"][]="categ_custom_small_text";
+$tabindexref["categ_custom_values"]["i_ccv_t"][]="categ_custom_text";
+$tabindexref["categ_custom_values"]["i_ccv_i"][]="categ_custom_integer";
+$tabindexref["categ_custom_values"]["i_ccv_d"][]="categ_custom_date";
+$tabindexref["categ_custom_values"]["i_ccv_f"][]="categ_custom_float";
 
 
 //  ###################### categories
@@ -259,6 +316,17 @@ $tabindexref["cms_articles_descriptors"]["PRIMARY"][]="num_noeud";
 
 //  ###################### cms_build
 $tabindexref["cms_build"]["PRIMARY"][]="id_build";
+$tabindexref["cms_build"]["cms_build_index"][]="build_version_num";
+$tabindexref["cms_build"]["cms_build_index"][]="build_obj";
+$tabindexref["cms_build"]["i_build_parent_build_version_num"][]="build_parent";
+$tabindexref["cms_build"]["i_build_parent_build_version_num"][]="build_version_num";
+$tabindexref["cms_build"]["i_build_obj_build_version_num"][]="build_obj";
+$tabindexref["cms_build"]["i_build_obj_build_version_num"][]="build_version_num";
+
+
+//  ###################### cms_cache_cadres
+$tabindexref["cms_cache_cadres"]["PRIMARY"][]="cache_cadre_hash";
+$tabindexref["cms_cache_cadres"]["PRIMARY"][]="cache_cadre_type_content";
 
 
 //  ###################### cms_cadre_content
@@ -269,8 +337,25 @@ $tabindexref["cms_cadre_content"]["PRIMARY"][]="id_cadre_content";
 $tabindexref["cms_cadres"]["PRIMARY"][]="id_cadre";
 
 
+//  ###################### cms_collections
+$tabindexref["cms_collections"]["PRIMARY"][]="id_collection";
+$tabindexref["cms_collections"]["i_cms_collection_title"][]="collection_title";
+
+
+//  ###################### cms_documents
+$tabindexref["cms_documents"]["PRIMARY"][]="id_document";
+$tabindexref["cms_documents"]["i_cms_document_title"][]="document_title";
+
+
+//  ###################### cms_documents_links
+$tabindexref["cms_documents_links"]["PRIMARY"][]="document_link_type_object";
+$tabindexref["cms_documents_links"]["PRIMARY"][]="document_link_num_object";
+$tabindexref["cms_documents_links"]["PRIMARY"][]="document_link_num_document";
+
+
 //  ###################### cms_editorial_custom
 $tabindexref["cms_editorial_custom"]["PRIMARY"][]="idchamp";
+$tabindexref["cms_editorial_custom"]["i_num_type"][]="num_type";
 
 
 //  ###################### cms_editorial_custom_lists
@@ -282,6 +367,11 @@ $tabindexref["cms_editorial_custom_lists"]["editorial_champ_list_value"][]="cms_
 //  ###################### cms_editorial_custom_values
 $tabindexref["cms_editorial_custom_values"]["editorial_custom_champ"][]="cms_editorial_custom_champ";
 $tabindexref["cms_editorial_custom_values"]["editorial_custom_origine"][]="cms_editorial_custom_origine";
+$tabindexref["cms_editorial_custom_values"]["i_ccv_st"][]="cms_editorial_custom_small_text";
+$tabindexref["cms_editorial_custom_values"]["i_ccv_t"][]="cms_editorial_custom_text";
+$tabindexref["cms_editorial_custom_values"]["i_ccv_i"][]="cms_editorial_custom_integer";
+$tabindexref["cms_editorial_custom_values"]["i_ccv_d"][]="cms_editorial_custom_date";
+$tabindexref["cms_editorial_custom_values"]["i_ccv_f"][]="cms_editorial_custom_float";
 
 
 //  ###################### cms_editorial_fields_global_index
@@ -299,6 +389,7 @@ $tabindexref["cms_editorial_publications_states"]["PRIMARY"][]="id_publication_s
 
 //  ###################### cms_editorial_types
 $tabindexref["cms_editorial_types"]["PRIMARY"][]="id_editorial_type";
+$tabindexref["cms_editorial_types"]["i_editorial_type_element"][]="editorial_type_element";
 
 
 //  ###################### cms_editorial_words_global_index
@@ -363,6 +454,11 @@ $tabindexref["collection_custom_lists"]["editorial_champ_list_value"][]="collect
 //  ###################### collection_custom_values
 $tabindexref["collection_custom_values"]["editorial_custom_champ"][]="collection_custom_champ";
 $tabindexref["collection_custom_values"]["editorial_custom_origine"][]="collection_custom_origine";
+$tabindexref["collection_custom_values"]["i_ccv_st"][]="collection_custom_small_text";
+$tabindexref["collection_custom_values"]["i_ccv_t"][]="collection_custom_text";
+$tabindexref["collection_custom_values"]["i_ccv_i"][]="collection_custom_integer";
+$tabindexref["collection_custom_values"]["i_ccv_d"][]="collection_custom_date";
+$tabindexref["collection_custom_values"]["i_ccv_f"][]="collection_custom_float";
 
 
 //  ###################### collections
@@ -537,6 +633,48 @@ $tabindexref["docs_statut"]["statusdoc_owner"][]="statusdoc_owner";
 
 //  ###################### docs_type
 $tabindexref["docs_type"]["PRIMARY"][]="idtyp_doc";
+
+
+//  ###################### docwatch_categories
+$tabindexref["docwatch_categories"]["PRIMARY"][]="id_category";
+
+
+//  ###################### docwatch_datasources
+$tabindexref["docwatch_datasources"]["PRIMARY"][]="id_datasource";
+$tabindexref["docwatch_datasources"]["i_docwatch_datasource_title"][]="datasource_title";
+
+
+//  ###################### docwatch_items
+$tabindexref["docwatch_items"]["PRIMARY"][]="id_item";
+$tabindexref["docwatch_items"]["i_docwatch_item_type"][]="item_type";
+$tabindexref["docwatch_items"]["i_docwatch_item_title"][]="item_title";
+$tabindexref["docwatch_items"]["i_docwatch_item_num_article"][]="item_num_article";
+$tabindexref["docwatch_items"]["i_docwatch_item_num_section"][]="item_num_section";
+$tabindexref["docwatch_items"]["i_docwatch_item_num_notice"][]="item_num_notice";
+$tabindexref["docwatch_items"]["i_docwatch_item_num_watch"][]="item_num_watch";
+
+
+//  ###################### docwatch_items_descriptors
+$tabindexref["docwatch_items_descriptors"]["PRIMARY"][]="num_item";
+$tabindexref["docwatch_items_descriptors"]["PRIMARY"][]="num_noeud";
+
+
+//  ###################### docwatch_items_tags
+$tabindexref["docwatch_items_tags"]["PRIMARY"][]="num_item";
+$tabindexref["docwatch_items_tags"]["PRIMARY"][]="num_tag";
+
+
+//  ###################### docwatch_selectors
+$tabindexref["docwatch_selectors"]["PRIMARY"][]="id_selector";
+
+
+//  ###################### docwatch_tags
+$tabindexref["docwatch_tags"]["PRIMARY"][]="id_tag";
+
+
+//  ###################### docwatch_watches
+$tabindexref["docwatch_watches"]["PRIMARY"][]="id_watch";
+$tabindexref["docwatch_watches"]["i_docwatch_watch_title"][]="watch_title";
 
 
 //  ###################### dsi_archive
@@ -741,6 +879,7 @@ $tabindexref["explnum"]["PRIMARY"][]="explnum_id";
 $tabindexref["explnum"]["explnum_notice"][]="explnum_notice";
 $tabindexref["explnum"]["explnum_bulletin"][]="explnum_bulletin";
 $tabindexref["explnum"]["explnum_repertoire"][]="explnum_repertoire";
+$tabindexref["explnum"]["i_explnum_nomfichier"][]="explnum_nomfichier";
 $tabindexref["explnum"]["i_f_explnumwew"][]="explnum_index_wew";
 
 
@@ -787,8 +926,66 @@ $tabindexref["external_count"]["PRIMARY"][]="rid";
 $tabindexref["external_count"]["recid"][]="recid";
 
 
+//  ###################### explnum_segments
+$tabindexref["explnum_segments"]["PRIMARY"][]="explnum_segment_id";
+$tabindexref["explnum_segments"]["i_ensg_explnum_num"][]="explnum_segment_explnum_num";
+$tabindexref["explnum_segments"]["i_ensg_speaker"][]="explnum_segment_speaker_num";
+
+
+//  ###################### explnum_speakers
+$tabindexref["explnum_speakers"]["PRIMARY"][]="explnum_speaker_id";
+$tabindexref["explnum_speakers"]["i_ensk_explnum_num"][]="explnum_speaker_explnum_num";
+$tabindexref["explnum_speakers"]["i_ensk_author"][]="explnum_speaker_author";
+
+
+//  ###################### explnum_statut
+$tabindexref["explnum_statut"]["PRIMARY"][]="id_explnum_statut";
+
+
 //  ###################### facettes
 $tabindexref["facettes"]["PRIMARY"][]="id_facette";
+
+
+//  ###################### faq_questions
+$tabindexref["faq_questions"]["PRIMARY"][]="id_faq_question";
+
+
+//  ###################### faq_questions_categories
+$tabindexref["faq_questions_categories"]["i_faq_categ"][]="num_faq_question";
+$tabindexref["faq_questions_categories"]["i_faq_categ"][]="num_categ";
+
+
+//  ###################### faq_questions_fields_global_index
+$tabindexref["faq_questions_fields_global_index"]["PRIMARY"][]="id_faq_question";
+$tabindexref["faq_questions_fields_global_index"]["PRIMARY"][]="code_champ";
+$tabindexref["faq_questions_fields_global_index"]["PRIMARY"][]="code_ss_champ";
+$tabindexref["faq_questions_fields_global_index"]["PRIMARY"][]="lang";
+$tabindexref["faq_questions_fields_global_index"]["PRIMARY"][]="ordre";
+$tabindexref["faq_questions_fields_global_index"]["i_value"][]="value";
+$tabindexref["faq_questions_fields_global_index"]["i_code_champ_code_ss_champ"][]="code_champ";
+$tabindexref["faq_questions_fields_global_index"]["i_code_champ_code_ss_champ"][]="code_ss_champ";
+
+
+//  ###################### faq_questions_words_global_index
+$tabindexref["faq_questions_words_global_index"]["PRIMARY"][]="id_faq_question";
+$tabindexref["faq_questions_words_global_index"]["PRIMARY"][]="code_champ";
+$tabindexref["faq_questions_words_global_index"]["PRIMARY"][]="num_word";
+$tabindexref["faq_questions_words_global_index"]["PRIMARY"][]="position";
+$tabindexref["faq_questions_words_global_index"]["PRIMARY"][]="code_ss_champ";
+$tabindexref["faq_questions_words_global_index"]["code_champ"][]="code_champ";
+$tabindexref["faq_questions_words_global_index"]["i_id_mot"][]="num_word";
+$tabindexref["faq_questions_words_global_index"]["i_id_mot"][]="id_faq_question";
+$tabindexref["faq_questions_words_global_index"]["i_code_champ_code_ss_champ_num_word"][]="code_champ";
+$tabindexref["faq_questions_words_global_index"]["i_code_champ_code_ss_champ_num_word"][]="code_ss_champ";
+$tabindexref["faq_questions_words_global_index"]["i_code_champ_code_ss_champ_num_word"][]="num_word";
+
+
+//  ###################### faq_themes
+$tabindexref["faq_themes"]["PRIMARY"][]="id_theme";
+
+
+//  ###################### faq_types
+$tabindexref["faq_types"]["PRIMARY"][]="id_type";
 
 
 //  ###################### fiche
@@ -812,6 +1009,11 @@ $tabindexref["gestfic0_custom_lists"]["gestfic0_champ_list_value"][]="gestfic0_c
 //  ###################### gestfic0_custom_values
 $tabindexref["gestfic0_custom_values"]["gestfic0_custom_champ"][]="gestfic0_custom_champ";
 $tabindexref["gestfic0_custom_values"]["gestfic0_custom_origine"][]="gestfic0_custom_origine";
+$tabindexref["gestfic0_custom_values"]["i_gcv_st"][]="gestfic0_custom_small_text";
+$tabindexref["gestfic0_custom_values"]["i_gcv_t"][]="gestfic0_custom_text";
+$tabindexref["gestfic0_custom_values"]["i_gcv_i"][]="gestfic0_custom_integer";
+$tabindexref["gestfic0_custom_values"]["i_gcv_d"][]="gestfic0_custom_date";
+$tabindexref["gestfic0_custom_values"]["i_gcv_f"][]="gestfic0_custom_float";
 
 
 //  ###################### grilles
@@ -866,6 +1068,12 @@ $tabindexref["import_marc"]["i_nonot_orig"][]="no_notice";
 $tabindexref["import_marc"]["i_nonot_orig"][]="origine";
 
 
+//  ###################### index_concept
+$tabindexref["index_concept"]["PRIMARY"][]="num_object";
+$tabindexref["index_concept"]["PRIMARY"][]="type_object";
+$tabindexref["index_concept"]["PRIMARY"][]="num_concept";
+
+
 //  ###################### indexint
 $tabindexref["indexint"]["PRIMARY"][]="indexint_id";
 $tabindexref["indexint"]["indexint_name"][]="indexint_name";
@@ -885,6 +1093,11 @@ $tabindexref["indexint_custom_lists"]["editorial_champ_list_value"][]="indexint_
 //  ###################### indexint_custom_values
 $tabindexref["indexint_custom_values"]["editorial_custom_champ"][]="indexint_custom_champ";
 $tabindexref["indexint_custom_values"]["editorial_custom_origine"][]="indexint_custom_origine";
+$tabindexref["indexint_custom_values"]["i_icv_st"][]="indexint_custom_small_text";
+$tabindexref["indexint_custom_values"]["i_icv_t"][]="indexint_custom_text";
+$tabindexref["indexint_custom_values"]["i_icv_i"][]="indexint_custom_integer";
+$tabindexref["indexint_custom_values"]["i_icv_d"][]="indexint_custom_date";
+$tabindexref["indexint_custom_values"]["i_icv_f"][]="indexint_custom_float";
 
 
 //  ###################### infopages
@@ -898,6 +1111,8 @@ $tabindexref["lenders"]["PRIMARY"][]="idlender";
 //  ###################### liens_actes
 $tabindexref["liens_actes"]["PRIMARY"][]="num_acte";
 $tabindexref["liens_actes"]["PRIMARY"][]="num_acte_lie";
+$tabindexref["liens_actes"]["i_num_acte"][]="num_acte";
+$tabindexref["liens_actes"]["i_num_acte_lie"][]="num_acte_lie";
 
 
 //  ###################### lignes_actes
@@ -937,6 +1152,27 @@ $tabindexref["log_retard"]["PRIMARY"][]="id_log";
 $tabindexref["mailtpl"]["PRIMARY"][]="id_mailtpl";
 
 
+//  ###################### map_echelles
+$tabindexref["map_echelles"]["PRIMARY"][]="map_echelle_id";
+
+
+//  ###################### map_emprises
+$tabindexref["map_emprises"]["PRIMARY"][]="map_emprise_id";
+$tabindexref["map_emprises"]["i_map_emprise_obj_num"][]="map_emprise_obj_num";
+
+
+//  ###################### map_hold_areas
+$tabindexref["map_hold_areas"]["PRIMARY"][]="id_obj";
+
+
+//  ###################### map_projections
+$tabindexref["map_projections"]["PRIMARY"][]="map_projection_id";
+
+
+//  ###################### map_refs
+$tabindexref["map_refs"]["PRIMARY"][]="map_ref_id";
+
+
 //  ###################### mots
 $tabindexref["mots"]["PRIMARY"][]="id_mot";
 $tabindexref["mots"]["mot"][]="mot";
@@ -949,6 +1185,58 @@ $tabindexref["noeuds"]["num_thesaurus"][]="num_thesaurus";
 $tabindexref["noeuds"]["autorite"][]="autorite";
 $tabindexref["noeuds"]["key_path"][]="path";
 $tabindexref["noeuds"]["i_num_renvoi_voir"][]="num_renvoi_voir";
+
+
+//  ###################### nomenclature_children_records
+$tabindexref["nomenclature_children_records"]["PRIMARY"][]="child_record_num_record";
+
+
+//  ###################### nomenclature_exotic_instruments
+$tabindexref["nomenclature_exotic_instruments"]["PRIMARY"][]="id_exotic_instrument";
+
+
+//  ###################### nomenclature_exotic_other_instruments
+$tabindexref["nomenclature_exotic_other_instruments"]["PRIMARY"][]="id_exotic_other_instrument";
+
+
+//  ###################### nomenclature_families
+$tabindexref["nomenclature_families"]["PRIMARY"][]="id_family";
+
+
+//  ###################### nomenclature_formations
+$tabindexref["nomenclature_formations"]["PRIMARY"][]="id_formation";
+
+
+//  ###################### nomenclature_instruments
+$tabindexref["nomenclature_instruments"]["PRIMARY"][]="id_instrument";
+
+
+//  ###################### nomenclature_musicstands
+$tabindexref["nomenclature_musicstands"]["PRIMARY"][]="id_musicstand";
+
+
+//  ###################### nomenclature_notices_nomenclatures
+$tabindexref["nomenclature_notices_nomenclatures"]["PRIMARY"][]="id_notice_nomenclature";
+
+
+//  ###################### nomenclature_types
+$tabindexref["nomenclature_types"]["PRIMARY"][]="id_type";
+
+
+//  ###################### nomenclature_voices
+$tabindexref["nomenclature_voices"]["PRIMARY"][]="id_voice";
+
+
+//  ###################### nomenclature_workshops
+$tabindexref["nomenclature_workshops"]["PRIMARY"][]="id_workshop";
+
+
+//  ###################### nomenclature_workshops_instruments
+$tabindexref["nomenclature_workshops_instruments"]["PRIMARY"][]="id_workshop_instrument";
+
+
+//  ###################### notice_onglet
+$tabindexref["notice_onglet"]["PRIMARY"][]="id_onglet";
 
 
 //  ###################### notices
@@ -972,6 +1260,11 @@ $tabindexref["notices"]["i_not_statut"][]="statut";
 //  ###################### notices_authorities_sources
 $tabindexref["notices_authorities_sources"]["PRIMARY"][]="num_authority_source";
 $tabindexref["notices_authorities_sources"]["PRIMARY"][]="num_notice";
+
+
+//  ###################### notices_authperso
+$tabindexref["notices_authperso"]["PRIMARY"][]="notice_authperso_notice_num";
+$tabindexref["notices_authperso"]["PRIMARY"][]="notice_authperso_authority_num";
 
 
 //  ###################### notices_categories
@@ -1014,6 +1307,8 @@ $tabindexref["notices_fields_global_index"]["PRIMARY"][]="code_ss_champ";
 $tabindexref["notices_fields_global_index"]["PRIMARY"][]="lang";
 $tabindexref["notices_fields_global_index"]["PRIMARY"][]="ordre";
 $tabindexref["notices_fields_global_index"]["i_value"][]="value";
+$tabindexref["notices_fields_global_index"]["i_code_champ_code_ss_champ"][]="code_champ";
+$tabindexref["notices_fields_global_index"]["i_code_champ_code_ss_champ"][]="code_ss_champ";
 
 
 //  ###################### notices_global_index
@@ -1030,12 +1325,15 @@ $tabindexref["notices_langues"]["PRIMARY"][]="code_langue";
 //  ###################### notices_mots_global_index
 $tabindexref["notices_mots_global_index"]["PRIMARY"][]="id_notice";
 $tabindexref["notices_mots_global_index"]["PRIMARY"][]="code_champ";
-$tabindexref["notices_mots_global_index"]["PRIMARY"][]="code_ss_champ";
 $tabindexref["notices_mots_global_index"]["PRIMARY"][]="num_word";
 $tabindexref["notices_mots_global_index"]["PRIMARY"][]="position";
+$tabindexref["notices_mots_global_index"]["PRIMARY"][]="code_ss_champ";
 $tabindexref["notices_mots_global_index"]["code_champ"][]="code_champ";
 $tabindexref["notices_mots_global_index"]["i_id_mot"][]="num_word";
 $tabindexref["notices_mots_global_index"]["i_id_mot"][]="id_notice";
+$tabindexref["notices_mots_global_index"]["i_code_champ_code_ss_champ_num_word"][]="code_champ";
+$tabindexref["notices_mots_global_index"]["i_code_champ_code_ss_champ_num_word"][]="code_ss_champ";
+$tabindexref["notices_mots_global_index"]["i_code_champ_code_ss_champ_num_word"][]="num_word";
 
 
 //  ###################### notices_relations
@@ -1063,6 +1361,11 @@ $tabindexref["notice_tplcode"]["PRIMARY"][]="num_notpl";
 $tabindexref["notice_tplcode"]["PRIMARY"][]="notplcode_localisation";
 $tabindexref["notice_tplcode"]["PRIMARY"][]="notplcode_typdoc";
 $tabindexref["notice_tplcode"]["PRIMARY"][]="notplcode_niveau_biblio";
+
+
+//  ###################### onto_uri
+$tabindexref["onto_uri"]["PRIMARY"][]="uri_id";
+$tabindexref["onto_uri"]["uri"][]="uri";
 
 
 //  ###################### opac_filters
@@ -1174,6 +1477,11 @@ $tabindexref["publisher_custom_lists"]["editorial_champ_list_value"][]="publishe
 //  ###################### publisher_custom_values
 $tabindexref["publisher_custom_values"]["editorial_custom_champ"][]="publisher_custom_champ";
 $tabindexref["publisher_custom_values"]["editorial_custom_origine"][]="publisher_custom_origine";
+$tabindexref["publisher_custom_values"]["i_pcv_st"][]="publisher_custom_small_text";
+$tabindexref["publisher_custom_values"]["i_pcv_t"][]="publisher_custom_text";
+$tabindexref["publisher_custom_values"]["i_pcv_i"][]="publisher_custom_integer";
+$tabindexref["publisher_custom_values"]["i_pcv_d"][]="publisher_custom_date";
+$tabindexref["publisher_custom_values"]["i_pcv_f"][]="publisher_custom_float";
 
 
 //  ###################### publishers
@@ -1246,6 +1554,14 @@ $tabindexref["responsability"]["PRIMARY"][]="responsability_author";
 $tabindexref["responsability"]["PRIMARY"][]="responsability_notice";
 $tabindexref["responsability"]["PRIMARY"][]="responsability_fonction";
 $tabindexref["responsability"]["responsability_notice"][]="responsability_notice";
+
+
+//  ###################### responsability_tu
+$tabindexref["responsability_tu"]["PRIMARY"][]="responsability_tu_author_num";
+$tabindexref["responsability_tu"]["PRIMARY"][]="responsability_tu_num";
+$tabindexref["responsability_tu"]["PRIMARY"][]="responsability_tu_fonction";
+$tabindexref["responsability_tu"]["responsability_tu_author"][]="responsability_tu_author_num";
+$tabindexref["responsability_tu"]["responsability_tu_num"][]="responsability_tu_num";
 
 
 //  ###################### rss_content
@@ -1328,6 +1644,10 @@ $tabindexref["serialcirc_expl"]["PRIMARY"][]="id_serialcirc_expl";
 $tabindexref["serialcirc_group"]["PRIMARY"][]="id_serialcirc_group";
 
 
+//  ###################### serialcirc_tpl
+$tabindexref["serialcirc_tpl"]["PRIMARY"][]="serialcirctpl_id";
+
+
 //  ###################### serie_custom
 $tabindexref["serie_custom"]["PRIMARY"][]="idchamp";
 
@@ -1341,6 +1661,11 @@ $tabindexref["serie_custom_lists"]["editorial_champ_list_value"][]="serie_custom
 //  ###################### serie_custom_values
 $tabindexref["serie_custom_values"]["editorial_custom_champ"][]="serie_custom_champ";
 $tabindexref["serie_custom_values"]["editorial_custom_origine"][]="serie_custom_origine";
+$tabindexref["serie_custom_values"]["i_scv_st"][]="serie_custom_small_text";
+$tabindexref["serie_custom_values"]["i_scv_t"][]="serie_custom_text";
+$tabindexref["serie_custom_values"]["i_scv_i"][]="serie_custom_integer";
+$tabindexref["serie_custom_values"]["i_scv_d"][]="serie_custom_date";
+$tabindexref["serie_custom_values"]["i_scv_f"][]="serie_custom_float";
 
 
 //  ###################### series
@@ -1348,6 +1673,31 @@ $tabindexref["series"]["PRIMARY"][]="serie_id";
 
 
 //  ###################### sessions
+
+
+//  ###################### skos_fields_global_index
+$tabindexref["skos_fields_global_index"]["PRIMARY"][]="id_item";
+$tabindexref["skos_fields_global_index"]["PRIMARY"][]="code_champ";
+$tabindexref["skos_fields_global_index"]["PRIMARY"][]="code_ss_champ";
+$tabindexref["skos_fields_global_index"]["PRIMARY"][]="lang";
+$tabindexref["skos_fields_global_index"]["PRIMARY"][]="ordre";
+$tabindexref["skos_fields_global_index"]["i_value"][]="value";
+$tabindexref["skos_fields_global_index"]["i_code_champ_code_ss_champ"][]="code_champ";
+$tabindexref["skos_fields_global_index"]["i_code_champ_code_ss_champ"][]="code_ss_champ";
+
+
+//  ###################### skos_words_global_index
+$tabindexref["skos_words_global_index"]["PRIMARY"][]="id_item";
+$tabindexref["skos_words_global_index"]["PRIMARY"][]="code_champ";
+$tabindexref["skos_words_global_index"]["PRIMARY"][]="num_word";
+$tabindexref["skos_words_global_index"]["PRIMARY"][]="position";
+$tabindexref["skos_words_global_index"]["PRIMARY"][]="code_ss_champ";
+$tabindexref["skos_words_global_index"]["code_champ"][]="code_champ";
+$tabindexref["skos_words_global_index"]["i_id_mot"][]="num_word";
+$tabindexref["skos_words_global_index"]["i_id_mot"][]="id_item";
+$tabindexref["skos_words_global_index"]["i_code_champ_code_ss_champ_num_word"][]="code_champ";
+$tabindexref["skos_words_global_index"]["i_code_champ_code_ss_champ_num_word"][]="code_ss_champ";
+$tabindexref["skos_words_global_index"]["i_code_champ_code_ss_champ_num_word"][]="num_word";
 
 
 //  ###################### source_sync
@@ -1379,6 +1729,11 @@ $tabindexref["statopac_vues"]["PRIMARY"][]="id_vue";
 $tabindexref["statopac_vues_col"]["PRIMARY"][]="id_col";
 
 
+//  ###################### storages
+$tabindexref["storages"]["PRIMARY"][]="id_storage";
+$tabindexref["storages"]["i_storage_class"][]="storage_class";
+
+
 //  ###################### sub_collections
 $tabindexref["sub_collections"]["PRIMARY"][]="sub_coll_id";
 $tabindexref["sub_collections"]["sub_coll_name"][]="sub_coll_name";
@@ -1397,6 +1752,11 @@ $tabindexref["subcollection_custom_lists"]["editorial_champ_list_value"][]="subc
 //  ###################### subcollection_custom_values
 $tabindexref["subcollection_custom_values"]["editorial_custom_champ"][]="subcollection_custom_champ";
 $tabindexref["subcollection_custom_values"]["editorial_custom_origine"][]="subcollection_custom_origine";
+$tabindexref["subcollection_custom_values"]["i_scv_st"][]="subcollection_custom_small_text";
+$tabindexref["subcollection_custom_values"]["i_scv_t"][]="subcollection_custom_text";
+$tabindexref["subcollection_custom_values"]["i_scv_i"][]="subcollection_custom_integer";
+$tabindexref["subcollection_custom_values"]["i_scv_d"][]="subcollection_custom_date";
+$tabindexref["subcollection_custom_values"]["i_scv_f"][]="subcollection_custom_float";
 
 
 //  ###################### suggestions
@@ -1448,8 +1808,16 @@ $tabindexref["thesaurus"]["libelle_thesaurus"][]="libelle_thesaurus";
 $tabindexref["titres_uniformes"]["PRIMARY"][]="tu_id";
 
 
+//  ###################### transacash
+$tabindexref["transacash"]["PRIMARY"][]="transacash_id";
+
+
 //  ###################### transactions
 $tabindexref["transactions"]["PRIMARY"][]="id_transaction";
+
+
+//  ###################### transactype
+$tabindexref["transactype"]["PRIMARY"][]="transactype_id";
 
 
 //  ###################### transferts
@@ -1463,6 +1831,10 @@ $tabindexref["transferts_demande"]["num_transfert"][]="num_transfert";
 $tabindexref["transferts_demande"]["num_location_source"][]="num_location_source";
 $tabindexref["transferts_demande"]["num_location_dest"][]="num_location_dest";
 $tabindexref["transferts_demande"]["num_expl"][]="num_expl";
+
+
+//  ###################### transferts_source
+$tabindexref["transferts_source"]["PRIMARY"][]="trans_source_numexpl";
 
 
 //  ###################### translation
@@ -1490,6 +1862,11 @@ $tabindexref["tu_custom_lists"]["editorial_champ_list_value"][]="tu_custom_list_
 //  ###################### tu_custom_values
 $tabindexref["tu_custom_values"]["editorial_custom_champ"][]="tu_custom_champ";
 $tabindexref["tu_custom_values"]["editorial_custom_origine"][]="tu_custom_origine";
+$tabindexref["tu_custom_values"]["i_tcv_st"][]="tu_custom_small_text";
+$tabindexref["tu_custom_values"]["i_tcv_t"][]="tu_custom_text";
+$tabindexref["tu_custom_values"]["i_tcv_i"][]="tu_custom_integer";
+$tabindexref["tu_custom_values"]["i_tcv_d"][]="tu_custom_date";
+$tabindexref["tu_custom_values"]["i_tcv_f"][]="tu_custom_float";
 
 
 //  ###################### tu_distrib
@@ -1511,17 +1888,17 @@ $tabindexref["tu_subdiv"]["PRIMARY"][]="subdiv_ordre";
 $tabindexref["tva_achats"]["PRIMARY"][]="id_tva";
 
 
-//  ###################### types_produits
-$tabindexref["types_produits"]["PRIMARY"][]="id_produit";
-$tabindexref["types_produits"]["libelle"][]="libelle";
-
-
 //  ###################### type_abts
 $tabindexref["type_abts"]["PRIMARY"][]="id_type_abt";
 
 
 //  ###################### type_comptes
 $tabindexref["type_comptes"]["PRIMARY"][]="id_type_compte";
+
+
+//  ###################### types_produits
+$tabindexref["types_produits"]["PRIMARY"][]="id_produit";
+$tabindexref["types_produits"]["libelle"][]="libelle";
 
 
 //  ###################### upload_repertoire
@@ -1535,6 +1912,27 @@ $tabindexref["users"]["PRIMARY"][]="userid";
 //  ###################### users_groups
 $tabindexref["users_groups"]["PRIMARY"][]="grp_id";
 $tabindexref["users_groups"]["i_users_groups_grp_name"][]="grp_name";
+
+
+//  ###################### vedette
+$tabindexref["vedette"]["PRIMARY"][]="id_vedette";
+
+
+//  ###################### vedette_link
+$tabindexref["vedette_link"]["PRIMARY"][]="num_vedette";
+$tabindexref["vedette_link"]["PRIMARY"][]="num_object";
+$tabindexref["vedette_link"]["PRIMARY"][]="type_object";
+
+
+//  ###################### vedette_object
+$tabindexref["vedette_object"]["PRIMARY"][]="object_type";
+$tabindexref["vedette_object"]["PRIMARY"][]="object_id";
+$tabindexref["vedette_object"]["PRIMARY"][]="num_vedette";
+$tabindexref["vedette_object"]["PRIMARY"][]="subdivision";
+$tabindexref["vedette_object"]["PRIMARY"][]="position";
+$tabindexref["vedette_object"]["i_vedette_object_object"][]="object_type";
+$tabindexref["vedette_object"]["i_vedette_object_object"][]="object_id";
+$tabindexref["vedette_object"]["i_vedette_object_vedette"][]="num_vedette";
 
 
 //  ###################### visionneuse_params
@@ -1553,6 +1951,8 @@ $tabindexref["voir_aussi"]["num_noeud_dest"][]="num_noeud_dest";
 $tabindexref["words"]["PRIMARY"][]="id_word";
 $tabindexref["words"]["i_word_lang"][]="word";
 $tabindexref["words"]["i_word_lang"][]="lang";
+$tabindexref["words"]["i_stem_lang"][]="stem";
+$tabindexref["words"]["i_stem_lang"][]="lang";
 
 
 //  ###################### z_attr

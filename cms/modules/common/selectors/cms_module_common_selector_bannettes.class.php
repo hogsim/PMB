@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_bannettes.class.php,v 1.1.2.3 2014-09-25 14:48:13 arenou Exp $
+// $Id: cms_module_common_selector_bannettes.class.php,v 1.2 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");
@@ -34,12 +34,12 @@ class cms_module_common_selector_bannettes extends cms_module_common_selector{
 	}
 	
 	protected function gen_select(){
-		$query= "select id_bannette, nom_bannette from bannettes where (proprio_bannette = 0)  order by nom_bannette";
-		$result = mysql_query($query);
+		$query= "select id_bannette, nom_bannette from bannettes where (num_classement = 1)  order by nom_bannette";
+		$result = pmb_mysql_query($query);
 		$select = "
 					<select name='".$this->get_form_value_name("id_bannette")."[]' multiple='multiple'>";
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$select.="
 						<option value='".$row->id_bannette."' ".(in_array($row->id_bannette,$this->parameters) ? "selected='selected'" : "").">".$this->format_text($row->nom_bannette)."</option>";
 			}

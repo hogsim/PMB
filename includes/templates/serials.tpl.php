@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials.tpl.php,v 1.167.2.13 2015-10-27 14:25:57 jpermanne Exp $
+// $Id: serials.tpl.php,v 1.187 2015-06-05 12:36:58 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -800,6 +800,8 @@ $ptab[4] = "
 		<span>$msg[324]$msg[1901]$msg[325]</span>
 	</div>
 </div>
+
+!!concept_form!!
 </div>
 ";
 //	----------------------------------------------------
@@ -937,32 +939,29 @@ function chklnk_f_lien(element){
 		}
 		document.getElementById('f_lien_check').appendChild(wait);
 		var testlink = encodeURIComponent(element.value);
-		var req = new XMLHttpRequest();
-		req.open('GET', './ajax.php?module=ajax&categ=chklnk&timeout=!!pmb_curl_timeout!!&link='+testlink, true);
-		req.onreadystatechange = function (aEvt) {
-		  if (req.readyState == 4) {
-		  	if(req.status == 200){
-				var img = document.createElement('img');
-			    var src='';
-			    if(req.responseText == '200'){
-			    	if((element.value.substr(0,7) != 'http://') && (element.value.substr(0,8) != 'https://')) element.value = 'http://'+element.value;
-					//impec, on print un petit message de confirmation
-					src = 'images/tick.gif';
-				}else{
-			      //problème...
-					src = 'images/error.png';
-					img.setAttribute('style','height:1.5em;');
-			    }
-			    img.setAttribute('src',src);
-				img.setAttribute('align','top');
-				while(document.getElementById('f_lien_check').firstChild){
-					document.getElementById('f_lien_check').removeChild(document.getElementById('f_lien_check').firstChild);
-				}
-				document.getElementById('f_lien_check').appendChild(img);
+		var check = new http_request();
+		if(check.request('./ajax.php?module=ajax&categ=chklnk',true,'&timeout=0&link='+testlink)){
+			alert(check.get_text());
+		}else{
+			var result = check.get_text();
+			var img = document.createElement('img');
+			var src='';
+			if(result == '200') {
+				if((element.value.substr(0,7) != 'http://') && (element.value.substr(0,8) != 'https://')) element.value = 'http://'+element.value;
+				//impec, on print un petit message de confirmation
+				src = 'images/tick.gif';
+			}else{
+				//problème...
+				src = 'images/error.png';
+				img.setAttribute('style','height:1.5em;');
 			}
-		  }
-		};
-		req.send(null);
+			img.setAttribute('src',src);
+			img.setAttribute('align','top');
+			while(document.getElementById('f_lien_check').firstChild){
+				document.getElementById('f_lien_check').removeChild(document.getElementById('f_lien_check').firstChild);
+			}
+			document.getElementById('f_lien_check').appendChild(img);
+		}
 	}
 }
 </script>
@@ -1039,6 +1038,16 @@ $ptab[8] = "
 			!!notice_statut!!
 		</div>
 	</div>
+	<div id='el10Child_7' title='".htmlentities($msg["notice_is_new_gestion"],ENT_QUOTES, $charset)."' movable='yes'>
+		<!--    Nouveauté    -->
+		<div id='el10Child_7a' class='row'>
+		    <label for='f_new_gestion' class='etiquette'>".$msg["notice_is_new_gestion"]."</label>
+		</div>
+		<div id='el10Child_7b' class='row'>
+		    <input type='radio' name='f_notice_is_new' !!checked_no!! value='0'>".$msg["notice_is_new_gestion_no"]."<br>
+		    <input type='radio' name='f_notice_is_new' !!checked_yes!! value='1'>".$msg["notice_is_new_gestion_yes"]."<br>
+		</div>
+	</div>	
 	<div id='el10Child_1' title='".htmlentities($msg["notice_commentaire_gestion"],ENT_QUOTES, $charset)."' movable='yes'>
 		<!--    commentaire de gestion    -->
 		<div id='el10Child_1a' class='row'>
@@ -1081,12 +1090,23 @@ $ptab[8].= "
 		</div>
 	</div>
 ";
+global $opac_serialcirc_active;
 if($opac_serialcirc_active) {
 	$ptab[8].= "
 	<div id='el10Child_8' title='".htmlentities($msg["opac_serialcirc_demande"],ENT_QUOTES, $charset)."' movable='yes'>
 		<div id='el10Child_8a' class='row'>
 			<input type='checkbox' value='1' id='opac_serialcirc_demande' name='opac_serialcirc_demande'  !!opac_serialcirc_demande!! />
 			<label for='opac_serialcirc_demande' class='etiquette'>".$msg["opac_serialcirc_demande"]."</label>
+		</div>
+	</div>
+	";
+}
+global $pmb_notices_show_dates;
+if($pmb_notices_show_dates) {
+	$ptab[8].= "
+	<div id='el10Child_9' title='".htmlentities($msg["noti_crea_date"],ENT_QUOTES, $charset)."' movable='yes'>
+		<div id='el10Child_9a' class='row'>
+			!!dates_notice!!
 		</div>
 	</div>
 	";
@@ -1470,8 +1490,11 @@ $serial_top_form .= "
 	<hr class='spacer' />
 	!!tab13!!
 	<hr class='spacer' />
+	!!tab14!!
+	<hr class='spacer' />
 	!!tab8!!
 	<hr class='spacer' />
+	!!authperso!!
 </div>
 <div class='row'>
 	<input type='button' class='bouton' value='$msg[76]' !!annul!!>&nbsp;
@@ -1744,8 +1767,11 @@ $serial_bul_form.="</div></h3>
 <hr class='spacer' />
 !!tab13!!
 <hr class='spacer' />
+!!tab14!!
+<hr class='spacer' />
 !!tab8!!
 <hr class='spacer' />
+!!authperso!!
 </div>
 <div class='row'>
 	<input type=\"button\" class=\"bouton\" value=\"$msg[76]\" onClick=\"unload_off();history.go(-1);\" />&nbsp;<input type=\"button\" class=\"bouton\" value=\"$msg[77]\" onClick=\"if (test_form(this.form)) {unload_off();this.form.submit();}\" />
@@ -2400,6 +2426,8 @@ $pdeptab[4] = "
 		<span>$msg[324]$msg[1901]$msg[325]</span>
 	</div>
 </div>
+
+!!concept_form!!
 </div>
 ";
 //	----------------------------------------------------
@@ -2538,7 +2566,7 @@ function chklnk_f_lien(element){
 		document.getElementById('f_lien_check').appendChild(wait);
 		var testlink = encodeURIComponent(element.value);
 		var check = new http_request();
-		if(check.request('./ajax.php?module=ajax&categ=chklnk',true,'&timeout=!!pmb_curl_timeout!!&link='+testlink)){
+		if(check.request('./ajax.php?module=ajax&categ=chklnk',true,'&timeout=0&link='+testlink)){
 			alert(check.get_text());
 		}else{
 			var result = check.get_text();
@@ -2598,6 +2626,31 @@ function chklnk_f_lien(element){
 ";
 
 //	----------------------------------------------------
+//    Onglet map
+//    ----------------------------------------------------
+global $pmb_map_activate;
+if ($pmb_map_activate)
+	$pdeptab[14] =$ptab[14] = "
+	<!-- onglet 14 -->
+	<div id='el14Parent' class='parent'>
+		<h3>
+			<img src='./images/plus.gif' class='img_plus' name='imEx' id='el14Img' onClick=\"expandBase('el14', true); return false;\" title='".$msg["notice_map_onglet_title"]."' border='0' /> ".$msg["notice_map_onglet_title"]."
+		</h3>
+	</div>
+
+	<div id='el14Child' class='child' etirable='yes' title='".htmlentities($msg[notice_map_onglet_title],ENT_QUOTES, $charset)."'>
+		<div id='el14Child_0' title='".htmlentities($msg[notice_map],ENT_QUOTES, $charset)."' movable='yes'>
+			<div id='el14Child_0a' class='row'>
+				<label class='etiquette'>$msg[notice_map]</label>
+			</div>
+			<div id='el14Child_0b' class='row'>
+				!!notice_map!!
+			</div>
+		</div>
+	</div>
+	";
+
+//	----------------------------------------------------
 //	Champs personalisés
 // 	  $ptab[7] : Contenu de l'onglet 7 (champs personalisés)
 //	----------------------------------------------------
@@ -2636,6 +2689,16 @@ $pdeptab[8] = "
 			!!notice_statut!!
 		</div>
 	</div>
+	<div id='el10Child_7' title='".htmlentities($msg["notice_is_new_gestion"],ENT_QUOTES, $charset)."' movable='yes'>
+		<!--    Nouveauté    -->
+		<div id='el10Child_7a' class='row'>
+		    <label for='f_new_gestion' class='etiquette'>".$msg["notice_is_new_gestion"]."</label>
+		</div>
+		<div id='el10Child_7b' class='row'>
+		    <input type='radio' name='f_notice_is_new' !!checked_no!! value='0'>".$msg["notice_is_new_gestion_no"]."<br>
+		    <input type='radio' name='f_notice_is_new' !!checked_yes!! value='1'>".$msg["notice_is_new_gestion_yes"]."<br>
+		</div>
+	</div>	
 	<div id='el10Child_1' title='".htmlentities($msg["notice_commentaire_gestion"],ENT_QUOTES, $charset)."' movable='yes'>
 		<!--    commentaire de gestion    -->
 		<div id='el10Child_1a' class='row'>
@@ -2678,7 +2741,16 @@ $pdeptab[8].= "
 		<div id='el10Child_5b' class='row'>
 		!!indexation_lang!!
 		</div>
-	</div>
+	</div>";
+global $pmb_notices_show_dates;
+if($pmb_notices_show_dates)
+	$pdeptab[8].= "
+		<div id='el10Child_9' title='".htmlentities($msg[noti_crea_date],ENT_QUOTES, $charset)."' movable='yes'>
+			<div id='el10Child_9a' class='row'>
+				!!dates_notice!!
+			</div>
+		</div>";
+$pdeptab[8].= "
 </div>
 ";
 
@@ -3001,8 +3073,11 @@ $analysis_top_form .= "
 	<hr class='spacer' />
 	!!tab13!!
 	<hr class='spacer' />
+	!!tab14!!
+	<hr class='spacer' />
 	!!tab8!!
 	<hr class='spacer' />
+	!!authperso!!
 	</div>
 <div class='row'>
 	<div class='left'>
@@ -3054,6 +3129,7 @@ $notice_bulletin_form.="<div class='row'>
 	<hr class='spacer' />
 	!!tab8!!
 	<hr class='spacer' />
+	!!authperso!!
 	</div>
 ";
 
@@ -3363,8 +3439,11 @@ $rfid_script_catalog
 		<div class='colonne2'><!-- exp_return_date --></div>
 	</div>
 </div>
+<!-- index_concept_form -->
 <div class='row'></div>
 !!champs_perso!!
+<div class='row'></div>
+!!perio_circ_tpl!! 
 <div class='row'></div>
 </div>
 <div class='row'>
@@ -3452,14 +3531,15 @@ $perio_replace = "
 <div class='form-contenu'>
 	<div class='row'>
 		<label class='etiquette' for='par'>$msg[160]</label>
-		</div>
+	</div>
 	<div class='row'>
 		<input type='text' class='saisie-50emr' value='' name='perio_libelle' readonly>
 		<input class='bouton' type='button' onclick=\"openPopUp('./select.php?what=perio&caller=perio_replace&param1=by&param2=perio_libelle&no_display=!!serial_id!!', 'select_perio', 600, 400, -2, -2, '$selector_prop')\" title='$msg[157]' value='$msg[parcourir]' />
 		<input type='button' class='bouton' value='$msg[raz]' onclick=\"this.form.perio_libelle.value=''; this.form.by.value='0'; \" />
 		<input type='hidden' name='by' value=''>
-		</div>
 	</div>
+	!!perio_replace_categories!!
+</div>
 <div class='row'>
 	<input type='button' class='bouton' value='$msg[76]' onClick=\"history.go(-1);\">
 	<input type='submit' class='bouton' value='$msg[159]'>
@@ -3483,6 +3563,7 @@ $bulletin_replace = "
 	<div class='row'>
 	!!del_depouillement!!
 	</div>
+	!!bulletin_replace_categories!!
 </div>
 
 <div class='row'>
@@ -3589,6 +3670,7 @@ function test_form(form)
 			alert(\"".$msg["expl_codestat_mandatory"]."\");
 			return false;
 	}
+
 
 	return check_form();
 }
@@ -3709,6 +3791,8 @@ $bul_expl_form1 ="
 	<br /><input type='file' size='50' class='saisie-80em' name='f_fichier' id='f_fichier' />
 	<br /><label class='etiquette' for='f_url'>".htmlentities($msg['abt_numeric_bulletinage_form_url'], ENT_QUOTES,$charset)."</label>
 	<br /><input type='text' class='saisie-80em' name='f_url' id='f_url' />
+	<br /><label class='etiquette' for='f_statut'>".htmlentities($msg['abt_numeric_bulletinage_form_statut'], ENT_QUOTES,$charset)."</label>
+	<br />!!statut_list!!
 	</div>
 	<div class='row'></div>
 
@@ -3856,3 +3940,47 @@ $analysis_type_form = "
 		</div>
 	</div>
 ";
+
+$perio_replace_categories = "
+<div class='row'>&nbsp;</div>
+<div class='row'>
+	<label class='etiquette' for='keep_categories_label'>".$msg["perio_replace_keep_categories"]."</label>
+</div>
+<div class='row'>
+	".$msg[39]." <input type='radio' name='keep_categories' value='0' checked='checked' onclick=\"document.getElementById('perio_replace_categories').setAttribute('style','display:none;');\" />
+	".$msg[40]." <input type='radio' name='keep_categories' value='1' onclick=\"document.getElementById('perio_replace_categories').setAttribute('style','');\" />
+</div>
+<div class='row'>&nbsp;</div>
+<div class='row' id='perio_replace_categories' style='display:none';>
+	!!perio_replace_category!!
+	<input type='hidden' id='f_nb_categ' name='f_nb_categ' value='!!nb_categ!!' />
+</div>
+		";
+$perio_replace_category = "
+<div class='row'>
+	<input type='checkbox' id='f_categ!!icateg!!' name='f_categ!!icateg!!' checked='checked' />
+	!!categ_libelle!!
+	<input type='hidden' name='f_categ_id!!icateg!!' id='f_categ_id!!icateg!!' value='!!categ_id!!' />
+</div>";
+
+$bulletin_replace_categories = "
+<div class='row'>&nbsp;</div>
+<div class='row'>
+	<label class='etiquette' for='keep_categories_label'>".$msg["bulletin_replace_keep_categories"]."</label>
+</div>
+<div class='row'>
+	".$msg[39]." <input type='radio' name='keep_categories' value='0' checked='checked' onclick=\"document.getElementById('bulletin_replace_categories').setAttribute('style','display:none;');\" />
+	".$msg[40]." <input type='radio' name='keep_categories' value='1' onclick=\"document.getElementById('bulletin_replace_categories').setAttribute('style','');\" />
+</div>
+<div class='row'>&nbsp;</div>
+<div class='row' id='bulletin_replace_categories' style='display:none';>
+	!!bulletin_replace_category!!
+	<input type='hidden' id='f_nb_categ' name='f_nb_categ' value='!!nb_categ!!' />
+</div>
+		";
+$bulletin_replace_category = "
+<div class='row'>
+	<input type='checkbox' id='f_categ!!icateg!!' name='f_categ!!icateg!!' checked='checked' />
+	!!categ_libelle!!
+	<input type='hidden' name='f_categ_id!!icateg!!' id='f_categ_id!!icateg!!' value='!!categ_id!!' />
+</div>";

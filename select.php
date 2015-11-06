@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: select.php,v 1.25 2013-08-14 15:47:58 dbellamy Exp $
+// $Id: select.php,v 1.28 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -134,6 +134,12 @@ switch($what) {
 	case 'ontology' :
 		include('./selectors/ontology.inc.php');
 		break;
+	case 'authperso' :
+		include('./selectors/authperso.inc.php');
+		break;
+	case 'abts' :
+		include('./selectors/abts.inc.php');
+		break;
 	default:
 		print "<script type='text/javascript'>
 			window.close();
@@ -141,4 +147,4 @@ switch($what) {
 		break;
 }
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);

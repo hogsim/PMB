@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: origine_notice.inc.php,v 1.7 2007-03-10 08:32:25 touraine37 Exp $
+// $Id: origine_notice.inc.php,v 1.8 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -34,12 +34,12 @@ function show_orinot($dbh) {
 
 	// affichage du tableau des statuts
 	$requete = "SELECT orinot_id, orinot_nom, orinot_pays, orinot_diffusion FROM origine_notice ORDER BY orinot_nom ";
-	$res = mysql_query($requete, $dbh);
-	$nbr = mysql_num_rows($res);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 		if ($parity % 2) {
 			$pair_impair = "even";
 			} else {
@@ -87,14 +87,14 @@ switch($action) {
 		if(!empty($form_nom)) {
 			if($id) {
 				$requete = "UPDATE origine_notice SET orinot_nom='$form_nom',orinot_pays='$form_pays',orinot_diffusion='$form_diffusion' WHERE orinot_id='$id' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				} else {
 					$requete = "SELECT count(1) FROM origine_notice WHERE orinot_nom='$form_nom' LIMIT 1 ";
-					$res = mysql_query($requete, $dbh);
-					$nbr = mysql_result($res, 0, 0);
+					$res = pmb_mysql_query($requete, $dbh);
+					$nbr = pmb_mysql_result($res, 0, 0);
 					if($nbr == 0){
 						$requete = "INSERT INTO origine_notice (orinot_nom,orinot_pays,orinot_diffusion) VALUES ('$form_nom','$form_pays','$form_diffusion') ";
-						$res = mysql_query($requete, $dbh);
+						$res = pmb_mysql_query($requete, $dbh);
 						}
 					}
 			}
@@ -107,9 +107,9 @@ switch($action) {
 	case 'modif':
 		if($id){
 			$requete = "SELECT orinot_nom, orinot_pays, orinot_diffusion FROM origine_notice WHERE orinot_id='$id' ";
-			$res = mysql_query($requete, $dbh);
-			if(mysql_num_rows($res)) {
-				$row=mysql_fetch_object($res);
+			$res = pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res)) {
+				$row=pmb_mysql_fetch_object($res);
 				orinot_form($row->orinot_nom, $row->orinot_pays, $row->orinot_diffusion, $id);
 				} else {
 					show_orinot($dbh);
@@ -121,12 +121,12 @@ switch($action) {
 	case 'del':
 		if (($id) && ($id!=1)) {
 			$total = 0;
-			$total = mysql_num_rows (mysql_query("select origine_catalogage from notices where origine_catalogage ='".$id."' ", $dbh));
+			$total = pmb_mysql_num_rows(pmb_mysql_query("select origine_catalogage from notices where origine_catalogage ='".$id."' ", $dbh));
 			if ($total==0) {
 				$requete = "DELETE FROM origine_notice WHERE orinot_id='$id' ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete = "OPTIMIZE TABLE origine_notice ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_orinot($dbh);
 				} else {
 					error_message(	"", $msg[orinot_used], 1, 'admin.php?categ=notices&sub=orinot&action=');

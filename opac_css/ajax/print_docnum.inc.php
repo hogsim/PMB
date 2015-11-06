@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: print_docnum.inc.php,v 1.3.6.3 2015-10-08 09:17:59 jpermanne Exp $
+// $Id: print_docnum.inc.php,v 1.6 2015-04-18 14:21:33 dgoron Exp $
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 //gestion des droits
@@ -22,26 +22,26 @@ function doc_num_get_list($id_notices){
 	$cpt_doc_num=0;
 	foreach($id_notices as $notice_id){
 		
-		$query = "SELECT explnum_id from explnum where explnum_statut=0 and explnum_notice=$notice_id and explnum_mimetype IN ('application/pdf','application/x-pdf') ";
+		$query = "SELECT explnum_id from explnum where explnum_notice=$notice_id and explnum_mimetype IN ('application/pdf','application/x-pdf') ";
 		$query .= " union ";
-		$query .= " select explnum_id from explnum ,bulletins where explnum_statut=0 and explnum_bulletin=bulletin_id and num_notice=$notice_id and explnum_mimetype IN ('application/pdf','application/x-pdf')";
-		$result = mysql_query($query,$dbh);
-		$nb_result = mysql_num_rows($result) ;
+		$query .= " select explnum_id from explnum ,bulletins where explnum_bulletin=bulletin_id and num_notice=$notice_id and explnum_mimetype IN ('application/pdf','application/x-pdf')";
+		$result = pmb_mysql_query($query,$dbh);
+		$nb_result = pmb_mysql_num_rows($result) ;
 		if (!$nb_result)	continue;		
 		// pour tout les pdf de la notice
-		while($row = mysql_fetch_object($result)){
+		while($row = pmb_mysql_fetch_object($result)){
 			$explnum_id=$row->explnum_id;
 			
-			$res = mysql_query("SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_data, length(explnum_data) as taille,explnum_path, concat(repertoire_path,explnum_path,explnum_nomfichier) as path, repertoire_id FROM explnum left join upload_repertoire on repertoire_id=explnum_repertoire WHERE explnum_id = '$explnum_id' ", $dbh);
-			$ligne = mysql_fetch_object($res);
+			$res = pmb_mysql_query("SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_url, explnum_data, length(explnum_data) as taille,explnum_path, concat(repertoire_path,explnum_path,explnum_nomfichier) as path, repertoire_id FROM explnum left join upload_repertoire on repertoire_id=explnum_repertoire WHERE explnum_id = '$explnum_id' ", $dbh);
+			$ligne = pmb_mysql_fetch_object($res);
 					
 			$id_for_rigths = $ligne->explnum_notice;
 			if($ligne->explnum_bulletin != 0){
 				//si bulletin, les droits sont rattachés à la notice du bulletin, à défaut du pério...
 				$req = "select bulletin_notice,num_notice from bulletins where bulletin_id =".$ligne->explnum_bulletin;
-				$res = mysql_query($req,$dbh);
-				if(mysql_num_rows($res)){
-					$r = mysql_fetch_object($res);
+				$res = pmb_mysql_query($req,$dbh);
+				if(pmb_mysql_num_rows($res)){
+					$r = pmb_mysql_fetch_object($res);
 					$id_for_rigths = $r->num_notice;
 					if(!$id_for_rigths){
 						$id_for_rigths = $r->bulletin_notice;
@@ -58,17 +58,17 @@ function doc_num_get_list($id_notices){
 						
 			//Accessibilité des documents numériques aux abonnés en opac
 			$req_restriction_abo = "SELECT explnum_visible_opac, explnum_visible_opac_abon ,notice_id FROM notice_statut, explnum, notices WHERE explnum_notice=notice_id AND statut=id_notice_statut  AND explnum_id='$explnum_id' ";
-			$res_restriction_abo=mysql_query($req_restriction_abo,$dbh);
-			if(! mysql_num_rows($res_restriction_abo) ){// bulletin
+			$res_restriction_abo=pmb_mysql_query($req_restriction_abo,$dbh);
+			if(! pmb_mysql_num_rows($res_restriction_abo) ){// bulletin
 				$req_restriction_abo="SELECT explnum_visible_opac, explnum_visible_opac_abon,notice_id
 					FROM notice_statut, explnum, bulletins, notices
 					WHERE explnum_bulletin = bulletin_id
 					AND num_notice = notice_id
 					AND statut = id_notice_statut
 					AND explnum_id='$explnum_id' ";
-				$res_restriction_abo=mysql_query($req_restriction_abo,$dbh);
+				$res_restriction_abo=pmb_mysql_query($req_restriction_abo,$dbh);
 			}			
-			$expl_num=mysql_fetch_array($res_restriction_abo);
+			$expl_num=pmb_mysql_fetch_array($res_restriction_abo);
 			
 			if( $rights & 16 || (is_null($dom_2) && $expl_num["explnum_visible_opac"] && (!$expl_num["explnum_visible_opac_abon"] || ($expl_num["explnum_visible_opac_abon"] && $_SESSION["user_code"])))){
 				if (($ligne->explnum_data)||($ligne->explnum_path)) {

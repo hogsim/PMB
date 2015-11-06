@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dico_empty_words.inc.php,v 1.3 2010-02-23 10:29:24 ngantier Exp $
+// $Id: dico_empty_words.inc.php,v 1.4 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -23,19 +23,19 @@ switch ($action) {
 		if ($text_empty_word) {
 			//vérification de l'existence du mot
 			$rqt_exist="select id_mot from mots where mot='".addslashes($text_empty_word)."'";
-			$query_exist=mysql_query($rqt_exist);
-			if (!mysql_num_rows($query_exist)) {
+			$query_exist=pmb_mysql_query($rqt_exist);
+			if (!pmb_mysql_num_rows($query_exist)) {
 				//insertion d'un nouveau mot
 				$rqt_ins="insert into mots (mot) values ('".addslashes($text_empty_word)."')";
-				@mysql_query($rqt_ins);
+				@pmb_mysql_query($rqt_ins);
 				//recherche de l'id du mot inséré
 				$rqt_search_id="select id_mot from mots where mot='".addslashes($text_empty_word)."'";
-				$query_search_id=mysql_query($rqt_search_id);
-				if ($query_search_id&&mysql_num_rows($query_search_id)) {
-					$r=mysql_fetch_object($query_search_id);
+				$query_search_id=pmb_mysql_query($rqt_search_id);
+				if ($query_search_id&&pmb_mysql_num_rows($query_search_id)) {
+					$r=pmb_mysql_fetch_object($query_search_id);
 					//insertion dans la table de lien entre mots que le mot est vide
 					$rqt_ins="insert into linked_mots (num_mot,num_linked_mot,type_lien) values ('".$r->id_mot."',0,3)";
-					@mysql_query($rqt_ins);		
+					@pmb_mysql_query($rqt_ins);		
 					semantique::gen_table_empty_word();		
 				}
 			} else {
@@ -62,10 +62,10 @@ switch ($action) {
 	case 'calculate':
 		if ($nb_noti) {
 			$rqt="select count(notice_id) from notices";
-			$execute_query=mysql_query($rqt);
-			$r=mysql_fetch_array($execute_query);
+			$execute_query=pmb_mysql_query($rqt);
+			$r=pmb_mysql_fetch_array($execute_query);
 			$pmb_nb_noti_calc_empty_words=$nb_noti;
-			@mysql_query("update parametres set valeur_param='".$nb_noti."' where type_param='pmb' and sstype_param='nb_noti_calc_empty_words'");
+			@pmb_mysql_query("update parametres set valeur_param='".$nb_noti."' where type_param='pmb' and sstype_param='nb_noti_calc_empty_words'");
 			$nb_noti=floor(($r[0]*$nb_noti)/100);
 			semantique::calculate_empty_words($nb_noti);
 			semantique::gen_table_empty_word();
@@ -73,10 +73,10 @@ switch ($action) {
 		break;
 	case 'del':
 		if ($id_mot&&$type_lien) {
-			@mysql_query("delete from linked_mots where num_mot=".$id_mot." and num_linked_mot=0 and type_lien=".$type_lien);	
+			@pmb_mysql_query("delete from linked_mots where num_mot=".$id_mot." and num_linked_mot=0 and type_lien=".$type_lien);	
 			$rqt="select num_mot from linked_mots where num_mot=".$id_mot." or num_linked_mot=".$id_mot;
-			$query_exist=mysql_query($rqt);
-			if ($query_exist&&!mysql_num_rows($query_exist)) @mysql_query("delete from mots where id_mot=".$id_mot);	
+			$query_exist=pmb_mysql_query($rqt);
+			if ($query_exist&&!pmb_mysql_num_rows($query_exist)) @pmb_mysql_query("delete from mots where id_mot=".$id_mot);	
 			semantique::gen_table_empty_word();	
 		}
 		break;
@@ -103,11 +103,11 @@ if ($action!='add') {
 	$autorites_list_empty_word=str_replace("!!checked4!!","",$autorites_list_empty_word);
 	//calcul du nombre de mots
 	$rqt1="select id_mot from mots,linked_mots where (linked_mots.type_lien in ($types_mots_vides))$clause and linked_mots.num_mot=mots.id_mot";
-	$execute_query1=mysql_query($rqt1);
-	$compt=mysql_num_rows($execute_query1);
+	$execute_query1=pmb_mysql_query($rqt1);
+	$compt=pmb_mysql_num_rows($execute_query1);
 	//recherche des mots vides calculés et saisis
 	$rqt="select id_mot,mot,type_lien from mots,linked_mots where (linked_mots.type_lien in ($types_mots_vides))$clause and linked_mots.num_mot=mots.id_mot order by $tri $limit";
-	$execute_query=mysql_query($rqt);
+	$execute_query=pmb_mysql_query($rqt);
 	$liste_mots="<tr>
 			<th>".$msg["word_selected"]."</th>
 			<th width='50%'>&nbsp;</th>
@@ -120,7 +120,7 @@ if ($action!='add') {
 		if ($compt) {
 			$parity=1;
 			//affichage
-			while ($r=mysql_fetch_object($execute_query)) {
+			while ($r=pmb_mysql_fetch_object($execute_query)) {
 				if ($parity % 2) {
 					$pair_impair = "even";
 					} else {

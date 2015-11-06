@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_datasource.class.php,v 1.19.2.6 2015-05-28 15:31:46 arenou Exp $
+// $Id: cms_module_common_datasource.class.php,v 1.27 2015-05-28 15:29:09 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -36,12 +36,13 @@ class cms_module_common_datasource extends cms_module_root{
 	 * Récupération des informations en base
 	 */
 	protected function fetch_datas(){
+		global $dbh;
 		if($this->id){
 			//on commence par aller chercher ses infos
 			$query = " select id_cadre_content, cadre_content_hash, cadre_content_num_cadre, cadre_content_data from cms_cadre_content where id_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				$row = mysql_fetch_object($result);
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				$row = pmb_mysql_fetch_object($result);
 				$this->id = $row->id_cadre_content+0;
 				$this->hash = $row->cadre_content_hash;
 				$this->cadre_parent = $row->cadre_content_num_cadre+0;
@@ -49,9 +50,9 @@ class cms_module_common_datasource extends cms_module_root{
 			}
 			//on va chercher les infos des sélecteurs...
 			$query = "select id_cadre_content, cadre_content_object from cms_cadre_content where cadre_content_type='selector' and cadre_content_num_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row=mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($row=pmb_mysql_fetch_object($result)){
 					$this->selectors[] = array(
 						'id' => $row->id_cadre_content+0,
 						'name' => $row->cadre_content_object
@@ -151,6 +152,7 @@ class cms_module_common_datasource extends cms_module_root{
 	 * Sauvegarde des infos depuis un formulaire...
 	 */
 	public function save_form(){
+		global $dbh;
 		global $selector_choice;
 		
 		$this->parameters['selector'] = $selector_choice;
@@ -170,15 +172,15 @@ class cms_module_common_datasource extends cms_module_root{
 			($this->cadre_parent ? "cadre_content_num_cadre = ".$this->cadre_parent."," : "")."		
 			cadre_content_data = '".addslashes($this->serialize())."'
 			".$clause;
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query,$dbh);
 		
 		if($result){
 			if(!$this->id){
-				$this->id = mysql_insert_id();
+				$this->id = pmb_mysql_insert_id();
 			}
 			//on supprime les anciennes sources de données...
 			$query = "delete from cms_cadre_content where id_cadre_content != ".$this->id." and cadre_content_type='datasource' and cadre_content_num_cadre = ".$this->cadre_parent;
-			mysql_query($query);
+			pmb_mysql_query($query,$dbh);
 			//sélecteur
 			$selector_id = 0;
 			for($i=0 ; $i<count($this->selectors) ; $i++){
@@ -220,13 +222,14 @@ class cms_module_common_datasource extends cms_module_root{
 	 * Méthode de suppression
 	 */
 	public function delete(){
+		global $dbh;
 		if($this->id){
 			//on commence par éliminer le sélecteur associé...
 			$query = "select id_cadre_content,cadre_content_object from cms_cadre_content where cadre_content_num_cadre_content = ".$this->id;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
 				//la logique voudrait qu'il n'y ai qu'un seul sélecteur (enfin sous-élément, la conception peut évoluer...), mais sauvons les brebis égarées...
-				while($row = mysql_fetch_object($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$sub_elem = new $row->cadre_content_object($row->id_cadre_content);
 					$success = $sub_elem->delete();
 					if(!$success){
@@ -237,7 +240,7 @@ class cms_module_common_datasource extends cms_module_root{
 			}
 			//on est tout seul, éliminons-nous !
 			$query = "delete from cms_cadre_content where id_cadre_content = ".$this->id;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query,$dbh);
 			if($result){
 				$this->delete_hash();
 				return true;
@@ -283,8 +286,8 @@ class cms_module_common_datasource extends cms_module_root{
 		$this->fetch_managed_datas();
 	}
 	
-	protected function fetch_managed_datas(){
-		parent::fetch_managed_datas("datasources");
+	protected function fetch_managed_datas($type="datasources"){
+		parent::fetch_managed_datas($type);
 	}
 		
 	/*
@@ -342,13 +345,14 @@ class cms_module_common_datasource extends cms_module_root{
 	}
 
 	protected function filter_articles($datas){
+		global $dbh;
 		$valid_datas = $valid_datas = array();
 		//quand on filtre un article, on cherche déjà si la rubrique parente est visible...
 		$valid_sections = $sections = array();
 		$query = "select distinct num_section from cms_articles where id_article in (".implode(",",$datas).")";
-		$result = mysql_query($query);
-		if($result && mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		$result = pmb_mysql_query($query,$dbh);
+		if($result && pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$sections[] = $row->num_section;
 			}
 			$valid_sections = $this->filter_sections($sections);
@@ -362,9 +366,9 @@ class cms_module_common_datasource extends cms_module_root{
 			$query = "select id_article from cms_articles 
 				join cms_editorial_publications_states on id_publication_state = article_publication_state 
 				where num_section in (".implode(",",$valid_sections).") and id_article in (".implode(",",$datas).") and editorial_publication_state_opac_show = 1".(!$_SESSION['id_empr_session'] ? " and editorial_publication_state_auth_opac_show = 0" : "")." and ".$clause_date;
-			$result = mysql_query($query);
-			if(mysql_num_rows($result)){
-				while($row = mysql_fetch_object($result)){
+			$result = pmb_mysql_query($query,$dbh);
+			if(pmb_mysql_num_rows($result)){
+				while($row = pmb_mysql_fetch_object($result)){
 					$valid_datas[]=$row->id_article;
 				}
 			}
@@ -417,10 +421,10 @@ class cms_module_common_datasource extends cms_module_root{
 		$clause = "((section_start_date != 0 and section_start_date<now() and section_end_date>now())||(section_start_date != 0 and section_end_date =0 and section_start_date <now())||(section_start_date = 0 and section_end_date>now()))";
 		
 		$query="select id_section,to_days(section_start_date) as start_day, to_days(section_end_date) as end_day , editorial_publication_state_opac_show,editorial_publication_state_auth_opac_show from cms_sections join cms_editorial_publications_states on id_publication_state = section_publication_state where section_num_parent = ".$id_parent;
-		$result = mysql_query($query);
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
-				$paths[$row->id_section] = ($path ? $path."/" : "").$row->id_section ;
+		$result = pmb_mysql_query($query,$dbh);
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
+				$paths[$row->id_section] = ($path ? $path."/" : "").$row->id_section ;	
 				$valid = 1; 
 				//vérification sur le statut
 				if(!($row->editorial_publication_state_opac_show && (!$row->editorial_publication_state_auth_opac_show || ($row->editorial_publication_state_auth_opac_show && $_SESSION['id_empr_session'])))){

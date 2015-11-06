@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: indexation_docnum.class.php,v 1.26.2.3 2014-12-16 16:36:48 dbellamy Exp $
+// $Id: indexation_docnum.class.php,v 1.30 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -58,9 +58,9 @@ class indexation_docnum {
 		global $dbh;
 		
 		$rqt_expl = "select explnum_mimetype, explnum_nomfichier, explnum_extfichier, explnum_data, explnum_url, concat(repertoire_path,explnum_path) as path, explnum_repertoire from explnum left join upload_repertoire on repertoire_id=explnum_repertoire where explnum_id='".$this->id_explnum."'";
-		$result_expl = mysql_query($rqt_expl,$dbh);
+		$result_expl = pmb_mysql_query($rqt_expl,$dbh);
 		if($result_expl) {
-			while(($explnum = mysql_fetch_object($result_expl))){
+			while(($explnum = pmb_mysql_fetch_object($result_expl))){
 				if($explnum->explnum_data)
 					//le fichier est en base
 					$this->file_content = $explnum->explnum_data;
@@ -234,7 +234,7 @@ class indexation_docnum {
 			$explnum_index_sew = ' '.$explnum_index_sew.' ';
 		}
 		$rqt = " update explnum set explnum_index_sew='".addslashes($explnum_index_sew)."', explnum_index_wew='".addslashes($this->texte)."' where explnum_id='".$this->id_explnum."'";
-		mysql_query($rqt,$dbh);	
+		pmb_mysql_query($rqt,$dbh);	
 		if (file_exists($this->fichier)) unlink($this->fichier);	
 	}
 	
@@ -245,7 +245,7 @@ class indexation_docnum {
 		global $dbh;
 		
 		$rqt = " update explnum set explnum_index_sew='', explnum_index_wew='' where explnum_id='".$this->id_explnum."'";
-		mysql_query($rqt,$dbh);	
+		pmb_mysql_query($rqt,$dbh);	
 
 	}
 }

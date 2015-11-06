@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pmbesConvertImport.class.php,v 1.7 2014-03-11 09:59:06 mbertin Exp $
+// $Id: pmbesConvertImport.class.php,v 1.8 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -279,22 +279,22 @@ class pmbesConvertImport extends external_services_api_class {
 							// cas des EAN purs : constitution de la requête
 							$requete = "SELECT distinct notice_id FROM notices ";
 							$requete.= " WHERE notices.code in ('$code','$EAN'".($code10?",'$code10'":"").") limit 1";
-							$myQuery = mysql_query($requete, $dbh);
-							$trouvees=mysql_num_rows($myQuery);
+							$myQuery = pmb_mysql_query($requete, $dbh);
+							$trouvees=pmb_mysql_num_rows($myQuery);
 						} elseif ($isbn) {
 							// recherche d'un isbn
 							$requete = "SELECT distinct notice_id FROM notices ";
 							$requete.= " WHERE notices.code in ('$code'".($code10?",'$code10'":"").") limit 1";
-							$myQuery = mysql_query($requete, $dbh);
-							$trouvees=mysql_num_rows($myQuery);
+							$myQuery = pmb_mysql_query($requete, $dbh);
+							$trouvees=pmb_mysql_num_rows($myQuery);
 						} elseif ($code) {
 							// note : le code est recherché dans le champ code des notices
 							// (cas des code-barres disques qui échappent à l'EAN)
 							//
 							$requete = "SELECT notice_id FROM notices ";
 							$requete.= " WHERE notices.code like '$code' limit 10";
-							$myQuery = mysql_query($requete, $dbh);
-							$trouvees=mysql_num_rows($myQuery);
+							$myQuery = pmb_mysql_query($requete, $dbh);
+							$trouvees=pmb_mysql_num_rows($myQuery);
 						}
 	
 	                    // dédoublonnage sur isbn
@@ -303,26 +303,26 @@ class pmbesConvertImport extends external_services_api_class {
 	                            $new_notice=1;
 	                        } else {
 	                            $new_notice=0;
-	                            $notice_id = mysql_result ($myQuery,0,"notice_id");
-	                            $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".$msg[542]." $EAN  || $isbn || $code ".addslashes($tit_200a[0])."') ") ;
+	                            $notice_id = pmb_mysql_result($myQuery,0,"notice_id");
+	                            $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_expl_".addslashes(SESSid).".inc', '".$msg[542]." $EAN  || $isbn || $code ".addslashes($tit_200a[0])."') ") ;
 	                        }
 	                    } else {
 	                        if ($params["isbn_mandatory"] == 1) {
-	                            $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[543]."') ") ;
+	                            $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[543]."') ") ;
 	                        } else {
 	                            $new_notice = 1;
-	                            $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[565]."') ") ;
+	                            $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[565]."') ") ;
 	                        }
 	                    }
 	                } else {
 	                    // pas de dédoublonnage
 	                    if ($params["isbn_mandatory"] == 1 && $isbn_OK=="") {
-	                       $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[543]."') ") ;
+	                       $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[543]."') ") ;
 	                    }elseif($isbn_OK){
 	                        $new_notice = 1;
 	                    }else{
 	                    	 $new_notice = 1;
-	                         $sql_log = mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[565]."') ") ;
+	                         $sql_log = pmb_mysql_query("insert into error_log (error_origin, error_text) values ('import_".addslashes(SESSid).".inc', '".$msg[565]."') ") ;
 	                    }
 	                }
 					
@@ -361,21 +361,21 @@ class pmbesConvertImport extends external_services_api_class {
   			ob_end_clean();
 			$gen_liste_log="";
 			
-            $resultat_liste=mysql_query("SELECT error_origin, error_text, count(*) as nb_error FROM error_log where error_origin in ('expl_".addslashes(SESSid).".class','import_expl_".addslashes(SESSid).".inc','iimport_expl_".addslashes(SESSid).".inc','import_".addslashes(SESSid).".inc.php', 'import_".addslashes(SESSid).".inc','import_func_".addslashes(SESSid).".inc.php') group by error_origin, error_text",$dbh );
-            $nb_liste=mysql_num_rows($resultat_liste);
+            $resultat_liste=pmb_mysql_query("SELECT error_origin, error_text, count(*) as nb_error FROM error_log where error_origin in ('expl_".addslashes(SESSid).".class','import_expl_".addslashes(SESSid).".inc','iimport_expl_".addslashes(SESSid).".inc','import_".addslashes(SESSid).".inc.php', 'import_".addslashes(SESSid).".inc','import_func_".addslashes(SESSid).".inc.php') group by error_origin, error_text",$dbh );
+            $nb_liste=pmb_mysql_num_rows($resultat_liste);
             if ($nb_liste>0) {
 	            $i_log=0;
 	            while ($i_log<$nb_liste) {
 	            	$tmp=array();
-	            	$tmp["error_origin"]=mysql_result($resultat_liste,$i_log,"error_origin");
+	            	$tmp["error_origin"]=pmb_mysql_result($resultat_liste,$i_log,"error_origin");
 	            	if($charset != "utf-8") $tmp["error_origin"]= utf8_encode($tmp["error_origin"]);
-	            	$tmp["error_text"]=mysql_result($resultat_liste,$i_log,"error_text");
+	            	$tmp["error_text"]=pmb_mysql_result($resultat_liste,$i_log,"error_text");
 	            	if($charset != "utf-8") $tmp["error_text"]= utf8_encode($tmp["error_text"]);
-	            	$tmp["nb_error"]=mysql_result($resultat_liste,$i_log,"nb_error");
+	            	$tmp["nb_error"]=pmb_mysql_result($resultat_liste,$i_log,"nb_error");
 	            	$log["error_log"][]=$tmp;
 	                $i_log++;
 				}
-				mysql_query("DELETE FROM error_log WHERE error_origin  in ('expl_".addslashes(SESSid).".class','import_expl_".addslashes(SESSid).".inc','iimport_expl_".addslashes(SESSid).".inc','import_".addslashes(SESSid).".inc.php', 'import_".addslashes(SESSid).".inc','import_func_".addslashes(SESSid).".inc.php')",$dbh);
+				pmb_mysql_query("DELETE FROM error_log WHERE error_origin  in ('expl_".addslashes(SESSid).".class','import_expl_".addslashes(SESSid).".inc','iimport_expl_".addslashes(SESSid).".inc','import_".addslashes(SESSid).".inc.php', 'import_".addslashes(SESSid).".inc','import_func_".addslashes(SESSid).".inc.php')",$dbh);
             }else{
             	$log["result"]=$this->msg["import_basic_msg_ok"];
             	if($charset != "utf-8") $log["result"]= utf8_encode($log["result"]);

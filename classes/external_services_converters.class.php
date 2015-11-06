@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: external_services_converters.class.php,v 1.20.2.2 2014-12-01 17:24:40 mbertin Exp $
+// $Id: external_services_converters.class.php,v 1.23 2015-04-03 11:16:19 jpermanne Exp $
 
 //
 //Convertisseurs et cacheur de formats des résultats des services externes
@@ -703,19 +703,19 @@ class external_services_converter_external_notices extends external_services_con
 	function get_notice_unimarc_array($notice_id) {
 		global $dbh;
 		$requete = "SELECT source_id FROM external_count WHERE rid=".addslashes($notice_id);
-		$myQuery = mysql_query($requete, $dbh);
-		if (!mysql_num_rows($myQuery))
+		$myQuery = pmb_mysql_query($requete, $dbh);
+		if (!pmb_mysql_num_rows($myQuery))
 			return FALSE;
-		$source_id = mysql_result($myQuery, 0, 0);
+		$source_id = pmb_mysql_result($myQuery, 0, 0);
 		if (!$source_id)
 			return FALSE;
 
 		$requete="select * from entrepot_source_".$source_id." where recid='".addslashes($notice_id)."' order by ufield,field_order,usubfield,subfield_order,value";
-		$myQuery = mysql_query($requete, $dbh);
+		$myQuery = pmb_mysql_query($requete, $dbh);
 		$unimarc = array('f' => array());
-		if(mysql_num_rows($myQuery)) {
+		if(pmb_mysql_num_rows($myQuery)) {
 			$field_order = $subfield_order = 0;
-			while ($l=mysql_fetch_object($myQuery)) {
+			while ($l=pmb_mysql_fetch_object($myQuery)) {
 				if (in_array($l->ufield, array('bl', 'rs', 'dt', 'el', 'hl', 'ru'))) {
 					$unimarc[$l->ufield]['value'] = $l->value;
 					continue;
@@ -733,12 +733,12 @@ class external_services_converter_external_notices extends external_services_con
 			}
 			//on ajoute le nom de source en 801$9
 			$rqt = "select name from connectors_sources where source_id ='".$source_id."'";
-			$res = mysql_query($rqt);
-			if(mysql_num_rows($res)){
+			$res = pmb_mysql_query($rqt);
+			if(pmb_mysql_num_rows($res)){
 				$unimarc['f'][$field_order+1]['c'] = "801";
 				$unimarc['f'][$field_order+1]['ind'] = '';
 				$unimarc['f'][$field_order+1]['id'] = '';
-				$unimarc['f'][$field_order+1]['s'][$subfield_order+1] = array('c' => "9", 'value' => mysql_result($res,0,0));				
+				$unimarc['f'][$field_order+1]['s'][$subfield_order+1] = array('c' => "9", 'value' => pmb_mysql_result($res,0,0));				
 			}
 		}
 		$unimarc['f'] = array_values($unimarc['f']);

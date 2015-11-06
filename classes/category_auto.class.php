@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category_auto.class.php,v 1.3 2013-10-31 15:48:54 dgoron Exp $
+// $Id: category_auto.class.php,v 1.4 2015-04-03 11:16:19 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -293,7 +293,7 @@ class category_auto {
 							if($notice_id && $id_noeud){
 								$incr_categ++;
 								$rqt_add = "insert IGNORE into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$id_noeud."', ordre_categorie='".$incr_categ."' " ;
-								mysql_query($rqt_add);
+								pmb_mysql_query($rqt_add);
 								if(!in_array($id_noeud,$tabl_id_categ_link)){
 									$tabl_id_categ_link[]=$id_noeud;
 								}
@@ -331,7 +331,7 @@ class category_auto {
 				 		if($notice_id && $id_noeud){
 							$incr_categ++;
 							$rqt_add = "insert IGNORE into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$id_noeud."', ordre_categorie='".$incr_categ."' " ;
-							mysql_query($rqt_add);
+							pmb_mysql_query($rqt_add);
 							if(!in_array($id_noeud,$tabl_id_categ_link)){
 								$tabl_id_categ_link[]=$id_noeud;
 							}
@@ -353,7 +353,7 @@ class category_auto {
 					if($notice_id && $id_noeud){
 						$incr_categ++;
 						$rqt_add = "insert IGNORE into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$id_noeud."', ordre_categorie='".$incr_categ."' " ;
-						mysql_query($rqt_add);
+						pmb_mysql_query($rqt_add);
 						if(!in_array($id_noeud,$tabl_id_categ_link)){
 							$tabl_id_categ_link[]=$id_noeud;
 						}
@@ -391,7 +391,7 @@ class category_auto {
 			if($do_lien && $resultat && $notice_id){
 				$incr_categ++;
 				$rqt_ajout = "insert IGNORE into notices_categories set notcateg_notice='".$notice_id."', num_noeud='".$resultat."', ordre_categorie='".$incr_categ."' " ;
-				mysql_query($rqt_ajout);
+				pmb_mysql_query($rqt_ajout);
 			}
 			return $resultat;
 		}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart_info.php,v 1.60 2014-02-20 11:33:07 mbertin Exp $
+// $Id: cart_info.php,v 1.64 2015-05-05 11:54:07 dgoron Exp $
 
 //Actions et affichage du résultat pour un panier de l'opac
 $base_path=".";
@@ -65,6 +65,10 @@ if($opac_opac_view_activate){
 	}
 }
 
+if($opac_search_other_function){
+	require_once($include_path."/".$opac_search_other_function);
+}
+
 ?>
 <html>
 <body class="cart_info_body">
@@ -77,10 +81,10 @@ function add_query($requete) {
 	global $msg;
 	global $charset;
 	
-	$resultat=mysql_query($requete);
-	$nbtotal=@mysql_num_rows($resultat);
+	$resultat=pmb_mysql_query($requete);
+	$nbtotal=@pmb_mysql_num_rows($resultat);
 	$n=0; $na=0;
-	while ($r=mysql_fetch_object($resultat)) {
+	while ($r=pmb_mysql_fetch_object($resultat)) {
 		if (count($cart_)<$opac_max_cart_items) {
 			$as=array_search($r->notice_id,$cart_);
 			if (($as===null)||($as===false)) {
@@ -93,6 +97,10 @@ function add_query($requete) {
 	if ($na) $message.=", ".sprintf($msg["cart_already_in"],$na);
 	if (count($cart_)==$opac_max_cart_items) $message.=", ".$msg["cart_full"];
 	return $message;
+}
+
+function change_basket_image($id_notice){
+	print "<script>changeBasketImage(".$id_notice.")</script>";
 }
 
 function add_notices_to_cart($notices){
@@ -108,6 +116,7 @@ function add_notices_to_cart($notices){
 			$as=array_search($tab_notices[$i],$cart_);
 			if (($as===null)||($as===false)) {
 				$cart_[]=$tab_notices[$i];
+				change_basket_image($tab_notices[$i]);
 				$n++;	
 			} else $na++;
 		}	
@@ -118,6 +127,10 @@ function add_notices_to_cart($notices){
 	return $message;	
 }
 
+print "<script type='text/javascript'>
+			var msg_notice_title_basket_exist = '".addslashes($msg["notice_title_basket_exist"])."';
+		</script>";
+print "<script type='text/javascript' src='".$include_path."/javascript/cart.js'></script>";
 $vide_cache=filemtime("./styles/".$css."/".$css.".css");
 print "<link rel=\"stylesheet\" href=\"./styles/".$css."/".$css.".css?".$vide_cache."\" />
 <span class='img_basket'><img src='images/basket_small_20x20.gif' border='0' valign='center'/></span>&nbsp;";
@@ -137,6 +150,7 @@ if (($id)&&(!$lvl)) {
 		} else {
 			$cart_[]=$id;
 			$message=sprintf($msg["cart_notice_add"],$notice_header);
+			change_basket_image($id);
 		}
 	} else {
 		$message=$msg["cart_full"];
@@ -172,9 +186,9 @@ if (($id)&&(!$lvl)) {
 					$table=$es->make_search();
 					$notices = '';
 					$q="select distinct notice_id from $table ";	
-					$res = mysql_query($q,$dbh);	
-					if(mysql_num_rows($res)){
-						while ($row = mysql_fetch_object($res)){						
+					$res = pmb_mysql_query($q,$dbh);	
+					if(pmb_mysql_num_rows($res)){
+						while ($row = pmb_mysql_fetch_object($res)){						
 							if ($notices != "") $notices.= ",";
 							$notices.= $row->notice_id;
 						}
@@ -208,9 +222,9 @@ if (($id)&&(!$lvl)) {
 					$q_bull  = "select notice_id from bulletins, explnum, notices $statut_j $acces_j ".stripslashes($clause_bull).' '; 
 					$q_bull_num_notice  = "select notice_id from bulletins, explnum, notices $statut_j $acces_j ".stripslashes($clause_bull_num_notice).' '; 
 					$q = "select uni.notice_id from ($q_noti UNION $q_bull UNION $q_bull_num_notice) as uni"; 					
-					$res = mysql_query($q,$dbh);	
-					if(mysql_num_rows($res)){
-						while ($row = mysql_fetch_object($res)){						
+					$res = pmb_mysql_query($q,$dbh);	
+					if(pmb_mysql_num_rows($res)){
+						while ($row = pmb_mysql_fetch_object($res)){						
 							if ($notices != "") $notices.= ",";
 							$notices.= $row->notice_id;
 						}						
@@ -222,17 +236,17 @@ if (($id)&&(!$lvl)) {
 		case "author_see":
 			$notices = '';
 			$rqt_auteurs = "select author_id as aut from authors where author_see='$id' and author_id!=0 union select author_see as aut from authors where author_id='$id' and author_see!=0 " ;
-			$res_auteurs = mysql_query($rqt_auteurs, $dbh);
+			$res_auteurs = pmb_mysql_query($rqt_auteurs, $dbh);
 			$clause_auteurs = "responsability_author in ('$id'";
-			while($id_aut=mysql_fetch_object($res_auteurs)) {
+			while($id_aut=pmb_mysql_fetch_object($res_auteurs)) {
 				$clause_auteurs .= ",'".$id_aut->aut."'"; 
 			}
 			$clause_auteurs .= ")" ;
 			$q = "select distinct responsability_notice as notice_id from responsability where $clause_auteurs ";
-			$res = mysql_query($q,$dbh);
-			if(mysql_num_rows($res)) {
+			$res = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($res)) {
 				$tab_notices=array();
-				while($row=mysql_fetch_object($res)) {
+				while($row=pmb_mysql_fetch_object($res)) {
 					$tab_notices[] = $row->notice_id;
 				}
 				$notices = implode(',',$tab_notices);
@@ -244,9 +258,9 @@ if (($id)&&(!$lvl)) {
 		case "categ_see":
 			$notices = '';
 			$q = "select notcateg_notice from notices_categories where num_noeud='$id' ";
-			$res = mysql_query($q,$dbh);	
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);	
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->notcateg_notice;
 				}		
@@ -258,9 +272,9 @@ if (($id)&&(!$lvl)) {
 		case "indexint_see":
 			$notices = '';
 			$q = "select notice_id from notices where indexint='$id' " ;			
-			$res = mysql_query($q,$dbh);	
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);	
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->notice_id;
 				}				
@@ -272,9 +286,9 @@ if (($id)&&(!$lvl)) {
 		case "coll_see":
 			$notices = '';
 			$q = "select notice_id from notices where coll_id='$id' " ;
-			$res = mysql_query($q,$dbh);	
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);	
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->notice_id;
 				}				
@@ -286,10 +300,10 @@ if (($id)&&(!$lvl)) {
 		case "publisher_see":
 			$notices = '';
 			$q = "select distinct notice_id from notices where (ed1_id='$id' or ed2_id='$id')" ;
-			$res = mysql_query($q,$dbh);
-			if(mysql_num_rows($res)) {
+			$res = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($res)) {
 				$tab_notices=array();
-				while ($row= mysql_fetch_object($res)) {
+				while ($row= pmb_mysql_fetch_object($res)) {
 					$tab_notices[]=$row->notice_id;
 				}
 				$notices = implode(',',$tab_notices);
@@ -301,9 +315,9 @@ if (($id)&&(!$lvl)) {
 		case "serie_see":
 			$notices = '';
 			$q = "select distinct notice_id from notices where tparent_id='$id' " ;
-			$res = mysql_query($q,$dbh);
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->notice_id;
 				}				
@@ -315,9 +329,9 @@ if (($id)&&(!$lvl)) {
 		case "subcoll_see":
 			$notices = '';
 			$q = "select distinct notice_id from notices where subcoll_id='$id' " ;
-			$res = mysql_query($q,$dbh);
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->notice_id;
 				}				
@@ -329,9 +343,9 @@ if (($id)&&(!$lvl)) {
 		case "etagere_see":
 			$notices = '';
 			$q = "select distinct object_id from caddie_content join etagere_caddie on caddie_content.caddie_id=etagere_caddie.caddie_id where etagere_id='$id'";
-			$res = mysql_query($q,$dbh);
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->object_id;
 				}				
@@ -343,9 +357,9 @@ if (($id)&&(!$lvl)) {
 		case "dsi":
 			$notices = '';
 			$q = "select distinct num_notice from bannette_contenu where num_bannette='$id' " ;
-			$res = mysql_query($q,$dbh);
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->num_notice;
 				}				
@@ -357,9 +371,9 @@ if (($id)&&(!$lvl)) {
 		case "analysis":
 			$notices='';
 			$q = "select distinct analysis_notice from analysis where analysis_bulletin='$id' " ;
-			$res = mysql_query($q,$dbh);
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->analysis_notice;
 				}				
@@ -371,9 +385,9 @@ if (($id)&&(!$lvl)) {
 		case "listlecture":
 			$notices='';
 			$q = "select notices_associees from opac_liste_lecture where id_liste=$id" ;
-			$res = mysql_query($q,$dbh);
-			if(mysql_num_rows($res)){
-				while ($row = mysql_fetch_object($res)){						
+			$res = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				while ($row = pmb_mysql_fetch_object($res)){						
 					if ($notices != "") $notices.= ",";
 					$notices.= $row->notices_associees;
 				}				
@@ -390,29 +404,29 @@ if (($id)&&(!$lvl)) {
 		case "section_see":
 			//On regarde dans quelle type de navigation on se trouve
 			$requete="SELECT num_pclass FROM docsloc_section WHERE num_location='".$location."' AND num_section='".$id."' ";
-			$res=mysql_query($requete);
+			$res=pmb_mysql_query($requete);
 			$type_aff_navigopac=0;
-			if(mysql_num_rows($res)){
-				$type_aff_navigopac=mysql_result($res,0,0);
+			if(pmb_mysql_num_rows($res)){
+				$type_aff_navigopac=pmb_mysql_result($res,0,0);
 			}
 
 			if($type_aff_navigopac == 0 or ($type_aff_navigopac == -1 && !$plettreaut)or ($type_aff_navigopac != -1 && $type_aff_navigopac != 0 && !isset($dcote) && !isset($nc))){
 				//Pas de navigation ou navigation par les auteurs mais sans choix effectué
 				$requete="create temporary table temp_n_id ENGINE=MyISAM ( select distinct expl_notice as notice_id from exemplaires where expl_section='".$id."' and expl_location='".$location."' )";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				//On récupère les notices de périodique avec au moins un exemplaire d'un bulletin dans la localisation et la section
 				$requete="INSERT INTO temp_n_id (select distinct bulletin_notice as notice_id from bulletins join exemplaires on bulletin_id=expl_bulletin where expl_section='".$id."' and expl_location='".$location."' )";
-				mysql_query($requete);
-				@mysql_query("alter table temp_n_id add index(notice_id)");
+				pmb_mysql_query($requete);
+				@pmb_mysql_query("alter table temp_n_id add index(notice_id)");
 				$requete = "SELECT notice_id FROM temp_n_id ";				
 				
 			}elseif($type_aff_navigopac == -1 ){
 				
 				$requete="create temporary table temp_n_id ENGINE=MyISAM ( SELECT distinct expl_notice as notice_id from exemplaires where expl_section='".$id."' and expl_location='".$location."' )";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				//On récupère les notices de périodique avec au moins un exemplaire d'un bulletin dans la localisation et la section
 				$requete="INSERT INTO temp_n_id (select distinct bulletin_notice as notice_id from bulletins join exemplaires on bulletin_id=expl_bulletin where expl_section='".$id."' and expl_location='".$location."' )";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				
 				if($plettreaut == "num"){
 					$requete = "SELECT temp_n_id.notice_id FROM temp_n_id JOIN responsability ON responsability_notice=temp_n_id.notice_id JOIN authors ON author_id=responsability_author and trim(index_author) REGEXP '^[0-9]' GROUP BY temp_n_id.notice_id";
@@ -442,27 +456,27 @@ if (($id)&&(!$lvl)) {
 					$requete.= " and $expl_cote_cond ";
 					$level_ref=strlen($dcote)+1;
 				}
-				@mysql_query($requete);
+				@pmb_mysql_query($requete);
 
 				$requete2 = "insert into temp_n_id (SELECT distinct bulletin_notice as notice_id FROM bulletins join exemplaires on expl_bulletin=bulletin_id where expl_location=$location and expl_section=$id ";
 				if (strlen($dcote)) {
 					$requete2.= " and $expl_cote_cond ";
 				}			
 				$requete2.= ") ";
-				@mysql_query($requete2);
-				@mysql_query("alter table temp_n_id add index(notice_id)");
+				@pmb_mysql_query($requete2);
+				@pmb_mysql_query("alter table temp_n_id add index(notice_id)");
 				
 				//Calcul du classement
 				$rq1_index="create temporary table union1 ENGINE=MyISAM (select distinct expl_cote from exemplaires, temp_n_id where expl_location=$location and expl_section=$id and expl_notice=temp_n_id.notice_id) ";
-				$res1_index=mysql_query($rq1_index);
+				$res1_index=pmb_mysql_query($rq1_index);
 				$rq2_index="create temporary table union2 ENGINE=MyISAM (select distinct expl_cote from exemplaires, temp_n_id, bulletins where expl_location=$location and expl_section=$id and bulletin_notice=temp_n_id.notice_id and expl_bulletin=bulletin_id) ";
-				$res2_index=mysql_query($rq2_index);			
+				$res2_index=pmb_mysql_query($rq2_index);			
 				$req_index="select distinct expl_cote from union1 union select distinct expl_cote from union2";
-				$res_index=mysql_query($req_index);
+				$res_index=pmb_mysql_query($req_index);
 		
 				if ($level_ref==0) $level_ref=1;
 				
-				while (($ct=mysql_fetch_object($res_index)) && $nc) {
+				while (($ct=pmb_mysql_fetch_object($res_index)) && $nc) {
 					if (preg_match("/[0-9][0-9][0-9]/",$ct->expl_cote,$c)) {
 						$found=false;
 						$lcote=(strlen($c[0])>=3) ? 3 : strlen($c[0]);
@@ -471,13 +485,13 @@ if (($id)&&(!$lvl)) {
 							$cote=substr($c[0],0,$level);
 							$compl=str_repeat("0",$lcote-$level);
 							$rq_index="select indexint_name,indexint_comment from indexint where indexint_name='".$cote.$compl."' and length(indexint_name)>=$lcote and num_pclass='".$type_aff_navigopac."' order by indexint_name limit 1";
-							$res_index_1=mysql_query($rq_index);
-							if (mysql_num_rows($res_index_1)) {
+							$res_index_1=pmb_mysql_query($rq_index);
+							if (pmb_mysql_num_rows($res_index_1)) {
 								$rq_del="select distinct notice_id from notices, exemplaires where expl_cote='".$ct->expl_cote."' and expl_notice=notice_id ";
 								$rq_del.=" union select distinct notice_id from notices, exemplaires, bulletins where expl_cote='".$ct->expl_cote."' and expl_bulletin=bulletin_id and bulletin_notice=notice_id ";
-								$res_del=mysql_query($rq_del) ;
-								while (list($n_id)=mysql_fetch_row($res_del)) {
-									mysql_query("delete from temp_n_id where notice_id=".$n_id);
+								$res_del=pmb_mysql_query($rq_del) ;
+								while (list($n_id)=pmb_mysql_fetch_row($res_del)) {
+									pmb_mysql_query("delete from temp_n_id where notice_id=".$n_id);
 								}
 								$found=true;
 							} else $level++;
@@ -488,16 +502,26 @@ if (($id)&&(!$lvl)) {
 			}
 			
 			$notices='';
-			$r =mysql_query($requete,$dbh);
-			if (mysql_num_rows($r)) {
+			$r =pmb_mysql_query($requete,$dbh);
+			if (pmb_mysql_num_rows($r)) {
 				$tab_notices=array();
-				while($row=mysql_fetch_object($r)) {
+				while($row=pmb_mysql_fetch_object($r)) {
 					$tab_notices[]=$row->notice_id;
 				}
 				$notices=implode(',',$tab_notices);
 				$fr = new filter_results($notices);
 				$notices = $fr->get_results();
 			}
+			add_notices_to_cart($notices);
+			break;
+		case "concept_see":
+			require_once($class_path."/skos/skos_concept.class.php");
+			$notices = '';
+			
+			$concept = new skos_concept($id);
+			$notices = implode(",", $concept->get_indexed_notices());
+			$fr = new filter_results($notices);
+			$notices = $fr->get_results();		
 			add_notices_to_cart($notices);
 			break;
 	}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: rapport_ajax.inc.php,v 1.5 2010-02-23 16:27:22 kantin Exp $
+// $Id: rapport_ajax.inc.php,v 1.6 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -38,8 +38,8 @@ function add_note($idnote=0){
 		$ordre = $ordre_cible;
 	} else {
 		$req = "select max(ordre)+1 from rapport_demandes where num_demande='".$iddemande."'";
-		$res = mysql_query($req,$dbh);
-		$ordre = mysql_result($res,0,0);
+		$res = pmb_mysql_query($req,$dbh);
+		$ordre = pmb_mysql_result($res,0,0);
 	}
 	
 	$req = "insert into rapport_demandes set 
@@ -49,14 +49,14 @@ function add_note($idnote=0){
 		ordre = '".$ordre."',
 		type='".$idtype."'
 		";
-	mysql_query($req,$dbh);
+	pmb_mysql_query($req,$dbh);
 	
-	if($ordre_cible) update_order(mysql_insert_id());
+	if($ordre_cible) update_order(pmb_mysql_insert_id());
 	
 	$req = "select rd.id_item, rd.contenu, rd.ordre, rd.type, rd.num_note, sujet_action from rapport_demandes rd left join demandes_notes on num_note=id_note left join demandes_actions on num_action=id_action where rd.num_demande='".$iddemande."' order by ordre";
-	$res = mysql_query($req,$dbh);
+	$res = pmb_mysql_query($req,$dbh);
 	$display = "";
-	while(($item = mysql_fetch_object($res))){
+	while(($item = pmb_mysql_fetch_object($res))){
 		$titre = substr($item->contenu,0,15)."...";	
 		$style="";
 		if(!$item->num_note){
@@ -101,20 +101,20 @@ function update_order($idinsert=0){
 
 	if(($ordre_source > $ordre_cible) && !$idinsert) {
 		$req = "update rapport_demandes set ordre='".$ordre_cible."' where id_item='".$idsource."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		$req = "update rapport_demandes set ordre=ordre+1 where (ordre <= '".$ordre_source."' and ordre >='".$ordre_cible."') and id_item!='".$idsource."' ";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	} else if(($ordre_source < $ordre_cible) && !$idinsert){
 		$req = "update rapport_demandes set ordre='".($ordre_cible-1)."' where id_item='".$idsource."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		$req = "update rapport_demandes set ordre=ordre-1 where (ordre >= '".$ordre_source."' and ordre <='".($ordre_cible-1)."') and id_item!='".$idsource."' ";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	} else if($idinsert && $ordre_cible && $idinsert){
 		//Insertion d'un élément nouveau dans la liste donc on a idinsert et pas idsource
 		$req = "update rapport_demandes set ordre='".$ordre_cible."' where id_item='".$idinsert."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		$req = "update rapport_demandes set ordre=ordre+1 where ordre >='".$ordre_cible."' and id_item!='".$idinsert."' ";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	}
 	
 }
@@ -128,8 +128,8 @@ function show_addcom($id=0){
 	$contenu="";
 	if($id){
 		$req = "select contenu from rapport_demandes where id_item='".$id."'";
-		$res = mysql_query($req,$dbh);
-		$rap = mysql_fetch_object($res);
+		$res = pmb_mysql_query($req,$dbh);
+		$rap = pmb_mysql_fetch_object($res);
 		
 		$contenu = $rap->contenu;
 	}
@@ -155,7 +155,7 @@ function del_item($id=0){
 	
 	if($id){
 		$req = "delete from rapport_demandes where id_item='".$id."'";
-		mysql_query($req,$dbh); 
+		pmb_mysql_query($req,$dbh); 
 	}
 }
 
@@ -167,13 +167,13 @@ function update_contenu($id){
 	
 	if($id){
 		$req = "update rapport_demandes set contenu='".$comment."' where id_item='".$id."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 	
 		//$req = "select id_item, contenu, ordre, type, num_note from rapport_demandes where num_demande='".$idobject."' order by ordre";
 		$req = "select rd.id_item, rd.contenu, rd.ordre, rd.type, rd.num_note, sujet_action from rapport_demandes rd left join demandes_notes on num_note=id_note left join demandes_actions on num_action=id_action where rd.num_demande='".$idobject."' order by ordre";
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 		$display = "";
-		while(($item = mysql_fetch_object($res))){
+		while(($item = pmb_mysql_fetch_object($res))){
 			$titre = substr($item->contenu,0,15)."...";	
 			$style="";
 			if(!$item->num_note){

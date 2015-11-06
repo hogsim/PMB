@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: manager.inc.php,v 1.4.2.1 2015-09-01 10:13:33 dbellamy Exp $
+// $Id: manager.inc.php,v 1.4 2013-10-15 07:38:15 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -12,9 +12,9 @@ require_once($class_path."/tache_calendar.class.php");
 	function task_list () {
 		global $base_path, $msg, $charset, $type_task_id;
 		$tasks = new taches();
-
+		
 		print "
-		<script type='text/javascript'>
+		<script>
 			function show_taches(id) {
 				if (document.getElementById(id).style.display=='none') {
 					document.getElementById(id).style.display='';
@@ -27,18 +27,18 @@ require_once($class_path."/tache_calendar.class.php");
 					print "if (document.getElementById('".$type_tache->name."').style.display=='none') {
 						document.getElementById('".$type_tache->name."').style.display='';
 					}";
-				}
+				}	
 			print "}
 			function collapse_taches_all() {";
 				foreach ($tasks->types_taches as $type_tache) {
 					print "if (document.getElementById('".$type_tache->name."').style.display=='') {
 						document.getElementById('".$type_tache->name."').style.display='none';
 					} ";
-				}
+				}	
 			print "}
 		</script>
-		<script type='text/javascript' src='".$base_path."/javascript/tablist.js'></script>
-		<a href='javascript:expand_taches_all()'><img border='0' id='expandall' src='./images/expand_all.gif'></a>
+		<script type=\"text/javascript\" src='".$base_path."/javascript/tablist.js'></script>
+		<a href='javascript:expand_taches_all()'><img border='0' id='expandall' src='./images/expand_all.gif'></a>		
 		<a href='javascript:collapse_taches_all()'><img border='0' id='collapseall' src='".$base_path."/images/collapse_all.gif'></a>
 		<table>
 			<tr>
@@ -47,10 +47,10 @@ require_once($class_path."/tache_calendar.class.php");
 				<th>".$msg["planificateur_task"]."</th>
 				<th>&nbsp;</th>
 			</tr>";
-
+		
 		$pair_impair=0;
 		$parity=0;
-
+		
 		//on affiche chaque type de tache
 		foreach($tasks->types_taches as $type_tache) {
 			$pair_impair = $parity++ % 2 ? "even" : "odd";
@@ -61,7 +61,7 @@ require_once($class_path."/tache_calendar.class.php");
 		    $tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"if (event) e=event; else e=window.event; if (e.srcElement) target=e.srcElement; else target=e.target; if ((target.nodeName!='IMG')&&(target.nodeName!='INPUT')) document.location='./admin.php?categ=planificateur&sub=manager&act=modif&type_task_id=".$type_tache->id_type."';\" ";
 		    print "<tr class='$pair_impair' $tr_javascript style='cursor: pointer' title='".htmlentities($type_tache->comment,ENT_QUOTES,$charset)."' alter='".htmlentities($type_tache->comment,ENT_QUOTES,$charset)."' id='tr".$type_tache->id_type."'><td>".($n_taches?"<img src='images/plus.gif' class='img_plus' onClick='if (event) e=event; else e=window.event; e.cancelBubble=true; if (e.stopPropagation) e.stopPropagation(); show_taches(\"".addslashes($type_tache->name)."\"); '/>":"&nbsp;")."</td><td>".htmlentities($type_tache->comment,ENT_QUOTES,$charset)."</td>
 			<td>".$n_taches." ".$msg["planificateur_count_tasks"]."</td><td style='text-align:right'><input type='button' value='".$msg["planificateur_task_add"]."' class='bouton_small' onClick='document.location=\"admin.php?categ=planificateur&sub=manager&act=task&type_task_id=".$type_tache->id_type."\"'/></td></tr>\n";
-
+		    
 		    print "<tr class='$pair_impair' style='display:none' id='".$type_tache->name."'><td>&nbsp;</td><td colspan='3'><table style='border:1px solid'>";
 		    $tasks->get_tasks($type_tache->id_type);
 		    print "</table></td></tr>";
@@ -111,7 +111,7 @@ switch ($act)  {
 							$plan->save_property_form($planificateur_id);
 						}
 					}
-				}
+				}		
 				task_list();
 				break;
 			default :

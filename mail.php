@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mail.php,v 1.7 2007-05-24 10:49:00 jlesaint Exp $
+// $Id: mail.php,v 1.8 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -28,4 +28,4 @@ switch($type_mail) {
 		break;
 }
 
-mysql_close($dbh);
+pmb_mysql_close($dbh);

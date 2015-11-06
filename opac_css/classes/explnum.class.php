@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum.class.php,v 1.1 2013-11-13 14:13:29 dgoron Exp $
+// $Id: explnum.class.php,v 1.2 2015-04-03 11:16:17 jpermanne Exp $
 
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
@@ -46,10 +46,10 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 				$requete = "SELECT explnum_id, explnum_notice, explnum_bulletin, explnum_nom, explnum_mimetype, explnum_extfichier, explnum_url, explnum_data, explnum_vignette, 
 				explnum_statut, explnum_index_sew, explnum_index_wew, explnum_repertoire, explnum_nomfichier, explnum_path, repertoire_nom, repertoire_path, group_concat(num_location SEPARATOR ',') as loc
 				 FROM explnum left join upload_repertoire on explnum_repertoire=repertoire_id left join explnum_location on num_explnum=explnum_id where explnum_id='$id' group by explnum_id";
-				$result = mysql_query($requete, $dbh);
+				$result = pmb_mysql_query($requete, $dbh);
 				
-				if(mysql_num_rows($result)) {
-					$item = mysql_fetch_object($result);
+				if(pmb_mysql_num_rows($result)) {
+					$item = pmb_mysql_fetch_object($result);
 					$this->explnum_id        = $item->explnum_id       ;
 					$this->explnum_notice    = $item->explnum_notice   ;
 					$this->explnum_bulletin  = $item->explnum_bulletin ;
@@ -71,9 +71,9 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 					$this->explnum_location = $item->loc ? explode(",",$item->loc) : '';
 				} else { // rien trouvé en base, on va faire comme pour une création
 						$req = "select repertoire_nom, repertoire_path from  upload_repertoire, users where repertoire_id=deflt_upload_repertoire and username='".SESSlogin."'";
-						$res = mysql_query($req,$dbh);
-						if(mysql_num_rows($res)){
-							$item = mysql_fetch_object($res);
+						$res = pmb_mysql_query($req,$dbh);
+						if(pmb_mysql_num_rows($res)){
+							$item = pmb_mysql_fetch_object($res);
 							$this->explnum_rep_nom = $item->repertoire_nom;
 							$this->explnum_rep_path = $item->repertoire_path;
 						} else {
@@ -99,9 +99,9 @@ if ( ! defined( 'EXPLNUM_CLASS' ) ) {
 				
 			} else { // rien de fourni apparemment : création
 				$req = "select repertoire_id, repertoire_nom, repertoire_path from  upload_repertoire, users where repertoire_id=deflt_upload_repertoire and username='".SESSlogin."'";
-				$res = mysql_query($req,$dbh);
-				if(mysql_num_rows($res)){
-					$item = mysql_fetch_object($res);
+				$res = pmb_mysql_query($req,$dbh);
+				if(pmb_mysql_num_rows($res)){
+					$item = pmb_mysql_fetch_object($res);
 					$this->explnum_rep_nom = $item->repertoire_nom;
 					$this->explnum_rep_path = $item->repertoire_path;
 					$this->explnum_repertoire = $item->repertoire_id;

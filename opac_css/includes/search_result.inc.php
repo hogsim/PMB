@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_result.inc.php,v 1.55.2.2 2014-07-02 13:16:23 mbertin Exp $
+// $Id: search_result.inc.php,v 1.60 2015-05-27 09:56:27 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -121,23 +121,49 @@ if (!$mode) {
 					require_once($base_path.'/search/level1/docnum.inc.php');
 					$total_results += $nb_result_docnum;
 				}
+				
+				if ($opac_modules_search_concept && $look_CONCEPT) {
+					require_once($base_path.'/search/level1/concept.inc.php');
+					$total_results += $nb_result_concept;
+				}
 	
 				if ($opac_modules_search_all && $look_ALL) {
 	  				require_once($base_path.'/search/level1/tous.inc.php');	
 	  				$total_results += $nb_result;
 	  				$nb_all_results=$nb_result;
 	  			}
-	
+	  			
+	  			if ($opac_modules_search_all && $look_ALL) {
+	  				require_once($base_path.'/search/level1/tous.inc.php');	
+	  				$total_results += $nb_result;
+	  				$nb_all_results=$nb_result;
+	  			}
+	  			
+	  			//Parcours pour les autorités personalisées
+	  			$query = "select id_authperso from authperso where authperso_opac_search > 0";
+	  			$result = pmb_mysql_query($query,$dbh);
+	  			if(pmb_mysql_num_rows($result)){
+	  				while($row = pmb_mysql_fetch_object($result)){
+  						$look_ = "look_AUTHPERSO_".$row->id_authperso."#";
+  						global $$look_;
+  						if($$look_){
+  							require_once ($class_path."/authperso.class.php");
+							include($base_path."/search/level1/authperso.inc.php");	
+							$total_results += $nb_result;
+							$nb_all_results=$nb_result;
+  						}
+	  				}
+	  			}
 
 	  			if ($opac_show_suggest) {
 	  				$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class='search_bt_sugg' ><a href=# ";
 	  				if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=600,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 	  				else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";
-	  				$bt_sugg.= " >".$msg[empr_bt_make_sugg]."</a></span>";
+	  				$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg[empr_bt_make_sugg]."</a></span>";
 	  			} else $bt_sugg="";
 	  				
 	  			if ($opac_allow_external_search) 
-						$bt_external="<span class='search_bt_external' ><a href='javascript:document.search_input.action=\"$base_path/index.php?search_type_asked=external_search&external_type=simple\"; document.search_input.submit();'>".$msg["connecteurs_external_search_sources"]."</a></span>";
+						$bt_external="<span class='search_bt_external' ><a href='javascript:document.search_input.action=\"$base_path/index.php?search_type_asked=external_search&external_type=simple\"; document.search_input.submit();' title='".$msg["connecteurs_external_search_sources"]."'>".$msg["connecteurs_external_search_sources"]."</a></span>";
 					else $bt_external="";
 	
 				// affichage pied-de-page
@@ -198,10 +224,10 @@ if (!$mode) {
 				$bt_sugg = "&nbsp;&nbsp;&nbsp;<span class='search_bt_sugg' ><a href=# ";		
 				if ($opac_resa_popup) $bt_sugg .= " onClick=\"w=window.open('./do_resa.php?lvl=make_sugg&oresa=popup','doresa','scrollbars=yes,width=500,height=600,menubar=0,resizable=yes'); w.focus(); return false;\"";
 				else $bt_sugg .= "onClick=\"document.location='./do_resa.php?lvl=make_sugg&oresa=popup' \" ";			
-				$bt_sugg.= " >".$msg[empr_bt_make_sugg]."</a></span>";
+				$bt_sugg.= " title='".$msg["empr_bt_make_sugg"]."' >".$msg[empr_bt_make_sugg]."</a></span>";
 			} else $bt_sugg="";
 			if ($opac_allow_external_search && $allow_search_affiliate_and_external) 
-				$bt_external="<span class='search_bt_external' ><a href='javascript:document.search_form.action=\"$base_path/index.php?search_type_asked=external_search&external_type=multi\"; document.search_form.submit();'>".$msg["connecteurs_external_search_sources"]."</a></span>";
+				$bt_external="<span class='search_bt_external' ><a href='javascript:document.search_form.action=\"$base_path/index.php?search_type_asked=external_search&external_type=multi\"; document.search_form.submit();' title='".$msg["connecteurs_external_search_sources"]."'>".$msg["connecteurs_external_search_sources"]."</a></span>";
 			else $bt_external="";
 				
 			if (!$nb_result_extended) { 

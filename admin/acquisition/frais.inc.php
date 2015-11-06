@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: frais.inc.php,v 1.17 2009-05-16 11:11:54 dbellamy Exp $
+// $Id: frais.inc.php,v 1.18 2015-04-03 11:16:26 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -25,11 +25,11 @@ function show_list_frais() {
 	</tr>";
 
 	$res = frais::listFrais();
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_object($res);
+		$row=pmb_mysql_fetch_object($res);
 			if ($parity % 2) {
 				$pair_impair = "even";
 			} else {
@@ -82,8 +82,8 @@ function show_frais_form($id=0) {
 	if ($acquisition_gestion_tva) {
 		$form_tva = "<select id='tva_achat' name ='tva_achat' >";
 		$q = tva_achats::listTva();
-		$res = mysql_query($q, $dbh);
-		while ($row=mysql_fetch_object($res)) {
+		$res = pmb_mysql_query($q, $dbh);
+		while ($row=pmb_mysql_fetch_object($res)) {
 			$form_tva.="<option value='".$row->id_tva."' ";
 			if ($id ) {
 				if ($frais->num_tva_achat == $row->id_tva) $form_tva.="selected ";

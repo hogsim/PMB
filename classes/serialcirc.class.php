@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc.class.php,v 1.26.2.2 2015-06-02 15:25:05 jpermanne Exp $
+// $Id: serialcirc.class.php,v 1.31 2015-07-16 09:37:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -12,6 +12,9 @@ require_once($class_path."/serial_display.class.php");
 require_once($class_path."/serialcirc_diff.class.php");
 require_once($class_path."/resa.class.php");
 require_once($class_path."/serialcirc_print_fields.class.php");
+@ini_set('zend.ze1_compatibility_mode',0);
+require_once($include_path."/h2o/h2o.php");
+require_once("$class_path/aut_link.class.php");
 
 class serialcirc {
 	var $info_expl=array();		
@@ -43,13 +46,19 @@ class serialcirc {
 		$this->classement['is_in_resa_ask']=array();		
 		if($this->id_location) $restrict=" and expl_location=".$this->id_location;
 		$req="select * from serialcirc_expl,exemplaires,bulletins where expl_id=num_serialcirc_expl_id and expl_bulletin=bulletin_id $restrict";
-		$resultat=mysql_query($req);	
-		if ($resultat && mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){	
+		$resultat=pmb_mysql_query($req);	
+		if ($resultat && pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){	
 				$this->info_expl[$r->expl_id]['expl_cb']= $r->expl_cb;	
 				$this->info_expl[$r->expl_id]['expl_id']= $r->expl_id;				
 				$this->info_expl[$r->expl_id]['expl_statut']= $r->expl_statut;
 				$this->info_expl[$r->expl_id]['expl_location']= $r->expl_location;
+				
+				
+				$rqtSite = "SELECT location_libelle FROM docs_location WHERE idlocation=".$r->expl_location;
+				$resSite = pmb_mysql_result(pmb_mysql_query($rqtSite),0);
+				$this->info_expl[$r->expl_id]['expl_location_name']= $resSite;
+				
 				$this->info_expl[$r->expl_id]['expl_cote']= $r->expl_cote;
 				
 				$this->info_expl[$r->expl_id]['bulletine_date']= $r->serialcirc_expl_bulletine_date;
@@ -69,8 +78,8 @@ class serialcirc {
 				$this->info_expl[$r->expl_id]['view_link']='./circ.php?categ=visu_ex&form_cb_expl='.$r->expl_cb;			
 					
 				$req_serial="select * from notices  where notice_id=".$r->bulletin_notice."";
-				$res_serial=mysql_query($req_serial);	
-				if ($r_serial=mysql_fetch_object($res_serial)){	
+				$res_serial=pmb_mysql_query($req_serial);	
+				if ($r_serial=pmb_mysql_fetch_object($res_serial)){	
 					$this->info_expl[$r->expl_id]['serial_title']=$r_serial->tit1;					
 				}				
 				
@@ -92,9 +101,9 @@ class serialcirc {
 				
 				$this->info_expl[$r->expl_id]['circ']=array();
 				$req_circ="select * from serialcirc_circ where num_serialcirc_circ_expl =".$r->expl_id;
-				$resultat_circ=mysql_query($req_circ);	
-				if (mysql_num_rows($resultat_circ)) {
-					while($r_circ=mysql_fetch_object($resultat_circ)){	
+				$resultat_circ=pmb_mysql_query($req_circ);	
+				if (pmb_mysql_num_rows($resultat_circ)) {
+					while($r_circ=pmb_mysql_fetch_object($resultat_circ)){	
 						$this->info_expl[$r->expl_id]['circ'][$r_circ->num_serialcirc_circ_empr ]['subscription']=$r_circ->serialcirc_circ_subscription;
 						$this->info_expl[$r->expl_id]['circ'][$r_circ->num_serialcirc_circ_empr ]['ret_asked ']=$r_circ->serialcirc_circ_ret_asked ;
 						$this->info_expl[$r->expl_id]['circ'][$r_circ->num_serialcirc_circ_empr ]['trans_asked ']=$r_circ->serialcirc_circ_trans_asked ;
@@ -121,10 +130,10 @@ class serialcirc {
 		global $opac_url_base;
 		$this->info_copy=array();		
 		$req="select * from serialcirc_copy ,bulletins, notices where num_serialcirc_copy_bulletin=bulletin_id and bulletin_notice=notice_id order by serialcirc_copy_date ";
-		$resultat=mysql_query($req);
+		$resultat=pmb_mysql_query($req);
 		$i=0;
-		if (mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){				
+		if (pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){				
 				$this->info_copy[$i]['id']=$r->id_serialcirc_copy;
 				$this->info_copy[$i]['id_empr']=$r->num_serialcirc_copy_empr;
 				$this->info_copy[$i]['empr']=$this->empr_info($this->info_copy[$i]['id_empr']);
@@ -149,10 +158,10 @@ class serialcirc {
 		
 		$this->info_resa=array();		
 		$req="select * from serialcirc_circ, exemplaires, bulletins, notices where serialcirc_circ_hold_asked=1 and num_serialcirc_circ_expl=expl_id and expl_bulletin=bulletin_id and bulletin_notice=notice_id order by num_serialcirc_circ_expl,serialcirc_circ_order ";
-		$resultat=mysql_query($req);
+		$resultat=pmb_mysql_query($req);
 		$i=0;
-		if ($resultat && mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){				
+		if ($resultat && pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){				
 				$this->info_resa[$i]['id']=$r->id_serialcirc_circ;
 				$this->info_resa[$i]['id_empr']=$r->num_serialcirc_circ_empr;
 				$this->info_resa[$i]['id_expl']=$r->num_serialcirc_circ_expl;
@@ -169,10 +178,10 @@ class serialcirc {
 	function fetch_info_circ($id_expl){
 		$this->info_circ[$id_expl]=array();		
 		$req="select *,DATEDIFF(serialcirc_circ_expected_date,CURDATE())as late_diff from serialcirc_circ where num_serialcirc_circ_expl=$id_expl order by serialcirc_circ_order ";
-		$resultat=mysql_query($req);
+		$resultat=pmb_mysql_query($req);
 		
-		if ($resultat && mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){				
+		if ($resultat && pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){				
 				$this->info_circ[$id_expl][$r->num_serialcirc_circ_empr]['id']=$r->id_serialcirc_circ;			
 				$this->info_circ[$id_expl][$r->num_serialcirc_circ_empr]['num_diff']=$r->num_serialcirc_circ_diff;	
 				$this->info_circ[$id_expl][$r->num_serialcirc_circ_empr]['num_expl']=$r->num_serialcirc_circ_expl;			
@@ -203,8 +212,8 @@ class serialcirc {
 		global $dbh;
 		$info=array();
 		$req="select empr_cb, empr_nom ,  empr_prenom, empr_mail from empr where id_empr=".$id;
-		$res_empr=mysql_query($req);
-		if ($empr=mysql_fetch_object($res_empr)) {			
+		$res_empr=pmb_mysql_query($req);
+		if ($empr=pmb_mysql_fetch_object($res_empr)) {			
 			$info['cb'] = $empr->empr_cb;
 			$info['nom'] = $empr->empr_nom; 
 			$info['prenom'] = $empr->empr_prenom;  
@@ -220,9 +229,9 @@ class serialcirc {
 		global $dbh;
 		$info=array();
 		$req="select * from exemplaires, bulletins, notices where expl_id=$id and expl_bulletin=bulletin_id and bulletin_notice=notice_id ";
-		$resultat=mysql_query($req);
+		$resultat=pmb_mysql_query($req);
 				
-		if($r=mysql_fetch_object($resultat)){				
+		if($r=pmb_mysql_fetch_object($resultat)){				
 			$info['id']=$id;				
 			$info['cb']=$r->expl_cb;			
 			$info['id_bulletin']=$r->num_serialcirc_copy_bulletin;
@@ -240,8 +249,8 @@ class serialcirc {
 			else $start_date=$this->info_expl[$expl_id]['start_date'];
 			$req="select DATEDIFF(DATE_ADD('".$start_date."',	INTERVAL ".$this->info_expl[$expl_id]['serialcirc_diff']->duration_before_send." DAY),CURDATE())";
 			
-			$result=mysql_query($req);
-			if($row = mysql_fetch_row($result)) {
+			$result=pmb_mysql_query($req);
+			if($row = pmb_mysql_fetch_row($result)) {
 				if($row[0]>0){	
 					return true;
 				}
@@ -306,28 +315,28 @@ class serialcirc {
 		// Traitement des résa
 		$req="select num_serialcirc_circ_empr from serialcirc_circ where serialcirc_circ_hold_asked=2 and num_serialcirc_circ_expl=$expl_id
 		order by serialcirc_circ_order";
-		$res=mysql_query($req);
-		if(mysql_num_rows($res)){
-			while ($r=mysql_fetch_object($res)) {
+		$res=pmb_mysql_query($req);
+		if(pmb_mysql_num_rows($res)){
+			while ($r=pmb_mysql_fetch_object($res)) {
 				$resa=new reservation($r->num_serialcirc_circ_empr,0,$this->info_expl[$expl_id]['bulletin_id']);
 				$resa->add();
 			}
 		}
 		$req="delete from serialcirc_expl where num_serialcirc_expl_id =$expl_id";
-		mysql_query($req);		
+		pmb_mysql_query($req);		
 		$req="delete from serialcirc_circ where num_serialcirc_circ_expl =$expl_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 		
 		// on change le statut si demandé
 		if($this->info_expl[$expl_id]['serialcirc_diff']->expl_statut_circ_after){
 			$req="update exemplaires set expl_statut=".$this->info_expl[$expl_id]['serialcirc_diff']->expl_statut_circ_after." where expl_id=".$expl_id;
-			mysql_query($req);	
+			pmb_mysql_query($req);	
 		}
 		
 		// traitement résa 
 		$query = "select count(1) from resa where resa_idbulletin=".$this->info_expl[$expl_id]['bulletin_id'];
-		$result = @mysql_query($query, $dbh);
-		if(@mysql_result($result, 0, 0)) {
+		$result = @pmb_mysql_query($query, $dbh);
+		if(@pmb_mysql_result($result, 0, 0)) {
 			$status=2;// mail de résa sera envoyé à l'affectation dans résa à traiter
 		}
 		return $status;
@@ -335,9 +344,9 @@ class serialcirc {
 
 	static function delete_expl($expl_id){
 		$req="delete from serialcirc_expl where num_serialcirc_expl_id =$expl_id";
-		mysql_query($req);		
+		pmb_mysql_query($req);		
 		$req="delete from serialcirc_circ where num_serialcirc_circ_expl =$expl_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 	}
 	
 	function copy_accept($copy_id){	
@@ -350,16 +359,16 @@ class serialcirc {
 		mailpmb($copy['empr']["prenom"]." ".$copy['empr']["nom"], $copy['empr']["mail"],	$msg["serialcirc_circ_title"],	$texte_mail, $biblio_name, $biblio_email,"", "", $PMBuseremailbcc,1);
 		
 		$req="update serialcirc_copy set serialcirc_copy_state=1  where id_serialcirc_copy=$copy_id ";
-		mysql_query($req);					
+		pmb_mysql_query($req);					
 		return true;
 	}		
 	
 	function copy_isdone($bul_id){	
 		global $serialcirc_copy_isdone_mail,$msg,$biblio_name, $biblio_email,$PMBuseremailbcc;
 		$req="select * from serialcirc_copy where num_serialcirc_copy_bulletin=$bul_id ";
-		$resultat=mysql_query($req);		
-		if ($resultat && mysql_num_rows($resultat)) {
-			while($r=mysql_fetch_object($resultat)){
+		$resultat=pmb_mysql_query($req);		
+		if ($resultat && pmb_mysql_num_rows($resultat)) {
+			while($r=pmb_mysql_fetch_object($resultat)){
 				// envoit des mails
 				if($copy=$this->index_info_copy[$r->id_serialcirc_copy]){		
 					$texte_mail=$serialcirc_copy_isdone_mail;
@@ -370,7 +379,7 @@ class serialcirc {
 			}
 			// on efface 
 			$req="delete from serialcirc_copy where num_serialcirc_copy_bulletin=$bul_id ";
-			$resultat=mysql_query($req);
+			$resultat=pmb_mysql_query($req);
 		}		
 	}
 
@@ -379,7 +388,7 @@ class serialcirc {
 			
 		if(!$this->index_info_copy[$copy_id]) return false;			
 		$req="delete from serialcirc_copy where id_serialcirc_copy=$copy_id";
-		mysql_query($req);		
+		pmb_mysql_query($req);		
 		$copy=$this->index_info_copy[$copy_id];		
 		$texte_mail=$serialcirc_copy_no_mail;
 		$texte_mail=str_replace("!!issue!!", $copy['perio']."-".$copy['numero'], $texte_mail);			
@@ -400,13 +409,13 @@ class serialcirc {
 	function resa_accept($expl_id,$empr_id){		
 	
 		$req="select * from bulletins, exemplaires where bulletin_id=expl_bulletin and expl_id=$expl_id";
-		$res=mysql_query($req);
-		if ($r=mysql_fetch_object($res)) {		
+		$res=pmb_mysql_query($req);
+		if ($r=pmb_mysql_fetch_object($res)) {		
 //			$resa=new reservation($empr_id,0,$r->bulletin_id);
 //			$resa->add();
 			$req="update serialcirc_circ set serialcirc_circ_hold_asked=2 where
 			num_serialcirc_circ_expl=$expl_id and num_serialcirc_circ_empr=$empr_id";
-			$res=mysql_query($req);			
+			$res=pmb_mysql_query($req);			
 		}
 		// mail de résa sera envoyé à l'affectation dans résa à traité			
 		return true;
@@ -416,7 +425,7 @@ class serialcirc {
 		global $serialcirc_resa_no_mail,$msg;			
 		$req="update serialcirc_circ set serialcirc_circ_hold_asked=0 where
 		num_serialcirc_circ_expl=$expl_id and num_serialcirc_circ_empr=$empr_id";
-		$res=mysql_query($req);
+		$res=pmb_mysql_query($req);
 			
 		// mail 
 		$this->ask_send_mail($expl_id,$empr_id,$msg["serialcirc_circ_title"],$serialcirc_resa_no_mail);		
@@ -458,7 +467,7 @@ class serialcirc {
 				num_serialcirc_expl_current_empr=0
 				where num_serialcirc_expl_id= $expl_id";
 				
-				mysql_query($req);
+				pmb_mysql_query($req);
 				$status=2;
 			}else{
 				// C'est terminé!
@@ -513,11 +522,11 @@ class serialcirc {
 		serialcirc_expl_state_circ=1,
 		serialcirc_expl_start_date=CURDATE()
 		where num_serialcirc_expl_id= $expl_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 		
 		$req="select date_format(CURDATE(), '".$msg["format_date"]."') as print_date";	
-		$result = mysql_query($req);
-		$obj = mysql_fetch_object($result);
+		$result = pmb_mysql_query($req);
+		$obj = pmb_mysql_fetch_object($result);
 		$print_date=$obj->print_date;
 		
 		$tpl = $serialcirc_circ_pdf_diffusion;
@@ -563,6 +572,7 @@ class serialcirc {
 					break;
 				}				
 			}
+			$last_empr=$this->info_expl[$expl_id]['serialcirc_diff']->empr_info[$diffusion["num_empr"]];
 		}		
 		$this->gen_circ($empr_list,$empr_days, $expl_id);
 		
@@ -586,13 +596,25 @@ class serialcirc {
 			}
 			$tr_list.="<tr>".$td_list."</tr>";	
 		}
-		$tpl=str_replace("!!table_contens!!", $tr_list, $tpl);		
+		$tpl=str_replace("!!table_contens!!", $tr_list, $tpl);	
+
+		
+		
+		if($gen_tpl->piedpage){	
+			$data=array();
+			$data['expl']=$this->info_expl[$expl_id];
+			$data['last_empr']=$last_empr;
+//		 	printr($data['expl']);
+			$tpl.=H2o::parseString($gen_tpl->piedpage)->render($data);
+		}
 		
 		if($this->info_expl[$expl_id]['serialcirc_diff']->no_ret_circ){
 			//pas de retour sur site, suppression de la circulation.
 			$this->delete_diffusion($expl_id);
 		}
-		
+		if($charset!="utf-8"){
+			$tpl=utf8_encode($tpl);
+		}
 		return $tpl;
 	}	
 	
@@ -610,13 +632,13 @@ class serialcirc {
 				num_serialcirc_circ_expl=".$expl_id ." and
 				num_serialcirc_circ_empr=". $empr_id." and 
 				serialcirc_circ_subscription=1 ";
-				mysql_query($req);
+				pmb_mysql_query($req);
 				$order++;
 				$nb_days+=$empr_days[$empr_id];
 			}			
 		}else{
 			$req=" delete from serialcirc_circ where num_serialcirc_circ_expl=".$expl_id  ;
-			mysql_query($req);	
+			pmb_mysql_query($req);	
 			
 			foreach($empr_list as $empr_id=>$diff_id){
 				
@@ -628,7 +650,7 @@ class serialcirc {
 				serialcirc_circ_order=". $order.",
 				serialcirc_circ_expected_date=DATE_ADD(CURDATE(),INTERVAL $nb_days DAY),
 				num_serialcirc_circ_serialcirc=".$this->info_expl[$expl_id]['num_serialcirc'];
-				mysql_query($req);
+				pmb_mysql_query($req);
 				$order++;
 				$nb_days+=$empr_days[$empr_id];
 			}
@@ -636,7 +658,7 @@ class serialcirc {
 		// on change le statut si demandé
 		if($this->info_expl[$expl_id]['serialcirc_diff']->expl_statut_circ){
 			$req="update exemplaires set expl_statut=".$this->info_expl[$expl_id]['serialcirc_diff']->expl_statut_circ." where expl_id=".$expl_id;
-			mysql_query($req);	
+			pmb_mysql_query($req);	
 		}	
 	}
 	
@@ -655,7 +677,7 @@ class serialcirc {
 		global $biblio_name,$biblio_email,$PMBuseremailbcc;
 		
 		$req=" delete from serialcirc_circ where num_serialcirc_circ_expl=".$expl_id  ;
-		mysql_query($req);	
+		pmb_mysql_query($req);	
 		
 		foreach($this->info_expl[$expl_id]['serialcirc_diff']->diffusion as $diff_id => $diffusion){
 
@@ -674,7 +696,7 @@ class serialcirc {
 		serialcirc_expl_state_circ=0,
 		serialcirc_expl_start_date=CURDATE()
 		where num_serialcirc_expl_id= $expl_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 		
 		$order=0;	
 		foreach($empr_list as $empr_id=>$diff_id){
@@ -686,7 +708,7 @@ class serialcirc {
 			serialcirc_circ_subscription=0,
 			serialcirc_circ_order=". $order.",
 			num_serialcirc_circ_serialcirc=".$this->info_expl[$expl_id]['num_serialcirc'];
-			mysql_query($req);
+			pmb_mysql_query($req);
 			$order++;
 			
 			// envoit mail alert
@@ -707,14 +729,14 @@ class serialcirc {
 		$req="UPDATE serialcirc_expl SET 
 		serialcirc_expl_ret_asked=1
 		where num_serialcirc_expl_id= $expl_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 		
 		if(!$empr_id=$this->info_expl[$expl_id]['current_empr']) return false;
 		
 		$req="UPDATE serialcirc_circ SET 
 		serialcirc_circ_ret_asked = serialcirc_circ_ret_asked+1
 		where num_serialcirc_circ_expl= $expl_id and num_serialcirc_circ_empr=$empr_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 
 		$objet=$msg["serialcirc_circ_title"];
 		$texte_mail=$serialcirc_call_mail;
@@ -728,14 +750,14 @@ class serialcirc {
 		$req="UPDATE serialcirc_expl SET 
 		serialcirc_expl_trans_doc_asked=1
 		where num_serialcirc_expl_id= $expl_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 		
 		if(!$empr_id=$this->info_expl[$expl_id]['current_empr']) return false;
 		
 		$req="UPDATE serialcirc_circ SET 
 		serialcirc_circ_trans_doc_asked = serialcirc_circ_trans_doc_asked+1
 		where num_serialcirc_circ_expl= $expl_id and num_serialcirc_circ_empr=$empr_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 				
 		$objet=$msg["serialcirc_circ_title"];
 		$texte_mail=$serialcirc_transmission_mail;
@@ -748,14 +770,14 @@ class serialcirc {
 		$req="UPDATE serialcirc_expl SET 
 		serialcirc_expl_trans_doc_asked=2
 		where num_serialcirc_expl_id= $expl_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 		
 		if(!$empr_id=$this->info_expl[$expl_id]['current_empr']) return false;
 		
 		$req="UPDATE serialcirc_circ SET 
 		serialcirc_circ_trans_doc_asked = serialcirc_circ_trans_doc_asked+1
 		where num_serialcirc_circ_expl= $expl_id and num_serialcirc_circ_empr=$empr_id";
-		mysql_query($req);				
+		pmb_mysql_query($req);				
 		$objet=$msg["serialcirc_circ_title"];
 		$texte_mail=$serialcirc_transmission_mail;
 		$status=$this->send_mail($expl_id,$objet,$texte_mail);
@@ -887,7 +909,14 @@ class serialcirc {
 					$tr=$serialcirc_circ_liste_circulation_rotative_tr;
 				}else{					
 					$tr=$serialcirc_circ_liste_circulation_star_tr;
-				}							
+				}	
+				if ($this->info_expl[$expl_id]['serialcirc_diff']->checked) {
+					$tr=str_replace("!!bt_rappel_perio!!","<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_call_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_call_expl('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;",$tr);
+					$tr=str_replace("!!bt_exige_transmission!!","<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_go_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_do_trans('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;",$tr);
+				} else {
+					$tr=str_replace("!!bt_rappel_perio!!","",$tr);
+					$tr=str_replace("!!bt_exige_transmission!!","",$tr);
+				}
 				$tr_list.=$this->build_expl_form($expl_id,$tr,"in_circ");
 			}
 			$liste_circulation=str_replace("!!liste_circulation!!", $tr_list, $liste_circulation);		
@@ -1016,7 +1045,14 @@ class serialcirc {
 					$tr=$serialcirc_circ_liste_circulation_rotative_tr;
 				}else{					
 					$tr=$serialcirc_circ_liste_circulation_star_tr;
-				}							
+				}
+				if ($this->info_expl[$expl_id]['serialcirc_diff']->checked) {
+					$tr=str_replace("!!bt_rappel_perio!!","<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_call_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_call_expl('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;",$tr);
+					$tr=str_replace("!!bt_exige_transmission!!","<input type=\"button\" class='bouton' value='".htmlentities($msg["serialcirc_circ_list_bull_circulation_go_bt"],ENT_QUOTES,$charset)."' onClick=\"my_serialcirc_do_trans('!!zone!!','!!expl_id!!'); return false;\"/>&nbsp;",$tr);
+				} else {
+					$tr=str_replace("!!bt_rappel_perio!!","",$tr);
+					$tr=str_replace("!!bt_exige_transmission!!","",$tr);
+				}						
 				$tr_list.=$this->build_expl_form($expl_id,$tr,"in_circ");			
 				$liste_circulation=str_replace("!!liste_circulation!!", $tr_list, $liste_circulation);		
 				
@@ -1060,13 +1096,13 @@ class serialcirc {
 		global $serialcirc_circ_cb_notfound, $serialcirc_circ_cb_info;
 		$info="";
 		$req="select * from serialcirc_expl,exemplaires where expl_cb='$cb' and expl_id=num_serialcirc_expl_id ";
-		$resultat=mysql_query($req);
+		$resultat=pmb_mysql_query($req);
 		if ($resultat) {
-			if (!mysql_num_rows($resultat)) {
+			if (!pmb_mysql_num_rows($resultat)) {
 				$this->info_cb['cb']='';
 				return str_replace("!!cb!!", $cb, $serialcirc_circ_cb_notfound);
 			}
-			$r=mysql_fetch_object($resultat);
+			$r=pmb_mysql_fetch_object($resultat);
 			$info.=$this->gen_pointage_form($r->expl_id);
 		}
 		return $info;
@@ -1183,9 +1219,9 @@ class serialcirc_subst extends serialcirc {
 			$req="select expl_id from  exemplaires  where expl_abt_num > 0 and create_date > concat(CURDATE(),' 00:00:00') and expl_id not in (
 			select num_serialcirc_expl_id from serialcirc_expl) order by create_date";
 			$i=0;
-			$resultat=mysql_query($req);
-			if (!mysql_num_rows($resultat)) return;
-			while($r=mysql_fetch_object($resultat)){
+			$resultat=pmb_mysql_query($req);
+			if (!pmb_mysql_num_rows($resultat)) return;
+			while($r=pmb_mysql_fetch_object($resultat)){
 				$list[$i]['expl_id']=$r->expl_id;
 				$list[$i]['type']="cote";
 				$i++;
@@ -1325,9 +1361,9 @@ class serialcirc_subst extends serialcirc {
 			$expl_id=$expl['expl_id'];
 		
 			$req="select *, date_format(create_date, '".$msg["format_date"]."') as aff_create_date from exemplaires,bulletins where expl_bulletin=bulletin_id and expl_id='$expl_id' ";
-			$resultat=mysql_query($req);
-			if (!mysql_num_rows($resultat)) return;
-			$r=mysql_fetch_object($resultat);
+			$resultat=pmb_mysql_query($req);
+			if (!pmb_mysql_num_rows($resultat)) return;
+			$r=pmb_mysql_fetch_object($resultat);
 			$this->info_expl[$r->expl_id]['expl_cb']= $r->expl_cb;
 			$this->info_expl[$r->expl_id]['expl_id']= $r->expl_id;
 			$this->info_expl[$r->expl_id]['expl_statut']= $r->expl_statut;
@@ -1341,8 +1377,8 @@ class serialcirc_subst extends serialcirc {
 			$print_date=$r->aff_create_date;
 		
 			$req_serial="select * from notices  where notice_id=".$r->bulletin_notice."";
-			$res_serial=mysql_query($req_serial);
-			if ($r_serial=mysql_fetch_object($res_serial)){
+			$res_serial=pmb_mysql_query($req_serial);
+			if ($r_serial=pmb_mysql_fetch_object($res_serial)){
 				$this->info_expl[$r->expl_id]['serial_title']=$r_serial->tit1;
 			}
 			$data=array();
@@ -1355,9 +1391,9 @@ class serialcirc_subst extends serialcirc {
 		
 		
 			$req="select  abt_name from abts_abts,exemplaires where expl_abt_num=abt_id and expl_id=". $r->expl_id;
-			$res_abt=mysql_query($req);
-			if (mysql_num_rows($res_abt)) {
-				$r_abt=mysql_fetch_object($res_abt);
+			$res_abt=pmb_mysql_query($req);
+			if (pmb_mysql_num_rows($res_abt)) {
+				$r_abt=pmb_mysql_fetch_object($res_abt);
 				$data['abt_name1']=$r_abt->abt_name;
 			}else $data['abt_name1']="";
 		
@@ -1384,11 +1420,11 @@ class serialcirc_subst extends serialcirc {
 		serialcirc_expl_state_circ=1,
 		serialcirc_expl_start_date=CURDATE()
 		where num_serialcirc_expl_id= $expl_id";
-		mysql_query($req);
+		pmb_mysql_query($req);
 	
 		$req="select date_format(CURDATE(), '".$msg["format_date"]."') as print_date";
-		$result = mysql_query($req);
-		$obj = mysql_fetch_object($result);
+		$result = pmb_mysql_query($req);
+		$obj = pmb_mysql_fetch_object($result);
 		$print_date=$obj->print_date;
 	
 		$tpl = $serialcirc_circ_pdf_diffusion;
@@ -1454,9 +1490,9 @@ class serialcirc_subst extends serialcirc {
 		$p_perso=new parametres_perso("empr");
 		foreach($empr_list as $empr_id=>$diff_id){
 			$req="select * from empr where 	id_empr=$empr_id";
-			$res = mysql_query($req, $dbh);
-			if (mysql_num_rows($res)) {
-				$row = mysql_fetch_object($res);		
+			$res = pmb_mysql_query($req, $dbh);
+			if (pmb_mysql_num_rows($res)) {
+				$row = pmb_mysql_fetch_object($res);		
 				$pp_values=$p_perso->read_base_fields_perso_values("pp_??????",$empr_id);	
 				$data['empr'][$i]['name']=$row->empr_nom;
 				$data['empr'][$i]['pperso']=$pp_values[0];
@@ -1471,7 +1507,7 @@ class serialcirc_subst extends serialcirc {
 			$this->delete_diffusion($expl_id);
 			if($empr_id){
 				$req="update exemplaires set expl_lastempr=$empr_id where expl_id=$expl_id";	
-				mysql_query($req, $dbh);
+				pmb_mysql_query($req, $dbh);
 			}
 		}
 	}

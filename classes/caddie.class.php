@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: caddie.class.php,v 1.42.2.1 2014-06-05 15:02:07 dgoron Exp $
+// $Id: caddie.class.php,v 1.48 2015-06-19 09:23:03 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -38,6 +38,9 @@ var $nb_item_base_pointe = 0	;	// nombre d'enregistrements pointés issus/connus 
 var $nb_item_blob = 0 		;	// nombre d'enregistrements inconnus dans la base PMB dans le panier
 var $nb_item_blob_pointe = 0 	;	// nombre d'enregistrements pointés inconnus dans la base PMB dans le panier
 var $autorisations = ""		;	// autorisations accordées sur ce panier
+var $classementGen = ""		;	// classement
+var $liaisons = array("etageres" => array(),"bannettes" => array(),"rss_flux" => array(),"connectors" => array()); // Liaisons associées à un panier
+var $acces_rapide = 0;		//accès rapide au panier en résultat de recherche notcies
 
 // ---------------------------------------------------------------
 //		caddie($id) : constructeur
@@ -66,17 +69,51 @@ function getData() {
 		$this->comment	= '';
 		$this->nb_item	= 0;
 		$this->autorisations	= "";
+		$this->classementGen	= "";
+		$this->acces_rapide	= 0;
 	} else {
 		$requete = "SELECT * FROM caddie WHERE idcaddie='$this->idcaddie' ";
-		$result = @mysql_query($requete, $dbh);
-		if(mysql_num_rows($result)) {
-			$temp = mysql_fetch_object($result);
-			mysql_free_result($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($result)) {
+			$temp = pmb_mysql_fetch_object($result);
+			pmb_mysql_free_result($result);
 			$this->idcaddie = $temp->idcaddie;
 			$this->type = $temp->type;
 			$this->name = $temp->name;
 			$this->comment = $temp->comment;
 			$this->autorisations = $temp->autorisations;
+			$this->classementGen = $temp->caddie_classement;
+			$this->acces_rapide = $temp->acces_rapide;
+			
+			//liaisons
+			$req="SELECT idetagere, name FROM etagere_caddie JOIN etagere ON etagere_id=idetagere WHERE caddie_id='".$this->idcaddie."' GROUP BY idetagere";
+			$res=pmb_mysql_query($req,$dbh);
+			if($res && pmb_mysql_num_rows($res)){
+				while ($ligne=pmb_mysql_fetch_object($res)){
+					$this->liaisons["etageres"][]=array("id"=>$ligne->idetagere,"lib"=>$ligne->name);
+				}
+			}
+			$req="SELECT id_bannette, nom_bannette FROM bannettes WHERE num_panier='".$this->idcaddie."' GROUP BY id_bannette";
+			$res=pmb_mysql_query($req,$dbh);
+			if($res && pmb_mysql_num_rows($res)){
+				while ($ligne=pmb_mysql_fetch_object($res)){
+					$this->liaisons["bannettes"][]=array("id"=>$ligne->id_bannette,"lib"=>$ligne->nom_bannette);
+				}
+			}
+			$req="SELECT id_rss_flux, nom_rss_flux FROM rss_flux_content JOIN rss_flux ON num_rss_flux=id_rss_flux WHERE num_contenant='".$this->idcaddie."' AND type_contenant='CAD' GROUP BY id_rss_flux";
+			$res=pmb_mysql_query($req,$dbh);
+			if($res && pmb_mysql_num_rows($res)){
+				while ($ligne=pmb_mysql_fetch_object($res)){
+					$this->liaisons["rss_flux"][]=array("id"=>$ligne->id_rss_flux,"lib"=>$ligne->nom_rss_flux);
+				}
+			}
+			$req="SELECT connector_out_set_id, connector_out_set_caption FROM connectors_out_sets WHERE connector_out_set_config REGEXP '\{s:16:\"included_caddies\";a:[0-9]+:\{i:0;[i:0-9;]*i:".$this->idcaddie.";[i:0-9;]*\}'";
+			$res=pmb_mysql_query($req,$dbh);
+			if($res && pmb_mysql_num_rows($res)){
+				while ($ligne=pmb_mysql_fetch_object($res)){
+					$this->liaisons["connectors"][]=array("id"=>$ligne->connector_out_set_id,"lib"=>$ligne->connector_out_set_caption);
+				}
+			}
 		} else {
 			// pas de caddie avec cet id
 			$this->idcaddie = 0;
@@ -84,22 +121,26 @@ function getData() {
 			$this->name = '';
 			$this->comment = '';
 			$this->autorisations = "";
+			$this->classementGen = "";
 		}
 		$this->compte_items();
 	}
 }
 
 // liste des paniers disponibles
-static function get_cart_list($restriction_panier="") {
+static function get_cart_list($restriction_panier="",$acces_rapide = 0) {
 	global $dbh, $PMBuserid;
 	$cart_list=array();
 	if ($restriction_panier=="") $requete = "SELECT * FROM caddie where 1 ";
 	else $requete = "SELECT * FROM caddie where type='$restriction_panier' ";
 	if ($PMBuserid!=1) $requete.=" and (autorisations='$PMBuserid' or autorisations like '$PMBuserid %' or autorisations like '% $PMBuserid %' or autorisations like '% $PMBuserid') ";
+	if ($acces_rapide) {
+		$requete .= " and acces_rapide=1";
+	}
 	$requete.=" order by type, name, comment ";
-	$result = @mysql_query($requete, $dbh) or die (mysql_error()."<br />".$requete);
-	if(mysql_num_rows($result)) {
-		while ($temp = mysql_fetch_object($result)) {
+	$result = @pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()."<br />".$requete);
+	if(pmb_mysql_num_rows($result)) {
+		while ($temp = pmb_mysql_fetch_object($result)) {
 			$nb_item = 0 ;
 			$nb_item_pointe = 0 ;
 			$nb_item_base = 0 ;
@@ -107,13 +148,13 @@ static function get_cart_list($restriction_panier="") {
 			$nb_item_blob = 0 ;
 			$nb_item_blob_pointe = 0 ;
 			$rqt_nb_item="select count(1) from caddie_content where caddie_id='".$temp->idcaddie."' ";
-			$nb_item = mysql_result(mysql_query($rqt_nb_item, $dbh), 0, 0);
+			$nb_item = pmb_mysql_result(pmb_mysql_query($rqt_nb_item, $dbh), 0, 0);
 			$rqt_nb_item_pointe = "select count(1) from caddie_content where caddie_id='".$temp->idcaddie."' and (flag is not null and flag!='') ";
-			$nb_item_pointe = mysql_result(mysql_query($rqt_nb_item_pointe, $dbh), 0, 0);
+			$nb_item_pointe = pmb_mysql_result(pmb_mysql_query($rqt_nb_item_pointe, $dbh), 0, 0);
 			$rqt_nb_item_base="select count(1) from caddie_content where caddie_id='".$temp->idcaddie."' and (content is null or content='') ";
-			$nb_item_base = mysql_result(mysql_query($rqt_nb_item_base, $dbh), 0, 0);
+			$nb_item_base = pmb_mysql_result(pmb_mysql_query($rqt_nb_item_base, $dbh), 0, 0);
 			$rqt_nb_item_base_pointe="select count(1) from caddie_content where caddie_id='".$temp->idcaddie."' and (content is null or content='') and (flag is not null and flag!='') ";
-			$nb_item_base_pointe = mysql_result(mysql_query($rqt_nb_item_base_pointe, $dbh), 0, 0);
+			$nb_item_base_pointe = pmb_mysql_result(pmb_mysql_query($rqt_nb_item_base_pointe, $dbh), 0, 0);
 			$nb_item_blob = $nb_item - $nb_item_base ;
 			$nb_item_blob_pointe = $nb_item_pointe - $nb_item_base_pointe ;
 
@@ -123,6 +164,7 @@ static function get_cart_list($restriction_panier="") {
 				'type' => $temp->type,
 				'comment' => $temp->comment,
 				'autorisations' => $temp->autorisations,
+				'caddie_classement' => $temp->caddie_classement,
 				'nb_item' => $nb_item,
 				'nb_item_pointe' => $nb_item_pointe,
 				'nb_item_base' => $nb_item_base,
@@ -139,9 +181,9 @@ static function get_cart_list($restriction_panier="") {
 // création d'un panier vide
 function create_cart() {
 	global $dbh;
-	$requete = "insert into caddie set name='".$this->name."', type='".$this->type."', comment='".$this->comment."', autorisations='".$this->autorisations."' ";
-	$result = @mysql_query($requete, $dbh);
-	$this->idcaddie = mysql_insert_id($dbh);
+	$requete = "insert into caddie set name='".$this->name."', type='".$this->type."', comment='".$this->comment."', autorisations='".$this->autorisations."', caddie_classement='".$this->classementGen."', acces_rapide='".$this->acces_rapide."' ";
+	$result = @pmb_mysql_query($requete, $dbh);
+	$this->idcaddie = pmb_mysql_insert_id($dbh);
 	$this->compte_items();
 	}
 
@@ -159,11 +201,11 @@ function add_item($item=0, $object_type="NOTI", $bul_or_dep="") {
 	if ($object_type==$this->type) {
 		// rêgle : les caddies sont homogènes, on y stocke des objets de même type en fonction du type du caddie
 		$requete_compte = "select count(1) from caddie_content where caddie_id='".$this->idcaddie."' AND object_id='".$item."' ";
-		$result_compte = @mysql_query($requete_compte, $dbh);
-		$deja_item=mysql_result($result_compte, 0, 0);
+		$result_compte = @pmb_mysql_query($requete_compte, $dbh);
+		$deja_item=pmb_mysql_result($result_compte, 0, 0);
 		if (!$deja_item) {
 			$requete= "insert into caddie_content set caddie_id='".$this->idcaddie."', object_id='".$item."', content='' ";
-			$result = @mysql_query($requete, $dbh);
+			$result = @pmb_mysql_query($requete, $dbh);
 		}
 	} else {
 		// Traitement des cas particuliers
@@ -173,8 +215,8 @@ function add_item($item=0, $object_type="NOTI", $bul_or_dep="") {
 		//				voir le pb de notice de dépouillement
 		if ($this->type=="EXPL" && $object_type=="NOTI") { 
 			$rqt_mono_serial_bull_analysis = "select niveau_biblio, niveau_hierar from notices where notice_id = '$item' ";
-			$res_mono_serial_bull_analysis = mysql_query($rqt_mono_serial_bull_analysis, $dbh);
-			$row_mono_serial_bull_analysis = mysql_fetch_object($res_mono_serial_bull_analysis);
+			$res_mono_serial_bull_analysis = pmb_mysql_query($rqt_mono_serial_bull_analysis, $dbh);
+			$row_mono_serial_bull_analysis = pmb_mysql_fetch_object($res_mono_serial_bull_analysis);
 			// monographie
 			if ($row_mono_serial_bull_analysis->niveau_biblio=="m" && $row_mono_serial_bull_analysis->niveau_hierar=="0")
 				$rqt_expl = "select expl_id from exemplaires where expl_notice='$item' ";
@@ -200,8 +242,8 @@ function add_item($item=0, $object_type="NOTI", $bul_or_dep="") {
 		//				voir le pb d'expl de bulletin
 		if ($this->type=="NOTI" && $object_type=="EXPL") {
 			$rqt_mono_bull = "select expl_notice, expl_bulletin from exemplaires where expl_id='$item' ";
-			$res_mono_bull = mysql_query($rqt_mono_bull, $dbh);
-			$row_mono_bull = mysql_fetch_object($res_mono_bull);
+			$res_mono_bull = pmb_mysql_query($rqt_mono_bull, $dbh);
+			$row_mono_bull = pmb_mysql_fetch_object($res_mono_bull);
 			// expl de monographie
 			if ($row_mono_bull->expl_notice && !$row_mono_bull->expl_bulletin)
 				$rqt_expl = "select expl_notice from exemplaires where expl_id='$item' ";
@@ -222,8 +264,8 @@ function add_item($item=0, $object_type="NOTI", $bul_or_dep="") {
 		//			on stocke le bulletin de l'exemplaire 
 		if ($this->type=="BULL" && $object_type=="EXPL") {
 			$rqt_mono_bull = "select expl_notice, expl_bulletin from exemplaires where expl_id='$item' ";
-			$res_mono_bull = mysql_query($rqt_mono_bull, $dbh);
-			$row_mono_bull = mysql_fetch_object($res_mono_bull);
+			$res_mono_bull = pmb_mysql_query($rqt_mono_bull, $dbh);
+			$row_mono_bull = pmb_mysql_fetch_object($res_mono_bull);
 			// expl de monographie
 			if ($row_mono_bull->expl_notice && !$row_mono_bull->expl_bulletin)
 				return CADDIE_ITEM_IMPOSSIBLE_BULLETIN;
@@ -236,8 +278,8 @@ function add_item($item=0, $object_type="NOTI", $bul_or_dep="") {
 		//			ou bien le bulletin contenant la notice de dépouillement reçue
 		if ($this->type=="BULL" && $object_type=="NOTI") {
 			$rqt_mono_serial_bull_analysis = "select niveau_biblio, niveau_hierar from notices where notice_id = '$item' ";
-			$res_mono_serial_bull_analysis = mysql_query($rqt_mono_serial_bull_analysis, $dbh);
-			$row_mono_serial_bull_analysis = mysql_fetch_object($res_mono_serial_bull_analysis);
+			$res_mono_serial_bull_analysis = pmb_mysql_query($rqt_mono_serial_bull_analysis, $dbh);
+			$row_mono_serial_bull_analysis = pmb_mysql_fetch_object($res_mono_serial_bull_analysis);
 			// monographie
 			if ($row_mono_serial_bull_analysis->niveau_biblio=="m" && $row_mono_serial_bull_analysis->niveau_hierar=="0")
 				return CADDIE_ITEM_IMPOSSIBLE_BULLETIN;
@@ -256,15 +298,15 @@ function add_item($item=0, $object_type="NOTI", $bul_or_dep="") {
 		} // fin if NOTI / BULL
 		
 		if ($rqt_expl) {
-			$res_expl = mysql_query($rqt_expl, $dbh);
-			for($i=0;$i<mysql_num_rows($res_expl);$i++) {
-				$row=mysql_fetch_row($res_expl);
+			$res_expl = pmb_mysql_query($rqt_expl, $dbh);
+			for($i=0;$i<pmb_mysql_num_rows($res_expl);$i++) {
+				$row=pmb_mysql_fetch_row($res_expl);
 				$requete_compte = "select count(1) from caddie_content where caddie_id='".$this->idcaddie."' AND object_id='".$row[0]."' ";
-				$result_compte = @mysql_query($requete_compte, $dbh);
-				$deja_item=mysql_result($result_compte, 0, 0);
+				$result_compte = @pmb_mysql_query($requete_compte, $dbh);
+				$deja_item=pmb_mysql_result($result_compte, 0, 0);
 				if (!$deja_item) {
 					$requete= "insert into caddie_content set caddie_id='".$this->idcaddie."', object_id='".$row[0]."', content='' ";
-					$result = @mysql_query($requete, $dbh);
+					$result = @pmb_mysql_query($requete, $dbh);
 				}
 			} // fin for
 		}
@@ -279,12 +321,12 @@ function add_item_blob($blobobject=0, $blob_type="EXPL_CB") {
 	if (!$blobobject) return CADDIE_ITEM_NULL ;
 	
 	$requete_compte = "select count(1) from caddie_content where caddie_id='".$this->idcaddie."' and content='".$blobobject."' and blob_type='".$blob_type."' ";
-	$result_compte = @mysql_query($requete_compte, $dbh);
-	$deja_item=mysql_result($result_compte, 0, 0);
+	$result_compte = @pmb_mysql_query($requete_compte, $dbh);
+	$deja_item=pmb_mysql_result($result_compte, 0, 0);
 	
 	if (!$deja_item) {
 		$requete= "insert into caddie_content set caddie_id='".$this->idcaddie."', object_id=0, content='".$blobobject."', blob_type='".$blob_type."' ";
-		$result = mysql_query($requete, $dbh);
+		$result = pmb_mysql_query($requete, $dbh);
 	}	
 }			
 	
@@ -292,7 +334,7 @@ function add_item_blob($blobobject=0, $blob_type="EXPL_CB") {
 function del_item($item=0) {
 	global $dbh;
 	$requete = "delete FROM caddie_content where caddie_id='".$this->idcaddie."' and object_id='".$item."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 	}
 
@@ -300,7 +342,7 @@ function del_item($item=0) {
 function del_item_blob($expl_cb="") {
 	global $dbh;
 	$requete = "delete FROM caddie_content where caddie_id='".$this->idcaddie."' and blob_type='EXPL_CB' and content='".$expl_cb."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 	}
 
@@ -337,8 +379,8 @@ function del_item_base($item=0,$forcage=array()) {
 					notice::save_to_agnostic_warehouse(array(0=>$item),$forcage['source_id']);
 				}
 				$requete="SELECT niveau_biblio, niveau_hierar FROM notices WHERE notice_id='".$item."'";
-				$res=mysql_query($requete, $dbh);
-				if(mysql_num_rows($res) && (mysql_result($res,0,0) == "s") && (mysql_result($res,0,1) == "1")){
+				$res=pmb_mysql_query($requete, $dbh);
+				if(pmb_mysql_num_rows($res) && (pmb_mysql_result($res,0,0) == "s") && (pmb_mysql_result($res,0,1) == "1")){
 					$myBulletinage = new serial($item);
 					$myBulletinage->serial_delete();
 				}else{
@@ -356,11 +398,11 @@ function del_item_base($item=0,$forcage=array()) {
 function del_item_all_caddies($item, $type) {
 	global $dbh;
 	$requete = "select idcaddie FROM caddie where type='".$type."' ";
-	$result = mysql_query($requete, $dbh);
-	for($i=0;$i<mysql_num_rows($result);$i++) {
-		$temp=mysql_fetch_object($result);
+	$result = pmb_mysql_query($requete, $dbh);
+	for($i=0;$i<pmb_mysql_num_rows($result);$i++) {
+		$temp=pmb_mysql_fetch_object($result);
 		$requete_suppr = "delete from caddie_content where caddie_id='".$temp->idcaddie."' and object_id='".$item."' ";
-		$result_suppr = mysql_query($requete_suppr, $dbh);
+		$result_suppr = pmb_mysql_query($requete_suppr, $dbh);
 	}
 }
 
@@ -368,7 +410,7 @@ function del_item_flag($inconnu_aussi=1) {
 	global $dbh;
 	$requete = "delete FROM caddie_content where caddie_id='".$this->idcaddie."' and (flag is not null and flag!='') ";
 	if (!$inconnu_aussi) $requete .= " and (content is null or content='') ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 }
 
@@ -376,7 +418,7 @@ function del_item_no_flag($inconnu_aussi=1) {
 	global $dbh;
 	$requete = "delete FROM caddie_content where caddie_id='".$this->idcaddie."' and (flag is null or flag='') ";
 	if (!$inconnu_aussi) $requete .= " and (content is null or content='') "; 
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 }
 
@@ -397,9 +439,9 @@ function export_doc_num($item=0,$chemin) {
 	} else return; // pas encore de document numérique attaché à un exemplaire
 	$requete .= " and explnum_data is not null and explnum_data!='' ";
 	
-	$result = mysql_query($requete, $dbh) or die(mysql_error()."<br />$requete");
-	for($i=0;$i<mysql_num_rows($result);$i++) {
-		$t=mysql_fetch_object($result);
+	$result = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error()."<br />$requete");
+	for($i=0;$i<pmb_mysql_num_rows($result);$i++) {
+		$t=pmb_mysql_fetch_object($result);
 		$t->explnum_id = str_pad ($t->explnum_id, 6, "0", STR_PAD_LEFT) ;
 		$t->numnotice = str_pad ($t->numnotice, 6, "0", STR_PAD_LEFT) ;
 		$t->explnum_bulletin = str_pad ($t->explnum_bulletin, 6, "0", STR_PAD_LEFT) ;
@@ -426,7 +468,7 @@ function export_doc_num($item=0,$chemin) {
 function depointe_items() {
 	global $dbh;
 	$requete = "update caddie_content set flag=null where caddie_id='".$this->idcaddie."' ";
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	$this->compte_items();
 }	
 
@@ -435,7 +477,7 @@ function depointe_item($item=0) {
 	
 	if ($item) {
 		$requete = "update caddie_content set flag=null where caddie_id='".$this->idcaddie."' and object_id='".$item."' ";
-		$result = @mysql_query($requete, $dbh);
+		$result = @pmb_mysql_query($requete, $dbh);
 		if ($result) {
 			$this->compte_items();
 			return 1;
@@ -450,12 +492,12 @@ function pointe_item($item=0, $object_type="NOTI", $blob="", $blob_type="EXPL_CB
 	
 	if (!$item) {
 		$requete_compte = "select count(1) from caddie_content where caddie_id='".$this->idcaddie."' and content='".$blob."' and blob_type='".$blob_type."' ";
-		$result_compte = @mysql_query($requete_compte, $dbh);
-		$deja_item=mysql_result($result_compte, 0, 0);
+		$result_compte = @pmb_mysql_query($requete_compte, $dbh);
+		$deja_item=pmb_mysql_result($result_compte, 0, 0);
 		
 		if ($deja_item) {
 			$requete = "update caddie_content set flag='1' where caddie_id='".$this->idcaddie."' and content='".$blob."' ";
-			$result = @mysql_query($requete, $dbh);
+			$result = @pmb_mysql_query($requete, $dbh);
 			$this->compte_items();
 		} else return CADDIE_ITEM_INEXISTANT;
 		
@@ -466,12 +508,12 @@ function pointe_item($item=0, $object_type="NOTI", $blob="", $blob_type="EXPL_CB
 	if ($object_type==$this->type) {
 		// rêgle : les caddies sont homogènes, on y stocke des objets de même type en fonction du type du caddie
 		$requete_compte = "select count(1) from caddie_content where caddie_id='".$this->idcaddie."' and object_id='".$item."' ";
-		$result_compte = @mysql_query($requete_compte, $dbh);
-		$deja_item=mysql_result($result_compte, 0, 0);
+		$result_compte = @pmb_mysql_query($requete_compte, $dbh);
+		$deja_item=pmb_mysql_result($result_compte, 0, 0);
 		
 		if ($deja_item) {
 			$requete = "update caddie_content set flag='1' where caddie_id='".$this->idcaddie."' and object_id='".$item."' ";
-			$result = @mysql_query($requete, $dbh);
+			$result = @pmb_mysql_query($requete, $dbh);
 			$this->compte_items();
 		} else return CADDIE_ITEM_INEXISTANT;
 	} else {
@@ -482,8 +524,8 @@ function pointe_item($item=0, $object_type="NOTI", $blob="", $blob_type="EXPL_CB
 		//				voir le pb de notice de dépouillement
 		if ($this->type=="EXPL" && $object_type=="NOTI") {
 			$rqt_mono_serial_bull_analysis = "select niveau_biblio, niveau_hierar from notices where notice_id = '$item' ";
-			$res_mono_serial_bull_analysis = mysql_query($rqt_mono_serial_bull_analysis, $dbh);
-			$row_mono_serial_bull_analysis = mysql_fetch_object($res_mono_serial_bull_analysis);
+			$res_mono_serial_bull_analysis = pmb_mysql_query($rqt_mono_serial_bull_analysis, $dbh);
+			$row_mono_serial_bull_analysis = pmb_mysql_fetch_object($res_mono_serial_bull_analysis);
 			// monographie
 			if ($row_mono_serial_bull_analysis->niveau_biblio=="m" && $row_mono_serial_bull_analysis->niveau_hierar=="0")
 				$rqt_expl = "select expl_id from exemplaires where expl_notice='$item' ";
@@ -509,8 +551,8 @@ function pointe_item($item=0, $object_type="NOTI", $blob="", $blob_type="EXPL_CB
 		//				voir le pb d'expl de bulletin
 		if ($this->type=="NOTI" && $object_type=="EXPL") {
 			$rqt_mono_bull = "select expl_notice, expl_bulletin from exemplaires where expl_id='$item' ";
-			$res_mono_bull = mysql_query($rqt_mono_bull, $dbh);
-			$row_mono_bull = mysql_fetch_object($res_mono_bull);
+			$res_mono_bull = pmb_mysql_query($rqt_mono_bull, $dbh);
+			$row_mono_bull = pmb_mysql_fetch_object($res_mono_bull);
 			// expl de monographie
 			if ($row_mono_bull->expl_notice && !$row_mono_bull->expl_bulletin)
 				$rqt_expl = "select expl_notice from exemplaires where expl_id='$item' ";
@@ -529,8 +571,8 @@ function pointe_item($item=0, $object_type="NOTI", $blob="", $blob_type="EXPL_CB
 		//			on stocke le bulletin de l'exemplaire 
 		if ($this->type=="BULL" && $object_type=="EXPL") {
 			$rqt_mono_bull = "select expl_notice, expl_bulletin from exemplaires where expl_id='$item' ";
-			$res_mono_bull = mysql_query($rqt_mono_bull, $dbh);
-			$row_mono_bull = mysql_fetch_object($res_mono_bull);
+			$res_mono_bull = pmb_mysql_query($rqt_mono_bull, $dbh);
+			$row_mono_bull = pmb_mysql_fetch_object($res_mono_bull);
 			// expl de monographie
 			if ($row_mono_bull->expl_notice && !$row_mono_bull->expl_bulletin)
 				return CADDIE_ITEM_IMPOSSIBLE_BULLETIN;
@@ -543,8 +585,8 @@ function pointe_item($item=0, $object_type="NOTI", $blob="", $blob_type="EXPL_CB
 		//			ou bien le bulletin contenant la notice de dépouillement reçue
 		if ($this->type=="BULL" && $object_type=="NOTI") {
 			$rqt_mono_serial_bull_analysis = "select niveau_biblio, niveau_hierar from notices where notice_id = '$item' ";
-			$res_mono_serial_bull_analysis = mysql_query($rqt_mono_serial_bull_analysis, $dbh);
-			$row_mono_serial_bull_analysis = mysql_fetch_object($res_mono_serial_bull_analysis);
+			$res_mono_serial_bull_analysis = pmb_mysql_query($rqt_mono_serial_bull_analysis, $dbh);
+			$row_mono_serial_bull_analysis = pmb_mysql_fetch_object($res_mono_serial_bull_analysis);
 			// monographie
 			if ($row_mono_serial_bull_analysis->niveau_biblio=="m" && $row_mono_serial_bull_analysis->niveau_hierar=="0")
 				return CADDIE_ITEM_IMPOSSIBLE_BULLETIN;
@@ -560,15 +602,15 @@ function pointe_item($item=0, $object_type="NOTI", $blob="", $blob_type="EXPL_CB
 		}
 		
 		if ($rqt_expl) {
-			$res_expl = mysql_query($rqt_expl, $dbh);
-			for($i=0;$i<mysql_num_rows($res_expl);$i++) {
-				$row=mysql_fetch_row($res_expl);
+			$res_expl = pmb_mysql_query($rqt_expl, $dbh);
+			for($i=0;$i<pmb_mysql_num_rows($res_expl);$i++) {
+				$row=pmb_mysql_fetch_row($res_expl);
 				$requete_compte = "select count(1) from caddie_content where caddie_id='".$this->idcaddie."' and object_id='".$row[0]."' ";
-				$result_compte = @mysql_query($requete_compte, $dbh);
-				$deja_item=mysql_result($result_compte, 0, 0);
+				$result_compte = @pmb_mysql_query($requete_compte, $dbh);
+				$deja_item=pmb_mysql_result($result_compte, 0, 0);
 				if ($deja_item) {
 					$requete = "update caddie_content set flag='1' where caddie_id='".$this->idcaddie."' and object_id='".$row[0]."' ";
-					$result = @mysql_query($requete, $dbh);
+					$result = @pmb_mysql_query($requete, $dbh);
 				}
 			} // fin for
 			$this->compte_items();
@@ -580,19 +622,46 @@ function pointe_item($item=0, $object_type="NOTI", $blob="", $blob_type="EXPL_CB
 // suppression d'un panier
 function delete() {
 	global $dbh;
-	$requete = "delete FROM caddie_content where caddie_id='".$this->idcaddie."' ";
-	$result = @mysql_query($requete, $dbh);
-	$requete = "delete FROM caddie where idcaddie='".$this->idcaddie."' ";
-	$result = @mysql_query($requete, $dbh);
 	
-	}
+    //On supprime le panier des étagères
+    $requete = "DELETE FROM etagere_caddie where caddie_id='".$this->idcaddie."' ";
+    $result = @pmb_mysql_query($requete, $dbh);
+    //On supprime le panier des bannettes
+    $requete = "UPDATE bannettes SET num_panier=0 where num_panier='".$this->idcaddie."' ";
+    $result = @pmb_mysql_query($requete, $dbh);
+    //On supprime le panier des flux RSS
+    $requete = "DELETE FROM rss_flux_content where num_contenant='".$this->idcaddie."' AND type_contenant='CAD' ";
+    $result = @pmb_mysql_query($requete, $dbh);
+    //On supprime dans les sets pour les connecteurs sortants
+    $requete = "SELECT * FROM connectors_out_sets WHERE connector_out_set_config REGEXP '\{s:16:\"included_caddies\";a:[0-9]+:\{i:0;[i:0-9;]*i:".$this->idcaddie.";[i:0-9;]*\}'";
+    $result = pmb_mysql_query($requete, $dbh);
+    if ($result && mysql_num_rows($result)) {
+    	while ($row = pmb_mysql_fetch_object($result)) {
+			$array_connector_out_set_config = unserialize($row->connector_out_set_config);
+			foreach ($array_connector_out_set_config["included_caddies"] as $k => $v) {
+				if ($v==$this->idcaddie) {
+					array_splice($array_connector_out_set_config["included_caddies"],$k,1);
+					break;
+				}
+			}
+    		@pmb_mysql_query("UPDATE connectors_out_sets SET connector_out_set_config = '".addslashes(serialize($array_connector_out_set_config))."' WHERE connector_out_set_id = ".$row->connector_out_set_id);
+    	}
+    }
+    
+    //suppression panier
+	$requete = "delete FROM caddie_content where caddie_id='".$this->idcaddie."' ";
+	$result = @pmb_mysql_query($requete, $dbh);
+	$requete = "delete FROM caddie where idcaddie='".$this->idcaddie."' ";
+	$result = @pmb_mysql_query($requete, $dbh);
+	
+}
 
 // sauvegarde du panier
 function save_cart() {
 	global $dbh;
-	$requete = "update caddie set name='".$this->name."', comment='".$this->comment."', autorisations='".$this->autorisations."' where idcaddie='".$this->idcaddie."'";
-	$result = @mysql_query($requete, $dbh);
-	}
+	$requete = "update caddie set name='".$this->name."', comment='".$this->comment."', autorisations='".$this->autorisations."', caddie_classement='".$this->classementGen."', acces_rapide='".$this->acces_rapide."' where idcaddie='".$this->idcaddie."'";
+	$result = @pmb_mysql_query($requete, $dbh);
+}
 
 
 // get_cart() : ouvre un panier et récupère le contenu
@@ -614,9 +683,9 @@ function get_cart($flag="", $inconnu_aussi=1) {
 			if (!$inconnu_aussi) $requete .= " and (content is null or content='') ";
 			break ;
 		}
-	$result = @mysql_query($requete, $dbh);
-	if(mysql_num_rows($result)) {
-		while ($temp = mysql_fetch_object($result)) {
+	$result = @pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		while ($temp = pmb_mysql_fetch_object($result)) {
 			$cart_list[] = $temp->object_id;
 			}
 		} 
@@ -633,13 +702,13 @@ function compte_items() {
 	$this->nb_item_blob = 0 ;
 	$this->nb_item_blob_pointe = 0 ;
 	$rqt_nb_item="select count(1) from caddie_content where caddie_id='".$this->idcaddie."' ";
-	$this->nb_item = mysql_result(mysql_query($rqt_nb_item, $dbh), 0, 0);
+	$this->nb_item = pmb_mysql_result(pmb_mysql_query($rqt_nb_item, $dbh), 0, 0);
 	$rqt_nb_item_pointe = "select count(1) from caddie_content where caddie_id='".$this->idcaddie."' and (flag is not null and flag!='') ";
-	$this->nb_item_pointe = mysql_result(mysql_query($rqt_nb_item_pointe, $dbh), 0, 0);
+	$this->nb_item_pointe = pmb_mysql_result(pmb_mysql_query($rqt_nb_item_pointe, $dbh), 0, 0);
 	$rqt_nb_item_base="select count(1) from caddie_content where caddie_id='".$this->idcaddie."' and (content is null or content='')";
-	$this->nb_item_base = mysql_result(mysql_query($rqt_nb_item_base, $dbh), 0, 0);
+	$this->nb_item_base = pmb_mysql_result(pmb_mysql_query($rqt_nb_item_base, $dbh), 0, 0);
 	$rqt_nb_item_base_pointe="select count(1) from caddie_content where caddie_id='".$this->idcaddie."' and (content is null or content='') and (flag is not null and flag!='') ";
-	$this->nb_item_base_pointe = mysql_result(mysql_query($rqt_nb_item_base_pointe, $dbh), 0, 0);
+	$this->nb_item_base_pointe = pmb_mysql_result(pmb_mysql_query($rqt_nb_item_base_pointe, $dbh), 0, 0);
 	$this->nb_item_blob = $this->nb_item - $this->nb_item_base ;
 	$this->nb_item_blob_pointe = $this->nb_item_pointe - $this->nb_item_base_pointe ;
 }
@@ -649,8 +718,8 @@ function verif_expl_item($expl) {
 	global $dbh;
 	if ($expl) {
 		$query = "select count(1) from pret where pret_idexpl=".$expl." limit 1 ";
-		$result = mysql_query($query, $dbh);
-		if(mysql_result($result, 0, 0)) return 1 ;
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_result($result, 0, 0)) return 1 ;
 		
 		return 0 ;
 		
@@ -666,28 +735,28 @@ function verif_bull_item($bull,$forcage=array()) {
 	//		exemplaire
 	//		exemplaires numériques
 	/*$query = "select count(1) from exemplaires, pret where expl_bulletin=".$bull." and pret_idexpl=expl_id limit 1 ";
-	$result = mysql_query($query, $dbh);
-	if (mysql_result($result, 0, 0)) return 1 ;
+	$result = pmb_mysql_query($query, $dbh);
+	if (pmb_mysql_result($result, 0, 0)) return 1 ;
 		else return 0 ;*/
 	if($bull){
 		$query = "select count(1) from analysis where analysis_bulletin=".$bull." limit 1 ";
-		$result = mysql_query($query, $dbh);
-		if(mysql_result($result, 0, 0)){
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_result($result, 0, 0)){
 			return 1 ;
 		}
 		$query = "select count(1) from exemplaires where expl_bulletin=".$bull." limit 1 ";
-		$result = mysql_query($query, $dbh);
-		if(mysql_result($result, 0, 0)){
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_result($result, 0, 0)){
 			return 1 ;
 		}
 		$query = "select count(1) from bulletins where bulletin_id=".$bull." AND num_notice!='0' limit 1 ";
-		$result = mysql_query($query, $dbh);
-		if(mysql_result($result, 0, 0)){
+		$result = pmb_mysql_query($query, $dbh);
+		if(pmb_mysql_result($result, 0, 0)){
 			return 1 ;
 		}
 		$query = "select count(1) from explnum where explnum_bulletin=".$bull." limit 1 ";
-		$result = mysql_query($query, $dbh);
-		if (mysql_result($result, 0, 0)&& !$forcage['bulletin_linked_expl_num']){
+		$result = pmb_mysql_query($query, $dbh);
+		if (pmb_mysql_result($result, 0, 0)&& !$forcage['bulletin_linked_expl_num']){
 			return 1 ;
 		}
 	}
@@ -700,50 +769,77 @@ function verif_bull_item($bull,$forcage=array()) {
 		if ($noti) {
 			if ($this->type=="BULL") {
 				$query = "select count(1) from analysis where analysis_notice=".$noti." limit 1 ";
-				$result = mysql_query($query, $dbh);
-				if (mysql_result($result, 0, 0)) return 1 ;
+				$result = pmb_mysql_query($query, $dbh);
+				if (pmb_mysql_result($result, 0, 0)) return 1 ;
 			}
 			
 			$query = "select count(1) from bulletins where bulletin_notice=".$noti." limit 1 ";
-			$result = mysql_query($query, $dbh);
-			if (mysql_result($result, 0, 0)) return 1 ;
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_result($result, 0, 0)) return 1 ;
 			
 			$query = "select count(1) from notices_relations where num_notice=$noti or linked_notice=$noti limit 1 ";
-			$result = mysql_query($query, $dbh);
-			if (mysql_result($result, 0, 0)&& !$forcage['notice_linked']) return 1 ;
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_result($result, 0, 0)&& !$forcage['notice_linked']) return 1 ;
 			
 			$query = "select count(1) from exemplaires where expl_notice=".$noti." limit 1 ";
-			$result = mysql_query($query, $dbh);
-			if (mysql_result($result, 0, 0)) return 1 ;
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_result($result, 0, 0)) return 1 ;
 			
 			$query = "select count(1) from resa where resa_idnotice=".$noti." limit 1 ";
-			$result = mysql_query($query, $dbh);
-			if (mysql_result($result, 0, 0)) return 1 ;
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_result($result, 0, 0)) return 1 ;
 			
 			$query = "select count(1) from explnum where explnum_notice=".$noti." limit 1 ";
-			$result = mysql_query($query, $dbh);
-			if (mysql_result($result, 0, 0)&& !$forcage['notice_linked_expl_num']) return 1 ;
+			$result = pmb_mysql_query($query, $dbh);
+			if (pmb_mysql_result($result, 0, 0)&& !$forcage['notice_linked_expl_num']) return 1 ;
 			
 			//Pour les périodiques
 			$requete="SELECT niveau_biblio, niveau_hierar FROM notices WHERE notice_id='".$noti."'";
-			$res=mysql_query($requete, $dbh);
-			if(mysql_num_rows($res) && (mysql_result($res,0,0) == "s") && (mysql_result($res,0,1) == "1")){
+			$res=pmb_mysql_query($requete, $dbh);
+			if(pmb_mysql_num_rows($res) && (pmb_mysql_result($res,0,0) == "s") && (pmb_mysql_result($res,0,1) == "1")){
 				
 				$query = "select count(1) from collections_state where id_serial=".$noti." limit 1 ";
-				$result = mysql_query($query, $dbh);
-				if (mysql_result($result, 0, 0) && !$forcage['notice_perio_collstat']) return 1 ;
+				$result = pmb_mysql_query($query, $dbh);
+				if (pmb_mysql_result($result, 0, 0) && !$forcage['notice_perio_collstat']) return 1 ;
 				
 				$query = "select count(1) from abts_abts where num_notice=".$noti." limit 1 ";
-				$result = mysql_query($query, $dbh);
-				if (mysql_result($result, 0, 0) && !$forcage['notice_perio_abo']) return 1 ;
+				$result = pmb_mysql_query($query, $dbh);
+				if (pmb_mysql_result($result, 0, 0) && !$forcage['notice_perio_abo']) return 1 ;
 				
 				$query = "select count(1) from abts_modeles where num_notice=".$noti." limit 1 ";
-				$result = mysql_query($query, $dbh);
-				if (mysql_result($result, 0, 0) && !$forcage['notice_perio_modele']) return 1 ;
+				$result = pmb_mysql_query($query, $dbh);
+				if (pmb_mysql_result($result, 0, 0) && !$forcage['notice_perio_modele']) return 1 ;
 			}
 		}
 		return 0 ;
 	}
+	
+	static function show_actions($id_caddie = 0, $type_caddie = 'NOTI') {
+		global $msg,$cart_action_selector;
+		
+		$liste_actions = "<option value='' selected='selected'></option>";
+		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=supprpanier&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_suppr_panier"]."</option>";
+		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=transfert&action=transfert&object_type=NOTI&idcaddie=".$id_caddie."&item='>".$msg["caddie_menu_action_transfert"]."</option>";
+		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=edition&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_edition"]."</option>";
+		if ($type_caddie == "EXPL") {
+			$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=impr_cote&action=choix_quoi&object_type=EXPL&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_impr_cote"]."</option>";
+		}
+		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=export&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_export"]."</option>";
+		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=expdocnum&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_exp_docnum"]."</option>";
+		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=selection&action=&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_selection"]."</option>";
+		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=supprbase&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_suppr_base"]."</option>";
+		$liste_actions .= "<option value='./catalog.php?categ=caddie&sub=action&quelle=reindex&action=choix_quoi&object_type=NOTI&idcaddie=".$id_caddie."&item=0'>".$msg["caddie_menu_action_reindex"]."</option>";
+		
+		$to_show = $cart_action_selector;
+		$to_show = str_replace("!!object_id!!",$id_caddie,$to_show);
+		$to_show = str_replace("!!object_type!!",$type_caddie,$to_show);
+		$to_show = str_replace("!!actions_liste!!",$liste_actions,$to_show);
+		$to_show = str_replace("!!lib_action!!",$msg["caddie_menu_action"],$to_show);
+		$to_show = str_replace("!!msg_object_action!!",$msg["caddie_menu_action"],$to_show);
+		
+		return $to_show;
+	}
+	
 } // fin de déclaration de la classe cart
   
 } # fin de déclaration du fichier caddie.class

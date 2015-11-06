@@ -11,10 +11,10 @@ function search_other_function_filters() {
 		"<option value='e'>enfants</option>" .
 		"<option value='pl'>premières lectures</option>";*/
 	$requete="select section_libelle, sdoc_codage_import from docs_section where section_visible_opac=1 and sdoc_codage_import != '' group by sdoc_codage_import order by sdoc_codage_import";
-	$result = mysql_query($requete, $dbh);
+	$result = pmb_mysql_query($requete, $dbh);
 	$option_section_public_libelle="";
-	if (mysql_numrows($result)){
-		while ($sec = mysql_fetch_object($result)) {
+	if (pmb_mysql_num_rows($result)){
+		while ($sec = pmb_mysql_fetch_object($result)) {
 			$selected="";
 			if ($section_public==$sec->sdoc_codage_import) {$selected="selected";}
 			switch ($sec->sdoc_codage_import) {
@@ -56,10 +56,10 @@ function search_other_function_clause(&$clause) {
 	if ($section_public || $t_n) {
 		if ($section_public) {
 			$requete="select distinct idsection from docs_section where section_visible_opac=1 and sdoc_codage_import = '".$section_public."' order by sdoc_codage_import";
-			$result = mysql_query($requete, $dbh);
+			$result = pmb_mysql_query($requete, $dbh);
 			$public="";
-			if (mysql_numrows($result)){
-				while ($sect = mysql_fetch_object($result)) {
+			if (pmb_mysql_num_rows($result)){
+				while ($sect = pmb_mysql_fetch_object($result)) {
 					if ($public) $public .= ", "; 
 					$public .= $sect->idsection;
 				}

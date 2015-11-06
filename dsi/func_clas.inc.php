@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_clas.inc.php,v 1.6 2009-05-16 11:08:24 dbellamy Exp $
+// $Id: func_clas.inc.php,v 1.7 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -18,8 +18,8 @@ $nb_per_page = 10;
 
 if(!$nbr_lignes) {
 	$requete = "SELECT COUNT(1) FROM classements ";
-	$res = mysql_query($requete, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($requete, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	}
 
 if (!$page) $page=1;
@@ -29,10 +29,10 @@ if($nbr_lignes) {
 
 		// on lance la vraie requête
 		$requete = "SELECT id_classement, nom_classement, type_classement FROM classements ORDER BY type_classement, nom_classement, id_classement LIMIT $debut,$nb_per_page ";
-		$res = @mysql_query($requete, $dbh);
+		$res = @pmb_mysql_query($requete, $dbh);
 
 		$parity = 0;
-		while(($clas=mysql_fetch_object($res))) {
+		while(($clas=pmb_mysql_fetch_object($res))) {
 			if ($parity % 2) $pair_impair = "even";
 				else $pair_impair = "odd";
 			$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" onmousedown=\"document.location='./dsi.php?categ=options&sub=classements&id_classement=$clas->id_classement&suite=acces';\" ";
@@ -47,7 +47,7 @@ if($nbr_lignes) {
 				</tr>";
 			$parity += 1;
 			}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// affichage de la barre de navig
 		$url_base = "$PHP_SELF?categ=options&sub=classements" ;

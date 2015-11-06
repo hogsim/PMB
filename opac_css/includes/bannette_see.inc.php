@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bannette_see.inc.php,v 1.1.2.1 2014-05-26 08:53:05 arenou Exp $
+// $Id: bannette_see.inc.php,v 1.2 2014-05-26 08:53:45 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

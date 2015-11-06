@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: devis.inc.php,v 1.41 2014-01-31 09:55:50 mbertin Exp $
+// $Id: devis.inc.php,v 1.42 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -73,7 +73,7 @@ function show_list_dev($id_bibli) {
 	global $acquisition_pdfdev_by_mail;
 
 	$bib = new entites($id_bibli);
-	$bib_coord = mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
+	$bib_coord = pmb_mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
 	
 	//Creation selecteur etablissement
 	$sel_bibli ="<select class='saisie-50em' id='id_bibli' name='id_bibli' onchange=\"submit();\" >";
@@ -160,11 +160,11 @@ function show_list_dev($id_bibli) {
 	
 		//Affichage liste des devis
 		$dev_list="";
-		$nbr = mysql_num_rows($res);
+		$nbr = pmb_mysql_num_rows($res);
 		
 		$parity=1;
 		for($i=0;$i<$nbr;$i++) {
-			$row=mysql_fetch_object($res);
+			$row=pmb_mysql_fetch_object($res);
 			$fourn = new entites($row->num_fournisseur);
 	
 			$st = ( ($row->statut) & ~(STA_ACT_ARC) );
@@ -304,8 +304,8 @@ function show_dev($id_bibli, $id_dev) {
 			$coord = new coordonnees($def_id_adr_fac);
 		} else {
 			$coord_fac = entites::get_coordonnees($id_bibli, '1');
-			if (mysql_num_rows($coord_fac) != 0) {
-				$coord = mysql_fetch_object($coord_fac);
+			if (pmb_mysql_num_rows($coord_fac) != 0) {
+				$coord = pmb_mysql_fetch_object($coord_fac);
 				$id_adr_fac = $coord->id_contact;
 			} else {
 				$id_adr_fac='0';
@@ -326,8 +326,8 @@ function show_dev($id_bibli, $id_dev) {
 			$coord = new coordonnees($def_id_adr_liv);
 		} else {
 			$coord_liv = entites::get_coordonnees($id_bibli, '2');
-			if (mysql_num_rows($coord_liv) != 0) {
-				$coord = mysql_fetch_object($coord_liv);
+			if (pmb_mysql_num_rows($coord_liv) != 0) {
+				$coord = pmb_mysql_fetch_object($coord_liv);
 				$id_adr_liv = $coord->id_contact;
 			} else {
 				$id_adr_liv='0';
@@ -381,8 +381,8 @@ function show_dev($id_bibli, $id_dev) {
 		$fou = new entites($id_fou);
 		$lib_fou = htmlentities($fou->raison_sociale, ENT_QUOTES, $charset);
 		$coord = entites::get_coordonnees($fou->id_entite, '1');
-		if (mysql_num_rows($coord) != 0) {
-			$coord = mysql_fetch_object($coord);
+		if (pmb_mysql_num_rows($coord) != 0) {
+			$coord = pmb_mysql_fetch_object($coord);
 			$id_adr_fou = $coord->id_contact;
 			if($coord->libelle != '') $adr_fou = htmlentities($coord->libelle, ENT_QUOTES, $charset)."\n";
 			if($coord->contact !='') $adr_fou.=  htmlentities($coord->contact, ENT_QUOTES, $charset)."\n";
@@ -424,7 +424,7 @@ function show_dev($id_bibli, $id_dev) {
 		$comment_i = htmlentities($dev->commentaires_i, ENT_QUOTES, $charset);	
 		$tab_liens = liens_actes::getChilds($id_dev);
 		$liens_cde = '';
-		while (($row_liens = mysql_fetch_object($tab_liens))) {
+		while (($row_liens = pmb_mysql_fetch_object($tab_liens))) {
 			if( ($row_liens->type_acte) == TYP_ACT_CDE ) {
 				$liens_cde.= "<br /><a href=\"./acquisition.php?categ=ach&sub=cmde&action=modif&id_bibli=".$id_bibli."&id_cde=".$row_liens->num_acte_lie."\">".$row_liens->numero."</a>"; 
 			} 
@@ -491,7 +491,7 @@ function show_lig_dev($id_dev) {
 	}
 	
 	$lignes = actes::getLignes($id_dev);		
-	while (($row = mysql_fetch_object($lignes))) {
+	while (($row = pmb_mysql_fetch_object($lignes))) {
 		
 		$i++;	
 		$form.= $modif_dev_row_form;
@@ -605,8 +605,8 @@ function show_dev_from_sug($id_bibli, $sugchk) {
 		$coord = new coordonnees($def_id_adr_fac);
 	} else {
 		$coord_fac = entites::get_coordonnees($id_bibli, '1');
-		if (mysql_num_rows($coord_fac) != 0) {
-			$coord = mysql_fetch_object($coord_fac);
+		if (pmb_mysql_num_rows($coord_fac) != 0) {
+			$coord = pmb_mysql_fetch_object($coord_fac);
 			$id_adr_fac = $coord->id_contact;
 		} else {
 			$id_adr_fac='0';
@@ -628,8 +628,8 @@ function show_dev_from_sug($id_bibli, $sugchk) {
 		$coord = new coordonnees($def_id_adr_liv);
 	} else {
 		$coord_liv = entites::get_coordonnees($id_bibli, '2');
-		if (mysql_num_rows($coord_liv) != 0) {
-			$coord = mysql_fetch_object($coord_liv);
+		if (pmb_mysql_num_rows($coord_liv) != 0) {
+			$coord = pmb_mysql_fetch_object($coord_liv);
 			$id_adr_liv = $coord->id_contact;
 		} else {
 			$id_adr_liv='0';
@@ -722,9 +722,9 @@ function show_lig_dev_from_sug($sugchk) {
 
 		if ($sug->num_notice) {
 			$q = "select niveau_biblio from notices where notice_id='".$sug->num_notice."' "; 
-			$r = mysql_query($q,$dbh);
-			if(mysql_num_rows($r)) {
-				$nb=mysql_result($r,0,0);
+			$r = pmb_mysql_query($q,$dbh);
+			if(pmb_mysql_num_rows($r)) {
+				$nb=pmb_mysql_result($r,0,0);
 			}
 		}
 		
@@ -954,8 +954,8 @@ function duplicate_dev($id_bibli, $id_dev) {
 	$fou = new entites($id_fou);
 	$lib_fou = htmlentities($fou->raison_sociale, ENT_QUOTES, $charset);
 	$coord = entites::get_coordonnees($fou->id_entite, '1');
-	if (mysql_num_rows($coord) != 0) {
-		$coord = mysql_fetch_object($coord);
+	if (pmb_mysql_num_rows($coord) != 0) {
+		$coord = pmb_mysql_fetch_object($coord);
 		$id_adr_fou = $coord->id_contact;
 		if($coord->libelle != '') $adr_fou = htmlentities($coord->libelle, ENT_QUOTES, $charset)."\n";
 		if($coord->contact !='') $adr_fou.=  htmlentities($coord->contact, ENT_QUOTES, $charset)."\n";
@@ -1099,13 +1099,13 @@ function print_dev($id_bibli=0, $id_dev=0, $by_mail=FALSE) {
 	if (!($id_bibli && $id_dev)) return;
 
 	$bib = new entites($id_bibli);
-	$bib_coord = mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
+	$bib_coord = pmb_mysql_fetch_object(entites::get_coordonnees($id_bibli,1));
 
 	$dev = new actes($id_dev);
 	
 	$id_fou = $dev->num_fournisseur;
 	$fou = new entites($id_fou);
-	$fou_coord = mysql_fetch_object(entites::get_coordonnees($id_fou,1));
+	$fou_coord = pmb_mysql_fetch_object(entites::get_coordonnees($id_fou,1));
 	
 	$no_mail=FALSE;
 	if ( $by_mail==FALSE || !($acquisition_pdfdev_by_mail && strpos($bib_coord->email,'@') && strpos($fou_coord->email,'@')) ) {

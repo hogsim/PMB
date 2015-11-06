@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: amazon.class.php,v 1.23.2.3 2015-06-01 07:33:18 jpermanne Exp $
+// $Id: amazon.class.php,v 1.28 2015-06-08 08:10:45 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -76,6 +76,22 @@ class amazon extends connector {
 		<script>var old_search_index='search_index_".$url."'</script>
 		<div class='row'>
 			<div class='colonne3'>
+				<label for='review_height'>".$this->msg["amazon_review_height"]."</label>
+			</div>
+			<div class='colonne_suite'>
+				<input type='text' name='review_height' id='review_height' value='".htmlentities($review_height,ENT_QUOTES,$charset)."' size='5'/>
+			</div>
+		</div>
+		<div class='row'>
+			<div class='colonne3'>
+				<label for='review_width'>".$this->msg["amazon_review_width"]."</label>
+			</div>
+			<div class='colonne_suite'>
+				<input type='text' name='review_width' id='review_width' value='".htmlentities($review_width,ENT_QUOTES,$charset)."' size='5'/>
+			</div>
+		</div>
+		<div class='row'>
+			<div class='colonne3'>
 				<label for='url'>".$this->msg["amazon_site"]."</label>
 			</div>
 			<div class='colonne_suite'>
@@ -121,11 +137,13 @@ class amazon extends connector {
     }
     
     function make_serialized_source_properties($source_id) {
-    	global $url,$response_group,$search_index,$max_return;
+    	global $url,$response_group,$search_index,$max_return,$review_height,$review_width;
     	$t["url"]=stripslashes($url);
     	$t["response_group"]=$response_group;
   		$t["search_index"]=$search_index;
   		$t["max_return"]=$max_return;
+  		$t["review_height"]=$review_height ? $review_height : "350px";
+  		$t["review_width"]=$review_width ? $review_width : "450px";
 		$this->sources[$source_id]["PARAMETERS"]=serialize($t);
 	}
 	
@@ -191,13 +209,13 @@ class amazon extends connector {
 			//Si conservation des anciennes notices, on regarde si elle existe
 			if (!$this->del_old) {
 				$requete="select count(*) from entrepot_source_".$source_id." where ref='".addslashes($ref)."' and search_id='".addslashes($search_id)."'";
-				$rref=mysql_query($requete);
-				if ($rref) $ref_exists=mysql_result($rref,0,0);
+				$rref=pmb_mysql_query($requete);
+				if ($rref) $ref_exists=pmb_mysql_result($rref,0,0);
 			}
 			//Si pas de conservation des anciennes notices, on supprime
 			if ($this->del_old) {
 				$requete="delete from entrepot_source_".$source_id." where ref='".addslashes($ref)."' and search_id='".addslashes($search_id)."'";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 			}
 			//Si pas de conservation ou reférence inexistante
 			if (($this->del_old)||((!$this->del_old)&&(!$ref_exists))) {
@@ -212,14 +230,14 @@ class amazon extends connector {
 				
 				//Récupération d'un ID
 				$requete="insert into external_count (recid, source_id) values('".addslashes($this->get_id()." ".$source_id." ".$ref)."', ".$source_id.")";
-				$rid=mysql_query($requete);
-				if ($rid) $recid=mysql_insert_id();
+				$rid=pmb_mysql_query($requete);
+				if ($rid) $recid=pmb_mysql_insert_id();
 				
 				foreach($n_header as $hc=>$code) {
 					$requete="insert into entrepot_source_".$source_id." (connector_id,source_id,ref,date_import,ufield,usubfield,field_order,subfield_order,value,i_value,recid,search_id) values(
 					'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 					'".$hc."','',-1,0,'".addslashes($code)."','',$recid,'".addslashes($search_id)."')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 				}
 				$field_order=0;
 				foreach ($record as $field=>$val) {
@@ -232,7 +250,7 @@ class amazon extends connector {
 									'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 									'".addslashes($field)."','".addslashes($sfield)."',".$field_order.",".$j.",'".addslashes($vals[$j])."',
 									' ".addslashes(strip_empty_words($vals[$j]))." ',$recid,'".addslashes($search_id)."')";
-									mysql_query($requete);
+									pmb_mysql_query($requete);
 								}
 							}
 						} else {
@@ -241,7 +259,7 @@ class amazon extends connector {
 							'".addslashes($this->get_id())."',".$source_id.",'".addslashes($ref)."','".$date_import."',
 							'".addslashes($field)."','',".$field_order.",0,'".addslashes($val[$i])."',
 							' ".addslashes(strip_empty_words($val[$i]))." ',$recid,'".addslashes($search_id)."')";
-							mysql_query($requete);
+							pmb_mysql_query($requete);
 						}
 						$field_order++;
 					}
@@ -441,29 +459,29 @@ class amazon extends connector {
 		$n+=count($items);
 		if ($first) {
 			$requete="create temporary table amazon_items (asin varchar(50), primary key(asin))";
-			mysql_query($requete);
-			if (count($asins)) mysql_query("insert into amazon_items values ".implode(",",$asins));
+			pmb_mysql_query($requete);
+			if (count($asins)) pmb_mysql_query("insert into amazon_items values ".implode(",",$asins));
 		} else {
 			if (($inter=="and")||($inter=="ex")) {
 				$requete="create temporary table amazon_items_1 (asin1 varchar(50), primary key(asin1))";
-				mysql_query($requete);
+				pmb_mysql_query($requete);
 				//C'est un et ou sauf, et = supprimer tous les éléments de la 
 				//table amazon_items qui ne sont pas dans amazon_items_1, sauf = supprimer
 				//de la table amazon_items tous ceux qui sont aussi dans la table amazon_items_1
 				if (count($asins)) {
-					mysql_query("insert into amazon_items_1 values ".implode(",",$asins));
+					pmb_mysql_query("insert into amazon_items_1 values ".implode(",",$asins));
 					if ($inter=="and") {
 						$requete="delete amazon_items from amazon_items left join amazon_items_1 on asin1=asin where asin1 is null";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					} else {
 						$requete="delete amazon_items from amazon_items, amazon_items_1 where asin1=asin";
-						mysql_query($requete);
+						pmb_mysql_query($requete);
 					}
-					mysql_query("drop table asin_items_1");
+					pmb_mysql_query("drop table asin_items_1");
 				}
 			} else {
 				//C'est un ou, on insère sans erreurs !!
-				if (count($asins)) mysql_query("insert ignore into amazon_items values ".implode(",",$asins));		
+				if (count($asins)) pmb_mysql_query("insert ignore into amazon_items values ".implode(",",$asins));		
 			}
 		}
 	}
@@ -822,11 +840,11 @@ class amazon extends connector {
 		if (!$this->error) {
 			$this->make_search($search_id,$q,$client);
 			$requete="select asin from amazon_items limit $max_return";
-			$resultat=mysql_query($requete);
-			if (@mysql_num_rows($resultat)) {
+			$resultat=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($resultat)) {
 				//Récupération des résultats et import
 				$n=0;
-				while ($r=mysql_fetch_object($resultat)) {
+				while ($r=pmb_mysql_fetch_object($resultat)) {
 					$asins[]=$r->asin;
 					$n++;
 					if ($n==10) {
@@ -836,7 +854,7 @@ class amazon extends connector {
 					}
 				}
 				if (count($asins)) $tasins[]=$asins;
-				mysql_query("drop table amazon_items");
+				pmb_mysql_query("drop table amazon_items");
 				//Nouvelle requete amazon
 				$this->sleep_needed();
 				$client->__setSoapHeaders(NULL);
@@ -962,9 +980,9 @@ class amazon extends connector {
 		$client->__setSoapHeaders($this->make_soap_headers('ItemSearch'));	
 		
 		$rqt = "select code from notices where notice_id = '".$notice_id."'";
-		$res = mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$code = mysql_result($res,0,0);
+		$res = pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$code = pmb_mysql_result($res,0,0);
 			if($code != ""){
 				$code = preg_replace('/-|\.| /', '', $code);
 				$paws["Request"]=array(
@@ -1018,7 +1036,7 @@ class amazon extends connector {
 							if (count($links)) {
 								for ($i=0; $i<count($links); $i++){
 									if($links[$i]['Description'] == "All Customer Reviews"){
-										$infos['review'] .= "<iframe src='".$links[$i]['URL']."' style='width:450px;height:350px;'></iframe>";
+										$infos['review'] .= "<iframe src='".$links[$i]['URL']."' style='width:".$review_width.";height:".$review_height.";'></iframe>";
 									}
 								}
 							}
@@ -1052,9 +1070,9 @@ class amazon extends connector {
 							foreach($items[0][SimilarProducts][SimilarProduct] as $similar){
 								if(isISBN($similar[ASIN])){
 									$rqt= "select notice_id from notices where code = '".formatISBN($similar[ASIN],10)."' or code = '".formatISBN($similar[ASIN],13)."' limit 1";
-									$res = mysql_query($rqt);
-									if(mysql_num_rows($res)){
-										$notice = mysql_result($res,0,0);
+									$res = pmb_mysql_query($rqt);
+									if(pmb_mysql_num_rows($res)){
+										$notice = pmb_mysql_result($res,0,0);
 										if($notice)	$infos['similarities'].=aff_notice($notice,1,1,0, AFF_ETA_NOTICES_REDUIT, "no",0, 1);
 									}
 								}else {
@@ -1077,9 +1095,9 @@ class amazon extends connector {
 										$code = $items[0][ItemAttributes][UPC];
 										if($code){
 											$rqt= "select notice_id from notices where code = '".$code."' or code = '".$code."' limit 1";
-											$res = mysql_query($rqt);
-											if(mysql_num_rows($res)){
-												$notice = mysql_result($res,0,0);
+											$res = pmb_mysql_query($rqt);
+											if(pmb_mysql_num_rows($res)){
+												$notice = pmb_mysql_result($res,0,0);
 												if($notice)	$infos['similarities'].=aff_notice($notice,1,1,0, AFF_ETA_NOTICES_REDUIT, "no",0, 1);
 											}
 										}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: liste_simple.tpl.php,v 1.1 2009-09-24 13:18:58 kantin Exp $
+// $Id: liste_simple.tpl.php,v 1.2 2014-04-01 13:45:50 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -28,7 +28,7 @@ $liste_simple_form = "
 <div class='row'>
 	<div class='left'>
 		<input class='bouton' type='button' value=' $msg[76] ' onClick=\"document.location='!!list_simple_action!!' \" />&nbsp;
-		<input class='bouton' type='submit' value=' $msg[77] ' onClick='this.form.act.value=\"save\"'; return test_form(this.form);  />
+		<input class='bouton' type='submit' value=' $msg[77] ' onClick='this.form.act.value=\"save\"; return test_form(this.form);'  />
 	</div>
 	<div class='right'>
 		!!bouton_sup!!

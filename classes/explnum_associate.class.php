@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_associate.class.php,v 1.2.2.1 2014-03-25 10:18:54 apetithomme Exp $
+// $Id: explnum_associate.class.php,v 1.4 2015-04-03 11:16:19 jpermanne Exp $
 
 
 if (stristr ($_SERVER['REQUEST_URI'], ".class.php"))
@@ -122,18 +122,18 @@ class explnum_associate {
 			$returnLink = $base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".$this->explnum->explnum_bulletin;
 		} else {
 			$query = "select notice_id, niveau_biblio from notices where notice_id = ".$this->explnum->explnum_notice;
-			$result = mysql_query($query, $dbh);
-			if ($result && mysql_num_rows($result)) {
-				if ($notice = mysql_fetch_object($result)) {
+			$result = pmb_mysql_query($query, $dbh);
+			if ($result && pmb_mysql_num_rows($result)) {
+				if ($notice = pmb_mysql_fetch_object($result)) {
 					if ($notice->niveau_biblio == 's') { // Cas d'une série
 						$returnLink = $base_path."/catalog.php?categ=serials&sub=view&serial_id=".$notice->notice_id;
 					} else if ($notice->niveau_biblio == 'm') { // Cas d'une monographie
 						$returnLink = $base_path."/catalog.php?categ=isbd&id=".$notice->notice_id;
 					} else if ($notice->niveau_biblio == 'a') { // Cas d'un article
 						$query = "select analysis_bulletin from analysis where analysis_notice = ".$notice->notice_id;
-						$result = mysql_query($query, $dbh);
-						if ($result && mysql_num_rows($result)) {
-							if ($analysis = mysql_fetch_object($result)) {
+						$result = pmb_mysql_query($query, $dbh);
+						if ($result && pmb_mysql_num_rows($result)) {
+							if ($analysis = pmb_mysql_fetch_object($result)) {
 								$returnLink = $base_path."/catalog.php?categ=serials&sub=bulletinage&action=view&bul_id=".$analysis->analysis_bulletin."&art_to_show=".$notice->notice_id."#anchor_".$notice->notice_id;
 							}
 						}

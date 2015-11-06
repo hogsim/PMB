@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_search.class.php,v 1.2 2012-10-17 09:13:40 arenou Exp $
+// $Id: cms_module_search.class.php,v 1.3 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -82,13 +82,13 @@ class cms_module_search extends cms_module_common_module {
 					<select name='cms_module_search_page_dest' onchange='load_page_vars(this.value)'>";
 		//on va chercher les infos pour les pages du portail !
 		$query = "select id_page,page_name from cms_pages order by page_name asc";
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$pages = array();
 		$pages[0] = $this->msg["cms_module_menu_menu_entry_page_choice"];
-		if(mysql_num_rows($result)){
+		if(pmb_mysql_num_rows($result)){
 			$form.="
 						<option value='0' ".(!$infos['page'] ? "selected='selected'" : "").">".$this->format_text($this->msg['cms_module_search_classique_dest'])."</option>";
-			while($row = mysql_fetch_object($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$form.="
 						<option value='".$row->id_page."' ".($row->id_page == $infos['page'] ? "selected='selected'" : "").">".$this->format_text($row->page_name)."</option>";
 			}			

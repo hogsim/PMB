@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_gam.inc.php,v 1.2 2011-11-03 13:58:04 mbertin Exp $
+// $Id: func_gam.inc.php,v 1.3 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -93,12 +93,12 @@ function import_new_notice_suite() {
 		}
 	$mots_cles ? $index_matieres = strip_empty_words($mots_cles) : $index_matieres = '';
 	$rqt_maj = "update notices set index_l='".addslashes($mots_cles)."', index_matieres=' ".addslashes($index_matieres)." ' where notice_id='$notice_id' " ;
-	mysql_query($rqt_maj, $dbh);
+	pmb_mysql_query($rqt_maj, $dbh);
 	
 	//Url image
 	if($tmp=trim($info_959[0])){
 		$requete="UPDATE notices SET thumbnail_url='".addslashes($tmp)."' WHERE notice_id='".$notice_id."'";
-		if(!mysql_query($requete)){
+		if(!pmb_mysql_query($requete)){
 			affiche_mes_erreurs("requete echoué : ".$requete);
 		}
 	}
@@ -112,7 +112,7 @@ function import_new_notice_suite() {
 	       			$libelle=$tmp;
 	       		}
 				$rqt_maj = "insert into explnum set explnum_notice='$notice_id', explnum_nom='".addslashes($libelle)."', explnum_mimetype='URL', explnum_url='".addslashes($tmp)."'";
-				if(!mysql_query($rqt_maj)){
+				if(!pmb_mysql_query($rqt_maj)){
 					affiche_mes_erreurs("requete echoué : ".$rqt_maj);
 				}
 			}

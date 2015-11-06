@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dsi.tpl.php,v 1.64.2.2 2015-05-15 09:44:07 jpermanne Exp $
+// $Id: dsi.tpl.php,v 1.72 2015-07-03 13:43:33 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -32,6 +32,10 @@ $dsi_menu = "
 <h3 onclick='menuHide(this,event)'>$msg[dsi_menu_flux]</h3>
 <ul>
 <li><a href='./dsi.php?categ=fluxrss&sub=definition'>".$msg['dsi_menu_flux_definition']."</a></li>
+</ul>
+<h3 onclick='menuHide(this,event)'>$msg[dsi_menu_docwatch]</h3>
+<ul>
+<li><a href='./dsi.php?categ=docwatch'>".$msg['dsi_menu_docwatch_definition']."</a></li>
 </ul>
 </div>
 ";
@@ -299,7 +303,10 @@ function confirm_delete() {
 	<textarea id='comment_public' name='comment_public' cols='120' rows='2' wrap='virtual'>!!comment_public!!</textarea>
 	</div>
 <div class='row'></div>
-
+<div class='row'>
+	<label for='comment_public' class='etiquette'>$msg[dsi_ban_form_tpl]</label>
+	!!bannette_tpl_list!!
+	</div>
 <div class='row'>
 	<label for='entete_mail' class='etiquette'>$msg[dsi_ban_form_entete_mail]</label>
 	</div>
@@ -317,16 +324,26 @@ function confirm_delete() {
 </div>
 	
 <div class='row'>
-	<div class='colonne3'>
-		<label for='notice_tpl' class='etiquette'>$msg[dsi_ban_form_select_notice_tpl]</label>
-		!!notice_tpl!!
-	</div>
-	<div class='colonne3'>
+	<label for='notice_tpl' class='etiquette'>$msg[dsi_ban_form_select_notice_tpl]</label>
+	!!notice_tpl!!
+</div>
+
+<div class='row'>&nbsp;</div>	
+
+<div class='row'>
+	<label for='display_notice_in_every_group' class='etiquette'>".$msg['dsi_ban_form_display_notice_in_every_group']."</label>
+	<input type='checkbox' name='display_notice_in_every_group' value='1' !!display_notice_in_every_group!! class='saisie-simple'>
+</div>
+
+<div class='row'>&nbsp;</div>
+
+<div class='row'>	
+	<div class='colonne2'>
 		<label for='notice_tpl' class='etiquette'>$msg[dsi_ban_form_regroupe_pperso]</label>
 		<input type='radio' name='group_type' value='0' !!checked_group_pperso!! class='saisie-simple'>
 		!!pperso_group!!
 	</div>	
-	<div class='colonne3'>
+	<div class='colonne2'>
 		<label for='notice_tpl' class='etiquette'>$msg[dsi_ban_form_froup_facette]</label>
 		<input type='radio' name='group_type' value='1' !!checked_group_facette!! class='saisie-simple'>
 		!!facette_group!!
@@ -811,6 +828,7 @@ $dsi_bannette_equation_assoce = "
 <form class='form-$current_module' id='bannette_equation_assoce' name='bannette_equation_assoce' method='post' action='!!form_action!!' >
 <h3>$msg[dsi_ban_equ_assoce] : !!nom_bannette!!</h3>
 <div class='form-contenu'>
+	!!bannette_equations_saved!!
 	!!classement!!<br />
 	!!equations!!
 	</div>
@@ -865,6 +883,7 @@ $dsi_bannette_lecteurs_assoce = "
 <form class='form-$current_module' id='bannette_lecteurs_assoce' name='bannette_lecteurs_assoce' method='post' action='!!form_action!!' >
 <h3>$msg[dsi_ban_lec_assoce] : !!nom_bannette!!</h3>
 <div class='form-contenu'>
+	!!bannette_lecteurs_saved!!
 	<div class='row'>
 		<div class='colonne3'>
 			<div class='row'><label class='etiquette'>$msg[dsi_ban_form_categ_lect]</label></div>
@@ -1184,9 +1203,9 @@ $dsi_bannette_form_selvars="
 <select name='selvars_id' id='selvars_id'>
 	<option value=!!empr_name!!>".$msg["selvars_empr_name"]."</option>
 	<option value=!!empr_first_name!!>".$msg["selvars_empr_first_name"]."</option>
+	<option value=!!empr_sexe!!>".$msg["selvars_empr_civilite"]."</option>
 	<option value=!!empr_cb!!>".$msg["selvars_empr_cb"]."</option>
 	<option value=!!empr_login!!>".$msg["selvars_empr_login"]."</option>
-	<option value=!!empr_password!!>".$msg["selvars_empr_password"]."</option>
 	<option value=!!empr_mail!!>".$msg["selvars_empr_mail"]."</option>
 	<option value=!!empr_name_and_adress!!>".$msg["selvars_empr_name_and_adress"]."</option>
 	<option value=!!empr_all_information!!>".$msg["selvars_empr_all_information"]."</option>

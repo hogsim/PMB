@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: cms_module_common_datasource_list.xml,v 1.4 2013-09-06 08:00:05 apetithomme Exp $ -->
+$Id: cms_module_common_datasource_list.xml,v 1.5 2015-03-12 09:13:12 dgoron Exp $ -->
 
 <XMLlist>
 	<entry code="cms_module_common_datasource_list_limit">Nombres d'éléments maximum à renvoyer</entry>
@@ -22,4 +22,10 @@ $Id: cms_module_common_datasource_list.xml,v 1.4 2013-09-06 08:00:05 apetithomme
 	<entry code="cms_module_common_datasource_list_sort_by_section_title">Titre</entry>	
 	<entry code="cms_module_common_datasource_list_sort_by_section_order">Position dans l'arbre du contenu éditorial</entry>
 	<entry code="cms_module_common_datasource_list_sort_by_article_order">Position dans l'arbre du contenu éditorial</entry>
+	<entry code="cms_module_common_datasource_list_sort_by_item_publication_date">Date de publication</entry>
+	<entry code="cms_module_common_datasource_list_sort_by_id_item">Identifiant</entry>
+	<entry code="cms_module_common_datasource_list_sort_by_item_title">Titre</entry>
+	<entry code="cms_module_common_datasource_list_sort_by_watch_last_date">Date de dernière synchronisation</entry>
+	<entry code="cms_module_common_datasource_list_sort_by_id_watch">Identifiant</entry>
+	<entry code="cms_module_common_datasource_list_sort_by_watch_title">Titre</entry>
 </XMLlist>

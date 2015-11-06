@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.9 2010-12-08 07:30:21 dbellamy Exp $ -->
+$Id: fr_FR.xml,v 1.10 2015-06-19 13:25:34 pmbs Exp $ -->
 
 <!DOCTYPE XMLlist SYSTEM "../../../includes/XMLlist.dtd" >
 <XMLlist>
@@ -349,7 +349,7 @@ fetch_item
   -->
   <entry code="retrieve_shelf_content_description">Liste les différentes notices contenues dans une étagère</entry>
   <entry code="retrieve_shelf_content_input_description"></entry>
-  <entry code="retrieve_shelf_content_output_description">Cette fonction tient compte des différents droits d'accès appliquables à l'emprunteur</entry>
+  <entry code="retrieve_shelf_content_output_description">Cette fonction tient compte des différents droits d'accès applicables à l'emprunteur</entry>
   <entry code="retrieve_shelf_content_session_id">Le numéro de session</entry>
   <entry code="retrieve_shelf_content_self_id">L'id de l'étagère</entry>
   <entry code="retrieve_shelf_content_shelf_content">Les ids des notices</entry>

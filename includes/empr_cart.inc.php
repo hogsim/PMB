@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_cart.inc.php,v 1.23.6.1 2015-05-20 11:46:31 jpermanne Exp $
+// $Id: empr_cart.inc.php,v 1.28 2015-06-18 14:30:00 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -13,8 +13,9 @@ function aff_paniers_empr($item=0, $lien_origine="./circ.php?", $action_click = 
 	global $PMBuserid;
 	global $charset;
 	global $myCart;
-	global $sub;
+	global $sub,$quoi;
 	global $action;
+	global $baselink;
 	
 	if ($lien_edition) $lien_edition_panier_cst = "<input type=button class=bouton value='$msg[caddie_editer]' onclick=\"document.location='$lien_origine&action=edit_cart&idemprcaddie=!!idemprcaddie!!';\" />";
 		else $lien_edition_panier_cst = "";
@@ -22,9 +23,17 @@ function aff_paniers_empr($item=0, $lien_origine="./circ.php?", $action_click = 
 		print "<form name='print_options' action='$lien_origine&action=$action_click&item=$item' method='post'>";
 	}
 	$liste = empr_caddie::get_cart_list($restriction_panier);
+	print "<script type='text/javascript' src='./javascript/tablist.js'></script>";
 	print "<hr />";
+	if ($lien_creation) {
+		print "<div class='row'>";
+		if($sub!='gestion')  print $boutons_select."<input class='bouton' type='button' value=' $msg[new_cart] ' onClick=\"this.form.action='$lien_origine&action=new_cart&item=$item'; this.form.submit();\" />";
+		else print $boutons_select."<input class='bouton' type='button' value=' $msg[new_cart] ' onClick=\"document.location='$lien_origine&action=new_cart&item=$item'\" />";
+		print "</div><br>";
+	}
 	if(sizeof($liste)) {
-		print "<div class='row'>$titre</div>";
+		print pmb_bidi("<div class='row'><a href='javascript:expandAll()'><img src='./images/expand_all.gif' id='expandall' border='0'></a>
+				<a href='javascript:collapseAll()'><img src='./images/collapse_all.gif' id='collapseall' border='0'></a>$titre</div>");
 		print confirmation_delete("$lien_origine&action=del_cart&item=$item&idemprcaddie=");
 		print "<script type='text/javascript'>
 			function add_to_cart(form) {
@@ -41,12 +50,17 @@ function aff_paniers_empr($item=0, $lien_origine="./circ.php?", $action_click = 
 				return true;
    			}
    		</script>";
-		print "<table border='0' cellspacing='0' width='100%'>";
+		if($sub=="gestion" && $quoi=="panier"){
+			print "<script src='./javascript/classementGen.js' type='text/javascript'></script>";
+		}
 		$parity=0;
 		while (list($cle, $valeur) = each($liste)) {
 			$rqt_autorisation=explode(" ",$valeur['autorisations']);
 			if (array_search ($PMBuserid, $rqt_autorisation)!==FALSE || $PMBuserid==1) {
-				
+				$classementRow = $valeur['empr_caddie_classement'];
+				if(!trim($classementRow)){
+					$classementRow=classementGen::getDefaultLibelle();
+				}
 				$link = "$lien_origine&action=$action_click&idemprcaddie=".$valeur['idemprcaddie']."&item=$item";
 				
 				if (($parity=1-$parity)) $pair_impair = "even"; else $pair_impair = "odd";
@@ -56,47 +70,56 @@ function aff_paniers_empr($item=0, $lien_origine="./circ.php?", $action_click = 
 		        $myCart = new empr_caddie(0);
 		        $myCart->nb_item=$valeur['nb_item'];
 		        $myCart->nb_item_pointe=$valeur['nb_item_pointe'];
-		        $myCart->type=$valeur['type'];
-		        $print_cart[$myCart->type]["titre"]="<b>".$msg["caddie_de_".$myCart->type]."</b><br />";
+		        $myCart->type='EMPR';
+		        $print_cart[$classementRow]["titre"]=stripslashes($classementRow);
 		        
 		        $tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" ";
 				if($item) {
-		            $print_cart[$myCart->type]["cart_list"].= pmb_bidi("<tr class='$pair_impair' $tr_javascript ><td>");
+		            $print_cart[$classementRow]["cart_list"].= pmb_bidi("<tr class='$pair_impair' $tr_javascript ><td class='classement60'>");
 		            if($action != "transfert" && $action != "del_cart" && $action!="save_cart") {
-		            	$print_cart[$myCart->type]["cart_list"].= pmb_bidi("<input type='checkbox' id='id_".$valeur['idemprcaddie']."' name='caddie[".$valeur['idemprcaddie']."]' value='".$valeur['idemprcaddie']."'>&nbsp;");
-		            	$print_cart[$myCart->type]["cart_list"].= pmb_bidi("<a href='#' onClick='javascript:document.getElementById(\"id_".$valeur['idemprcaddie']."\").checked=true; document.forms[\"print_options\"].submit();' /><strong>".$valeur['name']."</strong>");
-		            	// form_filters_cart
-		            	//$print_cart[$myCart->type]["cart_list"].= pmb_bidi("<a href='#' onClick=\"if (document.forms.length) {  if (document.forms['print_options'].elements.length) { document.forms['print_options'].idemprcaddie.value='".$valeur['idemprcaddie']."'; document.forms['form_filters_cart'].submit(); } }\"/><strong>".$valeur['name']."</strong>");
+		            	$print_cart[$classementRow]["cart_list"].= pmb_bidi("<input type='checkbox' id='id_".$valeur['idemprcaddie']."' name='caddie[".$valeur['idemprcaddie']."]' value='".$valeur['idemprcaddie']."'>&nbsp;");
+		            	$print_cart[$classementRow]["cart_list"].= pmb_bidi("<a href='#' onClick='javascript:document.getElementById(\"id_".$valeur['idemprcaddie']."\").checked=true; document.forms[\"print_options\"].submit();' /><strong>".$valeur['name']."</strong>");
 		            } else {		            
-						$print_cart[$myCart->type]["cart_list"].= pmb_bidi("<a href='$link' /><strong>".$valeur['name']."</strong>");
+						$print_cart[$classementRow]["cart_list"].= pmb_bidi("<a href='$link' /><strong>".$valeur['name']."</strong>");
 		            }	
-	                if ($valeur['comment']) $print_cart[$myCart->type]["cart_list"].=  pmb_bidi("<br /><small>(".$valeur['comment'].")</small>");
-	            	$print_cart[$myCart->type]["cart_list"].=  pmb_bidi("</td>
-	            		<td>".aff_cart_nb_items_reduit($myCart)."</td>
-	            		<td>$aff_lien</td>
+	                if ($valeur['comment']) $print_cart[$classementRow]["cart_list"].=  pmb_bidi("<br /><small>(".$valeur['comment'].")</small>");
+	            	$print_cart[$classementRow]["cart_list"].=  pmb_bidi("</td>
+	            		".aff_cart_nb_items_reduit($myCart)."
+	            		<td class='classement20'>$aff_lien</td>
 						</tr>");						
 				} else {		        
-		            $print_cart[$myCart->type]["cart_list"].= "<tr class='$pair_impair' $tr_javascript ><td>";
+		            $print_cart[$classementRow]["cart_list"].= pmb_bidi("<tr class='$pair_impair' $tr_javascript >");
+		            $print_cart[$classementRow]["cart_list"].= pmb_bidi("<td class='classement60'>");
 		            if($sub!='gestion' && $sub!='action'  && $action!="save_cart") {
-						$print_cart[$myCart->type]["cart_list"].= "<input type='checkbox' id='id_".$valeur['idemprcaddie']."' name='caddie[".$valeur['idemprcaddie']."]' value='".$valeur['idemprcaddie']."'>&nbsp;";		            	
-						$print_cart[$myCart->type]["cart_list"].= "<a href='#' onClick='javascript:document.getElementById(\"id_".$valeur['idemprcaddie']."\").checked=true; document.forms[\"print_options\"].submit();' /><strong>".$valeur['name']."</strong>";
-		            }		                
-		            else $print_cart[$myCart->type]["cart_list"].= "<a href='$link' /><strong>".$valeur['name']."</strong>";
-		            if ($valeur['comment']) $print_cart[$myCart->type]["cart_list"].= "<br /><small>(".$valeur['comment'].")</small>";
-		            $print_cart[$myCart->type]["cart_list"].="</a></td>
-		            		<td>".aff_cart_nb_items_reduit($myCart)."</td>
-		            		<td>$aff_lien</td>
-							</tr>";
+						$print_cart[$classementRow]["cart_list"].= pmb_bidi("<input type='checkbox' id='id_".$valeur['idemprcaddie']."' name='caddie[".$valeur['idemprcaddie']."]' value='".$valeur['idemprcaddie']."'>&nbsp;");		            	
+						$print_cart[$classementRow]["cart_list"].= pmb_bidi("<a href='#' onClick='javascript:document.getElementById(\"id_".$valeur['idemprcaddie']."\").checked=true; document.forms[\"print_options\"].submit();' /><strong>".$valeur['name']."</strong>");
+		            } else {
+		            	$print_cart[$classementRow]["cart_list"].= pmb_bidi("<a href='$link' /><strong>".$valeur['name']."</strong>");
+		            }
+		            if ($valeur['comment']){
+		            	$print_cart[$classementRow]["cart_list"].= pmb_bidi("<br /><small>(".$valeur['comment'].")</small>");
+		            }
+		            $print_cart[$classementRow]["cart_list"].=pmb_bidi("</a></td>");
+		            $print_cart[$classementRow]["cart_list"].=pmb_bidi(aff_cart_nb_items_reduit($myCart));
+		            if($sub=="gestion" && $quoi=="panier"){
+		            	$print_cart[$classementRow]["cart_list"].=pmb_bidi("<td class='classement15'>".$aff_lien."&nbsp;".empr_caddie::show_actions($valeur['idemprcaddie'])."</td>");
+		            	$classementGen = new classementGen('empr_caddie', $valeur['idemprcaddie']);
+		            	$print_cart[$classementRow]["cart_list"].=pmb_bidi("<td class='classement5'>".$classementGen->show_selector($baselink,$PMBuserid)."</td>");
+		            }else{
+		            	$print_cart[$classementRow]["cart_list"].=pmb_bidi("<td class='classement20'>$aff_lien</td>");
+		            }
+					$print_cart[$classementRow]["cart_list"].=pmb_bidi("</tr>");
 				}		
 			}
 		}
+		//on trie
+		ksort($print_cart);
+		//on remplace les clés à cause des accents
+		$print_cart=array_values($print_cart);
+		foreach($print_cart as $key => $type) {
+			print gen_plus($key,$type["titre"],"<table class='classementGen_tableau'>".$type["cart_list"]."</table>",1);
+		}
 		
-		// affichage des paniers par type	
-		foreach($print_cart as $key => $cart_type) {
-			print $cart_type["cart_list"];
-		}	
-		
-		print "</table>";
 	} else {
 		print $msg[398];
 	}
@@ -177,8 +200,8 @@ function aff_empr_cart_objects ($idemprcaddie=0, $url_base="./circ.php?categ=cad
 	// on récupére le nombre de lignes
 	if(!$nbr_lignes) {
 		$requete = "SELECT count(1) FROM empr_caddie_content where empr_caddie_id='".$idemprcaddie."' ";
-		$res = mysql_query($requete, $dbh);
-		$nbr_lignes = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($requete, $dbh);
+		$nbr_lignes = pmb_mysql_result($res, 0, 0);
 	}
 	
 	if(!$page) $page=1;
@@ -211,10 +234,10 @@ function aff_empr_cart_objects ($idemprcaddie=0, $url_base="./circ.php?categ=cad
 	}
 	
 	$liste=array();
-	$result = @mysql_query($requete, $dbh);
+	$result = @pmb_mysql_query($requete, $dbh);
 	
-	if(mysql_num_rows($result)) {
-		while ($temp = mysql_fetch_object($result)) 
+	if(pmb_mysql_num_rows($result)) {
+		while ($temp = pmb_mysql_fetch_object($result)) 
 			$liste[] = array('object_id' => $temp->object_id, 'flag' => $temp->flag ) ;  
 	}
 	
@@ -276,12 +299,13 @@ function aff_empr_cart_objects ($idemprcaddie=0, $url_base="./circ.php?categ=cad
 			}
 		</script>";
 		print $begin_result_liste;
+		print empr_caddie::show_actions($idemprcaddie);
 		while(list($cle, $object) = each($liste)) {
 			// affichage de la liste des emprunteurs 
 			$requete = "SELECT * FROM empr WHERE id_empr=$object[object_id] LIMIT 1";
-			$fetch = mysql_query($requete);
-			if(mysql_num_rows($fetch)) {
-				$empr = mysql_fetch_object($fetch);
+			$fetch = pmb_mysql_query($requete);
+			if(pmb_mysql_num_rows($fetch)) {
+				$empr = pmb_mysql_fetch_object($fetch);
 				// emprunteur
 				$link = './circ.php?categ=pret&form_cb='.rawurlencode($empr->empr_cb);
 				if (!$no_point) {
@@ -327,9 +351,9 @@ function verif_droit_proc_empr_caddie($id) {
 	
 	if ($id) {
 		$requete = "SELECT autorisations FROM empr_caddie_procs WHERE idproc='$id' ";
-		$result = @mysql_query($requete, $dbh);
-		if(mysql_num_rows($result)) {
-			$temp = mysql_fetch_object($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($result)) {
+			$temp = pmb_mysql_fetch_object($result);
 			$rqt_autorisation=explode(" ",$temp->autorisations);
 			if (array_search ($PMBuserid, $rqt_autorisation)!==FALSE || $PMBuserid == 1) return 1 ;
 				else return 0 ;
@@ -345,9 +369,9 @@ function verif_droit_empr_caddie($id) {
 	
 	if ($id) {
 		$requete = "SELECT autorisations FROM empr_caddie WHERE idemprcaddie='$id' ";
-		$result = @mysql_query($requete, $dbh);
-		if(mysql_num_rows($result)) {
-			$temp = mysql_fetch_object($result);
+		$result = @pmb_mysql_query($requete, $dbh);
+		if(pmb_mysql_num_rows($result)) {
+			$temp = pmb_mysql_fetch_object($result);
 			$rqt_autorisation=explode(" ",$temp->autorisations);
 			if (array_search ($PMBuserid, $rqt_autorisation)!==FALSE || $PMBuserid == 1) return $id ;
 				else return 0 ;

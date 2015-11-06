@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: search_perso.tpl.php,v 1.2.12.2 2015-10-04 06:14:18 Alexandre Exp $
+// $Id: search_perso.tpl.php,v 1.3 2015-05-15 12:30:51 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -28,8 +28,8 @@ $tpl_search_perso_liste_tableau = "
 		</tr>
 		!!lignes_tableau!!
 		</table>
-	</div>
-<hr />
+	</div>		
+<hr />	
 <!--	Bouton Ajouter	-->
 <div class='row'>
 	<input class='bouton' value='".$msg["search_perso_add"]."' type='button'  onClick=\"document.location='./catalog.php?categ=search&mode=6&search_perso=add'\" >
@@ -37,11 +37,11 @@ $tpl_search_perso_liste_tableau = "
 ";
 
 $tpl_search_perso_liste_tableau_ligne = "
-<tr class='!!pair_impair!!' !!tr_surbrillance!! style='cursor: pointer'>
+<tr class='!!pair_impair!!' '!!tr_surbrillance!!'  style='cursor: pointer'>
 	<td !!td_javascript!! >!!directlink!!</td>
 	<td !!td_javascript!! >!!name!!</td>
 	<td !!td_javascript!! >!!shortname!!</td>
-	<td !!td_javascript!! >!!human!!</td>
+	<td !!td_javascript!! >!!human!!</td>	
 	<td><input class='bouton_small' value='".$msg["search_perso_modifier"]."' type='button'  onClick=\"document.location='./catalog.php?categ=search_perso&sub=form&id=!!id!!'\" ></td>
 </tr>
 ";
@@ -54,7 +54,7 @@ function test_form(form) {
 		alert(\"".$msg["search_perso_form_name_empty"]."\");
 		return false;
 	}
-	unload_off();
+	unload_off();	
 	return true;
 }
 
@@ -82,21 +82,21 @@ function check_link(id) {
 		</div>
 		<div class='row'>
 			<input type='text' class='saisie-80em' id='form_nom' name='name' value=\"!!name!!\" />
-		</div>
-
+		</div>	
+		
 		<!--	short nom	-->
 		<div class='row'>
 			<label class='etiquette' for='shortname'>".$msg["search_perso_form_shortname"]."</label>
 		</div>
 		<div class='row'>
 			<input type='text' class='saisie-80em' id='shortname' name='shortname' value=\"!!shortname!!\" />
-		</div>
-
+		</div>			
+		
 		<div class='row'>
 			<input value='1' name='directlink' !!directlink!! type='checkbox'>
-			<label for='directlink' class='etiquette'>".$msg["search_perso_form_direct_search"]."</label>
-		</div>
-
+			<label for='directlink' class='etiquette'>".$msg["search_perso_form_direct_search"]."</label>  
+		</div>	
+		
 		<div class='row'>
 			<label class='etiquette' for='autorisations'>".$msg["search_perso_form_autorisations"]."</label>
 			<input type='button' class='bouton_small' value='".$msg['tout_cocher_checkbox']."' onclick='check_checkbox(document.getElementById(\"auto_id_list\").value,1);' align='middle'>

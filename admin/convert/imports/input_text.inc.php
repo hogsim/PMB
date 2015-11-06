@@ -2,12 +2,12 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: input_text.inc.php,v 1.9 2012-02-10 11:28:05 mbertin Exp $
+// $Id: input_text.inc.php,v 1.10 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 function _get_n_notices_($fi,$file_in,$input_params,$origine) {
-	//mysql_query("delete from import_marc");
+	//pmb_mysql_query("delete from import_marc");
 	$index=array();
 	$fcontents=fread($fi,filesize($file_in));
 	$i_=0;
@@ -54,7 +54,7 @@ function _get_n_notices_($fi,$file_in,$input_params,$origine) {
 					$t["POS"]=$i_;
 					$t["LENGHT"]=$i;
 					$requete="insert into import_marc (no_notice, notice, origine) values($n,'".addslashes($sub)."','$origine')";
-					mysql_query($requete);
+					pmb_mysql_query($requete);
 					$n++;
 					$fcontents=substr($fcontents,$i+$endchar+1);
 					$index[]=$t;

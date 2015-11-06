@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notes.inc.php,v 1.2 2010-02-23 16:27:22 kantin Exp $
+// $Id: notes.inc.php,v 1.3 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -40,8 +40,8 @@ function show_results($dbh,$user_input,$nbr_lignes=0,$page=0){
 	} else {		
 		$req_count = "select count(1) from demandes_notes where num_action='".$idaction."' and contenu like '%".$user_input."%' and id_note !='".$current_note."'";
 	}
-	$res = mysql_query($req_count, $dbh);
-	$nbr_lignes = @mysql_result($res, 0, 0);
+	$res = pmb_mysql_query($req_count, $dbh);
+	$nbr_lignes = @pmb_mysql_result($res, 0, 0);
 	
 	if(!$page) $page=1;
 	$debut =($page-1)*$nb_per_page;
@@ -54,13 +54,13 @@ function show_results($dbh,$user_input,$nbr_lignes=0,$page=0){
 			$req = "select id_note, date_note, CONCAT(SUBSTRING(contenu,1,50),'','...') as note from demandes_notes where num_action='".$idaction."' and contenu like '%".$user_input."%' and id_note !='".$current_note."'";
 		}
 		
-		$res = mysql_query($req,$dbh);
-		while(($note = mysql_fetch_object($res))){
+		$res = pmb_mysql_query($req,$dbh);
+		while(($note = pmb_mysql_fetch_object($res))){
 			print "<div class='row'>";
 			print "<a href='#' onclick=\"set_parent('$caller', '$note->id_note', '".htmlentities(addslashes($note->note),ENT_QUOTES,$charset)."')\"> [".htmlentities(formatdate($note->date_note),ENT_QUOTES,$charset).'] '.htmlentities($note->note,ENT_QUOTES,$charset)."</a>";
 			print "</div>";
 		}
-		mysql_free_result($res);
+		pmb_mysql_free_result($res);
 
 		// constitution des liens
 		$nbepages = ceil($nbr_lignes/$nb_per_page);

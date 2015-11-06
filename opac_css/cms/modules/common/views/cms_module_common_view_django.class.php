@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_django.class.php,v 1.18.2.1 2014-09-29 09:09:21 arenou Exp $
+// $Id: cms_module_common_view_django.class.php,v 1.21 2015-04-29 14:14:11 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 require_once($base_path."/cms/modules/common/includes/pmb_h2o.inc.php");
@@ -87,6 +87,9 @@ class cms_module_common_view_django extends cms_module_common_view{
 	}
 	
 	public function render($datas){
+		if(!$datas['id']){
+			$datas['id'] = $this->get_module_dom_id();
+		}
 		if(!$datas['get_vars']){
 			$datas['get_vars'] = $_GET;
 		}
@@ -213,6 +216,51 @@ class cms_module_common_view_django extends cms_module_common_view{
 			}
 		}
 		return $max;
+	}
+	
+	public function get_format_data_structure(){
+		$format_datas = array();
+		$format_datas[] = array(
+			'var' => "get_vars.<variable>",
+			'desc' => $this->msg['cms_module_common_view_django_get_vars_desc']
+		);
+		$format_datas[] = array(
+			'var' => "post_vars.<variable>",
+			'desc' => $this->msg['cms_module_common_view_django_post_vars_desc']
+		);
+		$format_datas[] = array(
+			'var' => "session_vars",
+			'desc' => $this->msg['cms_module_common_view_django_session_vars_desc'],
+			'children' =>array(
+				array(
+					'var' => "session_vars.view",
+					'desc' => $this->msg['cms_module_common_view_django_session_vars_view_desc'],
+				),
+				array(
+					'var' => "session_vars.id_empr",
+					'desc' => $this->msg['cms_module_common_view_django_session_vars_id_empr_desc'],
+				)
+			)
+		);
+		$format_datas[] = array(
+			'var' => "env_vars",
+			'desc' => $this->msg['cms_module_common_view_django_env_vars_desc'],
+			'children' =>array(
+				array(
+					'var' => "env_vars.script",
+					'desc' => $this->msg['cms_module_common_view_django_session_vars_script_desc'],
+				),
+				array(
+					'var' => "env_vars.request",
+					'desc' => $this->msg['cms_module_common_view_django_session_vars_request_desc'],
+				),
+				array(
+					'var' => "env_vars.opac_url",
+					'desc' => $this->msg['cms_module_common_view_django_session_vars_opac_url_desc'],
+				)
+			)
+		);
+		return $format_datas;
 	}
 	
 	public function get_format_data_structure_tree($textarea){

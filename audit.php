@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: audit.php,v 1.4.10.3 2015-05-06 08:10:45 jpermanne Exp $
+// $Id: audit.php,v 1.9 2015-06-02 15:17:03 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -63,4 +63,22 @@ while(list($cle, $valeur) = each($all)) {
 $audit_list .= "</table>";
 
 echo $audit_list ;
-mysql_close($dbh);
+
+if ($type_obj == 1 || $type_obj == 3) { //Audit notices/notices de bulletin
+	if ($type_obj == 1) {
+		$requete = "SELECT * FROM notices WHERE notice_id='$object_id' LIMIT 1 ";
+	} else {
+		$requete = "SELECT * FROM notices, bulletins WHERE num_notice = notice_id AND bulletin_id='$object_id' LIMIT 1 ";
+	}
+	$result = pmb_mysql_query($requete, $dbh);
+	if(pmb_mysql_num_rows($result)) {
+		$notice = pmb_mysql_fetch_object($result);
+		$create_date = new DateTime($notice->create_date);
+		$update_date = new DateTime($notice->update_date);
+		echo "<br>";
+		echo htmlentities($msg["noti_crea_date"],ENT_QUOTES, $charset)." ".$create_date->format('d/m/Y H:i:s')."<br>";
+		echo htmlentities($msg["noti_mod_date"],ENT_QUOTES, $charset)." ".$update_date->format('d/m/Y H:i:s')."<br>";
+	}
+}
+
+pmb_mysql_close($dbh);

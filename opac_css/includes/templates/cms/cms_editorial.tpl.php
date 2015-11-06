@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial.tpl.php,v 1.5.2.2 2014-11-21 16:14:46 dgoron Exp $
+// $Id: cms_editorial.tpl.php,v 1.7 2014-11-21 16:11:46 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 

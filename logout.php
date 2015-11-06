@@ -4,7 +4,7 @@
 
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: logout.php,v 1.4 2007-03-14 15:18:56 gueluneau Exp $
+// $Id: logout.php,v 1.5 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -16,7 +16,7 @@ require_once ("$base_path/includes/init.inc.php");
 // modules propres à logout.php ou à ses sous-modules
 
 sessionDelete('PhpMyBibli');
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 
 // appel de l'index
 

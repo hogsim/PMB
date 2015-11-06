@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: recouvr_prix.class.php,v 1.1 2010-09-03 07:11:30 ngantier Exp $
+// $Id: recouvr_prix.class.php,v 1.2 2015-04-03 11:16:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -39,8 +39,8 @@ class recouvr_prix{
 		global $msg, $charset,$pmb_gestion_devise,$dbh;
 
 		$rqt="select montant, recouvr_type from recouvrements where recouvr_id='".$this->idobjet."'";
-		$res = mysql_query($rqt,$dbh);
-		$act = mysql_fetch_object($res);
+		$res = pmb_mysql_query($rqt,$dbh);
+		$act = pmb_mysql_fetch_object($res);
 		
 		$display ="";
 		$submit = "<input type='submit' class='bouton' name='soumission' id='soumission' value='".$msg['demandes_valid_progression']."'/>";
@@ -61,7 +61,7 @@ class recouvr_prix{
 		global $dbh, $recouvr_prix, $pmb_gestion_devise;		
 		
 		$req = "update recouvrements set montant='".$recouvr_prix."' where recouvr_id='".$this->idobjet."'";
-		mysql_query($req,$dbh);
+		pmb_mysql_query($req,$dbh);
 		if(!$recouvr_prix)$recouvr_prix="0.00";
 		switch($this->champ_sortie){
 			default :

@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serialcirc_diff.js,v 1.6 2013-03-25 11:22:35 ngantier Exp $
+// $Id: serialcirc_diff.js,v 1.7 2014-10-14 10:41:02 dgoron Exp $
 var diff_list_checked=0;
 function serialcirc_diff_get_group_form(){
 	
@@ -234,4 +234,23 @@ function serialcirc_diff_add_caddie(id){
 	
 	var template = document.getElementById('group_empr_list');
 	template.innerHTML=req.get_text();
-}	
+}
+
+function serialcirc_print_change_fields(){		
+	var form_type = document.getElementById('form_type').value;		
+	var num_abt = document.getElementById('num_abt').value;			
+	var url= './catalog.php?&categ=serialcirc_diff&sub='+form_type;		
+	url+='&num_abt='+num_abt;
+	url+='&action=change_fields';
+	document.form_serialcirc_diff_tpl.action=url; 
+	document.form_serialcirc_diff_tpl.submit();
+}
+
+function serialcirc_diff_sort_button(){		
+	var num_abt = document.getElementById('num_abt').value;			
+	var url= './catalog.php?&categ=serialcirc_diff&sub=sort_diff';		
+	url+='&num_abt='+num_abt;
+	
+	document.form_empr_list.action=url; 
+	document.form_empr_list.submit();
+}

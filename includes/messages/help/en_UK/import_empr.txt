@@ -2,7 +2,7 @@
 
 // $Id: import_empr.txt,v 0.1 2003/11/21 9:44:264 Jonathan charest
 
-// Documentation sur l'utilisation de l'import
+// Documentation about the use of the import function
 
 $content = "
   <p><b>PMB : import-mini-howto</b> </p>

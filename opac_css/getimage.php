@@ -2,7 +2,20 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: getimage.php,v 1.8.6.7 2015-03-31 14:19:15 jpermanne Exp $
+// $Id: getimage.php,v 1.21 2015-06-08 13:24:52 arenou Exp $
+
+
+//on ajoute des entêtes qui autorisent le navigateur à faire du cache...
+$headers = apache_request_headers();
+//une journée
+$offset = 60 * 60 * 24 ;
+if (isset($headers['If-Modified-Since']) && (strtotime($headers['If-Modified-Since']) <= time())) {
+	header('Last-Modified: '.$headers['If-Modified-Since'], true, 304);
+	return;
+}else{
+	header('Expired: '.gmdate("D, d M Y H:i:s", time() + $offset).' GMT', true);
+	header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT', true, 200);
+}
 
 if(isset($_GET['noticecode'])){
 	$noticecode=$_GET['noticecode'];
@@ -40,10 +53,23 @@ session_write_close();
 $poids_fichier_max=1024*1024;//Limite la taille de l'image à 1 Mo
 if($notice_id && $pmb_notice_img_folder_id){	
 	$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-	$res = mysql_query($req,$dbh);
-	if(mysql_num_rows($res)){
-		$rep=mysql_fetch_object($res);
+	$res = pmb_mysql_query($req,$dbh);
+	if(pmb_mysql_num_rows($res)){
+		$rep=pmb_mysql_fetch_object($res);
 		$img=$rep->repertoire_path."img_".$notice_id;	
+		header('Content-Type: image/png');
+		$fp=@fopen($img, "rb");
+		fpassthru($fp);
+		fclose($fp) ;
+		exit;
+	}
+}
+if($etagere_id && $pmb_notice_img_folder_id){
+	$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
+	$res = pmb_mysql_query($req,$dbh);
+	if(pmb_mysql_num_rows($res)){
+		$rep=pmb_mysql_fetch_object($res);
+		$img=$rep->repertoire_path."img_etag_".$etagere_id;
 		header('Content-Type: image/png');
 		$fp=@fopen($img, "rb");
 		fpassthru($fp);
@@ -80,25 +106,38 @@ if ($opac_curl_available) {
 	$aCurl->options["CURLOPT_ENCODING"]="";
 	$content = $aCurl->get($vigurl);
 	$image=$content->body;
+	$need_copyright_amazon = false;
 	
 	if(!$image || $content->headers['Status-Code'] != 200){
 		$content = $aCurl->get($url_image10);
 		$image=$content->body;
+		if ($image && strpos($url_image10, 'amazon')) {
+			$need_copyright_amazon = true;
+		}
 	}
 	
 	if(!$image || $content->headers['Status-Code'] != 200){
 		$content = $aCurl->get($url_image13);
 		$image=$content->body;
+		if ($image && strpos($url_image13, 'amazon')) {
+			$need_copyright_amazon = true;
+		}
 	}
 	
 	if(!$image || $content->headers['Status-Code'] != 200){
 		$content = $aCurl->get($url_imageEAN);
 		$image=$content->body;
+		if ($image && strpos($url_imageEAN, 'amazon')) {
+			$need_copyright_amazon = true;
+		}
 	}
 	
 	if(!$image || $content->headers['Status-Code'] != 200){
 		$content = $aCurl->get($url_image);
 		$image=$content->body;
+		if ($image && strpos($url_image, 'amazon')) {
+			$need_copyright_amazon = true;
+		}
 	}
 	
 	if(!$image || $content->headers['Status-Code'] != 200 || $content->headers['Content-Length'] > $aCurl->limit){//Si le fichier est trop gros image n'est pas vide mais ne contient que le début d'ou le dernier test
@@ -154,7 +193,7 @@ if ($opac_curl_available) {
 						$hauteur=$pmb_notice_img_pics_max_size;
 						$largeur = ($hauteur*imagesx($img))/imagesy($img);
 					}
-				}				
+				}			
 			}else{
 				$largeur = imagesx($img);
 				$hauteur = imagesy($img);
@@ -168,6 +207,12 @@ if ($opac_curl_available) {
 			}else{
 				imagecopyresampled($dest, $img, 0, 0, 0, 0, $largeur, $hauteur, $largeur, $hauteur);
 			}
+			
+			//Copyright Amazon
+			if ($need_copyright_amazon) {
+				imagestring($dest, 1, ($largeur/3), ($hauteur/1.1), "Copyright Amazon", $white);
+			}
+			
 			imagepng($dest);
 			imagedestroy($dest);
 			imagedestroy($img);
@@ -241,7 +286,7 @@ if ($opac_curl_available) {
 							$hauteur=$pmb_notice_img_pics_max_size;
 							$largeur = ($hauteur*imagesx($img))/imagesy($img);
 						}
-					}				
+					}	
 				}else{
 					$largeur = imagesx($img);
 					$hauteur = imagesy($img);

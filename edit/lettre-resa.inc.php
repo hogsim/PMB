@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: lettre-resa.inc.php,v 1.5 2009-02-09 11:09:39 kantin Exp $
+// $Id: lettre-resa.inc.php,v 1.6 2015-04-03 11:16:21 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -78,8 +78,8 @@ switch($pdfdoc) {
 	default :
 		// chercher id_empr validé
 		$rqt = "select resa_idempr from resa where id_resa in ($id_resa) ";
-		$res = mysql_query ($rqt, $dbh) ;
-		while ($resa_validee=mysql_fetch_object($res)){
+		$res = pmb_mysql_query($rqt, $dbh) ;
+		while ($resa_validee=pmb_mysql_fetch_object($res)){
 			if($resa_validee->resa_idempr != $id_empr_tmp){
 				lettre_resa_par_lecteur($resa_validee->resa_idempr) ;
 				$id_empr_tmp=$resa_validee->resa_idempr;	

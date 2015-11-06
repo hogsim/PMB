@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: func_aiss.inc.php,v 1.2 2011-01-19 08:21:00 arenou Exp $
+// $Id: func_aiss.inc.php,v 1.3 2015-04-03 11:16:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -85,7 +85,7 @@ function import_new_notice_suite() {
 		);
 		notice_to_article($perio,$bulletin);
 		$update =" update notices set typdoc='t' where notice_id = $notice_id";
-		mysql_query($update);
+		pmb_mysql_query($update);
 	//cas d'un bulletin
 	}else if ($bl == "s" && $hl == "2") {
 		if(decoupe_date($champ_210[0]['h']) == 0 && clean_string($titre_ppal_200[0]['h']) == ""){
@@ -104,7 +104,7 @@ function import_new_notice_suite() {
 		);	
 		$bull_id = genere_bulletin($perio,$bulletin);
 		$update =" update notices set typdoc='t' where notice_id = $notice_id";
-		mysql_query($update);
+		pmb_mysql_query($update);
 	}	
 	
 	//on s'occupe des descripteurs;
@@ -138,14 +138,14 @@ function import_new_notice_suite() {
 				$categ_to_index = $n->id_noeud;
 			}
 			$requete = "INSERT INTO notices_categories (notcateg_notice,num_noeud,ordre_categorie) VALUES($notice_id,$categ_to_index,$ordre_categ)";
-			mysql_query($requete);
+			pmb_mysql_query($requete);
 			$ordre_categ++;	
 		}
 	}
 	
 	//on traite le commentaire de gestion
 	$up = "update notices set commentaire_gestion = '".addslashes($info_901[0][0])."' where notice_id = $notice_id";
-	mysql_query($up);
+	pmb_mysql_query($up);
 	
 	//traitement des Champs perso
 	//classique on commence par cherché l'id
@@ -189,26 +189,26 @@ function export_traite_exemplaires ($ex=array()) {}
 function update_notice($bl,$hl){
 	global $notice_id;
 	$update =" update notices set niveau_biblio = '$bl', niveau_hierar ='$hl' where notice_id = $notice_id";
-	mysql_query($update);
+	pmb_mysql_query($update);
 }
 function notice_to_article($perio_info,$bull_info){
 	global $notice_id;
 	$bull_id = genere_bulletin($perio_info,$bull_info);
 	update_notice("a","2");
 	$insert = "insert into analysis set analysis_bulletin = $bull_id, analysis_notice = $notice_id";
-	mysql_query($insert);
+	pmb_mysql_query($insert);
 	
 }
 
 function genere_perio($perio_info){
 	$search = "select notice_id from notices where tit1 LIKE '".addslashes($perio_info['titre'])."' and niveau_biblio = 's' and niveau_hierar = '1'";
-	$res = mysql_query($search);
-	if(mysql_num_rows($res) == 0){
+	$res = pmb_mysql_query($search);
+	if(pmb_mysql_num_rows($res) == 0){
 		//il existe pas, faut le créer
 		$insert = "insert into notices set tit1 = '".addslashes($perio_info['titre'])."', code = '".$perio_info['code']."', niveau_biblio = 's', niveau_hierar = '1'";
-		$result = mysql_query($insert);
-		$perio_id = mysql_insert_id();
-	}else $perio_id = mysql_result($res,0,0);
+		$result = pmb_mysql_query($insert);
+		$perio_id = pmb_mysql_insert_id();
+	}else $perio_id = pmb_mysql_result($res,0,0);
 	return $perio_id;
 }
 
@@ -222,24 +222,24 @@ function genere_bulletin($perio_info,$bull_info,$isbull=true){
 		$bull_info['titre'] = $bull_info['num'].($bull_info['mention'] ? " (".$bull_info['mention'].") ": " ").($bull_info['date'] ? "[".$bull_info['date']."]" : "");
 	}
 	$search = "select bulletin_id from bulletins where bulletin_titre LIKE '".addslashes($bull_info['titre'])."' and mention_date LIKE '".$bull_info['mention']."' and bulletin_numero LIKE '".$bull_info['num']."' and bulletin_notice = $perio_id";
-	$res = mysql_query($search);
-	if(mysql_num_rows($res) == 0){
+	$res = pmb_mysql_query($search);
+	if(pmb_mysql_num_rows($res) == 0){
 		$insert = "insert into bulletins set bulletin_titre = '".$bull_info['titre']."', date_date  = '".$bull_info['date']."', mention_date = '".$bull_info['mention']."', bulletin_numero = '".$bull_info['num']."', bulletin_notice = $perio_id";
 		if($bl == "s" && $hl == "2") {
 			$insert .=", num_notice = $notice_id";
 			update_notice("b","2");
 		}
-		$result = mysql_query($insert);
-		$bull_id = mysql_insert_id();
+		$result = pmb_mysql_query($insert);
+		$bull_id = pmb_mysql_insert_id();
 	}else {
-		$bull_id = mysql_result($res,0,0);
+		$bull_id = pmb_mysql_result($res,0,0);
 		//on regarde si une notice n'existe pas déjà pour ce bulletin
 		$req = "select num_notice from bulletins where bulletin_id = $bull_id and num_notice != 0";
-		$res = mysql_query($req);
+		$res = pmb_mysql_query($req);
 		//si oui on retire l'enregistrement en cours, et on continue sur la notice existante...
-		if(mysql_num_rows($res)>0) {
+		if(pmb_mysql_num_rows($res)>0) {
 			notice::del_notice($notice_id);
-			$notice_id = mysql_result($res,0,0);
+			$notice_id = pmb_mysql_result($res,0,0);
 		}
 	}
 	return $bull_id;
@@ -275,8 +275,8 @@ function create_docnum($doc){
 	$insert.= "explnum_extfichier = '$ext_fichier', ";
 	$insert.= "explnum_repertoire = $id_rep, ";
 	$insert.= "explnum_path = '/'";
-	$result = mysql_query($insert);
-	$explnum_id = mysql_insert_id();
+	$result = pmb_mysql_query($insert);
+	$explnum_id = pmb_mysql_insert_id();
 	return $explnum_id;
 }
 
@@ -296,8 +296,8 @@ function recup_champ_perso($champ,$table,$notice_id,$create=false){
 	if ($id_champ){
 		//on récup de le type de champ
 		$type = "select type from ".$table."_custom where idchamp=$id_champ";
-		$res = mysql_query($type);
-		$type = mysql_result($res,0,0);
+		$res = pmb_mysql_query($type);
+		$type = pmb_mysql_result($res,0,0);
 		renseigne_champ_perso($champ['nom'],$type,$champ['value'],$notice_id,$table);
 	}else if($create){
 		//on l'a pas, on crée
@@ -308,10 +308,10 @@ function recup_champ_perso($champ,$table,$notice_id,$create=false){
 //trouve un champ perso et renvoi son id
 function trouve_champ_perso($nom,$table="notices") {
 	$rqt = "SELECT idchamp FROM ".$table."_custom WHERE name='" . addslashes($nom) . "'";
-	$res = mysql_query($rqt);
+	$res = pmb_mysql_query($rqt);
 	
-	if (mysql_num_rows($res)>0)
-		return mysql_result($res,0);
+	if (pmb_mysql_num_rows($res)>0)
+		return pmb_mysql_result($res,0);
 	else
 		return 0;
 }
@@ -324,53 +324,53 @@ function renseigne_champ_perso($nom,$type,$value,$notice_id,$table="notices") {
 		switch ($type) {
 			case "small_text":
 				$requete="insert into ".$table."_custom_values (".$table."_custom_champ,".$table."_custom_origine,".$table."_custom_small_text) values('".$mon_champ."','".$notice_id."','".addslashes(trim($value))."')";
-				if(!mysql_query($requete)) return false;
+				if(!pmb_mysql_query($requete)) return false;
 				break;
 			case "integer":
 				$requete="insert into ".$table."_custom_values (".$table."_custom_champ,".$table."_custom_origine,".$table."_custom_integer) values('".$mon_champ."','".$notice_id."','".addslashes(trim($value))."')";
-				if(!mysql_query($requete)) return false;
+				if(!pmb_mysql_query($requete)) return false;
 				break;
 			case "text":
 				$rqt = "select datatype from ".$table."_custom where idchamp = $mon_champ";
-				$res = mysql_query($rqt);
-				$datatype = @mysql_result($res,0,0);
+				$res = pmb_mysql_query($rqt);
+				$datatype = @pmb_mysql_result($res,0,0);
 				if($datatype == "small_text"){
 					$requete="insert into ".$table."_custom_values (".$table."_custom_champ,".$table."_custom_origine,".$table."_custom_small_text) values('".$mon_champ."','".$notice_id."','".addslashes(trim($value))."')";			
 				}else{
 					$requete="insert into ".$table."_custom_values (".$table."_custom_champ,".$table."_custom_origine,".$table."_custom_text) values('".$mon_champ."','".$notice_id."','".addslashes(trim($value))."')";
 				}
-				if(!mysql_query($requete)) return false;
+				if(!pmb_mysql_query($requete)) return false;
 				break;
 			case "date":
 				$requete="insert into ".$table."_custom_values (".$table."_custom_champ,".$table."_custom_origine,".$table."_custom_date) values('".$mon_champ."','".$notice_id."','".addslashes(trim($value))."')";
-				if(!mysql_query($requete)){
+				if(!pmb_mysql_query($requete)){
 					echo "requete : ".$requete."<br>";
 					 return false;
 				}
 				break;
 			case "list":
 				$requete="select ".$table."_custom_list_value from ".$table."_custom_lists where ".$table."_custom_list_lib='".addslashes(trim($value))."' and ".$table."_custom_champ='".$mon_champ."' ";
-				$resultat=mysql_query($requete);
-				if (mysql_num_rows($resultat)) {
-					$value2=mysql_result($resultat,0,0);
+				$resultat=pmb_mysql_query($requete);
+				if (pmb_mysql_num_rows($resultat)) {
+					$value2=pmb_mysql_result($resultat,0,0);
 				} else {
 					$requete="select max(".$table."_custom_list_value*1) from ".$table."_custom_lists where ".$table."_custom_champ='".$mon_champ."' ";
-					$resultat=mysql_query($requete);
-					$max=@mysql_result($resultat,0,0);
+					$resultat=pmb_mysql_query($requete);
+					$max=@pmb_mysql_result($resultat,0,0);
 					$n=$max+1;
 					$requete="insert into ".$table."_custom_lists (".$table."_custom_champ,".$table."_custom_list_value,".$table."_custom_list_lib) values('".$mon_champ."',$n,'".addslashes(trim($value))."')";
-					if(!mysql_query($requete)) return false;
+					if(!pmb_mysql_query($requete)) return false;
 					$value2=$n;
 				}
 				$requete="insert into ".$table."_custom_values (".$table."_custom_champ,".$table."_custom_origine,".$table."_custom_integer) values('".$mon_champ."',$notice_id,$value2)";
-				if(!mysql_query($requete)) return false;
+				if(!pmb_mysql_query($requete)) return false;
 				break;
 			default:
 				return false;
 				break;
 		}
 	}else{
-		mysql_query("insert into error_log (error_origin, error_text) values ('aide.import', '".addslashes("Impossible d'inserrer dans le champ : ".$nom)."') ") ;
+		pmb_mysql_query("insert into error_log (error_origin, error_text) values ('aide.import', '".addslashes("Impossible d'inserrer dans le champ : ".$nom)."') ") ;
 		return false;
 	}
 	return true;

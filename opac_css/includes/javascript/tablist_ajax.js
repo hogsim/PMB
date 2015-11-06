@@ -1,7 +1,7 @@
 //+-------------------------------------------------+
 //© 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 //+-------------------------------------------------+
-//$Id: tablist_ajax.js,v 1.5 2014-02-20 08:49:02 ngantier Exp $
+//$Id: tablist_ajax.js,v 1.7 2015-04-14 10:08:43 dgoron Exp $
 
 var expand_state=new Array();
 
@@ -49,6 +49,9 @@ function expandBase_ajax_callback(text,el) {
 		var surligne = document.getElementsByName('surligne');
 		if (surligne[0].value == 1) rechercher(1);
 	}
+  	if(typeof(dojo) == "object"){
+  		dojo.parser.parse(whichEl);
+  	}
 	ReinitializeAddThis();
 }
 
@@ -59,12 +62,13 @@ function expandAll_ajax(mode) {
 	var tempColl    = document.getElementsByTagName('DIV');
 	var nb_to_send=0;
 	var display_cmd_all='';
+	var elements = new Array();
 	for (var i = 0 ; i< tempColl.length ; i++) {		
 		if ((tempColl[i].className == 'notice-child') || (tempColl[i].className == 'child')) {
 			tempColl[i].style.display = 'block';
 		}		
 		changeCoverImage(tempColl[i]);
-
+		
 		if (tempColl[i].className == 'notice-parent') {
 			var obj_id=tempColl[i].getAttribute('id');
 			var el=obj_id.replace(/Parent/,'');
@@ -104,9 +108,20 @@ function expandAll_ajax(mode) {
 					if (whichAddthis && !whichAddthis.getAttribute("added")){
 						creeAddthis(el);
 					}
+					if(whichEl.getAttribute("token") && whichEl.getAttribute("datetime")){
+						elements.push(
+								{"id":el.replace("el",""),
+								"token":whichEl.getAttribute("token"),
+								"datetime":whichEl.getAttribute("datetime")
+								});
+					}
 				}
 			}
 		}
+	}
+	if (elements.length > 0) {
+		expandAllNotices.records = elements;
+		document.body.dispatchEvent(expandAllNotices);
 	}
 	if(nb_to_send){
 		expandAll_ajax_block_suite('display_cmd='+display_cmd_all);
@@ -134,7 +149,10 @@ function expandAll_ajax_callback_block(text,el) {
 			var whichAddthis = document.getElementById('el' + res_notice[0] + 'addthis');
 			if (whichAddthis && !whichAddthis.getAttribute("added")){
 				creeAddthis('el' + res_notice[0]);
-			}
+			}			
+		  	if(typeof(dojo) == "object"){
+		  		dojo.parser.parse(whichEl);
+		  	}
 		}
 	}
 	if(document.getElementsByName('surligne')) {

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: affichage.inc.php,v 1.3.14.1 2014-07-18 14:45:25 dgoron Exp $
+// $Id: affichage.inc.php,v 1.5 2015-04-03 11:16:25 jpermanne Exp $
 
 
 // affiche un tableau de parametres
@@ -53,10 +53,10 @@ function admin_affiche_params($sub,$tab_param,$tab_gen,$tab_ligne,$tab_ligne_sep
 							}
 						} else {
 							//c'est une requete
-							$res = mysql_query(str_replace("!!id!!",$$varGlobal,$lgOpt["affichage"]));
+							$res = pmb_mysql_query(str_replace("!!id!!",$$varGlobal,$lgOpt["affichage"]));
 							if ($res) {
 								//il y a un resultat a la requete
-								$tmpLigne = str_replace("!!val_param!!", mysql_result($res,0), $tmpLigne);
+								$tmpLigne = str_replace("!!val_param!!", pmb_mysql_result($res,0), $tmpLigne);
 								break;
 							}
 						}
@@ -129,8 +129,8 @@ function admin_modif_params($sub,$tab_param,$tab_gen,$tab_ligne,$tab_ligne_sep) 
 								$tmpInput .= " selected";
 							$tmpInput .= ">".$lgOpt["lib"]."</option>";
 						} else {
-							$res = mysql_query($lgOpt["liste"]);
-							while($val = mysql_fetch_array($res)) {
+							$res = pmb_mysql_query($lgOpt["liste"]);
+							while($val = pmb_mysql_fetch_array($res)) {
 								$tmpInput .= "<option value='".$val[0]."'";
 								if ($$varGlobal==$val[0])
 									$tmpInput .= " selected";
@@ -172,14 +172,14 @@ function admin_affiche_ordre_localisation() {
 	
 	//on genere le tableau des sites
 	$rqt = "SELECT idlocation,location_libelle,transfert_ordre FROM docs_location ORDER BY transfert_ordre, idLocation";
-	$res = mysql_query($rqt);
+	$res = pmb_mysql_query($rqt);
 	
 	//le nb de lignes
 	$nb=0;
-	$nbTotal = mysql_num_rows($res);
+	$nbTotal = pmb_mysql_num_rows($res);
 	$tmpString = "";
 	
-	while ($value = mysql_fetch_array($res)) {
+	while ($value = pmb_mysql_fetch_array($res)) {
 		
 		//la classe de la ligne
 		if ($nb % 2)
@@ -216,7 +216,7 @@ function admin_affiche_ordre_localisation() {
 		if ($value[2]!=$nb) {
 			//on met a jour le no d'ordre
 			$rqt = "UPDATE docs_location SET transfert_ordre=".$nb." WHERE idlocation=".$value[0];
-			mysql_query($rqt);
+			pmb_mysql_query($rqt);
 		}
 		
 		$nb++;
@@ -239,10 +239,10 @@ function admin_affiche_statuts_defaut() {
 	
 	// la liste des sites
 	$rqt = "SELECT idlocation,location_libelle,statut_libelle FROM docs_location LEFT JOIN docs_statut ON idstatut=transfert_statut_defaut";
-	$res = mysql_query($rqt);
+	$res = pmb_mysql_query($rqt);
 	$tmpOpt = "";
 	$nb = 0;
-	while ($value = mysql_fetch_array($res)) {
+	while ($value = pmb_mysql_fetch_array($res)) {
 		//on boucle sur les localisations
 		if ($nb%2)
 			$tmpString = str_replace("!!class_ligne!!","odd",$transferts_admin_statuts_loc_ligne);
@@ -275,8 +275,8 @@ function admin_modif_statuts_defaut($id) {
 	
 	//la requete 
 	$rqt = "SELECT idlocation, location_libelle, transfert_statut_defaut FROM docs_location WHERE idlocation=".$id;
-	$res = mysql_query($rqt);
-	$value = mysql_fetch_array($res);
+	$res = pmb_mysql_query($rqt);
+	$value = pmb_mysql_fetch_array($res);
 	
 	//on remplace dans le template
 	$tmpString = str_replace("!!nom_site!!",$value[1],$transferts_admin_statuts_loc_modif);
@@ -285,9 +285,9 @@ function admin_modif_statuts_defaut($id) {
 	
 	//la liste des statuts
 	$rqt = "SELECT idstatut, statut_libelle FROM docs_statut";
-	$res = mysql_query($rqt);
+	$res = pmb_mysql_query($rqt);
 	$tmpOpt = "";
-	while ($value = mysql_fetch_array($res)) {
+	while ($value = pmb_mysql_fetch_array($res)) {
 		$tmpOpt .= "<option value='" . $value[0] . "'>" . $value[1] . "</option>";
 	}
 	$tmpString = str_replace("!!liste_statuts!!", $tmpOpt, $tmpString);

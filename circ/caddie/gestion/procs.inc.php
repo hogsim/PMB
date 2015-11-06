@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: procs.inc.php,v 1.7 2009-05-16 11:12:02 dbellamy Exp $
+// $Id: procs.inc.php,v 1.8 2015-04-03 11:16:24 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -47,13 +47,13 @@ function show_procs($dbh) {
 	// affichage du tableau des procédures
 	if ($PMBuserid!=1) $where=" where (autorisations='$PMBuserid' or autorisations like '$PMBuserid %' or autorisations like '% $PMBuserid %' or autorisations like '% $PMBuserid') ";
 	$requete = "SELECT idproc, type, name, requete, comment, autorisations FROM empr_caddie_procs $where ORDER BY type, name ";
-	$res = mysql_query($requete, $dbh) or die(mysql_error().$requete) ;
+	$res = pmb_mysql_query($requete, $dbh) or die(pmb_mysql_error().$requete) ;
 
-	$nbr = mysql_num_rows($res);
+	$nbr = pmb_mysql_num_rows($res);
 
 	$parity=1;
 	for($i=0;$i<$nbr;$i++) {
-		$row=mysql_fetch_row($res);
+		$row=pmb_mysql_fetch_row($res);
 		$rqt_autorisation=explode(" ",$row[5]);
 		if (array_search ($PMBuserid, $rqt_autorisation)!==FALSE || $PMBuserid == 1) {
 			if ($parity % 2) {
@@ -174,20 +174,20 @@ switch($action) {
 					exit();
 				}
 				$requete = "UPDATE empr_caddie_procs SET name='$f_proc_name',requete='$f_proc_code',comment='$f_proc_comment' , autorisations='$autorisations' WHERE idproc=$id ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				show_procs($dbh);
 			} else {
 				// afficher le form avec les bonnes valeurs
 				$requete = "SELECT idproc, name, requete, comment, autorisations, type FROM empr_caddie_procs WHERE idproc=$id LIMIT 1 ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				$requete_users = "SELECT userid, username FROM users order by username ";
-				$res_users = mysql_query($requete_users, $dbh);
+				$res_users = pmb_mysql_query($requete_users, $dbh);
 				$all_users=array();
-				while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+				while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 					$all_users[]=array($all_userid,$all_username);
 					}
-				if(mysql_num_rows($res)) {
-					$row = mysql_fetch_row($res);
+				if(pmb_mysql_num_rows($res)) {
+					$row = pmb_mysql_fetch_row($res);
 					$autorisations_donnees=explode(" ",$row[4]);
 					for ($i=0 ; $i<count($all_users) ; $i++) {
 						if (array_search ($all_users[$i][0], $autorisations_donnees)!==FALSE) $autorisation[$i][0]=1;
@@ -205,8 +205,8 @@ switch($action) {
 	case 'add':
 		if($f_proc_name && $f_proc_code) {
 			$requete = "SELECT count(1) FROM empr_caddie_procs WHERE name='$f_proc_name' ";
-			$res = mysql_query($requete, $dbh);
-			$nbr_lignes = mysql_result($res, 0, 0);
+			$res = pmb_mysql_query($requete, $dbh);
+			$nbr_lignes = pmb_mysql_result($res, 0, 0);
 			if(!$nbr_lignes) {
 				if (is_array($userautorisation)) {
 					$autorisations=implode(" ",$userautorisation);
@@ -219,16 +219,16 @@ switch($action) {
 					exit();
 				}
 				$requete = "INSERT INTO empr_caddie_procs (idproc,type,name,requete,comment,autorisations) VALUES ('', '$f_proc_type', '$f_proc_name', '$f_proc_code', '$f_proc_comment', '$autorisations' ) ";
-				$res = mysql_query($requete, $dbh);
+				$res = pmb_mysql_query($requete, $dbh);
 				} else {
 					print "<script language='Javascript'>alert(\"$msg[709]\");</script>";
 					}
 			show_procs($dbh);
 		} else {
 			$requete_users = "SELECT userid, username FROM users order by username ";
-			$res_users = mysql_query($requete_users, $dbh);
+			$res_users = pmb_mysql_query($requete_users, $dbh);
 			$autorisation=array();
-			while (list($all_userid,$all_username)=mysql_fetch_row($res_users)) {
+			while (list($all_userid,$all_username)=pmb_mysql_fetch_row($res_users)) {
 				if ($all_userid==1 or $all_userid==$PMBuserid) $autorisation[]=array(1,$all_userid,$all_username);
 					else $autorisation[]=array(0,$all_userid,$all_username);
 				}
@@ -245,7 +245,7 @@ switch($action) {
 	case 'del':
 		if($id) {
 			$requete = "DELETE FROM empr_caddie_procs WHERE idproc=$id ";
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			show_procs($dbh);
 		}
 		break;

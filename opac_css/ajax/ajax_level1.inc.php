@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_level1.inc.php,v 1.3.6.1 2014-11-20 15:42:39 jpermanne Exp $
+// $Id: ajax_level1.inc.php,v 1.4 2014-11-20 15:46:01 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 

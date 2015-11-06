@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: acces.class.php,v 1.13 2014-02-07 10:46:36 dbellamy Exp $
+// $Id: acces.class.php,v 1.16 2015-06-26 13:03:18 dbellamy Exp $
 
 
 if (stristr ($_SERVER['REQUEST_URI'], ".class.php"))
@@ -145,7 +145,7 @@ class domain {
 		res_mask int(2) NOT NULL default 0,
 		PRIMARY KEY (res_num, usr_prf_num)
 		)";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 		//creation de la table de surcharge des droits par utilisateur si inexistante
 		$q = "CREATE TABLE IF NOT EXISTS acces_usr_".$this->dom['id']." (
@@ -155,7 +155,7 @@ class domain {
 		updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, 
 		PRIMARY KEY (usr_num, res_prf_num)
 		)";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 	}
 	
 	//Lecture message general/specifique domaine
@@ -197,30 +197,30 @@ class domain {
 				if ($v) { // profils deja enregistres, on modifie juste nom et profil utilise
 					
 					$q = "update acces_profiles set prf_name='".$prf_lib[$k]."', prf_used='".$prf_used[$k]."' where prf_id ='".$v."' ";
-					mysql_query($q, $dbh);
+					pmb_mysql_query($q, $dbh);
 					$t_id[]=$v;
 					
 				} else { //on regarde si un profil similaire n'existe pas deja
 					
 					$q = "select prf_id from acces_profiles where dom_num='".$this->dom['id']."' and prf_type='".USER_PRF_TYP."' and prf_rule='".$prf_rule[$k]."' limit 1 ";
-					$r = mysql_query($q, $dbh);
+					$r = pmb_mysql_query($q, $dbh);
 					
-					if(mysql_num_rows($r)) {
-						$row = mysql_fetch_object($r);
+					if(pmb_mysql_num_rows($r)) {
+						$row = pmb_mysql_fetch_object($r);
 						$t_id[]=$row->prf_id;
 					} else {
 						$q = "insert into acces_profiles set dom_num='".$this->dom['id']."', prf_type='".USER_PRF_TYP."',prf_name='".$prf_lib[$k]."', prf_rule='".$prf_rule[$k]."', prf_hrule='".$prf_hrule[$k]."' ";
-						mysql_query($q, $dbh);
-						$il=mysql_insert_id($dbh);
+						pmb_mysql_query($q, $dbh);
+						$il=pmb_mysql_insert_id($dbh);
 						$t_id[]=$il;
 						$q = "update acces_profiles set prf_used=prf_id where prf_id='".$il."' ";
-						mysql_query($q, $dbh);
+						pmb_mysql_query($q, $dbh);
 					}
 				}
 			}
 			$l_id=implode("','", $t_id);
 			$q = "delete from acces_profiles where dom_num='".$this->dom['id']."' and prf_type='".USER_PRF_TYP."' and prf_id not in ('".$l_id."') ";
-			mysql_query($q, $dbh);
+			pmb_mysql_query($q, $dbh);
 		}
 		
 		//que faire des anciens profils inutilises
@@ -231,11 +231,11 @@ class domain {
 				//modification dans la table des droits par ressource
 				if(!$prf_used[$v]) $prf_used[$v]=0;
 				$q = "update acces_res_".$this->dom['id']." set usr_prf_num='".$prf_used[$v]."' where usr_prf_num='".$v."' ";
-				mysql_query($q,$dbh);
+				pmb_mysql_query($q,$dbh);
 
 				//suppression dans la table de droits
 				$q = "delete from acces_rights where dom_num='".$this->dom['id']."' and usr_prf_num='".$v."' ";
-				mysql_query($q,$dbh);
+				pmb_mysql_query($q,$dbh);
 			}
 		}
 		
@@ -272,7 +272,7 @@ class domain {
 		
 		global $dbh;
 		$q= "delete from acces_profiles where prf_type='".USER_PRF_TYP."' and dom_num='".$this->dom['id']."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 	}
 	
 	
@@ -303,8 +303,8 @@ class domain {
 			switch ($v['type']) {
 				case 'table' :
 					$q="select ".$v['key'].", " .$v['value']." from ".$v['name']." ".($v['clause'] ? "where ".$v['clause']." " : "")."order by 2 ";
-					$r=mysql_query ($q, $dbh);
-					while (($row=mysql_fetch_row ($r))) {
+					$r=pmb_mysql_query($q, $dbh);
+					while (($row=pmb_mysql_fetch_row($r))) {
 						$t_kv[$k][$row[0]]=$row[1];
 					}
 					break;
@@ -360,9 +360,9 @@ class domain {
 		foreach($t_r as $k=>$v) {
 			$t_r[$k]['rule']=serialize($v['rule']);
 			$q = "select prf_id, prf_name, prf_used from acces_profiles where dom_num='".$this->dom['id']."' and prf_type='".USER_PRF_TYP."' and prf_rule='".$t_r[$k]['rule']."' limit 1 ";
-			$r = mysql_query($q, $dbh);
-			if(mysql_num_rows($r)) {
-				$row=mysql_fetch_object($r);
+			$r = pmb_mysql_query($q, $dbh);
+			if(pmb_mysql_num_rows($r)) {
+				$row=pmb_mysql_fetch_object($r);
 				$t_r[$k]['name']=$row->prf_name;
 				$t_r[$k]['old']=$row->prf_id;
 			} else {
@@ -445,21 +445,21 @@ class domain {
 				if ($v) { // profils deja enregistres, on modifie juste nom et profil utilise
 					
 					$q = "update acces_profiles set prf_name='".$prf_lib[$k]."', prf_used='".$prf_used[$k]."' where prf_id ='".$v."' ";
-					mysql_query($q, $dbh);
+					pmb_mysql_query($q, $dbh);
 					$t_id[]=$v;
 				} else {
 					$q = "insert into acces_profiles set dom_num='".$this->dom['id']."', prf_type='".RES_PRF_TYP."', prf_name='".$prf_lib[$k]."', prf_rule='".$prf_rule[$k]."', prf_hrule='".$prf_hrule[$k]."' ";
-					mysql_query($q, $dbh);
-					$il=mysql_insert_id($dbh);
+					pmb_mysql_query($q, $dbh);
+					$il=pmb_mysql_insert_id($dbh);
 					$t_id[]=$il;
 					$q = "update acces_profiles set prf_used=prf_id where prf_id='".$il."' ";
-					mysql_query($q, $dbh);
+					pmb_mysql_query($q, $dbh);
 				}
 			}
 		}
 		$l_id=implode("','", $t_id);
 		$q = "delete from acces_profiles where dom_num='".$this->dom['id']."' and prf_type='".RES_PRF_TYP."' and prf_id not in ('".$l_id."') ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 		//que faire des anciens profils inutilises
 		if (count($unused_prf_id)) {
@@ -469,11 +469,11 @@ class domain {
 				//modification dans la table des droits par ressource
 				if(!$prf_used[$v]) $prf_used[$v]=0;
 				$q = "update acces_res_".$this->dom['id']." set res_prf_num='".$prf_used[$v]."' where res_prf_num='".$v."' ";
-				mysql_query($q,$dbh);
+				pmb_mysql_query($q,$dbh);
 
 				//suppression dans la table de droits
 				$q = "delete from acces_rights where dom_num='".$this->dom['id']."' and res_prf_num='".$v."' ";
-				mysql_query($q,$dbh);
+				pmb_mysql_query($q,$dbh);
 			}
 		}
 		
@@ -510,7 +510,7 @@ class domain {
 		
 		global $dbh;
 		$q= "delete from acces_profiles where prf_type='".RES_PRF_TYP."' and dom_num='".$this->dom['id']."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 	}
 	
 	
@@ -541,8 +541,8 @@ class domain {
 			switch ($v['type']) {
 				case 'table' :
 					$q="select ".$v['key'].", " .$v['value']." from ".$v['name']." ".($v['clause'] ? "where ".$v['clause']." " : "")."order by 2 ";
-					$r=mysql_query ($q, $dbh);
-					while (($row=mysql_fetch_row ($r))) {
+					$r=pmb_mysql_query($q, $dbh);
+					while (($row=pmb_mysql_fetch_row($r))) {
 						$t_kv[$k][$row[0]]=$row[1];
 					}
 					break;
@@ -597,9 +597,9 @@ class domain {
 		foreach($t_r as $k=>$v) {
 			$t_r[$k]['rule']=serialize($v['rule']);
 			$q = "select prf_id, prf_name from acces_profiles where dom_num='".$this->dom['id']."' and prf_type='".RES_PRF_TYP."' and prf_rule='".$t_r[$k]['rule']."' limit 1 ";
-			$r = mysql_query($q, $dbh);
-			if(mysql_num_rows($r)) {
-				$row=mysql_fetch_object($r);
+			$r = pmb_mysql_query($q, $dbh);
+			if(pmb_mysql_num_rows($r)) {
+				$row=pmb_mysql_fetch_object($r);
 				$t_r[$k]['name']=$row->prf_name;
 				$t_r[$k]['old']=$row->prf_id; 
 			} else {
@@ -655,23 +655,23 @@ class domain {
 		$t_ctl=$this->getControls(2);
 		//Suppression des anciens droits
 		$q = "delete from acces_rights where dom_num='".$this->dom['id']."' ";
-		mysql_query($q, $dbh);
+		pmb_mysql_query($q, $dbh);
 		
 		//recuperation des roles utilisateurs
 		$q_usr = $this->loadUsedUserProfiles();
-		$r_usr = mysql_query($q_usr, $dbh);
+		$r_usr = pmb_mysql_query($q_usr, $dbh);
 		$t_usr[0]=0;
-		if (mysql_num_rows($r_usr)) {
-			while (($row=mysql_fetch_object($r_usr))) {
+		if (pmb_mysql_num_rows($r_usr)) {
+			while (($row=pmb_mysql_fetch_object($r_usr))) {
 				$t_usr[]=$row->prf_id;
 			}
 		}
 		
 		$q_res=$this->loadUsedResourceProfiles();
-		$r_res = mysql_query($q_res, $dbh);
+		$r_res = pmb_mysql_query($q_res, $dbh);
 		$t_res[0]=0;
-		if (mysql_num_rows($r_res)) {
-			while (($row=mysql_fetch_object($r_res))) {
+		if (pmb_mysql_num_rows($r_res)) {
+			while (($row=pmb_mysql_fetch_object($r_res))) {
 				$t_res[]=$row->prf_id;
 			}
 		}
@@ -695,7 +695,7 @@ class domain {
 					}
 				}			
 				$q = "replace into acces_rights set dom_num=".$this->dom['id'].",  usr_prf_num=".$v_usr.", res_prf_num=".$v_res.", dom_rights=".$b_r." ";
-				mysql_query($q, $dbh);
+				pmb_mysql_query($q, $dbh);
 			}
 		}		
 	}
@@ -711,9 +711,9 @@ class domain {
 			
 			case 'table' :
 				$q="select count(*) from ".$this->dom['resource']['ref']['name']." ";
-				$r=mysql_query($q,$dbh);
-				if (mysql_num_rows($r)) {
-					$ret = mysql_result($r,0,0);
+				$r=pmb_mysql_query($q,$dbh);
+				if (pmb_mysql_num_rows($r)) {
+					$ret = pmb_mysql_result($r,0,0);
 				}
 				break;
 			default:
@@ -735,12 +735,12 @@ class domain {
 
 				//lecture de nb_per_pass ressources
 				$q0 = "select ".$this->dom['resource']['ref']['key']." from ".$this->dom['resource']['ref']['name']." limit ".$nb_done.",".$nb_per_pass;
-				$r0 = mysql_query($q0,$dbh);
+				$r0 = pmb_mysql_query($q0,$dbh);
 				
 				//pour chaque ressource, definition du profil
-				$nb_done+=mysql_num_rows($r0);
+				$nb_done+=pmb_mysql_num_rows($r0);
 				if($r0) {
-					while (($row0=mysql_fetch_row($r0))) {
+					while (($row0=pmb_mysql_fetch_row($r0))) {
 						$this->applyRessourceRights($row0[0],$chk_sav_spe_rights);
 					}
 				}
@@ -759,9 +759,9 @@ class domain {
 		global $dbh;
 		if ($this->dom['id']) {
 			$qr = "delete from acces_res_".$this->dom['id']." ";
-			mysql_query($qr,$dbh);
+			pmb_mysql_query($qr,$dbh);
 			$qu = "delete from acces_usr_".$this->dom['id']." ";
-			mysql_query($qu,$dbh);
+			pmb_mysql_query($qu,$dbh);
 		}
 	}
 	
@@ -772,12 +772,12 @@ class domain {
 		global $dbh;
 		
 		$q4 = "delete from acces_res_".$this->dom['id']." where res_prf_num !=0 and res_prf_num not in (select distinct prf_used from acces_profiles)";
-		mysql_query($q4, $dbh);
+		pmb_mysql_query($q4, $dbh);
 		$q5 = "delete from acces_res_".$this->dom['id']." where usr_prf_num != 0 and usr_prf_num not in (select distinct prf_used from acces_profiles)";
-		mysql_query($q5, $dbh);
+		pmb_mysql_query($q5, $dbh);
 		$q6 = "delete from acces_res_".$this->dom['id']." ";
 		$q6.= "where res_num not in (select ".$this->dom['resource']['ref']['key']." from ".$this->dom['resource']['ref']['name'].") ";
-		mysql_query($q6, $dbh);
+		pmb_mysql_query($q6, $dbh);
 	}
 	
 	//lecture des droits pour la ressource
@@ -789,18 +789,18 @@ class domain {
 			
 			$res_prf = $this->getResourceProfile($res_id);
 			$q = $this->loadUsedUserProfiles();
-			$r = mysql_query($q, $dbh);
-			if (mysql_num_rows($r)) {
+			$r = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_num_rows($r)) {
 				$t_usr=array();
 				$t_usr[0]=$res_prf;
-				while(($row=mysql_fetch_object($r))) {
+				while(($row=pmb_mysql_fetch_object($r))) {
 					$t_usr[$row->prf_id]=$res_prf;
 				}
 				$q="select usr_prf_num, (res_rights ^ res_mask) from acces_res_".$this->dom['id']." where res_num=".$res_id;
-				$r = mysql_query($q, $dbh);
+				$r = pmb_mysql_query($q, $dbh);
 				$t_r=array();
-				if (mysql_num_rows($r)) {
-					while(($row=mysql_fetch_row($r))){
+				if (pmb_mysql_num_rows($r)) {
+					while(($row=pmb_mysql_fetch_row($r))){
 						$t_r[$row[0]][$res_prf]=$row[1];
 					}
 					return $t_r;
@@ -818,10 +818,10 @@ class domain {
 		global $dbh;
 		
 		$q="select usr_prf_num, res_prf_num, dom_rights from acces_rights where dom_num=".$this->dom['id']." ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		$t_r = array();
-		if (mysql_num_rows($r)) {
-			while (($row=mysql_fetch_object($r))) {
+		if (pmb_mysql_num_rows($r)) {
+			while (($row=pmb_mysql_fetch_object($r))) {
 				$t_r[$row->usr_prf_num][$row->res_prf_num]=$row->dom_rights;
 			}
 		}
@@ -855,7 +855,7 @@ class domain {
 				$res_rights = $t_r[$v_usr][$res_prf];
 				$q = "replace into acces_res_".$this->dom['id']." set res_num=".$res_id.", res_prf_num=".$res_prf.", ";
 				$q.= "usr_prf_num=".$v_usr.", res_rights=".$res_rights.", res_mask=0 ";
-				mysql_query($q, $dbh);
+				pmb_mysql_query($q, $dbh);
 			}		
 						
 			
@@ -874,6 +874,8 @@ class domain {
 					default :
 						break;	
 				}
+			}else if(count($res_prf[$this->dom['id']])==0){
+				$res_prf = $this->defineResourceProfile();
 			}
 
 			//recuperation de la liste des droits du domaine
@@ -903,7 +905,7 @@ class domain {
 				$res_rights = $t_r[$v_usr][$res_prf];
 				$q = "replace into acces_res_".$this->dom['id']." set res_num=".$res_id.", res_prf_num=".$res_prf;
 				$q.= ",  usr_prf_num=".$v_usr.", res_rights=".$res_rights.", res_mask=($res_rights ^ $mask) ";
-				mysql_query($q, $dbh);
+				pmb_mysql_query($q, $dbh);
 			}		
 		}
 	}
@@ -916,10 +918,10 @@ class domain {
 		global $dbh;
 		$res_prf = $this->defineResourceProfile();
 		$q1 = "select dom_rights from acces_rights where dom_num=".$this->dom['id']." and res_prf_num=".$res_prf." and usr_prf_num = ".$usr_prf_id;
-		$r1 = mysql_query($q1, $dbh);
+		$r1 = pmb_mysql_query($q1, $dbh);
 		$d=0;
-		if (mysql_num_rows($r1)) {
-			$d = mysql_result($r1,0,0);
+		if (pmb_mysql_num_rows($r1)) {
+			$d = pmb_mysql_result($r1,0,0);
 		} else {
 			$d = $this->dom['default_rights'];
 		}
@@ -946,15 +948,15 @@ class domain {
 		$q="select (usr_rights ".$qr.")
 		from acces_usr_".$this->dom['id']."
 		where usr_num =".$usr_id." and res_prf_num = (select distinct res_prf_num from acces_res_".$this->dom['id']."	where res_num =".$res_id.")";
-		$r = mysql_query($q,$dbh);
-		if (mysql_num_rows($r)) {
-			return mysql_result($r,0,0);
+		$r = pmb_mysql_query($q,$dbh);
+		if (pmb_mysql_num_rows($r)) {
+			return pmb_mysql_result($r,0,0);
 		}
 		
 		
 		$usr_prf = $this->getUserProfile($usr_id);
 		$q= "select ((res_rights ^ res_mask) ".$qr.") from acces_res_".$this->dom['id']." where res_num=".$res_id." and usr_prf_num=".$usr_prf;
-		$r = mysql_result(mysql_query($q, $dbh),0,0);
+		$r = pmb_mysql_result(pmb_mysql_query($q, $dbh),0,0);
 		return $r;
 	}
 
@@ -964,9 +966,9 @@ class domain {
 		
 		global $dbh;
 		$q= "select dom_rights from acces_rights where res_prf_num=".$res_prf_num." and usr_prf_num=".$usr_prf_num." and dom_num=".$this->dom['id'] ;
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			return mysql_result($r,0,0);
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			return pmb_mysql_result($r,0,0);
 		}
 		return 0;
 	}
@@ -986,9 +988,9 @@ class domain {
 		$t_r = array();
 		
 		$q= "select res_prf_num, usr_rights from acces_usr_".$this->dom['id']." where usr_num=".$usr_id." ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_num_rows($r)) {
-			while($row=mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_num_rows($r)) {
+			while($row=pmb_mysql_fetch_object($r)) {
 				$t_r[$usr_prf][$row->res_prf_num]=$row->usr_rights;
 			}
 		} else {
@@ -1023,15 +1025,15 @@ class domain {
 		}
 		//recherche de surcharge sur les droits d'accès
 		$q = "select count(*) from acces_usr_".$this->dom['id']." where usr_num=".$usr_id." ";
-		$r = mysql_query($q,$dbh);
+		$r = pmb_mysql_query($q,$dbh);
 		
-		if (mysql_result($r,0,0)) {
-			$j = " join acces_res_".$this->dom['id']." ar on ".$join_field."=res_num and usr_prf_num=0 ";
-			$j.= "join acces_usr_".$this->dom['id']." au on ar.res_prf_num=au.res_prf_num and usr_num=".$usr_id." ";
-			$j.= "and (usr_rights & ".$rights.") ";
+		if (pmb_mysql_result($r,0,0)) {
+			$j = " join acces_res_".$this->dom['id']." on ".$join_field."=acces_res_".$this->dom['id'].".res_num and acces_res_".$this->dom['id'].".usr_prf_num=0 ";
+			$j.= "join acces_usr_".$this->dom['id']." on acces_res_".$this->dom['id'].".res_prf_num=acces_usr_".$this->dom['id'].".res_prf_num and acces_usr_".$this->dom['id'].".usr_num=".$usr_id." ";
+			$j.= "and (acces_usr_".$this->dom['id'].".usr_rights & ".$rights.") ";
 		} else {
 			$usr_prf = $this->getUserProfile($usr_id);
-			$j=" join acces_res_".$this->dom['id']." on ".$join_field."=res_num and usr_prf_num=".$usr_prf." and ((res_rights ^ res_mask) & ".$rights.") ";
+			$j=" join acces_res_".$this->dom['id']." on ".$join_field."=acces_res_".$this->dom['id'].".res_num and acces_res_".$this->dom['id'].".usr_prf_num=".$usr_prf." and ((acces_res_".$this->dom['id'].".res_rights ^ acces_res_".$this->dom['id'].".res_mask) & ".$rights.") ";
 		}
 		return $j;
 	}
@@ -1047,9 +1049,9 @@ class domain {
 		
 		//recherche de surcharge sur les droits d'accès
 		$q = "select count(*) from acces_usr_".$this->dom['id']." where usr_num=".$usr_id." ";
-		$r = mysql_query($q,$dbh);
+		$r = pmb_mysql_query($q,$dbh);
 		
-		if (mysql_result($r,0,0)) {
+		if (pmb_mysql_result($r,0,0)) {
 			$j = "select res_num as ".$field." from acces_res_".$this->dom['id']." ar ";
 			$j.= "join acces_usr_".$this->dom['id']." au on ar.res_prf_num=au.res_prf_num and usr_num=".$usr_id." ";
 			$j.= "where usr_prf_num=0 and (usr_rights & ".$rights.") and res_num in (".$ids.") ";		
@@ -1071,11 +1073,11 @@ class domain {
 		
 		//Recuperation des regles
 		$q = $this->loadUserProfiles();
-		$r=mysql_query($q, $dbh);
+		$r=pmb_mysql_query($q, $dbh);
 		$prf_id=0;
 		
-		if (mysql_num_rows($r)) {
-			while (($row=mysql_fetch_object($r))) {
+		if (pmb_mysql_num_rows($r)) {
+			while (($row=pmb_mysql_fetch_object($r))) {
 				$t_rules[$row->prf_id]=unserialize($row->prf_rule);
 				$prf_used[$row->prf_id]=$row->prf_used;
 			}
@@ -1094,23 +1096,23 @@ class domain {
 						$t_var[$k_var]= $_SESSION[$x];
 						break;
 					case 'field' :
-						if ($usr_id==0) return $prf_id;
- 						$q = "select ".$v_var['value']." from ".$this->dom['user']['ref']['name']." where ".$this->dom['user']['ref']['key']."=".$usr_id.($this->dom['user']['ref']['clause'] ? " and ".$this->dom['user']['ref']['clause'] : "" );
-						$r = mysql_query($q, $dbh);
-						if (mysql_num_rows($r)) {
-							$t_var[$k_var]= mysql_result($r,0,0);
-						} else {
-							return $prf_id;
+										$t_var[$k_var]=0;
+						if ($usr_id!==0) {
+	 						$q = "select ".$v_var['value']." from ".$this->dom['user']['ref']['name']." where ".$this->dom['user']['ref']['key']."=".$usr_id.($this->dom['user']['ref']['clause'] ? " and ".$this->dom['user']['ref']['clause'] : "" );
+							$r = pmb_mysql_query($q, $dbh);
+							if (pmb_mysql_num_rows($r)) {
+								$t_var[$k_var]= pmb_mysql_result($r,0,0);
+							}
 						}
 						break;
 					case 'sql' :
-						if ($usr_id==0) return $prf_id;
-						$q = str_replace('!!usr_id!!',$usr_id,$v_var['value']);
-						$r = mysql_query($q, $dbh);
-						if (mysql_num_rows($r)) {
-							$t_var[$k_var]= mysql_result($r,0,0);
-						} else {
-							$t_var[$k_var]=0;
+						$t_var[$k_var]=0;
+						if ($usr_id!==0) {
+							$q = str_replace('!!usr_id!!',$usr_id,$v_var['value']);
+							$r = pmb_mysql_query($q, $dbh);
+							if (pmb_mysql_num_rows($r)) {
+							$t_var[$k_var]= pmb_mysql_result($r,0,0);
+							}
 						}
 						break;
 					default:
@@ -1164,9 +1166,9 @@ class domain {
 			$q = "select res_prf_num from acces_res_".$this->dom['id']." join acces_profiles on dom_num='".$this->dom['id']."' and prf_type='1' and prf_id=res_prf_num ";
 			$q.= "where res_num = ".$res_id." limit 1";
 			
-			$r = mysql_query($q, $dbh); 
-			if(mysql_num_rows($r)) {
-				return mysql_result($r, 0, 0);
+			$r = pmb_mysql_query($q, $dbh); 
+			if(pmb_mysql_num_rows($r)) {
+				return pmb_mysql_result($r, 0, 0);
 			}
 		}
 		return $this->defineResourceProfile($res_id);
@@ -1178,9 +1180,9 @@ class domain {
 
 		global $dbh;
 		$q = "select prf_name from acces_profiles where prf_id='$res_prf' ";
-		$r = mysql_query($q, $dbh); 
-		if(mysql_num_rows($r)) {
-			return mysql_result($r, 0, 0);
+		$r = pmb_mysql_query($q, $dbh); 
+		if(pmb_mysql_num_rows($r)) {
+			return pmb_mysql_result($r, 0, 0);
 		} 
 		return $this->getComment('res_prf_def_lib');
 	}
@@ -1192,11 +1194,11 @@ class domain {
 		global $dbh;
 		//Recuperation des regles
 		$q = $this->loadResourceProfiles();
-		$r=mysql_query($q, $dbh);
+		$r=pmb_mysql_query($q, $dbh);
 		$prf_id=0;
-		if (mysql_num_rows($r)) {
+		if (pmb_mysql_num_rows($r)) {
 			
-			while (($row=mysql_fetch_object($r))) {
+			while (($row=pmb_mysql_fetch_object($r))) {
 				$t_rules[$row->prf_id]=unserialize($row->prf_rule);
 				$prf_used[$row->prf_id]=$row->prf_used;
 			}
@@ -1223,9 +1225,9 @@ class domain {
 					case 'field' :
 						if ($res_id==0) return $prf_id;
 						$q = "select ".$v_var['value']." from ".$this->dom['resource']['ref']['name']." where ".$this->dom['resource']['ref']['key']."=".$res_id.($this->dom['resource']['ref']['clause'] ? " and ".$this->dom['resource']['ref']['clause'] : "");
-						$r = mysql_query($q, $dbh);
-						if (mysql_num_rows($r)) {
-							$t_var[$k_var]= mysql_result($r,0,0);
+						$r = pmb_mysql_query($q, $dbh);
+						if (pmb_mysql_num_rows($r)) {
+							$t_var[$k_var]= pmb_mysql_result($r,0,0);
 						} else {
 							$t_var[$k_var]=0;
 						}
@@ -1233,9 +1235,9 @@ class domain {
 					case 'sql' :
 						if ($res_id==0) return $prf_id;
 						$q = str_replace('!!res_id!!',$res_id,$v_var['value']);
-						$r = mysql_query($q, $dbh);
-						if (mysql_num_rows($r)) {
-							$t_var[$k_var]= mysql_result($r,0,0);
+						$r = pmb_mysql_query($q, $dbh);
+						if (pmb_mysql_num_rows($r)) {
+							$t_var[$k_var]= pmb_mysql_result($r,0,0);
 						} else {
 							$t_var[$k_var]=0;
 						}
@@ -1283,7 +1285,7 @@ class domain {
 		global $dbh;
 		if (!$res_id) return;
 		$q="delete from acces_res_".$this->dom['id']." where res_num=".$res_id;
-		mysql_query($q,$dbh);
+		pmb_mysql_query($q,$dbh);
 	}
 	
 	//generation des droits par profil utilisateur pour une ressource
@@ -1294,10 +1296,10 @@ class domain {
 
 		//recuperation des droits/profils utilisateurs pour le profil ressource en cours de traitement
 		$q1 = "select usr_prf_num, dom_rights from acces_rights where dom_num=".$this->dom['id']." and res_prf_num=".$res_prf." ";
-		$r1 = mysql_query($q1, $dbh);
+		$r1 = pmb_mysql_query($q1, $dbh);
 		$t_d=array();
-		if (mysql_num_rows($r1)) {
-			while (($row=mysql_fetch_object($r1))) {
+		if (pmb_mysql_num_rows($r1)) {
+			while (($row=pmb_mysql_fetch_object($r1))) {
 				$t_d[$row->usr_prf_num]= $row->dom_rights;
 			}
 		}
@@ -1305,15 +1307,15 @@ class domain {
 		//pour chaque profil utilisateur
 		foreach($t_d as $k_d=>$v_d) {
 			$q2 = "select res_mask from acces_res_".$this->dom['id']." where res_num=".$res_id." and usr_prf_num=".$k_d;
-			$r2 = mysql_query($q2,$dbh);
-			if(mysql_num_rows($r2)) {
+			$r2 = pmb_mysql_query($q2,$dbh);
+			if(pmb_mysql_num_rows($r2)) {
 				$q3 = "update acces_res_".$this->dom['id']." set res_prf_num=".$res_prf.", res_rights=".$v_d;
 				if(!$chk_sav_spe_rights) $q3.= ", res_mask=0";
 				$q3.= " where res_num=".$res_id." and usr_prf_num=".$k_d;
 			} else {
 				$q3 = "insert into acces_res_".$this->dom['id']." set res_num=".$res_id.", res_prf_num=".$res_prf.", usr_prf_num=".$k_d.", res_rights=".$v_d.", res_mask=0";
 			}
-			mysql_query($q3,$dbh);
+			pmb_mysql_query($q3,$dbh);
 		}
 	}
 	
@@ -1331,10 +1333,10 @@ class domain {
 						
 							//récupération des profils ressources
 							$q_res=$this->loadUsedResourceProfiles();
-							$r_res = mysql_query($q_res, $dbh);
+							$r_res = pmb_mysql_query($q_res, $dbh);
 							$t_res[0]=0;
-							if (mysql_num_rows($r_res)) {
-								while (($row=mysql_fetch_object($r_res))) {
+							if (pmb_mysql_num_rows($r_res)) {
+								while (($row=pmb_mysql_fetch_object($r_res))) {
 									$t_res[]=$row->prf_id;
 								}
 							}
@@ -1362,7 +1364,7 @@ class domain {
 								}			
 								
 								$q = "replace into acces_usr_".$this->dom['id']." set usr_num=".$usr_id.",  res_prf_num=".$v_res.", usr_rights=".$b_r." ";
-								mysql_query($q, $dbh);
+								pmb_mysql_query($q, $dbh);
 							}
 					}
 					
@@ -1371,7 +1373,7 @@ class domain {
 				case '2' :	//suppression surcharge
 					
 					$q = "delete from acces_usr_".$this->dom['id']." where usr_num=".$usr_id." ";
-					mysql_query($q, $dbh);
+					pmb_mysql_query($q, $dbh);
 					break;
 			}
 		}

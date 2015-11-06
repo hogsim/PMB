@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: view_serial.inc.php,v 1.12 2009-05-16 11:12:03 dbellamy Exp $
+// $Id: view_serial.inc.php,v 1.13 2015-04-03 11:16:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -14,11 +14,11 @@ $serial = new serial($serial_id);
 print pmb_bidi("<h3>".$msg[1150]." : ".$serial->tit1."</h3>");
 
 $requete = "select bulletin_id from bulletins WHERE bulletin_notice=$serial_id ORDER BY bulletin_id DESC"; 
-$myQuery = mysql_query($requete, $dbh);
+$myQuery = pmb_mysql_query($requete, $dbh);
 
-if(mysql_num_rows($myQuery)) {
+if(pmb_mysql_num_rows($myQuery)) {
 	
-	while($bulletin = mysql_fetch_object($myQuery)) {
+	while($bulletin = pmb_mysql_fetch_object($myQuery)) {
 		
 		$entry = new bulletinage($bulletin->bulletin_id);
 

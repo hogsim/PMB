@@ -2,10 +2,10 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes.inc.php,v 1.3 2009-10-13 07:29:33 kantin Exp $
+// $Id: demandes.inc.php,v 1.12 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
-
+require_once($class_path."/demandes_types.class.php");
 require_once($class_path."/demandes.class.php");
 require_once($class_path."/demandes_actions.class.php");
 require_once($class_path."/rapport.class.php");
@@ -22,17 +22,26 @@ switch($act){
 		$demande->show_modif_form();
 	break;	
 	case 'save':
-		$demande->save();
+		demandes::get_values_from_form($demande);
+		demandes::save($demande);
+		$demande->fetch_data($demande->id_demande);
 		$demande->show_consult_form();
 	break;	
 	case 'modif':
 		$demande->show_modif_form();
 	break;
 	case 'suppr_noti':
-		$demande->suppr_notice_form();
+		$requete = "SELECT num_notice FROM demandes WHERE id_demande =".$iddemande." AND num_notice != 0";
+		$result = pmb_mysql_query($requete,$dbh);
+		if(pmb_mysql_num_rows($result)>0){
+			$demande->suppr_notice_form();
+		} else {
+			demandes::delete($demande);
+			$demande->show_list_form();
+		}		
 	break;
 	case 'suppr':
-		$demande->delete();
+		demandes::delete($demande);
 		$demande->show_list_form();
 	break;
 	case 'see_dmde':
@@ -43,7 +52,15 @@ switch($act){
 		$demande->show_consult_form();
 	break;
 	case 'change_state':
-		$demande->change_state($state);
+		if(sizeof($chk)){
+			for($i=0;$i<count($chk);$i++){
+				$dde = new demandes($chk[$i]);
+				demandes::change_state($state,$dde);
+			}
+		}else{
+			demandes::change_state($state,$demande);
+			$demande->fetch_data($iddemande);
+		}		
 		$demande->show_consult_form();
 	break;
 	case 'attach':
@@ -62,7 +79,28 @@ switch($act){
 	break;
 	case 'rapport':
 		$rap->showRapport();
-	break;	
+	break;
+	case 'create_notice':
+		$demande->create_notice();		
+		$demande->show_consult_form();
+		break;
+	case 'delete_notice':		
+		$demande->delete_notice();
+		$demande->show_consult_form();
+		break;
+	case 'final_response':
+		$demande->show_repfinale_form();		
+		break;
+	case 'save_repfinale':
+		$demande->save_repfinale();
+		$demande->fetch_data($iddemande);
+		$demande->show_consult_form();	
+		break;
+	case 'suppr_repfinale':
+		$demande->suppr_repfinale();
+		$demande->fetch_data($iddemande);
+		$demande->show_consult_form();
+		break;
 	default:
 		$demande->show_list_form();
 	break;

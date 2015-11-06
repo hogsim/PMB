@@ -9,11 +9,11 @@ function search_other_function_filters() {
 		"<option value='j'>jeunes</option>" .
 		"<option value='e'>enfants</option>" .
 		"<option value='pl'>premières lectures</option>";*/
-	$requete="select sdoc_codage_import from docs_section where section_visible_opac=1 and sdoc_codage_import != '' group by sdoc_codage_import order by sdoc_codage_import";
-	$result = mysql_query($requete, $dbh);
+	$requete="select section_libelle, sdoc_codage_import from docs_section where section_visible_opac=1 and sdoc_codage_import != '' group by sdoc_codage_import order by sdoc_codage_import";
+	$result = pmb_mysql_query($requete, $dbh);
 	$option_heyrieux_public_libelle="";
-	if (mysql_numrows($result)){
-		while ($sec = mysql_fetch_object($result)) {
+	if (pmb_mysql_num_rows($result)){
+		while ($sec = pmb_mysql_fetch_object($result)) {
 			$selected="";
 			if ($heyrieux_public==$sec->sdoc_codage_import) {$selected="selected";}
 			switch ($sec->sdoc_codage_import) {
@@ -30,7 +30,7 @@ function search_other_function_filters() {
 						$option_heyrieux_public_libelle="premières lectures";
 						break;
 				default :
-						$option_heyrieux_public_libelle=$sec->sdoc_codage_import;
+						$option_heyrieux_public_libelle=$sec->section_libelle;
 			}					 
 			$r.= "<option value='".$sec->sdoc_codage_import."' $selected>$option_heyrieux_public_libelle</option>";
 		}
@@ -39,28 +39,24 @@ function search_other_function_filters() {
 	return $r;
 }
 
-function search_other_function_clause(&$clause) {
+function search_other_function_clause() {
 	global $dbh;
 	global $heyrieux_public;
+	$r = "";
 	if ($heyrieux_public) {
 		$requete="select distinct idsection from docs_section where section_visible_opac=1 and sdoc_codage_import = '".$heyrieux_public."' order by sdoc_codage_import";
-		$result = mysql_query($requete, $dbh);
+		$result = pmb_mysql_query($requete, $dbh);
 		$public="";
-		if (mysql_numrows($result)){
-			while ($sect = mysql_fetch_object($result)) {
+		if (pmb_mysql_num_rows($result)){
+			while ($sect = pmb_mysql_fetch_object($result)) {
 				if ($public) $public .= ", "; 
 				$public .= $sect->idsection;
 			}
 		}
-		$r=",exemplaires ".$clause." and notices.notice_id=exemplaires.expl_notice and expl_section in ($public)";
-	} else $r=$clause;
-	if ($r=="") $r=$clause;
-	if ($clause==$r) return false; else {
-		$clause=$r;
-		return true;
-	}
+		$r = "select notice_id from notices,exemplaires where notices.notice_id=exemplaires.expl_notice and expl_section in ($public)";
+	} 
+	return $r;
 }
-
 function search_other_function_has_values() {
 	global $heyrieux_public;
 	if ($heyrieux_public) return true; else return false;

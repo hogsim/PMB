@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: printer_data.class.php,v 1.2.2.1 2014-05-12 15:24:21 dbellamy Exp $
+// $Id: printer_data.class.php,v 1.4 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -44,8 +44,8 @@ class printer_data {
 		$requete.= "FROM (((resa LEFT JOIN notices AS notices_m ON resa_idnotice = notices_m.notice_id ) LEFT JOIN bulletins ON resa_idbulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id) ";
 		$requete.= "WHERE id_resa='".$id_resa_print."' ";
 		
-		$res = mysql_query($requete, $dbh);
-		$expl = mysql_fetch_object($res);
+		$res = pmb_mysql_query($requete, $dbh);
+		$expl = pmb_mysql_fetch_object($res);
 		
 		$responsabilites = get_notice_authors(($expl->m_id+$expl->s_id)) ;
 		$as = array_search ("0", $responsabilites["responsabilites"]) ;
@@ -71,8 +71,8 @@ class printer_data {
 		left join exemplaires on expl_cb=resa_cb
 		left join docs_location on idlocation=expl_location
 		where id_resa =$id_resa_print  and resa_cb is not null and resa_cb!='' ";
-		$res_detail = mysql_query ($rqt_detail) ;
-		$expl_detail = mysql_fetch_object($res_detail);
+		$res_detail = pmb_mysql_query($rqt_detail) ;
+		$expl_detail = pmb_mysql_fetch_object($res_detail);
 		
 		$data_resa["id"]=$id_resa_print;
 		$data_resa["titre"]=$expl->tit;
@@ -168,17 +168,17 @@ class printer_data {
 		global $dbh;
 		
 		$req="select * from transacash where transacash_id=$transacash_id";
-		$result = mysql_query($query, $dbh);
-		if (($r= mysql_fetch_object($result))) {
+		$result = pmb_mysql_query($query, $dbh);
+		if (($r= pmb_mysql_fetch_object($result))) {
 			$this->data["transacash"][0]["id_empr"]=$r->transacash_empr_num;
 			$this->data["transacash"][0]["date"]=$r->transacash_date;
 			$this->data["transacash"][0]["sold_before"]=$r->transacash_sold;
 			$this->data["transacash"][0]["collected"]=$r->transacash_collected;
 			
 			$req="select * from transactions where transacash_num=$transacash_id and encaissement=0";
-			$result = mysql_query($query, $dbh);
+			$result = pmb_mysql_query($query, $dbh);
 			$i=0;
-			if (($r= mysql_fetch_object($result))) {				
+			if (($r= pmb_mysql_fetch_object($result))) {				
 				$this->data["transacash"][0]["transaction"][$i]["name"]=$r->commentaire;	
 				$this->data["transacash"][0]["transaction"][$i]["montant"]=$r->montant;
 				

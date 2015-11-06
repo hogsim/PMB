@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: files_gestion.class.php,v 1.1.6.2 2014-08-18 14:04:03 dgoron Exp $
+// $Id: files_gestion.class.php,v 1.3 2014-08-18 14:03:09 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

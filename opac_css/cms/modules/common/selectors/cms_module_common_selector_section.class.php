@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_section.class.php,v 1.4 2012-11-09 14:12:45 arenou Exp $
+// $Id: cms_module_common_selector_section.class.php,v 1.5 2015-04-03 11:16:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 //require_once($base_path."/cms/modules/common/selectors/cms_module_selector.class.php");
@@ -34,11 +34,11 @@ class cms_module_common_selector_section extends cms_module_common_selector{
 	
 	protected function gen_select(){
 		$query= "select id_section, section_title from cms_sections";// where section_publication_state = 1";
-		$result = mysql_query($query);
+		$result = pmb_mysql_query($query);
 		$select = "
 					<select name='".$this->get_form_value_name("id_section")."'>";
-		if(mysql_num_rows($result)){
-			while($row = mysql_fetch_object($result)){
+		if(pmb_mysql_num_rows($result)){
+			while($row = pmb_mysql_fetch_object($result)){
 				$select.="
 						<option value='".$row->id_section."' ".($this->parameters == $row->id_section ? "selected='selected'" : "").">".$this->format_text($row->section_title)."</option>";
 			}

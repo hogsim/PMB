@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: term_show.class.php,v 1.15 2012-08-23 14:58:11 mbertin Exp $
+// $Id: term_show.class.php,v 1.16 2015-04-03 11:16:17 jpermanne Exp $
 //
 // Gestion de l'affichage d'un notice d'un terme du thésaurus
 
@@ -35,8 +35,8 @@ class term_show {
     
     function has_child($categ_id) {
 		$requete = "select count(1) from noeuds where num_parent = '".$categ_id."' ";
-		$resultat=mysql_query($requete);
-		return mysql_result($resultat,0,0);
+		$resultat=pmb_mysql_query($requete);
+		return pmb_mysql_result($resultat,0,0);
 	}
 
 	//Récupération du chemin
@@ -122,7 +122,7 @@ class term_show {
 
 		$resultat_2=$this->do_query(4,$categ_id);
 
-			while ($r2=mysql_fetch_object($resultat_2)) {
+			while ($r2=pmb_mysql_fetch_object($resultat_2)) {
 				if($r2->categ_libelle[0] != "~"){
 					$visible=$pl($r2->categ_id,$r2->categ_see);
 					if ($visible["VISIBLE"]) {
@@ -178,7 +178,7 @@ class term_show {
 		$t_see=array();
 
 		//Pour chaque catégorie ayant le même libellé
-		while ($r1=mysql_fetch_object($resultat_1)) {
+		while ($r1=pmb_mysql_fetch_object($resultat_1)) {
 			$t_see[$r1->categ_id]=1;//Pour les renvois vers le un noeud traité
 			//Lecture du chemin vers la catégorie
 			$renvoi=$this->get_categ_lib($r1->categ_id,$this->term).' ';
@@ -222,7 +222,7 @@ class term_show {
 				
 				//Recherche des catégories associées
 				$requete = "select count(1) from voir_aussi where voir_aussi.num_noeud_orig = '".$r1->categ_id."' ";
-				$nta=mysql_result(mysql_query($requete),0,0);
+				$nta=pmb_mysql_result(pmb_mysql_query($requete),0,0);
 				//Si il y en a
 				if ($nta) {
 					$res.='<blockquote>';
@@ -231,7 +231,7 @@ class term_show {
 					
 					$first=1;
 					$res1='';
-					while ($r_ta=mysql_fetch_object($resultat_ta)) {
+					while ($r_ta=pmb_mysql_fetch_object($resultat_ta)) {
 						$visible=$pl($r_ta->categ_id,$r_ta->categ_see);
 						if ($visible["VISIBLE"]) {
 							if (!$first) $res1.=", "; else $first=0;
@@ -254,8 +254,8 @@ class term_show {
        					if($val["to"] == AUT_TABLE_CATEG){
 							$r_link=$this->do_query(3,$val["to_num"]);
 							
-							if(mysql_num_rows($r_link) == 1){
-								$r_link_res=mysql_fetch_object($r_link);
+							if(pmb_mysql_num_rows($r_link) == 1){
+								$r_link_res=pmb_mysql_fetch_object($r_link);
 								$visible=$pl($r_link_res->categ_id,$r_link_res->categ_see);
 								$info_thes="";
 								if($r_link_res->thes_id != $this->id_thes){
@@ -339,7 +339,7 @@ class term_show {
 		$select.="noeuds.num_renvoi_voir AS categ_see ";
 
 		$requete=$select.$from.$join.$where.$order.$limit;
-		return mysql_query($requete);
+		return pmb_mysql_query($requete);
 	}
 }
 ?>

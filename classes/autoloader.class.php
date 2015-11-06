@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: autoloader.class.php,v 1.3 2012-03-16 08:59:01 arenou Exp $
+// $Id: autoloader.class.php,v 1.6 2015-03-05 09:10:17 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -58,7 +58,8 @@ class autoloader{
 		global $class_path;
 		global $include_path;
 		global $javascript_path;
-		global $styles_path;		
+		global $styles_path;	
+		global $msg,$charset;
 		if(file_exists($file)){
 			require_once($file);
 			if($this->debug){
@@ -136,5 +137,47 @@ class autoloader{
 		}else if($this->debug){
 			echo "Already loaded<br>";
 		}
-	}	
+	}
+
+	private function onto_class($class_name){
+		global $class_path;
+		
+		if($this->debug){
+			echo '<br>Trying to load ', $class_name, ' via ', __METHOD__, "()<br>";
+		}
+		//inclusion de la classe d'un module...
+		if(!class_exists($class_name)){
+			$class_file = $class_path."/onto/".$class_name.".class.php";
+			$success = $this->load($class_file);
+			if(!$success){
+				$module = $class_file = "";
+				$var = str_replace("onto_","",$class_name);
+				$module = substr($var,0,strpos($var,"_"));
+				$element = substr($element,0,strpos($element,"_"));
+				$class_file = $class_path."/onto/".$module."/".$class_name.".class.php";
+				$this->load($class_file);
+			}
+		}else if($this->debug){
+			echo "Already loaded<br>";
+		}		
+	}
+	
+	/*
+	 * Inclusion pour les classes modules du portail
+	 */
+	private function docwatch($class_name) {
+		global $class_path;
+		if($this->debug){
+			echo '<br>Trying to load ', $class_name, ' via ', __METHOD__, "()<br>";
+		}
+		//inclusion de la classe d'un module...
+		if(!class_exists($class_name)){
+			$elements = explode("_",$class_name);
+			
+			$class_file = $class_path."/".$elements[0]."/".$elements[1]."s/".$class_name.".class.php";
+			$this->load($class_file);
+		}else if($this->debug){
+			echo "Already loaded<br>";
+		}
+	}
 }

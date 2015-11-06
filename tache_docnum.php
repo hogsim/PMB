@@ -3,7 +3,7 @@
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // | creator : PMB Services                                                   |
 // +-------------------------------------------------+
-// $Id: tache_docnum.php,v 1.4 2012-09-06 08:00:12 ngantier Exp $
+// $Id: tache_docnum.php,v 1.5 2015-04-03 11:16:23 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path     = ".";                            
@@ -17,18 +17,18 @@ require_once ("$base_path/includes/init.inc.php");
 require_once ("$include_path/explnum.inc.php");  
 require_once ($class_path."/upload_folder.class.php"); 
 
-$resultat = mysql_query("SELECT id_tache_docnum, tache_docnum_nomfichier, tache_docnum_mimetype, tache_docnum_data, tache_docnum_extfichier, 
+$resultat = pmb_mysql_query("SELECT id_tache_docnum, tache_docnum_nomfichier, tache_docnum_mimetype, tache_docnum_data, tache_docnum_extfichier, 
 			tache_docnum_repertoire, tache_docnum_path, concat(repertoire_path,tache_docnum_path,tache_docnum_nomfichier) as path
 			FROM taches_docnum left join upload_repertoire on repertoire_id=tache_docnum_repertoire WHERE id_tache_docnum = '$tache_docnum_id' ", $dbh);
 
-$nb_res = mysql_num_rows($resultat) ;
+$nb_res = pmb_mysql_num_rows($resultat) ;
 
 if (!$nb_res) {
 	header("Location: images/mimetype/unknown.gif");
 	exit ;
 	} 
 	
-$ligne = mysql_fetch_object($resultat);
+$ligne = pmb_mysql_fetch_object($resultat);
 
 if (($ligne->tache_docnum_data)||($ligne->tache_docnum_path)) {
 	if ($ligne->tache_docnum_path) {

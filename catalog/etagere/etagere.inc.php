@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: etagere.inc.php,v 1.15.10.1 2014-03-20 17:44:11 dgoron Exp $
+// $Id: etagere.inc.php,v 1.18 2015-03-30 07:14:52 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -20,6 +20,12 @@ switch ($action) {
 		$etagere_form = str_replace('!!checkbox_accueil!!', "", $etagere_form);
 		$etagere_form = str_replace('!!tri_name!!', $msg['etagere_form_no_active_tri'], $etagere_form);
 		if($pmb_javascript_office_editor) print $pmb_javascript_office_editor;
+		$message_folder = etagere::validate_img_folder();
+		$etagere_form = str_replace('!!message_folder!!', $message_folder, $etagere_form);
+		$etagere_form = str_replace('!!thumbnail_url!!', '', $etagere_form);
+		$classementGen = new classementGen('etagere', '0');
+		$etagere_form = str_replace("!!object_type!!",$classementGen->object_type,$etagere_form);
+		$etagere_form = str_replace("!!classements_liste!!",$classementGen->getClassementsSelectorContent($PMBuserid,$classementGen->libelle),$etagere_form);
 		print pmb_bidi($etagere_form) ;
 		break;
 	case 'edit_etagere':
@@ -55,6 +61,12 @@ switch ($action) {
 			
 		print confirmation_delete("./catalog.php?categ=etagere&action=del_etagere&idetagere=");
 		if($pmb_javascript_office_editor) print $pmb_javascript_office_editor;
+		$message_folder = etagere::validate_img_folder();
+		$etagere_form = str_replace('!!message_folder!!', $message_folder, $etagere_form);
+		$etagere_form = str_replace('!!thumbnail_url!!', $myEtagere->thumbnail_url, $etagere_form);
+		$classementGen = new classementGen('etagere', $idetagere);
+		$etagere_form = str_replace("!!object_type!!",$classementGen->object_type,$etagere_form);
+		$etagere_form = str_replace("!!classements_liste!!",$classementGen->getClassementsSelectorContent($PMBuserid,$classementGen->libelle),$etagere_form);
 		print $etagere_form ;
 		break;
 	case 'del_etagere':
@@ -76,6 +88,8 @@ switch ($action) {
 		$myEtagere->validite_date_fin = extraitdate($form_visible_fin);
 		$myEtagere->visible_accueil = $form_visible_accueil;
 		$myEtagere->tri = $tri;
+		$myEtagere->thumbnail_url = $f_thumbnail_url;
+		$myEtagere->classementGen = $classementGen_etagere;
 		$myEtagere->save_etagere();
 		aff_etagere("edit_etagere",1);
 		break;
@@ -94,6 +108,8 @@ switch ($action) {
 		$myEtagere->validite_date_fin = extraitdate($form_visible_fin);
 		$myEtagere->visible_accueil = $form_visible_accueil;
 		$myEtagere->tri = $tri;
+		$myEtagere->thumbnail_url = $f_thumbnail_url;
+		$myEtagere->classementGen = $classementGen_etagere;
 		$myEtagere->save_etagere();
 		aff_etagere("edit_etagere",1);
 		break;

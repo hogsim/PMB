@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: series.inc.php,v 1.10 2011-06-13 14:39:19 ngantier Exp $
+// $Id: series.inc.php,v 1.11 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -50,7 +50,7 @@ switch($sub) {
 		// maj de index_serie
 		$index_serie=strip_empty_words($serie_nom);
 		$rqt = "update notices set index_serie='".$index_serie."' where tparent_id='".$id."' ";
-		mysql_query($rqt, $dbh) ;
+		pmb_mysql_query($rqt, $dbh) ;
 */		
 		include('./autorites/series/series_list.inc.php');
 		break;

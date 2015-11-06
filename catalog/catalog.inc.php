@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: catalog.inc.php,v 1.39 2014-01-10 15:46:42 apetithomme Exp $
+// $Id: catalog.inc.php,v 1.40 2015-01-14 11:31:08 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -41,6 +41,7 @@ if ($pmb_prefill_cote) {
 } else {
 	require_once("./catalog/expl/custom_no_cote.inc.php");
 }
+if($pmb_javascript_office_editor) print $pmb_javascript_office_editor;
 
 switch($categ) {
 	case 'update':

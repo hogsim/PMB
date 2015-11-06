@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax.inc.php,v 1.3.6.1 2014-07-10 10:31:13 mbertin Exp $
+// $Id: ajax.inc.php,v 1.4 2014-07-10 10:35:21 mbertin Exp $
 
 require_once($base_path."/includes/misc.inc.php");
 

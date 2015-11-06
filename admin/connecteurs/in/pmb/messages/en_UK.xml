@@ -4,25 +4,25 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: en_UK.xml,v 1.1 2011-10-11 17:57:43 touraine37 Exp $ -->
+$Id: en_UK.xml,v 1.2 2015-06-15 12:55:34 pmbs Exp $ -->
 
 <XMLlist>
-	<entry code="pmb_site">Adresse du webservice</entry>
-	<entry code="pmb_max_return">Nombre maximum de résultats</entry>
-	<entry code="pmb_title">Titres</entry>
-	<entry code="pmb_authors">Auteurs</entry>
-	<entry code="pmb_editors">Editeurs</entry>
-	<entry code="pmb_title_uniforme">Titres uniformes</entry>
-	<entry code="pmb_category">Catégories</entry>
-	<entry code="pmb_index">Indexations décimales</entry>
-	<entry code="pmb_keywords">Mots-clés</entry>
-	<entry code="pmb_summary">Résumé et notes</entry>
-	<entry code="pmb_all">Tous les champs</entry>
-	<entry code="pmb_protocole">Protocole utilisé</entry>
+	<entry code="pmb_site">Address of the webservice</entry>
+	<entry code="pmb_max_return">Maximum number of results</entry>
+	<entry code="pmb_title">Titles</entry>
+	<entry code="pmb_authors">Authors</entry>
+	<entry code="pmb_editors">Editors</entry>
+	<entry code="pmb_title_uniforme">Uniform titles</entry>
+	<entry code="pmb_category">Category</entry>
+	<entry code="pmb_index">Decimal indexations</entry>
+	<entry code="pmb_keywords">Keywords</entry>
+	<entry code="pmb_summary">Recap and notes</entry>
+	<entry code="pmb_all">All the fields</entry>
+	<entry code="pmb_protocole">Used protocol</entry>
 	<entry code="pmb_prtcl_soap">SOAP</entry>
 	<entry code="pmb_prtcl_json">Json-RPC</entry>
-	<entry code="pmb_display_items">Récupérer les exemplaires ?</entry>
-	<entry code="pmb_authentification">Une authentification est-elle necessaire ?</entry>
-	<entry code="pmb_username">Identifiant pour l'authentification</entry>
-	<entry code="pmb_password">Mot de passe pour l'authentification</entry>
+	<entry code="pmb_display_items">Get back the copies ?</entry>
+	<entry code="pmb_authentification">Is an authentification necessary ?</entry>
+	<entry code="pmb_username">Username to authenticate</entry>
+	<entry code="pmb_password">Password to authenticate</entry>
 </XMLlist>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: metapace.class.php,v 1.3.2.1 2014-05-12 15:24:21 dbellamy Exp $
+// $Id: metapace.class.php,v 1.4 2014-05-12 15:28:40 dbellamy Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 global $include_path;

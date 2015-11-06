@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes.php,v 1.3 2014-01-13 08:07:15 arenou Exp $
+// $Id: demandes.php,v 1.6 2015-04-03 11:16:23 jpermanne Exp $
 
 
 // définition du minimum nécéssaire 
@@ -16,6 +16,7 @@ require("$include_path/templates/demandes.tpl.php");
 require("$include_path/templates/demandes_actions.tpl.php");
 require("$include_path/templates/demandes_notes.tpl.php");
 require_once($class_path."/liste_simple.class.php");
+require_once($class_path."/demandes_types.class.php");
 
 print "<div id='att' style='z-Index:1000'></div>";
 
@@ -51,7 +52,10 @@ if(!$nb_themes || !$nb_types) {
 			break;
 		case 'notes' :
 			include("./demandes/demandes_notes.inc.php");
-			break;		
+			break;
+		case "faq" :
+			include("./demandes/faq/main.inc.php");
+			break;
 		default :		
 			include("$include_path/messages/help/$lang/demandes.txt");	
 		break;
@@ -63,5 +67,5 @@ print $demandes_layout_end;
 print $footer;
 
 // deconnection MYSql
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 ?>

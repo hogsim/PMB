@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: subcollections.inc.php,v 1.11 2013-03-20 18:21:23 mbertin Exp $
+// $Id: subcollections.inc.php,v 1.12 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -21,10 +21,10 @@ $v_state=urldecode($v_state);
 
 print "<br /><br /><h2 align='center'>".htmlentities($msg["nettoyage_suppr_subcollections"], ENT_QUOTES, $charset)."</h2>";
 
-$query = mysql_query("SELECT sub_coll_id from sub_collections left join notices on sub_coll_id=subcoll_id where subcoll_id is null ");
+$query = pmb_mysql_query("SELECT sub_coll_id from sub_collections left join notices on sub_coll_id=subcoll_id where subcoll_id is null ");
 $affected=0;
-if($affected = mysql_num_rows($query)){
-	while ($ligne = mysql_fetch_object($query)) {
+if($affected = pmb_mysql_num_rows($query)){
+	while ($ligne = pmb_mysql_fetch_object($query)) {
 		$subcoll = new subcollection($ligne->sub_coll_id);
 		$subcoll->delete();
 	}
@@ -33,12 +33,12 @@ if($affected = mysql_num_rows($query)){
 //Nettoyage des informations d'autorités pour les sous collections
 subcollection::delete_autority_sources();
 
-$query = mysql_query("update notices left join sub_collections ON sub_coll_id=subcoll_id SET subcoll_id=0 WHERE sub_coll_id is null");
+$query = pmb_mysql_query("update notices left join sub_collections ON sub_coll_id=subcoll_id SET subcoll_id=0 WHERE sub_coll_id is null");
 
 $spec = $spec - CLEAN_SUBCOLLECTIONS;
 $v_state .= "<br /><img src=../../images/d.gif hspace=3>".htmlentities($msg["nettoyage_suppr_subcollections"], ENT_QUOTES, $charset)." : ";
 $v_state .= $affected." ".htmlentities($msg["nettoyage_res_suppr_subcollections"], ENT_QUOTES, $charset);
-$opt = mysql_query('OPTIMIZE TABLE sub_collections');
+$opt = pmb_mysql_query('OPTIMIZE TABLE sub_collections');
 // mise à jour de l'affichage de la jauge
 print "<table border='0' align='center' width='$table_size' cellpadding='0'><tr><td class='jauge'>
    		<img src='../../images/jauge.png' width='$jauge_size' height='16'></td></tr></table>

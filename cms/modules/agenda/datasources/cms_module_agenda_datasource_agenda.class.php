@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_agenda_datasource_agenda.class.php,v 1.6.4.1 2015-02-25 16:11:05 mbertin Exp $
+// $Id: cms_module_agenda_datasource_agenda.class.php,v 1.8 2015-04-03 11:16:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -35,19 +35,19 @@ class cms_module_agenda_datasource_agenda extends cms_module_common_datasource{
 				if($selector){
 					$calendars = array();
 					$query = "select managed_module_box from cms_managed_modules join cms_cadres on id_cadre = ".$this->cadre_parent." and cadre_object = managed_module_name";
-					$result = mysql_query($query);
+					$result = pmb_mysql_query($query);
 					$events=array();
-					if(mysql_num_rows($result)){
-						$box = mysql_result($result,0,0);
+					if(pmb_mysql_num_rows($result)){
+						$box = pmb_mysql_result($result,0,0);
 						$infos =unserialize($box);
 						$calendars = $selector->get_value();
 						foreach($calendars as $calendar){
 							$elem = $infos['module']['calendars'][$calendar];
 							$query="select id_article from cms_articles where article_num_type = ".$elem['type'];
-							$result = mysql_query($query);
-							if($result && mysql_num_rows($result)){
+							$result = pmb_mysql_query($query);
+							if($result && pmb_mysql_num_rows($result)){
 								$articles = array();
-								while($row = mysql_fetch_object($result)){
+								while($row = pmb_mysql_fetch_object($result)){
 									$articles[]=$row->id_article;
 								}
 								$articles = $this->filter_datas("articles",$articles);
@@ -82,9 +82,9 @@ class cms_module_agenda_datasource_agenda extends cms_module_common_datasource{
 					$event = $art->format_datas();
 					//allons chercher les infos du calendrier associé à cet évènement
 					$query = "select managed_module_box from cms_managed_modules join cms_cadres on id_cadre = ".$this->cadre_parent." and cadre_object = managed_module_name";
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						$box = mysql_result($result,0,0);
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						$box = pmb_mysql_result($result,0,0);
 						$infos =unserialize($box);
 						foreach($infos['module']['calendars'] as $calendar){
 							if($calendar['type'] == $art->num_type){
@@ -111,19 +111,19 @@ class cms_module_agenda_datasource_agenda extends cms_module_common_datasource{
 			case "cms_module_agenda_selector_calendars_date" :
 				if($selector){
 					$query = "select managed_module_box from cms_managed_modules join cms_cadres on id_cadre = ".$this->cadre_parent." and cadre_object = managed_module_name";
-					$result = mysql_query($query);
-					if(mysql_num_rows($result)){
-						$box = mysql_result($result,0,0);
+					$result = pmb_mysql_query($query);
+					if(pmb_mysql_num_rows($result)){
+						$box = pmb_mysql_result($result,0,0);
 						$infos =unserialize($box);
 						$datas = $selector->get_value();
 						$time = mktime(0,0,0,substr($datas['date'],5,2),substr($datas['date'],8,2),substr($datas['date'],0,4));
 						foreach($datas['calendars'] as $calendar){
 							$elem = $infos['module']['calendars'][$calendar];
 							$query="select id_article from cms_articles where article_num_type = ".$elem['type'];
-							$result = mysql_query($query);
-							if(mysql_num_rows($result)){
+							$result = pmb_mysql_query($query);
+							if(pmb_mysql_num_rows($result)){
 								$articles = array();
-								while($row = mysql_fetch_object($result)){
+								while($row = pmb_mysql_fetch_object($result)){
 									$articles[]=$row->id_article;
 								}
 								$articles = $this->filter_datas("articles",$articles);

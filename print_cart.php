@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: print_cart.php,v 1.19 2013-10-16 08:30:19 dbellamy Exp $
+// $Id: print_cart.php,v 1.21 2015-04-03 11:16:23 jpermanne Exp $
 
 //Ajout aux paniers
 
@@ -36,9 +36,9 @@ if ($action=="print_prepare") {
 	print "<form name='print_options' action='print_cart.php?action=print' method='post'>";
 	//Affichage de la sélection des paniers
 	$requete="select caddie.*,count(object_id) as nb_objects, count(flag=1) as nb_flags from caddie left join caddie_content on caddie_id=idcaddie group by idcaddie order by type, name, comment";
-	$resultat=mysql_query($requete);
+	$resultat=pmb_mysql_query($requete);
 	$ctype="";
-	while ($ca=mysql_fetch_object($resultat)) {
+	while ($ca=pmb_mysql_fetch_object($resultat)) {
 		$ca_auth=explode(" ",$ca->autorisations);
 		$as=in_array(SESSuserid,$ca_auth);
 		if (($as!==false)&&($as!==null)) {
@@ -46,13 +46,17 @@ if ($action=="print_prepare") {
 				$ctype=$ca->type;
 				$print_cart[$ctype]["titre"]="<b>".$msg["caddie_de_".$ca->type]."</b><br />";
 			}
+			if(!trim($ca->caddie_classement)){
+				$ca->caddie_classement=classementGen::getDefaultLibelle();
+			}
+			$print_cart[$ctype]["classement_list"][$ca->caddie_classement]["title"]=stripslashes($ca->caddie_classement);
 			if (($parity=1-$parity)) $pair_impair = "even"; else $pair_impair = "odd";
 			$tr_javascript=" onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='$pair_impair'\" ";
-		  	$print_cart[$ctype]["cart_list"].= pmb_bidi("<tr class='$pair_impair' $tr_javascript ><td><input type='checkbox' id='id_".$ca->idcaddie."' name='caddie[".$ca->idcaddie."]' value='".$ca->idcaddie."' />&nbsp;");	                
+		  	$print_cart[$ctype]["classement_list"][$ca->caddie_classement]["cart_list"].= pmb_bidi("<tr class='$pair_impair' $tr_javascript ><td class='classement60'><input type='checkbox' id='id_".$ca->idcaddie."' name='caddie[".$ca->idcaddie."]' value='".$ca->idcaddie."' />&nbsp;");	                
             $link = "print_cart.php?action=print&object_type=".$object_type."&idcaddie=".$ca->idcaddie."&item=$item&current_print=$current_print";	
-            $print_cart[$ctype]["cart_list"].= pmb_bidi( "<a href='javascript:document.getElementById(\"id_".$ca->idcaddie."\").checked=true;document.forms[\"print_options\"].submit();' /><strong>".$ca->name."</strong>")	;		
-            if ($ca->comment) $print_cart[$ctype]["cart_list"].=  pmb_bidi("<br /><small>(".$ca->comment.")</small>");
-            $print_cart[$ctype]["cart_list"].=  pmb_bidi("</td>
+            $print_cart[$ctype]["classement_list"][$ca->caddie_classement]["cart_list"].= pmb_bidi( "<a href='javascript:document.getElementById(\"id_".$ca->idcaddie."\").checked=true;document.forms[\"print_options\"].submit();' /><strong>".$ca->name."</strong>")	;		
+            if ($ca->comment) $print_cart[$ctype]["classement_list"][$ca->caddie_classement]["cart_list"].=  pmb_bidi("<br /><small>(".$ca->comment.")</small>");
+            $print_cart[$ctype]["classement_list"][$ca->caddie_classement]["cart_list"].=  pmb_bidi("</td>
             	<td><b>".$ca->nb_flags."</b>". $msg['caddie_contient_pointes']." / <b>$ca->nb_objects</b> </td>
             	<td>$aff_lien</td>
 				</tr>");		
@@ -68,9 +72,18 @@ if ($action=="print_prepare") {
 		<a href='javascript:collapseAll()'><img src='./images/collapse_all.gif' id='collapseall' border='0'></a>".$msg['caddie_add_search']."</div>");
 
 	if (count($print_cart)) {
-	foreach($print_cart as $key => $cart_type) {
-		print gen_plus($key,$cart_type["titre"],"<table border='0' cellspacing='0' width='100%'>".$cart_type["cart_list"]."</table>",1);
-	}
+		foreach($print_cart as $key => $cart_type) {
+			ksort($print_cart[$key]["classement_list"]);
+		}
+		foreach($print_cart as $key => $cart_type) {
+			//on remplace les clés à cause des accents
+			$cart_type["classement_list"]=array_values($cart_type["classement_list"]);
+			$contenu="";
+			foreach($cart_type["classement_list"] as $keyBis => $cart_typeBis) {
+				$contenu.=gen_plus($key.$keyBis,$cart_typeBis["title"],"<table border='0' cellspacing='0' width='100%' class='classementGen_tableau'>".$cart_typeBis["cart_list"]."</table>",1);
+			}
+			print gen_plus($key,$cart_type["titre"],$contenu,1);
+		}
 	}
 	print "<input type='hidden' name='current_print' value='$current_print'/>";
 	$boutons_select = '';
@@ -190,9 +203,9 @@ if ((($action=="") || ($action=="add_item"))&&($_SESSION["PRINT_CART"])) {
 		foreach ($environement["caddie"] as $environement_caddie) {
 			$c=new caddie($environement_caddie);
 			$nb_items_before=$c->nb_item;
-			$resultat=@mysql_query($requete);
-			print mysql_error();				
-			while (($r=mysql_fetch_object($resultat))) {
+			$resultat=@pmb_mysql_query($requete);
+			print pmb_mysql_error();				
+			while (($r=pmb_mysql_fetch_object($resultat))) {
 				if($environement["include_child"]) {					
 					$tab_list_child=notice::get_list_child($r->notice_id);
 					if(count($tab_list_child))

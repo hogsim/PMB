@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: catalog.tpl.php,v 1.37.4.1 2014-06-05 09:51:36 dgoron Exp $
+// $Id: catalog.tpl.php,v 1.39 2015-03-30 07:14:50 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -100,6 +100,11 @@ $catalog_menu_panier_gestion = "
 	<span".ongletSelect("categ=caddie&sub=gestion&quoi=remote_procs").">
 		<a title='$msg[remote_procedures_catalog_title]' href='./catalog.php?categ=caddie&sub=gestion&quoi=remote_procs'>
 			$msg[remote_procedures_catalog_title]
+		</a>
+	</span>
+	<span".ongletSelect("categ=caddie&sub=gestion&quoi=classementGen").">
+		<a title='$msg[classementGen_list_libelle]' href='./catalog.php?categ=caddie&sub=gestion&quoi=classementGen'>
+			$msg[classementGen_list_libelle]
 		</a>
 	</span>
 </div>

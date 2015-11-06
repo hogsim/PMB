@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: suggestions_origine.class.php,v 1.9 2013-04-16 08:16:41 mbertin Exp $
+// $Id: suggestions_origine.class.php,v 1.10 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -23,8 +23,8 @@ class suggestions_origine{
 		$this->origine = $origine;
 		$this->num_suggestion = $num_suggestion;
 		$q = "select count(1) from suggestions_origine where origine = '".$this->origine."' and num_suggestion = '".$this->num_suggestion."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) != 0) {
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) != 0) {
 			$this->load();
 		}
 
@@ -37,8 +37,8 @@ class suggestions_origine{
 		global $dbh;
 		
 		$q = "select * from suggestions_origine where origine = '".$this->origine."' and num_suggestion = '".$this->num_suggestion."' ";
-		$r = mysql_query($q, $dbh);
-		$obj = mysql_fetch_object($r);
+		$r = pmb_mysql_query($q, $dbh);
+		$obj = pmb_mysql_fetch_object($r);
 		$this->type_origine = $obj->type_origine;
 		$this->date_suggestion = $obj->date_suggestion;
 
@@ -53,18 +53,18 @@ class suggestions_origine{
 		if (!$this->origine && !$this->num_suggestion) die("Erreur de création suggestions_origine");
 
 		$q = "select count(1) from suggestions_origine where origine = '".$this->origine."' and num_suggestion = '".$this->num_suggestion."' ";
-		$r = mysql_query($q, $dbh);
-		if (mysql_result($r, 0, 0) != 0) {
+		$r = pmb_mysql_query($q, $dbh);
+		if (pmb_mysql_result($r, 0, 0) != 0) {
 		
 			$q = "update suggestions_origine set type_origine = '".$this->type_origine."' ";
 			$q.= "where origine = '".$this->origine."' and num_suggestion = '".$this->num_suggestion."' ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
 		} else {
 				
 			$q = "insert into suggestions_origine set origine = '".$this->origine."', num_suggestion = '".$this->num_suggestion."', ";
 			$q.= "type_origine =  '".$this->type_origine."', date_suggestion = now() ";
-			$r = mysql_query($q, $dbh);
+			$r = pmb_mysql_query($q, $dbh);
 			
 		}
 	}
@@ -77,7 +77,7 @@ class suggestions_origine{
 
 		$q = "delete from suggestions_origine where num_suggestion = '".$num_suggestion."' ";
 		if($origine) $q.= "and origine = '".$origine."' "; 
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 				
 	}
 
@@ -87,7 +87,7 @@ class suggestions_origine{
 		
 		global $dbh;
 		
-		$opt = mysql_query('OPTIMIZE TABLE suggestions_origine', $dbh);
+		$opt = pmb_mysql_query('OPTIMIZE TABLE suggestions_origine', $dbh);
 		return $opt;
 				
 	}
@@ -109,11 +109,11 @@ class suggestions_origine{
 		
 		//On commence par supprimer les suggestions pour lesquelles l'origine est identique à celle de destination
 		$q = "Delete from suggestions_origine where origine = '".$origine."' and num_suggestion = '".$from_sug."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 		
 		//On met à jour les suggestions à fusionner
 		$q = "Update suggestions_origine set num_suggestion = '".$to_sug."' where num_suggestion = '".$from_sug."' ";
-		$r = mysql_query($q, $dbh);
+		$r = pmb_mysql_query($q, $dbh);
 	}
 
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2005 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_associate_svg.class.php,v 1.2.2.1 2014-03-25 10:18:54 apetithomme Exp $
+// $Id: explnum_associate_svg.class.php,v 1.5 2015-04-03 11:16:19 jpermanne Exp $
 
 
 if (stristr ($_SERVER['REQUEST_URI'], ".class.php"))
@@ -268,10 +268,10 @@ class explnum_associate_svg {
 	 */
 	private function getDatas() {
 		$query = "select explnum_speaker_id, explnum_speaker_speaker_num, explnum_speaker_gender, explnum_speaker_author, author_name, author_rejete from explnum_speakers left join authors on explnum_speaker_author = author_id where explnum_speaker_explnum_num = ".$this->explnum_id;
-		$result = mysql_query($query);
-		if ($result && mysql_num_rows($result)) {
+		$result = pmb_mysql_query($query);
+		if ($result && pmb_mysql_num_rows($result)) {
 			$i = 0;
-			while ($speaker = mysql_fetch_object($result)) {
+			while ($speaker = pmb_mysql_fetch_object($result)) {
 				$this->speakers[$speaker->explnum_speaker_id] = array(
 						'id' => $speaker->explnum_speaker_speaker_num,
 						'gender' => $speaker->explnum_speaker_gender,
@@ -284,9 +284,9 @@ class explnum_associate_svg {
 		}
 		
 		$query = "select explnum_segment_id, explnum_segment_speaker_num, explnum_segment_start, explnum_segment_duration, explnum_segment_end from explnum_segments where explnum_segment_explnum_num = ".$this->explnum_id;
-		$result = mysql_query($query);
-		if ($result && mysql_num_rows($result)) {
-			while ($segment = mysql_fetch_object($result)) {
+		$result = pmb_mysql_query($query);
+		if ($result && pmb_mysql_num_rows($result)) {
+			while ($segment = pmb_mysql_fetch_object($result)) {
 				$this->segments[] = array(
 						'db_id' => $segment->explnum_segment_id,
 						'speaker' => $segment->explnum_segment_speaker_num,
@@ -414,7 +414,7 @@ class explnum_associate_svg {
 		
 		// Récupération des variables en js
 		$this->js .= "
-		var duration = ".$duration."
+		var duration = ".$duration.";
 		var ratio = ".$ratio.";
 		var player = videojs('videojs');
 		var segments = ".json_encode($this->segments).";";
@@ -448,9 +448,10 @@ class explnum_associate_svg {
 			for (var i in segments) {
 				if (segments[i].db_id == id) {
 					player.currentTime(segments[i].start / 100);
-					break;
+					return segments[i].start / 100;
 				}
 			}
+			return 0;
 		}";
 		
 		// Drag du curseur
@@ -512,7 +513,7 @@ class explnum_associate_svg {
 		
 		// Récupération du tableau de locuteurs en js
 		$this->js .= "
-		var speakers = ".json_encode($this->speakers).";
+		var speakers = ".json_encode($this->utf8_normalize($this->speakers)).";
 		var segments_between_lr_cursors = new Array();";
 		
 		// Positionnement des taquets
@@ -531,7 +532,7 @@ class explnum_associate_svg {
 			var x = sec * ratio + ".($this->dimensions['speakerLeft'] + $this->dimensions['speakerWidth'] + $this->dimensions['speakerMarginRight'] + $this->dimensions['backgroundPadding']).";
 			if (cursor_id == 'left_cursor_svg') {
 				x = x - ".$explnum_associate_left_cursor_svg_width.";
-		
+				
 				if (x <= document.getElementById('right_cursor_svg').transform.baseVal.getItem(0).matrix.e) {
 					cursor.transform.baseVal.getItem(0).setTranslate(x, cursor.transform.baseVal.getItem(0).matrix.f);
 					cursor.setAttribute('title', document.getElementById(cursor_id + '_pos').value);
@@ -606,7 +607,7 @@ class explnum_associate_svg {
 				form.className = 'form-catalog';
 				form.name = 'explnum_associate_speaker_' + i;
 				var x = findPos(document.getElementById('speech_timeline'))[0] + ".$this->dimensions['speakerLeft'].";
-				var y = findPos(document.getElementById('speech_timeline'))[1] - 10 + speakers[i]['posY'];
+				var y = findPos(document.getElementById('speech_timeline'))[1] - 10 + speakers[i]['posY']*1;
 				form.style = 'position: absolute; top: ' + y + 'px; left: ' + x + 'px;';
 				form.addEventListener('submit', function(e){
 					e.preventDefault();
@@ -748,10 +749,10 @@ class explnum_associate_svg {
 			
 			var mouse_posY = event.pageY - findPos(document.getElementById('speech_timeline'))[1];
 			var speaker_id = current_drag_speaker_id.replace('speaker_svg_', '');
-			if ((speakers[speaker_id].posY > mouse_posY) || ((speakers[speaker_id].posY + ".$this->dimensions['speakerHeight'].") < mouse_posY)) {
+			if ((speakers[speaker_id].posY*1 > mouse_posY) || ((speakers[speaker_id].posY*1 + ".$this->dimensions['speakerHeight'].") < mouse_posY)) {
 				set_current_speaker(current_drag_speaker_id, false);
 				for (var i in speakers) {
-					if ((speakers[i].posY <= mouse_posY) && ((speakers[i].posY + ".$this->dimensions['speakerHeight'].") >= mouse_posY)) {
+					if ((speakers[i].posY*1 <= mouse_posY) && ((speakers[i].posY*1 + ".$this->dimensions['speakerHeight'].") >= mouse_posY)) {
 						current_drag_speaker_id = 'speaker_svg_' + i;
 						set_current_speaker(current_drag_speaker_id, true);
 						break;
@@ -783,7 +784,7 @@ class explnum_associate_svg {
 			}
 			
 			if ((segments[segment_id].speaker != speaker_id) && move_allowed) {
-				current_drag_segment.transform.baseVal.getItem(0).setTranslate(current_drag_segment.transform.baseVal.getItem(0).matrix.e, speakers[speaker_id].posY);
+				current_drag_segment.transform.baseVal.getItem(0).setTranslate(current_drag_segment.transform.baseVal.getItem(0).matrix.e, speakers[speaker_id].posY*1);
 				segments[segment_id].speaker = speaker_id;
 				
 				var req = new http_request();
@@ -1042,7 +1043,7 @@ class explnum_associate_svg {
 			var selectedSpeakerId = 0;
 				
 			for (var i in speakers) {
-				if ((clickPosY >= speakers[i].posY) && (clickPosY <= (speakers[i].posY + ".$this->dimensions['speakerHeight']."))) {
+				if ((clickPosY >= speakers[i].posY*1) && (clickPosY <= (speakers[i].posY*1 + ".$this->dimensions['speakerHeight']."))) {
 					selectedSpeakerId = i;
 					break;
 				}
@@ -1184,6 +1185,17 @@ class explnum_associate_svg {
 		document.getElementById('right_cursor_svg_to_cursor').addEventListener('click', function(event) {
 			move_lr_cursor_on_cursor('right_cursor_svg');
 		}, false);";
+	}
+	
+	private function utf8_normalize($array) {
+		global $charset;
+		$rarray=array();
+		foreach ($array as $key=>$val) {
+			if (is_array($val)) {
+				$rarray[$key]=$this->utf8_normalize($val);
+			} else $rarray[$key]=($charset!="utf-8"?utf8_encode($val):$val);
+		}
+		return $rarray;
 	}
 }
 ?>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: autorites.tpl.php,v 1.32 2013-08-14 15:23:28 mbertin Exp $
+// $Id: autorites.tpl.php,v 1.35 2014-08-27 09:02:04 ngantier Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -22,8 +22,14 @@ $autorites_menu .= "<li><a href='./autorites.php?categ=editeurs&sub=&id='>".$msg
 if ($pmb_use_uniform_title) {
 	$autorites_menu .= "<li><a href='./autorites.php?categ=titres_uniformes&sub=&id='>".$msg['aut_menu_titre_uniforme']."</a></li>";
 }
-$autorites_menu .= "<li><a href='./autorites.php?categ=indexint&sub=&id='>".$msg['indexint_menu']."</a></li>
-	<li><a href='./autorites.php?categ=concepts&sub=&id='>".$msg['ontology_skos_menu']."</a></li>
+$autorites_menu .= "<li><a href='./autorites.php?categ=indexint&sub=&id='>".$msg['indexint_menu']."</a></li>";
+
+if($thesaurus_concepts_active == 1){
+	$autorites_menu .= "
+	<li><a href='./autorites.php?categ=concepts&sub=&id='>".$msg['ontology_skos_menu']."</a></li>";
+}
+$autorites_menu .= "
+	!!authpersos!!
 </ul>";
 if (SESSrights & THESAURUS_AUTH) {
 	$autorites_menu .= "

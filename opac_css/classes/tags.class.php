@@ -4,7 +4,7 @@
 // © 2006 mental works / www.mental-works.com contact@mental-works.com
 // 	repris et corrigé par PMB Services 
 // +-------------------------------------------------+
-// $Id: tags.class.php,v 1.13.4.1 2014-08-28 14:54:18 dgoron Exp $
+// $Id: tags.class.php,v 1.15 2015-04-03 11:16:17 jpermanne Exp $
 
 // définition de la classe d'affichage des 'tags'
 
@@ -28,9 +28,9 @@ class tags {
 		
 		$requete = "select index_l from notices where index_l is not null and index_l!=''";
 		$arr=array();
-		$r = mysql_query($requete, $dbh);
-		if (mysql_numrows($r)){
-			while ($loc = mysql_fetch_object($r)) {
+		$r = pmb_mysql_query($requete, $dbh);
+		if (pmb_mysql_num_rows($r)){
+			while ($loc = pmb_mysql_fetch_object($r)) {
 				$liste = explode($pmb_keyword_sep,$loc->index_l);
 				for ($i=0;$i<count($liste);$i++){
 					$index=trim($liste[$i]);
@@ -96,9 +96,9 @@ class tags {
 		$requete = "select index_l from notices where index_l like '%$user_query%'";
 		$user_query=stripslashes($user_query);
 		$arr=array();
-		$r = mysql_query($requete,$dbh);
+		$r = pmb_mysql_query($requete,$dbh);
 		
-		while ($loc = mysql_fetch_object($r)) {
+		while ($loc = pmb_mysql_fetch_object($r)) {
 			$liste = explode($pmb_keyword_sep,$loc->index_l);
 			for ($i=0;$i<count($liste);$i++){
 				$index=trim($liste[$i]);

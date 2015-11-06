@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: relance_export.php,v 1.4 2013-10-04 12:48:39 dgoron Exp $
+// $Id: relance_export.php,v 1.5 2015-04-03 11:16:24 jpermanne Exp $
 
 //Affichage des recouvrements pour un lecteur, format Excel HTML
 
@@ -66,8 +66,8 @@ $export_relance_tpl="
 
 $req ="select id_empr  from empr, pret, exemplaires, empr_categ where 1 ";
 $req.= "and pret_retour<CURDATE() and pret_idempr=id_empr and pret_idexpl=expl_id and id_categ_empr=empr_categ group by id_empr";
-$res=mysql_query($req);
-while ($r=mysql_fetch_object($res)) {
+$res=pmb_mysql_query($req);
+while ($r=pmb_mysql_fetch_object($res)) {
 	$relance_liste.=get_relance($r->id_empr);
 }
 
@@ -124,8 +124,8 @@ function get_relance($id_empr){
 	
 	$reqexpl = "select pret_idexpl as expl from pret where pret_retour<CURDATE() and pret_idempr=$id_empr";
 	
-	$resexple=mysql_query($reqexpl,$dbh);
-	while(($liste = mysql_fetch_object($resexple))){			
+	$resexple=pmb_mysql_query($reqexpl,$dbh);
+	while(($liste = pmb_mysql_fetch_object($resexple))){			
 		$dates_resa_sql = " date_format(pret_date, '".$msg["format_date"]."') as aff_pret_date, date_format(pret_retour, '".$msg["format_date"]."') as aff_pret_retour " ;
 		
 		$requete = "SELECT notices_m.notice_id as m_id, notices_s.notice_id as s_id, pret_idempr, expl_id, expl_cb,expl_cote, pret_date, pret_retour,
@@ -136,8 +136,8 @@ function get_relance($id_empr){
 		$requete.= " notices_m.tparent_id, notices_m.tnvol " ; 
 		$requete.= " FROM (((exemplaires LEFT JOIN notices AS notices_m ON expl_notice = notices_m.notice_id ) LEFT JOIN bulletins ON expl_bulletin = bulletins.bulletin_id) LEFT JOIN notices AS notices_s ON bulletin_notice = notices_s.notice_id), docs_type, docs_section, docs_location, pret ";
 		$requete.= " WHERE expl_id='".$liste->expl."' and expl_typdoc = idtyp_doc and expl_section = idsection and expl_location = idlocation and pret_idexpl = expl_id  ";
-		$res_det_expl = mysql_query($requete) ;
-		$expl = mysql_fetch_object($res_det_expl);
+		$res_det_expl = pmb_mysql_query($requete) ;
+		$expl = pmb_mysql_fetch_object($res_det_expl);
 				
 		$amd = $amende->get_amende($liste->expl);
 		
@@ -145,8 +145,8 @@ function get_relance($id_empr){
 			from log_retard as log, log_expl_retard  as expl where log.idempr=$id_empr and  log.niveau_reel='".$expl->niveau_relance."'
 		 	and expl.num_log_retard=log.id_log and expl_id='".$liste->expl."' ";
 		
-		$reslog=mysql_query($reqlog);
-		if($log=mysql_fetch_object($reslog)) {
+		$reslog=pmb_mysql_query($reqlog);
+		if($log=pmb_mysql_fetch_object($reslog)) {
 			$printed=$log->printed;
 			$mail=$log->mail;
 		} else {

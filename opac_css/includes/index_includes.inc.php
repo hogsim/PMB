@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: index_includes.inc.php,v 1.85.2.6 2015-06-18 13:29:09 jpermanne Exp $
+// $Id: index_includes.inc.php,v 1.103 2015-06-18 13:27:54 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -116,6 +116,9 @@ if ((!$lvl)&&(!$search_type_asked)&&($opac_first_page_params)) {
 	}
 } 
 
+if($opac_search_other_function){
+	require_once($include_path."/".$opac_search_other_function);
+}
 
 if (!$_SESSION["nb_sortnotices"]) $_SESSION["nb_sortnotices"]=0; 
 
@@ -205,6 +208,7 @@ if ($raz_history) {
 						$_SESSION["notice_view".(string)$value]=$_SESSION["notice_view".(string)$key];
 						$_SESSION["search_type".(string)$value]=$_SESSION["search_type".(string)$key];
 						$_SESSION["user_query".(string)$value]=$_SESSION["user_query".(string)$key];
+						$_SESSION["map_emprises_query".(string)$value]=$_SESSION["map_emprises_query".(string)$key];
 						$_SESSION["typdoc".(string)$value]=$_SESSION["typdoc".(string)$key];
 						$_SESSION["look_TITLE".(string)$value]=$_SESSION["look_TITLE".(string)$key];
 	       				$_SESSION["look_AUTHOR".(string)$value]=$_SESSION["look_AUTHOR".(string)$key];
@@ -284,9 +288,15 @@ if($opac_autolevel2){
 }
 require_once($base_path.'/includes/navigator.inc.php');
 
+$link_to_print_search_result = "<span class=\"printSearchResult\">
+<a href='#' onClick=\"openPopUp('".$base_path."/print.php?lvl=search&current_search=".($_SESSION['last_query']+0)."','print',500,600,-2,-2,'scrollbars=yes,menubar=0'); w.focus(); return false;\">
+	<img src='".$base_path."/images/print.gif' border='0' align='bottom' alt=\"".$msg["histo_print"]."\" title=\"".$msg["histo_print"]."\"/>
+</a>
+</span>";
+
 if ((($opac_cart_allow)&&(!$opac_cart_only_for_subscriber))||(($opac_cart_allow)&&($_SESSION["user_code"]))) {
-	$add_cart_link="<span class=\"addCart\"><a href='cart_info.php?lvl=$lvl&id=$id' target='cart_info'>".$msg["cart_add_result_in"]."</a></span>";
-	$add_cart_link_spe="<span class=\"addCart\"><a href='cart_info.php?lvl=$lvl&id=$id!!spe!!' target='cart_info'>".$msg["cart_add_result_in"]."</a></span>";
+	$add_cart_link="<span class=\"addCart\"><a href='cart_info.php?lvl=$lvl&id=$id' target='cart_info' title='".$msg["cart_add_result_in"]."'>".$msg["cart_add_result_in"]."</a></span>";
+	$add_cart_link_spe="<span class=\"addCart\"><a href='cart_info.php?lvl=$lvl&id=$id!!spe!!' target='cart_info' title='".$msg["cart_add_result_in"]."'>".$msg["cart_add_result_in"]."</a></span>";
 }
 
 $link_to_visionneuse = "
@@ -334,9 +344,9 @@ switch($lvl) {
 		$author_type_aff=0;
 		if($opac_congres_affichage_mode && $id) {
 			$requete="select author_type from authors where author_id=".$id;
-			$r_author=mysql_query($requete);
-			if (@mysql_num_rows($r_author)) {
-				$author_type=mysql_result($r_author,0,0);
+			$r_author=pmb_mysql_query($requete);
+			if (@pmb_mysql_num_rows($r_author)) {
+				$author_type=pmb_mysql_result($r_author,0,0);
 				if($author_type == '71' || $author_type == '72') $author_type_aff=1;
 			}			
 		}
@@ -413,6 +423,10 @@ switch($lvl) {
 		require_once ($base_path.'/includes/templates/last_records.tpl.php');
 		require_once ($base_path.'/includes/last_records.inc.php');
 		break;
+	case 'authperso_see':
+		require_once($base_path.'/includes/authperso_see.inc.php');
+		break;
+		
 	case 'information':
 		// Insertion page d'information
 		// Ceci permet d'afficher une page d'info supplémentaire en incluant un fichier.
@@ -453,6 +467,17 @@ switch($lvl) {
 		break;
 	case 'bannette_see':
 		require_once($base_path.'/includes/bannette_see.inc.php');
+		break;
+	case "faq" :
+		if($faq_active){
+			require_once($base_path.'/includes/faq.inc.php');
+		}else{
+			$lvl = "index";
+		}
+		
+		break;
+	case 'concept_see':
+		require_once($base_path.'/includes/concept_see.inc.php');
 		break;
 	default:
 		$lvl='index';
@@ -510,9 +535,9 @@ if($pmb_logs_activate){
 			left join pret on e.id_empr=pret_idempr
 			where e.empr_login='".addslashes($_SESSION['user_code'])."'
 			group by resa_idempr, pret_idempr";	
-	$res=mysql_query($rqt);
+	$res=pmb_mysql_query($rqt);
 	if($res){
-		$empr_carac = mysql_fetch_array($res);
+		$empr_carac = pmb_mysql_fetch_array($res);
 		$log->add_log('empr',$empr_carac);
 	}
 
@@ -552,6 +577,12 @@ if($pmb_logs_activate){
 		$log->add_log('multi_search', $search_stat->serialize_search());
 		$log->add_log('multi_human_query', $search_stat->make_human_query());
 	}
+	
+	//Enregistrement vue
+	if($opac_opac_view_activate){
+		$log->add_log('opac_view', $_SESSION["opac_view"]);
+	}
+	
 	$log->save();
 }
 
@@ -579,9 +610,20 @@ if ($opac_show_bandeaugauche==0) {
 		$facette=str_replace("!!title_block_facette!!",$msg["label_title_facette"],$facette);
 		$facette=str_replace("!!lst_facette!!",$str,$facette);
 		$lvl1=str_replace("!!lst_lvl1!!",$str_lvl1,$lvl1);
-	}else {
-		$facette="";
+	}else if(strpos($lvl,"_see")!==false){
+		$facette=str_replace("!!title_block_facette!!",$msg["label_title_facette"],$facette);
+		$facette=str_replace("!!lst_facette!!",$str,$facette);
+		$lvl1=str_replace("!!lst_lvl1!!",$str_lvl1,$lvl1);
+	}else if ($lvl=="faq") {
+		//au plus simple...
+		if(!is_object($faq) || get_class($faq) != "faq"){
+			$faq = new faq($faq_page,0,$faq_filters);
+		}
+		$facette=$faq->get_facettes_filter();
 		$lvl1="";	
+	}else{
+		$facette="";
+		$lvl1="";		
 	}
 	
 	// loading the languages available in OPAC - martizva >> Eric
@@ -593,11 +635,23 @@ if ($opac_show_bandeaugauche==0) {
 		$loginform__ = genere_form_connexion_empr();
 	} else {
 		$loginform__.="<b>".$empr_prenom." ".$empr_nom."</b><br />\n";
-		$loginform__.="<a href=\"empr.php\" id=\"empr_my_account\">".$msg["empr_my_account"]."</a><br />
-			<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
+		$loginform__.="<select name='empr_quick_access' onchange='if (this.value) window.location.href=this.value'>
+				<option value=''>".$msg["empr_quick_access"]."</option>
+				<option value='empr.php'>".$msg["empr_my_account"]."</option>";
+		if ($allow_loan || $allow_loan_hist) {
+			$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-loan'>".$msg["empr_my_loans"]."</option>";
+		}
+		if ($allow_book && $opac_resa) {
+			$loginform__.="<option value='empr.php?tab=loan_reza&lvl=all#empr-resa'>".$msg["empr_my_resas"]."</option>";
+		}
+		if ($opac_demandes_active && $allow_dema) {
+			$loginform__.="<option value='empr.php?tab=request&lvl=list_dmde'>".$msg["empr_my_dmde"]."</option>";
+		}
+		$loginform__.="</select><br />";
+		$loginform__.="<a href=\"index.php?logout=1\" id=\"empr_logout_lnk\">".$msg["empr_logout"]."</a>";
 	}
 	$loginform = str_replace("!!login_form!!",$loginform__,$loginform);
-	$footer=str_replace("!!contenu_bandeau!!",$home_on_left.$loginform.$meteo.($opac_facette_in_bandeau_2?"":$lvl1.$facette).$adresse,$footer);
+	$footer=str_replace("!!contenu_bandeau!!",($opac_accessibility ? $accessibility : "").$home_on_left.$loginform.$meteo.($opac_facette_in_bandeau_2?"":$lvl1.$facette).$adresse,$footer);
 	$footer= str_replace("!!contenu_bandeau_2!!",$opac_facette_in_bandeau_2?$lvl1.$facette:"",$footer);
 } 
 print $footer;
@@ -614,7 +668,46 @@ if($opac_parse_html || $cms_active){
 		$cms=new cms_build();
 		$htmltoparse = $cms->transform_html($htmltoparse);
 	}
+	
+	//Compression CSS
+	if($opac_compress_css == 1 && !$cms_active){
+		$compressed_file_exist = file_exists("./temp/full.css");
+		require_once($class_path."/curl.class.php");
+		$dom = new DOMDocument();
+		$dom->encoding = $charset;
+		$dom->loadHTML($htmltoparse);
+		$css_buffer = "";
+		$links = $dom->getElementsByTagName("link");
+		$dom_css = array();
+		for($i=0 ; $i<$links->length ; $i++){
+			$dom_css[] = $links->item($i);
+			if(!$compressed_file_exist && $links->item($i)->hasAttribute("type") && $links->item($i)->getAttribute("type") == "text/css"){
+				$css_buffer.= loadandcompresscss(html_entity_decode($links->item($i)->getAttribute("href")));
+			}
+		}
+		$styles = $dom->getElementsByTagName("style");
+		for($i=0 ; $i<$styles->length ; $i++){
+			$dom_css[] = $styles->item($i);
+			if(!$compressed_file_exist){
+				$css_buffer.= compresscss($styles->item($i)->nodeValue,"");
+			}
+		}
+		foreach($dom_css as $link){
+			$link->parentNode->removeChild($link);
+		}
+		if(!$compressed_file_exist){
+			file_put_contents("./temp/full.css",$css_buffer);
+		}
+		$link = $dom->createElement("link");
+		$link->setAttribute("href", "./temp/full.css");
+		$link->setAttribute("rel", "stylesheet");
+		$link->setAttribute("type", "text/css");
+		$dom->getElementsByTagName("head")->item(0)->appendChild($link);
+		$htmltoparse = $dom->saveHTML();
+	}else if (file_exists("./temp/full.css") && !$cms_active){
+		unlink("./temp/full.css");
+	}
 	print $htmltoparse;
 }
-mysql_close($dbh);
+pmb_mysql_close($dbh);
 ?>

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: export_z3950.php,v 1.6 2008-03-26 12:55:54 ohennequin Exp $
+// $Id: export_z3950.php,v 1.7 2015-04-03 11:16:29 jpermanne Exp $
 
 $base_path="../..";
 include($base_path."/includes/db_param.inc.php");
@@ -15,8 +15,8 @@ function make_error($nerr,$err_message) {
 	exit();
 }
 
-if (!@mysql_connect(SQL_SERVER,USER_NAME,USER_PASS)) make_error(1,"Could'nt connect to database server"); 
-if (!@mysql_select_db(DATA_BASE)) make_error(2,"Database unknown");
+if (!@pmb_mysql_connect(SQL_SERVER,USER_NAME,USER_PASS)) make_error(1,"Could'nt connect to database server"); 
+if (!@pmb_mysql_select_db(DATA_BASE)) make_error(2,"Database unknown");
 
 //Commande envoyée
 $command=$_GET["command"];
@@ -50,13 +50,13 @@ function construct_query($query,$not,$level,$argn="") {
 		$requete="create temporary table r$level ";
 		if ($ope=="and") {
 			$requete.="select $return1.notice_id from $return1, $return2 where $return1.notice_id=$return2.notice_id";
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 		}
 		else {
 			$requete.="select notice_id from $return1";
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 			$requete="insert into r$level select $return2.notice_id from $return2,$return1 where $return2.notice_id!=$return1.notice_id";
-			@mysql_query($requete);
+			@pmb_mysql_query($requete);
 		}
 		$return="r$level";
 	} else {
@@ -85,15 +85,15 @@ function construct_query($query,$not,$level,$argn="") {
 			case 1003:
 				if ($not) {
 					$requete="create temporary table aut1 select notice_id,concat(author_name,' ',author_rejete) as auth from notices left join authors on author_id=aut1_id";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 					$requete="create temporary table aut2 select notice_id,concat(author_name,' ',author_rejete) as auth from notices left join authors on author_id=aut2_id";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 					$requete="create temporary table aut3 select notice_id,concat(author_name,' ',author_rejete) as auth from notices left join authors on author_id=aut3_id";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 					$requete="create temporary table aut4 select notice_id,concat(author_name,' ',author_rejete) as auth from notices left join authors on author_id=aut4_id";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 					$requete="create temporary table aut select aut1.notice_id, concat(ifnull(aut1.auth,''),' ',ifnull(aut2.auth,''),' ',ifnull(aut3.auth,''),' ',ifnull(aut4.auth,'')) as auth from aut1, aut2, aut3, aut4 where aut2.notice_id=aut1.notice_id and aut3.notice_id=aut1.notice_id and aut4.notice_id=aut1.notice_id";
-				    @mysql_query($requete);
+				    @pmb_mysql_query($requete);
 				    $requete="select notice_id from aut where auth not like '%".$use[1]."%'";
 				}
 				else 
@@ -104,7 +104,7 @@ function construct_query($query,$not,$level,$argn="") {
 			case 21:
 				if ($not) {
 				    $requete="CREATE TEMPORARY TABLE cat SELECT DISTINCT notices_categories.notcateg_notice as notice_id, index_categorie as cat FROM categories, notices_categories WHERE notcateg_categorie = categ_id ORDER BY notices_categories.ordre_categorie";
-				    @mysql_query($requete);
+				    @pmb_mysql_query($requete);
 					$requete="SELECT DISTINCT notice_id FROM cat WHERE cat not like '%".$use[1]."%'";
 					} else { 
 						$requete="SELECT DISTINCT notice_id FROM notices_categories, categories, notices WHERE categ_id=notcateg_categorie AND notice_id=notcateg_notice AND index_categorie like '%".$use[1]."%'";
@@ -115,7 +115,7 @@ function construct_query($query,$not,$level,$argn="") {
 				break;
 		}
 		$requete="create temporary table r".$level."_".$argn." ".$requete;
-		@mysql_query($requete);
+		@pmb_mysql_query($requete);
 		$return="r".$level."_".$argn;
 	}
 	return $return;
@@ -194,10 +194,10 @@ switch ($command) {
 		$sup_tables="";
 		$sql_query=construct_query($query,0,0);
 		$sql_query="select notice_id from $sql_query limit 100";
-		$resultat=@mysql_query($sql_query);
+		$resultat=@pmb_mysql_query($sql_query);
 		echo "0@No errors@";
-		echo @mysql_num_rows($resultat);
-		while (list($id)=@mysql_fetch_row($resultat)) {
+		echo @pmb_mysql_num_rows($resultat);
+		while (list($id)=@pmb_mysql_fetch_row($resultat)) {
 			echo "@$id";
 		}
 		break;

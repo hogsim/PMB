@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: main.inc.php,v 1.13 2014-03-07 11:12:31 dgoron Exp $
+// $Id: main.inc.php,v 1.14 2015-04-01 12:23:48 vtouchard Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -44,6 +44,9 @@ switch ($sub) {
 			$_SESSION["session_history"][$_SESSION["CURRENT"]]["NOTI"]["SEARCH_TYPE"]="extended";
 			$_SESSION["session_history"][$_SESSION["CURRENT"]]["NOTI"]["TEXT_QUERY"]="";
 		}
+		if($pmb_map_activate){
+			$sc->check_emprises();
+		}		
 		break;
 	default:
 		print $sc->show_form("./catalog.php?categ=search&mode=6","./catalog.php?categ=search&mode=6&sub=launch");

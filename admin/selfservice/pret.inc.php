@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pret.inc.php,v 1.2 2010-03-16 14:25:22 ngantier Exp $
+// $Id: pret.inc.php,v 1.3 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -135,42 +135,42 @@ function memo_param() {
 	
 	$rqt = "UPDATE parametres SET valeur_param ='$pret_carte_invalide_msg' where type_param= 'selfservice' and sstype_param='pret_carte_invalide_msg' ";
 	$selfservice_pret_carte_invalide_msg=stripslashes($pret_carte_invalide_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 
 	$rqt = "UPDATE parametres SET valeur_param ='$pret_pret_interdit_msg' where type_param= 'selfservice' and sstype_param='pret_pret_interdit_msg' ";
 	$selfservice_pret_pret_interdit_msg=stripslashes($pret_pret_interdit_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 
 	$rqt = "UPDATE parametres SET valeur_param ='$pret_deja_prete_msg' where type_param= 'selfservice' and sstype_param='pret_deja_prete_msg' ";
 	$selfservice_pret_deja_prete_msg=stripslashes($pret_deja_prete_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 
 	$rqt = "UPDATE parametres SET valeur_param ='$pret_deja_reserve_msg' where type_param= 'selfservice' and sstype_param='pret_deja_reserve_msg' ";
 	$selfservice_pret_deja_reserve_msg=stripslashes($pret_deja_reserve_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 
 	$rqt = "UPDATE parametres SET valeur_param ='$pret_quota_bloc_msg' where type_param= 'selfservice' and sstype_param='pret_quota_bloc_msg' ";
 	$selfservice_pret_quota_bloc_msg=stripslashes($pret_quota_bloc_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 
 	$rqt = "UPDATE parametres SET valeur_param ='$pret_non_pretable_msg' where type_param= 'selfservice' and sstype_param='pret_non_pretable_msg' ";
 	$selfservice_pret_non_pretable_msg=stripslashes($pret_non_pretable_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 
 	$rqt = "UPDATE parametres SET valeur_param ='$pret_expl_inconnu_msg' where type_param= 'selfservice' and sstype_param='pret_expl_inconnu_msg' ";
 	$selfservice_pret_expl_inconnu_msg=stripslashes($pret_expl_inconnu_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 
 	$rqt = "UPDATE parametres SET valeur_param ='$pret_prolonge_non_msg' where type_param= 'selfservice' and sstype_param='pret_prolonge_non_msg' ";
 	$selfservice_pret_prolonge_non_msg=stripslashes($pret_prolonge_non_msg);
-	mysql_query($rqt);
+	pmb_mysql_query($rqt);
 
 	
 	

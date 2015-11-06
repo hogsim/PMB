@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: ajax_integer.inc.php,v 1.3.6.1 2015-06-23 11:30:24 jpermanne Exp $
+// $Id: ajax_integer.inc.php,v 1.5 2015-06-23 11:31:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -35,10 +35,10 @@ $ret=$z->insert_in_database(true);
 //on conserve la trace de l'origine de la notice...
 $id_notice = $ret[1];
 $rqt = "select recid from external_count where rid = '$item'";
-$res = mysql_query($rqt);
-if(mysql_num_rows($res)) $recid = mysql_result($res,0,0);
+$res = pmb_mysql_query($rqt);
+if(pmb_mysql_num_rows($res)) $recid = pmb_mysql_result($res,0,0);
 $req= "insert into notices_externes set num_notice = '".$id_notice."', recid = '".$recid."'";
-mysql_query($req);
+pmb_mysql_query($req);
 if ($ret[0]) {
 	if($z->bull_id && $z->perio_id){
 		$notice_display=new serial_display($ret[1],6);

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: dashboard_module_circ.class.php,v 1.4.2.1 2014-09-10 10:28:57 ngantier Exp $
+// $Id: dashboard_module_circ.class.php,v 1.7 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -114,7 +114,7 @@ class dashboard_module_circ extends dashboard_module {
 		}
 		if(count($update)){
 			$query.=implode(", ",$update)." where userid=".SESSuserid;
-			$result = mysql_query($query);
+			$result = pmb_mysql_query($query);
 			return $result;
 		}
 		return true;

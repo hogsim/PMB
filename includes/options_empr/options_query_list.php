@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: options_query_list.php,v 1.17 2012-11-27 15:28:10 mbertin Exp $
+// $Id: options_query_list.php,v 1.18 2015-04-03 11:16:28 jpermanne Exp $
 
 //Gestion des otpions de type query_list
 
@@ -91,10 +91,10 @@ if (!$first) {
 	$FIELD1=stripslashes($FIELD1);
 }
 if ($first==2) {
-	$resultat=mysql_query($REQUETE);
+	$resultat=pmb_mysql_query($REQUETE);
 	if ($resultat) {
-		$FIELD0=mysql_field_name($resultat,0);
-		$FIELD1=mysql_field_name($resultat,1);
+		$FIELD0=pmb_mysql_field_name($resultat,0);
+		$FIELD1=pmb_mysql_field_name($resultat,1);
 	}
 }
 ?>
@@ -151,11 +151,11 @@ if ($first==2) {
 <?php
 if ($first==2) {
 	if (!$resultat) {
-		echo "<center>$msg[procs_options_echec_requete] <br />".mysql_error()."</center>";
+		echo "<center>$msg[procs_options_echec_requete] <br />".pmb_mysql_error()."</center>";
 	} else {
 		echo "<center><b>$msg[procs_options_reponse_requete]</b></center>";
 		echo "<table width=100% border=1>\n";
-		while ($r=mysql_fetch_row($resultat)) {
+		while ($r=pmb_mysql_fetch_row($resultat)) {
 			echo "<tr><td>".htmlentities($r[0],ENT_QUOTES,$charset)."</td><td>".htmlentities($r[1],ENT_QUOTES,$charset)."</td></tr>\n";
 		}
 		echo "</table>";

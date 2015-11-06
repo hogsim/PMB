@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: misc.js,v 1.5.8.1 2014-05-04 09:43:09 Alexandre Exp $
+// $Id: misc.js,v 1.6 2014-05-04 09:56:03 Alexandre Exp $
 
 
 // Fonction check_checkbox : Permet de changer l'états d'une liste de checkbox.

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: demandes.class.php,v 1.12 2013-12-20 14:37:55 dgoron Exp $
+// $Id: demandes.class.php,v 1.39 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -14,6 +14,7 @@ require_once("$include_path/templates/catalog.tpl.php");
 require_once("$class_path/notice.class.php");
 require_once("$class_path/tu_notice.class.php");
 require_once("$class_path/explnum.class.php");
+require_once($class_path."/audit.class.php");
 
 require_once($class_path."/acces.class.php");
 
@@ -39,24 +40,43 @@ class demandes {
 	var $liste_etat = array();
 	var $workflow = array();
 	var $num_notice = 0;
+	var $allowed_actions=array();
+	var $first_action= 1;
+	var $actions=array();
+	var $dmde_read_gestion=0;
+	var $last_modified=0;
+	var $notice=0;
+	var $reponse_finale='';
+	var $dmde_read_opac=0;
+	var $num_faq_question = 0;
 	
 	/*
 	 * Constructeur
 	 */
-	function demandes($id=0){
-		
+	function demandes($id=0,$lazzy_load=true){
 		global $base_path, $dbh;
 		
-		$this->workflow = new workflow('DEMANDES','INITIAL');
-				
-		$this->id_demande = $id;
+		$this->fetch_data($id,$lazzy_load);
+	}
+	
+	function fetch_data($id=0,$lazzy_load=true){
+		global $base_path, $dbh;
+		
+		if($this->id_demande && !$id){
+			$id=$this->id_demande;
+		}elseif(!$this->id_demande && $id){
+			$this->id_demande=$id;
+		}
+		
 		if($this->id_demande){
 			$req = "select etat_demande, date_demande, deadline_demande, sujet_demande, num_demandeur, progression, num_notice,
-			date_prevue, theme_demande, type_demande, titre_demande, libelle_theme,libelle_type from demandes d, demandes_theme dt, demandes_type dy 
-			where dy.id_type=d.type_demande and dt.id_theme=d.theme_demande and id_demande='".$this->id_demande."'"; 
-			$res=mysql_query($req,$dbh); 
-			if(mysql_num_rows($res)){
-				$dmde = mysql_fetch_object($res);
+			date_prevue, theme_demande, type_demande, titre_demande, libelle_theme,libelle_type, allowed_actions, 
+			dmde_read_gestion, reponse_finale , dmde_read_opac 
+			from demandes d, demandes_theme dt, demandes_type dy
+			where dy.id_type=d.type_demande and dt.id_theme=d.theme_demande and id_demande='".$this->id_demande."'";
+			$res=pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$dmde = pmb_mysql_fetch_object($res);
 				$this->etat_demande = $dmde->etat_demande;
 				$this->date_demande = $dmde->date_demande;
 				$this->deadline_demande = $dmde->deadline_demande;
@@ -69,7 +89,31 @@ class demandes {
 				$this->titre_demande = $dmde->titre_demande;
 				$this->theme_libelle = $dmde->libelle_theme;
 				$this->type_libelle = $dmde->libelle_type;
-				$this->num_notice = $dmde->num_notice;
+				$this->num_notice = $dmde->num_notice;				
+				$this->allowed_actions = unserialize($dmde->allowed_actions);
+				$this->dmde_read_gestion = $dmde->dmde_read_gestion;
+				$this->dmde_read_opac = $dmde->dmde_read_opac;
+				$this->reponse_finale = $dmde->reponse_finale;
+				
+				if(!count($this->allowed_actions)){
+					$workflow = new workflow('ACTIONS');
+					$this->allowed_actions = $workflow->getTypeList();
+					$allowed_actions = array();
+					foreach($this->allowed_actions as $allowed_action){
+						$allowed_action['active'] = 1;
+						$allowed_actions[] = $allowed_action;
+						if($allowed_action['default']){
+							$this->first_action = $allowed_action['id'];
+						}
+					}
+				}
+				
+				//recherche de l'entrée dans la FAQ
+				$query = "select id_faq_question from faq_questions where faq_question_num_demande = ".$this->id_demande;
+				$result = pmb_mysql_query($query,$dbh);
+				if(pmb_mysql_num_rows($result)){
+					$this->num_faq_question = pmb_mysql_result($result,0,0);
+				}
 			} else{
 				$this->id_demande = 0;
 				$this->etat_demande = 0;
@@ -82,16 +126,33 @@ class demandes {
 				$this->theme_demande = 0;
 				$this->type_demande = 0;
 				$this->titre_demande = '';
-				$this->num_notice = 0; 
+				$this->num_notice = 0;
+				$workflow = new workflow('ACTIONS');
+				$this->allowed_actions = $workflow->getTypeList();
+				$allowed_actions = array();
+				$this->dmde_read_gestion = 0;
+				$this->dmde_read_opac = 0;
+				$this->reponse_finale = '';
+				foreach($this->allowed_actions as $allowed_action){
+					$allowed_action['active'] = 1;
+					$allowed_actions[] = $allowed_action;
+					if($allowed_action['default']){
+						$this->first_action = $allowed_action['id'];
+					}
+				}
 			}
-			$req = "select num_user, concat(prenom,' ',nom) as nom, username from demandes_users, users where num_user=userid and num_demande='".$this->id_demande."' and users_statut=1";
-			$res = mysql_query($req,$dbh);		
+			$req = "select num_user, concat(prenom,' ',nom) as nom, username, users_statut from demandes_users, users where num_user=userid 
+					and num_demande='".$this->id_demande."' and users_statut=1";
+			$res = pmb_mysql_query($req,$dbh);
 			$i=0;
-			while($user = mysql_fetch_object($res)){
+			$this->users = array();
+			while($user = pmb_mysql_fetch_object($res)){
 				$this->users[$i]['nom'] = (trim($user->nom) ? $user->nom : $user->username);
 				$this->users[$i]['id'] = $user->num_user;
+				$this->users[$i]['statut'] = $user->users_statut;
 				$i++;
-			}
+			}		
+			
 		} else {
 			$this->id_demande = 0;
 			$this->etat_demande = 0;
@@ -106,16 +167,71 @@ class demandes {
 			$this->type_demande = 0;
 			$this->titre_demande = '';
 			$this->num_notice = 0;
+			$workflow = new workflow('ACTIONS');
+			$this->allowed_actions = $workflow->getTypeList();
+			$allowed_actions = array();
+			$this->dmde_read_gestion = 0;
+			$this->dmde_read_opac = 0;
+			$this->reponse_finale = '';
+			foreach($this->allowed_actions as $allowed_action){
+				$allowed_action['active'] = 1;
+				$allowed_actions[] = $allowed_action;
+				if($allowed_action['default']){
+					$this->first_action = $allowed_action['id'];
+				}
+			}
+		}
+		if(!sizeof($this->workflow)){
+			$this->workflow = new workflow('DEMANDES','INITIAL');
+			$this->liste_etat = $this->workflow->getStateList();
+		}
+
+		if($this->id_demande){
+			$this->actions=array();
+			//On charge la liste d'id des actions
+			$query='SELECT id_action FROM demandes_actions WHERE num_demande='.$this->id_demande;
+			$result=pmb_mysql_query($query);
+			$tempAudit=0;
+			while($action=pmb_mysql_fetch_array($result,MYSQL_ASSOC)){
+				if($lazzy_load){
+					$this->actions[$action['id_action']]=new stdClass();
+					$this->actions[$action['id_action']]->id_action=$action['id_action'];
+				}else{
+					$this->actions[$action['id_action']]=new demandes_actions($action['id_action']);
+				}	
+			}
+			
+			if(!$lazzy_load){
+				$this->last_modified=self::get_last_modified_action($this->actions);
+			}
+		}
+	}
+	
+	static function get_last_modified_action($actions){
+		$temp=0;
+		foreach($actions as $id_action=>$action){
+			//On cherche la dernière note modifiée
+			if(!$temp && $action->last_modified){
+				$temp=$action;
+			}
+				
+			$dateTemp= new DateTime($temp->last_modified->date_note);
+			$dateAction= new DateTime($action->last_modified->date_note);
+				
+			if($dateTemp->format('U') < $dateAction->format('U')){
+				$temp = $action;
+			}
 		}
 		
-		$this->liste_etat = $this->workflow->getStateList();
+		if($temp){
+			return $temp;
+		}
 	}
 	
 	/*
 	 * Formulaire de création d'une demande
 	 */
 	function show_modif_form(){
-		
 		global $form_modif_demande, $msg, $charset;
 		
 		$themes = new demandes_themes('demandes_theme','id_theme','libelle_theme',$this->theme_demande);
@@ -204,6 +320,12 @@ class demandes {
 			<input type='hidden' id='date_fin' name='date_fin' value='!!date_fin!!' />
 			<input type='button' class='bouton' id='date_fin_btn' name='date_fin_btn' value='!!date_fin_btn!!' onClick=\"openPopUp('./select.php?what=calendrier&caller=search&date_caller=!!date_fin!!&param1=date_fin&param2=date_fin_btn&auto_submit=NO&date_anterieure=YES', 'date_fin', 250, 300, -2, -2, 'toolbar=no, dependent=yes, resizable=yes')\"/>
 		";
+		//Affichage de l'état en entete de page (si séléctioné)
+		if($idetat){
+			$form_filtre_demande=str_replace('!!etat_demandes!!',htmlentities(stripslashes($this->liste_etat[$idetat]['comment']),ENT_QUOTES, $charset),$form_filtre_demande);
+		}else{
+			$form_filtre_demande=str_replace('!!etat_demandes!!',"",$form_filtre_demande);
+		}
 		
 		if($date_debut && $date_fin){
 			$date_deb = str_replace('!!date_debut_btn!!',formatdate($date_debut),$date_deb);
@@ -241,10 +363,10 @@ class demandes {
 		$form_filtre_demande = str_replace('!!type!!',$types->getListSelector($id_type,$onchange,true),$form_filtre_demande);
 		
 		$req_loc = "select idlocation, location_libelle from docs_location";
-		$res_loc = mysql_query($req_loc,$dbh);
+		$res_loc = pmb_mysql_query($req_loc,$dbh);
 		$sel_loc = "<select id='dmde_loc' name='dmde_loc' onchange='this.form.act.value=\"search\";submit()' >";
 		$sel_loc .= "<option value='0' ".(!$dmde_loc ? 'selected' : '').">".htmlentities($msg['demandes_localisation_all'],ENT_QUOTES,$charset)."</option>";
-		while($loc = mysql_fetch_object($res_loc)){
+		while($loc = pmb_mysql_fetch_object($res_loc)){
 			$sel_loc .= "<option value='".$loc->idlocation."' ".(($dmde_loc==$loc->idlocation) ? 'selected' : '').">".htmlentities($loc->location_libelle,ENT_QUOTES,$charset)."</option>";
 		}
 		$sel_loc.= "</select>";
@@ -253,13 +375,15 @@ class demandes {
 		print $form_filtre_demande;
 		
 		//Formulaire de la liste
-		$req = $this->getQueryFilter($idetat,$iduser,$idempr,$user_input,$date_debut,$date_fin, $id_theme, $id_type,$dmde_loc);
-		$res = mysql_query($req,$dbh);
+		$req = self::getQueryFilter($idetat,$iduser,$idempr,$user_input,$date_debut,$date_fin, $id_theme, $id_type,$dmde_loc);
+		$res = pmb_mysql_query($req,$dbh);
 		
 		$liste ="";
-		if(mysql_num_rows($res)){
+		if(pmb_mysql_num_rows($res)){
 			$parity=1;						
-			while(($dmde = mysql_fetch_object($res))){
+			while(($dmde = pmb_mysql_fetch_object($res))){
+				
+				$dmde=new demandes($dmde->id_demande);
 				if ($parity % 2) {
 					$pair_impair = "even";
 				} else {
@@ -267,21 +391,84 @@ class demandes {
 				}
 				$parity += 1;
 				$tr_javascript = "onmouseover=\"this.className='surbrillance'\" onmouseout=\"this.className='".$pair_impair."'\" ";
-				$action = "onclick=document.location='./demandes.php?categ=gestion&act=see_dmde&iddemande=".$dmde->id_demande."'";
-				$liste .= "<tr class='".$pair_impair."' ".$tr_javascript." style='cursor: pointer'  >";
+				$action = "onclick=\"document.location='./demandes.php?categ=gestion&act=see_dmde&iddemande=".$dmde->id_demande;
+				//Ajout des éléments de retour vers la bonne liste
+				if($idetat){
+					$action.="&idetat=".$idetat;
+				}
+				if($iduser){
+					$action.="&iduser=".$iduser;
+				}
+				if($idempr){
+					$action.="&idempr=".$idempr;
+				}
+				if($user_input){
+					$action.="&user_input=".$user_input;
+				}
+				if($date_debut){
+					$action.="&date_debut=".$date_debut;
+				}
+				if($date_fin){
+					$action.="&date_fin=".$date_fin;
+				}
+				if($id_type){
+					$action.="&id_type=".$id_type;
+				}
+				if($id_theme){
+					$action.="&id_theme=".$id_theme;
+				}
+				if($dmde_loc){
+					$action.="&dmde_loc=".$dmde_loc;
+				}
+				$action.="'\"";
 				
-				$carac_empr = $this->getCaracEmpr($dmde->num_demandeur);
+				// affichage en gras si nouveauté du côté des notes ou des actions		
+				$dmde->dmde_read_gestion = demandes::dmde_majRead($dmde->id_demande,"_gestion");
+				if($dmde->dmde_read_gestion == 1){
+					$style=" style='cursor: pointer; font-weight:bold'";					
+				} else {
+					$style=" style='cursor: pointer'";
+				}
+				
+				$liste .= "<tr id='dmde".$dmde->id_demande."' class='".$pair_impair."' ".$tr_javascript.$style."  >";
+				
+				$carac_empr = $dmde->getCaracEmpr($dmde->num_demandeur);
 				$nom_empr = $carac_empr['nom'];
+				
+				$nom_user='';
+				if(sizeof($dmde->users)){
+					foreach($dmde->users as $id=>$user){
+						if($user['statut']==1){
+							if($nom_user){
+								$nom_user.="/ ";
+							}
+							$nom_user.=$user['nom'];
+						}
+					}
+				}
+
+				$liste .= "<td><img hspace=\"3\" border=\"0\" onclick=\"expand_action('action".$dmde->id_demande."','$dmde->id_demande', true); return false;\" title=\"\" id=\"action".$dmde->id_demande."Img\" name=\"imEx\" class=\"img_plus\" src=\"./images/plus.gif\"></td>";
+				$liste .= "<td>";
+				if($dmde->dmde_read_gestion == 1){
+					// remplacer $action le jour où on décide d'activer la modif d'état manuellement par onclick=\"change_read_dmde('dmde".$dmde->id_demande."','$dmde->id_demande', true); return false;\"
+					$liste .= "<img hspace=\"3\" border=\"0\" title=\"\" ".$action." id=\"dmde".$dmde->id_demande."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" style='display:none'>
+								<img hspace=\"3\" border=\"0\" title=\"\" ".$action." id=\"dmde".$dmde->id_demande."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\">";
+				} else {
+					// remplacer $action le jour où on décide d'activer la modif d'état manuellement par onclick=\"change_read_dmde('dmde".$dmde->id_demande."','$dmde->id_demande', true); return false;\"
+					$liste .= "<img hspace=\"3\" border=\"0\" title=\"\" ".$action." id=\"dmde".$dmde->id_demande."Img1\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_empty.png\" >
+								<img hspace=\"3\" border=\"0\" title=\"\" ".$action." id=\"dmde".$dmde->id_demande."Img2\" name=\"imRead\" class=\"img_plus\" src=\"./images/notification_new.png\" style='display:none'>";
+				}				
 				$liste .= "
-					<td $action>".htmlentities($dmde->libelle_theme,ENT_QUOTES,$charset)."</td>
-					<td $action>".htmlentities($dmde->libelle_type,ENT_QUOTES,$charset)."</td>
+					</td>
+					<td $action>".htmlentities($themes->getLabel($dmde->theme_demande),ENT_QUOTES,$charset)."</td>
+					<td $action>".htmlentities($types->getLabel($dmde->type_demande),ENT_QUOTES,$charset)."</td>
 					<td $action>".htmlentities($dmde->titre_demande,ENT_QUOTES,$charset)."</td>
-					<td $action>".htmlentities($this->workflow->getStateCommentById($dmde->etat_demande),ENT_QUOTES,$charset)."</td>
+					<td $action>".htmlentities($dmde->workflow->getStateCommentById($dmde->etat_demande),ENT_QUOTES,$charset)."</td>
 					<td $action>".htmlentities(formatdate($dmde->date_demande),ENT_QUOTES,$charset)."</td>
 					<td $action>".htmlentities(formatdate($dmde->date_prevue),ENT_QUOTES,$charset)."</td>
 					<td $action>".htmlentities(formatdate($dmde->deadline_demande),ENT_QUOTES,$charset)."</td>
 					<td $action>".htmlentities($nom_empr,ENT_QUOTES,$charset)."</td>
-					<td $action>".htmlentities($dmde->nom,ENT_QUOTES,$charset)."</td>
+					<td $action>".htmlentities($nom_user,ENT_QUOTES,$charset)."</td>
 					<td><span id='progressiondemande_".$dmde->id_demande."'  dynamics='demandes,progressiondemande' dynamics_params='img/img' >
 						<img src=\"./images/jauge.png\" height='15px' width=\"".$dmde->progression."%\" title='".$dmde->progression."%' />
 						</span>
@@ -291,7 +478,16 @@ class demandes {
 					else $liste .= "<td></td>";
 					$liste .= "<td ><input type='checkbox' id='chk[".$dmde->id_demande."]' name='chk[]' value='".$dmde->id_demande."'></td>";
 				
-				$liste .= "</tr>";				
+				$liste .= "</tr>";		
+
+				//Le détail de l'action, contient les notes
+				$liste .="<tr id=\"action".$dmde->id_demande."Child\" style=\"display:none\">
+				<td></td>
+				<td colspan=\"13\" id=\"action".$dmde->id_demande."ChildTd\">";
+					
+				$liste .="</td>
+				</tr>";
+				
 			}
 			$btn_suppr = "<input type='submit' class='bouton' value='$msg[63]' onclick='this.form.act.value=\"suppr_noti\"; return verifChk(\"suppr\");'/>";
 
@@ -317,180 +513,184 @@ class demandes {
 		print $form_liste_demande;
 	}
 	
-	/*
-	 * Création/Modification d'une demande
-	 */
-	function save(){
-		
-		global $dbh, $sujet, $idetat, $titre, $id_theme, $id_type;
+	static function get_values_from_form(&$demande){
+		global $sujet,$iddemande ,$idetat, $titre, $id_theme, $id_type;
 		global $date_debut, $date_fin, $date_prevue, $idempr;
-		global $iduser, $progression, $demandes_statut_notice, $pmb_type_audit;
-		global $gestion_acces_active, $gestion_acces_user_notice, $gestion_acces_empr_notice;
+		global $iduser, $progression, $demandes_statut_notice;
+		global $demandes_init_workflow;
 		
-		if($this->id_demande){
-			//MODIFICATION
-			$req = "update demandes set sujet_demande='".$sujet."',  
-				num_demandeur='".$idempr."', 
-				date_demande='".$date_debut."', 
-				deadline_demande='".$date_fin."',
-				date_prevue='".$date_prevue."', 
-				progression='".$progression."',
-				titre_demande='".$titre."',
-				type_demande='".$id_type."',
-				theme_demande='".$id_theme."'";
-				if($idetat == 4 || $idetat == 5 ) $req .= " ,num_user_cloture='".SESSuserid."'";	
-				$req .= " where id_demande='".$this->id_demande."'";
-				
-				mysql_query($req,$dbh);
-				
-				$this->titre_demande = stripslashes($titre);
-				$this->sujet_demande = stripslashes($sujet);
-				$this->date_demande = $date_debut;
-				$this->date_prevue = $date_prevue;
-				$this->deadline_demande = $date_fin;
-				$this->num_user = $iduser;
-				$this->progression = $progression;
-				$this->num_demandeur = $idempr;
-				$this->type_demande = $id_type;
-				$this->theme_demande = $id_theme;
-		} else {
-				//CREATION de la notice associée					
-				$req = "insert into notices set 
-				tit1='".$titre."',
-				n_contenu='".$sujet."',
-				statut ='".$demandes_statut_notice."'
-				";
-				mysql_query($req,$dbh);
-				$id_notice = mysql_insert_id();
-				notice::majNotices($id_notice);
-				if($pmb_type_audit) audit::insert_creation(AUDIT_NOTICE,$id_notice);
-
-				//droits d'acces
-				if ($gestion_acces_active==1) {
-					$ac= new acces();
-					
-					//traitement des droits acces user_notice
-					if ($gestion_acces_user_notice==1) {
-						$dom_1= $ac->setDomain(1);
-						$dom_1->storeUserRights(0, $id_notice);
-					}
-					//traitement des droits acces empr_notice
-					if ($gestion_acces_empr_notice==1) {
-						$dom_2= $ac->setDomain(2);
-						$dom_2->storeUserRights(0, $id_notice);
-					}
-				}
-				
-				//CREATION de la demande
-				$req = "insert into demandes set sujet_demande='".$sujet."', 
-				etat_demande='".$idetat."', 
-				num_demandeur='".$idempr."', 
-				date_demande='".$date_debut."', 
-				date_prevue='".$date_prevue."', 
-				deadline_demande='".$date_fin."', 
-				progression='".$progression."',
-				titre_demande='".$titre."',
-				type_demande='".$id_type."',
-				theme_demande='".$id_theme."',
-				num_notice='".$id_notice."'" ;
-				mysql_query($req,$dbh);
+		
+		$demande->id_demande=$iddemande;
+		$demande->titre_demande = $titre;
+		$demande->sujet_demande = $sujet;
+		$demande->date_demande = $date_debut;
+		$demande->date_prevue = $date_prevue;
+		$demande->deadline_demande = $date_fin;
+		$demande->num_user = $iduser;
+		$demande->progression = $progression;
+		$demande->num_demandeur = $idempr;
+		$demande->type_demande = $id_type;
+		$demande->theme_demande = $id_theme;
+		$demande->etat_demande=$idetat;
+		
+		if($idetat == 4 || $idetat == 5 ) {
+			$demande->num_user_cloture=SESSuserid;
+		}
+		//Création d'une stdClass (pour alleger) => doit matcher à une notice, mais un peu lourd ...
+		$demande->notice=new stdClass();
+		$demande->notice->tit1=$demande->titre_demande;
+		$demande->notice->n_contenu=$demande->sujet_demande;
+		$demande->notice->notice_id=$demande->num_notice;
+		$demande->notice->statut=$demandes_statut_notice;
+	}
+	
+	static function save_notice(&$demande){
+		global $dbh;
+		global $demandes_notice_auto, $gestion_acces_active, $gestion_acces_user_notice, $gestion_acces_empr_notice;
+		
+		//CREATION de la notice associée
+		if($demandes_notice_auto === "1"){
+			$query = "INSERT INTO notices SET
+			tit1='".$demande->notice->tit1."',
+			n_contenu='".$demande->notice->n_contenu."',
+			statut ='".$demande->notice->statut."'";
+			
+			pmb_mysql_query($query,$dbh);
+			$demande->num_notice= $demande->notice->num_notice = pmb_mysql_insert_id($dbh);
+			
+			notice::majNotices($demande->num_notice);
+			if($pmb_type_audit) audit::insert_creation(AUDIT_NOTICE,$demande->num_notice);
 		}
 		
-		//Affectation du libellé du thème et du type
-		$this->id_demande ? $id = $this->id_demande : $id = mysql_insert_id(); 
-		$req = "select libelle_theme, libelle_type from demandes d, demandes_type dy , demandes_theme dt where dt.id_theme=d.theme_demande and dy.id_type=d.type_demande and id_demande='".$id."'";
-		$res = mysql_query($req,$dbh);
-		$row = mysql_fetch_object($res);
-		$this->type_libelle = $row->libelle_type;
-		$this->theme_libelle = $row->libelle_theme;
+		//droits d'acces
+		if ($gestion_acces_active==1) {
+			$ac= new acces();
+		
+			//traitement des droits acces user_notice
+			if ($gestion_acces_user_notice==1) {
+				$dom_1= $ac->setDomain(1);
+				$dom_1->storeUserRights(0, $id_notice);
+			}
+			//traitement des droits acces empr_notice
+			if ($gestion_acces_empr_notice==1) {
+				$dom_2= $ac->setDomain(2);
+				$dom_2->storeUserRights(0, $id_notice);
+			}
+		}
+	}
+	
+	static function save_demandes_users(&$demande){
+		global $dbh;
 		
 		//Enregistrement dans demandes_users
 		$date_creation=date("Y-m-d",time());
-		if($this->id_demande && $iduser){
-			$req = "update demandes_users set users_statut=0 where num_user not in (".implode(',',$iduser).") and num_demande='".$this->id_demande."'";
-			mysql_query($req,$dbh);
-			$req = "update demandes_users set users_statut=1 where num_user in (".implode(',',$iduser).") and num_demande='".$this->id_demande."'";
-			mysql_query($req,$dbh);
-			for($i=0;$i<sizeof($iduser);$i++){
-				$req = "insert into demandes_users set num_user='".$iduser[$i]."', num_demande='".$this->id_demande."', date_creation='".$date_creation."', users_statut=1";
-				mysql_query($req,$dbh);
+		
+		if($demande->id_demande && sizeof($demande->num_user)){
+			$query = "UPDATE demandes_users SET users_statut=0 WHERE num_user NOT IN (".implode(',',$demande->num_user).") AND num_demande='".$demande->id_demande."'";
+			pmb_mysql_query($query,$dbh);
+			$query = "UPDATE demandes_users SET users_statut=1 WHERE num_user IN (".implode(',',$demande->num_user).") AND num_demande='".$demande->id_demande."'";
+			pmb_mysql_query($query,$dbh);
+			foreach($demande->num_user as $id_user){
+				$query = "insert into demandes_users set num_user='".$id_user."', num_demande='".$demande->id_demande."', date_creation='".$date_creation."', users_statut=1";
+				pmb_mysql_query($query,$dbh);
 			}
-		} else if($iduser) {
-			for($i=0;$i<sizeof($iduser);$i++){
-				$req = "insert into demandes_users set num_user='".$iduser[$i]."', num_demande='".$id."', date_creation='".$date_creation."', users_statut=1";
-				mysql_query($req,$dbh);
-			}
+		} elseif($demande->id_demande && !sizeof($demande->num_user)){
+			$query = "UPDATE demandes_users SET users_statut=0 WHERE num_demande='".$demande->id_demande."'";
+			pmb_mysql_query($query,$dbh);
 		}
-		$req = "select num_user, concat(prenom,' ',nom) as nom, username from demandes_users, users where num_user=userid and num_demande='".$id."' and users_statut=1";
-		$res = mysql_query($req,$dbh);		
-		$i=0;
-		if(mysql_num_rows($res)){
-			$this->users = array();
-			while(($user=mysql_fetch_object($res))){
-				$this->users[$i]['nom'] = (trim($user->nom)  ? $user->nom : $user->username);
-				$this->users[$i]['id'] = $user->num_user;
+	}
+	
+	/*
+	 * Création/Modification d'une demande
+	*/
+	static function save(&$demande){
+		global $dbh, $pmb_type_audit;
+	
+		if($demande->id_demande){
 				
-				$i++;
-			}		
+			//MODIFICATION
+			$query = "UPDATE demandes SET
+			sujet_demande='".$demande->sujet_demande."',
+			num_demandeur='".$demande->num_demandeur."',
+			date_demande='".$demande->date_demande."',
+			deadline_demande='".$demande->deadline_demande."',
+			date_prevue='".$demande->date_prevue."',
+			progression='".$demande->progression."',
+			titre_demande='".$demande->titre_demande."',
+			type_demande='".$demande->type_demande."',
+			theme_demande='".$demande->theme_demande."',
+			num_user_cloture='".$demande->num_user_cloture."'
+			WHERE id_demande='".$demande->id_demande."'";
+			
+			pmb_mysql_query($query,$dbh);
+	
+			if($pmb_type_audit) audit::insert_modif(AUDIT_DEMANDE,$demande->id_demande);
+			
+		} else {
+			//On ajoute une notice ?
+			self::save_notice($demande);
+			
+			//CREATION de la demande
+			$query = "INSERT INTO demandes SET
+			sujet_demande='".$demande->sujet_demande."',
+			etat_demande='".$demande->etat_demande."',
+			num_demandeur='".$demande->num_demandeur."',
+			date_demande='".$demande->date_demande."',
+			date_prevue='".$demande->date_prevue."',
+			deadline_demande='".$demande->deadline_demande."',
+			progression='".$demande->progression."',
+			titre_demande='".$demande->titre_demande."',
+			type_demande='".$demande->type_demande."',
+			theme_demande='".$demande->theme_demande."',
+			num_notice='".$demande->num_notice."',
+			dmde_read_opac='1'" ;
+			pmb_mysql_query($query,$dbh);
+			
+			$demande->id_demande = pmb_mysql_insert_id($dbh);
+			if($pmb_type_audit) audit::insert_creation(AUDIT_DEMANDE,$demande->id_demande);
 		}
+		
+		//MAJ des users de la demande
+		self::save_demandes_users($demande);
 	}
 	
 	/*
 	 * Suppression d'une demande
 	 */
-	function delete(){
-		global $dbh,$chk, $delnoti;
+	static function delete($demande){
+		global $dbh, $delnoti;
 		
-				
-		if($this->id_demande){
-			
+		if($demande->id_demande){
+			$demande->fetch_data($demande->id_demande,false);
 			if($delnoti){
 				//Si on supprime la notice associée
-				$req = "delete n from notices n 
-					join demandes d on n.notice_id=d.num_notice
-					where d.id_demande=$this->id_demande";
-				mysql_query($req, $dbh);
-			} 				
-			
-			$req = "delete from demandes_users where num_demande='".$this->id_demande."'";
-			mysql_query($req,$dbh);
+				$query = "SELECT num_notice FROM demandes WHERE id_demande = ".$demande->id_demande." AND num_notice!=0";
+				$result = pmb_mysql_query($query,$dbh);
+				if(pmb_mysql_num_rows($result)){
+					notice::del_notice(pmb_mysql_result($result,0,0));
+				}				
+			} 		
+			// suppression des actions et des notes		
+			if(sizeof($demande->actions)){
+				foreach($demande->actions as $action){
+					demandes_actions::delete($action);
+				}
+			}
+			// suppression des liens user - demande
+			$req = "delete from demandes_users where num_demande='".$demande->id_demande."'";
+			pmb_mysql_query($req,$dbh);
+			//suppression des doc num
 			$req = "delete ed,eda from explnum_doc ed 
 			join explnum_doc_actions eda on ed.id_explnum_doc=eda.num_explnum_doc 
 			join demandes_actions da on eda.num_action=da.id_action
-			where da.num_demande=$this->id_demande";
-			mysql_query($req, $dbh);
-			$req = "delete from demandes where id_demande='".$this->id_demande."'"; 
-			mysql_query($req,$dbh);
-			$req = "delete from demandes_actions where num_demande='".$this->id_demande."'";
-			mysql_query($req,$dbh);
-
-		} elseif($chk){
-			$chk = explode(",",$chk);
-			for($i=0;$i<count($chk);$i++){
-
-				if($delnoti){
-					//Si on supprime la notice associée
-					$req = "delete n from notices n 
-					join demandes d on n.notice_id=d.num_notice
-					where d.id_demande=$chk[$i]";
-					mysql_query($req, $dbh); 
-				}
-				
-				$req = "delete from demandes_users where num_demande='".$chk[$i]."'";
-				mysql_query($req,$dbh);	
-				$req = "delete ed,eda from explnum_doc ed 
-					join explnum_doc_actions eda on ed.id_explnum_doc=eda.num_explnum_doc 
-					join demandes_actions da on eda.num_action=da.id_action
-					where da.num_demande='".$chk[$i]."'";
-				mysql_query($req, $dbh);
-				$req = "delete from demandes where id_demande='".$chk[$i]."'"; 
-				mysql_query($req,$dbh);
-				$req = "delete from demandes_actions where num_demande='".$chk[$i]."'";
-				mysql_query($req,$dbh);	
-				
-			}
-		}
-
+			where da.num_demande=".$demande->id_demande;
+			pmb_mysql_query($req, $dbh);
+			// suppression de la demande
+			$req = "delete from demandes where id_demande='".$demande->id_demande."'"; 
+			pmb_mysql_query($req,$dbh);
+			//suppression de l'audit
+			audit::delete_audit(AUDIT_DEMANDE,$demande->id_demande);
+		} 
 	}
 	
 
@@ -524,24 +724,24 @@ class demandes {
 		else $mul = " name='iduser' ";
 		
 		if(!$this->id_demande){
-			$req="select concat(prenom,' ',nom) as nom, userid, username
+			$req="select TRIM(concat(prenom,' ',nom)) as name, userid, username
 			from users 
-			where rights>=16384";
+			where rights&16384 order by name";
 		} else {
-			$req="select concat(prenom,' ',nom) as nom, userid , if(isnull(num_demande),0,if((users_statut),1,0)) as actif, username
+			$req="select TRIM(concat(prenom,' ',nom)) as name, userid , if(isnull(num_demande),0,if((users_statut),1,0)) as actif, username
 			from users
 			left join demandes_users on (num_user=userid and num_demande='".$this->id_demande."') 
-			where rights>=16384";
+			where rights&16384 order by name";
 		}
 		 
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 		$select = "";
 		$selector = "<select  $mul $action >";
 		if($default) $selector .= "<option value='0'>".htmlentities($msg['demandes_all_users'],ENT_QUOTES,$charset)."</option>";
 		if($nonassign) $selector .=  "<option value='-1' ".($iduser == -1 ?'selected' :'').">".htmlentities($msg['demandes_not_assigned'],ENT_QUOTES,$charset)."</option>";
-		while(($user=mysql_fetch_object($res))){			
+		while(($user=pmb_mysql_fetch_object($res))){			
 			if($user->actif) $select="selected";
-			$name = (trim($user->nom) ? $user->nom :$user->username);
+			$name = (trim($user->name) ? $user->name :$user->username);
 			if($iduser == $user->userid) $select="selected";						
 			$selector .= "<option value='".$user->userid."' $select>".htmlentities($name,ENT_QUOTES,$charset)."</option>";
 			$select = "";
@@ -558,8 +758,8 @@ class demandes {
 		global $dbh;
 
 		$req = "select concat(prenom,' ',nom) as nom, userid, username from users where userid='".$iduser."'";
-		$res = mysql_query($req,$dbh);
-		$user = mysql_fetch_object($res);
+		$res = pmb_mysql_query($req,$dbh);
+		$user = pmb_mysql_fetch_object($res);
 		
 		return ( trim($user->nom) ? $user->nom : $user->username );		
 	}
@@ -571,8 +771,8 @@ class demandes {
 		global $dbh;
 
 		$req = "select concat(empr_prenom,' ',empr_nom) as nom, id_empr,empr_cb from empr where id_empr='".$idempr."'";
-		$res = mysql_query($req,$dbh);
-		$empr = mysql_fetch_array($res);
+		$res = pmb_mysql_query($req,$dbh);
+		$empr = pmb_mysql_fetch_array($res);
 
 		return $empr;		
 	}
@@ -581,7 +781,7 @@ class demandes {
 	/*
 	 * Fonction qui retourne la requete de filtre
 	 */
-	function getQueryFilter($idetat,$iduser,$idempr,$user_input,$date_dmde,$date_but,$id_theme,$id_type,$dmde_loc){
+	static function getQueryFilter($idetat,$iduser,$idempr,$user_input,$date_dmde,$date_but,$id_theme,$id_type,$dmde_loc){
 		
 		$date_deb = str_replace('-','',$date_dmde);
 		$date_fin = str_replace('-','',$date_but);
@@ -643,10 +843,7 @@ class demandes {
 		}
 		
 		if($params) $clause = "where ".implode(" and ",$params);
-				
-		$req = "select id_demande, etat_demande, titre_demande, sujet_demande, deadline_demande, date_demande, date_prevue, 
-				type_demande, theme_demande, progression, num_demandeur, num_notice, libelle_theme, libelle_type, 
-				group_concat(distinct if(concat(prenom,' ',nom) !='',concat(prenom,' ',nom),username) separator '/ ') as nom
+		$req = "select id_demande
 				from demandes d 
 				join demandes_type dy on d.type_demande=dy.id_type
 				join demandes_theme dt on d.theme_demande=dt.id_theme				
@@ -664,8 +861,12 @@ class demandes {
 	/*
 	 * Affichage du formulaire de consultation d'une demande
 	 */
-	function show_consult_form(){
-		global $form_consult_dmde, $charset, $msg, $dbh;
+	function show_consult_form($last_modified=0){
+		
+		global $idetat,$iduser,$idempr,$user_input;
+		global $date_debut,$date_fin, $id_type, $id_theme, $dmde_loc;
+		global $form_consult_dmde, $charset, $msg, $dbh,$demandes_init_workflow;
+		global $pmb_type_audit, $reponse_finale;
 		
 		$form_consult_dmde = str_replace('!!form_title!!',htmlentities($this->titre_demande,ENT_QUOTES,$charset),$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!sujet_dmde!!',htmlentities($this->sujet_demande,ENT_QUOTES,$charset),$form_consult_dmde);
@@ -675,12 +876,18 @@ class demandes {
 		$form_consult_dmde = str_replace('!!date_prevue_dmde!!',htmlentities(formatdate($this->date_prevue),ENT_QUOTES,$charset),$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!progression_dmde!!',htmlentities($this->progression.'%',ENT_QUOTES,$charset),$form_consult_dmde);
 		
-		for($i=0;$i<sizeof($this->users);$i++){
-			if($i == sizeof($this->users)-1)
-				$users .= htmlentities($this->users[$i]['nom'],ENT_QUOTES,$charset);
-			else $users .= htmlentities($this->users[$i]['nom'],ENT_QUOTES,$charset)." / ";	
+		$nom_user='';
+		if(sizeof($this->users)){
+			foreach($this->users as $id=>$user){
+				if($user['statut']==1){
+					if($nom_user){
+						$nom_user.="/ ";
+					}
+					$nom_user.=$user['nom'];
+				}
+			}
 		}
-	
+		
 		$carac_empr = $this->getCaracEmpr($this->num_demandeur);
 		$nom = $carac_empr['nom'];
 		$cb = $carac_empr['empr_cb'];
@@ -689,13 +896,13 @@ class demandes {
 			$nom_emprunteur = "<a href=\"circ.php?categ=pret&form_cb=$cb\" >".htmlentities($nom,ENT_QUOTES,$charset)."</a>";
 		
 		$form_consult_dmde = str_replace('!!demandeur!!',($nom_emprunteur ? $nom_emprunteur :$nom),$form_consult_dmde);
-		$form_consult_dmde = str_replace('!!attribution!!',$users,$form_consult_dmde);
+		$form_consult_dmde = str_replace('!!attribution!!',$nom_user,$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!iddemande!!',$this->id_demande,$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!theme_dmde!!',htmlentities($this->theme_libelle,ENT_QUOTES,$charset),$form_consult_dmde);
 		$form_consult_dmde = str_replace('!!type_dmde!!',htmlentities($this->type_libelle,ENT_QUOTES,$charset),$form_consult_dmde);
 		
 		//afficher la liste des boutons de changement d'état
-		if($this->etat_demande && $this->users){
+		if(($this->etat_demande && sizeof($this->users)) || $demandes_init_workflow!=="2"){
 			$states = $this->workflow->getStateList($this->etat_demande);
 			$states_btn = $this->getDisplayStateBtn($states);		
 			$form_consult_dmde = str_replace('!!btn_etat!!',$states_btn,$form_consult_dmde);
@@ -703,30 +910,134 @@ class demandes {
 			$form_consult_dmde = str_replace('!!btn_etat!!',"",$form_consult_dmde);
 		}
 		
-		$notice = "<a onclick=\"show_notice('".$this->num_notice."')\" href='#'><img border='0' align='top' src='./images/search.gif' alt='".htmlentities($msg['demandes_see_notice'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_see_notice'],ENT_QUOTES,$charset)."' /></a>";
+		//afficher la liste des boutons de la notice
+		if($this->num_notice != 0){
+			$notice = "<a onclick=\"show_notice('".$this->num_notice."')\" href='#'><img border='0' align='top' src='./images/search.gif' alt='".htmlentities($msg['demandes_see_notice'],ENT_QUOTES,$charset)."' title='".htmlentities($msg['demandes_see_notice'],ENT_QUOTES,$charset)."' /></a>";
+		} else {
+			$notice = "";
+		}
 		$form_consult_dmde = str_replace('!!icone!!',$notice,$form_consult_dmde);
 		
-		if($this->users){
+		if((sizeof($this->users)) || $demandes_init_workflow!=="2"){
 			$req = "select count(1) as nb from demandes join demandes_actions on id_demande=num_demande join explnum_doc_actions on num_action=id_action where id_demande='".$this->id_demande."'";
-			$res = mysql_query($req, $dbh);
-			$docnum = mysql_fetch_object($res);
+			$res = pmb_mysql_query($req, $dbh);
+			$docnum = pmb_mysql_fetch_object($res);
+			// bouton doc num
 			if($docnum->nb){
 				$btn_attach = "&nbsp;<input type='submit' class='bouton' value='".$msg['demandes_attach_docnum']."' onClick='this.form.act.value=\"attach\" ; ' />";
 			} else $btn_attach = "";
-			$btn_notices = "<input type='submit' class='bouton' value='".$msg['demandes_complete_notice']."' onClick='this.form.act.value=\"notice\" ; ' />".			
-			$btn_attach."&nbsp;<input type='submit' class='bouton' value='".$msg['demandes_generate_rapport']."' onClick='this.form.act.value=\"rapport\" ; ' />";
+			// boutons notice
+			if($this->num_notice != 0){
+				$btn_notices = "<input type='submit' class='bouton' value='".$msg['demandes_complete_notice']."' onClick='this.form.act.value=\"notice\" ; ' />".
+				$btn_attach."&nbsp;<input type='submit' class='bouton' value='".$msg['demandes_generate_rapport']."' onClick='this.form.act.value=\"rapport\" ; ' />";
+				$btn_suppr_notice = "<input type='submit' class='bouton' value='".$msg['demandes_delete_notice']."' onClick='this.form.act.value=\"delete_notice\"  ; return confirm_delete(); ' />";
+			} else {
+				$btn_notices = "<input type='submit' class='bouton' value='".$msg['demandes_create_notice']."' onClick='this.form.act.value=\"create_notice\" ; ' />".
+						$btn_attach."&nbsp;<input type='hidden' class='bouton' value='".$msg['demandes_generate_rapport']."' onClick='this.form.act.value=\"rapport\" ; ' />".
+				$btn_attach."&nbsp;<input type='submit' class='bouton' value='".$msg['demandes_generate_rapport']."' onClick='this.form.act.value=\"rapport\" ; ' />";
+				$btn_suppr_notice = "";
+			}
+			// bouton audit
+			if($pmb_type_audit){
+				$btn_audit = "&nbsp;<input class='bouton' type='button' onClick=\"openPopUp('./audit.php?type_obj=14&object_id=$this->id_demande', 'audit_popup', 700, 500, -2, -2, 'scrollbars=yes, toolbar=no, dependent=yes, resizable=yes')\" title=\"".$msg['audit_button']."\" value=\"".$msg['audit_button']."\" />&nbsp;";
+			} else {
+				$btn_audit = "";
+			}
+			
+			// affichage des boutons de création de la réponse finale
+			$btn_repfinal = $btn_faq ="";
+			if($this->etat_demande == 4){
+				if(!$this->reponse_finale || $this->reponse_finale==''){
+					$btn_repfinal = "&nbsp;<input type='submit' class='bouton' value='".$msg['demandes_repfinale_creation']."' onclick='this.form.act.value=\"final_response\" ; ' />&nbsp;";
+				}				
+			}			
+			if($this->etat_demande == 4){
+				if(!$this->num_faq_question){
+					$btn_faq = "&nbsp;<input type='button' class='bouton' value='".$msg['demandes_creation_faq_question']."' onclick='document.location=\"./demandes.php?categ=faq&sub=question&action=new&num_demande=".$this->id_demande."\" ; ' />&nbsp;";
+				}else{
+					$btn_faq = "&nbsp;<input type='button' class='bouton' value='".$msg['demandes_edit_faq_question']."' onclick='document.location=\"./demandes.php?categ=faq&sub=question&action=edit&id=".$this->num_faq_question."\" ; ' />&nbsp;";
+				}
+			}
+			
 			$form_consult_dmde = str_replace('!!btns_notice!!',$btn_notices,$form_consult_dmde);
+			$form_consult_dmde = str_replace('!!btn_suppr_notice!!',$btn_suppr_notice,$form_consult_dmde);
+			$form_consult_dmde = str_replace('!!btn_audit!!',$btn_audit,$form_consult_dmde);
+			$form_consult_dmde = str_replace('!!btn_repfinal!!',$btn_repfinal,$form_consult_dmde);
+			$form_consult_dmde = str_replace('!!btn_faq!!',$btn_faq,$form_consult_dmde);
 		} else {
 			$form_consult_dmde = str_replace('!!btns_notice!!',"",$form_consult_dmde);
+			$form_consult_dmde = str_replace('!!btn_suppr_notice!!',"",$form_consult_dmde);
+			$form_consult_dmde = str_replace('!!btn_audit!!',"",$form_consult_dmde);
+			$form_consult_dmde = str_replace('!!btn_repfinal!!',$btn_repfinal,$form_consult_dmde);
+			$form_consult_dmde = str_replace('!!btn_faq!!',"",$form_consult_dmde);
 		}
 		
-		print $form_consult_dmde;
+		//construction de l'url de retour
+		$params_retour='';
+		if($idetat){
+			$params_retour.="&idetat=".$idetat;
+		}
+		if($iduser){
+			$params_retour.="&iduser=".$iduser;
+		}
+		if($idempr){
+			$params_retour.="&idempr=".$idempr;
+		}
+		if($user_input){
+			$params_retour.="&user_input=".$user_input;
+		}
+		if($date_debut){
+			$params_retour.="&date_debut=".$date_debut;
+		}
+		if($date_fin){
+			$params_retour.="&date_fin=".$date_fin;
+		}
+		if($id_type){
+			$params_retour.="&id_type=".$id_type;
+		}
+		if($id_theme){
+			$params_retour.="&id_theme=".$id_theme;
+		}
+		if($dmde_loc){
+			$params_retour.="&dmde_loc=".$dmde_loc;
+		}
 		
-		if($this->users){
+		if($params_retour){
+			$form_consult_dmde=str_replace('!!params_retour!!',htmlentities(stripslashes($params_retour),ENT_QUOTES, $charset),$form_consult_dmde);
+		}else{
+			$form_consult_dmde=str_replace('!!params_retour!!',"",$form_consult_dmde);
+		}
+		
+		if((sizeof($this->users)) || $demandes_init_workflow!=="2"){
 			//Liste des actions
-			$actions = new demandes_actions();
-			$actions->show_list_actions($this->id_demande);
-		}	
+			$this->fetch_data($this->id_demande,false);
+			
+			if($this->etat_demande == 4 || $this->etat_demande == 5){
+				$form_consult_dmde.=demandes_actions::show_list_actions($this->actions, $this->id_demande);
+			}elseif($last_modified){
+				$form_consult_dmde.=demandes_actions::show_list_actions($this->actions, $this->id_demande,$last_modified);
+			}elseif($this->last_modified){
+				$form_consult_dmde.=demandes_actions::show_list_actions($this->actions, $this->id_demande,$this->last_modified->id_action);
+			}elseif($this->last_modified){
+				$form_consult_dmde.=demandes_actions::show_list_actions($this->actions, $this->id_demande,$this->last_modified->id_action);
+			}else{
+				$form_consult_dmde.=demandes_actions::show_list_actions($this->actions, $this->id_demande);
+			}
+		}
+		
+		if($this->etat_demande == 4 && $this->reponse_finale != ''){
+			$reponse_finale  = str_replace('!!repfinale!!',$this->reponse_finale,$reponse_finale);
+			$reponse_finale  = str_replace('!!iddemande!!',htmlentities($this->id_demande,ENT_QUOTES,$charset),$reponse_finale);
+			$act_form = "./demandes.php?categ=gestion";
+			$reponse_finale  = str_replace('!!form_action!!',htmlentities($act_form,ENT_QUOTES,$charset),$reponse_finale);
+			$form_consult_dmde.= $reponse_finale;
+		} 
+		
+		if($this->etat_demande == 1 && !sizeof($this->actions) && $this->dmde_read_gestion == 1){
+			demandes::demande_read($this->id_demande,true,"_gestion");
+			$this->fetch_data($this->id_demande,false);
+		}
+		print $form_consult_dmde;
 	}
 	
 	/*
@@ -749,19 +1060,60 @@ class demandes {
 	/*
 	 * Changement d'etat d'une demande
 	 */
-	function change_state($state){
-		global $chk, $dbh;
+	static function change_state($state,$demande){
+		global $dbh,$demandes_init_workflow, $demandes_default_action, $pmb_type_audit;
+		global $PMBuserid;
+		global $sujet, $idtype, $idstatut;
+		global $date_debut, $date_fin, $detail;
+		global $time_elapsed, $progression,$cout,$iddemande, $ck_prive;
 		
-		if($chk){
-			for($i=0;$i<count($chk);$i++){
-				$req = "update demandes set etat_demande=$state where id_demande='".$chk[$i]."'";
-				mysql_query($req,$dbh);
+		if($demandes_init_workflow==="1" && $PMBuserid){
+			//La demande est elle attribué à un utilisateur ?
+			$query='SELECT 1 FROM demandes_users WHERE num_demande='.$demande->id_demande;
+			$result=pmb_mysql_query($query,$dbh);
+			if(!pmb_mysql_num_rows($result)){
+				//si non, on attribue
+				$query='INSERT INTO demandes_users SET num_user="'.$PMBuserid.'", num_demande="'.$demande->id_demande.'", date_creation="'.date("Y-m-d",time()).'", users_statut=1';
+				pmb_mysql_query($query,$dbh);
 			}
-		} else {
-			$req = "update demandes set etat_demande=$state where id_demande='".$this->id_demande."'";
-			mysql_query($req,$dbh);
-			$this->etat_demande = $state;
 		}
+		
+		$req = "update demandes set etat_demande=$state where id_demande='".$demande->id_demande."'";
+		pmb_mysql_query($req,$dbh);
+		
+		if($state == 2 && $demandes_default_action === "1"){
+			$query = "SELECT id_action FROM demandes_actions WHERE num_demande=".$demande->id_demande;
+			$result = pmb_mysql_query($query,$dbh);
+			if(!pmb_mysql_num_rows($result)){
+				
+				$action_default = new demandes_actions();
+				$action_default->num_demande = $demande->id_demande;
+				$action_default->actions_num_user = $demande->num_demandeur;
+				$action_default->actions_type_user =1;
+				$action_default->date_action = date("Y-m-d",time());
+				$action_default->deadline_action = date("Y-m-d",time());
+				if($action_default->list_statut){
+					$action_default->statut_action = "";				
+					foreach($action_default->list_statut as $key=>$value){
+						if($value['default']) {
+							$action_default->statut_action = $value['id'];							
+						} 
+					}
+					if($idstatut == "" && !$action_default->statut_action) {
+						reset($action_default->list_statut);
+						$first_statut = current($action_default->list_statut);
+						$action_default->statut_action = $first_statut['id'];						
+					}
+				}
+				$action_default->type_action = $demande->first_action;
+				$action_default->sujet_action = addslashes($demande->titre_demande);
+				$action_default->detail_action = addslashes($demande->sujet_demande);
+				
+				demandes_actions::save($action_default);				
+			}
+		}
+		
+		if($pmb_type_audit) audit::insert_modif(AUDIT_DEMANDE,$demande->id_demande);
 	}
 	
 	/*
@@ -778,10 +1130,10 @@ class demandes {
 			join demandes_actions on num_action=id_action
 			left join explnum on explnum_id=num_explnum
 			where num_demande='".$this->id_demande."'";
-		$res = mysql_query($req,$dbh);
+		$res = pmb_mysql_query($req,$dbh);
 		$liste="";
-		if(mysql_num_rows($res)){
-			while(($doc = mysql_fetch_object($res))){
+		if(pmb_mysql_num_rows($res)){
+			while(($doc = pmb_mysql_fetch_object($res))){
 				if($doc->num_explnum) {
 					$check = 'checked';
 				}
@@ -832,15 +1184,15 @@ class demandes {
 			and num_explnum = 0
 			and num_demande='".$this->id_demande."'
 			"; 
-			$res = mysql_query($req,$dbh);
-			if(mysql_num_rows($res)){
-				$expl = mysql_fetch_object($res);			
+			$res = pmb_mysql_query($req,$dbh);
+			if(pmb_mysql_num_rows($res)){
+				$expl = pmb_mysql_fetch_object($res);			
 				$req = "insert into explnum(explnum_notice,explnum_nom,explnum_nomfichier,explnum_mimetype,explnum_data,explnum_extfichier) values 
 					('".$this->num_notice."','".addslashes($expl->nom)."','".addslashes($expl->nom)."','".addslashes($expl->mime)."','".addslashes($expl->data)."','".addslashes($expl->ext)."')";
-				mysql_query($req,$dbh);
-				$id_explnum = mysql_insert_id();			
+				pmb_mysql_query($req,$dbh);
+				$id_explnum = pmb_mysql_insert_id();			
 				$req = "update explnum_doc_actions set num_explnum='".$id_explnum."' where num_explnum_doc='".$chk[$i]."'";
-				mysql_query($req,$dbh);
+				pmb_mysql_query($req,$dbh);
 				if($ck_index[$i] && $pmb_indexation_docnum){
 					$expl = new explnum($id_explnum);
 					$expl->indexer_docnum();
@@ -850,14 +1202,14 @@ class demandes {
 			//On désattache les autres
 			if($chk){
 				$req = "select id_explnum_doc from explnum_doc where id_explnum_doc not in ('".implode('\',\'',$chk)."')"; 
-				$res = mysql_query($req,$dbh);
-				while(($expl = mysql_fetch_object($res))){
+				$res = pmb_mysql_query($req,$dbh);
+				while(($expl = pmb_mysql_fetch_object($res))){
 					$req = "delete e from explnum e 
 					join explnum_doc_actions on num_explnum=explnum_id 
 					where num_explnum_doc='".$expl->id_explnum_doc."'";
-					mysql_query($req,$dbh);
+					pmb_mysql_query($req,$dbh);
 					$req = "update explnum_doc_actions set num_explnum='0' where num_explnum_doc='".$expl->id_explnum_doc."'";
-					mysql_query($req,$dbh);
+					pmb_mysql_query($req,$dbh);
 				}
 			} else {
 				$req ="select id_explnum_doc
@@ -866,14 +1218,14 @@ class demandes {
 					join demandes_actions on num_action=id_action
 					where num_explnum != 0
 					and num_demande='".$this->id_demande."'";
-				$res = mysql_query($req,$dbh);
-				while(($expl = mysql_fetch_object($res))){
+				$res = pmb_mysql_query($req,$dbh);
+				while(($expl = pmb_mysql_fetch_object($res))){
 					$req = "delete e from explnum e 
 					join explnum_doc_actions on num_explnum=explnum_id 
 					where num_explnum_doc='".$expl->id_explnum_doc."'";
-					mysql_query($req,$dbh);
+					pmb_mysql_query($req,$dbh);
 					$req = "update explnum_doc_actions set num_explnum='0' where num_explnum_doc='".$expl->id_explnum_doc."'";
-					mysql_query($req,$dbh);
+					pmb_mysql_query($req,$dbh);
 				}
 			}
 	}
@@ -902,32 +1254,34 @@ class demandes {
 	function suppr_notice_form(){
 		global $msg, $chk, $iddemande;
 		
+		
 		$display = "
 		<form class='form-$current_module' name='suppr_noti'  method='post' action='./demandes.php?categ=list'>
-			<h3>".$msg["demandes_del_notice"]."</h3>
-			<div class='form-contenu'>
-				<div class='row'>
-					<div>
-						<img src='./images/error.gif'  >
-						<strong>".$msg["demandes_del_linked_notice"]."</strong>
-					</div>
+		<h3>".$msg["demandes_del_notice"]."</h3>
+		<div class='form-contenu'>
+			<div class='row'>
+				<div>
+					<img src='./images/error.gif'  >
+					<strong>".$msg["demandes_del_linked_notice"]."</strong>
 				</div>
 			</div>
-			<div></div>
-			<div class='row'>
-				<input type='hidden' name='delnoti' id='delnoti'>
-				<input type='hidden' name='act' value='suppr'>
-				<input type='hidden' name='iddemande' value='$iddemande'>";
-				if($chk) 
-					$display .= "<input type='hidden' name='chk' value='".implode(',',$chk)."'";
-				$display .= 
-					"<input type='submit' name='non_btn' class='bouton' value='$msg[39]' onclick='this.form.delnoti.value=\"0\";'>
-					<input type='submit' class='bouton' name='ok_btn' value='$msg[40]' onclick='this.form.delnoti.value=\"1\";'>					
-			</div>
-			
-		</form>		
+		</div>
+		<div></div>
+		<div class='row'>
+			<input type='hidden' name='delnoti' id='delnoti'>
+			<input type='hidden' name='act' value='suppr'>
+			<input type='hidden' name='iddemande' value='$iddemande'>";
+		if($chk){
+			$display .= "<input type='hidden' name='chk' value='".implode(',',$chk)."'>";
+		}
+		$display .=
+		"<input type='submit' name='non_btn' class='bouton' value='$msg[39]' onclick='this.form.delnoti.value=\"0\";'>
+		<input type='submit' class='bouton' name='ok_btn' value='$msg[40]' onclick='this.form.delnoti.value=\"1\";'>
+		</div>
+				
+		</form>
 		";
-					
+				
 		print $display;
 	}
 	
@@ -937,7 +1291,211 @@ class demandes {
 		
 		for($i=0;$i<count($chk);$i++){
 			$req = "insert into demandes_users set num_user=$iduser, num_demande=$chk[$i], date_creation='".today()."', users_statut=1";
-			mysql_query($req,$dbh);
+			pmb_mysql_query($req,$dbh);
+		}
+	}
+	
+	function create_notice(){
+		global $dbh, $iddemande;
+		global $demandes_statut_notice, $pmb_type_audit;				
+		
+		// creation notice à partir de la demande
+		$req = "insert into notices set
+				tit1='".$this->titre_demande."',
+				n_contenu='".$this->sujet_demande."',
+				statut ='".$demandes_statut_notice."'
+				";				
+				pmb_mysql_query($req,$dbh);
+				$id_notice = pmb_mysql_insert_id();
+				notice::majNotices($id_notice);
+				if($pmb_type_audit) audit::insert_creation(AUDIT_NOTICE,$id_notice);
+		
+		// mise à jour de la demande
+		$req = "UPDATE demandes SET num_notice=".$id_notice." WHERE id_demande=".$this->id_demande;
+		pmb_mysql_query($req,$dbh);	
+		$this->num_notice=$id_notice;		
+	}
+	
+	function delete_notice(){
+		global $dbh;
+		global $demandes_statut_notice, $pmb_type_audit;
+	
+		notice::del_notice($this->num_notice);
+		// mise à jour de la demande
+		$req = "UPDATE demandes SET num_notice=0 WHERE id_demande=".$this->id_demande;
+		pmb_mysql_query($req,$dbh);
+		$this->num_notice=0;				
+	}
+	
+	// mise à jour de l'alerte en fonction des alertes présentes sur les actions de la demande en cours
+	static function dmde_majRead($id_demande,$side="_gestion"){
+		global $dbh;
+		// on teste s'il y a des actions non lues
+		$query = "SELECT id_action FROM demandes_actions WHERE num_demande=".$id_demande. " AND actions_read".$side."=1";
+		$result = pmb_mysql_query($query,$dbh);		
+		$value=0;
+		if(pmb_mysql_num_rows($result)){
+			$value=1;
+		} else {
+			// sinon, on teste si la demande est non lue et non validée en gestion et s'il n'y a aucune action de crée
+			$query = "SELECT id_action FROM demandes_actions WHERE num_demande=".$id_demande;
+			$res = pmb_mysql_query($query,$dbh);
+			if(!pmb_mysql_num_rows($res)){
+				$query = "SELECT dmde_read".$side.", etat_demande FROM demandes WHERE id_demande=".$id_demande;
+				$res2 = pmb_mysql_query($query,$dbh);
+				if(pmb_mysql_num_rows($res2)){
+					$etat = pmb_mysql_result($res2,0,"etat_demande");
+					$read = pmb_mysql_result($res2,0,"dmde_read".$side);
+					if($etat == 1 && $read == 1){
+						$value = 1;
+					}
+				}
+			}
+		}
+		$query2 = "UPDATE demandes SET dmde_read".$side."=".$value." WHERE id_demande=".$id_demande;
+		pmb_mysql_query($query2,$dbh);
+		return $value;
+	}
+	
+	// fonction qui renvoie un booléen indiquant si une demande a été lue ou pas
+	static function read($demande,$side="_gestion"){
+		global $dbh;
+		$read  = false;
+		$query = "SELECT dmde_read".$side." FROM demandes WHERE id_demande=".$demande->id_demande;
+		$result = pmb_mysql_query($query,$dbh);
+		if($result){
+			$tmp = pmb_mysql_result($result,0,0);
+			if($tmp == 0){
+				$read = true;
+			}
+		}
+		return $read;
+	}
+	
+	/*
+	 * Change l'alerte de la demande : si elle est lue, elle passe en non lue et inversement
+	*/
+	static function change_read($demande,$side="_gestion"){
+		global $dbh;
+	
+		$read = demandes::read($demande,$side);
+		$value = "";
+		if($read){
+			$value = 1;
+		} else {
+			$value = 0;
+		}
+		$query = "UPDATE demandes SET dmde_read".$side."=".$value." WHERE id_demande=".$demande->id_demande;
+		if(pmb_mysql_query($query,$dbh)){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/*
+	 * changement forcé de la mention "lue" ou "pas lue" de l'action
+	* true => action est déjà lue donc pas d'alerte
+	* false => alerte
+	*/
+	static function demande_read($id_demande,$booleen=true,$side="_gestion"){
+		global $dbh;
+	
+		$value = "";
+		if($booleen){
+			$value = 0;
+		} else {
+			$value = 1;
+		}
+		$query = "UPDATE demandes SET dmde_read".$side."=".$value." WHERE id_demande=".$id_demande;
+		if(pmb_mysql_query($query,$dbh)){
+			return true;
+		} else {
+			return false;
+		}		
+	}
+	
+	// mise à jour de l'alerte sur les actions et les notes de la demande
+	static function dmde_propageLu($id_demande,$side="_gestion"){
+		global $dbh;
+		
+		if($id_demande){
+			$dmde = new demandes($id_demande);
+			$read = demandes::read($dmde,$side);
+			if($read){				
+				$query1 = "UPDATE demandes_actions SET actions_read".$side."=0 WHERE num_demande=".$id_demande;
+				$result1 = pmb_mysql_query($query1,$dbh);
+				
+				$query2 = "SELECT id_action FROM demandes_actions WHERE num_demande=".$id_demande;
+				$result2 = pmb_mysql_query($query2,$dbh);
+				
+				if(pmb_mysql_num_rows($result2)){
+					while($action = pmb_mysql_fetch_object($result2)){
+						$query3 = "UPDATE demandes_notes SET notes_read".$side."=0 WHERE num_action=".$action->id_action;
+						pmb_mysql_query($query3,$dbh);
+					}
+				}
+				return "lu";
+			} else {
+				return "nonlu";
+			}			
+		}
+	}
+	
+	/*
+	 * Formulaire de création d'une demande
+	*/
+	function show_repfinale_form(){
+		global $form_reponse_final, $msg, $charset, $dbh, $pmb_javascript_office_editor;
+		
+		if ($pmb_javascript_office_editor) {
+			print $pmb_javascript_office_editor ;
+		}
+		
+		$form_reponse_final = str_replace('!!titre_dmde!!',htmlentities($this->titre_demande,ENT_QUOTES,$charset),$form_reponse_final);
+		$form_reponse_final = str_replace('!!form_title!!',htmlentities($msg['demandes_reponse_finale'],ENT_QUOTES,$charset),$form_reponse_final);
+		$form_reponse_final = str_replace('!!theme_dmde!!',htmlentities($this->theme_libelle,ENT_QUOTES,$charset),$form_reponse_final);
+		$form_reponse_final = str_replace('!!type_dmde!!',htmlentities($this->type_libelle,ENT_QUOTES,$charset),$form_reponse_final);
+		$form_reponse_final = str_replace('!!sujet_dmde!!',htmlentities($this->sujet_demande,ENT_QUOTES,$charset),$form_reponse_final);
+		$form_reponse_final = str_replace('!!iddemande!!',htmlentities($this->id_demande,ENT_QUOTES,$charset),$form_reponse_final);
+		
+		$act_cancel = "document.location='./demandes.php?categ=gestion&act=see_dmde&iddemande=".$this->id_demande."'";
+		$act_form = "./demandes.php?categ=gestion";
+		
+		if(!$this->reponse_finale){
+			$form_reponse_final = str_replace('!!reponse!!','',$form_reponse_final);
+			$form_reponse_final = str_replace('!!btn_suppr!!','',$form_reponse_final);
+		} else {
+			$form_reponse_final = str_replace('!!reponse!!',htmlentities($this->reponse_finale,ENT_QUOTES,$charset),$form_reponse_final);
+			$btn_suppr = "<input type='submit' class='bouton' value='".$msg['demandes_repfinale_delete']."' onClick='this.form.act.value=\"suppr_repfinale\" ; return confirm_delete();' />";
+			$form_reponse_final = str_replace('!!btn_suppr!!',$btn_suppr,$form_reponse_final);
+		}
+		$form_reponse_final = str_replace('!!form_action!!',$act_form,$form_reponse_final);
+		$form_reponse_final = str_replace('!!cancel_action!!',$act_cancel,$form_reponse_final);
+		print $form_reponse_final;
+	}
+	
+	/*
+	 * Formulaire de création d'une demande
+	*/
+	function save_repfinale($id_note=0){
+		global $dbh, $f_message;
+		$f_message=strip_tags($f_message);
+		if($this->id_demande){
+			$query = "UPDATE demandes SET reponse_finale='".$f_message."', demande_note_num=$id_note WHERE id_demande=".$this->id_demande;
+			pmb_mysql_query($query,$dbh);				
+		}
+	}
+	
+	/*
+	 * Formulaire de création d'une demande
+	*/
+	function suppr_repfinale(){
+		global $dbh, $f_message;	
+		
+		if($this->id_demande){
+			$query = "UPDATE demandes SET reponse_finale='' WHERE id_demande=".$this->id_demande;			
+			pmb_mysql_query($query,$dbh);
 		}
 	}
 }

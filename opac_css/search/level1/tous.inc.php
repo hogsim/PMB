@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: tous.inc.php,v 1.53 2013-10-30 15:00:54 dgoron Exp $
+// $Id: tous.inc.php,v 1.55 2015-04-01 07:23:04 arenou Exp $
 // premier niveau de recherche OPAC sur tous
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
@@ -13,7 +13,7 @@ require_once($base_path.'/classes/notice.class.php');
 require_once($base_path.'/includes/notice_affichage.inc.php');
 require_once($class_path."/searcher.class.php");
 
-$search_all_fields = new searcher_all_fields(stripslashes($user_query));
+$search_all_fields = new searcher_all_fields(stripslashes($user_query),$map_emprises_query);
 //$notices = $search_all_fields->get_result();
 $nb_result = $search_all_fields->get_nb_results();
 $l_typdoc= implode(",",$search_all_fields->get_typdocs());
@@ -23,6 +23,12 @@ $form = "
 	<form name=\"search_tous\" action=\"./index.php?lvl=more_results\" method=\"post\">";
 	if (function_exists("search_other_function_post_values")){
 		$form .=search_other_function_post_values(); 
+	}
+	if($map_emprises_query) {
+		foreach($map_emprises_query as $map_emprise_query){
+			$form .= "
+		<input type=\"hidden\" name=\"map_emprises_query[]\" value=\"$map_emprise_query\">";
+		}
 	}
   	$form .= "
   		<input type=\"hidden\" name=\"mode\" value=\"tous\">

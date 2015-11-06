@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: connecteurs_out.class.php,v 1.6 2013-10-01 06:42:24 dbellamy Exp $
+// $Id: connecteurs_out.class.php,v 1.8 2015-06-02 13:48:57 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -161,14 +161,14 @@ class connecteur_out {
 	function commit_to_db() {
 		global $dbh;
 		$sql = "REPLACE INTO connectors_out SET connectors_out_config = '".addslashes(serialize($this->config))."', connectors_out_id = ".$this->id;
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	function get_config_from_db() {
 		global $dbh;
 		$sql = "SELECT connectors_out_config FROM connectors_out WHERE connectors_out_id = ".$this->id;
-		$res = mysql_query($sql, $dbh);
-		$row = mysql_fetch_assoc($res);
+		$res = pmb_mysql_query($sql, $dbh);
+		$row = pmb_mysql_fetch_assoc($res);
 		$this->config = unserialize($row["connectors_out_config"]);
 	}
 	
@@ -191,8 +191,8 @@ class connecteur_out {
 	function get_sources() {
 		global $dbh;
 		$sql = "SELECT connectors_out_source_id FROM connectors_out_sources WHERE connectors_out_sources_connectornum = ".$this->id;
-		$res = mysql_query($sql, $dbh);
-		while ($row=mysql_fetch_assoc($res)) {
+		$res = pmb_mysql_query($sql, $dbh);
+		while ($row=pmb_mysql_fetch_assoc($res)) {
 			$this->sources[] = $this->instantiate_source_class($row["connectors_out_source_id"]);
 		}
 	}
@@ -277,8 +277,8 @@ class connecteur_out_source {
 		
 		if ($this->id) {
 			$sql = "SELECT * FROM connectors_out_sources WHERE connectors_out_source_id = ".$id;
-			$res = mysql_query($sql, $dbh);
-			$row = mysql_fetch_assoc($res);
+			$res = pmb_mysql_query($sql, $dbh);
+			$row = pmb_mysql_fetch_assoc($res);
 			$this->name = $row["connectors_out_source_name"];
 			$this->comment = $row["connectors_out_source_comment"];
 			$this->config = unserialize($row["connectors_out_source_config"]);
@@ -293,14 +293,14 @@ class connecteur_out_source {
 		$this->config = addslashes_array($this->config);
 		$serialized = serialize($this->config);
 		$sql = "REPLACE INTO connectors_out_sources SET connectors_out_source_id = ".$this->id.", connectors_out_sources_connectornum = ".$this->connector_id.", connectors_out_source_name='".addslashes($this->name)."', connectors_out_source_comment = '".addslashes($this->comment)."', connectors_out_source_config = '".addslashes($serialized)."'";
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 
 	static function add_new($connector_id) {
 		global $dbh;
 		$sql = "INSERT INTO connectors_out_sources (connectors_out_sources_connectornum) VALUES (".$connector_id.")";
-		mysql_query($sql, $dbh);
-		$new_source_id = mysql_insert_id($dbh);
+		pmb_mysql_query($sql, $dbh);
+		$new_source_id = pmb_mysql_insert_id($dbh);
 		$conn = new connecteur_out($connector_id);
 		return new connecteur_out_source($conn, $new_source_id, array());
 	}
@@ -308,15 +308,15 @@ class connecteur_out_source {
 	static function name_exists($name_to_test) {
 		global $dbh;
 		$sql = "SELECT COUNT(1) FROM connectors_out_sources WHERE connectors_out_source_name = '".addslashes($name_to_test)."'";
-		$count = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$count = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		return $count > 0;
 	}
 	
 	static function get_connector_id($source_id) {
 		global $dbh;
 		$sql = "SELECT connectors_out_sources_connectornum FROM connectors_out_sources WHERE connectors_out_source_id = ".($source_id+0);
-		$res = mysql_query($sql, $dbh);
-		$row = mysql_fetch_array($res);
+		$res = pmb_mysql_query($sql, $dbh);
+		$row = pmb_mysql_fetch_array($res);
 		return $row["connectors_out_sources_connectornum"];
 	}
 	
@@ -337,7 +337,7 @@ class connecteur_out_source {
 	function delete($source_id) {
 		global $dbh;
 		$sql = "DELETE FROM connectors_out_sources WHERE connectors_out_source_id = ".($source_id+0);
-		mysql_query($sql, $dbh);
+		pmb_mysql_query($sql, $dbh);
 	}
 	
 	function update_config_from_form() {
@@ -359,16 +359,16 @@ function connector_out_check_credentials($username, $password, $source_id) {
 		
 		//Verifions si le groupe anonyme a le droit d'utiliser la source
 		$sql = "SELECT COUNT(1) FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_sourcenum = ".$source_id.' AND connectors_out_source_esgroup_esgroupnum = -1';
-		$count = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$count = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		$allowed = $count > 0;
 		
 		if ($allowed) {
 			$sql = 'SELECT esgroup_pmbusernum FROM es_esgroups WHERE esgroup_id = -1';
-			$res = mysql_query($sql, $dbh);
-			if (!mysql_numrows($res))
+			$res = pmb_mysql_query($sql, $dbh);
+			if (!pmb_mysql_num_rows($res))
 				return 1;
 			else 
-				return mysql_result($res, 0, 0);
+				return pmb_mysql_result($res, 0, 0);
 		}
 		
 		return false;
@@ -386,33 +386,33 @@ function connector_out_check_credentials($username, $password, $source_id) {
 			
 		//Cherchons le lecteur
 		$empr_id=0;
-		$sql = "SELECT id_empr FROM empr WHERE empr_login = '".addslashes($empr_name)."' AND empr_password = '".addslashes($password)."'";
-		$res = mysql_query($sql, $dbh);
-		if (mysql_numrows($res))
-			$empr_id = mysql_result($res, 0, 0);
+		$sql = "SELECT id_empr FROM empr WHERE empr_login = '".addslashes($empr_name)."' AND empr_password = '".addslashes(emprunteur::get_hashed_password($empr_name,$password))."'";
+		$res = pmb_mysql_query($sql, $dbh);
+		if (pmb_mysql_num_rows($res))
+			$empr_id = pmb_mysql_result($res, 0, 0);
 		//Pas trouvé? Plouf!
 		if (!$empr_id)
 			return false;
 
 		//Cherchons le groupe
 		$sql = "SELECT esgroup_id FROM es_esgroups WHERE esgroup_name = '".addslashes($es_group)."'";
-		$res = mysql_query($sql, $dbh);
+		$res = pmb_mysql_query($sql, $dbh);
 		//Pas trouvé? Plouf!
-		if (!mysql_numrows($res))
+		if (!pmb_mysql_num_rows($res))
 			return false;
-		$esgroup_id = mysql_result($res, 0, 0);
+		$esgroup_id = pmb_mysql_result($res, 0, 0);
 		$es_group = new es_esgroup($esgroup_id);
 		
 		//Vérifions que le lecteur est dans le groupe
 		$sql = "SELECT SUM(EXISTS(SELECT 1 FROM empr_groupe WHERE empr_id = ".$empr_id." AND groupe_id = esgroupuser_usernum)) > 0 AS in_group FROM es_esgroup_esusers WHERE esgroupuser_usertype = 2 AND esgroupuser_groupnum = ".$esgroup_id;
-		$res = mysql_query($sql, $dbh);
-		$empr_in_group = mysql_result($res, 0, 0);
+		$res = pmb_mysql_query($sql, $dbh);
+		$empr_in_group = pmb_mysql_result($res, 0, 0);
 		if (!$empr_in_group)//Vil faquin, tu as cru pouvoir rentré en mentant sur ton groupe d'origine? Ca marche pas ici; plouf!
 			return false;
 			
 		//Verifions si le groupe a le droit d'utiliser la source
 		$sql = "SELECT COUNT(1) FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_sourcenum = ".$source_id.' AND connectors_out_source_esgroup_esgroupnum = '.$esgroup_id;
-		$count = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$count = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		$allowed = $count > 0;
 
 		//Pas le droit? Plouf!
@@ -437,7 +437,7 @@ function connector_out_check_credentials($username, $password, $source_id) {
 		
 		//Verifions si le groupe a le droit d'utiliser la source
 		$sql = "SELECT COUNT(1) FROM connectors_out_sources_esgroups WHERE connectors_out_source_esgroup_sourcenum = ".$source_id.' AND connectors_out_source_esgroup_esgroupnum = '.$esgroup_id;
-		$count = mysql_result(mysql_query($sql, $dbh), 0, 0);
+		$count = pmb_mysql_result(pmb_mysql_query($sql, $dbh), 0, 0);
 		$allowed = $count > 0;
 
 		//Pas le droit? Plouf!

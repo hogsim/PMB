@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: docs_type.class.php,v 1.7 2013-04-11 08:08:11 mbertin Exp $
+// $Id: docs_type.class.php,v 1.8 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -45,10 +45,10 @@ function getData() {
 
 	/* récupération des informations de la catégorie */
 	$requete = 'SELECT * FROM docs_type WHERE idtyp_doc='.$this->id.' LIMIT 1;';
-	$result = mysql_query($requete, $dbh) or die (mysql_error()." ".$requete);
-	if(!mysql_num_rows($result)) return;
+	$result = pmb_mysql_query($requete, $dbh) or die (pmb_mysql_error()." ".$requete);
+	if(!pmb_mysql_num_rows($result)) return;
 		
-	$data = mysql_fetch_object($result);
+	$data = pmb_mysql_fetch_object($result);
 	$this->id = $data->idtyp_doc;		
 	$this->libelle = $data->tdoc_libelle;
 	$this->duree_pret = $data->duree_pret;
@@ -75,9 +75,9 @@ function import($data) {
 		return 0;
 		}
 	// check sur les éléments du tableau
-	$long_maxi = mysql_field_len(mysql_query("SELECT tdoc_libelle FROM docs_type limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT tdoc_libelle FROM docs_type limit 1"),0);
 	$data['tdoc_libelle'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['tdoc_libelle']))),0,$long_maxi));
-	$long_maxi = mysql_field_len(mysql_query("SELECT tdoc_codage_import FROM docs_type limit 1"),0);
+	$long_maxi = pmb_mysql_field_len(pmb_mysql_query("SELECT tdoc_codage_import FROM docs_type limit 1"),0);
 	$data['tdoc_codage_import'] = rtrim(substr(preg_replace('/\[|\]/', '', rtrim(ltrim($data['tdoc_codage_import']))),0,$long_maxi));
 
 	if($data['tdoc_owner']=="") $data['tdoc_owner'] = 0;
@@ -92,9 +92,9 @@ function import($data) {
 	
 	/* vérification que le type doc existe */
 	$query = "SELECT idtyp_doc FROM docs_type WHERE tdoc_codage_import='${key1}' and tdoc_owner = '${key2}' LIMIT 1 ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't SELECT docs_type ".$query);
-	$docs_type  = mysql_fetch_object($result);
+	$docs_type  = pmb_mysql_fetch_object($result);
 
 	/* le type de doc existe, on retourne l'ID */
 	if($docs_type->idtyp_doc) return $docs_type->idtyp_doc;
@@ -108,10 +108,10 @@ function import($data) {
 	$query .= "duree_pret='".$data['duree_pret']."', ";
 	$query .= "tdoc_codage_import='".$key1."', ";
 	$query .= "tdoc_owner='".$key2."' ";
-	$result = @mysql_query($query, $dbh);
+	$result = @pmb_mysql_query($query, $dbh);
 	if(!$result) die("can't INSERT into docs_type ".$query);
 
-	return mysql_insert_id($dbh);
+	return pmb_mysql_insert_id($dbh);
 
 	} /* fin méthode import */
 
@@ -131,9 +131,9 @@ static function gen_combo_box ( $selected ) {
 	$option_premier_code="";
 	$option_premier_info="";
 	$gen_liste_str="";
-	$resultat_liste=mysql_query($requete) or die (mysql_error()." ".$requete);
+	$resultat_liste=pmb_mysql_query($requete) or die (pmb_mysql_error()." ".$requete);
 	$gen_liste_str = "<select name=\"$nom\" onChange=\"$on_change\">\n" ;
-	$nb_liste=mysql_numrows($resultat_liste);
+	$nb_liste=pmb_mysql_num_rows($resultat_liste);
 	if ($nb_liste==0) {
 		$gen_liste_str.="<option value=\"$liste_vide_code\">$liste_vide_info</option>\n" ;
 	} else {
@@ -144,11 +144,11 @@ static function gen_combo_box ( $selected ) {
 		}
 		$i=0;
 		while ($i<$nb_liste) {
-			$gen_liste_str.="<option value=\"".mysql_result($resultat_liste,$i,$champ_code)."\" " ;
-			if ($selected==mysql_result($resultat_liste,$i,$champ_code)) {
+			$gen_liste_str.="<option value=\"".pmb_mysql_result($resultat_liste,$i,$champ_code)."\" " ;
+			if ($selected==pmb_mysql_result($resultat_liste,$i,$champ_code)) {
 				$gen_liste_str.="selected" ;
 				}
-			$gen_liste_str.=">".mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
+			$gen_liste_str.=">".pmb_mysql_result($resultat_liste,$i,$champ_info)."</option>\n" ;
 			$i++;
 		}
 	}

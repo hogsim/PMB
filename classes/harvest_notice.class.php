@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: harvest_notice.class.php,v 1.3 2013-03-22 15:34:05 mbertin Exp $
+// $Id: harvest_notice.class.php,v 1.4 2015-04-03 11:16:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -75,8 +75,8 @@ class harvest_notice {
 		$notice_uni=$this->info['notice_base'];
 		
 		$req="select * from notices where notice_id=".$notice_id." ";
-		$resultat=mysql_query($req);	
-		if ($r=mysql_fetch_object($resultat)) {
+		$resultat=pmb_mysql_query($req);	
+		if ($r=pmb_mysql_fetch_object($resultat)) {
 			$code=$r->code;
 			$notice_extern= $this->info['harvest']->havest_notice($code,$notice_id);
 //			printr($notice_extern);
@@ -196,8 +196,8 @@ class harvest_notice {
 		
 		//Je regarde si la notice à un isbn
 		$req="SELECT code FROM notices WHERE notice_id='".$this->id."'";
-		$res=mysql_query($req);
-		if(mysql_num_rows($res) && (isISBN(mysql_result($res,0,0)) || isEAN(mysql_result($res,0,0)))){
+		$res=pmb_mysql_query($req);
+		if(pmb_mysql_num_rows($res) && (isISBN(pmb_mysql_result($res,0,0)) || isEAN(pmb_mysql_result($res,0,0)))){
 			$tpl=$harvest_notice_tpl;
 			
 			$harvests=new harvests();

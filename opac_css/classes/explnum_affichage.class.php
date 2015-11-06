@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: explnum_affichage.class.php,v 1.11 2013-05-14 12:08:19 dgoron Exp $
+// $Id: explnum_affichage.class.php,v 1.12 2015-04-03 11:16:18 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -71,7 +71,7 @@ class explnum_affichage{
 					$url_docnum="/doc_num.php?explnum_id=";
 					break;
 			}
-			$res = mysql_query($requete, $dbh);
+			$res = pmb_mysql_query($requete, $dbh);
 			
 			$i=1;
 			$allowed_mimetype=array();
@@ -79,7 +79,7 @@ class explnum_affichage{
 				global $opac_photo_filtre_mimetype;
 				$allowed_mimetype = explode(",",str_replace("'","",$opac_photo_filtre_mimetype));
 			}
-			while(($expl = mysql_fetch_object($res))){
+			while(($expl = pmb_mysql_fetch_object($res))){
 				if($expl->explnum_notice) {
 					$notice_aff = new notice_affichage($expl->explnum_notice,'');
 					$notice_aff->do_header_without_html();
@@ -165,9 +165,9 @@ class explnum_affichage{
 		global $dbh;
 		
 		$req = "select bulletin_notice, bulletin_numero, date_date, mention_date, bulletin_titre from bulletins where bulletin_id='".$id."'";
-		$res = mysql_query($req, $dbh);
+		$res = pmb_mysql_query($req, $dbh);
 		$header ='';
-		while(($bull = mysql_fetch_object($res))){
+		while(($bull = pmb_mysql_fetch_object($res))){
 			$notice_mere = $bull->bulletin_notice;
 			$titre_bull = $bull->bulletin_titre;
 			$date = $bull->date_date;

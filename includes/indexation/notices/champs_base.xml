@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: champs_base.xml,v 1.19.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
+$Id: champs_base.xml,v 1.30 2015-05-27 14:14:30 jpermanne Exp $ -->
 
 <indexation>
 
@@ -117,6 +117,12 @@ $Id: champs_base.xml,v 1.19.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 	<field name="admin_opac_facette_annee_calculee" id="040" pond="0">
 		<table>
 			<tablefield>YEAR(date_parution)</tablefield>
+		</table>		
+	</field>
+	
+	<field name="notice_is_new_search" id="042" datatype="new" pond="0">
+		<table>
+			<tablefield>if(notice_is_new=0,"msg:notice_is_not_new_search","msg:notice_is_new_search")</tablefield>
 		</table>		
 	</field>
 	
@@ -420,7 +426,7 @@ $Id: champs_base.xml,v 1.19.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 			</link>
 		</table>
 	</field>
-	
+		
 	<!-- Infos d'exemplaires -->
 	<field name="search_exemplaire" external="yes" id="090" datatype="expl">
 		<!-- Indexation de l'article avec les exemplaires du bulletin auquel il est relié -->
@@ -683,10 +689,77 @@ $Id: champs_base.xml,v 1.19.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 				<linkrestrict>AND sur_location.surloc_visible_opac=1</linkrestrict>
 			</link> ->
 		</table>-->
+	</field>
+	
+	<!-- Concepts -->	
+	<field name="index_concept_label" external="yes" id="036" datatype="concept">
+		<table name="skos_fields_global_index">
+			<tablefield id="01" name="lib_categ" pond="110">value</tablefield>
+			<language>lang</language>
+			<tablekey>id_item</tablekey>
+			<idkey>id_item</idkey>
+			<filter>type_object = 1</filter>
+			<link type="nn">
+				<table>index_concept</table>
+				<referencefield>num_object</referencefield>
+				<externalfield>num_concept</externalfield>
+				<linkrestrict>and code_champ = 1</linkrestrict>
+			</link>
+		</table>
 	</field>	
+	
+	<!-- Echelle de la carte -->	
+	<field name="map_echelle" external="yes" id="037" datatype="map">
+		<table name="map_echelles">
+			<tablefield name="map_echelle_name" id="01" pond="100">map_echelle_name</tablefield>
+			<tablekey>map_echelle_id</tablekey>
+			<idkey>map_echelle_id</idkey>
+			<link type="1n">
+				<referencefield>map_echelle_num</referencefield>
+			</link>
+		</table>
+	</field>
+	
+	<!-- Système de projection de la carte -->	
+	<field name="map_projection" external="yes" id="038" datatype="map">
+		<table name="map_projections">
+			<tablefield name="map_projection_name" id="01" pond="100">map_projection_name</tablefield>
+			<tablekey>map_projection_id</tablekey>
+			<idkey>map_projection_id</idkey>
+			<link type="1n">
+				<referencefield>map_projection_num</referencefield>
+			</link>
+		</table>
+	</field>
+	
+	<!-- Système de référence de coordonnées de la carte -->	
+	<field name="map_ref" external="yes" id="039" datatype="map">
+		<table name="map_refs">
+			<tablefield name="map_ref_name" id="01" pond="100">map_ref_name</tablefield>
+			<tablekey>map_ref_id</tablekey>
+			<idkey>map_ref_id</idkey>
+			<link type="1n">
+				<referencefield>map_ref_num</referencefield>
+			</link>
+		</table>
+	</field>
+	
+	<!-- Equinoxe -->
+	<field name="map_equinoxe" id="041" pond="100">
+		<table>
+			<tablefield>map_equinoxe</tablefield>
+		</table>
+	</field>	
+	
 	<!-- les CPs -->
 	<!-- de notices -->
 	<field name="notice_champs_perso" external="yes" id="100" datatype="custom_field" >
+		<table>notices</table>
+	</field>
+		
+	<!-- les Autorités personnalisées -->
+	<!-- de notices -->
+	<field name="notice_authperso" external="yes" id="1000" datatype="authperso" >
 		<table>notices</table>
 	</field>
 	
@@ -699,10 +772,16 @@ $Id: champs_base.xml,v 1.19.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 			<tablefield name="extexplnum_minetype" id="02" pond="100">explnum_mimetype</tablefield>
 			<tablefield name="extexplnum_url" id="03" pond="100">explnum_url</tablefield>
 			<tablefield name="extexplnum_extfichier" id="04" pond="100">explnum_extfichier</tablefield>
+			<tablefield name="empr_statut_menu" id="05" pond="0">gestion_libelle</tablefield>
 			<tablekey>explnum_id</tablekey>
 			<link type="n1">
 				<externalfield>explnum_notice</externalfield>
 				<linkrestrict>AND explnum.explnum_bulletin=0</linkrestrict>
+			</link>
+			<link type="n1">
+				<table>explnum_statut</table>
+				<tablekey>id_explnum_statut</tablekey>
+				<externalfield>explnum_docnum_statut</externalfield>
 			</link>
 		</table>
 		<!-- Exemplaires numériques reliés au bulletin de la notice de bulletin -->
@@ -712,12 +791,18 @@ $Id: champs_base.xml,v 1.19.2.3 2015-05-27 14:18:31 jpermanne Exp $ -->
 			<tablefield name="extexplnum_minetype" id="02" pond="100">explnum_mimetype</tablefield>
 			<tablefield name="extexplnum_url" id="03" pond="100">explnum_url</tablefield>
 			<tablefield name="extexplnum_extfichier" id="04" pond="100">explnum_extfichier</tablefield>
+			<tablefield name="empr_statut_menu" id="05" pond="0">gestion_libelle</tablefield>
 			<link type="nn">
 				<table>bulletins</table>
 				<referencefield>num_notice</referencefield>
 				<tablekey>bulletin_id</tablekey>
 				<externalfield>explnum_bulletin</externalfield>
 				<linkrestrict>AND explnum.explnum_notice=0</linkrestrict>
+			</link>
+			<link type="n1">
+				<table>explnum_statut</table>
+				<tablekey>id_explnum_statut</tablekey>
+				<externalfield>explnum_docnum_statut</externalfield>
 			</link>
 		</table>
 		<!-- A activer dans le fichier subst si l'on veut indexer la notice de périodiques avec tous les documents numériques de tous ces bulletins -->

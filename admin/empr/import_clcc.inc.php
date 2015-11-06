@@ -60,10 +60,10 @@ function import_lect_par_lect($tab,$dbh){
 	//update empr set `empr_modif`= DATE_SUB(empr_modif, INTERVAL 6 MONTH),`empr_date_expiration`= DATE_SUB(`empr_date_expiration`, INTERVAL 6 MONTH)
 	//On regarde si le lecteur existe déja en le recherchant par son badge
 	$requete="select id_empr,empr_modif from empr where empr_cb='".addslashes($tab[12])."'";
-	$select = mysql_query($requete,$dbh);
-	$nb_enreg = mysql_num_rows($select);
+	$select = pmb_mysql_query($requete,$dbh);
+	$nb_enreg = pmb_mysql_num_rows($select);
 	if($nb_enreg == 1){
-		if(mysql_result($select,0,1) != date('Y-m-j') ){
+		if(pmb_mysql_result($select,0,1) != date('Y-m-j') ){
 			$requete="update empr set empr_modif='".addslashes(date('Y-m-j'))."'";
 			if($tab[4]){
 				$data3=array();
@@ -74,7 +74,7 @@ function import_lect_par_lect($tab,$dbh){
 				$requete=$requete.", empr_date_expiration=DATE_ADD('".addslashes(date('Y-m-j'))."', INTERVAL 6 MONTH)";
 			}
 			$requete=$requete." where empr_cb='".addslashes($tab[12])."' ";
-			if(!mysql_query($requete,$dbh)){
+			if(!pmb_mysql_query($requete,$dbh)){
 				$lect_erreur++;
 				echo "Erreur : requete echoué : ".$requete."<br />";
 			}else{
@@ -130,8 +130,8 @@ function import_lect_par_lect($tab,$dbh){
 	}
 	
 	if(!$data['date_expiration']){
-		if (($result = mysql_query("SELECT DATE_ADD('".addslashes(date('Y-m-j'))."', INTERVAL 6 MONTH)"))) {
-			if (($row = mysql_fetch_row($result))) { 
+		if (($result = pmb_mysql_query("SELECT DATE_ADD('".addslashes(date('Y-m-j'))."', INTERVAL 6 MONTH)"))) {
+			if (($row = pmb_mysql_fetch_row($result))) { 
 				$data['date_expiration']= $row[0];		
 			}
 		}
@@ -144,8 +144,8 @@ function import_lect_par_lect($tab,$dbh){
 	$empr_cb2=$empr_cb;
 	while ($pb==1) {
 		$q = "SELECT empr_cb FROM empr WHERE empr_cb='".$empr_cb2."' LIMIT 1 ";
-		$r = mysql_query($q, $dbh);
-		$nb = mysql_num_rows($r);
+		$r = pmb_mysql_query($q, $dbh);
+		$nb = pmb_mysql_num_rows($r);
 		if ($nb) {
 			$empr_cb2 =$empr_cb."-".$num_cb ;
 			$num_cb++;
@@ -214,12 +214,12 @@ function import_lect_par_lect($tab,$dbh){
 		$lect_cree++;
 		if ($tab[0]) {
 			$q="select idchamp from empr_custom where name='matricule' limit 1";
-			$r = mysql_query($q, $dbh);
-			if (mysql_num_rows($r)) {
-				$idchamp=mysql_result($r,0,0);
+			$r = pmb_mysql_query($q, $dbh);
+			if (pmb_mysql_num_rows($r)) {
+				$idchamp=pmb_mysql_result($r,0,0);
 				$q = "insert into empr_custom_values (empr_custom_champ, empr_custom_origine, empr_custom_small_text) ";
 				$q.= "values('".$idchamp."', '".$id_empr."','".addslashes($tab[0])."' ) ";
-				$r=mysql_query($q, $dbh);
+				$r=pmb_mysql_query($q, $dbh);
 			}
 		}
 	}
@@ -251,17 +251,17 @@ function import_empr($dbh){
     	
     	//on change la date de mise a jour pour retrouver les lecteurs
     	$requete="select id_empr from empr where empr_modif='".addslashes(date('Y-m-j'))."'";
-    	$select = mysql_query($requete,$dbh);
-        while (($verif = mysql_fetch_array($select))) {
+    	$select = pmb_mysql_query($requete,$dbh);
+        while (($verif = pmb_mysql_fetch_array($select))) {
         	$requete="update empr set empr_modif=DATE_SUB(empr_modif, INTERVAL 1 DAY) where id_empr='".addslashes($verif["id_empr"])."' ";
-        	if(!mysql_query($requete,$dbh)){
+        	if(!pmb_mysql_query($requete,$dbh)){
 				echo "Erreur : requete echoué : ".$requete."<br />";
 			}
         }
     	
     	while (!feof($fichier)) {
             $buffer = fgets($fichier, 4096);
-            //$buffer = mysql_escape_string($buffer);
+            //$buffer = pmb_mysql_escape_string($buffer);
             $tab = explode(";", $buffer);
             $nb=0;
             $incr=0;
@@ -316,12 +316,12 @@ function import_empr($dbh){
     	
     	 //On supprime tout les lecteurs qui ne sont pas dans le fichier et qui n'ont pas de prets en cours
         $req_select_verif_pret = "SELECT distinct id_empr, pret_idempr FROM empr left join pret on id_empr=pret_idempr WHERE empr_modif != '".addslashes(date('Y-m-j'))."' ";
-        $select_verif_pret = mysql_query($req_select_verif_pret,$dbh);
-        while (($verif_pret = mysql_fetch_array($select_verif_pret))) {
+        $select_verif_pret = pmb_mysql_query($req_select_verif_pret,$dbh);
+        while (($verif_pret = pmb_mysql_fetch_array($select_verif_pret))) {
         	//pour tous les emprunteurs qui n'ont pas de pret en cours
         	if($verif_pret["pret_idempr"]){
         		$requete="update empr set empr_statut='2' where id_empr='".addslashes($verif_pret["id_empr"])."' ";
-        		if(!mysql_query($requete,$dbh)){
+        		if(!pmb_mysql_query($requete,$dbh)){
 					$lect_erreur++;
 					echo " requete echoué : ".$requete."<br />";
 				}else{

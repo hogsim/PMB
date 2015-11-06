@@ -2,14 +2,19 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: bul_update.inc.php,v 1.31.2.3 2014-11-26 09:55:26 mbertin Exp $
+// $Id: bul_update.inc.php,v 1.39 2015-04-18 13:01:51 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
+
+
+require_once($class_path."/authperso_notice.class.php");
 
 if($gestion_acces_active==1) {
 	require_once("$class_path/acces.class.php");
 	$ac= new acces();
 }
+
+require_once($class_path."/index_concept.class.php");
 
 //verification des droits de modification notice
 $acces_m=1;
@@ -66,7 +71,7 @@ if ($acces_m==0) {
 	$table['tit1']          = $table["bul_no"].($table["bul_date"]?" - ".$table["bul_date"]:"").($table["bul_titre"]?" - ".$table["bul_titre"]:"");
 	$table['tit3']          = $f_tit3;
 	$table['tit4']          = $f_tit4;
-
+	
 	// auteur principal
 	$f_aut[] = array (
 			'id' => $f_aut0_id,
@@ -150,6 +155,8 @@ if ($acces_m==0) {
 	}
 	
 	$table['categ']=$f_categ;
+
+	$table['concept'] = index_concept::is_concept_in_form();
 	
 	$table['indexint']      = $f_indexint_id;
 	$table['index_l']       = clean_tags($f_indexation);
@@ -188,20 +195,48 @@ if ($acces_m==0) {
 	}
 	if (!$nberrors) {
 		$myBulletinage = new bulletinage($bul_id, $serial_id);
-		$result = $myBulletinage->update($table);
+		
+		$req_notice_date_is_new="";
+		if($myBulletinage->bull_num_notice) {
+			$req_new="select notice_is_new, notice_date_is_new from notices where notice_id=".$myBulletinage->bull_num_notice;
+			$res_new=pmb_mysql_query($req_new, $dbh);
+			if (pmb_mysql_num_rows($res_new)) {
+				if($r=pmb_mysql_fetch_object($res_new)){
+					if($r->notice_is_new==$f_notice_is_new){ // pas de changement du flag
+						$req_notice_date_is_new= "";
+					}elseif($f_notice_is_new){ // Changement du flag et affecté comme new
+						$req_notice_date_is_new= ", notice_date_is_new =now() ";
+					}else{// raz date
+						$req_notice_date_is_new= ", notice_date_is_new ='' ";
+					}
+				}
+			}
+		}else{
+			if($f_notice_is_new){ // flag affecté comme new en création
+				$req_notice_date_is_new= ", notice_date_is_new =now(), notice_is_new=".($f_notice_is_new+0);
+			}
+		}
+		
+		$result = $myBulletinage->update($table,false,$req_notice_date_is_new);
 	} else {
 		error_message_history($msg["notice_champs_perso"],$p_perso->error_message,1);
 		exit();
 	}
+	
+	// autorité personnalisées
+	if($myBulletinage->bull_num_notice){
+		$authperso = new authperso_notice($myBulletinage->bull_num_notice);
+		$authperso->save_form();
+	}	
 	
 	// vignette de la notice uploadé dans un répertoire
 	if($_FILES['f_img_load']['name'] && $pmb_notice_img_folder_id && $myBulletinage->bull_num_notice){
 		$poids_fichier_max=1024*1024;//Limite la taille de l'image à 1 Mo
 			
 		$req = "select repertoire_path from upload_repertoire where repertoire_id ='".$pmb_notice_img_folder_id."'";
-		$res = mysql_query($req,$dbh);
-		if(mysql_num_rows($res)){
-			$rep=mysql_fetch_object($res);
+		$res = pmb_mysql_query($req,$dbh);
+		if(pmb_mysql_num_rows($res)){
+			$rep=pmb_mysql_fetch_object($res);
 			$filename_output=$rep->repertoire_path."img_".$myBulletinage->bull_num_notice;
 		}
 		if (($fp=@fopen($_FILES['f_img_load']['tmp_name'], "rb")) && $filename_output) {
@@ -251,7 +286,7 @@ if ($acces_m==0) {
 					$thumbnail_url=$opac_url_base."getimage.php?noticecode=&vigurl=&notice_id=".$myBulletinage->bull_num_notice;				
 						
 					$req = "update notices set thumbnail_url='".$thumbnail_url."' where notice_id ='".$myBulletinage->bull_num_notice."'";
-					$res = mysql_query($req,$dbh);				
+					$res = pmb_mysql_query($req,$dbh);				
 				
 				}
 			}
@@ -267,22 +302,22 @@ if ($acces_m==0) {
 		LEFT OUTER JOIN bulletins ON bulletins.num_notice=notices_relations.num_notice AND bulletins.bulletin_notice=notices_relations.linked_notice
 		WHERE (notices_relations.num_notice=$update_result OR notices_relations.linked_notice=$update_result)
 		AND (bulletin_notice IS NULL OR bulletins.bulletin_notice!=$serial_id)";
-		mysql_query($requete);	
+		pmb_mysql_query($requete);	
 		foreach($table['rel'] as $rel){
 			if ($rel['id_notice']) {
 				if($rel['relation_direction']=='up'){
 					$requete="INSERT INTO notices_relations VALUES('$update_result','".$rel['id_notice']."','".$rel['relation_type']."','".$rel['rank']."')";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 				}elseif($rel['relation_direction']=='down'){
 					$requete="INSERT INTO notices_relations VALUES('".$rel['id_notice']."','$update_result','".$rel['relation_type']."','".$rel['rank']."')";
-					@mysql_query($requete);
+					@pmb_mysql_query($requete);
 				}
 			}
 		}
 		
 		// traitement des auteurs
 		$rqt_del = "DELETE FROM responsability WHERE responsability_notice='$update_result' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "INSERT INTO responsability (responsability_author, responsability_notice, responsability_fonction, responsability_type, responsability_ordre) VALUES ";
 		$i=0;
 		while ($i<=count ($f_aut)-1) {
@@ -292,24 +327,31 @@ if ($acces_m==0) {
 				$type_aut=$f_aut[$i]['type'];
 				$ordre_aut = $f_aut[$i]['ordre'];
 				$rqt = $rqt_ins . " ('$id_aut','$update_result','$fonc_aut','$type_aut', $ordre_aut) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 			$i++;
 		}
 	
 		// traitement des categories
 		$rqt_del = "DELETE FROM notices_categories WHERE notcateg_notice='$update_result' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "INSERT INTO notices_categories (notcateg_notice, num_noeud, ordre_categorie) VALUES ";
 		while (list ($key, $val) = each ($f_categ)) {
 			$id_categ=$val['id'];
 			if ($id_categ) {
 				$ordre_categ = $val['ordre'];
 				$rqt = $rqt_ins . " ('$update_result','$id_categ', $ordre_categ ) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 		}
-	
+		
+		// Indexation concepts
+		global $thesaurus_concepts_active;
+		
+		if($thesaurus_concepts_active == 1){
+			$index_concept = new index_concept($update_result, TYPE_NOTICE);
+			$index_concept->save();
+		}
 	
 		// traitement des langues
 		// langues
@@ -327,14 +369,14 @@ if ($acces_m==0) {
 		}
 	
 		$rqt_del = "delete from notices_langues where num_notice='$update_result' ";
-		$res_del = mysql_query($rqt_del, $dbh);
+		$res_del = pmb_mysql_query($rqt_del, $dbh);
 		$rqt_ins = "insert into notices_langues (num_notice, type_langue, code_langue, ordre_langue) VALUES ";
 		while (list ($key, $val) = each ($f_lang_form)) {
 			$tmpcode_langue=$val['code'];
 			if ($tmpcode_langue) {
 				$tmpordre_langue = $val['ordre'];
 				$rqt = $rqt_ins . " ('$update_result',0, '$tmpcode_langue', $tmpordre_langue) " ; 
-				$res_ins = mysql_query($rqt, $dbh);
+				$res_ins = pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
@@ -345,7 +387,7 @@ if ($acces_m==0) {
 			if ($tmpcode_langue) {
 				$tmpordre_langue = $val['ordre'];
 				$rqt = $rqt_ins . " ('$update_result',1, '$tmpcode_langue', $tmpordre_langue) " ; 
-				$res_ins = @mysql_query($rqt, $dbh);
+				$res_ins = @pmb_mysql_query($rqt, $dbh);
 			}
 		}
 		
@@ -361,7 +403,7 @@ if ($acces_m==0) {
 			//mise a jour des droits d'acces user_notice (idem notice mere perio)
 			if ($gestion_acces_user_notice==1) {
 				$q = "replace into acces_res_1 select $myBulletinage->bull_num_notice, res_prf_num, usr_prf_num, res_rights, res_mask from acces_res_1 where res_num=".$myBulletinage->bulletin_notice;
-				mysql_query($q, $dbh);
+				pmb_mysql_query($q, $dbh);
 			} 
 	
 			//mise a jour des droits d'acces empr_notice 

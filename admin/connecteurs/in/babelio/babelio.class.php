@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: babelio.class.php,v 1.3 2012-02-15 14:40:40 arenou Exp $
+// $Id: babelio.class.php,v 1.4 2015-04-03 11:16:25 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -150,9 +150,9 @@ class babelio extends connector {
 		$this->enrichPage = $page;
 		//on renvoi ce qui est demandé... si on demande rien, on renvoi tout..
 		$rqt="select code from notices where notice_id = '$notice_id'";
-		$res=mysql_query($rqt);
-		if(mysql_num_rows($res)){
-			$code = mysql_result($res,0,0);
+		$res=pmb_mysql_query($rqt);
+		if(pmb_mysql_num_rows($res)){
+			$code = pmb_mysql_result($res,0,0);
 			$code = preg_replace('/-|\.| /', '', $code);
 		}
 		$this->typeOfEnrichment = $type;
