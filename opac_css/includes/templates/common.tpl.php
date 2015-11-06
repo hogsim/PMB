@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: common.tpl.php,v 1.198.2.3 2015-10-12 08:34:12 mbertin Exp $
+// $Id: common.tpl.php,v 1.198.2.4 2015-11-03 16:00:50 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -329,7 +329,7 @@ if($opac_notice_enrichment == 0){
 							items[i].className = 'isbd_public_active';
 							document.getElementById('div_'+quoi+id).style.display = 'block';
 						}else{
-							if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_basket'){
+							if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_avis' && items[i].className != 'onglet_sugg' && items[i].className != 'onglet_basket'){
 								items[i].className = 'isbd_public_inactive';	
 								document.getElementById(items[i].getAttribute('id').replace('onglet','div')).style.display = 'none';
 							}
@@ -392,7 +392,7 @@ if($opac_notice_enrichment == 0){
 					items[i].className = 'isbd_public_active';
 					document.getElementById('div_'+quoi+id).style.display = 'block';
 				}else{
-					if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_basket'){
+					if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_avis' && items[i].className != 'onglet_sugg' && items[i].className != 'onglet_basket'){
 						items[i].className = 'isbd_public_inactive';	
 						document.getElementById(items[i].getAttribute('id').replace('onglet','div')).style.display = 'none';
 					}
@@ -560,7 +560,7 @@ function show_what(quoi, id) {
 						items[i].className = 'isbd_public_active';
 						document.getElementById('div_'+quoi+id).style.display = 'block';
 					}else{
-						if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_basket'){
+						if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_avis' && items[i].className != 'onglet_sugg' && items[i].className != 'onglet_basket'){
 							items[i].className = 'isbd_public_inactive';	
 							document.getElementById(items[i].getAttribute('id').replace('onglet','div')).style.display = 'none';
 						}
@@ -623,7 +623,7 @@ function show_what(quoi, id) {
 				items[i].className = 'isbd_public_active';
 				document.getElementById('div_'+quoi+id).style.display = 'block';
 			}else{
-				if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_basket'){
+				if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_avis' && items[i].className != 'onglet_sugg' && items[i].className != 'onglet_basket'){
 					items[i].className = 'isbd_public_inactive';	
 					document.getElementById(items[i].getAttribute('id').replace('onglet','div')).style.display = 'none';
 				}

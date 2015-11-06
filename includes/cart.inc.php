@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart.inc.php,v 1.84 2015-06-18 14:30:00 jpermanne Exp $
+// $Id: cart.inc.php,v 1.84.2.1 2015-11-04 10:09:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -718,6 +718,7 @@ function aff_choix_quoi($action="", $action_cancel="", $titre_form="", $bouton_v
 	global $dbh,$msg,$charset,$base_path;
 	global $quelle;
 	global $cart_choix_quoi, $cart_choix_quoi_not_ou_dep,$notice_linked_suppr_form,$bull_liked_suppr_form;
+	global $elt_flag,$elt_no_flag;
 
 	$sources_form ='';
 	if ($quelle=='supprbase') {
@@ -753,6 +754,16 @@ function aff_choix_quoi($action="", $action_cancel="", $titre_form="", $bouton_v
 	else $cart_choix_quoi = str_replace('!!bull_not_ou_dep!!',"<div class='row'>&nbsp;</div>",$cart_choix_quoi);
 	if ($onclick!="") $cart_choix_quoi = str_replace('!!onclick_valider!!','onClick="'.$onclick.'"',$cart_choix_quoi); 
 		else $cart_choix_quoi = str_replace('!!onclick_valider!!','',$cart_choix_quoi);
+	if ($elt_flag) {
+		$cart_choix_quoi = str_replace('!!elt_flag_checked!!', 'checked=\'checked\'', $cart_choix_quoi);
+	} else {
+		$cart_choix_quoi = str_replace('!!elt_flag_checked!!', '', $cart_choix_quoi);
+	}
+	if ($elt_no_flag) {
+		$cart_choix_quoi = str_replace('!!elt_no_flag_checked!!', 'checked=\'checked\'', $cart_choix_quoi);
+	} else {
+		$cart_choix_quoi = str_replace('!!elt_no_flag_checked!!', '', $cart_choix_quoi);
+	}
 	return $cart_choix_quoi;
 }
 

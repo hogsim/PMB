@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: searcher.class.php,v 1.70 2015-06-22 08:29:09 jpermanne Exp $
+// $Id: searcher.class.php,v 1.70.2.1 2015-11-03 12:36:27 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -305,6 +305,16 @@ class searcher {
 		}else{
 			$this->result = $cache_result;
 		}
+		return $this->result;
+	}
+	
+	public function get_sorted_cart_result($tri = "default",$start=0,$number=20){
+		$this->tri = $tri;
+		$cache_result = $this->_get_in_cache(true);
+		$this->_get_notices_ids();
+		$this->_filter_results();
+		$this->_sort_result($start,$number);
+		
 		return $this->result;
 	}
 

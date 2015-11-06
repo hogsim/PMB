@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: selection.inc.php,v 1.18 2015-04-03 11:16:27 jpermanne Exp $
+// $Id: selection.inc.php,v 1.18.4.1 2015-11-04 10:09:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -93,6 +93,7 @@ if($idcaddie) {
             }
 			print aff_cart_nb_items ($myCart) ;
 			echo "<hr /><input type='button' class='bouton' value='".$msg["caddie_select_reindex"]."' onclick='document.location=&quot;./catalog.php?categ=caddie&amp;sub=action&amp;quelle=reindex&amp;action=suite&amp;idcaddie=".$idcaddie."&amp;elt_flag=".$elt_flag."&amp;elt_no_flag=".$elt_no_flag."&quot;' />";
+			echo "<input type='button' class='bouton' value='".$msg["caddie_menu_action_suppr_panier"]."' onclick='document.location=&quot;./catalog.php?categ=caddie&amp;sub=action&amp;quelle=supprpanier&amp;action=choix_quoi&amp;object_type=NOTI&amp;idcaddie=".$idcaddie."&amp;item=0&amp;elt_flag=".$elt_flag."&amp;elt_no_flag=".$elt_no_flag."&quot;' />";
 			break;
 		default:
 			print aff_cart_nb_items ($myCart) ;

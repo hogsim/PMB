@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: analysis_main.inc.php,v 1.9 2011-11-29 13:26:37 dgoron Exp $
+// $Id: analysis_main.inc.php,v 1.9.10.1 2015-11-05 09:17:03 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -34,6 +34,9 @@ switch($action) {
 		break;	
 	case 'explnum_form':
 		include('./catalog/serials/analysis/ana_explnum_form.inc.php');
+		break;
+	case 'analysis_move':
+		include('./catalog/serials/analysis/analysis_move.inc.php');
 		break;
 	default:
 		abort();

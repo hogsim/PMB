@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: addon.inc.php,v 1.5.4.11 2015-10-29 10:56:59 jpermanne Exp $
+// $Id: addon.inc.php,v 1.5.4.13 2015-11-05 13:21:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -150,6 +150,19 @@ switch ($pmb_bdd_subversion) {
 				VALUES (0, 'opac', 'empr_export_loans', '0', 'Afficher sur le compte emprunteur un bouton permettant d\'exporter les prêts dans un tableur ?\n0 : Non 1 : Oui' ,'a_general',0)";
 			echo traite_rqt($rqt,"insert opac_empr_export_loans into parametres");
 		}
+	case '10' :
+		//Alexandre - Ajout des modes d'affichage avec sélection par étoiles
+		$rqt = "UPDATE parametres SET comment_param=CONCAT(comment_param,'\n 4 : Affichage de la note sous la forme d\'étoiles, choix de la note sous la forme d\'étoiles.\n 5 : Affichage de la note sous la forme textuelle et d\'étoiles, choix de la note sous la forme d\'étoiles.') WHERE type_param= 'pmb' AND sstype_param='avis_note_display_mode'";
+		echo traite_rqt($rqt,"UPDATE pmb_avis_note_display_mode into parametres");
+		$rqt = "UPDATE parametres SET comment_param=CONCAT(comment_param,'\n 4 : Affichage de la note sous la forme d\'étoiles, choix de la note sous la forme d\'étoiles.\n 5 : Affichage de la note sous la forme textuelle et d\'étoiles, choix de la note sous la forme d\'étoiles.') WHERE type_param= 'opac' AND sstype_param='avis_note_display_mode'";
+		echo traite_rqt($rqt,"UPDATE opac_avis_note_display_mode into parametres");
+	case '11' :
+		//JP - paramètre utilisateur : localisation par défaut en bulletinage
+		// deflt_bulletinage_location : Identifiant de la localisation par défaut en bulletinage
+		$rqt = "ALTER TABLE users ADD deflt_bulletinage_location INT( 6 ) UNSIGNED NOT NULL DEFAULT 0 AFTER deflt_collstate_location";
+		echo traite_rqt($rqt,"ALTER TABLE users ADD deflt_bulletinage_location");
+		$rqt = "UPDATE users SET deflt_bulletinage_location=deflt_docs_location";
+		echo traite_rqt($rqt,"UPDATE users SET deflt_bulletinage_location=deflt_docs_location");
 		
 }
 

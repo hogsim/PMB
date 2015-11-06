@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart_info.php,v 1.64.2.5 2015-10-22 15:26:59 mbertin Exp $
+// $Id: cart_info.php,v 1.64.2.6 2015-11-03 12:36:27 jpermanne Exp $
 
 //Actions et affichage du résultat pour un panier de l'opac
 $base_path=".";
@@ -160,11 +160,12 @@ if (($id)&&(!$lvl)) {
 			switch ($mode) {
 				case "tous" :
 					$searcher = new searcher_all_fields(stripslashes($user_query));
-					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
-						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					if(!empty($_SESSION["last_sortnotices"])){
+						$cart_sort=$_SESSION["last_sortnotices"];
 					}else{
-						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+						$cart_sort="default";
 					}
+					$notices = $searcher->get_sorted_cart_result($cart_sort,0,$opac_max_cart_items);
 					if(count($notices)){
 						$notices = implode(",",$notices);
 					}
@@ -173,11 +174,12 @@ if (($id)&&(!$lvl)) {
 				case "title":	
 				case "titre":
 					$searcher = new searcher_title(stripslashes($user_query));
-					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
-						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					if(!empty($_SESSION["last_sortnotices"])){
+						$cart_sort=$_SESSION["last_sortnotices"];
 					}else{
-						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+						$cart_sort="default";
 					}
+					$notices = $searcher->get_sorted_cart_result($cart_sort,0,$opac_max_cart_items);
 					if(count($notices)){
 						$notices = implode(",",$notices);
 					}
@@ -185,11 +187,12 @@ if (($id)&&(!$lvl)) {
 					break;
 				case "keyword":
 					$searcher = new searcher_keywords(stripslashes($user_query));
-					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
-						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					if(!empty($_SESSION["last_sortnotices"])){
+						$cart_sort=$_SESSION["last_sortnotices"];
 					}else{
-						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+						$cart_sort="default";
 					}
+					$notices = $searcher->get_sorted_cart_result($cart_sort,0,$opac_max_cart_items);
 					if(count($notices)){
 						$notices = implode(",",$notices);
 					}
@@ -197,11 +200,12 @@ if (($id)&&(!$lvl)) {
 					break;
 				case "abstract":
 					$searcher = new searcher_abstract(stripslashes($user_query));
-					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
-						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					if(!empty($_SESSION["last_sortnotices"])){
+						$cart_sort=$_SESSION["last_sortnotices"];
 					}else{
-						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+						$cart_sort="default";
 					}
+					$notices = $searcher->get_sorted_cart_result($cart_sort,0,$opac_max_cart_items);
 					if(count($notices)){
 						$notices = implode(",",$notices);
 					}
@@ -209,11 +213,12 @@ if (($id)&&(!$lvl)) {
 					break;
 				case "extended":
 					$searcher = new searcher_extended(stripslashes($user_query));
-					if(isset($_SESSION["last_sortnotices"]) && $_SESSION["last_sortnotices"]!==""){
-						$notices = $searcher->get_sorted_result($_SESSION["last_sortnotices"],0,$opac_max_cart_items);
+					if(!empty($_SESSION["last_sortnotices"])){
+						$cart_sort=$_SESSION["last_sortnotices"];
 					}else{
-						$notices = $searcher->get_sorted_result("default",0,$opac_max_cart_items);
+						$cart_sort="default";
 					}
+					$notices = $searcher->get_sorted_cart_result($cart_sort,0,$opac_max_cart_items);
 					if(count($notices)){
 						$notices = implode(",",$notices);
 					}

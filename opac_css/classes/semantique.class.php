@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: semantique.class.php,v 1.8 2015-04-03 11:16:18 jpermanne Exp $
+// $Id: semantique.class.php,v 1.8.4.2 2015-11-05 16:57:05 mbertin Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 

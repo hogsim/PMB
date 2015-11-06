@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: pointage_exemplarise.php,v 1.58 2015-07-16 12:33:42 jpermanne Exp $
+// $Id: pointage_exemplarise.php,v 1.58.2.1 2015-11-03 08:48:58 jpermanne Exp $
 
 // définition du minimum nécéssaire
 $base_path="./../../..";
@@ -419,7 +419,7 @@ if(($act=='update') ) {
 	pmb_mysql_query($requete);
 	
 	
-	if($f_fichier["name"]!=""){	
+	if(($f_fichier["name"]!="") || trim($f_url)){	
 		// Il y a un document numérique rattaché au bulletin
 		$up_place=0;
 		$id_rep=0;

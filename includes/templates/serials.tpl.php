@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials.tpl.php,v 1.187.2.2 2015-10-27 14:26:54 jpermanne Exp $
+// $Id: serials.tpl.php,v 1.187.2.3 2015-11-05 09:17:03 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -3087,6 +3087,7 @@ $analysis_top_form .= "
 		<input type='button' class='bouton' value='$msg[76]' onClick=\"unload_off();history.go(-1);\" />
 		<input type='button' class='bouton' value='$msg[77]' id='btsubmit' onClick=\"if (test_notice(this.form)) {unload_off();this.form.submit();}\" />
 		!!link_duplicate!!
+		!!link_move!!
 		!!link_audit!!
 	</div>
 	<div class='right'>!!link_supp!!</div>
@@ -3987,3 +3988,33 @@ $bulletin_replace_category = "
 	!!categ_libelle!!
 	<input type='hidden' name='f_categ_id!!icateg!!' id='f_categ_id!!icateg!!' value='!!categ_id!!' />
 </div>";
+
+// $analysis_move : form déplacement dépouillement
+$analysis_move = "
+<form class='form-$current_module' name='analysis_move' method='post' action='./catalog.php?categ=serials&sub=analysis&action=analysis_move&bul_id=!!bul_id!!&analysis_id=!!analysis_id!!'>
+<div class='form-contenu'>
+<div class='row'>
+<label class='etiquette'>".$msg['analysis_move_sel_perio']."</label>
+</div>
+<div class='row'>
+<input type='text' class='saisie-50emr' value='' name='perio_libelle' readonly>
+<input class='bouton' type='button' onclick=\"openPopUp('./select.php?what=perio&caller=analysis_move&param1=to_perio&param2=perio_libelle', 'select_perio', 600, 500, -2, -2, 'toolbar=no, dependent=yes, resizable=yes, scrollbars=yes')\" title='".$msg['157']."' value='".$msg['parcourir']."' />
+<input type='button' class='bouton' value='".$msg['raz']."' onclick=\"this.form.perio_libelle.value=''; this.form.to_perio.value='0'; \" />
+<input type='hidden' id='to_perio' name='to_perio' value='0'>
+</div>
+<div class='row'>
+<label class='etiquette'>".$msg['analysis_move_sel_bull']."</label>
+</div>
+<div class='row'>
+<input type='text' class='saisie-50emr' value='' name='bulletin_libelle' readonly>
+<input class='bouton' type='button' onclick=\"var idperio=document.getElementById('to_perio').value; if(idperio!=0){ openPopUp('./select.php?what=bulletin&caller=analysis_move&param1=to_bul&param2=bulletin_libelle&idperio='+idperio, 'select_bulletin', 600, 500, -2, -2, 'toolbar=no, dependent=yes, resizable=yes, scrollbars=yes'); }else{ alert('".$msg['analysis_move_sel_perio_choose']."'); }\" title='".$msg['157']."' value='".$msg['parcourir']."' />
+<input type='button' class='bouton' value='".$msg['raz']."' onclick=\"this.form.bulletin_libelle.value=''; this.form.to_bul.value='0'; \" />
+<input type='hidden' id='to_bul' name='to_bul' value='0'>
+</div>
+
+<div class='row'>
+<input type='button' class='bouton' value='".$msg['76']."' onClick=\"history.go(-1);\">
+<input type='button' class='bouton' value='".$msg['analysis_move_bouton']."' onClick=\"var to_bul=document.getElementById('to_bul').value; if(to_bul!=0){document.forms['analysis_move'].submit();}else{ alert('".$msg['analysis_move_sel_bull_choose']."'); }\">
+</div>
+</form>
+";

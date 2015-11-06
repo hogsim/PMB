@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_selector_type_section_generic.class.php,v 1.3 2015-04-03 11:16:22 jpermanne Exp $
+// $Id: cms_module_common_selector_type_section_generic.class.php,v 1.3.4.1 2015-11-03 12:14:22 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -21,7 +21,6 @@ class cms_module_common_selector_type_section_generic extends cms_module_common_
 	}
 	
 	public function get_form(){
-		$this->debug($this);
 		$form=parent::get_form();
 		$form.= "			
 			<div id='type_editorial_fields'>

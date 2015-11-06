@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: avis_notice.inc.php,v 1.13 2015-06-23 07:25:50 Alexandre Exp $
+// $Id: avis_notice.inc.php,v 1.13.2.1 2015-10-31 13:02:26 Alexandre Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -146,7 +146,8 @@ function avis_notice($id,$avis_quoifaire,$valid_id_avis){
 						$etoiles .= "<img border=0 src='images/star_unlight.png' align='absmiddle' />";
 					}
 				}
-				if($pmb_avis_note_display_mode==3)$note=$etoiles."<br />".$categ_avis;
+				if($pmb_avis_note_display_mode==3 || $pmb_avis_note_display_mode==5)$note=$etoiles."<br />".$categ_avis;
+				else if($pmb_avis_note_display_mode==4)$note=$etoiles;
 				else $note=$etoiles.$categ_avis;
 			} else $note="";
 

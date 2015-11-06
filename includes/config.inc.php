@@ -2,14 +2,14 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: config.inc.php,v 1.208.2.11 2015-10-29 12:44:30 touraine37 Exp $
+// $Id: config.inc.php,v 1.208.2.14 2015-11-05 16:30:10 touraine37 Exp $
 
 // fichier de configuration générale
 
-$pmb_version = "</b>4.2.3</b>";
-$pmb_version_brut = "4.2.3";
+$pmb_version = "</b>4.2.4</b>";
+$pmb_version_brut = "4.2.4";
 $pmb_version_database_as_it_should_be = "v5.19";
-$pmb_subversion_database_as_it_shouldbe = "10";
+$pmb_subversion_database_as_it_shouldbe = "12";
 
 $pmb_version_web = "http://www.sigb.net/config.inc.php" ;
 

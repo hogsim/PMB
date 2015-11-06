@@ -4,7 +4,7 @@
 // © 2006 mental works / www.mental-works.com contact@mental-works.com
 // 	complètement repris et corrigé par PMB Services
 // +-------------------------------------------------+
-// $Id: avis.php,v 1.45.2.1 2015-09-24 15:48:15 dgoron Exp $
+// $Id: avis.php,v 1.45.2.2 2015-11-04 11:00:46 jpermanne Exp $
 
 $base_path=".";
 require_once($base_path."/includes/init.inc.php");
@@ -117,11 +117,11 @@ print $avis_tpl_header ;
 switch($todo) {
 	case 'save':
 		if (!$allow_avis_ajout || !$noticeid) die();
-		if (!$note) $note="NULL";
+		if (!$avis_note) $avis_note="NULL";
 		$masque="@<[\/\!]*?[^<>]*?>@si";
 		$commentaire = preg_replace($masque,'',$commentaire);
 		if($charset != "utf-8") $commentaire=cp1252Toiso88591($commentaire);
-		$sql="insert into avis (num_empr,num_notice,note,sujet,commentaire) values ('$id_empr','$noticeid','$note','$sujet','$commentaire')";
+		$sql="insert into avis (num_empr,num_notice,note,sujet,commentaire) values ('$id_empr','$noticeid','$avis_note','$sujet','$commentaire')";
 		if (pmb_mysql_query($sql, $dbh)) {
 			print $avis_tpl_post_add;
 		} else {

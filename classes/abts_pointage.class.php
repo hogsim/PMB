@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: abts_pointage.class.php,v 1.67 2015-07-16 12:33:42 jpermanne Exp $
+// $Id: abts_pointage.class.php,v 1.67.2.1 2015-11-05 13:21:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php"))
 	die("no access");
@@ -52,12 +52,12 @@ class abts_pointage {
 		global $msg;
 		global $dbh;
 		global $pointage_form, $pointage_list;
-		global $location_view, $deflt_docs_location;
+		global $location_view, $deflt_bulletinage_location;
 		
 		$this->fiche_bulletin=array();
 		$print_format=new parse_format();
 
-		if ($location_view == "") $location_view = $deflt_docs_location;
+		if ($location_view == "") $location_view = $deflt_bulletinage_location;
 		if($this->num_notice) $and_rqt_notice=" and notice_id =". $this->num_notice ;
 		
 		$cpt_a_recevoir = $cpt_en_retard = $cpt_en_alerte = 0;
@@ -413,7 +413,7 @@ class abts_pointage {
 	static function get_dashboard_info($location_view="") {
 		global $msg;
 		global $dbh;
-		global $deflt_docs_location;	
+		global $deflt_bulletinage_location;	
 				
 		$cpt_a_recevoir = $cpt_en_retard = $cpt_en_alerte = $prochain_numero = 0;
 		
@@ -472,10 +472,10 @@ class abts_pointage {
 		global $msg, $charset;
 		global $dbh;
 		global $pointage_form, $pointage_list;
-		global $location_view, $deflt_docs_location,$serial_id,$pmb_abt_end_delay;
+		global $location_view, $deflt_bulletinage_location,$serial_id,$pmb_abt_end_delay;
 		global $pmb_serialcirc_subst;
 		
-		if ($location_view == "") $location_view = $deflt_docs_location;
+		if ($location_view == "") $location_view = $deflt_bulletinage_location;
 		$form = $pointage_form;
 
 		$form .=<<<ENDOFTEXT
@@ -808,12 +808,12 @@ ENDOFTEXT;
 	
 	function get_form_retard(){
 		global $abts_gestion_retard_form_filter,$charset,$dbh,$msg;
-		global $location_view,$filter,$deflt_docs_location;
+		global $location_view,$filter,$deflt_bulletinage_location;
 		global $abts_gestion_retard_fournisseur_first,$abts_gestion_retard_fournisseur_suite;
 		global $max_fourn,$abts_gestion_retard_form,$abts_gestion_retard_perio,$abts_gestion_retard_bulletin;
 		
 		$form=$abts_gestion_retard_form_filter;
-		if($location_view == "") $location_view=$deflt_docs_location;
+		if($location_view == "") $location_view=$deflt_bulletinage_location;
 		$select_location = gen_liste("select distinct idlocation, location_libelle from docs_location, docsloc_section where num_location=idlocation order by 2 ", "idlocation", "location_libelle", 'location_view', "", $location_view, "", "", "0", $msg[all_location], 0);
 		$form = str_replace("!!location_filter!!", $select_location, $form);
 		$form = str_replace("!!abts_state_selected_".$filter."!!", "selected='selected' ", $form);
@@ -1358,8 +1358,8 @@ ENDOFTEXT;
 	
 	function calc_alert() {
 		global $dbh;
-		global $location_view, $deflt_docs_location,$pmb_abt_end_delay;
-		if ($location_view == "") $location_view = $deflt_docs_location;
+		global $location_view, $deflt_bulletinage_location,$pmb_abt_end_delay;
+		if ($location_view == "") $location_view = $deflt_bulletinage_location;
 	
 		$liste_bulletin=$this->get_bulletinage();
 		$cpt_a_recevoir = $cpt_en_retard = $cpt_en_alerte = 0;

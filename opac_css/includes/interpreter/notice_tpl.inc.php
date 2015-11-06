@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_tpl.inc.php,v 1.78.2.7 2015-10-28 10:19:20 jpermanne Exp $
+// $Id: notice_tpl.inc.php,v 1.78.2.8 2015-11-04 09:26:46 jpermanne Exp $
 require_once ($include_path . "/misc.inc.php");
 
 //gestion des droits
@@ -2084,6 +2084,7 @@ function group($param){
 	$display_number=$param[1];
 	$separator=$param[2];
 	$code=$param[3];
+	$texte_complement=$param[4];
 	
 	if(!$display_number || $display_number==0){
 		$display_number=sizeof($array_id);
@@ -2109,6 +2110,10 @@ function group($param){
 			$tpl.=$separator;
 		}
 		$tpl.=$parser->exec_cmd();
+	}
+	
+	if($display_number<sizeof($array_id)){
+		$tpl.=$separator.$texte_complement;
 	}
 	
 	$parser_environnement=$sav_parser_environnement;

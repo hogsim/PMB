@@ -1,0 +1,17 @@
+/* +--------------------------------------------------------------------------+
+// 2013 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
+// +-------------------------------------------------+
+// $Id: home.css,v 1.1.2.2 2015-10-29 15:05:46 wlair Exp $ */
+
+/*------------------------------------------------------------------------------------------*/
+
+#bandeau{
+	display: block!important;
+}
+#main {
+	width: auto;
+	float: none;
+	box-sizing: border-box;
+	margin-left: 230px;
+	padding-left: 20px;
+}

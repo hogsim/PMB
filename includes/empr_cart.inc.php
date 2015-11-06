@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_cart.inc.php,v 1.28 2015-06-18 14:30:00 jpermanne Exp $
+// $Id: empr_cart.inc.php,v 1.28.2.1 2015-11-04 10:09:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -333,6 +333,7 @@ function aff_empr_cart_objects ($idemprcaddie=0, $url_base="./circ.php?categ=cad
 function aff_empr_choix_quoi($action="", $action_cancel="", $titre_form="", $bouton_valider="",$onclick="") {
 	
 	global $empr_cart_choix_quoi;
+	global $elt_flag,$elt_no_flag;
 	
 	$empr_cart_choix_quoi = str_replace('!!action!!', $action, $empr_cart_choix_quoi);
 	$empr_cart_choix_quoi = str_replace('!!action_cancel!!', $action_cancel, $empr_cart_choix_quoi);
@@ -340,6 +341,16 @@ function aff_empr_choix_quoi($action="", $action_cancel="", $titre_form="", $bou
 	$empr_cart_choix_quoi = str_replace('!!bouton_valider!!', $bouton_valider, $empr_cart_choix_quoi);
 	if ($onclick!="") $empr_cart_choix_quoi = str_replace('!!onclick_valider!!','onClick="'.$onclick.'"',$empr_cart_choix_quoi); 
 		else $empr_cart_choix_quoi = str_replace('!!onclick_valider!!','',$empr_cart_choix_quoi);
+	if ($elt_flag) {
+		$empr_cart_choix_quoi = str_replace('!!elt_flag_checked!!', 'checked=\'checked\'', $empr_cart_choix_quoi);
+	} else {
+		$empr_cart_choix_quoi = str_replace('!!elt_flag_checked!!', '', $empr_cart_choix_quoi);
+	}
+	if ($elt_no_flag) {
+		$empr_cart_choix_quoi = str_replace('!!elt_no_flag_checked!!', 'checked=\'checked\'', $empr_cart_choix_quoi);
+	} else {
+		$empr_cart_choix_quoi = str_replace('!!elt_no_flag_checked!!', '', $empr_cart_choix_quoi);
+	}
 	return $empr_cart_choix_quoi;
 	}
 

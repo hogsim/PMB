@@ -1,7 +1,7 @@
  /* +--------------------------------------------------------------------------+
 // ? 2002-2013 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: common.css,v 1.86.2.1 2015-09-30 15:35:03 wlair Exp $ */
+// $Id: common.css,v 1.86.2.2 2015-10-31 13:13:33 Alexandre Exp $ */
 
 
 /* ---------------------------------------------------------------------------*/
@@ -153,9 +153,9 @@ input[type="password"].password {
 
 .empty {
 	visibility: hidden !important;
-	height: 0px !important;	
-	margin: 0px !important;	
-	padding: 0px !important;	
+	height: 0px !important;
+	margin: 0px !important;
+	padding: 0px !important;
 }
 
 
@@ -251,9 +251,9 @@ input[type="password"].password {
 #perio_a2z_search {
 	width: 50%;
 }
- 
+
 #perio_a2z .onglets_isbd_public {
-	padding-bottom: 0px;	
+	padding-bottom: 0px;
 }
 
 table.a2z_contens {
@@ -308,7 +308,7 @@ input#a2z_abt_actif {
 }
 
 #categories-container li:after  {
-	content: " - "; 
+	content: " - ";
 }
 
 #aut_see {
@@ -336,7 +336,7 @@ input#a2z_abt_actif {
 }
 
 .loc_comment {
-	margin-bottom: 10px;	
+	margin-bottom: 10px;
 }
 
 
@@ -366,7 +366,7 @@ input#a2z_abt_actif {
 }
 
 #etagere-notice-list {
-	clear: left;	
+	clear: left;
 }
 
 
@@ -668,7 +668,7 @@ td {
 #empr-all, #empr-late, #empr-old, #empr-resa, #empr-dsi, #empr-sugg,
 #empr-list, #empr-dema {
 	margin-top: 25px;
-} 
+}
 
 #list_cadre {
 	border: none !important;
@@ -682,7 +682,7 @@ td {
 }
 
 .form_liste_lecture .form-contenu .row .colonne2 .row textarea {
-	max-width: 100%;	
+	max-width: 100%;
 }
 
 .form_liste_lecture h3 {
@@ -831,7 +831,7 @@ body.popup {
 
 #make_sugg {
 }
-	
+
 #titre-popup {
 }
 
@@ -900,7 +900,7 @@ form#f {
 	  -webkit-margin-after: 1em!important;
 	  -webkit-margin-start: 40px!important;
 	  -webkit-margin-end: 40px!important;
- 
+
 }
 /* ---------------------------------------------------------------------------*/
 /* ---------------------------------------------------------------------------*/
@@ -962,11 +962,11 @@ a.addthis_button_compact {
 
 #visio_current_description {
 	text-align: left;
-	margin-top: 1em;	
+	margin-top: 1em;
 }
 
 #visio_current_doc a {
-	cursor: pointer;	
+	cursor: pointer;
 }
 
 #visio_navigator {
@@ -1041,7 +1041,7 @@ a.addthis_button_compact {
 
 #form_values_block {
 	clear: both;
-	display: block;  
+	display: block;
 }
 
 /* ---------------------------------------------------------------------------*/
@@ -1181,11 +1181,11 @@ a.TagF4 	{
     padding: 10px;
 	width: 100%;
 }
-          
+
 .content .padder {
 	height: 200px;
 }
-     
+
 div.tabs {
 	font-size: 14px;
 	line-height: 16px;
@@ -1194,7 +1194,7 @@ div.tabs {
 	left: 50px;
 	z-index: 1000;
 }
-       
+
 .tab {
 	padding: 3px;
     z-index: 100;
@@ -1204,11 +1204,11 @@ div.tabs {
 	z-index: 1200;
 }
 
-.tabActive { 
+.tabActive {
 	padding: 3px;
 	z-index: 10000;
 }
-      
+
 #viewsrc{
 	width: 130px;
 	margin: 5px;
@@ -1240,10 +1240,10 @@ div.tabs {
 	#footer {
 		display: none;
 	}
-          
+
     #main #search_crl {
     	clear: both;
-    }      
+    }
 
 }
 
@@ -1306,11 +1306,11 @@ div.tabs {
 /* Bannettes */
 
 
-.bannette { 
+.bannette {
 	padding: 5px;
 }
 
-.bannette-container { 
+.bannette-container {
 	margin-bottom: 20px;
 }
 
@@ -1325,7 +1325,7 @@ div.tabs {
 .tab_sug th, .tab_sug td {
 	border:1px solid #CCCCCC;
 	border-collapse:collapse;
-	overflow:hidden;	
+	overflow:hidden;
 	vertical-align: middle;
 	text-align: center;
 	width: 100%;
@@ -1375,7 +1375,7 @@ div.tabs {
 .cms_drag {
 	/*outline: 2px solid red;*/
 	/*box-shadow:inset 0px 0px 0px 5px rgba(255,0,0,0.5);*/
-	cursor: move;		
+	cursor: move;
 	z-index: 2000;
 	-webkit-box-sizing: border-box;
    	-moz-box-sizing: border-box;
@@ -1405,7 +1405,7 @@ Portfolio
 	text-align: center;
 	height:200px;
 	width:200px;
-	line-height:200px; 
+	line-height:200px;
 	float:left;
 	margin: 5px;
 	padding : 5px;
@@ -1434,7 +1434,7 @@ Portfolio
 	height:100px;
 	width:97%;
 	overflow:hidden;
-	line-height:100px; 
+	line-height:100px;
 	-moz-border-radius: 8px;
 	-webkit-border-radius: 8px;
 	border-radius: 8px;
@@ -1482,7 +1482,7 @@ Portfolio
 
 #main_hors_footer .faq_filters div.faq_user_query_filter input, .faq_filters div.faq_user_query_filter input{
 	width : 80%;
-} 
+}
 
 /* ---------------------------------------------------------------------------*/
 /* ---------------------------------------------------------------------------*/
@@ -1626,7 +1626,7 @@ form[name="modif_notes"] input{
 	line-height: 20px;
 }
 #compare_hearders th,#compare_hearders {
-	font-size: 14px;  
+	font-size: 14px;
 	text-align: center;
 	min-height: 30px;
 }
@@ -1669,7 +1669,7 @@ td.first_collumn img {
 	background-color: #FCFCFC;
 	border: solid 1px #D1D1D1;
 }
-.compare_line_toggled td { 
+.compare_line_toggled td {
 }
  .compare_line_toggled td {
 	 background-color:#fff;
@@ -1699,7 +1699,7 @@ td.first_collumn img {
 	background-color:#fff;
 	border:1px solid black;
 	padding:10px;
-	box-shadow:0px 0px 0px 999px rgba(0,0,0,0.30); 
+	box-shadow:0px 0px 0px 999px rgba(0,0,0,0.30);
 }
 
 .popup_preview .vignetteimg{
@@ -1731,7 +1731,7 @@ td.first_collumn img {
 .docnum_statutnot1 {
 }
 
-.docnum_statutnot2 { 
+.docnum_statutnot2 {
 	position: absolute;
 	top: -10px;
 	background-color: #BB0000;
@@ -1782,61 +1782,61 @@ td.first_collumn img {
 	position: absolute;
 	top: -10px;
 	background-color: #FFC587;}
-	
+
 .docnum_statutnot11 {
 	position: absolute;
 	top: -10px;
 	background-color: #70C173;
 }
-	
+
 .docnum_statutnot12 {
 	position: absolute;
 	top: -10px;
 	background-color: #660000;
 }
-	
+
 .docnum_statutnot13 {
 	position: absolute;
 	top: -10px;
 	background-color: #006600;
 }
-	
+
 .docnum_statutnot14 {
 	position: absolute;
 	top: -10px;
 	background-color: #000066;
 }
-	
+
 .docnum_statutnot15 {
 	position: absolute;
 	top: -10px;
 	background-color: #80181F;
 }
-	
+
 .docnum_statutnot16 {
 	position: absolute;
 	top: -10px;
 	background-color: #668C8C;
 }
-	
+
 .docnum_statutnot17 {
 	position: absolute;
 	top: -10px;
 	background-color: #311442;
 }
-	
+
 .docnum_statutnot18 {
 	position: absolute;
 	top: -10px;
 	background-color: #7C7914;
 }
-	
+
 .docnum_statutnot19 {
 	position: absolute;
 	top: -10px;
 	background-color: #2C356C;
 }
-	
+
 .docnum_statutnot20 {
 	position: absolute;
 	top: -10px;
@@ -1850,7 +1850,7 @@ td.first_collumn img {
     width: 100%;
 }
 .rss_section{
-	
+
 }
 .rss_articles{
     width: auto;
@@ -1896,7 +1896,7 @@ td.first_collumn img {
 	clear:both;
 }
 #main_rss_item #aut_see {
-	
+
 }
 #dialog_wrapper input[type="image"]{
     height:16px;
@@ -1915,7 +1915,7 @@ td.first_collumn img {
 
 #script_analytics {
 	width:100%;
-	
+
 }
 
 #script_analytics_content {
@@ -1972,7 +1972,66 @@ td.first_collumn img {
 .mode_selector_list .mode_selector_selected img{
     background-color: #f1f1f1;
 }
-				
+
 .mode_selector{
 	cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------*/
+/* ---------------------------------------------------------------------------*/
+/*                     Avis - choix sous forme d'etoiles                      */
+/* ---------------------------------------------------------------------------*/
+/* ---------------------------------------------------------------------------*/
+
+.echelle_avis_text:not(:checked) {
+	display: none;
+}
+
+.echelle_avis_stars {
+	position: relative;
+	font-size: medium;
+	top: 2px;
+}
+
+.echelle_avis_star:not(:checked) {
+	font-size: 0.1px; /*0px bug sous IE*/
+}
+
+.echelle_avis_star:not(:checked) input {
+	position: absolute;
+	top: 0;
+	opacity: 0;
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	padding: 0;
+	font-size: 0;
+	border-radius: 0;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.echelle_avis_star:not(:checked) label {
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	padding: 0;
+	display: inline-block;
+	background: url('../../images/star_rating.png') no-repeat -16px 0;
+}
+
+.echelle_avis_star input:checked + label {
+	background-position: -16px 0;
+}
+
+.echelle_avis_star input:checked + label ~ label {
+	background-position: 0;
+}
+
+.echelle_avis_star:hover label {
+	background-position: -16px 0 !important;
+}
+
+.echelle_avis_star input[type='radio']:hover + label ~ label {
+	background-position: 0 !important;
 }

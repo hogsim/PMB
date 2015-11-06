@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: champs_base.xml,v 1.30.2.2 2015-10-21 13:57:51 jpermanne Exp $ -->
+$Id: champs_base.xml,v 1.30.2.3 2015-11-03 09:43:53 jpermanne Exp $ -->
 
 <indexation>
 
@@ -261,6 +261,25 @@ $Id: champs_base.xml,v 1.30.2.2 2015-10-21 13:57:51 jpermanne Exp $ -->
 		</table>
 		<isbd name="isbd" class_name="categories" id="02" pond="0"/>
 	</field>
+	
+	<!-- termes rejetés des thésaurus -->   
+    <field name="thes_orphelins" external="yes" id="122" datatype="subject">
+        <table name="noeuds">
+            <tablefield id="01" name="lib_categ" pond="100">libelle_categorie</tablefield>
+            <language>langue</language>
+            <tablekey>num_renvoi_voir</tablekey>
+            <link type="nn">
+                <table>notices_categories</table>
+                <referencefield>notcateg_notice</referencefield>
+                <externalfield>num_noeud</externalfield>
+            </link>
+            <link type="n1">
+                <table>categories</table>
+                <tablekey>num_noeud</tablekey>
+                <externalfield>id_noeud</externalfield>
+            </link>
+        </table>
+    </field>
 	
 	<!-- table titres uniformes -->	
 	<field name="aut_menu_titre_uniforme" external="yes" id="026" datatype="uniformtitle" keepEmptyWord="yes">

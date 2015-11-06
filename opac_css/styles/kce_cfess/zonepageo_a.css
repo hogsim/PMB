@@ -1,0 +1,113 @@
+/* +--------------------------------------------------------------------------+
+// 2013 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
+// +-------------------------------------------------+
+// $Id: zonepageo_a.css,v 1.1.2.2 2015-10-29 15:05:46 wlair Exp $ */
+
+/*------------------------------------------------------------------------------------------*/
+
+#container {
+	margin: 0 auto;
+	max-width: 1000px;
+	padding: 28px;
+	position: relative;
+	background-color: #fff;
+}
+
+#intro {
+}
+
+#main {
+	width: auto;
+	float: none;
+	box-sizing: border-box;
+}
+
+#bandeau {
+	width: 23%;
+	max-width: 230px;
+	padding: 0px 0px 0px 0px;
+	margin: 0px 0px 0px 0px;
+	box-sizing: border-box;
+	float: left;
+	position: relative;
+	display: none!important;
+}
+
+#bandeau_2 {
+}
+#footer {
+    clear: both;
+}
+
+/*------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------960-------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+
+@media screen and (max-width: 960px) {
+	#container {
+		width: 100%!important;
+		position: static;
+	}
+
+	#main {
+		float: none;
+		width: auto;
+		margin: 0 auto;
+	
+		padding: 0;
+}
+
+	#bandeau {
+		float: none;
+		max-width: none;
+		width: 100%;
+		overflow: visible;
+		position: static;
+	}
+}
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------768-------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+@media screen and (max-width: 767px) and (min-width: 600px){
+	#container {
+		height: auto;
+		overflow-x: hidden;
+	}
+
+	#bandeau {
+		display: block;
+	}
+}
+/*------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------600-------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+@media screen and (max-width: 599px) {
+	#container {
+		/*max-width: 420px;*/
+		height: auto;
+	
+		overflow-x: hidden;
+}
+
+	#bandeau {
+		display: block;
+	}
+}
+/*------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------400 -------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+@media screen and (max-width: 400px) {
+	#container {
+		max-width: 375px;
+		min-width: 320px;
+		height: auto;
+	}
+
+	#bandeau {
+		display: block;
+	}
+}

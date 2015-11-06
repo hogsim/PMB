@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: account.php,v 1.57 2015-06-05 12:36:58 dgoron Exp $
+// $Id: account.php,v 1.57.2.1 2015-11-05 16:21:04 jpermanne Exp $
 
 // définition du minimum nécéssaire 
 $base_path=".";                            
@@ -255,6 +255,20 @@ if(!$modified) {
 							".$msg[39]." <input type='radio' name='form_$field' value='0' ".(!$field_values[$i] ? "checked='checked'" : "")." />
 							".$msg[40]." <input type='radio' name='form_$field' value='1' ".($field_values[$i] ? "checked='checked'" : "")." />
 						</div></div>\n" ;
+				} elseif ($field=="deflt_notice_is_new") {
+					$deflt_user.="<div class='row'><div class='colonne60'>".$msg[$field]."</div>\n
+						<div class='colonne_suite'>
+							".$msg[39]." <input type='radio' name='form_$field' value='0' ".(!$field_values[$i] ? "checked='checked'" : "")." />
+							".$msg[40]." <input type='radio' name='form_$field' value='1' ".($field_values[$i] ? "checked='checked'" : "")." />
+						</div></div>\n" ;
+				} elseif ($field=="deflt_bulletinage_location") {
+					$selector = gen_liste ("select distinct idlocation, location_libelle from docs_location order by 2 ", "idlocation", "location_libelle", 'form_'.$field, "", $field_values[$i], "", "","0",$msg["all_location"],0);
+					$deflt_user.="
+						<div class='row'><div class='colonne60'>".
+						$msg[$field]."&nbsp;:&nbsp;</div>\n
+						<div class='colonne_suite'>"			
+						.$selector.
+						"</div></div>\n";
 				} else {
 					$deflt_table = substr($field,6);
 					if($deflt_table == "integration_notice_statut") $deflt_table= "notice_statut";

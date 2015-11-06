@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials.class.php,v 1.168.2.3 2015-10-27 14:26:54 jpermanne Exp $
+// $Id: serials.class.php,v 1.168.2.5 2015-11-05 10:24:23 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -3465,12 +3465,14 @@ class analysis extends bulletinage {
 				$link_audit =  "<input class='bouton' type='button' onClick=\"openPopUp('./audit.php?type_obj=1&object_id=$this->analysis_id', 'audit_popup', 700, 500, -2, -2, '$select_categ_prop')\" title='$msg[audit_button]' value='$msg[audit_button]' />";
 			else 
 				$link_audit = "" ;
-			$link_duplicate = "<input type='button' class='bouton' value='$msg[analysis_duplicate_bouton]' onclick='document.location=\"./catalog.php?categ=serials&sub=analysis&action=analysis_duplicate&bul_id=$this->id_bulletinage&analysis_id=$this->analysis_id\"' />";
+			$link_duplicate = "<input type='button' class='bouton' value='".$msg["analysis_duplicate_bouton"]."' onclick='document.location=\"./catalog.php?categ=serials&sub=analysis&action=analysis_duplicate&bul_id=$this->id_bulletinage&analysis_id=$this->analysis_id\"' />";
+			$link_move = "<input type='button' class='bouton' value='".$msg["analysis_move_bouton"]."' onclick='document.location=\"./catalog.php?categ=serials&sub=analysis&action=analysis_move&bul_id=$this->id_bulletinage&analysis_id=".$this->analysis_id."\"' />";
 		} else {
 			$link_supp = "";
 			$form_titre = $msg[4022];
 			$link_audit = "" ;
 			$link_duplicate = "";    
+			$link_move = "";    
 		}
 		
 		$analysis_top_form = str_replace('!!link_supp!!', $link_supp, $analysis_top_form);
@@ -3481,6 +3483,7 @@ class analysis extends bulletinage {
 		$analysis_top_form = str_replace('!!analysis_id!!', $this->analysis_id, $analysis_top_form);
 		$analysis_top_form = str_replace('!!link_audit!!', $link_audit, $analysis_top_form);
 		$analysis_top_form = str_replace('!!link_duplicate!!', $link_duplicate, $analysis_top_form);
+		$analysis_top_form = str_replace('!!link_move!!', $link_move, $analysis_top_form);
 		$analysis_top_form = str_replace('!!notice_id_no_replace!!', $this->analysis_id, $analysis_top_form);
 		
 		if($notice_type){
@@ -3967,6 +3970,53 @@ class analysis extends bulletinage {
 		pmb_mysql_query($req, $dbh);
 		
 		return $result;
+	}
+	
+	function move_form() {
+		global $include_path,$analysis_move,$msg,$dbh,$charset;
+		
+		if(!$this->analysis_id) {
+			require_once($include_path.'/user_error.inc.php');
+			error_message($msg['161'], $msg['162'], 1, './catalog.php');
+			return false;
+		}
+		$analysis_move=str_replace('!!analysis_id!!', $this->analysis_id, $analysis_move);
+		$analysis_move=str_replace('!!bul_id!!', $this->bulletin_id, $analysis_move);
+				
+		print $analysis_move;
+	}
+	
+	// ---------------------------------------------------------------
+	//		move($to_bul) : déplacement du dépouillement
+	// ---------------------------------------------------------------
+	function move($to_bul) {
+		global $msg;
+		global $dbh;
+		global $pmb_synchro_rdf;
+	
+		// rattachement du dépouillement
+		$requete = 'UPDATE analysis SET analysis_bulletin='.$to_bul.' WHERE analysis_notice='.$this->analysis_id;
+		@pmb_mysql_query($requete, $dbh);
+		
+		//dates
+		$myBul = new bulletinage($to_bul);
+		$year= substr($myBul->date_date,0,4);
+		$date_parution = $myBul->date_date;
+		
+		
+		$requete = 'UPDATE notices SET year="'.$year.'", date_parution="'.$date_parution.'", update_date=sysdate() WHERE notice_id='.$this->analysis_id.' LIMIT 1';
+		@pmb_mysql_query($requete, $dbh);
+	
+		//Indexation du dépouillement
+		notice::majNoticesTotal($this->analysis_id);
+		audit::insert_modif (AUDIT_NOTICE, $this->analysis_id) ;
+		if($pmb_synchro_rdf){
+			$synchro_rdf = new synchro_rdf();
+			$synchro_rdf->delRdf($this->analysis_id,0);
+			$synchro_rdf->addRdf($this->analysis_id,0);
+		}
+	
+		return false;
 	}
 	
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.tpl.php,v 1.28.4.1 2015-10-13 07:58:19 jpermanne Exp $
+// $Id: category.tpl.php,v 1.28.4.2 2015-11-03 09:29:56 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -211,7 +211,7 @@ function set_parent_w(f_caller, id_value, libelle_value,w,callback,id_thesaurus)
 		var p2bis = tmp_p2.join('_');
 		
 		var max_aut = w.opener.document.getElementById(p1bis.replace('id','max_aut'));
-		if(max_aut){
+		if(max_aut && (p1bis.replace('id','max_aut').substr(-7)=='max_aut')){
 			var trouve=false;
 			var trouve_id=false;
 			for(i_aut=0;i_aut<=max_aut.value;i_aut++){

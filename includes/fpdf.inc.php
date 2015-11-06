@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fpdf.inc.php,v 1.81 2015-06-10 10:28:18 jpermanne Exp $
+// $Id: fpdf.inc.php,v 1.81.2.1 2015-11-03 13:04:34 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -693,7 +693,7 @@ function lettre_retard_par_groupe($id_groupe, $lecteurs_ids=array()) {
 	}
 
 	$ourPDF->SetXY ($marge_page_gauche,125);
-	$ourPDF->setFont($pmb_pdf_font, '', 12);
+	$ourPDF->setFont($pmb_pdf_font, '', 10);
 	$ourPDF->multiCell(($largeur_page - $marge_page_droite - $marge_page_gauche), 8, $texte_madame_monsieur_group, 0, 'L', 0);
 	$ourPDF->multiCell(($largeur_page - $marge_page_droite - $marge_page_gauche), 8, $before_list_group, 0, 'J', 0);
 
@@ -738,7 +738,7 @@ function lettre_retard_par_groupe($id_groupe, $lecteurs_ids=array()) {
 		$i++;
 		$indice_page++;
 	}
-	$ourPDF->setFont($pmb_pdf_font, '', 12);
+	$ourPDF->setFont($pmb_pdf_font, '', 10);
 	if (($pos_page+$taille_bloc_expl)>$limite_after_list) {
 		$ourPDF->addPage();
 		$pos_after_list = $debut_expl_page;
@@ -747,7 +747,7 @@ function lettre_retard_par_groupe($id_groupe, $lecteurs_ids=array()) {
 	}
 	$ourPDF->SetXY ($marge_page_gauche,($pos_after_list));
 	$ourPDF->multiCell(($largeur_page - $marge_page_droite - $marge_page_gauche), 8, $after_list_group."\n\n", 0, 'J', 0);
-	$ourPDF->setFont($pmb_pdf_font, 'I', 12);
+	$ourPDF->setFont($pmb_pdf_font, 'I', 10);
 	$ourPDF->multiCell(($largeur_page - $marge_page_droite - $marge_page_gauche), 8, $fdp_group, 0, 'R', 0);
 } // fin lettre_retard_par_groupe
 

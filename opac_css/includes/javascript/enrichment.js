@@ -1,7 +1,7 @@
 // +-------------------------------------------------+
 // © 2002-2010 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: enrichment.js,v 1.15 2015-05-28 09:34:45 apetithomme Exp $
+// $Id: enrichment.js,v 1.15.2.1 2015-11-03 16:00:50 jpermanne Exp $
 
 function getEnrichment(notice_id){
 	var ul = findNoticeElement(notice_id);
@@ -155,7 +155,7 @@ function show_what(quoi, id) {
 						items[i].className = "isbd_public_active";
 						document.getElementById("div_"+quoi+id).style.display = "block";
 					}else{
-						if(items[i].className != "onglet_tags" && items[i].className != "onglet_basket"){
+						if(items[i].className != "onglet_tags" && items[i].className != "onglet_avis" && items[i].className != "onglet_sugg" && items[i].className != "onglet_basket"){
 							items[i].className = "isbd_public_inactive";	
 							document.getElementById(items[i].getAttribute("id").replace("onglet","div")).style.display = "none";
 						}

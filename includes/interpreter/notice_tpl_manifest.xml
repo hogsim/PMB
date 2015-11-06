@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: notice_tpl_manifest.xml,v 1.2.2.3 2015-10-20 11:48:08 jpermanne Exp $ -->
+$Id: notice_tpl_manifest.xml,v 1.2.2.4 2015-11-04 09:26:46 jpermanne Exp $ -->
 <manifest>
 	<name>notice_tpl</name>
 	<description>msg:Notice_tpl_functions_description</description>
@@ -657,7 +657,7 @@ $Id: notice_tpl_manifest.xml,v 1.2.2.3 2015-10-20 11:48:08 jpermanne Exp $ -->
 				<description>msg:get_parents_in_tpl_output_description</description>
 			</outputs>
 		</method>
-		<method name="#group(param0,param1,param2,#{param3};);" rights="" version="1.0" comment="msg:group_description" language_independant="true">
+		<method name="#group(param0,param1,param2,#{param3};,param4);" rights="" version="1.0" comment="msg:group_description" language_independant="true">
 			<inputs>
 				<description>msg:group_input_description</description>
 			</inputs>

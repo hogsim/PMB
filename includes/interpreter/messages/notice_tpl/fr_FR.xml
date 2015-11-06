@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2007 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: fr_FR.xml,v 1.2.2.4 2015-10-20 11:48:08 jpermanne Exp $ -->
+$Id: fr_FR.xml,v 1.2.2.5 2015-11-04 09:26:46 jpermanne Exp $ -->
 
 <!DOCTYPE XMLlist SYSTEM "../../../../includes/XMLlist.dtd" >
 <XMLlist>
@@ -753,20 +753,21 @@ Affiche le libellé de période et la date du bulletin au format "Libellé de pério
   <entry code="get_parents_in_tpl_input_description"></entry>
   <entry code="get_parents_in_tpl_output_description"></entry>
   
-<!--#group(param0,param1,param2,#{param3};);-->
+<!--#group(param0,param1,param2,#{param3};,param4);-->
   <entry code="group_description">Affiche des informations groupées d'une ou plusieurs notices à partir de leur identifiant, selon les paramètres :</entry>
   <entry code="group_input_description">
 param0 : tableau d'identifiants des notices à afficher => à utiliser avec la fonction #linked_id();
 param1 : nombre de notices à afficher, 0 pour tout afficher
 param2 : séparateur entre les notices
 param3 : fonctions de templates pour l'affichage des notices, à mettre entre #{};
+param4 : texte à ajouter si le tableau de notices liées est plus grand que le nombre de notices à afficher
   </entry>
   <entry code="group_output_description">
 Exemple :
 #group(#linked_id(up,a,d);,0,&lt;br
  /&gt;,#{In
  :
-&lt;i&gt;#title();#a_empty(#complement_title();, : );&lt;/i&gt;};);
+&lt;i&gt;#title();#a_empty(#complement_title();, : );&lt;/i&gt;};,...);
   </entry>
 
 <!--#linked_id(param0,param1);-->

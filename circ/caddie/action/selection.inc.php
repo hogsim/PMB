@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: selection.inc.php,v 1.7 2015-04-03 11:16:28 jpermanne Exp $
+// $Id: selection.inc.php,v 1.7.4.1 2015-11-04 10:09:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -89,6 +89,7 @@ if($idemprcaddie) {
 				}
             }
 			print aff_empr_cart_nb_items ($myCart) ;
+			echo "<hr /><input type='button' class='bouton' value='".$msg["caddie_menu_action_suppr_panier"]."' onclick='document.location=&quot;./circ.php?categ=caddie&amp;sub=action&amp;quelle=supprpanier&amp;action=choix_quoi&amp;idemprcaddie=".$idemprcaddie."&amp;item=&amp;elt_flag=".$elt_flag."&amp;elt_no_flag=".$elt_no_flag."&quot;' />";
 			break;
 		default:
 			print aff_empr_cart_nb_items ($myCart) ;

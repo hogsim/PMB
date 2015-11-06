@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage.ext.class.php,v 1.237.2.4 2015-10-21 15:19:49 jpermanne Exp $
+// $Id: notice_affichage.ext.class.php,v 1.237.2.6 2015-11-04 15:48:55 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -1392,13 +1392,15 @@ class notice_affichage_abiodoc extends notice_affichage {
 		
 		//add tags
 		if ( ($this->tag_allowed==1) || ( ($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag) ) )
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";	
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";	
 		
 		 //Avis
-		if (($opac_avis_display_mode==0) && (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2))) $img_tag .= $this->affichage_avis($this->notice_id);	
+		if (($opac_avis_display_mode==0) && (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)))
+			$img_avis= $this->affichage_avis($this->notice_id);	
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg)) $img_tag .= $this->affichage_suggestion($this->notice_id);
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);
 		
 		// préparation de la case à cocher pour traitement panier
 		if ($cart_aff_case_traitement) $case_a_cocher = "<input type='checkbox' value='!!id!!' name='notice[]'/>&nbsp;";
@@ -1494,6 +1496,8 @@ class notice_affichage_abiodoc extends notice_affichage {
 			</div>";
 	 	}
 		if($img_tag) $li_tags="<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>";
+		if($img_avis) $li_tags.="<li id='avis!!id!!' class='onglet_avis'>$img_tag</li>";
+		if($img_sugg) $li_tags.="<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>";
 		$template_in.="
 		<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>";
 	    if ($premier=='ISBD'){ 
@@ -1662,14 +1666,15 @@ class notice_affichage_abiodoc extends notice_affichage {
 		
 		//add tags
 		if (($this->tag_allowed==1)||(($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag)))
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
 		
 		 //Avis
 		if (($opac_avis_display_mode==0)&&(($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)))
-			$img_tag .= $this->affichage_avis($this->notice_id);
+			$img_avis= $this->affichage_avis($this->notice_id);
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg)) $img_tag .= $this->affichage_suggestion($this->notice_id);	
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);	
 		 
 		if ($this->no_header) $icon="";
 		else $icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
@@ -1756,7 +1761,9 @@ class notice_affichage_abiodoc extends notice_affichage {
 		</div>";	
 		}			
 		if($img_tag) $li_tags="<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>";
-		if($basket || $img_tag || $opac_notice_enrichment){
+		if($img_avis) $li_tags.="<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>";
+		if($img_sugg) $li_tags.="<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>";
+		if($basket || $img_tag || $img_avis || $img_sugg || $opac_notice_enrichment){
 			$template_in.="
 		<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>";
 			if ($basket) $template_in.="<li id='baskets!!id!!' class='onglet_basket'>$basket</li>";
@@ -4078,13 +4085,15 @@ class notice_affichage_crips extends notice_affichage {
 		
 		//add tags
 		if ( ($this->tag_allowed==1) || ( ($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag) ) )
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";	
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";	
 		
 		 //Avis
-		if (($opac_avis_display_mode==0) && (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2))) $img_tag .= $this->affichage_avis($this->notice_id);	
+		if (($opac_avis_display_mode==0) && (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)))
+			$img_avis= $this->affichage_avis($this->notice_id);	
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg)) $img_tag .= $this->affichage_suggestion($this->notice_id);
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);
 		
 		// préparation de la case à cocher pour traitement panier
 		if ($cart_aff_case_traitement) $case_a_cocher = "<input type='checkbox' value='!!id!!' name='notice[]'/>&nbsp;";
@@ -4176,6 +4185,8 @@ class notice_affichage_crips extends notice_affichage {
 			</div>";	
 		}
 		if($img_tag) $li_tags="<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>";
+		if($img_avis) $li_tags.="<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>";
+		if($img_sugg) $li_tags.="<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>";
 		$template_in.="
 		<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>";
 	    if ($premier=='ISBD') { 
@@ -4339,14 +4350,15 @@ class notice_affichage_crips extends notice_affichage {
 		
 		//add tags
 		if (($this->tag_allowed==1)||(($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag)))
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
 		
 		 //Avis
 		if (($opac_avis_display_mode==0)&&(($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)))
-			$img_tag .= $this->affichage_avis($this->notice_id);
+			$img_avis= $this->affichage_avis($this->notice_id);
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg)) $img_tag .= $this->affichage_suggestion($this->notice_id);
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);
 		 
 		if ($this->no_header) $icon="";
 		else $icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
@@ -4429,7 +4441,9 @@ class notice_affichage_crips extends notice_affichage {
 		</div>";	
 		}
 		if($img_tag) $li_tags="<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>";
-		if($basket || $img_tag || $opac_notice_enrichment){
+		if($img_avis) $li_tags.="<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>";
+		if($img_sugg) $li_tags.="<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>";
+		if($basket || $img_tag || $img_avis || $img_sugg || $opac_notice_enrichment){
 			$template_in.="
 				<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>";
 			if ($basket) $template_in.="<li id='baskets!!id!!' class='onglet_basket'>$basket</li>";
@@ -5761,13 +5775,15 @@ class notice_affichage_commande_copie extends notice_affichage {
 		
 		//add tags
 		if ( ($this->tag_allowed==1) || ( ($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag) ) )
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\"></a>";	
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\"></a>";	
 		
 		 //Avis
-		if (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)) $img_tag .= $this->affichage_avis($this->notice_id);	
+		if (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2))
+			$img_avis= $this->affichage_avis($this->notice_id);	
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && $this->sugg_allowed ==1)) $img_tag .= $this->affichage_suggestion($this->notice_id);
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && $this->sugg_allowed ==1))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);
 		
 		// préparation de la case à cocher pour traitement panier
 		if ($cart_aff_case_traitement) $case_a_cocher = "<input type='checkbox' value='!!id!!' name='notice[]'/>&nbsp;";
@@ -5808,6 +5824,8 @@ class notice_affichage_commande_copie extends notice_affichage {
 	    	<li id='onglet_isbd!!id!!' class='isbd_public_active'><a href='#' title=\"".$msg['ISBD_info']."\" onclick=\"show_what('ISBD', '!!id!!'); return false;\">".$msg['ISBD']."</a></li>
 	    	<li id='onglet_public!!id!!' class='isbd_public_inactive'><a href='#' title=\"".$msg['Public_info']."\" onclick=\"show_what('PUBLIC', '!!id!!'); return false;\">".$msg['Public']."</a></li>
 	    	<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>
+	    	<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>
+	    	<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>
 			</ul>
 			<div id='div_isbd!!id!!' style='display:block;'>!!ISBD!!</div>
 	  		<div id='div_public!!id!!' style='display:none;'>!!PUBLIC!!</div>";
@@ -5816,6 +5834,8 @@ class notice_affichage_commande_copie extends notice_affichage {
 	  			<li id='onglet_public!!id!!' class='isbd_public_active'><a href='#' title=\"".$msg['Public_info']."\" onclick=\"show_what('PUBLIC', '!!id!!'); return false;\">".$msg['Public']."</a></li>
 				<li id='onglet_isbd!!id!!' class='isbd_public_inactive'><a href='#' title=\"".$msg['ISBD_info']."\" onclick=\"show_what('ISBD', '!!id!!'); return false;\">".$msg['ISBD']."</a></li>
 		    	<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>
+		    	<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>
+		    	<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>
 				</ul>
 				<div id='div_public!!id!!' style='display:block;'>!!PUBLIC!!</div>
 	  			<div id='div_isbd!!id!!' style='display:none;'>!!ISBD!!</div>";
@@ -5867,14 +5887,15 @@ class notice_affichage_commande_copie extends notice_affichage {
 		
 		//add tags
 		if (($this->tag_allowed==1)||(($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag)))
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\"></a>";
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\"></a>";
 		
 		 //Avis
 		if (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2))
-			$img_tag .= $this->affichage_avis($this->notice_id);
+			$img_avis= $this->affichage_avis($this->notice_id);
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && $this->sugg_allowed ==1)) $img_tag .= $this->affichage_suggestion($this->notice_id);	
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && $this->sugg_allowed ==1))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);	
 		 
 		$icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
 		
@@ -5907,9 +5928,11 @@ class notice_affichage_commande_copie extends notice_affichage {
 		$template.="!!CONTENU!!
 					!!SUITE!!</div>";
 		
-		if($basket || $img_tag) $template_in.="<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>
+		if($basket || $img_tag || $img_avis || $img_sugg) $template_in.="<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>
 						<li id='baskets!!id!!' class='onglet_basket'>$basket</li>
 	  					<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>
+	  					<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>
+	  					<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>
 					   </ul>	
 		";
 		if($what =='ISBD') $template_in.="		    	
@@ -6257,13 +6280,15 @@ class notice_affichage_ireps extends notice_affichage {
 		
 		//add tags
 		if ( ($this->tag_allowed==1) || ( ($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag) ) )
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";	
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";	
 		
 		 //Avis
-		if (($opac_avis_display_mode==0) && (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2))) $img_tag .= $this->affichage_avis($this->notice_id);	
+		if (($opac_avis_display_mode==0) && (($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)))
+			$img_avis= $this->affichage_avis($this->notice_id);	
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg)) $img_tag .= $this->affichage_suggestion($this->notice_id);
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);
 		
 		// préparation de la case à cocher pour traitement panier
 		if ($cart_aff_case_traitement) $case_a_cocher = "<input type='checkbox' value='!!id!!' name='notice[]'/>&nbsp;";
@@ -6355,6 +6380,8 @@ class notice_affichage_ireps extends notice_affichage {
 			</div>";	
 		}
 		if($img_tag) $li_tags="<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>";
+		if($img_avis) $li_tags.="<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>";
+		if($img_sugg) $li_tags.="<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>";
 		$template_in.="
 		<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>";
 	    if ($premier=='ISBD'){ 
@@ -6521,14 +6548,15 @@ class notice_affichage_ireps extends notice_affichage {
 		
 		//add tags
 		if (($this->tag_allowed==1)||(($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag)))
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
 		
 		 //Avis
 		if (($opac_avis_display_mode==0)&&(($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)))
-			$img_tag .= $this->affichage_avis($this->notice_id);
+			$img_avis= $this->affichage_avis($this->notice_id);
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg)) $img_tag .= $this->affichage_suggestion($this->notice_id);	
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);	
 		 
 		if ($this->no_header) $icon="";
 		else $icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
@@ -6611,7 +6639,9 @@ class notice_affichage_ireps extends notice_affichage {
 		</div>";	
 		}
 		if($img_tag) $li_tags="<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>";
-		if($basket || $img_tag || $opac_notice_enrichment){
+		if($img_avis) $li_tags.="<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>";
+		if($img_sugg) $li_tags.="<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>";
+		if($basket || $img_tag || $img_avis || $img_avis || $opac_notice_enrichment){
 			$template_in.="
 		<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>";
 			if ($basket) $template_in.="<li id='baskets!!id!!' class='onglet_basket'>$basket</li>";
@@ -7101,7 +7131,7 @@ class notice_affichage_ireps extends notice_affichage {
 		if (!$opac_expl_data) $opac_expl_data="expl_cb,expl_cote,tdoc_libelle,".$surloc_field."location_libelle,section_libelle";
 		$colonnesarray=explode(",",$opac_expl_data);
 		
-		$expl_list_header_deb="<tr>";
+		$expl_list_header_deb="";
 		for ($i=0; $i<count($colonnesarray); $i++) {
 			eval ("\$colencours=\$msg['expl_header_".$colonnesarray[$i]."'];");
 			$expl_list_header_deb.="<th class='expl_header_".$colonnesarray[$i]."'>".htmlentities($colencours,ENT_QUOTES, $charset)."</th>";
@@ -7191,10 +7221,12 @@ class notice_affichage_ireps extends notice_affichage {
 		$expl_liste="";
 		
 		} // fin while
+		$expl_list_header_deb="<tr>".$expl_list_header_deb;
 		//S'il y a des titres de champs perso dans les exemplaires 
 		if($header_perso_aff) {
 			$expl_list_header_deb.=$header_perso_aff;
 		}	
+		$expl_list_header_deb.="</tr>";
 		
 	if($opac_aff_expl_localises && $_SESSION["empr_location"] && $nb_expl_autre_loc) {	
 		// affichage avec onglet selon la localisation
@@ -8015,7 +8047,7 @@ class notice_affichage_livrechange extends notice_affichage {
 		if (!$opac_expl_data) $opac_expl_data="expl_cb,expl_cote,tdoc_libelle,".$surloc_field."location_libelle,section_libelle";
 		$colonnesarray=explode(",",$opac_expl_data);
 		
-		$expl_list_header_deb="<tr>";
+		$expl_list_header_deb="";
 		for ($i=0; $i<count($colonnesarray); $i++) {
 			eval ("\$colencours=\$msg[expl_header_".$colonnesarray[$i]."];");
 			$expl_list_header_deb.="<th class='expl_header_".$colonnesarray[$i]."'>".htmlentities($colencours,ENT_QUOTES, $charset)."</th>";
@@ -8108,10 +8140,12 @@ class notice_affichage_livrechange extends notice_affichage {
 		$expl_liste="";
 		
 		} // fin while
+		$expl_list_header_deb="<tr>".$expl_list_header_deb;
 		//S'il y a des titres de champs perso dans les exemplaires 
 		if($header_perso_aff) {
 			$expl_list_header_deb.=$header_perso_aff;
 		}	
+		$expl_list_header_deb.="</tr>";
 		
 	if($opac_aff_expl_localises && $_SESSION["empr_location"] && $nb_expl_autre_loc) {	
 		// affichage avec onglet selon la localisation
@@ -9437,7 +9471,7 @@ class notice_affichage_esc_rennes extends notice_affichage {
 		if (!$opac_expl_data) $opac_expl_data="expl_cb,expl_cote,tdoc_libelle,".$surloc_field."location_libelle,section_libelle";
 		$colonnesarray=explode(",",$opac_expl_data);
 		
-		$expl_list_header_deb="<tr>";
+		$expl_list_header_deb="";
 		for ($i=0; $i<count($colonnesarray); $i++) {
 			eval ("\$colencours=\$msg[expl_header_".$colonnesarray[$i]."];");
 			$expl_list_header_deb.="<th class='expl_header_".$colonnesarray[$i]."'>".htmlentities($colencours,ENT_QUOTES, $charset)."</th>";
@@ -9548,10 +9582,12 @@ class notice_affichage_esc_rennes extends notice_affichage {
 		$expl_liste="";
 		
 		} // fin while
+		$expl_list_header_deb="<tr>".$expl_list_header_deb;
 		//S'il y a des titres de champs perso dans les exemplaires 
 		if($header_perso_aff) {
 			$expl_list_header_deb.=$header_perso_aff;
 		}	
+		$expl_list_header_deb.="</tr>";
 		
 	if($opac_aff_expl_localises && $_SESSION["empr_location"] && $nb_expl_autre_loc) {	
 		// affichage avec onglet selon la localisation
@@ -10374,14 +10410,15 @@ class notice_affichage_cconstitutionnel extends notice_affichage {
 		
 		//add tags
 		if (($this->tag_allowed==1)||(($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag)))
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
 		
 		 //Avis
 		if (($opac_avis_display_mode==0)&&(($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)))
-			$img_tag .= $this->affichage_avis($this->notice_id);
+			$img_avis= $this->affichage_avis($this->notice_id);
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg)) $img_tag .= $this->affichage_suggestion($this->notice_id);	
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);	
 		 
 		if ($this->no_header) $icon="";
 		else $icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
@@ -10468,7 +10505,9 @@ class notice_affichage_cconstitutionnel extends notice_affichage {
 		</div>";	
 		}
 		if($img_tag) $li_tags="<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>";
-		if($basket || $img_tag || $opac_notice_enrichment){
+		if($img_avis) $li_tags.="<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>";
+		if($img_sugg) $li_tags.="<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>";
+		if($basket || $img_tag || $img_avis || $img_sugg || $opac_notice_enrichment){
 			$template_in.="
 		<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>";
 			if ($basket) $template_in.="<li id='baskets!!id!!' class='onglet_basket'>$basket</li>";

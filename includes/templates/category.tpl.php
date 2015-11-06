@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: category.tpl.php,v 1.44 2014-10-31 13:13:07 ngantier Exp $
+// $Id: category.tpl.php,v 1.44.4.1 2015-11-03 09:29:56 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -253,10 +253,10 @@ $form_categ_parent = "
 		<label class='etiquette' for='form_categparent'>".htmlentities($msg[categ_parent], ENT_QUOTES, $charset)."</label>
 	</div>
 	<div class='row'>
-		<input type='text' class='saisie-80emr' name='category_parent' readonly value=\"!!parent_libelle!!\" />
+		<input type='text' class='saisie-80emr' id='category_parent' name='category_parent' readonly value=\"!!parent_libelle!!\" />
 		<input type='button' class='bouton_small' onclick=\"openPopUp('./select.php?what=categorie&caller=categ_form&p1=category_parent_id&p2=category_parent&keep_tilde=1&parent=!!parent!!&id2='+document.categ_form.category_parent_id.value, 'select_categ', 700, 500, -2, -2, '$select_categ_prop')\" title='$msg[157]' value='$msg[parcourir]' />
 		<input type='button' class='bouton_small' value='$msg[raz]' onclick=\"this.form.category_parent.value=''; this.form.category_parent_id.value='0'; \" />
-		<input type='hidden' name='category_parent_id' value='!!parent_value!!' />
+		<input type='hidden' id='category_parent_id' name='category_parent_id' value='!!parent_value!!' />
 	</div>";
 
 $form_renvoivoir = "
@@ -264,10 +264,10 @@ $form_renvoivoir = "
 		<label class='etiquette' for='form_renvoivoir'>".htmlentities($msg[categ_renvoi], ENT_QUOTES, $charset)."</label>
 	</div>
 	<div class='row'>
-		<input type='text' class='saisie-80emr' name='category_voir' size='48' readonly value=\"!!voir_libelle!!\" />
+		<input type='text' class='saisie-80emr' id='category_voir' name='category_voir' size='48' readonly value=\"!!voir_libelle!!\" />
 		<input type='button' class='bouton_small' onclick=\"openPopUp('./select.php?what=categorie&caller=categ_form&p1=category_voir_id&p2=category_voir&parent=!!parent!!&id2='+document.categ_form.category_voir_id.value, 'select_categ', 700, 500, -2, -2, '$select_categ_prop')\" title='$msg[157]' value='$msg[parcourir]' />
 		<input type='button' class='bouton_small' value='$msg[raz]' onclick=\"this.form.category_voir.value=''; this.form.category_voir_id.value='0'; \" />
-		<input type='hidden' name='category_voir_id' value='!!voir_value!!' />
+		<input type='hidden' id='category_voir_id' name='category_voir_id' value='!!voir_value!!' />
 	</div>";
 
 $form_renvoivoiraussi = "

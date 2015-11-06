@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: user_modif.inc.php,v 1.53.2.1 2015-10-15 09:35:03 jpermanne Exp $
+// $Id: user_modif.inc.php,v 1.53.2.2 2015-11-05 13:21:13 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -263,6 +263,14 @@ while ($i < pmb_mysql_num_fields($res_param)) {
 						".$msg[39]." <input type='radio' name='form_$field' value='0' ".(!$field_values[$i] ? "checked='checked'" : "")." />
 						".$msg[40]." <input type='radio' name='form_$field' value='1' ".($field_values[$i] ? "checked='checked'" : "")." />
 					</div></div>\n" ;
+			} elseif ($field=="deflt_bulletinage_location") {
+				$selector = gen_liste ("select distinct idlocation, location_libelle from docs_location order by 2 ", "idlocation", "location_libelle", 'form_'.$field, "", $field_values[$i], "", "","0",$msg["all_location"],0);
+				$deflt_user.="
+					<div class='row'><div class='colonne60'>".
+					$msg[$field]."&nbsp;:&nbsp;</div>\n
+					<div class='colonne_suite'>"			
+					.$selector.
+					"</div></div>\n";
 			} else {
 				$deflt_table = substr($field,6);
 				if($deflt_table == "integration_notice_statut") $deflt_table= "notice_statut";

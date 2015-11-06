@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_view.php,v 1.11 2014-03-31 08:34:06 dgoron Exp $
+// $Id: notice_view.php,v 1.11.4.1 2015-11-03 16:00:50 jpermanne Exp $
 
 $base_path=".";
 //Affichage d'une notice
@@ -117,7 +117,7 @@ if ($opac_notice_enrichment == 0) {
 									items[i].className = 'isbd_public_active';
 									document.getElementById('div_'+quoi+id).style.display = 'block';
 								}else{
-									if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_basket'){
+									if(items[i].className != 'onglet_tags' && items[i].className != 'onglet_avis' && items[i].className != 'onglet_sugg' && items[i].className != 'onglet_basket'){
 										items[i].className = 'isbd_public_inactive';	
 										document.getElementById(items[i].getAttribute('id').replace('onglet','div')).style.display = 'none';
 									}

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart.tpl.php,v 1.49.2.1 2015-10-16 14:47:09 jpermanne Exp $
+// $Id: cart.tpl.php,v 1.49.2.2 2015-11-04 10:09:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -499,13 +499,13 @@ $cart_choix_quoi = "
 <div class=row>
 	<div class=colonne2>
 		<div class='row'>
-			<input type='checkbox' name='elt_flag' value='1'>$msg[caddie_item_marque]";
+			<input type='checkbox' name='elt_flag' value='1' !!elt_flag_checked!!>$msg[caddie_item_marque]";
 	if ($quelle=="supprbase" || $quelle=="supprpanier") $cart_choix_quoi .= "&nbsp;<input type='checkbox' name='elt_flag_inconnu' value='1'>$msg[caddie_item_blob]";
 	$cart_choix_quoi .= "
 		</div>
 		<!--<div class='row'>&nbsp;</div>-->
 		<div class='row'>
-			<input type='checkbox' name='elt_no_flag' value='1'>$msg[caddie_item_NonMarque]";
+			<input type='checkbox' name='elt_no_flag' value='1' !!elt_no_flag_checked!!>$msg[caddie_item_NonMarque]";
 	if ($quelle=="supprbase" || $quelle=="supprpanier") $cart_choix_quoi .= "&nbsp;<input type='checkbox' name='elt_no_flag_inconnu' value='1'>$msg[caddie_item_blob]";
 	$cart_choix_quoi .= "
 		</div>

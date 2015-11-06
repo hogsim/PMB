@@ -1,0 +1,177 @@
+@charset "utf-8";
+/*Calendar  
+-------------------------------------------------------------------------
+--------------------------------------------------------------------------
+---------------------------------------------------------------------------*/
+
+.tundra .dijitCalendarMonthContainer th {
+	background-image: none!important;
+	background-color: #526e82!important;
+}
+
+.tundra .dijitCalendarIncrementControl {
+	width: 11px;
+	height: 16px;
+	background-image: url(../images/calendar_arrow.png);
+	background-repeat: no-repeat;
+}
+.tundra .dijitCalendarIncrease {
+  background-position: -12px 0;
+}
+.tundra .dijitButtonNode {
+	border: 1px solid #E94E1B;
+}
+
+.tundra .dijitDropDownButtonHover .dijitButtonNode {
+	border: 1px solid #c34117;
+	border-color: #c34117;
+	border-bottom-color: #c34117;
+	color: #243C5F;
+	background: #c34117 url(images/buttonHover.png) repeat-x bottom;
+}
+
+.dijitCalendarMonthMenu .dijitCalendarMonthLabel {
+	text-align: center;
+	color: #243C5F;
+}
+
+.dijitCalendarMonthMenu .dijitCalendarMonthLabel {
+	text-align: center;
+	color: #243C5F!important;
+	font-family: arial;
+	font-weight: 600;
+	font-size: 90%;
+	line-height: 22px;
+}
+
+.tundra .dijitCalendarMonthMenu .dijitCalendarMonthLabelHover {
+	background-color: #c34117;
+	color: #fff!important;
+}
+
+.tundra .dijitArrowButtonInner {
+	background: url(../images/spriteArrows.png) no-repeat scroll 0 center;
+	width: 13px;
+	height: 7px;
+	margin: 0 4px 0 4px;	
+}
+
+.tundra .dijitCalendarMonthLabel {
+	color: #FFFFFF!important;
+	text-transform: uppercase;
+}
+
+.tundra .dijitCalendarDayLabelTemplate {
+	color: #3c998a!important;
+	background-image: none!important;
+	background-color: #FFFFFF!important;
+	line-height: 35px;
+	border-top: 0px solid #eeeeee!important;
+	font-weight: 600;
+	padding: 5px 0px;
+}
+
+.tundra .dijitCalendarMonthContainer th {
+	background-image: none!important;
+	background-color: #e94e1b!important;
+	padding: 15px 0px;
+}
+.dijitCalendarMonthContainer{
+	background-color: #e94e1b!important;	
+	outline: solid 1px #e94e1b;
+}
+.tundra .dijitCalendarContainer {
+		margin-bottom:10px;
+		border: none;
+		border-bottom:3px dotted #c7c7c7;		
+}
+
+.tundra .dijitCalendarBodyContainer td {
+	border: solid 2px #FFF;
+	border-top: solid 1px #fff;
+	border-left: solid 1px #fff;
+	box-shadow: 2px 0px 0px 1px #fff inset,0px 2px 0px 1px #FFF inset,0px 0px 0px 3px #e0e0e0 inset,0px 0px 0px 2px #e0e0e0 inset;
+	color: #979797;
+	padding: 4px 0px;
+}
+.tundra td.dijitCalendarEnabledDate {
+
+}
+.tundra td[class^='cms_module_agenda_event_']{
+    color: #fff;
+	
+}
+.tundra td.dijitCalendarPreviousMonth ,
+.tundra td.dijitCalendarNextMonth 		{
+	/* days that are part of the previous or next month */
+	color: #B6B6B6;
+	background-color: #FBFBFB;
+	border-color: #fff;
+	box-shadow: 0px 0px 0px 1px #FBFBFB inset;
+}
+/*jour*/
+
+.tundra .dijitCalendarHoveredDate {
+	background-color: #f2b6a2!important;
+	color:#fff!important;
+}
+
+span.dijitCalendarDateLabel {
+	min-width: 17px;
+	display: inline-block;
+	padding: 4px 0px;
+}
+/*Année*/
+
+.tundra .dijitCalendarSelectedYear {
+	color: #fff;
+	background-color: #5598CE !important;
+	border-radius: 6px;
+}
+.tundra .dijitCalendarYearContainer {
+	background:white url("images/calendarYearLabel.png") repeat-x bottom;
+	border-top:1px solid #ccc;
+}
+/*fleche*/
+.tundra .dijitCalendarIncrementControl{
+	
+}
+/*menu*/
+.tundra .dijitMenu,
+.tundra .dijitMenuBar {
+	border: 1px solid #BE4219;
+	margin: 0;
+	padding: 0;
+	background-color: #E94E1B;
+}
+
+#cms_module_agenda_85 {
+	border: 2px solid #E94E1B;
+	max-width: 250px;
+	width: auto;
+	overflow: hidden;
+	min-height: 396px;
+}
+#cms_module_agenda_85 > div.row > div > div{
+	border-radius:50%;
+}
+#cms_module_agenda_85 > div.row > div{
+	padding:5px;
+}
+
+/*960 responsive
+========================================================================== */
+@media screen and (max-width: 960px) {
+	#cms_module_agenda_85{
+		max-width:30%;
+		margin-left:70%;
+	}
+}
+/*767 responsive
+========================================================================== */
+@media screen and (max-width: 767px) {
+	#cms_module_agenda_85{
+		max-width: 100%;
+		margin-left: 0%;
+	}	
+}

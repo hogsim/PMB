@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: empr_cart.tpl.php,v 1.15.2.1 2015-10-16 14:47:09 jpermanne Exp $
+// $Id: empr_cart.tpl.php,v 1.15.2.2 2015-11-04 10:09:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -488,11 +488,11 @@ $empr_cart_choix_quoi = "
 <!--	Contenu du form	-->
 <div class='form-contenu'>
 	<div class='row'>
-		<input type='checkbox' name='elt_flag' value='1'>$msg[caddie_item_marque]
+		<input type='checkbox' name='elt_flag' value='1' !!elt_flag_checked!!>$msg[caddie_item_marque]
 		</div>
 	<div class='row'>&nbsp;</div>
 	<div class='row'>
-		<input type='checkbox' name='elt_no_flag' value='1'>$msg[caddie_item_NonMarque]
+		<input type='checkbox' name='elt_no_flag' value='1' !!elt_no_flag_checked!!>$msg[caddie_item_NonMarque]
 		</div>
 	</div>
 <!-- Boutons -->

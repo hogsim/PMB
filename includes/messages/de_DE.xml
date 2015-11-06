@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: de_DE.xml,v 1.380.2.15 2015-10-28 16:25:25 apetithomme Exp $ -->
+$Id: de_DE.xml,v 1.380.2.17 2015-11-05 13:21:13 jpermanne Exp $ -->
 
 <XMLlist>
 <entry code="demo">Demo</entry>
@@ -7885,4 +7885,13 @@ $Id: de_DE.xml,v 1.380.2.15 2015-10-28 16:25:25 apetithomme Exp $ -->
 
 <entry code="transferts_circ_depart_exemplaire">Départ d'un exemplaire</entry>
 <entry code="cms_editorial_desc_parent_section">Rubrique parente</entry>
+
+<entry code="analysis_move_bouton">Déplacer</entry>
+<entry code="analysis_move">Déplacement d'un dépouillement</entry>
+<entry code="analysis_move_sel_perio">Sélection du périodique</entry>
+<entry code="analysis_move_sel_perio_choose">Veuillez sélectionner un périodique</entry>
+<entry code="analysis_move_sel_bull">Sélection du bulletin</entry>
+<entry code="analysis_move_sel_bull_choose">Veuillez sélectionner un bulletin</entry>
+
+<entry code="deflt_bulletinage_location">Localisation par défaut en visualisation du bulletinage</entry>
 </XMLlist>

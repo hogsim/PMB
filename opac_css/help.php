@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: help.php,v 1.12.2.1 2015-09-24 15:48:44 dgoron Exp $
+// $Id: help.php,v 1.12.2.3 2015-11-05 16:56:24 mbertin Exp $
 
 $base_path="./";
 require_once($base_path."/includes/init.inc.php");
@@ -18,7 +18,7 @@ $dbh = connection_mysql();
 //Sessions !! Attention, ce doit être impérativement le premier include (à cause des cookies)
 require_once($base_path."/includes/session.inc.php");
 require_once($base_path."includes/start.inc.php");
-
+require_once("./includes/misc.inc.php");
 require_once($base_path.'/includes/templates/common.tpl.php');
 // récupération localisation
 require_once('./includes/localisation.inc.php');

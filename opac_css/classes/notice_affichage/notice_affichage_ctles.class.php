@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage_ctles.class.php,v 1.11.2.2 2015-10-21 15:19:49 jpermanne Exp $
+// $Id: notice_affichage_ctles.class.php,v 1.11.2.3 2015-11-03 16:00:50 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -54,14 +54,15 @@ class notice_affichage_ctles extends notice_affichage {
 		
 		//add tags
 		if (($this->tag_allowed==1)||(($this->tag_allowed==2)&&($_SESSION["user_code"])&&($allow_tag)))
-			$img_tag.="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
+			$img_tag="<a href='#' onclick=\"open('addtags.php?noticeid=$this->notice_id','ajouter_un_tag','width=350,height=150,scrollbars=yes,resizable=yes'); return false;\"><img src='".$opac_url_base."images/tag.png' align='absmiddle' border='0' title=\"".$msg['notice_title_tag']."\" alt=\"".$msg['notice_title_tag']."\" /></a>";
 		
 		 //Avis
 		if (($opac_avis_display_mode==0)&&(($this->avis_allowed && $this->avis_allowed !=2)|| ($_SESSION["user_code"] && $this->avis_allowed ==2)))
-			$img_tag .= $this->affichage_avis($this->notice_id);
+			$img_avis= $this->affichage_avis($this->notice_id);
 		
 		//Suggestions
-		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg)) $img_tag .= $this->affichage_suggestion($this->notice_id);	
+		if (($this->sugg_allowed ==2)|| ($_SESSION["user_code"] && ($this->sugg_allowed ==1) && $allow_sugg))
+			$img_sugg= $this->affichage_suggestion($this->notice_id);	
 		 
 		if ($this->no_header) $icon="";
 		else $icon = $icon_doc[$this->notice->niveau_biblio.$this->notice->typdoc];
@@ -144,7 +145,9 @@ class notice_affichage_ctles extends notice_affichage {
 		</div>";	
 		}			
 		if($img_tag) $li_tags="<li id='tags!!id!!' class='onglet_tags'>$img_tag</li>";
-		if($basket || $img_tag || $opac_notice_enrichment){
+		if($img_avis) $li_tags.="<li id='avis!!id!!' class='onglet_avis'>$img_avis</li>";
+		if($img_sugg) $li_tags.="<li id='sugg!!id!!' class='onglet_sugg'>$img_sugg</li>";
+		if($basket || $img_tag || $img_avis || $img_sugg || $opac_notice_enrichment){
 			$template_in.="
 		<ul id='onglets_isbd_public!!id!!' class='onglets_isbd_public'>";
 			if ($basket) $template_in.="<li id='baskets!!id!!' class='onglet_basket'>$basket</li>";

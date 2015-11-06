@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_build.tpl.php,v 1.64 2015-03-31 12:46:27 ngantier Exp $
+// $Id: cms_build.tpl.php,v 1.64.4.1 2015-11-02 15:19:31 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], "tpl.php")) die("no access");
 
@@ -809,7 +809,11 @@ $cms_build_block_tpl="
 
 		var url = parent.frames['opac_frame'].location.href;
 		url=url.replace('&cms_build_activate=1&build_id_version=!!id_version!!','');
-		if(version) url=url + '&build_id_version=' + version;;
+		if(url.indexOf('?') !== -1){		
+			if(version) url=url + '&build_id_version=' + version;
+		}else{
+			if(version) url=url + '?build_id_version=' + version;
+		}		
 		parent.frames['opac_frame'].location=url;
 
 	}

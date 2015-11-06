@@ -3,7 +3,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: facette_search_compare.class.php,v 1.10.2.4 2015-10-29 11:20:30 dgoron Exp $
+// $Id: facette_search_compare.class.php,v 1.10.2.5 2015-11-02 11:26:10 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -235,7 +235,7 @@ class facette_search_compare {
 						
 						$hidden_element=str_replace("!!compare_hidden_element_libelle!!", $notices, $hidden_element);
 					}else{
-						$element=str_replace("!!compare_element_libelle!!", '0', $element);
+						$element=str_replace("!!compare_element_libelle!!", '', $element);
 						
 						$hidden_element=str_replace("!!compare_hidden_element_libelle!!", '', $hidden_element);
 					}
