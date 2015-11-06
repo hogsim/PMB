@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: impr_etiquette.inc.php,v 1.1.2.2 2015-09-22 13:17:41 ngantier Exp $
+// $Id: impr_etiquette.inc.php,v 1.1.2.3 2015-10-22 14:36:36 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -70,7 +70,10 @@ function aff_choix_quoi_impr_cote($action = "", $action_redo="", $action_cancel 
 			$label_fmt_sel .= "selected='selected' ";
 			$label_id = $key;
 		}
-		$label_fmt_sel .= ">" .htmlentities($value[label_name], ENT_QUOTES, $charset) . "</option>";
+		if($charset=='utf-8'){
+			$value['label_name'] = utf8_encode($value['label_name']);
+		}
+		$label_fmt_sel .= ">" .htmlentities($value['label_name'], ENT_QUOTES, $charset) . "</option>";
 	}
 	$label_fmt_sel .= "</select>";
 	$cart_choix_quoi_impr_cote = str_replace("<!--label_fmt_sel-->", $label_fmt_sel, $cart_choix_quoi_impr_cote);

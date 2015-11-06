@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: serials.class.php,v 1.168.2.2 2015-10-15 09:35:03 jpermanne Exp $
+// $Id: serials.class.php,v 1.168.2.3 2015-10-27 14:26:54 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -518,8 +518,10 @@ class serial {
 		$serial_top_form = str_replace('!!tab5!!', $ptab[5], $serial_top_form);
 		
 		// mise à jour de l'onglet 6
+		global $pmb_curl_timeout;
 	 	$ptab[6] = str_replace('!!lien!!',		htmlentities($this->lien,ENT_QUOTES, $charset)		, $ptab[6]);
 	 	$ptab[6] = str_replace('!!eformat!!',	htmlentities($this->eformat,ENT_QUOTES, $charset)		, $ptab[6]);
+	 	$ptab[6] = str_replace('!!pmb_curl_timeout!!',		$pmb_curl_timeout	, $ptab[6]);
 		
 		$serial_top_form = str_replace('!!tab6!!', $ptab[6], $serial_top_form);
 		
@@ -2132,8 +2134,10 @@ class bulletinage extends serial {
 		$serial_bul_form = str_replace('!!tab5!!', $ptab[5], $serial_bul_form);
 		
 		// mise à jour de l'onglet 6
+		global $pmb_curl_timeout;
 	 	$ptab[6] = str_replace('!!lien!!',		htmlentities($this->b_lien,ENT_QUOTES, $charset)		, $ptab[6]);
 	 	$ptab[6] = str_replace('!!eformat!!',	htmlentities($this->b_eformat,ENT_QUOTES, $charset)		, $ptab[6]);
+	 	$ptab[6] = str_replace('!!pmb_curl_timeout!!',		$pmb_curl_timeout	, $ptab[6]);
 		
 		$serial_bul_form = str_replace('!!tab6!!', $ptab[6], $serial_bul_form);
 		
@@ -3148,8 +3152,10 @@ class analysis extends bulletinage {
 		$analysis_top_form = str_replace('!!tab5!!', $pdeptab[5], $analysis_top_form);
 		
 		// mise à jour de l'onglet 6
+		global $pmb_curl_timeout;
 	 	$pdeptab[6] = str_replace('!!lien!!',		htmlentities($this->analysis_lien,ENT_QUOTES, $charset)		, $pdeptab[6]);
 	 	$pdeptab[6] = str_replace('!!eformat!!',	htmlentities($this->analysis_eformat,ENT_QUOTES, $charset)		, $pdeptab[6]);
+	 	$pdeptab[6] = str_replace('!!pmb_curl_timeout!!',		$pmb_curl_timeout	, $pdeptab[6]);
 		$analysis_top_form = str_replace('!!tab6!!', $pdeptab[6], $analysis_top_form);
 		
 		//Mise à jour de l'onglet 7

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: record_display.class.php,v 1.9.2.4 2015-09-24 15:48:16 dgoron Exp $
+// $Id: record_display.class.php,v 1.9.2.5 2015-10-27 11:49:56 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -923,6 +923,11 @@ class record_display {
 		return $liens_opac;
 	}
 	
+	/**
+	 * Retourne l'affichage des documents numériques
+	 * @param int $notice_id Identifiant de la notice
+	 * @return string Rendu html des documents numériques
+	 */
 	static public function get_display_explnums($notice_id) {
 		global $include_path;
 		require_once($include_path."/explnum.inc.php");
@@ -1017,5 +1022,21 @@ class record_display {
 			return $html;
 		}
 		return "";
+	}
+	
+	/**
+	 * Retourne le rendu html des documents numériques du bulletin parent de la notice d'article
+	 * @param int $notice_id Identifiant de la notice
+	 * @return string Rendu html des documents numériques du bulletin parent
+	 */
+	static public function get_display_bull_for_art_expl_num($notice_id) {
+		
+		$record_datas = static::get_record_datas($notice_id);
+		$bul_infos = $record_datas->get_bul_info();
+		
+		$paramaff["mine_type"]=1;
+		$retour = show_explnum_per_notice(0, $bul_infos['bulletin_id'],"",$paramaff);
+
+		return $retour;
 	}
 }

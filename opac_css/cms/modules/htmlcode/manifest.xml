@@ -4,7 +4,7 @@
 ****************************************************************************************
 © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: manifest.xml,v 1.4 2015-06-16 15:23:53 pmbs Exp $ -->
+$Id: manifest.xml,v 1.4.2.1 2015-10-28 10:41:02 apetithomme Exp $ -->
 
 <manifest>
 	<name lang="fr_FR">Code html</name>
@@ -24,6 +24,7 @@ $Id: manifest.xml,v 1.4 2015-06-16 15:23:53 pmbs Exp $ -->
 		<views>
 			<view>cms_module_htmlcode_view_htmlcode</view>
 			<view>cms_module_htmlcode_view_htmlcode_bycurl</view>
+			<view>cms_module_common_view_django</view>
 		</views>
 		<conditions>
 			<condition>cms_module_common_condition_global_var</condition>

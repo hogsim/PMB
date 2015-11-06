@@ -6,12 +6,12 @@
  * distributed under the LGPL License
  *
  * @author  Laurent MINGUET <webmaster@html2pdf.fr>
- * @version 4.03
+ * @version 4.04
  */
 
 if (!defined('__CLASS_HTML2PDF__')) {
 
-    define('__CLASS_HTML2PDF__', '4.03');
+    define('__CLASS_HTML2PDF__', '4.04');
     define('HTML2PDF_USED_TCPDF_VERSION', '5.0.002');
 
     require_once(dirname(__FILE__).'/_class/exception.class.php');
@@ -93,7 +93,7 @@ if (!defined('__CLASS_HTML2PDF__')) {
         protected $_pageMarges       = array();     // float marges of the current page
         protected $_background       = array();     // background informations
 
-
+        protected $_hideHeader       = array();     // array : list of pages which the header gonna be hidden
         protected $_firstPage        = true;        // flag : first page
         protected $_defList          = array();     // table to save the stats of the tags UL and OL
 
@@ -192,7 +192,7 @@ if (!defined('__CLASS_HTML2PDF__')) {
         public function __clone()
         {
             $this->pdf = clone $this->pdf;
- //           $this->parsingHtml = clone $this->parsingHtml;
+            $this->parsingHtml = clone $this->parsingHtml;
             $this->parsingCss = clone $this->parsingCss;
             $this->parsingCss->setPdfParent($this->pdf);
         }
@@ -807,6 +807,8 @@ if (!defined('__CLASS_HTML2PDF__')) {
         protected function _setPageHeader()
         {
             if (!count($this->_subHEADER)) return false;
+            
+            if (in_array($this->pdf->getPage(), $this->_hideHeader)) return false;
 
             $oldParsePos = $this->_parsePos;
             $oldParseCode = $this->parsingHtml->code;
@@ -935,13 +937,13 @@ if (!defined('__CLASS_HTML2PDF__')) {
 
             // create the sub object
             HTML2PDF::$_subobj = new HTML2PDF(
-                                        $this->_orientation,
-                                        $this->_format,
-                                        $this->_langue,
-                                        $this->_unicode,
-                                        $this->_encoding,
-                                        array($this->_defaultLeft,$this->_defaultTop,$this->_defaultRight,$this->_defaultBottom)
-                                    );
+                $this->_orientation,
+                $this->_format,
+                $this->_langue,
+                $this->_unicode,
+                $this->_encoding,
+                array($this->_defaultLeft,$this->_defaultTop,$this->_defaultRight,$this->_defaultBottom)
+            );
 
             // init
             HTML2PDF::$_subobj->setTestTdInOnePage($this->_testTdInOnepage);
@@ -2179,7 +2181,10 @@ if (!defined('__CLASS_HTML2PDF__')) {
                     if (isset($corr[$y][$x]) && is_array($corr[$y][$x]) && $corr[$y][$x][3]>1) {
 
                         // sum the max height of each line in rowspan
-                        $s = 0; for ($i=0; $i<$corr[$y][$x][3]; $i++) $s+= $sh[$y+$i];
+                        $s = 0;
+                        for ($i=0; $i<$corr[$y][$x][3]; $i++) {
+                            $s+= isset($sh[$y+$i]) ? $sh[$y+$i] : 0;
+                        }
 
                         // if the max height is < the height of the cell with rowspan => we adapt the height of each max height
                         if ($s>0 && $s<$cases[$corr[$y][$x][1]][$corr[$y][$x][0]]['h']) {
@@ -2235,6 +2240,10 @@ if (!defined('__CLASS_HTML2PDF__')) {
             $newPageSet= (!isset($param['pageset']) || $param['pageset']!='old');
 
             $resetPageNumber = (isset($param['pagegroup']) && $param['pagegroup']=='new');
+            
+            if (array_key_exists('hideheader', $param) && $param['hideheader']!='false' && !empty($param['hideheader'])) {
+                $this->_hideHeader = (array) array_merge($this->_hideHeader, split(',', $param['hideheader']));
+            }
 
             $this->_maxH = 0;
 
@@ -3259,11 +3268,11 @@ if (!defined('__CLASS_HTML2PDF__')) {
 
             if ($this->parsingCss->value['text-transform']!='none') {
                 if ($this->parsingCss->value['text-transform']=='capitalize')
-                    $txt = ucwords($txt);
+                    $txt = mb_convert_case($txt, MB_CASE_TITLE, $this->_encoding);
                 else if ($this->parsingCss->value['text-transform']=='uppercase')
-                    $txt = strtoupper($txt);
+                    $txt = mb_convert_case($txt, MB_CASE_UPPER, $this->_encoding);
                 else if ($this->parsingCss->value['text-transform']=='lowercase')
-                    $txt = strtolower($txt);
+                    $txt = mb_convert_case($txt, MB_CASE_LOWER, $this->_encoding);
             }
 
             // size of the text

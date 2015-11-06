@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_editorial_searcher.class.php,v 1.5 2015-04-03 11:16:25 jpermanne Exp $
+// $Id: cms_editorial_searcher.class.php,v 1.5.4.1 2015-10-27 14:17:02 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -48,7 +48,7 @@ class cms_editorial_searcher extends searcher {
 		if($this->user_query !== "*"){
 			$query = $this->aq->get_query_mot("num_obj","cms_editorial_words_global_index","word","cms_editorial_fields_global_index","value",$this->field_restrict);
 		}else{
-			$query =" select id_".$this->type_obj." from cms_".$this->type_obj."s";//ça peut pas être pire avec un s
+			$query =" select id_".$this->type_obj." as num_obj from cms_".$this->type_obj."s";//ça peut pas être pire avec un s
 		}
 		return $query;
 	}
@@ -64,9 +64,7 @@ class cms_editorial_searcher extends searcher {
 		
 		$query = $this->_get_pert(false,true);
 		
-		if($sort == 'pert'){
-			$query = $this->_get_pert(false,true);
-		}else{
+		if ($sort != 'pert') {
 			$query = "select uni.*,$sort from (".$query.") as uni join cms_".$this->type_obj."s on id_".$this->type_obj." = num_obj ";
 		}
 		
@@ -165,7 +163,7 @@ class cms_editorial_searcher extends searcher {
 				}
 				$query = "select distinct num_obj, sum(pert) as pert from ((".implode(") union all (",$queries).")) as uni where num_obj in (".$this->notices_ids.") group by num_obj";
 			}else{
-				$query = "select * from(select num_obj, sum(pond) as pert from notices_fields_global_index ".(count($restrict) > 0 ? "where ".$this->aq->get_field_restrict($restrict,$neg_restrict) : "")." group by num_obj) as uni where num_obj in (".$this->notices_ids.")";
+				$query = "select id_".$this->type_obj." as num_obj, 100 as pert from cms_".$this->type_obj."s where id_".$this->type_obj." in (".$this->notices_ids.")";
 			}
 		}
 

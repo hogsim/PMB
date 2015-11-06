@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: champs_base.xml,v 1.30.2.1 2015-09-09 08:03:10 mbertin Exp $ -->
+$Id: champs_base.xml,v 1.30.2.2 2015-10-21 13:57:51 jpermanne Exp $ -->
 
 <indexation>
 
@@ -868,4 +868,10 @@ $Id: champs_base.xml,v 1.30.2.1 2015-09-09 08:03:10 mbertin Exp $ -->
 			</link>
 		</table>
 	</field> -->
+	
+	<field name="253" id="121" pond="100" >
+		<table>
+			<tablefield>nocoll</tablefield>
+		</table>
+	</field>
 </indexation>

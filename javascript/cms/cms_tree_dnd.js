@@ -182,6 +182,7 @@ function cms_load_content_infos(item,node,evt){
 				content.set('href','./ajax.php?module=cms&categ=get_infos&type=section&id='+item.id[0]);
 				add_section_button.href = "./cms.php?categ=section&sub=edit&id=new&num_parent="+item.id[0];
 				add_article_button.href = "./cms.php?categ=article&sub=edit&id=new&num_parent="+item.id[0];
+				content.domNode.scrollIntoView();
 				break;
 			case "article" :
 				change =true;
@@ -189,12 +190,14 @@ function cms_load_content_infos(item,node,evt){
 				var parent_id = dijit.byId('section_tree').selectedNode.getParent().item.id[0].replace("articles_","");
 				add_section_button.href = "./cms.php?categ=section&sub=edit&id=new&num_parent="+parent_id;
 				add_article_button.href = "./cms.php?categ=article&sub=edit&id=new&num_parent="+parent_id;
+				content.domNode.scrollIntoView();
 				break;
 			case "articles" :
 				change = true;
 				content.set('href','./ajax.php?module=cms&categ=get_infos&type=list_articles&id='+item.id[0].replace("articles_",""));
 				add_section_button.href = "./cms.php?categ=section&sub=edit&id=new&num_parent="+item.id[0].replace("articles_","");
 				add_article_button.href = "./cms.php?categ=article&sub=edit&id=new&num_parent="+item.id[0].replace("articles_","");
+				content.domNode.scrollIntoView();
 				break;
 			default :
 				change =false;

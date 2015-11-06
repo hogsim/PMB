@@ -1,20 +1,20 @@
 <?php
 // +-------------------------------------------------+
-// Â© 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
+// © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: departs.inc.php,v 1.2 2013-04-18 14:59:07 mbertin Exp $
+// $Id: departs.inc.php,v 1.2.10.1 2015-10-22 14:06:30 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
 // Titre de la fenêtre
-echo window_title($database_window_title.$msg[transferts_circ_menu_departs].$msg[1003].$msg[1001]);
+echo window_title($database_window_title.$msg['transferts_circ_menu_departs'].$msg['1003'].$msg['1001']);
 
 //creation de l'objet transfert
 $obj_transfert = new transfert();
 
 switch ($action) {
 		case "aff_env":
-		echo "<h1>" . $msg[transferts_circ_menu_titre] . " > " . $msg[transferts_circ_menu_envoi] . "</h1>";
+		echo "<h1>" . $msg['transferts_circ_menu_titre'] . " > " . $msg['transferts_circ_menu_envoi'] . "</h1>";
 		
 		echo affiche_liste_valide(
 			$transferts_envoi_liste_valide_envoi,
@@ -44,7 +44,7 @@ switch ($action) {
 
 	case "aff_refus":
 		//on affiche l'écran de saisie du refus
-		echo "<h1>" . $msg[transferts_circ_menu_titre] . " > " . $msg[transferts_circ_menu_envoi] . "</h1>";
+		echo "<h1>" . $msg['transferts_circ_menu_titre'] . " > " . $msg['transferts_circ_menu_envoi'] . "</h1>";
 		
 		echo affiche_liste_valide(
 			$transferts_validation_liste_refus,
@@ -73,7 +73,7 @@ switch ($action) {
 		
 	case "aff_val":
 		//on affiche l'écran de validation
-		echo "<h1>" . $msg[transferts_circ_menu_titre] . " > " . $msg[transferts_circ_menu_validation] . "</h1>";
+		echo "<h1>" . $msg['transferts_circ_menu_titre'] . " > " . $msg['transferts_circ_menu_validation'] . "</h1>";
 		echo affiche_liste_valide(
 			$transferts_validation_liste_valide,
 			$transferts_validation_liste_valide_ligne,
@@ -101,7 +101,7 @@ switch ($action) {
 		
 	case "aff_ret":
 		//on affiche l'écran de validation
-		echo "<h1>" . $msg[transferts_circ_menu_titre] . " > " . $msg[transferts_circ_menu_retour] . "</h1>";
+		echo "<h1>" . $msg['transferts_circ_menu_titre'] . " > " . $msg['transferts_circ_menu_retour'] . "</h1>";
 		
 		echo affiche_liste_valide(
 			$transferts_retour_liste_valide,
@@ -132,8 +132,8 @@ switch ($action) {
 if ($action == "") {
 	//pas d'action donc affichage de la liste des validations en attente
 
-	get_cb_expl($msg[transferts_circ_menu_titre]." > ".$msg[transferts_circ_menu_departs],
-					$msg[661], $msg[transferts_circ_retour_exemplaire], "./circ.php?categ=trans&sub=".$sub."&f_destination=".$f_destination."&nb_per_page=".$nb_per_page, 0);
+	get_cb_expl($msg['transferts_circ_menu_titre']." > ".$msg['transferts_circ_menu_departs'],
+					$msg['661'], $msg['transferts_circ_depart_exemplaire'], "./circ.php?categ=trans&sub=".$sub."&f_destination=".$f_destination."&nb_per_page=".$nb_per_page, 0);
 	print $transferts_parcours_filtres;
 	//pour la validation d'un exemplaire
 	if ($form_cb_expl != "") {			
@@ -173,7 +173,7 @@ if ($action == "") {
 	
 	
 	//le filtre des destinations
-	$filtres = "&nbsp;".$msg["transferts_circ_retour_filtre_destination"].str_replace("!!nom_liste!!","f_destination",$transferts_liste_localisations_tous);
+	$filtres = "&nbsp;".$msg['transferts_circ_retour_filtre_destination'].str_replace("!!nom_liste!!","f_destination",$transferts_liste_localisations_tous);
 	$filtres = str_replace("!!liste_localisations!!", do_liste_localisation($f_destination), $filtres);
 	
 	//le filtre de l'etat de la date
@@ -202,7 +202,7 @@ if ($action == "") {
 	
 	//le lien pour l'édition si on a le droit ...
 	if (SESSrights & EDIT_AUTH)
-		$lien_edition = "<a href='" . $url_edition . "'>".$msg[1100]."</a>";
+		$lien_edition = "<a href='" . $url_edition . "'>".$msg['1100']."</a>";
 	else
 		$lien_edition = "";
 	
@@ -263,7 +263,7 @@ if ($action == "") {
 	
 	//le lien pour l'édition si on a le droit ...
 	if (SESSrights & EDIT_AUTH)
-		$lien_edition = "<a href='" . $url_edition . "'>".$msg[1100]."</a>";
+		$lien_edition = "<a href='" . $url_edition . "'>".$msg['1100']."</a>";
 	else
 		$lien_edition = "";
 	//on affiche la liste
@@ -329,7 +329,7 @@ if ($action == "") {
 	
 	//le lien pour l'édition si on a le droit ...
 	if (SESSrights & EDIT_AUTH)
-		$lien_edition = "<a href='" . $url_edition . "'>".$msg[1100]."</a>";
+		$lien_edition = "<a href='" . $url_edition . "'>".$msg['1100']."</a>";
 	else
 		$lien_edition = "";
 	

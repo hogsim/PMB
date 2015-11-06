@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage_unimarc.class.php,v 1.55.2.4 2015-09-24 15:48:15 dgoron Exp $
+// $Id: notice_affichage_unimarc.class.php,v 1.55.2.6 2015-10-22 10:02:29 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -768,15 +768,15 @@ function affichage_avis($notice_id) {
 
 	//Affichage des Etoiles et nombre d'avis
 		if ($this->avis_qte > 0) {
-			$nombre_avis = "<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$this->avis_qte."&nbsp;".$msg['notice_bt_avis']."</a>";
+			$nombre_avis = "<a href='#' class='donner_avis' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$this->avis_qte."&nbsp;".$msg['notice_bt_avis']."</a>";
 			$etoiles_moyenne = $this->stars($this->avis_moyenne);
 		} else {
-			$nombre_avis = "<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$msg['avis_aucun']."</a>";
+			$nombre_avis = "<a href='#' class='donner_avis' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$msg['avis_aucun']."</a>";
 			$cpt_star = -1;
 		}
 
 		// Affichage du nombre d'avis ainsi que la note moyenne et les etoiles associees
-		$img_tag .= $nombre_avis."<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$etoiles_moyenne."</a>";
+		$img_tag .= $nombre_avis."<a href='#' class='consult_avis' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$etoiles_moyenne."</a>";
 
 		return $img_tag;
 }
@@ -819,7 +819,7 @@ function genere_double($depliable=1, $premier='ISBD') {
 		if(isset($_SESSION["cart"]) && in_array("es".$this->notice_id, $_SESSION["cart"])) {
 			$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".get_url_icon('basket_exist.gif', 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 		} else {
-			$basket="<a href=\"cart_info.php?id=es".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.gif", 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\"></a>";
+			$basket="<a href=\"cart_info.php?id=es".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.png", 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\"></a>";
 		}
 	} else {
 		$basket="";
@@ -945,7 +945,7 @@ function genere_simple($depliable=1, $what='ISBD') {
 		if(isset($_SESSION["cart"]) && in_array("es".$this->notice_id, $_SESSION["cart"])) {
 			$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".get_url_icon('basket_exist.gif', 1)."\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 		} else {
-			$basket="<a href=\"cart_info.php?id=es".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\" title=\"".$msg['notice_title_basket']."\"><img src='".get_url_icon("basket_small_20x20.gif", 1)."' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\"></a>";
+			$basket="<a href=\"cart_info.php?id=es".$this->notice_id."&header=".rawurlencode(strip_tags($this->notice_header))."\" target=\"cart_info\" title=\"".$msg['notice_title_basket']."\"><img src='".get_url_icon("basket_small_20x20.png", 1)."' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\"></a>";
 		}
 	} else {
 		$basket="";

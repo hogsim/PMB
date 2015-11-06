@@ -1,7 +1,7 @@
  /* +--------------------------------------------------------------------------+
 // 2013 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: heldv.css,v 1.1.2.3 2015-10-15 09:32:29 mramage Exp $ */
+// $Id: heldv.css,v 1.1.2.5 2015-10-28 15:08:35 mramage Exp $ */
 
 /*------------------------------------------------------------------------------------------*/
 
@@ -1357,6 +1357,15 @@ text-align:center;
     margin-bottom: 25px;
 }
 
+.listResultArticles .itemContent {
+    border-bottom: 1px solid #65A0C4;
+    padding: 15px 0;
+}
+
+.listResultArticles p.lirePlus {
+    text-align: center;
+}
+
 #widget {
     background-color: #fafafa;
     border: 1px solid #f1f1f1;
@@ -2656,7 +2665,7 @@ color: #ffffff;}
 	font-size: 125%;
 	color: #202020;
 	text-transform: uppercase;	
-	border-left: 5px solid #fff200;
+	border-left: 5px solid #333333;
 	margin-bottom: 15px;
 	padding-left: 5px;
 	font-weight: normal;
@@ -3866,7 +3875,7 @@ text-decoration: underline;
 }
 
 #main .cpCoeur h3{
-	background-color:#fff200;
+	background-color:#333333;
 	border-bottom:1px solid #202020;
 	margin: 0 10px;
 	padding-bottom: 7px;
@@ -4610,7 +4619,7 @@ float: left;margin-right: 15px;min-height: 100px;}
 }
 
 .listItemsGen .itemAbrege {
-	border-top: 1px dotted #fff200;
+	border-top: 1px dotted #333333;
 	position: relative;
 	padding-top: 10px;
 	margin-top: 10px;
@@ -4623,7 +4632,7 @@ float: left;margin-right: 15px;min-height: 100px;}
 }
 
 .listItemsGen .itemAbrege:first-child {
-	border-top: 0px dotted #fff200;
+	border-top: 0px dotted #333333;
 }
 
 /* -------------------listRubs---------------------*/
@@ -4709,7 +4718,7 @@ float: left;margin-right: 15px;min-height: 100px;}
 }
 
 .Rub:first-child {
-	border-top: 0px dotted #fff200;
+	border-top: 0px dotted #333333;
 }
 
 .Rub h3 {
@@ -5403,7 +5412,7 @@ ul.list_tabs li.current:hover {
 }
 
 ul.empr_tabs #current{
-	background-color: #fff200;
+	background-color: #333333;
 	color: #202020;
 }
 
@@ -7376,7 +7385,7 @@ form[name=export_form] input[type="radio"]{
 }
 
 #facette .facette_plus_link {
-    background-color: #fff200;
+    background-color: #333333;
     color: #202020;
     padding: 0px 5px;
     display: inline-block;

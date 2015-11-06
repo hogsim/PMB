@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: fields_empr.inc.php,v 1.51.2.6 2015-10-06 10:03:43 apetithomme Exp $
+// $Id: fields_empr.inc.php,v 1.51.2.7 2015-10-22 08:11:00 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -275,14 +275,16 @@ function aff_date_box_empr_search($field,&$check_scripts,$varname) {
 	$values=$field[VALUES];
 	$d=explode("-",$values[0]);
 	if (!checkdate($d[1],$d[2],$d[0])) {
-		$val=date("Y-m-d",time());
+		$val='';
 		$val_popup=date("Ymd",time());
+		$val_lib=$msg['format_date_input_placeholder'];
 	} else {
-		$val_popup=$d[0].$d[1].$d[2];
 		$val=$values[0];
+		$val_popup=$d[0].$d[1].$d[2];
+		$val_lib=formatdate($val_popup);
 	}
 	$ret="<input type='hidden' name='".$varname."[]' value='$val' />
-				<input class='bouton' type='button' name='".$varname."_lib' value='".formatdate($val_popup)."' onClick=\"window.open('./select.php?what=calendrier&caller='+this.form.name+'&date_caller=".$val_popup."&param1=".$varname."[]&param2=".$varname."_lib&auto_submit=NO&date_anterieure=YES', 'date_".$varname."', 'toolbar=no, dependent=yes, width=250, height=300, resizable=yes')\"   />";
+				<input class='bouton' type='button' name='".$varname."_lib' value='".$val_lib."' onClick=\"window.open('./select.php?what=calendrier&caller='+this.form.name+'&date_caller=".$val_popup."&param1=".$varname."[]&param2=".$varname."_lib&auto_submit=NO&date_anterieure=YES', 'date_".$varname."', 'toolbar=no, dependent=yes, width=250, height=300, resizable=yes')\"   />";
 	return $ret;
 }
 

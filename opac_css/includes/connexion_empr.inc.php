@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: connexion_empr.inc.php,v 1.12 2015-04-24 14:20:58 dbellamy Exp $
+// $Id: connexion_empr.inc.php,v 1.12.2.1 2015-10-28 16:20:36 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -89,6 +89,7 @@ function do_formulaire_connexion() {
 
 		case ('make_sugg') :
 			$loginform ="<br />
+				<div class='popup_connexion_empr'>
 				<h3>".$msg['sugg_doit_etre_abon']."</h3>
 					<blockquote>
 						<form action='do_resa.php' method='post' name='loginform'>

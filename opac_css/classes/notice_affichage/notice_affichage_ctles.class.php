@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage_ctles.class.php,v 1.11.2.1 2015-08-13 14:01:13 jpermanne Exp $
+// $Id: notice_affichage_ctles.class.php,v 1.11.2.2 2015-10-21 15:19:49 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -48,7 +48,7 @@ class notice_affichage_ctles extends notice_affichage {
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."images/basket_small_20x20.gif' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".$opac_url_base."images/basket_small_20x20.png' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 		

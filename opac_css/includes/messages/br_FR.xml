@@ -2,7 +2,7 @@
 <!DOCTYPE XMLlist SYSTEM "../XMLlist.dtd" [<!ENTITY nbsp "&amp;nbsp;">]>
 
 <!-- messages localisŽs en franais pour l'OPAC de PMB
-$Id: br_FR.xml,v 1.277.2.7 2015-10-09 13:15:17 dgoron Exp $ -->
+$Id: br_FR.xml,v 1.277.2.9 2015-10-29 10:56:59 jpermanne Exp $ -->
 
 <XMLlist>
 <entry code="not_allowed">N'oc'h ket aotreet d'ober an dra-se</entry>
@@ -1717,7 +1717,7 @@ $Id: br_FR.xml,v 1.277.2.7 2015-10-09 13:15:17 dgoron Exp $ -->
 
 <entry code="empr_my_dmde">Mes demandes</entry>
 
-<entry code="print_loans_bt">Export excel</entry>
+<entry code="print_loans_bt">Export tableur</entry>
 
 <entry code="show_cart_check_all">Tout cocher</entry>
 <entry code="show_cart_uncheck_all">Tout décocher</entry>
@@ -1764,4 +1764,5 @@ $Id: br_FR.xml,v 1.277.2.7 2015-10-09 13:15:17 dgoron Exp $ -->
 <entry code="show_history_uncheck_all">Tout décocher</entry>
 <entry code="show_sort_check_all">Tout cocher</entry>
 <entry code="show_sort_uncheck_all">Tout décocher</entry>
+<entry code="cms_editorial_desc_parent_section">Rubrique parente</entry>
 </XMLlist>

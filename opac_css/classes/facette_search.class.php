@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: facette_search.class.php,v 1.55.2.3 2015-10-20 07:40:14 jpermanne Exp $
+// $Id: facette_search.class.php,v 1.55.2.4 2015-10-29 11:20:30 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -677,7 +677,7 @@ class facettes{
 				if(count($facette_compare->facette_groupby)){
 					$table_groupby=$facette_compare->gen_table_groupby();
 				}
-				$table .= "<h3 class='facette_compare_SubTitle'><img id='facette_compare_not_clickable' src='$base_path/images/group_by.png'/> ".htmlentities($msg['facette_list_groupby_crit'],ENT_QUOTES,$charset)."</h3><table id='facette_groupby'>".$table_groupby."</table><br/>";
+				$table .= "<h3 class='facette_compare_SubTitle'><img id='facette_compare_not_clickable' src='".get_url_icon('group_by.png')."'/> ".htmlentities($msg['facette_list_groupby_crit'],ENT_QUOTES,$charset)."</h3><table id='facette_groupby'>".$table_groupby."</table><br/>";
 			}
 			
 			//le bouton de retour
@@ -691,7 +691,7 @@ class facettes{
 		if(count($arrayFacettesNotClicked)){
 			if($opac_compare_notice_active*1=="1"){
 				$table .= "<div id='facettes_help'></div>";
-				$table .= "<h3 class='facette_compare_listTitle'>".htmlentities($msg['facette_list_compare'],ENT_QUOTES,$charset)." &nbsp;<img onclick='open_popup(document.getElementById(\"facettes_help\"),\"".htmlentities($msg['facette_compare_helper_message'],ENT_QUOTES,$charset)."\");' height='18px' width='18px' title='".htmlentities($msg['facette_compare_helper'],ENT_QUOTES,$charset)."' alt='".htmlentities($msg['facette_compare_helper'],ENT_QUOTES,$charset)."' src='$base_path/images/quest.png'/></h3>".$table_facette."<br/>";
+				$table .= "<h3 class='facette_compare_listTitle'>".htmlentities($msg['facette_list_compare'],ENT_QUOTES,$charset)." &nbsp;<img onclick='open_popup(document.getElementById(\"facettes_help\"),\"".htmlentities($msg['facette_compare_helper_message'],ENT_QUOTES,$charset)."\");' height='18px' width='18px' title='".htmlentities($msg['facette_compare_helper'],ENT_QUOTES,$charset)."' alt='".htmlentities($msg['facette_compare_helper'],ENT_QUOTES,$charset)."' src='".get_url_icon('quest.png')."'/></h3>".$table_facette."<br/>";
 			}else{
 				$table .= "<h3 class='facette_compare_listTitle'>".htmlentities($msg['facette_list'],ENT_QUOTES,$charset)."</h3>".$table_facette."<br/>";
 			}

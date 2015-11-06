@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: all.inc.php,v 1.46.2.5 2015-10-09 11:43:09 jpermanne Exp $
+// $Id: all.inc.php,v 1.46.2.8 2015-10-29 10:56:59 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -116,7 +116,9 @@ $nb_elements = pmb_mysql_num_rows($req) ;
 if (!$dest) {
 	if ($lvl=="late") $class_aff_expl="class='liste-expl-empr-late'" ;
 	$class_aff_expl="class='liste-expl-empr-all'" ;
-	echo "<input class=\"bouton\" type=\"button\" value=\"".$msg["print_loans_bt"]."\" name=\"print_loans_bt\" id=\"print_loans_bt\" onClick=\"location.href='empr.php?tab=".$tab."&lvl=".$lvl."&dest=TABLEAU'\">";
+	if ($opac_empr_export_loans) {
+		echo "<input class=\"bouton\" type=\"button\" value=\"".$msg["print_loans_bt"]."\" name=\"print_loans_bt\" id=\"print_loans_bt\" onClick=\"location.href='empr.php?tab=".$tab."&lvl=".$lvl."&dest=TABLEAU'\">";
+	}
 }
 if ($nb_elements) {
 	if (!$dest) {
@@ -204,7 +206,7 @@ if ($nb_elements) {
 			if ($opac_pret_prolongation==1 && $allow_prol) {
 				$prolongation=TRUE;
 				$expl_id = $data['expl_id'] ;
-				$query = "select cpt_prolongation, pret_date,pret_retour, expl_location from pret, exemplaires where expl_id=pret_idexpl and pret_idexpl='".$data['expl_id']."'";
+				$query = "select cpt_prolongation, pret_date,pret_retour, expl_location, niveau_relance from pret, exemplaires where expl_id=pret_idexpl and pret_idexpl='".$data['expl_id']."'";
 				$result = pmb_mysql_query($query, $dbh);
 				$data_expl = pmb_mysql_fetch_array($result);
 				$nb_prolongation = $cpt_prolongation = $data_expl['cpt_prolongation'];
@@ -286,6 +288,13 @@ if ($nb_elements) {
 	
 				echo "<td><center>".$nb_prolongation."/".$pret_nombre_prolongation."</center></td>";
 				
+				//Blocage des prolongations si relance sur pret, selon paramètre
+				if ($opac_pret_prolongation_blocage) {
+					if ($data_expl['niveau_relance']!='0') {
+						$prolongation=false;
+					}
+				}
+				
 				// Proposer le bouton prolongation
 				if ($prolongation==TRUE) {	
 					// Mettre au format affichable
@@ -294,15 +303,15 @@ if ($nb_elements) {
 					$res = pmb_mysql_fetch_object($resultatdate) ;
 					$aff_date_prolongation= $res->aff_date_prolongation;
 					// Bouton de prolongation
-					if (sql_value("SELECT DATEDIFF('$date_retour','$date_prolongation')") != 0) {
-						$js="onmousedown=\"if (event) e=event; else e=window.event; if (e.target) elt=e.target; else elt=e.srcElement; e.cancelBubble = true; if (e.stopPropagation) e.stopPropagation(); return false;\" "; //if (elt.nodeName=='A') document.location='./empr.php?prolongation=$aff_date_prolongation&prolonge_id=$expl_id&lvl=$lvl'; return false;\" ";
-						echo "<td><center><a href='./empr.php?prolongation=$aff_date_prolongation&prolonge_id=$expl_id&tab=loan_reza&lvl=$lvl#empr-loan' $js >$aff_date_prolongation</a></center></td>";
-					} else {
-						$js="onmousedown=\"if (event) e=event; else e=window.event; if (e.target) elt=e.target; else elt=e.srcElement; e.cancelBubble = true; if (e.stopPropagation) e.stopPropagation();return false;\"";
-						echo "<td style='cursor: default'  $js ><center>&nbsp;</center></td>";
+					if (sql_value("SELECT DATEDIFF('$date_retour','$date_prolongation')") == 0) {
+						$prolongation=false;
 					}
+				}
+				
+				$js="onmousedown=\"if (event) e=event; else e=window.event; if (e.target) elt=e.target; else elt=e.srcElement; e.cancelBubble = true; if (e.stopPropagation) e.stopPropagation(); return false;\" ";
+				if ($prolongation) {
+					echo "<td><center><a href='./empr.php?prolongation=$aff_date_prolongation&prolonge_id=$expl_id&tab=loan_reza&lvl=$lvl#empr-loan' $js >$aff_date_prolongation</a></center></td>";
 				} else {
-					$js= "onmousedown=\"if (event) e=event; else e=window.event; if (e.target) elt=e.target; else elt=e.srcElement; e.cancelBubble = true; if (e.stopPropagation) e.stopPropagation();return false;\"";
 					echo "<td style='cursor: default' $js ><center>&nbsp;</center></td>";
 				}
 		
@@ -413,7 +422,7 @@ if ($nb_elements) {
 	switch($lvl) {
 		case 'all':	
 			if(!$dest){
-				print '<br><br>'.$msg["empr_no_loan"] ;
+				print '<br><br><span class="noLoan">'.$msg["empr_no_loan"].'</span>' ;
 			}elseif ($dest=="TABLEAU") {
 				$worksheet->write(0,0,$msg["empr_no_loan"],$heading_blue);
 			}

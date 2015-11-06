@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage.class.php,v 1.415.2.7 2015-10-20 13:01:36 mbertin Exp $
+// $Id: notice_affichage.class.php,v 1.415.2.9 2015-10-22 10:02:28 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -732,11 +732,11 @@ class notice_affichage {
 		$nombre_avis = "";
 		//Affichage des Etoiles et nombre d'avis
 		if ($this->avis_qte > 0) {
-			$nombre_avis = "<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$this->avis_qte."&nbsp;".$msg['notice_bt_avis']."</a>";
+			$nombre_avis = "<a href='#' class='donner_avis' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$this->avis_qte."&nbsp;".$msg['notice_bt_avis']."</a>";
 			$etoiles_moyenne = $this->stars($this->avis_moyenne);
-			$img_tag .= $nombre_avis."<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$etoiles_moyenne."</a>";
+			$img_tag .= $nombre_avis."<a href='#' class='consult_avis' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$etoiles_moyenne."</a>";
 		} else {
-			$nombre_avis = "<a href='#' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$msg['avis_aucun']."</a>";
+			$nombre_avis = "<a href='#' class='donner_avis' title=\"".$msg['notice_title_avis']."\" onclick=\"w=window.open('avis.php?todo=liste&noticeid=$notice_id','avis','width=600,height=290,scrollbars=yes,resizable=yes'); w.focus(); return false;\">".$msg['avis_aucun']."</a>";
 			$img_tag .= $nombre_avis;
 		}
 		return $img_tag;
@@ -903,7 +903,7 @@ class notice_affichage {
 			} else {
 				$title=$this->notice_header;
 				if(!$title)$title=$this->notice->tit1;
-				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.gif", 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a>";
+				$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.png", 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 
@@ -1167,7 +1167,7 @@ class notice_affichage {
 			} else {
 			$title=$this->notice_header;
 			if(!$title)$title=$this->notice->tit1;
-			$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".get_url_icon("basket_small_20x20.gif", 1)."' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
+			$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".get_url_icon("basket_small_20x20.png", 1)."' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 			}
 		}else $basket="";
 

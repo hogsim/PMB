@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: subscribe.php,v 1.27 2015-06-10 08:13:01 dgoron Exp $
+// $Id: subscribe.php,v 1.27.2.2 2015-10-23 14:52:53 arenou Exp $
 
 $base_path=".";
 $is_opac_included = false;
@@ -35,6 +35,26 @@ require_once($base_path.'/includes/localisation.inc.php');
 
 // version actuelle de l'opac
 require_once($base_path.'/includes/opac_version.inc.php');
+
+//si les vues sont activées (à laisser après le calcul des mots vides)
+// Il n'est pas possible de chagner de vue à ce niveau
+if($opac_opac_view_activate){
+	if(!$pmb_opac_view_class) $pmb_opac_view_class= "opac_view";
+	require_once($base_path."/classes/".$pmb_opac_view_class.".class.php");
+
+	$opac_view_class= new $pmb_opac_view_class($_SESSION["opac_view"],$_SESSION["id_empr_session"]);
+	if($opac_view_class->id){
+		$opac_view_class->set_parameters();
+		$opac_view_filter_class=$opac_view_class->opac_filters;
+		$_SESSION["opac_view"]=$opac_view_class->id;
+		if(!$opac_view_class->opac_view_wo_query) {
+			$_SESSION['opac_view_query']=1;
+		}
+	} else {
+		$_SESSION["opac_view"]=0;
+	}
+	$css=$_SESSION["css"]=$opac_default_style;
+}
 
 // fonctions de gestion de formulaire
 require_once($base_path.'/includes/javascript/form.inc.php');
@@ -163,7 +183,9 @@ if ($opac_show_liensbas==1) $footer = str_replace("!!div_liens_bas!!",$liens_bas
 	else $footer = str_replace("!!div_liens_bas!!","",$footer);
 
 $cms_build_info="";
-if($cms_build_activate || $_SESSION["cms_build_activate"]){ // issu de la gestion
+if($cms_build_activate == -1){
+	unset($_SESSION["cms_build_activate"]);
+}else if($cms_build_activate || $_SESSION["cms_build_activate"]){ // issu de la gestion
 	if($pageid){
 		require_once($base_path."/classes/cms/cms_pages.class.php");
 		$cms_page= new cms_page($pageid);

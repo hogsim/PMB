@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // | 2002-2011 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_section.class.php,v 1.24 2015-04-03 11:16:21 jpermanne Exp $
+// $Id: cms_section.class.php,v 1.24.4.1 2015-10-28 16:25:27 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -215,7 +215,7 @@ class cms_section extends cms_editorial {
 		return true;
 	}
 	
-	public function format_datas($get_children= true,$get_articles = true,$filter = true){
+	public function format_datas($get_children= true,$get_articles = true,$filter = true, $get_parent=false){
 		$documents = array();
 		foreach($this->documents_linked as $id_doc){
 			$document = new cms_document($id_doc);
@@ -242,6 +242,10 @@ class cms_section extends cms_editorial {
 		}
 		if($get_articles){
 			$result['articles'] = $this->get_articles($filter);
+		}
+		if ($get_parent && $result['num_parent']) {
+			$cms_parent_section = new cms_section($result['num_parent']);
+			$result['parent'] = $cms_parent_section->format_datas(false, false);
 		}
 		return $result;
 	}
@@ -286,9 +290,16 @@ class cms_section extends cms_editorial {
 		return $articles;			
 	}
 	
-	public static function get_format_data_structure($get_children= true,$get_articles = true,$full=true){
+	public static function get_format_data_structure($get_children= true,$get_articles = true,$full=true, $get_parent = false){
 		global $msg;
 		$format = cms_editorial::get_format_data_structure("section",$full);
+		if ($get_parent) {
+			$format[] = array(
+				'var' => "parent",
+				'desc' => $msg['cms_editorial_desc_parent_section'],
+				'children' => self::prefix_var_tree(cms_section::get_format_data_structure(false, false),"parent")
+			);
+		}
 		if($get_children){
 			$format[] = array(
 				'var' => 'children',

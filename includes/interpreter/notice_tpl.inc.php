@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_tpl.inc.php,v 1.84.2.5 2015-10-20 11:48:08 jpermanne Exp $
+// $Id: notice_tpl.inc.php,v 1.84.2.6 2015-10-28 10:19:20 jpermanne Exp $
 require_once ($include_path . "/misc.inc.php");
 
 $func_format['b_empty']= aff_b_empty;
@@ -584,7 +584,7 @@ function gere_expl_bulletin($bulletin_id){
 	//Exemplaires
 	$bulletin->memo_exemplaires=array();
 	$requete = "select expl_id, expl_cb, expl_cote, expl_statut,statut_libelle, expl_typdoc, tdoc_libelle, expl_note, expl_comment, expl_section, section_libelle, ";
-	$requete.= "expl_owner, lender_libelle, expl_codestat, codestat_libelle, expl_date_retour, expl_date_depot, expl_note, pret_flag, expl_location, location_libelle ";
+	$requete.= "expl_owner, lender_libelle, expl_codestat, codestat_libelle, expl_date_retour, expl_date_depot, expl_note, pret_flag, expl_location, location_libelle, expl_prix ";
 	if($opac_sur_location_activate) {
 		$requete.= ", ifnull(surloc_id,0) as surloc_id, ifnull(surloc_libelle,'') as surloc_libelle ";
 	}

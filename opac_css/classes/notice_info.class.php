@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_info.class.php,v 1.39.2.6 2015-09-24 15:48:16 dgoron Exp $
+// $Id: notice_info.class.php,v 1.39.2.8 2015-10-28 10:19:20 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -106,8 +106,8 @@ class notice_info {
 		} else {
 			$title=$this->notice_header;
 			if(!$title)$title=$this->notice->tit1;
-			if ($use_opac_url_base) $this->memo_iconcart="<span id='baskets".$this->notice_id."'><a href=\"".$opac_url_base."cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.gif", 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a></span>";
-			else $this->memo_iconcart="<span id='baskets".$this->notice_id."'><a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.gif")."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a></span>";
+			if ($use_opac_url_base) $this->memo_iconcart="<span id='baskets".$this->notice_id."'><a href=\"".$opac_url_base."cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.png", 1)."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a></span>";
+			else $this->memo_iconcart="<span id='baskets".$this->notice_id."'><a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src=\"".get_url_icon("basket_small_20x20.png")."\" border=\"0\" alt=\"".$msg['notice_title_basket']."\" /></a></span>";
 		}
 		$this->niveau_biblio=$this->notice->niveau_biblio;
 		$this->niveau_hierar=$this->notice->niveau_hierar;
@@ -383,7 +383,7 @@ class notice_info {
 		//Traitement des exemplaires
 		$this->memo_exemplaires=array();
 		$requete = "select expl_id, expl_cb, expl_cote, expl_statut,statut_libelle, expl_typdoc, tdoc_libelle, expl_note, expl_comment, expl_section, section_libelle, "; 
-		$requete.= "expl_owner, lender_libelle, expl_codestat, codestat_libelle, expl_date_retour, expl_date_depot, expl_note, pret_flag, expl_location, location_libelle ";
+		$requete.= "expl_owner, lender_libelle, expl_codestat, codestat_libelle, expl_date_retour, expl_date_depot, expl_note, pret_flag, expl_location, location_libelle, expl_prix ";
 		if($opac_sur_location_activate) {
 			$requete.= ", ifnull(surloc_id,0) as surloc_id, ifnull(surloc_libelle,'') as surloc_libelle ";
 		}
@@ -395,7 +395,7 @@ class notice_info {
 		$requete.= "and expl_location=idlocation ";
 		$requete.= "union ";
 		$requete.= "select expl_id, expl_cb, expl_cote, expl_statut,statut_libelle, expl_typdoc, tdoc_libelle, expl_note, expl_comment, expl_section, section_libelle, "; 
-		$requete.= "expl_owner, lender_libelle, expl_codestat, codestat_libelle, expl_date_retour, expl_date_depot, expl_note, pret_flag, expl_location, location_libelle ";
+		$requete.= "expl_owner, lender_libelle, expl_codestat, codestat_libelle, expl_date_retour, expl_date_depot, expl_note, pret_flag, expl_location, location_libelle, expl_prix ";
 		if($opac_sur_location_activate) {
 			$requete.= ", ifnull(surloc_id,0) as surloc_id, ifnull(surloc_libelle,'') as surloc_libelle ";
 		}

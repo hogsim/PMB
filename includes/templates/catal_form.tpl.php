@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: catal_form.tpl.php,v 1.133.2.1 2015-09-07 15:23:40 jpermanne Exp $
+// $Id: catal_form.tpl.php,v 1.133.2.2 2015-10-27 14:26:54 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".tpl.php")) die("no access");
 
@@ -1033,7 +1033,7 @@ function chklnk_f_lien(element){
 		document.getElementById('f_lien_check').appendChild(wait);
 		var testlink = encodeURIComponent(element.value);
 		var req = new XMLHttpRequest();
-		req.open('GET', './ajax.php?module=ajax&categ=chklnk&timeout=0&link='+testlink, true);
+		req.open('GET', './ajax.php?module=ajax&categ=chklnk&timeout=!!pmb_curl_timeout!!&link='+testlink, true);
 		req.onreadystatechange = function (aEvt) {
 		  if (req.readyState == 4) {
 		  	if(req.status == 200){

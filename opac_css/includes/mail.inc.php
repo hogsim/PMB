@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: mail.inc.php,v 1.18 2010-07-07 13:33:30 arenou Exp $
+// $Id: mail.inc.php,v 1.18.14.1 2015-10-28 13:02:06 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -12,7 +12,7 @@ require_once($class_path."/class.phpmailer.php") ;
 
 function mailpmb($to_nom="", $to_mail, $obj="", $corps="", $from_name="", $from_mail, $headers, $copie_CC="", $copie_BCC="", $faire_nl2br=0, $pieces_jointes=array(),$reply_name="",$reply_mail="") {
 
-	global $opac_mail_methode, $opac_mail_html_format ;
+	global $opac_mail_methode, $opac_mail_html_format,$opac_mail_adresse_from;
 	global $charset;
 	
 	if (!is_array($pieces_jointes)) $pieces_jointes=array();
@@ -49,8 +49,16 @@ function mailpmb($to_nom="", $to_mail, $obj="", $corps="", $from_name="", $from_
 	}
 
 	if ($opac_mail_html_format) $mail->IsHTML(true);
-	$mail->From=$from_mail;
-	$mail->FromName=$from_name;
+	if (trim($opac_mail_adresse_from)) {
+		$tmp_array_email = explode(';',$opac_mail_adresse_from);
+		$mail->From=$tmp_array_email[0];
+		if (isset($tmp_array_email[1])) {
+			$mail->FromName=$tmp_array_email[1];
+		}
+	} else {
+		$mail->From=$from_mail;
+		$mail->FromName=$from_name;
+	}
 	for ($i=0; $i<count($destinataires); $i++) {
 		$mail->AddAddress($destinataires[$i], $to_nom);
 		}

@@ -5,8 +5,8 @@
  * HTML => PDF convertor
  * distributed under the LGPL License
  *
- * @author      Laurent MINGUET <webmaster@html2pdf.fr>
- * @version     4.03
+ * @author  Laurent MINGUET <webmaster@html2pdf.fr>
+ * @version 4.04
  */
 
 class HTML2PDF_parsingHtml
@@ -231,7 +231,7 @@ class HTML2PDF_parsingHtml
      */
     protected function _prepareTxt($txt, $spaces = true)
     {
-        if ($spaces) $txt = preg_replace('/\s+/is', ' ', $txt);
+        if ($spaces) $txt = preg_replace('/\s+/isu', ' ', $txt);
         $txt = str_replace('&euro;', '€', $txt);
         $txt = html_entity_decode($txt, ENT_QUOTES, $this->_encoding);
         return $txt;

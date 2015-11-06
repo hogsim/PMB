@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: en_UK.xml,v 1.1027.2.13 2015-10-15 09:35:02 jpermanne Exp $ -->
+$Id: en_UK.xml,v 1.1027.2.15 2015-10-28 16:25:26 apetithomme Exp $ -->
 
 <XMLlist>
 <entry code="demo">Demo</entry>
@@ -7894,4 +7894,7 @@ $Id: en_UK.xml,v 1.1027.2.13 2015-10-15 09:35:02 jpermanne Exp $ -->
 <entry code="operator_between_multiple_authorities_and">Et</entry>
 
 <entry code="deflt_notice_is_new">Nouveauté par défaut en création de notice :</entry>
+
+<entry code="transferts_circ_depart_exemplaire">Départ d'un exemplaire</entry>
+<entry code="cms_editorial_desc_parent_section">Rubrique parente</entry>
 </XMLlist>

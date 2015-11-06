@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: index_includes.inc.php,v 1.103.2.3 2015-10-15 08:18:20 jpermanne Exp $
+// $Id: index_includes.inc.php,v 1.103.2.4 2015-10-23 14:52:53 arenou Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".inc.php")) die("no access");
 
@@ -488,8 +488,10 @@ switch($lvl) {
 		break;
 	}
 
-$cms_build_info="";
-if($cms_build_activate || $_SESSION["cms_build_activate"]){ // issu de la gestion
+
+if($cms_build_activate == -1){
+	unset($_SESSION["cms_build_activate"]);
+}else if($cms_build_activate || $_SESSION["cms_build_activate"]){ // issu de la gestion	
 	if($pageid){
 		require_once($base_path."/classes/cms/cms_pages.class.php");
 		$cms_page= new cms_page($pageid);

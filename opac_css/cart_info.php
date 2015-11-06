@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cart_info.php,v 1.64.2.3 2015-09-17 15:14:13 dgoron Exp $
+// $Id: cart_info.php,v 1.64.2.5 2015-10-22 15:26:59 mbertin Exp $
 
 //Actions et affichage du résultat pour un panier de l'opac
 $base_path=".";
@@ -39,30 +39,28 @@ if (file_exists($base_path.'/includes/ext_auth.inc.php')) require_once($base_pat
 
 //si les vues sont activées (à laisser après le calcul des mots vides)
 if($opac_opac_view_activate){
+	$current_opac_view=$_SESSION["opac_view"];
 	if($opac_view==-1){
-		$_SESSION["opac_view"]=0;
-		$opac_view=0;
-	}
-	if($opac_view)	{
-		$_SESSION["opac_view"]=$opac_view;
+		$_SESSION["opac_view"]="default_opac";
+	}else if($opac_view)	{
+		$_SESSION["opac_view"]=$opac_view*1;
 	}
 	$_SESSION['opac_view_query']=0;
 	if(!$pmb_opac_view_class) $pmb_opac_view_class= "opac_view";
 	require_once($base_path."/classes/".$pmb_opac_view_class.".class.php");
-	if($_SESSION["opac_view"]){
-		$opac_view_class= new $pmb_opac_view_class($_SESSION["opac_view"],$_SESSION["id_empr_session"]);
-	 	if($opac_view_class->id){
-	 		$opac_view_class->set_parameters();
-	 		$opac_view_filter_class=$opac_view_class->opac_filters;
-	 		$_SESSION["opac_view"]=$opac_view_class->id;
-	 		if(!$opac_view_class->opac_view_wo_query) {
-	 			$_SESSION['opac_view_query']=1;
-	 		}
-	 	}else{
-	 		$_SESSION["opac_view"]=0;
-	 	}
-		$css=$_SESSION["css"]=$opac_default_style;
-	}
+
+	$opac_view_class= new $pmb_opac_view_class($_SESSION["opac_view"],$_SESSION["id_empr_session"]);
+ 	if($opac_view_class->id){
+ 		$opac_view_class->set_parameters();
+ 		$opac_view_filter_class=$opac_view_class->opac_filters;
+ 		$_SESSION["opac_view"]=$opac_view_class->id;
+ 		if(!$opac_view_class->opac_view_wo_query) {
+ 			$_SESSION['opac_view_query']=1;
+ 		}
+ 	} else {
+ 		$_SESSION["opac_view"]=0;
+ 	}
+	$css=$_SESSION["css"]=$opac_default_style;
 }
 
 if($opac_search_other_function){
@@ -133,7 +131,7 @@ print "<script type='text/javascript'>
 print "<script type='text/javascript' src='".$include_path."/javascript/cart.js'></script>";
 $vide_cache=filemtime("./styles/".$css."/".$css.".css");
 print "<link rel=\"stylesheet\" href=\"./styles/".$css."/".$css.".css?".$vide_cache."\" />
-<span class='img_basket'><img src='".get_url_icon("basket_small_20x20.gif")."' border='0' valign='center'/></span>&nbsp;";
+<span class='img_basket'><img src='".get_url_icon("basket_small_20x20.png")."' border='0' valign='center'/></span>&nbsp;";
 $cart_=$_SESSION["cart"];
 if (!count($cart_)) $cart_=array();
 

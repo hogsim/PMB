@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2012 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: cms_module_common_view_sectionslist.class.php,v 1.5 2015-02-25 16:18:09 mbertin Exp $
+// $Id: cms_module_common_view_sectionslist.class.php,v 1.5.4.1 2015-10-28 16:25:27 apetithomme Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -60,7 +60,7 @@ class cms_module_common_view_sectionslist extends cms_module_common_view_django{
 		if(is_array($datas) && count($datas)){
 			foreach($datas as $section){
 				$cms_section = new cms_section($section);
-				$infos= $cms_section->format_datas();
+				$infos= $cms_section->format_datas(true, true, true, true);
 				$infos['link'] = $this->get_constructed_link("section",$section);
 				foreach ($infos['articles'] as $i=>$article) {
 					$infos['articles'][$i]['link'] = $this->get_constructed_link("article",$article["id"]);
@@ -81,7 +81,7 @@ class cms_module_common_view_sectionslist extends cms_module_common_view_django{
 		$sections = array(
 			'var' => "sections",
 			'desc' => $this->msg['cms_module_common_view_section_desc'],
-			'children' => $this->prefix_var_tree(cms_section::get_format_data_structure(),"sections[i]")
+			'children' => $this->prefix_var_tree(cms_section::get_format_data_structure(true, true, true, true),"sections[i]")
 		);
 		$sections['children'][] = array(
 			'var' => "sections[i].link",

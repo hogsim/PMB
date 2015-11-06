@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 //  2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice.class.php,v 1.201.2.1 2015-10-15 09:35:03 jpermanne Exp $
+// $Id: notice.class.php,v 1.201.2.2 2015-10-27 14:26:54 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -593,8 +593,10 @@ if ( ! defined( 'NOTICE_CLASS' ) ) {
 			$form_notice = str_replace('!!tab7!!', $ptab[7], $form_notice);
 		
 			// mise a jour de l'onglet 8
+			global $pmb_curl_timeout;
 			$ptab[8] = str_replace('!!lien!!',			htmlentities($this->lien	,ENT_QUOTES, $charset)	, $ptab[8]);
 			$ptab[8] = str_replace('!!eformat!!',		htmlentities($this->eformat	,ENT_QUOTES, $charset)	, $ptab[8]);
+			$ptab[8] = str_replace('!!pmb_curl_timeout!!',		$pmb_curl_timeout	, $ptab[8]);
 		
 			$form_notice = str_replace('!!tab8!!', $ptab[8], $form_notice);
 		

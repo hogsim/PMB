@@ -5,8 +5,8 @@
  * HTML => PDF convertor
  * distributed under the LGPL License
  *
- * @author      Laurent MINGUET <webmaster@html2pdf.fr>
- * @version     4.03
+ * @author  Laurent MINGUET <webmaster@html2pdf.fr>
+ * @version 4.04
  */
 
 class HTML2PDF_parsingCss
@@ -113,14 +113,14 @@ class HTML2PDF_parsingCss
      */
     public function initStyle()
     {
-        $this->value['id_tag']       = 'body';        // tag name
+        $this->value['id_tag']           = 'body';       // tag name
         $this->value['id_name']          = null;         // tag - attribute name
         $this->value['id_id']            = null;         // tag - attribute id
         $this->value['id_class']         = null;         // tag - attribute class
         $this->value['id_lst']           = array('*');   // tag - list of legacy
         $this->value['mini-size']        = 1.;           // specific size report for sup, sub
         $this->value['mini-decal']       = 0;            // specific position report for sup, sub
-        $this->value['font-family']      = 'Arial';
+        $this->value['font-family']      = defined('PDF_FONT_NAME_MAIN') ? PDF_FONT_NAME_MAIN : 'Arial';
         $this->value['font-bold']        = false;
         $this->value['font-italic']      = false;
         $this->value['font-underline']   = false;

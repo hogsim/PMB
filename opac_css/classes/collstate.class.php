@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: collstate.class.php,v 1.18 2015-04-03 11:16:17 jpermanne Exp $
+// $Id: collstate.class.php,v 1.18.4.1 2015-10-29 09:42:48 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -109,6 +109,7 @@ class collstate {
 		global $opac_sur_location_activate, $opac_view_filter_class;
 		global $collstate_list_header, $collstate_list_footer;
 		global $opac_collstate_data, $opac_collstate_order, $opac_url_base;
+		global $charset;
 		
 		$location=$filtre->location;	
 		if($opac_view_filter_class){

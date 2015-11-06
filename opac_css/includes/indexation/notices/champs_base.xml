@@ -5,7 +5,7 @@
 ****************************************************************************************
 © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 ****************************************************************************************
-$Id: champs_base.xml,v 1.24.2.1 2015-09-09 08:03:10 mbertin Exp $ -->
+$Id: champs_base.xml,v 1.24.2.2 2015-10-21 13:57:51 jpermanne Exp $ -->
 
 <indexation>
 
@@ -691,72 +691,6 @@ $Id: champs_base.xml,v 1.24.2.1 2015-09-09 08:03:10 mbertin Exp $ -->
 		</table>-->
 	</field>	
 				
-	<!-- Infos d'exemplaires numérique-->
-	<field name="search_expl_num" external="yes" id="095" datatype="explnum">
-		<table name="explnum">
-			<tablefield name="extexplnum_mimetype" id="01" pond="0">explnum_mimetype</tablefield>
-			<filter>(notices.niveau_biblio='a' and notices.niveau_hierar=2)</filter>
-			<tablekey>explnum_id</tablekey>
-			<link type="n1">
-					<table>analysis</table>
-					<tablekey>analysis_notice</tablekey>
-					<externaltable>notices</externaltable>
-					<externalfield>notice_id</externalfield>
-				</link>
-			<link type="n1">
-					<table>bulletins</table>
-					<tablekey>bulletin_id</tablekey>
-					<externaltable>analysis</externaltable>
-					<externalfield>analysis_bulletin</externalfield>
-			</link>
-			<link type="n1">
-					<table>explnum</table>
-					<tablekey>expl_bulletin</tablekey>
-					<externaltable>bulletins</externaltable>
-					<externalfield>bulletin_id</externalfield>
-					<linkrestrict>AND explnum.explnum_notice=0</linkrestrict>
-			</link>	
-			<link type="n1">
-				<table>explnum_statut</table>
-				<tablekey>id_explnum_statut</tablekey>
-				<externalfield>explnum_id</externalfield>
-			</link>	  		    
-		</table>	 
-		<!--  Indexation de la notice de bulletin avec les explnum du bulletin auquel elle est reliée  -->
-		<table name="explnum">
-			<filter>(notices.niveau_biblio='b' and notices.niveau_hierar=2)</filter>  
-			<tablefield name="extexplnum_mimetype" id="01" pond="0">explnum_mimetype</tablefield>
-			<tablekey>explnum_id</tablekey>
-			<link type="nn">
-				<table>bulletins</table>
-				<referencefield>num_notice</referencefield>
-				<tablekey>bulletin_id</tablekey>
-				<externalfield>explnum_bulletin</externalfield>
-				<linkrestrict>AND explnum.explnum_notice=0</linkrestrict>
-			</link> 	
-			<link type="n1">
-				<table>explnum_statut</table>
-				<tablekey>id_explnum_statut</tablekey>
-				<externalfield>explnum_id</externalfield>
-			</link>	     
-		</table>			
-		<!-- Indexation d'une notice de monographie avec ses explnum -->
-		<table name="explnum">
-			<filter>(notices.niveau_biblio='m' and notices.niveau_hierar=0)</filter>
-			<tablefield name="extexplnum_mimetype" id="01" pond="0">explnum_mimetype</tablefield>
-			<tablekey>explnum_id</tablekey>
-			<link type="n1">
-				<externalfield>explnum_notice</externalfield>
-				<linkrestrict>AND explnum.explnum_bulletin=0</linkrestrict>
-			</link>
-			<link type="n1">
-				<table>explnum_statut</table>
-				<tablekey>id_explnum_statut</tablekey>
-				<externalfield>explnum_id</externalfield>
-			</link>	     
-		</table>			
-	</field>
-				
 	<!-- Concepts -->	
 	<field name="index_concept_label" external="yes" id="036" datatype="concept">
 		<table name="skos_fields_global_index">
@@ -890,4 +824,10 @@ $Id: champs_base.xml,v 1.24.2.1 2015-09-09 08:03:10 mbertin Exp $ -->
 			</link>
 		</table>
 	</field> -->
+	
+	<field name="253" id="121" pond="100" >
+		<table>
+			<tablefield>nocoll</tablefield>
+		</table>
+	</field>
 </indexation>

@@ -3,7 +3,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: facette_search_compare.class.php,v 1.10.2.2 2015-09-17 15:14:13 dgoron Exp $
+// $Id: facette_search_compare.class.php,v 1.10.2.4 2015-10-29 11:20:30 dgoron Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -400,7 +400,7 @@ class facette_search_compare {
 					} else {
 						$title=$current->notice_header;
 						if(!$title)$title=$current->notice->tit1;
-						$notices.="<a href=\"cart_info.php?id=".$current->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".get_url_icon("basket_small_20x20.gif", 1)."' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
+						$notices.="<a href=\"cart_info.php?id=".$current->notice_id."&header=".rawurlencode(strip_tags($title))."\" target=\"cart_info\" class=\"img_basket\" title=\"".$msg['notice_title_basket']."\"><img src='".get_url_icon("basket_small_20x20.png", 1)."' align='absmiddle' border='0' alt=\"".$msg['notice_title_basket']."\" /></a>";
 					}
 				}else {
 					$notices.="";
@@ -568,11 +568,11 @@ class facette_search_compare {
 		$script="";
 		if(sizeof($facette_compare->facette_groupby[$idGroupBy])){
 			$script= "
-				<th class='groupby_button' onclick=\"group_by('".htmlentities($groupBy,ENT_QUOTES,$charset)."');\"><img title='".$msg['facette_compare_groupby']."' class='facette_compare_grp' alt='".$msg['facette_compare_groupby']."' src='$base_path/images/group_by.png'/></th>
+				<th class='groupby_button' onclick=\"group_by('".htmlentities($groupBy,ENT_QUOTES,$charset)."');\"><img title='".$msg['facette_compare_groupby']."' class='facette_compare_grp' alt='".$msg['facette_compare_groupby']."' src='".get_url_icon('group_by.png')."'/></th>
 				<input type='hidden' id='facette_groupby_".$idGroupBy."' name='check_facette_groupby[]' value='".htmlentities($groupBy,ENT_QUOTES,$charset)."'/>";
 		}else{
 			$script= "
-				<th class='groupby_button' onclick=\"group_by('".htmlentities($groupBy,ENT_QUOTES,$charset)."');\"><img title='".$msg['facette_compare_groupby']."' class='facette_compare_grp' alt='".$msg['facette_compare_groupby']."' src='$base_path/images/group_by_grey.png'/></th>
+				<th class='groupby_button' onclick=\"group_by('".htmlentities($groupBy,ENT_QUOTES,$charset)."');\"><img title='".$msg['facette_compare_groupby']."' class='facette_compare_grp' alt='".$msg['facette_compare_groupby']."' src='".get_url_icon('group_by_grey.png')."'/></th>
 				<input type='hidden' id='facette_groupby_".$idGroupBy."' name='check_facette_groupby[]' value=''/>";
 			}	
 		return $script;
@@ -710,7 +710,7 @@ class facette_search_compare {
 								
 								var group_by_elements_img=group_by_elements[i].previousElementSibling.firstChild;
 									
-								group_by_elements_img.setAttribute('src','$base_path/images/group_by_grey.png');
+								group_by_elements_img.setAttribute('src','".get_url_icon('group_by_grey.png')."');
 								group_by_elements[i].setAttribute('value','');
 								
 							}else{

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: notice_affichage.phototheque.class.php,v 1.30.4.5 2015-09-24 15:48:15 dgoron Exp $
+// $Id: notice_affichage.phototheque.class.php,v 1.30.4.6 2015-10-21 15:19:49 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -458,7 +458,7 @@ function genere_simple($depliable=1, $what='ISBD') {
 		if(isset($_SESSION["cart"]) && in_array($this->notice_id, $_SESSION["cart"])) {
 			$basket="<a href='#' class=\"img_basket_exist\" title=\"".$msg['notice_title_basket_exist']."\"><img src=\"".get_url_icon('basket_exist.gif', 1)."\" align='absmiddle' border='0' alt=\"".$msg['notice_title_basket_exist']."\" /></a>";
 		} else {
-			$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode($this->notice_header)."\" target=\"cart_info\" title=\"".$msg[notice_title_basket]."\"><img src='".get_url_icon("basket_small_20x20.gif", 1)."' align='absmiddle' border='0' alt=\"".$msg[notice_title_basket]."\"></a>";
+			$basket="<a href=\"cart_info.php?id=".$this->notice_id."&header=".rawurlencode($this->notice_header)."\" target=\"cart_info\" title=\"".$msg[notice_title_basket]."\"><img src='".get_url_icon("basket_small_20x20.png", 1)."' align='absmiddle' border='0' alt=\"".$msg[notice_title_basket]."\"></a>";
 		}
 	}
 

@@ -2,7 +2,7 @@
 // +-------------------------------------------------+
 // © 2002-2004 PMB Services / www.sigb.net pmb@sigb.net et contributeurs (voir www.sigb.net)
 // +-------------------------------------------------+
-// $Id: sel_display.class.php,v 1.11 2015-06-29 08:54:04 jpermanne Exp $
+// $Id: sel_display.class.php,v 1.11.2.1 2015-10-28 15:21:45 jpermanne Exp $
 
 if (stristr($_SERVER['REQUEST_URI'], ".class.php")) die("no access");
 
@@ -208,6 +208,7 @@ class sel_mono_display {
 	function doContent() {
 		global $tdoc;
 		global $fonction_auteur;
+		global $msg;
 	
 		//mention titre
 		$this->isbd = $this->titre;
@@ -336,6 +337,13 @@ class sel_mono_display {
 		}
 		if($zoneNote) {
 			$this->isbd .= "<br /><br />$zoneNote.";
+		}
+		
+		//Indexation décimale
+		if($this->notice->indexint) {
+			$indexint = new indexint($this->notice->indexint);
+			$indexint_isbd=$indexint->display;
+			$this->isbd .= "<br /><b>${msg['indexint_catal_title']}</b>&nbsp;: ".$indexint_isbd;
 		}
 	}	
 
@@ -621,7 +629,13 @@ class sel_serial_display {
 
 		//code (ISSN,...)
 		if ($this->notice->code) $this->isbd .="<br /><b>${msg[165]}</b>&nbsp;: ".$this->notice->code;
-			
+
+		//Indexation décimale
+		if($this->notice->indexint) {
+			$indexint = new indexint($this->notice->indexint);
+			$indexint_isbd=$indexint->display;
+			$this->isbd .= "<br /><b>${msg['indexint_catal_title']}</b>&nbsp;: ".$indexint_isbd;
+		}
 					
 		// Si notice-mère alors on compte le nombre de numéros (bulletins)
 		if($this->notice->niveau_biblio=="s") {

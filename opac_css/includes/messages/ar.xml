@@ -1718,7 +1718,7 @@ $Id$ -->
 
 <entry code="empr_my_dmde">Mes demandes</entry>
 
-<entry code="print_loans_bt">Export excel</entry>
+<entry code="print_loans_bt">Export tableur</entry>
 
 <entry code="show_cart_check_all">Tout cocher</entry>
 <entry code="show_cart_uncheck_all">Tout décocher</entry>
@@ -1765,4 +1765,5 @@ $Id$ -->
 <entry code="show_history_uncheck_all">Tout décocher</entry>
 <entry code="show_sort_check_all">Tout cocher</entry>
 <entry code="show_sort_uncheck_all">Tout décocher</entry>
+<entry code="cms_editorial_desc_parent_section">Rubrique parente</entry>
 </XMLlist>
